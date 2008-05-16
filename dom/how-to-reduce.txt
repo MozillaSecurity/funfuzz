@@ -1,0 +1,87 @@
+This document assumes you found a bug with fuzzer-combined.js and want to make a reduced testcase.  A reduced testcase is not only easier for a Gecko developer to work with to understand the bug, but it also avoids giving away hints about how the fuzzers work to people who look at the testcase.
+
+
+First of all, here's the information you have:
+- The URL the initial DOM came from.  (grep the log for "running on".)
+- A script for reconstructing the initial DOM.  (grep the log for "FRC2".)
+- The sequence of fuzz commands.  (grep the log for "FRC1".)
+
+
+=== Get the interesting bits into a single file ===
+
+1. Save the page on which you found the crash.  Use your browser's "HTML only" or "XHTML only" saving mode rather than "Web Page, Complete" -- you want the markup to exactly the same.  
+  -- Sometimes you'll need to add <base fuzzskip="skip" href="[pageurl]"> to the <head>.  (The fuzzskip attribute keeps allNodes indices from getting out of whack if you skip the FRC2 parts.)
+  -- Since you have a DOM reconstruction script, you might be able to get away with using a different page, but this method gives you the right rendering mode (e.g. quirks), document type (e.g. HTMLDocument), and documentElement node (e.g. html:html).
+
+2. Paste the chunk of the fuzz script's "default test page" that contains the three <script> elements (one with src="fuzz.js", one referring to the specific fuzzer, and one with src="fuzz-start.js") into the saved page.
+  -- For HTML or XHTML, paste it in <head> (below meta charset, if present -- bug 322181) (above base href, if present).
+  -- For things like SVG that don't have <head>, paste it so that it's the first child of the root, with no whitespace before it.
+
+3. Remove the src attribute from the middle script and paste the entire .js file as an inline script.  (For XML, you'll need CDATA markers: "<![CDATA[" before the script body and "]]>" after.)  You can leave fuzz.js and fuzz-start.js as separate files.
+
+4. Paste the result "grep FRC logfile | pbcopy" over the first two lines (the ones declaring fuzzSettings and fuzzCommands).
+
+5. Add a "]" on a separate line if it's missing from the end.  (It will be missing from the output if Firefox crashed, for example.)
+
+6. Make sure it still demonstrates the bug (e.g. crashes).
+
+
+If it doesn't crash at this point, try:
+- reloading a few times.  (If you find that it only crashes 30% of the time, use "fuzzRetry(5)" instead of "goQuitApplication" so that it crashes 85% of the time.)
+- removing all of the FRC2 lines (DOM reconstruction script).  The DOM reconstruction script makes reduction easier and reduces the risk of losing a bug due to changes on the page, but sometimes using a DOM reconstruction script hides bugs, so you can't always use it.
+- giving up and moving on. you at least have a stack trace for the crash or the assertion, right?
+
+
+=== Reduce the fuzzCommands array ===
+
+1. Reduce the fuzzCommands array.
+
+You'll usually want to do this part using an automated reduction program such as Lithium -- it's not only automatic (letting you focus on other things for a while) but also usually faster than doing the same thing by hand.  To prepare the testcase for Lithium, make sure there are comment lines containing "DDBEGIN" and "DDEND" around the meat of the fuzzCommands array (DDEND might be missing due to a crash), and add a to goQuitApplication after the DDEND line.  It should look like this:
+
+var fuzzCommands = [
+  // DDBEGIN
+  ... recorded commands ...
+  // DDEND
+  { origCount: 10000, rest: true },
+  { origCount: 10001, fun: goQuitApplication },
+];
+
+Now the testcase is ready for you to use Lithium: it will always cause Firefox to exit without human intervention (either by crashing or by hitting the goQuitApplication line), and Lithium just needs to find a minimal subsequence of the recorded commands that triggers the bug.
+
+For a crash, use one of the following:
+./lithium L foo.html firefoxdebug crashes 120
+./lithium L foo.html firefoxdebug outputs1 Start9 Quitting
+
+For an assertion, use:
+./lithium L foo.html firefoxdebug outputs "index out of range"
+
+
+
+=== Reduce the rest and convert script to markup ===
+
+Now that you have a short sequence of JavaScript commands, you'll have to reduce the rest of the script (and the markup, if you're not using FRC2) by hand.  You want a final reduced testcase that include very little script.  Usually, it's only necessary for at most one appendChild or removeChild call (at the end) to be dynamic; the rest of the testcase can be markup.
+
+Here's an example of a reduced testcase where exactly one modification was left dynamic:
+view-source:https://bugzilla.mozilla.org/attachment.cgi?id=250556
+(This example is from https://bugzilla.mozilla.org/show_bug.cgi?id=366012.)
+
+
+Luckily, you have a great set of tools to pick from:
+
+- fuzzBounceDE
+- serializeHTML or XMLSerializer
+- serializeDOMAsScript (again!)
+- Lithium (again!)
+
+A quick way to figure out how much needs to be dynamic is to use fuzzBounceDE.  If you find that inserting a fuzzBounceDE (followed by a rest) above the last line doesn't make the bug go away, that usually means that the result of the script up to the fuzzBounceDE call can be replaced with static markup.  Assign id attributes to elements referenced by the last line, place a call to serializeHTML where the fuzzBounceDE call was, and then take the output from serializeHTML and use it along with the last line to make a simple testcase.
+
+(If you haven't used FRC2 and you can't use serializeHTML or serializeDOMAsScript, remember that the meaning of allNodes[10] changes as you modify the markup.  In this "worst case" scenario, you'll be faced with the tedious task of giving IDs to tags in the markup and replacing "allNodes[i]" with getElementById calls before you can start hacking away at the markup.  But once you do that, you can use Lithium to do the hacking-away-at-markup for you.)
+
+At some point (usually when you're almost done), you'll want to get rid off all the fuzz.js references and convert any remaining script to a simple onload function (or button onclick).
+
+
+=== File the bug ===
+
+Now that you have a simple testcase, you're ready to file a bug!  Use the "testcase" keyword and mark it as blocking the metabug for the fuzzer that found it.
+
+If the fuzzer is private, make sure the testcase is clean of hints about how the fuzzer works or even that the bug was found through fuzzing.  (Do this even if you file the bug as security-sensitive for other reasons, in case the bug is fixed before the fuzzer becomes public.)

@@ -1,0 +1,24 @@
+There are several ways to use these fuzzers.
+
+
+* Just load the default test page and give it a seed.
+
+This is fast and easy, but you don't want to leave it running with a single seed for a long time.  (If it finds a crash after 10 minutes, reproducing and reducing that crash is going to be tough.)  This is good for getting an idea of what each fuzzer does, and good for demos.
+
+
+* Load the default test page using "scan=1":
+file:///Users/jruderman/Sites/fuzz3/fuzzer-stir-table.xhtml?fuzz=0,0,100,100,500&scan=1
+
+When it gets to maxSteps (500 in this case) or otherwise decides that it's done, it will increment the seed and start over.  This is good for quick regression testing and demos.
+
+
+* Turn the fuzzer into a bookmarklet using "make-fuzz-bookmarklet.html", then use the bookmarklet on any loaded page.  This is good for quick exploration and demos.
+
+
+* Use Jesse's "autofuzz" or Bob Clary's "spider" for hours of unattended fuzzing.  Come back to a list of crashes/assertions along with (URL, fuzzer, parameter) information for each one.  This is good for overnight fuzzing.
+
+
+
+To check for strict warnings:
+
+ls *.js | xargs -n 1 ~/central/mozilla/js/src/Darwin_DBG.obj/js -s -C 

@@ -1,0 +1,44 @@
+=== One-time setup ===
+
+Grep all the files for "jruderman" and fix the paths ;)
+
+Install Greasemonkey into Firefox.
+
+Install autofuzz.user.js using Greasemonkey.
+
+
+=== Before starting ===
+
+Clear out the w* log files from any previous run.
+
+Set Mac OS X Crash Reporter to "Server" mode to suppress crash dialogs.
+
+Turn sound off (mute the computer) if you intend to sleep.
+
+Open firefox-bin.crash.log in Console.app and click Clear.
+
+Make sure the last build that ran was the same one you're about to test, to avoid EM-restart issues.  (And make sure Firefox is closed.)
+
+
+=== Run it ===
+
+export MallocScribble=1
+export MallocPreScribble=1
+
+export XPCOM_DEBUG_BREAK=stack
+export XPCOM_MEM_LEAK_LOG=1
+
+python -u ./af_timed_run.py 120 "/Users/jruderman/trunk/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog
+
+
+Can be left unattended overnight, for example.
+
+
+=== After running for a while ===
+
+For crashes, look through firefox-bin.crash.log using Console.app.
+
+
+
+
+python -u ./wholeaked.py 120 "/Users/jruderman/trunk/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee loggage.log
