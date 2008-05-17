@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<overlay
+	id="domfuzzOverlay"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript" src="chrome://domfuzz/content/domfuzz.js"/>
+
+</overlay>

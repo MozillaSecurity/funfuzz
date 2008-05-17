@@ -2,9 +2,9 @@
 
 Grep all the files for "jruderman" and fix the paths ;)
 
-Install Greasemonkey into Firefox.
-
-Install autofuzz.user.js using Greasemonkey.
+Install the "DOM Fuzzer" extension, not as an XPI, but using a fake link:
+  cd fuzzing/dom/extension/
+  pwd > [profile directory]/extensions/domfuzz@squarefree.com
 
 
 === Before starting ===
@@ -28,7 +28,7 @@ export MallocPreScribble=1
 export XPCOM_DEBUG_BREAK=stack
 export XPCOM_MEM_LEAK_LOG=1
 
-python -u ./af_timed_run.py 120 "/Users/jruderman/trunk/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog
+python -u ./af_timed_run.py 120 "/Users/jruderman/central/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog
 
 
 Can be left unattended overnight, for example.

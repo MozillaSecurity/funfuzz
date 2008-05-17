@@ -1,0 +1,3 @@
+content domfuzz chrome/content/
+overlay chrome://browser/content/browser.xul chrome://domfuzz/content/domfuzz-overlay.xul
+
