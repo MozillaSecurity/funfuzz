@@ -2,7 +2,7 @@
 
 Grep all the files for "jruderman" and fix the paths ;)
 
-Install the "DOM Fuzzer" extension, not as an XPI, but using a fake link:
+Install the "DOM Fuzzer" extension, not as an XPI, but using a text file pointing to the directory containing the extension:
   cd fuzzing/dom/extension/
   pwd > [profile directory]/extensions/domfuzz@squarefree.com
 
