@@ -98,8 +98,7 @@ def amiss(logPrefix):
         currentFile.close()
         return True
     elif largeKnownLeaks != "":
-        # print "(Known large leaks, ignored)"
-        print "Leaked:"
+        # print "(Known large leaks, and no other large leaks, so all leaks were ignored)"
         currentFile.close()
         return False
     elif smallLeaks != "":
