@@ -91,6 +91,8 @@ if (jsshell) {
 if (typeof gc == "undefined")
   gc = function(){};
 
+var haveUsefulDis = typeof dis == "function" && typeof dis() == "string";
+
 function simpleSource(s)
 {
   function hexify(c)
@@ -112,7 +114,7 @@ function simpleSource(s)
   else
     return "" + s; // hope this is right ;)  should work for numbers.
 }
-  
+
 var haveRealUneval = (typeof uneval == "function");
 if (!haveRealUneval)
   uneval = simpleSource;
@@ -442,11 +444,15 @@ function tryItOut(code)
     return;
   }
 
-  if (f && "dis" in this) {
+  var offsets;
+
+  if (f && haveUsefulDis) {
     var disassembly = dis(f);
     var lines = disassembly.split("\n");
     var i;
-    var offsets = [];
+    
+    offsets = [];
+    
     for (i = 0; i < lines.length; ++i) {
       if (lines[i] == "main:")
         break;
