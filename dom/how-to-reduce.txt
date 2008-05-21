@@ -1,35 +1,33 @@
-This document assumes you found a bug with fuzzer-combined.js and want to make a reduced testcase.  A reduced testcase is not only easier for a Gecko developer to work with to understand the bug, but it also avoids giving away hints about how the fuzzers work to people who look at the testcase.
-
-
-First of all, here's the information you have:
-- The URL the initial DOM came from.  (grep the log for "running on".)
-- A script for reconstructing the initial DOM.  (grep the log for "FRC2".)
-- The sequence of fuzz commands.  (grep the log for "FRC1".)
+This document assumes you found a bug with fuzzer-combined.js and want to make a reduced testcase.  A reduced testcase easier for a Gecko developer to work with to understand the bug, and avoids giving away hints about how the fuzzers work to people who look at the testcase.
 
 
 === Get the interesting bits into a single file ===
 
-1. Save the page on which you found the crash.  Use your browser's "HTML only" or "XHTML only" saving mode rather than "Web Page, Complete" -- you want the markup to exactly the same.  
-  -- Sometimes you'll need to add <base fuzzskip="skip" href="[pageurl]"> to the <head>.  (The fuzzskip attribute keeps allNodes indices from getting out of whack if you skip the FRC2 parts.)
-  -- Since you have a DOM reconstruction script, you might be able to get away with using a different page, but this method gives you the right rendering mode (e.g. quirks), document type (e.g. HTMLDocument), and documentElement node (e.g. html:html).
+The fast way:
 
-2. Paste the chunk of the fuzz script's "default test page" that contains the three <script> elements (one with src="fuzz.js", one referring to the specific fuzzer, and one with src="fuzz-start.js") into the saved page.
-  -- For HTML or XHTML, paste it in <head> (below meta charset, if present -- bug 322181) (above base href, if present).
-  -- For things like SVG that don't have <head>, paste it so that it's the first child of the root, with no whitespace before it.
+1. grep FRC w1234-out | pbcopy
+2. Paste into a copy of a-template.html (call it b0.html), replacing the "var fuzzSettings = null;" and "var fuzzCommands = null;" lines.
+3. Add a "]" on a separate line if it's missing from the end.  (It will be missing from the output if Firefox crashed, for example.)
+4. Load b0.html in Firefox.
 
-3. Remove the src attribute from the middle script and paste the entire .js file as an inline script.  (For XML, you'll need CDATA markers: "<![CDATA[" before the script body and "]]>" after.)  You can leave fuzz.js and fuzz-start.js as separate files.
+If you can't reproduce the bug:
 
-4. Paste the result "grep FRC logfile | pbcopy" over the first two lines (the ones declaring fuzzSettings and fuzzCommands).
+5. Grab a copy of the original page.
+6. If needed, add <base fuzzskip="skip" href="[pageurl]"> to the <head>.
+7. Copy the three <script> elements from b0.html to the original page.
+     For HTML or XHTML, paste it in <head> (below meta charset, if present -- bug 322181) (above base href, if present).
+     For things like SVG that don't have <head>, paste it so that it's the first child of the root, with no whitespace before it.
 
-5. Add a "]" on a separate line if it's missing from the end.  (It will be missing from the output if Firefox crashed, for example.)
+Using the original page ensures that the Document type (e.g. XMLDocument, HTMLDocument) is the same and the layout mode (e.g. quirks, almost-standards, standards) is the same.  It also makes the next step possible.  If you still can't reproduce the bug:
 
-6. Make sure it still demonstrates the bug (e.g. crashes).
+8. Remove the FRC2 lines.
 
+The fuzz commands will now act on the DOM as it results from markup, rather than the DOM reconstruction script.  This should be very similar what happened the first time.  If you *still* can't reproduce, then as a last resort, you can try:
 
-If it doesn't crash at this point, try:
-- reloading a few times.  (If you find that it only crashes 30% of the time, use "fuzzRetry(5)" instead of "goQuitApplication" so that it crashes 85% of the time.)
-- removing all of the FRC2 lines (DOM reconstruction script).  The DOM reconstruction script makes reduction easier and reduces the risk of losing a bug due to changes on the page, but sometimes using a DOM reconstruction script hides bugs, so you can't always use it.
-- giving up and moving on. you at least have a stack trace for the crash or the assertion, right?
+9. Load the URL you get from "grep running w1234-out", including the #squarefree-af!... part.
+
+This ensures that makeCommand (which isn't *supposed* to have side effects) gets called, but it makes it possible for new randomness to sneak in.
+
 
 
 === Reduce the fuzzCommands array ===
@@ -39,6 +37,7 @@ If it doesn't crash at this point, try:
 You'll usually want to do this part using an automated reduction program such as Lithium -- it's not only automatic (letting you focus on other things for a while) but also usually faster than doing the same thing by hand.  To prepare the testcase for Lithium, make sure there are comment lines containing "DDBEGIN" and "DDEND" around the meat of the fuzzCommands array (DDEND might be missing due to a crash), and add a to goQuitApplication after the DDEND line.  It should look like this:
 
 var fuzzCommands = [
+  ...
   // DDBEGIN
   ... recorded commands ...
   // DDEND
@@ -49,35 +48,89 @@ var fuzzCommands = [
 Now the testcase is ready for you to use Lithium: it will always cause Firefox to exit without human intervention (either by crashing or by hitting the goQuitApplication line), and Lithium just needs to find a minimal subsequence of the recorded commands that triggers the bug.
 
 For a crash, use one of the following:
-./lithium L foo.html firefoxdebug crashes 120
-./lithium L foo.html firefoxdebug outputs1 Start9 Quitting
+./lithium L foo.html ~/.../firefox-bin crashes 120
+./lithium L foo.html ~/.../firefox outputs1 "running" "Quitting"
 
 For an assertion, use:
-./lithium L foo.html firefoxdebug outputs "index out of range"
+./lithium L foo.html ~/.../firefox outputs "index out of range"
 
+
+=== Dealing with bugs that are not 100% reproducible ===
+
+- Use fuzzRetry to make it try several times.  This will make it a bit slower, and there's a risk that it will become harder and harder to reproduce as it gets smaller.
+- Use the "fuzzCount = 0" trick.
+- Force GC
+- Ensure that the page doesn't depend on images or stylesheets that must be loaded from the Web.
+- Increase timeouts (e.g. to let remote images load).
+- Decrease timeouts -- use offsetHeight (for HTML) or boxObject.height (for XUL) instead.
+- Move XBL to markup, since onload knows when it's done, and otherwise it's tricky to tell when it's done.
+
+
+=== Dealing with messy testcases ===
+
+Sometimes, Lithium gives you something that has 20 or more lines.  Common culprits are wrapping bugs (where widths have to add up to some large amount in order to wrap) and -moz-column bugs (where the total height might be split into two equal parts, and the break point matters).
+
+When -moz-column is involved, use the "fuzzCount = 0" trick and make it use a different width or height each time.  This ensures that the "correct" column-break point is tested even as content is removed from either side.
+
+When wrapping is involved, do the same with varying widths, or just use a small width (like 1px).
 
 
 === Reduce the rest and convert script to markup ===
 
-Now that you have a short sequence of JavaScript commands, you'll have to reduce the rest of the script (and the markup, if you're not using FRC2) by hand.  You want a final reduced testcase that include very little script.  Usually, it's only necessary for at most one appendChild or removeChild call (at the end) to be dynamic; the rest of the testcase can be markup.
+Now that you have a short sequence of JavaScript commands, you'll have to reduce the rest of the script (and the markup, if you're not using FRC2) by hand.  You want a final reduced testcase that include very little or no script.  Often, it's only necessary for the last appendChild or removeChild call to be dynamic; the rest of the testcase can be markup.
 
 Here's an example of a reduced testcase where exactly one modification was left dynamic:
 view-source:https://bugzilla.mozilla.org/attachment.cgi?id=250556
 (This example is from https://bugzilla.mozilla.org/show_bug.cgi?id=366012.)
 
-
 Luckily, you have a great set of tools to pick from:
 
-- fuzzBounceDE
-- serializeHTML or XMLSerializer
-- serializeDOMAsScript (again!)
-- Lithium (again!)
+- fuzzBounceDE()
+- serializeHTML() or (new XMLSerializer).serializeToString()
+- serializeDOMAsScript() followed by another use of Lithium
 
 A quick way to figure out how much needs to be dynamic is to use fuzzBounceDE.  If you find that inserting a fuzzBounceDE (followed by a rest) above the last line doesn't make the bug go away, that usually means that the result of the script up to the fuzzBounceDE call can be replaced with static markup.  Assign id attributes to elements referenced by the last line, place a call to serializeHTML where the fuzzBounceDE call was, and then take the output from serializeHTML and use it along with the last line to make a simple testcase.
 
-(If you haven't used FRC2 and you can't use serializeHTML or serializeDOMAsScript, remember that the meaning of allNodes[10] changes as you modify the markup.  In this "worst case" scenario, you'll be faced with the tedious task of giving IDs to tags in the markup and replacing "allNodes[i]" with getElementById calls before you can start hacking away at the markup.  But once you do that, you can use Lithium to do the hacking-away-at-markup for you.)
+
+=== Simplifying transformations ===
+
+If the page contains...      Try replacing it with...
+
+iB                           aC / parentNode
+aC chains                    (Collapse the chain)
+Accented characters          'x'
+Chinese characters           ' x ' (the whitespace lets it wrap)
+CSS style rules              Inline styles
+Event handlers               The handler's contents, at the appropriate point
+<small>                      <span> or <span style="font-size: smaller">
+-moz-appearance              smallish width and height
+Percentage widths            Pixel widths (find them using computed styles)
+
+
+=== Eliminating allNodes[] references ===
+
+You'll only have to do this the hard way if you deleted the FRC2 bits, and you can't use serializeHTML or serializeDOMAsScript.  The meaning of allNodes[10] changes as you modify the markup.  In this "worst case" scenario, you'll be faced with the tedious task of giving IDs to tags in the markup and replacing "allNodes[i]" with getElementById calls before you can start hacking away at the markup.  But once you do that, you can use Lithium to do the hacking-away-at-markup for you.
+
+
+This is useful for SVG:
+
+      for each (i in [68, 118, 82, 122, 108]) {        dumpln("allNodes[" + i + "]:");        dumpln((new XMLSerializer).serializeToString(allNodes[i]));        dumpln("");      }
+
+This is useful in conjunction with DOM Inspector's "Find" feature:
+
+      for (i in allNodes) {        try {
+          allNodes[i].setAttribute("id", "n" + i);
+        } catch (e) { }
+      }
+
+
+=== Final steps ===
 
 At some point (usually when you're almost done), you'll want to get rid off all the fuzz.js references and convert any remaining script to a simple onload function (or button onclick).
+
+Switch to XHTML if needed to put weird nesting in markup.  The first step is often to switch to standards mode; if turning on standards mode makes the bug go away, use DOM Inspector to figure out which CSS rules from quirk.css apply to elements in the page.
+
+If the testcase is XHTML but does not use strange nesting, it is considered simpler to switch to HTML.  But use <!DOCTYPE html> to stay in standards mode.
 
 
 === File the bug ===
