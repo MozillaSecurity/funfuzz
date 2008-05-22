@@ -6,13 +6,14 @@ sys.path.append("../../lithium/")
 import ntr
 
 
+
 def many_timed_runs(fullURLs):
     
     for iteration in range(0, len(fullURLs)):
         fullURL = fullURLs[iteration]
         # print "URL: " + URL
         logPrefix = "w%d" % iteration
-        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[2:] + [fullURL], int(sys.argv[1]), logPrefix)
+        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:] + [fullURL], int(sys.argv[1]), logPrefix)
         
         print "%s: %s (%.1f seconds)" % (logPrefix, msg, elapsedtime)
         
@@ -36,7 +37,7 @@ def getURLs():
     URLs = []
     fullURLs = []
     
-    urlfile = open("urls", "r")
+    urlfile = open(sys.argv[2], "r")
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
             URLs.append(line.rstrip())
@@ -55,4 +56,7 @@ def getURLs():
     return fullURLs
 
 
-many_timed_runs(getURLs())
+if len(sys.argv) == 4:
+    many_timed_runs(getURLs())
+else:
+    print "Wrong number of command-line arguments"

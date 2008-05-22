@@ -28,7 +28,7 @@ export MallocPreScribble=1
 export XPCOM_DEBUG_BREAK=stack
 export XPCOM_MEM_LEAK_LOG=1
 
-python -u ./af_timed_run.py 120 "/Users/jruderman/central/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog
+python -u ./af_timed_run.py 120 urls-random "/Users/jruderman/central/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog
 
 
 Can be left unattended overnight, for example.
