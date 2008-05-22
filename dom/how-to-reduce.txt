@@ -57,22 +57,18 @@ For an assertion, use:
 
 === Dealing with bugs that are not 100% reproducible ===
 
-- Use fuzzRetry to make it try several times.  This will make it a bit slower, and there's a risk that it will become harder and harder to reproduce as it gets smaller.
-- Use the "fuzzCount = 0" trick.
-- Force GC
+- Use fuzzReset to make it restart from the beginning of fuzzCommands several times.  This will make it a bit slower, and there's a risk that it will become harder and harder to reproduce as it gets smaller.
+- Use fuzzRetry to make it reload the entire page several times.  This has the same risks as fuzzReset, and is considerably slower.
 - Ensure that the page doesn't depend on images or stylesheets that must be loaded from the Web.
 - Increase timeouts (e.g. to let remote images load).
 - Decrease timeouts -- use offsetHeight (for HTML) or boxObject.height (for XUL) instead.
+- Force GC
 - Move XBL to markup, since onload knows when it's done, and otherwise it's tricky to tell when it's done.
 
 
 === Dealing with messy testcases ===
 
-Sometimes, Lithium gives you something that has 20 or more lines.  Common culprits are wrapping bugs (where widths have to add up to some large amount in order to wrap) and -moz-column bugs (where the total height might be split into two equal parts, and the break point matters).
-
-When -moz-column is involved, use the "fuzzCount = 0" trick and make it use a different width or height each time.  This ensures that the "correct" column-break point is tested even as content is removed from either side.
-
-When wrapping is involved, do the same with varying widths, or just use a small width (like 1px).
+Sometimes, Lithium gives you something that has 20 or more lines.  Common culprits are wrapping bugs (where widths have to add up to some large amount in order to wrap) and -moz-column bugs (where the total height might be split into two equal parts, and the break point matters).  In both cases, you can use fuzzReset, and have one of the heights or widths depend on fuzzResetCount.  (Or you can just try forcing a small height or width to encourage maximal wrapping.)
 
 
 === Reduce the rest and convert script to markup ===
