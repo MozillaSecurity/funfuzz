@@ -140,6 +140,7 @@ file:///Users/jruderman/central/mozilla/editor/libeditor/html/crashtests/428489-
 file:///Users/jruderman/central/mozilla/editor/libeditor/base/crashtests/382527-1.html
 file:///Users/jruderman/central/mozilla/editor/libeditor/base/crashtests/402172-1.html
 file:///Users/jruderman/central/mozilla/editor/libeditor/base/crashtests/407256-1.html
+file:///Users/jruderman/central/mozilla/editor/libeditor/base/crashtests/430624-1.html
 file:///Users/jruderman/central/mozilla/editor/composer/src/crashtests/428844-1.html
 file:///Users/jruderman/central/mozilla/intl/lwbrk/src/crashtests/416721.html
 file:///Users/jruderman/central/mozilla/js/src/xpconnect/crashtests/326615-1.html
@@ -199,6 +200,7 @@ file:///Users/jruderman/central/mozilla/layout/base/crashtests/364427-1.html
 file:///Users/jruderman/central/mozilla/layout/base/crashtests/365909-1.xhtml
 file:///Users/jruderman/central/mozilla/layout/base/crashtests/365909-2.xhtml
 file:///Users/jruderman/central/mozilla/layout/base/crashtests/366128-1.xhtml
+file:///Users/jruderman/central/mozilla/layout/base/crashtests/366271-1.html
 file:///Users/jruderman/central/mozilla/layout/base/crashtests/366967-1.html
 file:///Users/jruderman/central/mozilla/layout/base/crashtests/367015-1.html
 file:///Users/jruderman/central/mozilla/layout/base/crashtests/367243-1.html
@@ -285,6 +287,7 @@ file:///Users/jruderman/central/mozilla/layout/forms/crashtests/393656-2.xhtml
 file:///Users/jruderman/central/mozilla/layout/forms/crashtests/404118-1.html
 file:///Users/jruderman/central/mozilla/layout/forms/crashtests/404123-1.html
 file:///Users/jruderman/central/mozilla/layout/generic/crashtests/307979-1.html
+file:///Users/jruderman/central/mozilla/layout/generic/crashtests/310556-1.xhtml
 file:///Users/jruderman/central/mozilla/layout/generic/crashtests/322780-1.xul
 file:///Users/jruderman/central/mozilla/layout/generic/crashtests/323386-1.html
 file:///Users/jruderman/central/mozilla/layout/generic/crashtests/323389-1.html
@@ -1917,8 +1920,6 @@ file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413286-5.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413286-5-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413286-6.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413286-6-ref.html
-file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413292-1.html
-file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413292-1-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413361-1.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413361-1-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/413840-background-unchanged.html
@@ -2016,6 +2017,18 @@ file:///Users/jruderman/central/mozilla/layout/reftests/bugs/427730-1-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428423-1a.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428423-1-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428423-1b.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428521-1a.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428521-1-ref.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428521-1b.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/428521-1c.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430412-1.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430412-1-ref.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430813-1.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430813-1-ref.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430813-2.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430813-2-ref.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430813-3.html
+file:///Users/jruderman/central/mozilla/layout/reftests/bugs/430813-3-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/object/no-attrs.html
 file:///Users/jruderman/central/mozilla/layout/reftests/object/no-attrs-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/object/404-data.html
@@ -2828,6 +2841,7 @@ file:///Users/jruderman/central/mozilla/layout/reftests/svg/sizing/dynamic--inli
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/sizing/dynamic--inline-css-width.xhtml
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/sizing/dynamic--inline-resize-cb-height.xhtml
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/sizing/dynamic--inline-resize-cb-width.xhtml
+file:///Users/jruderman/central/mozilla/layout/reftests/svg/sizing/dynamic--inline-resize-window-width.xhtml
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/filters/feBlend-1.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/filters/feBlend-1-ref.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/filters/feBlend-2.svg
@@ -2923,11 +2937,6 @@ file:///Users/jruderman/central/mozilla/layout/reftests/svg/foreignObject-displa
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/foreignObject-move-repaint-01.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/foreignObject-overflow-01.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/getElementById-a-element-01.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/gradient-live-01a.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/gradient-live-01-ref.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/gradient-live-01b.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/gradient-live-01c.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/gradient-live-01d.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/image-scaling-01.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/image-scaling-02.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/linearGradient-basic-01.svg
@@ -2938,10 +2947,6 @@ file:///Users/jruderman/central/mozilla/layout/reftests/svg/objectBoundingBox-an
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/objectBoundingBox-and-pattern-01b.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/objectBoundingBox-and-pattern-01c.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/opacity-and-pattern-01.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/pattern-live-01a.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/pattern-live-01-ref.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/pattern-live-01b.svg
-file:///Users/jruderman/central/mozilla/layout/reftests/svg/pattern-live-01c.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/pseudo-classes-01.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/pseudo-classes-02.svg
 file:///Users/jruderman/central/mozilla/layout/reftests/svg/pseudo-classes-02-ref.svg
@@ -3078,6 +3083,8 @@ file:///Users/jruderman/central/mozilla/layout/reftests/native-theme/checkbox-st
 file:///Users/jruderman/central/mozilla/layout/reftests/native-theme/checkbox-still-native-when-styled-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/native-theme/native-theme-disabled-cascade-levels.html
 file:///Users/jruderman/central/mozilla/layout/reftests/native-theme/native-theme-disabled-cascade-levels-ref.html
+file:///Users/jruderman/central/mozilla/layout/reftests/native-theme/427122-1.html
+file:///Users/jruderman/central/mozilla/layout/reftests/native-theme/427122-1-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bidi/bidi-000.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bidi/bidi-000-ref.html
 file:///Users/jruderman/central/mozilla/layout/reftests/bidi/bidi-001.html
