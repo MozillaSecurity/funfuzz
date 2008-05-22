@@ -2,9 +2,9 @@
 
 Grep all the files for "jruderman" and fix the paths ;)
 
-Install the "DOM Fuzzer" extension, not as an XPI, but using a text file pointing to the directory containing the extension:
-  cd fuzzing/dom/extension/
-  pwd > [profile directory]/extensions/domfuzz@squarefree.com
+Install the "DOM Fuzzer" extension into the profile(s) you plan to use for fuzzing.  Don't install it as an XPI; instead, install it using a text file pointing to the directory containing the extension:
+    cd fuzzing/dom/extension/
+    pwd > [profile directory]/extensions/domfuzz@squarefree.com
 
 
 === Before starting ===
@@ -28,7 +28,7 @@ export MallocPreScribble=1
 export XPCOM_DEBUG_BREAK=stack
 export XPCOM_MEM_LEAK_LOG=1
 
-python -u ./af_timed_run.py 120 urls-random "/Users/jruderman/central/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog
+python -u ./af_timed_run.py 120 urls-random "/Users/jruderman/central/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee wlog`date +%Y-%m-%d-%H-%M-%S%z`
 
 
 Can be left unattended overnight, for example.
@@ -36,9 +36,4 @@ Can be left unattended overnight, for example.
 
 === After running for a while ===
 
-For crashes, look through firefox-bin.crash.log using Console.app.
-
-
-
-
-python -u ./wholeaked.py 120 "/Users/jruderman/trunk/mozilla/debug-obj/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin" | tee loggage.log
+Skim through the output for interesting things.  For crashes, look through firefox-bin.crash.log using Console.app.

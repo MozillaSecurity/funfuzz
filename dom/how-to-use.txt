@@ -15,7 +15,7 @@ When it gets to maxSteps (500 in this case) or otherwise decides that it's done,
 * Turn the fuzzer into a bookmarklet using "make-fuzz-bookmarklet.html", then use the bookmarklet on any loaded page.  This is good for quick exploration and demos.
 
 
-* Use Jesse's "autofuzz" or Bob Clary's "spider" for hours of unattended fuzzing.  Come back to a list of crashes/assertions along with (URL, fuzzer, parameter) information for each one.  This is good for overnight fuzzing.
+* Use the stuff in the "automation" directory for hours of unattended fuzzing (e.g. overnight).
 
 
 
