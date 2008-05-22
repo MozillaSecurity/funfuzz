@@ -5,3 +5,4 @@
 \.pyc$
 \.DS_Store
 \.gdb_history
+refdyn.log
