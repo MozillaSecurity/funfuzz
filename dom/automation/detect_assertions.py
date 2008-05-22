@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import platform
+
 def amiss(logPrefix):
     global ignoreList
     foundSomething = False
@@ -24,23 +26,37 @@ def amiss(logPrefix):
 
 def getIgnores():
 
-    global ignoreList
+    global simpleIgnoreList
     ignoreFile = open("known_assertions.txt", "r")
 
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):
-            ignoreList.append(line)
+            mpi = line.find(", file ")  # assertions use this format
+            if (mpi == -1):
+                mpi = line.find(": file ")  # aborts use this format
+            if (mpi == -1):
+                simpleIgnoreList.append(line)
+            else:
+                twoPartIgnoreList.append((line[:mpi+7], localSlashes(line[mpi+7:])))
+                
+def localSlashes(s):
+    if platform.system() in ('Windows', 'Microsoft'):
+        return s.replace("\\", "/")
+    return s
 
 def ignore(assertion):
-
-    global ignoreList
-    for ig in ignoreList:
-        if (assertion.find(ig) != -1):
+    global simpleIgnoreList
+    for ig in simpleIgnoreList:
+        if assertion.find(ig) != -1:
+            return True
+    for (part1, part2) in twoPartIgnoreList:
+        if assertion.find(part1) != -1 and assertion.find(part2) != -1:
             return True
     return False
 
 
-ignoreList = []
+simpleIgnoreList = []
+twoPartIgnoreList = []
 getIgnores()
-# print "detect_assertions is ready (ignoring %d assertions)" % len(ignoreList)
+#print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
