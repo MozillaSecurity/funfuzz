@@ -56,7 +56,8 @@ def getURLs():
     return fullURLs
 
 
-if len(sys.argv) == 4:
+if len(sys.argv) >= 4:
     many_timed_runs(getURLs())
 else:
-    print "Wrong number of command-line arguments"
+    print "Not enough command-line arguments"
+    print "Usage: ./af_timed_run.py timeout urllist firefoxpath firefoxargs"
