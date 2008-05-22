@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import platform
+import os
 
 def amiss(logPrefix):
     global ignoreList
@@ -38,13 +38,8 @@ def getIgnores():
             if (mpi == -1):
                 simpleIgnoreList.append(line)
             else:
-                twoPartIgnoreList.append((line[:mpi+7], localSlashes(line[mpi+7:])))
+                twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:].replace("/", os.sep)))
                 
-def localSlashes(s):
-    if platform.system() in ('Windows', 'Microsoft'):
-        return s.replace("\\", "/")
-    return s
-
 def ignore(assertion):
     global simpleIgnoreList
     for ig in simpleIgnoreList:
