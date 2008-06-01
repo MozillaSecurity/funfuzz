@@ -25,12 +25,15 @@ def many_timed_runs(fullURLs):
         amissMalloc = detect_malloc_errors.amiss(logPrefix)
         
         if ((sta == ntr.CRASHED) or (sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc):
-             print fullURL
-             for line in file(logPrefix + "-out"):
-                 if line.startswith("Chosen"):
-                     print line
-             print ""
-             print ""
+            print fullURL
+            for line in file(logPrefix + "-out"):
+                if line.startswith("Chosen"):
+                    print line
+            print ""
+            print ""
+        else:
+            os.remove(logPrefix + "-out")
+            os.remove(logPrefix + "-err")
              
 
 def getURLs():
