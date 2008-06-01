@@ -2,9 +2,15 @@
 
 Grep all the files for "jruderman" and fix the paths ;)
 
-Install the "DOM Fuzzer" extension into the profile(s) you plan to use for fuzzing.  Don't install it as an XPI; instead, install it using a text file pointing to the directory containing the extension:
+Install the "DOM Fuzzer" extension into the profile(s) you plan to use for fuzzing.  Don't install it as an XPI; instead, install it using a text file pointing to the directory containing the extension.
+
+From the fuzzing directory:
     cd fuzzing/dom/extension/
     pwd > [profile directory]/extensions/domfuzz@squarefree.com
+or, in the Firefox profile directory:
+    mkdir extensions
+    cd extensions
+    echo "~/fuzzing/dom/extension" > domfuzz@squarefree.com
 
 
 === Before starting ===
