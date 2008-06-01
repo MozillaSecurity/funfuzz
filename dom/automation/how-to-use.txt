@@ -9,8 +9,7 @@ From the fuzzing directory:
     pwd > [profile directory]/extensions/domfuzz@squarefree.com
 or, in the Firefox profile directory:
     mkdir extensions
-    cd extensions
-    echo "~/fuzzing/dom/extension" > domfuzz@squarefree.com
+    echo "~/fuzzing/dom/extension" > extensions/domfuzz@squarefree.com
 
 
 === Before starting ===
