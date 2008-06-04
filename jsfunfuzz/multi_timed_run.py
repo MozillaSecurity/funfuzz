@@ -28,8 +28,11 @@ def many_timed_runs():
         (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[2:], int(sys.argv[1]), logPrefix)
         print "%s: %s (%.1f seconds)" % (logPrefix, msg, elapsedtime)
         if not succeeded(logPrefix):
-             showtail(logPrefix + "-out")
-             showtail(logPrefix + "-err")
+            showtail(logPrefix + "-out")
+            showtail(logPrefix + "-err")
+        else:
+            os.remove(logPrefix + "-out")
+            os.remove(logPrefix + "-err")
 
 
 many_timed_runs()
