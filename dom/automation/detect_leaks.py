@@ -25,7 +25,10 @@ knownHash = ath([
 
 # Bug 415112
 "AtomImpl",
-"nsInstantiationNode"
+"nsInstantiationNode",
+
+# Bug 427922
+"nsStringBuffer"
 ])
 
 # Things that are known to leak AND entrain smaller objects.
@@ -53,10 +56,7 @@ knownLargeHash = ath([
 "nsDocShell", 
 
 # Bug 417630 and friends
-"nsJVMManager",
-
-# Bug 427922
-"nsStringBuffer"
+"nsJVMManager"
 ])
 
 # Large items that
