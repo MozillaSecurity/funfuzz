@@ -53,7 +53,10 @@ knownLargeHash = ath([
 "nsDocShell", 
 
 # Bug 417630 and friends
-"nsJVMManager"
+"nsJVMManager",
+
+# Bug 427922
+"nsStringBuffer"
 ])
 
 # Large items that
