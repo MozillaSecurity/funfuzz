@@ -1650,6 +1650,50 @@ var specialProperties = [
   "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype"
 ]
+
+
+// An incomplete list of builtin methods for various data types.
+var objectMethods = [
+  // String
+  "fromCharCode", 
+  
+  // Strings
+  "charAt", "charCodeAt", "concat", "indexOf", "lastIndexOf", "localeCompare",
+  "match", "quote", "replace", "search", "slice", "split", "substr", "substring",
+  "toLocaleUpperCase", "toLocaleLowerCase", "toLowerCase", "toUpperCase",
+  
+  // Regular expressions
+  "test", "exec", 
+
+  // Arrays
+  "splice", "shift", "sort", "pop", "push", "reverse", "unshift",
+  "concat", "join", "slice",
+
+  // Array extras in JavaScript 1.6
+  "map", "forEach", "filter", "some", "every", "indexOf", "lastIndexOf",
+
+  // Array extras in JavaScript 1.8
+  "reduce", "reduceRight",
+
+  // Functions
+  "call", "apply", 
+
+  // Date
+  "now", "parse", "UTC",
+
+  // Date instances
+  "getDate", "setDay", // many more not listed
+
+  // Number
+  "toExponential", "toFixed", "toLocaleString", "toPrecision",
+
+  // General -- defined on each type of object, but wit a different implementation
+  "toSource", "toString", "valueOf", "constructor", "prototype", "__proto__",
+
+  // General -- same implementation inherited from Object.prototype
+  "__defineGetter__", "__defineSetter__", "hasOwnProperty", "isPrototypeOf", "__lookupGetter__", "__lookupSetter__", "__noSuchMethod__", "propertyIsEnumerable", "unwatch", "watch"
+
+];
     
 
 var exprMakers =
@@ -1669,6 +1713,10 @@ var exprMakers =
   function(dr) { return cat([makeExpr(dr), ".", rndElt(specialProperties), " = ", makeExpr(dr)]); },
   function(dr) { return cat([makeId(dr),   ".", rndElt(specialProperties), " = ", makeExpr(dr)]); },
   
+  // Methods
+  function(dr) { return cat([makeExpr(dr), ".", rndElt(objectMethods), "(", makeActualArgList(dr), ")"]); },
+  function(dr) { return cat([makeExpr(dr), ".", "valueOf", "(", uneval("number"), ")"]); },
+
   // Binary operators
   function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
   function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
@@ -1817,14 +1865,6 @@ var exprMakers =
   
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(dr) { return "(uneval(" + makeExpr(dr) + "))"; },
-
-  // Object.prototype stuff
-  function(dr) { return cat([makeExpr(dr), ".", "hasOwnProperty", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "propertyIsEnumerable", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "isPrototypeOf", "(", makeExpr(dr), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "__lookupGetter__", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "__lookupSetter__", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "valueOf", "(", uneval("number"), ")"]); },
   
   // Constructors.  No "T" -- don't screw with the constructors themselves; just call them.
   function(dr) { return "new " + rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; },
@@ -1936,6 +1976,11 @@ var functionMakers = [
   function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
   function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
   
+  // Methods
+  function(dr) { return cat([makeExpr(dr), ".", rndElt(objectMethods)]); }, 
+  function(dr) { return cat([makeExpr(dr), ".", rndElt(objectMethods)]); }, 
+  function(dr) { return cat([makeExpr(dr), ".", rndElt(objectMethods)]); }, 
+  function(dr) { return cat([makeExpr(dr), ".", rndElt(objectMethods)]); }, 
 
   // The identity function
   function(dr) { return "function(q) { return q; }" },
@@ -1955,15 +2000,6 @@ var functionMakers = [
   function(dr) { return "Math.sin" },
   function(dr) { return "Math.pow" },
   function(dr) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
-  function(dr) { return "[1,2,3,4].map" },
-  function(dr) { return "[1,2,3,4].slice" },
-  function(dr) { return "'haha'.split" },
-  function(dr) { return "({}).hasOwnProperty" },
-  function(dr) { return "({}).__lookupGetter__" },
-  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "call"]); },
-  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "apply"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", ".", "watch"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", ".", "__defineSetter__"]); },
 ];
   
 
