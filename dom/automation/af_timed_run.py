@@ -47,7 +47,7 @@ def getURLs():
             
     plan = file(tempDir + os.sep + "wplan", 'w')
 
-    for iteration in range(0, 10000):
+    for iteration in range(0, 100000):
         metaSeed = random.randint(1, 10000)
         metaPer = random.randint(0, 15) * random.randint(0, 15) + 5
         u = random.choice(URLs) + "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,3000,0"
