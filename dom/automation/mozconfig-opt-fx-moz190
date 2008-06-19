@@ -1,0 +1,11 @@
+# Sample .mozconfig
+mk_add_options MOZ_MAKE_FLAGS="-j3"
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/../objdir/
+mk_add_options MOZ_BUILD_PROJECTS="browser"
+mk_add_options MOZ_CO_PROJECT="browser"
+
+# To enable multi-app compilation from one .mozconfig
+ac_add_app_options browser --enable-application=browser
+
+ac_add_options --disable-tests
+ac_add_options --with-macos-sdk=/Developer/SDKs/MacOSX10.4u.sdk
