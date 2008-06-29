@@ -6,5 +6,6 @@
 \.DS_Store
 \.gdb_history
 refdyn.log
+autoconf.js
 wlog
 wtmp
