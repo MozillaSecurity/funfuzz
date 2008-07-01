@@ -805,7 +805,7 @@ function testUneval(o)
       &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
       &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
       &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
-      &&  uo.indexOf("new Error") == -1                    // ignore bug 380578
+      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
       && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
       && !(uo == "{}" && !jsshell)                         // ignore bug 380959
      )
