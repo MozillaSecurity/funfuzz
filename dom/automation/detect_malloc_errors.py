@@ -24,6 +24,7 @@ def amiss(logPrefix):
             print pline
             print line
             foundSomething = True
+            break # Don't flood the log with repeated malloc failures
 
         ppline = pline
         pline = line
