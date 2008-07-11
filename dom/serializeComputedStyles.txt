@@ -1,15 +1,64 @@
-function serializeComputedStyles()
+// Warning: this might not match what the stylesheet specifies because:
+// * Heights may be computed through layout rather than specified through CSS (?)
+// * Inheritance (?)
+// * Percentages turn into absolutes
+function serializeInterestingStyles()
 {
-  for (var i in allNodes) {
-    var n = allNodes[i];
-    if (allNodes[i] && allNodes[i].style) {
+  var es = [];
+
+  for (var i = 0; i < document.styleSheets.length; ++i)
+    if (!document.styleSheets[i].disabled)
+      es.push(document.styleSheets[i]);
+      
+  var currentStyle = []; // allNodes index --> style property plus space --> value
+
+  function getCurrentStyles()
+  {
+    for (var i = 0; i < allNodes.length; ++i) {
+      var n = allNodes[i];
+      if (!n || !n.style)
+        continue;
+        
+      currentStyle[i] = {};
+        
       var cs = window.getComputedStyle(n, null);
       var len = cs.length;
-      for (var j = 0; j < len; ++j) {
+      var j;
+      for (j = 0; j < len; ++j) {
         var p = cs.item(j);
-        var command = "allNodes[" + i + "].style.setProperty(" + simpleSource(p) + ", " + simpleSource(cs.getPropertyValue(p)) + ", \"\");";
-        dumpln("  { origCount: 1, fun: function() { " + command + " } },");
+        var cv = cs.getPropertyValue(p);
+        currentStyle[i][" " + p] = cv;
       }
     }
   }
+  
+  function getUnstyledStyles()
+  {
+    for (var i = 0; i < allNodes.length; ++i) {
+      var n = allNodes[i];
+      if (!n || !n.style)
+        continue;
+        
+      var cs = window.getComputedStyle(n, null);
+      var len = cs.length;
+      var j;
+      for (j = 0; j < len; ++j) {
+        var p = cs.item(j);
+        var uv = cs.getPropertyValue(p);
+        var cv = currentStyle[i][" " + p];
+        if (uv != cv) {
+          var command = "allNodes[" + i + "].style.setProperty(" + simpleSource(p) + ", " + simpleSource(cv) + ", \"\");";
+          dumpln("  { origCount: 1, fun: function() { " + command + " } },");
+        }
+      }
+    }
+  }
+
+
+  getCurrentStyles();
+  es.forEach(function(s) s.disabled = true);
+
+  getUnstyledStyles();
+  es.forEach(function(s) s.disabled = false);
 }
+
