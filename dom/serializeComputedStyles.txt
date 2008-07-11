@@ -1,0 +1,15 @@
+function serializeComputedStyles()
+{
+  for (var i in allNodes) {
+    var n = allNodes[i];
+    if (allNodes[i] && allNodes[i].style) {
+      var cs = window.getComputedStyle(n, null);
+      var len = cs.length;
+      for (var j = 0; j < len; ++j) {
+        var p = cs.item(j);
+        var command = "allNodes[" + i + "].style.setProperty(" + simpleSource(p) + ", " + simpleSource(cs.getPropertyValue(p)) + ", \"\");";
+        dumpln("  { origCount: 1, fun: function() { " + command + " } },");
+      }
+    }
+  }
+}
