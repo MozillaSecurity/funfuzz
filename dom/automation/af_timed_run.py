@@ -34,10 +34,8 @@ def many_timed_runs(fullURLs):
                     print line
             print ""
             print ""
-        elif sta == ntr.TIMED_OUT:
-            # Don't print lots of stuff, but don't delete the log files either.
-            pass
-        else:
+        
+        if sta == ntr.NORMAL and not amiss:
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
              
