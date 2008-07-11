@@ -1,7 +1,7 @@
 #!/usr/bin/env python -u
 
 import sys, random, time, os
-import detect_assertions, detect_leaks, detect_malloc_errors
+import detect_assertions, detect_leaks, detect_malloc_errors, detect_interesting_crashes
 sys.path.append("../../lithium/")
 import ntr
 
@@ -15,16 +15,19 @@ def many_timed_runs(fullURLs):
         logPrefix = tempDir + os.sep + "w" + str(iteration)
         (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:] + [fullURL], int(sys.argv[1]), logPrefix)
         
-        print "%s: %s (%.1f seconds)" % (logPrefix, msg, elapsedtime)
-        
-        if sta == ntr.CRASHED:
-            print "Approximate crash time: " + time.asctime()
-
         amissAssert = detect_assertions.amiss(logPrefix)
         amissLeak = detect_leaks.amiss(logPrefix)
         amissMalloc = detect_malloc_errors.amiss(logPrefix)
+        amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix)
+
+        amiss = ((sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc or amissInterestingCrash)
+        amissStr = "" if not amiss else "*"
+        print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
         
-        if ((sta == ntr.CRASHED) or (sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc):
+        #if sta == ntr.CRASHED:
+        #    print "Approximate crash time: " + time.asctime()
+
+        if amiss:
             print fullURL
             for line in file(logPrefix + "-out"):
                 if line.startswith("Chosen"):
