@@ -370,6 +370,10 @@ function testOne()
   ++count;
 
   var code = makeStatement(8);
+  
+  // Test tracing heavily.
+  if (rnd(2))
+    code = randomRepeater() + " { " + code + " } ";
 
 //  if (rnd(10) == 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
@@ -1286,6 +1290,10 @@ var statementMakers = [
   function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(dr), "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
   function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeId(dr),                                       "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
   function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeDestructuringLValue(dr), " = ", makeExpr(dr), "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
+  
+  // C-style "for" loops for the purpose of repetition (e.g. to test tracing)
+  // These don't get T'd because we don't want to set up infinite loops.
+  function(dr) { return randomRepeater() + makeStatementOrBlock(dr); },
 
   // "for..in" loops
 
@@ -1369,6 +1377,21 @@ function maybeLabel()
     return "";
 }
 
+
+function randomRepeater()
+{
+  var reps = 2 + rnd(3);
+  var v = randomVarName();
+  return ("for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
+}
+
+function randomVarName()
+{
+  var i, s = "";
+  for (i = 0; i < 4; ++i)
+    s += String.fromCharCode(97 + rnd(26)); // a lowercase english letter
+  return s;
+}
 
 
 
