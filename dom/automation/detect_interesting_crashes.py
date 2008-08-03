@@ -41,4 +41,4 @@ def ignore(assertion):
 ignoreList = []
 getIgnores()
 
-print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
+#print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
