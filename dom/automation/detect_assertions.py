@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Recognizes NS_ASSERTIONs based on condition, text, and filename (ignoring irrelevant parts of the path)
+# Recognizes JS_ASSERT based on condition only :(
+
 import os
 
 def amiss(logPrefix):
@@ -13,7 +16,7 @@ def amiss(logPrefix):
 
     for line in currentFile:
         line = line.strip("\x07").rstrip("\n")
-        if (line.startswith("###!!!") and not (line in seenInCurrentFile)):
+        if ((line.startswith("###!!!") or line.startswith("Assertion failure:")) and not (line in seenInCurrentFile)):
             seenInCurrentFile[line] = True
             if not (ignore(line)):
                 print line
@@ -32,9 +35,9 @@ def getIgnores():
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):
-            mpi = line.find(", file ")  # assertions use this format
+            mpi = line.find(", file ")  # NS_ASSERTION and friends use this format
             if (mpi == -1):
-                mpi = line.find(": file ")  # aborts use this format
+                mpi = line.find(": file ")  # NS_ABORT uses this format
             if (mpi == -1):
                 simpleIgnoreList.append(line)
             else:
