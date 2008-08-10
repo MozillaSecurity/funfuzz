@@ -64,7 +64,7 @@ cd ~/Desktop/dom-debug-fx-trunk-A
 mkdir -p fx-trunk-hg-debug  #  This will overwrite your existing directory's files.
 cd fx-trunk-hg-debug
 cp -R ~/mozilla-central/ .
-cp ~/fuzzing/dom/automation/mozconfig-debug-fx-moz190 ~/Desktop/dom-debug-fx-trunk-A/fx-trunk-hg-debug/.mozconfig
+cp ~/fuzzing/dom/automation/mozconfig-debug-fx ~/Desktop/dom-debug-fx-trunk-A/fx-trunk-hg-debug/.mozconfig
 date
 time make -f client.mk build MOZ_CURRENT_PROJECT=browser
 

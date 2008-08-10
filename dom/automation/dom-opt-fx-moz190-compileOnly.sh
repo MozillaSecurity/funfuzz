@@ -60,7 +60,7 @@ export CVSROOT=:pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
 cvs co mozilla/client.mk
 cd mozilla
 time make -f client.mk checkout MOZ_CO_PROJECT=browser
-cp ~/fuzzing/dom/automation/mozconfig-opt-fx-moz190 ~/Desktop/dom-opt-fx-moz190-A/fx-moz190-cvs-opt/mozilla/.mozconfig
+cp ~/fuzzing/dom/automation/mozconfig-opt-fx ~/Desktop/dom-opt-fx-moz190-A/fx-moz190-cvs-opt/mozilla/.mozconfig
 date
 time make -f client.mk build MOZ_CURRENT_PROJECT=browser
 
