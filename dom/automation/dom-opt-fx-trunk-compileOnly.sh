@@ -39,11 +39,11 @@
 # Version History:
 # 
 # June 2008 - 1:
-#     Adapted from moz-190 CVS trunk for dom script.
+#     Adapted from trunk hg for dom script.
 
 # FAQ:
-# 1: If something screws up, trash the entire existing ~/Desktop/dom-debug-fx-trunk-A folder.
-# 2: To clone this script, replace "dom-debug-fx-trunk-A" throughout this script with "dom-debug-fx-trunk-B", "dom-debug-fx-trunk-C" and so on.
+# 1: If something screws up, trash the entire existing ~/Desktop/dom-opt-fx-trunk-A folder.
+# 2: To clone this script, replace "dom-opt-fx-trunk-A" throughout this script with "dom-opt-fx-trunk-B", "dom-opt-fx-trunk-C" and so on.
 # 4: File naming convention is:
 #        dom-<opt/debug>-<app>-<branch/trunk>-compileOnly
 
@@ -55,21 +55,21 @@ echo 'Starting in 7s...'
 sleep 7
 echo
 date
-mkdir -p ~/Desktop/dom-debug-fx-trunk-A  #  This will overwrite your existing directory's files.
-cd ~/Desktop/dom-debug-fx-trunk-A
+mkdir -p ~/Desktop/dom-opt-fx-trunk-A  #  This will overwrite your existing directory's files.
+cd ~/Desktop/dom-opt-fx-trunk-A
 
 
-# Compile a debug fx build.
+# Compile an opt fx build.
 
-mkdir -p fx-trunk-hg-debug  #  This will overwrite your existing directory's files.
-cd fx-trunk-hg-debug
+mkdir -p fx-trunk-hg-opt  #  This will overwrite your existing directory's files.
+cd fx-trunk-hg-opt
 cp -R ~/mozilla-central/ .
-cp ~/fuzzing/dom/automation/mozconfig-debug-fx ~/Desktop/dom-debug-fx-trunk-A/fx-trunk-hg-debug/.mozconfig
+cp ~/fuzzing/dom/automation/mozconfig-opt-fx ~/Desktop/dom-opt-fx-trunk-A/fx-trunk-hg-opt/.mozconfig
 date
 time make -f client.mk build MOZ_CURRENT_PROJECT=browser
 
 
-# Start fuzzing the newly compiled debug fx build.
+# Start fuzzing the newly compiled opt fx build.
 
 date
 echo
@@ -77,11 +77,11 @@ echo 'Done compiling!'
 echo
 cat ~/fuzzing/dom/automation/how-to-use.txt
 echo
-echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-debug-fx-trunk-A/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
+echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-opt-fx-trunk-A/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
 echo
-cd ~/Desktop/dom-debug-fx-trunk-A/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/
+cd ~/Desktop/dom-opt-fx-trunk-A/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/
 pwd
 echo
-#cd ~/Desktop/dom-debug-fx-trunk-A
+#cd ~/Desktop/dom-opt-fx-trunk-A
 #time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 900 ~/Desktop/jsfunfuzz-moz190-A/js-moz190-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-moz190-A/log-jsfunfuzz
 #date

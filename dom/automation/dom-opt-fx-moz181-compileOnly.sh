@@ -65,7 +65,7 @@ date
 time make -f client.mk build MOZ_CURRENT_PROJECT=browser
 
 
-# Start fuzzing the newly compiled debug fx build.
+# Start fuzzing the newly compiled opt fx build.
 
 date
 echo

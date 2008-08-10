@@ -52,7 +52,7 @@ mkdir -p ~/Desktop/dom-opt-fx-moz190-A  #  This will overwrite your existing dir
 cd ~/Desktop/dom-opt-fx-moz190-A
 
 
-# Compile an opt fx build, .
+# Compile an opt fx build.
 
 mkdir -p fx-moz190-cvs-opt  #  This will overwrite your existing directory's files.
 cd fx-moz190-cvs-opt
@@ -65,7 +65,7 @@ date
 time make -f client.mk build MOZ_CURRENT_PROJECT=browser
 
 
-# Start fuzzing the newly compiled debug fx build.
+# Start fuzzing the newly compiled opt fx build.
 
 date
 echo
