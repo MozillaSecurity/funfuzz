@@ -3,14 +3,14 @@
 # Recognizes NS_ASSERTIONs based on condition, text, and filename (ignoring irrelevant parts of the path)
 # Recognizes JS_ASSERT based on condition only :(
 
-import os
+import os, sys
 
-def amiss(logPrefix):
+
+def fs(currentFile):
     global ignoreList
+
     foundSomething = False
 
-    currentFile = file(logPrefix + "-err", "r")
-    
     # map from (assertion message) to (true, if seen in the current file)
     seenInCurrentFile = {}
 
@@ -58,3 +58,13 @@ simpleIgnoreList = []
 twoPartIgnoreList = []
 getIgnores()
 #print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
+
+# For use by af_timed_run
+def amiss(logPrefix):
+    currentFile = file(logPrefix + "-err", "r")
+    return fs(currentFile)
+
+# For standalone use
+if __name__ == "__main__":
+    currentFile = file(sys.argv[1], "r")
+    fs(currentFile)
