@@ -4,8 +4,7 @@ import os
 
 def amiss(logPrefix):
     global ignoreList
-    crashIsKnown = False
-
+    igmatch = []
     fn = logPrefix + "-crash"
     
     if os.path.exists(fn):
@@ -13,13 +12,19 @@ def amiss(logPrefix):
         for line in currentFile:
             for ig in ignoreList:
                 if line.find(ig) != -1:
-                    print "Known crash: " + ig
-                    crashIsKnown = True
+                    igmatch.append(ig)
         currentFile.close()
+        
+        if len(igmatch) == 0:
+            # Would be great to print [@ nsFoo::Bar] in addition to the filename
+            print "Unknown crash: " + fn
+            return True
+        else:
+            print "Known crash: " + ", ".join(igmatch)
+            return False
     else:
-        print "detect_interesting_crashes didn't see a crash log!"
-    
-    return not crashIsKnown
+        print "Unknown crash (crash log is missing)"
+        return True
 
 
 def getIgnores():
