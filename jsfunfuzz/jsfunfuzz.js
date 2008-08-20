@@ -144,10 +144,8 @@ function whatToTestSpidermonkeyTrunk(code)
 {
   return {
   
-    allowParse: true
-      && !(code.match(/\{.*\:.*\[.*\].*\}.*\=.*\{.*/))  // avoid bug 418051 {x:[]}={x}
-      && !(code.match(/\{.*\:.*\{\}.*\}.*\=.*\{.*/)),   // avoid bug 418051 where OBVIOUSLY EMPTY {} takes the place of []
-
+    allowParse: true,
+    
     // Exclude things here if decompiling the function causes a crash.
     allowDecompile: true
       && !(code.match( /for.*for.*in.*in/ )),         // avoid bug 376370
@@ -185,8 +183,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("default") == -1)   // avoid bug 355509 harder
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
-      && (code.indexOf("import") == -1)    // avoid bug 350681
-      && (code.indexOf("export") == -1)    // avoid bug 350681
       && (code.indexOf("?") == -1)         // avoid bug 355203
       && (code.indexOf("p.z") == -1)       // avoid bug 355672 (this is the most common trigger)
   
@@ -213,7 +209,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && code.indexOf("valueOf")  == -1 // avoid bug 355829
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
-      && !( code.match( /delete.*Function/ )) // avoid bug 352604 (exclusion needed despite the realFunction stuff?!)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       ,
   
@@ -715,7 +710,8 @@ function tryEnsureSanity()
   if ('__defineSetter__' in this) {
     // The only way to get rid of getters/setters is to delete the property.
     delete eval;
-    // delete Function; // doh, this triggers bug 352604!
+    if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 on branch
+      delete Function;
     delete gc;
   }
 
