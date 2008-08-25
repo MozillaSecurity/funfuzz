@@ -2,6 +2,7 @@
 
 # Recognizes NS_ASSERTIONs based on condition, text, and filename (ignoring irrelevant parts of the path)
 # Recognizes JS_ASSERT based on condition only :(
+# Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
 
 import os, sys
 
@@ -16,7 +17,7 @@ def fs(currentFile):
 
     for line in currentFile:
         line = line.strip("\x07").rstrip("\n")
-        if ((line.startswith("###!!!") or line.startswith("Assertion failure:")) and not (line in seenInCurrentFile)):
+        if ((line.startswith("###!!!") or line.startswith("Assertion failure:") or line.find("Mozilla has caught an Obj-C exception") != -1) and not (line in seenInCurrentFile)):
             seenInCurrentFile[line] = True
             if not (ignore(line)):
                 print line
