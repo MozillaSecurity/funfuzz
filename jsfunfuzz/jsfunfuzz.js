@@ -135,6 +135,8 @@ function printAndStop(s)
     quit();
 }
 
+var jitEnabled = (engine == ENGINE_SPIDERMONKEY_TRUNK) && jsshell && options().indexOf("jit") != -1;
+
 
 /***********************
  * AVOIDING KNOWN BUGS *
@@ -387,7 +389,7 @@ function testOne()
 
 function tryItOut(code)
 {
-  if ("gczeal" in this)
+  if ("gczeal" in this && !jitEnabled) // avoid bug 452168
     gczeal(count % 100 == 42 ? 2 : 0);
 
   // regexps can't match across lines, so strip line breaks.
@@ -742,16 +744,18 @@ function tryIteration(rv)
   }
   
   dumpln("It's an iterator!");
-  try {
-    var iterCount = 0;
-    var iterValue;
-    // To keep Safari-compatibility, don't use "let", "each", etc.
-    for /* each */ ( /* let */ iterValue in rv)
-      ++iterCount;
-    dumpln("Iterating succeeded, iterCount == " + iterCount);
-  } catch (iterError) {
-    dumpln("Iterating threw!");
-    dumpln("Iterating threw: " + errorToString(iterError));
+  if (!jitEnabled) { // avoid bug 452167
+    try {
+      var iterCount = 0;
+      var iterValue;
+      // To keep Safari-compatibility, don't use "let", "each", etc.
+      for /* each */ ( /* let */ iterValue in rv)
+        ++iterCount;
+      dumpln("Iterating succeeded, iterCount == " + iterCount);
+    } catch (iterError) {
+      dumpln("Iterating threw!");
+      dumpln("Iterating threw: " + errorToString(iterError));
+    }
   }
 }
 
