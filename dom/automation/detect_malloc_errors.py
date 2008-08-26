@@ -17,7 +17,7 @@ def amiss(logPrefix):
         if (-1 != line.find("szone_error")
          or -1 != line.find("malloc_error_break")
          or -1 != line.find("MallocHelp")):
-            if (-1 != pline.find("can't allocate region")):
+            if (-1 == pline.find("can't allocate region")):
                 print ""
                 print ppline
                 print pline
