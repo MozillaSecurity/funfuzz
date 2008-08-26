@@ -46,7 +46,10 @@ function domFuzzInit(event)
   
   
   // http://developer.mozilla.org/en/docs/Code_snippets:Interaction_between_privileged_and_non-privileged_pages
-  window.addEventListener("please-quit", pleaseQuitCalled, true, true /* allow untrusted events */);
+  // Setting the last argument to |true| means we're allowing untrusted events to trigger this chrome event handler.
+  window.addEventListener("please-quit", pleaseQuitCalled, true, true);
+  window.addEventListener("please-gc", pleaseGCCalled, true, true);
+  
 }
 
 function onPageLoad(event)
@@ -131,6 +134,22 @@ function pleaseQuitCalled()
 {
   dump("Quitting because I got a please-quit event from the web page.\n");
   goQuitApplication();
+}
+
+function pleaseGCCalled()
+{ 
+  dump("GC!\n");
+  Components.utils.forceGC();
+
+        window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+              .getInterface(Components.interfaces.nsIDOMWindowUtils)
+              .garbageCollect(); 
+        window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+              .getInterface(Components.interfaces.nsIDOMWindowUtils)
+              .garbageCollect(); 
+        window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+              .getInterface(Components.interfaces.nsIDOMWindowUtils)
+              .garbageCollect(); 
 }
 
 
