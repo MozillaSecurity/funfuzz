@@ -156,6 +156,7 @@ function whatToTestSpidermonkeyTrunk(code)
     checkRecompiling: true
       && (code.indexOf("#") == -1)                    // avoid bug 367731
       && !( code.match( /for.*\(.*in.*const/ )) // avoid bug 352083, with for loops or array comprehensions
+      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
       && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
       && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
