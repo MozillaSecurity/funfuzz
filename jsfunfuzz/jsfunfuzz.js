@@ -205,7 +205,10 @@ function whatToTestSpidermonkeyTrunk(code)
              )
           )
       ,
-      
+    
+    checkForExtraParens: true
+      && !code.match( /\(.*for.*\(.*in.*\).*\)/ ), // ignore bug 381213, and unfortunately anything with genexps
+    
     allowExec: true
       && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
       && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
@@ -242,6 +245,7 @@ function whatToTestSpidermonkey18Branch(code)
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: false,
+    checkForExtraParens: false,
       
     allowExec: true
       && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
@@ -275,6 +279,8 @@ function whatToTestJavaScriptCore(code)
       && !code.match( /new.*\(.*\).*\[/ )      // avoid bug 17931
       ,
 
+    checkForExtraParens: false, // ?
+
     allowExec: true
       && !code.match(/with.*const/)            // avoid bug 17924
       && !code.match(/catch.*const/)           // avoid bug 17924
@@ -296,6 +302,7 @@ function whatToTestGeneric(code)
     allowDecompile: true,
     checkRecompiling: true,
     checkForMismatch: true,
+    checkForExtraParens: false, // most js engines don't try to guarantee lack of extra parens
     allowExec: true,
     allowIter: ("Iterator" in this),
     checkUneval: haveRealUneval
@@ -413,6 +420,7 @@ function tryItOut(code)
            ", allowDecompile=" + wtt.allowDecompile + 
            ", checkRecompiling=" + wtt.checkRecompiling + 
            ", checkForMismatch=" + wtt.checkForMismatch + 
+           ", checkForExtraParens=" + wtt.checkForExtraParens +
            ", allowIter=" + wtt.allowIter + 
            ", checkUneval=" + wtt.checkUneval);
   }
@@ -534,7 +542,7 @@ function tryItOut(code)
   }
 
   if (f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt.checkRecompiling, wtt.checkForMismatch);
+    tryRoundTripStuff(f, code, wtt.checkRecompiling, wtt.checkForMismatch, wtt.checkForExtraParens);
   }
 
   var rv = null;
@@ -653,7 +661,7 @@ function trySandboxEval(code, isRetry)
   
 
 
-function tryRoundTripStuff(f, code, checkRecompiling, checkForMismatch)
+function tryRoundTripStuff(f, code, checkRecompiling, checkForMismatch, checkForExtraParens)
 {
   if (verbose)
     dumpln("About to do the 'toString' round-trip test");
@@ -661,9 +669,9 @@ function tryRoundTripStuff(f, code, checkRecompiling, checkForMismatch)
   // Functions are prettier with line breaks, so test toString before uneval.
   checkRoundTripToString(f, code, checkRecompiling, checkForMismatch); 
 
-  if (checkRecompiling && checkForMismatch && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+  if (checkRecompiling && checkForMismatch && checkForExtraParens) {
     try {
-      checkForExtraParens(f, code);
+      testForExtraParens(f, code);
     } catch(e) { /* bug 355667 is annoying here too */ }
   }
   
@@ -1028,7 +1036,7 @@ function deParen(code)
 // print(uneval(deParen("for (i = 0; (false); ++i) { x(); }")));
 // print(uneval(deParen("[]")));
 
-function checkForExtraParens(f, code)
+function testForExtraParens(f, code)
 {
   var code = code.replace(/\n/g, " ").replace(/\r/g, " "); // regexps can't match across lines
 
