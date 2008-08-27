@@ -173,6 +173,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*const/ ))               // avoid bug 352985
       && !( code.match( /const.*arguments/ ))        // avoid bug 355480
       && !( code.match( /var.*arguments/ ))          // avoid bug 355480
+      && !( code.match( /let.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let.*,/ ))                  // avoid bug 382400
       && !( code.match( /for.*;.*;/ ))               // avoid bug 381195 :(
       && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558
