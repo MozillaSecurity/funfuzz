@@ -176,6 +176,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let.*,/ ))                  // avoid bug 382400
       && !( code.match( /for.*;.*;/ ))               // avoid bug 381195 :(
+      && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558
       && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
