@@ -18,14 +18,11 @@ def many_timed_runs(fullURLs):
         amissAssert = detect_assertions.amiss(logPrefix)
         amissLeak = detect_leaks.amiss(logPrefix)
         amissMalloc = detect_malloc_errors.amiss(logPrefix)
-        amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix)
+        amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix, msg)
 
         amiss = ((sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc or amissInterestingCrash)
         amissStr = "" if not amiss else "*"
         print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
-        
-        #if sta == ntr.CRASHED:
-        #    print "Approximate crash time: " + time.asctime()
 
         if amiss:
             print fullURL

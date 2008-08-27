@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import os
+import os, sys, platform, signal
 
-def amiss(logPrefix):
+def amiss(logPrefix, msg):
     global ignoreList
     igmatch = []
     fn = logPrefix + "-crash"
@@ -20,16 +20,20 @@ def amiss(logPrefix):
             print "Unknown crash: " + fn
             return True
         else:
-            print "Known crash: " + ", ".join(igmatch)
+            # print "Known crash: " + ", ".join(igmatch)
             return False
     else:
-        print "Unknown crash (crash log is missing)"
-        return True
+        if platform.mac_ver()[0].startswith("10.4") and msg.find("SIGABRT") != -1:
+            # Tiger doesn't create crash logs for aborts.  No cause for alarm.
+            return False
+        else:
+            print "Unknown crash (crash log is missing)"
+            return True
 
 
 def getIgnores():
     global ignoreList
-    ignoreFile = open("known_crashes.txt", "r")
+    ignoreFile = open(os.path.dirname(sys.argv[0]) + os.sep + "known_crashes.txt", "r")
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):

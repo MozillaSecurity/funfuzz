@@ -17,7 +17,11 @@ def fs(currentFile):
 
     for line in currentFile:
         line = line.strip("\x07").rstrip("\n")
-        if ((line.startswith("###!!!") or line.startswith("Assertion failure:") or line.find("Mozilla has caught an Obj-C exception") != -1) and not (line in seenInCurrentFile)):
+        if ((line.startswith("###!!!") or 
+             line.startswith("Assertion failure:") or # spidermonkey
+             line.find("Mozilla has caught an Obj-C exception") != -1 or
+             line.find("failed assertion") # nanojit
+            ) and not (line in seenInCurrentFile)):
             seenInCurrentFile[line] = True
             if not (ignore(line)):
                 print line
@@ -31,7 +35,7 @@ def fs(currentFile):
 def getIgnores():
 
     global simpleIgnoreList
-    ignoreFile = open("known_assertions.txt", "r")
+    ignoreFile = open(os.path.dirname(sys.argv[0]) + os.sep + "known_assertions.txt", "r")
 
     for line in ignoreFile:
         line = line.strip()
