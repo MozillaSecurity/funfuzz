@@ -20,7 +20,7 @@ def fs(currentFile):
         if ((line.startswith("###!!!") or 
              line.startswith("Assertion failure:") or # spidermonkey
              line.find("Mozilla has caught an Obj-C exception") != -1 or
-             line.find("failed assertion") # nanojit
+             line.find("failed assertion") != -1 # nanojit
             ) and not (line in seenInCurrentFile)):
             seenInCurrentFile[line] = True
             if not (ignore(line)):
