@@ -957,6 +957,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
+  if (e.indexOf("invalid object initializer") != -1) {
+    dumpln("Ignoring bug 452561.");
+    return;
+  }
+  
   var message = issue + "\n\n" +
                 "Code: " + uneval(code) + "\n\n" +  
                 "fs: " + fs + "\n\n" +
