@@ -805,7 +805,7 @@ function testUneval(o)
   
   var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
 
-  dumpln("uneval returned the string: " + uo);
+  // dumpln("uneval returned the string: " + uo);
   if (    true
   
       &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
@@ -827,6 +827,8 @@ function testUneval(o)
   {
     // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
     uo = uo.replace(/\[native code\]/g, "");
+    if (uo.charAt(0) == "/")
+      return; // ignore bug 362582
     
     try {
       euo = eval(uo); // if this throws, something's wrong with uneval, probably
