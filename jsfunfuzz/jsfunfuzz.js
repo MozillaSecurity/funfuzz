@@ -399,7 +399,7 @@ function testOne()
 
 function tryItOut(code)
 {
-  if ("gczeal" in this && !jitEnabled) // avoid bug 452168
+  if ("gczeal" in this)
     gczeal(count % 100 == 42 ? 2 : 0);
 
   // regexps can't match across lines, so strip line breaks.
