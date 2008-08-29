@@ -1396,7 +1396,8 @@ function maybeLabel()
 
 function randomRepeater()
 {
-  var reps = 2 + rnd(3);
+  // tracing bugs usually require 4 or 5 iterations.
+  var reps = 1 + rnd(5);
   var v = randomVarName();
   return ("for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
 }
