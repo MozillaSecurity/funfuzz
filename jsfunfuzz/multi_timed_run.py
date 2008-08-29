@@ -41,7 +41,9 @@ def many_timed_runs():
           issues.append("nothing really bad happened, yet jsfunfuzz didn't finish")
         if sta == ntr.ABNORMAL:
           issues.append("abnormal exit")
-          
+        if sta == ntr.TIMED_OUT:
+          issues.append("timed out")
+
         amiss = len(issues) != 0
         amissStr = "" if not amiss else "*" + repr(issues) + " "
         print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
