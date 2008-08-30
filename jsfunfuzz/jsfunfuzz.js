@@ -964,6 +964,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
+  if (e.indexOf("missing ; after for-loop condition")) {
+    dumpln("Looks like bug 443074.");
+    return;
+  }
+  
   var message = issue + "\n\n" +
                 "Code: " + uneval(code) + "\n\n" +  
                 "fs: " + fs + "\n\n" +
