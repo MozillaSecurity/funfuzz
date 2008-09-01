@@ -185,7 +185,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
-      && (code.indexOf("default") == -1)   // avoid bug 355509 harder
+      && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
       && (code.indexOf("?") == -1)         // avoid bug 355203
@@ -544,7 +544,7 @@ function tryItOut(code)
   }
 
   if (f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt.checkRecompiling, wtt.checkForMismatch, wtt.checkForExtraParens);
+    tryRoundTripStuff(f, code, wtt);
   }
 
   var rv = null;
@@ -663,15 +663,15 @@ function trySandboxEval(code, isRetry)
   
 
 
-function tryRoundTripStuff(f, code, checkRecompiling, checkForMismatch, checkForExtraParens)
+function tryRoundTripStuff(f, code, wtt)
 {
   if (verbose)
     dumpln("About to do the 'toString' round-trip test");
 
   // Functions are prettier with line breaks, so test toString before uneval.
-  checkRoundTripToString(f, code, checkRecompiling, checkForMismatch); 
+  checkRoundTripToString(f, code, wtt); 
 
-  if (checkRecompiling && checkForMismatch && checkForExtraParens) {
+  if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkForExtraParens) {
     try {
       testForExtraParens(f, code);
     } catch(e) { /* bug 355667 is annoying here too */ }
@@ -680,7 +680,7 @@ function tryRoundTripStuff(f, code, checkRecompiling, checkForMismatch, checkFor
   if (haveRealUneval) {
     if (verbose)
       dumpln("About to do the 'uneval' round-trip test");
-    checkRoundTripUneval(f, code, checkRecompiling, checkForMismatch);
+    checkRoundTripUneval(f, code, wtt);
   }
 }
 
@@ -894,7 +894,7 @@ function errorToString(e)
 
 
 // Function round-trip with implicit toString
-function checkRoundTripToString(f, code, checkRecompiling, checkForMismatch)
+function checkRoundTripToString(f, code, wtt)
 {
   var uf, g;
   try {
@@ -908,10 +908,10 @@ function checkRoundTripToString(f, code, checkRecompiling, checkForMismatch)
     return;
   }
 
-  if (checkRecompiling) {
+  if (wtt.checkRecompiling) {
     try {
       g = eval("(" + uf + ")");
-      if (checkForMismatch && (""+g) != (""+f) ) {
+      if (wtt.checkForMismatch && (""+g) != (""+f) ) {
         reportRoundTripIssue("Round-trip with implicit toString", code, f, g, "mismatch");
       }
     } catch(e) {
@@ -921,7 +921,7 @@ function checkRoundTripToString(f, code, checkRecompiling, checkForMismatch)
 }
 
 // Function round-trip with uneval
-function checkRoundTripUneval(f, code, checkRecompiling, checkForMismatch)
+function checkRoundTripUneval(f, code, wtt)
 {
   var g, uf, ug;
   try {
@@ -930,11 +930,11 @@ function checkRoundTripUneval(f, code, checkRecompiling, checkForMismatch)
   
   checkForCookies(uf)
 
-  if (checkRecompiling) {
+  if (wtt.checkRecompiling) {
     try {
       g = eval("(" + uf + ")");
       ug = uneval(g);
-      if (checkForMismatch && ug != uf) {
+      if (wtt.checkForMismatch && ug != uf) {
         reportRoundTripIssue("Round-trip with uneval: mismatch", code, uf, ug, "mismatch");
       }
     } catch(e) { reportRoundTripIssue("Round-trip with uneval: error", code, uf, ug, errorToString(e)); }
@@ -964,7 +964,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
-  if (e.indexOf("missing ; after for-loop condition")) {
+  if (e.indexOf("missing ; after for-loop condition") != -1) {
     dumpln("Looks like bug 443074.");
     return;
   }
