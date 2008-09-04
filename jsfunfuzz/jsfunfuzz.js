@@ -93,6 +93,8 @@ if (typeof gc == "undefined")
 
 var haveUsefulDis = typeof dis == "function" && typeof dis() == "string";
 
+var haveE4X = (typeof XML == "function");
+
 function simpleSource(s)
 {
   function hexify(c)
@@ -755,18 +757,16 @@ function tryIteration(rv)
   }
   
   dumpln("It's an iterator!");
-  if (!jitEnabled) { // avoid bug 452167
-    try {
-      var iterCount = 0;
-      var iterValue;
-      // To keep Safari-compatibility, don't use "let", "each", etc.
-      for /* each */ ( /* let */ iterValue in rv)
-        ++iterCount;
-      dumpln("Iterating succeeded, iterCount == " + iterCount);
-    } catch (iterError) {
-      dumpln("Iterating threw!");
-      dumpln("Iterating threw: " + errorToString(iterError));
-    }
+  try {
+    var iterCount = 0;
+    var iterValue;
+    // To keep Safari-compatibility, don't use "let", "each", etc.
+    for /* each */ ( /* let */ iterValue in rv)
+      ++iterCount;
+    dumpln("Iterating succeeded, iterCount == " + iterCount);
+  } catch (iterError) {
+    dumpln("Iterating threw!");
+    dumpln("Iterating threw: " + errorToString(iterError));
   }
 }
 
@@ -1669,13 +1669,17 @@ var binaryOps = [
 
   // . is special, so test it as a group of right-unary ops, a special exprMaker for property access, and a special exprMaker for the xml filtering predicate operator
   // " . ", 
-  
-  // Added by E4X
+];
+
+if (haveE4X) {
+  binaryOps = binaryOps.concat([
+  // Binary operators added by E4X
   " :: ", " .. ", " @ ",
   // Frequent combinations of E4X things (and "*" namespace, which isn't produced by this fuzzer otherwise)
   " .@ ", " .@*:: ", " .@x:: ",
-];
-
+  ]);
+}
+  
 var leftUnaryOps = [
   "--", "++", 
   "!", "+", "-", "~",
@@ -1686,9 +1690,11 @@ var leftUnaryOps = [
 
 var rightUnaryOps = [
   "++", "--",
-  // E4X
-  ".*", ".@foo", ".@*"
 ];
+
+if (haveE4X)
+  rightUnaryOps = rightUnaryOps.concat([".*", ".@foo", ".@*"]);
+
 
 
 var specialProperties = [
@@ -1797,10 +1803,6 @@ var exprMakers =
   
   // RegExp replace.  This is interesting for same same reason as array extras.
   function(dr) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(dr), ")"]); },
-
-  // XML filtering predicate operator!  It isn't lexed specially; there can be a space between the dot and the lparen.
-  function(dr) { return cat([makeId(dr),  ".", "(", makeExpr(dr), ")"]); },
-  function(dr) { return cat([makeE4X(dr),  ".", "(", makeExpr(dr), ")"]); },
 
   // Dot (property access)
   function(dr) { return cat([makeId(dr),    ".", makeId(dr)]); },
@@ -1917,6 +1919,16 @@ var exprMakers =
   function(dr) { return "new " + rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; },
   function(dr) { return          rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; }
 ];
+
+
+if (haveE4X) {
+  exprMakers = exprMakers.concat([
+    // XML filtering predicate operator!  It isn't lexed specially; there can be a space between the dot and the lparen.
+    function(dr) { return cat([makeId(dr),  ".", "(", makeExpr(dr), ")"]); },
+    function(dr) { return cat([makeE4X(dr),  ".", "(", makeExpr(dr), ")"]); },
+  ]);
+}
+
 
 var constructors = [
   "Error", "RangeError", "Exception",
@@ -2346,14 +2358,17 @@ var termMakers = [
   function(dr) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(dr) { return rndElt([ "this", "window" ]); },
   function(dr) { return rndElt([" \"\" ", " '' ", " /x/ ", " /x/g "]) },
+];
 
+if (haveE4X) {
   // E4X literals
+  termMakers = termMakers.concat([
   function(dr) { return rndElt([ "<x/>", "<y><z/></y>"]); },
   function(dr) { return rndElt([ "@foo" /* makes sense in filtering predicates, at least... */, "*", "*::*"]); },
   function(dr) { return makeE4X(dr) }, // xml
   function(dr) { return cat(["<", ">", makeE4X(dr), "<", "/", ">"]); }, // xml list
-];
-  
+  ]);
+}
 
 
 function maybeMakeTerm(depth)
