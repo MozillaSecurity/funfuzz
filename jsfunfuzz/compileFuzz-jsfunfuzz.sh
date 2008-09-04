@@ -45,6 +45,8 @@
 # end-August 2008 - 3.0:
 # 	Rewritten from scratch again to support command-line inputs and
 # 	consolidate all existing jsfunfuzz bash scripts.
+# start-September 2008 - 3.1:
+# 	Support fuzzing v8 engine.
 # 
 # Note:
 #   If something screws up, trash the entire existing
@@ -52,7 +54,8 @@
 # 
 # Receive user input on compileType and branchType.
 #   compileType can be debug or opt.
-#   branchType can be Gecko 1.8.1.x, 1.9.0.x, 1.9.1.x branches, or the trunk.
+#   branchType can be Gecko 1.8.1.x, 1.9.0.x, 1.9.1.x branches, the trunk, or the v8 engine.
+
 compileType=$1
 branchType=$2
 
@@ -65,7 +68,7 @@ echo ' - for use with jsfunfuzz';
 if [ "$2" = "" ]
     then
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [181|190|191|trunk]';
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz181|moz190|moz191|mozTrunk|tm|v8]';
         echo
         exit 0;
 fi
@@ -77,7 +80,7 @@ case $compileType in
     "opt" ) ;;
     *     )
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [181|190|191|trunk]'
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz181|moz190|moz191|mozTrunk|tm|v8]'
         echo
         exit 0;;
 esac
@@ -85,13 +88,15 @@ esac
 # Determine actions based on second parameter, branchType.
 
 case $branchType in
-    "181"   ) ;;
-    "190"   ) ;;
-    "191"   ) ;;
-    "trunk" ) ;;
+    "moz181"   ) ;;
+    "moz190"   ) ;;
+    "moz191"   ) ;;
+    "mozTrunk" ) ;;
+    "tm" ) ;;
+    "v8" ) ;;
     *       )
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [181|190|191|trunk]'
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz181|moz190|moz191|mozTrunk|tm|v8]'
         echo
         exit 0;;
 esac
@@ -124,11 +129,11 @@ cd debug-$branchType
 
 # Gecko 1.8.1.x and 1.9.0.x are in CVS.
 
-if ( [ $branchType = "181" ] || [ $branchType = "190" ] ) then
+if ( [ $branchType = "moz181" ] || [ $branchType = "moz190" ] ) then
     export CVSROOT=:pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
     
     # Check out CVS source files depending on parameters.
-    if [ $compileType = "181" ]
+    if [ $compileType = "moz181" ]
         then
             cvs co -r MOZILLA_1_8_BRANCH -l mozilla/js/src mozilla/js/src/fdlibm
             cvs co -l mozilla/js/src/config mozilla/js/src/editline
@@ -160,7 +165,7 @@ fi
 
 # Gecko 1.9.1.x and the trunk are in Mercurial.
 
-if ( [ $branchType = "191" ] || [ $branchType = "trunk" ] )
+if ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] )
     then
         # 
         # NOTE: Gecko 1.9.1.x has not yet branched from the trunk.
@@ -189,6 +194,82 @@ if ( [ $branchType = "191" ] || [ $branchType = "trunk" ] )
         rm -r opt-$branchType
 fi
 
+# TraceMonkey is still in a separate branch from trunk.
+
+if [ $branchType = "tm" ]
+    then
+        # This assumes you have an updated tracemonkey directory.
+        cp -r ~/tracemonkey/js/src/ .
+        cd ..
+        
+        # Debug builds, keeping the debug source code directory,
+        #   in case gdb is needed for symbols.
+        cp -r debug-$branchType/* opt-$branchType/
+        cd debug-$branchType
+        # |Make| sometimes screws up when compiling a build using 2 jobs.
+        make -f Makefile.ref
+        cd Darwin_DBG.OBJ
+        cp js ../../js-dbg-$branchType-intelmac
+        cd ../../
+        
+        # Opt build, removing the opt source code directory.
+        cd opt-$branchType
+        # |Make| sometimes screws up when compiling a build using 2 jobs.
+        make BUILD_OPT=1 -f Makefile.ref
+        cd Darwin_OPT.OBJ
+        cp js ../../js-opt-$branchType-intelmac
+        cd ../../
+        rm -r opt-$branchType
+fi
+
+
+# Google Chrome uses the v8 Javascript engine.
+
+if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
+    then
+    	# 
+        # SVN checks out five times, it seems to consistently error out 1 or 2 times.
+        # Sample:
+        # svn: REPORT request failed on '/svn/!svn/vcc/default'
+		# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
+		
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        cd ..
+        
+        # Debug builds, keeping the debug source code directory,
+        #   in case gdb is needed for symbols.
+        cd debug-$branchType/v8/
+        scons mode=debug library=shared snapshot=on sample=shell
+        cd ../../
+fi
+
+if ( [ $compileType = "opt" ] && [ $branchType = "v8" ] )
+    then
+    	# 
+        # SVN checks out five times, it seems to consistently error out 1 or 2 times.
+        # Sample:
+        # svn: REPORT request failed on '/svn/!svn/vcc/default'
+		# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
+		cd ../opt-$branchType
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+        cd ..
+        
+        # Opt build.
+        cd opt-$branchType/v8/
+        scons mode=release library=static snapshot=on sample=shell
+        cp shell ../../js-opt-$branchType-intelmac
+        cd ../../
+        #rm -r opt-$branchType  # do not remove source yet.
+fi
+
 cd ~/Desktop/jsfunfuzz-$compileType-$branchType
 
 # Copy over useful files that are updated in hg fuzzing branch.
@@ -208,7 +289,16 @@ echo '============================================'
 echo
 
 # Start fuzzing the newly compiled builds.
-time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
+    then
+		# v8 engine doesn't allow moving of debug shell.
+    	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
+    	cp ../../jsfunfuzz.js .
+      	cp ../../analysis.sh .
+		time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz.js
+	else
+		time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+fi
 
 echo
 date
