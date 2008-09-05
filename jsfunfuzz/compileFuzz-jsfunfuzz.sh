@@ -231,8 +231,8 @@ if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
         # SVN checks out five times, it seems to consistently error out 1 or 2 times.
         # Sample:
         # svn: REPORT request failed on '/svn/!svn/vcc/default'
-		# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
-		
+	# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
+	
         svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
         svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
         svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
@@ -253,8 +253,9 @@ if ( [ $compileType = "opt" ] && [ $branchType = "v8" ] )
         # SVN checks out five times, it seems to consistently error out 1 or 2 times.
         # Sample:
         # svn: REPORT request failed on '/svn/!svn/vcc/default'
-		# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
-		cd ../opt-$branchType
+	# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
+        
+	cd ../opt-$branchType
         svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
         svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
         svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
@@ -291,15 +292,33 @@ echo
 # Start fuzzing the newly compiled builds.
 if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
     then
-		# v8 engine doesn't allow moving of debug shell.
+	# v8 engine doesn't allow moving of debug shell.
     	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
     	cp ../../jsfunfuzz.js .
       	cp ../../analysis.sh .
-		time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz.js
-	else
-		time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz.js
+    else
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
 fi
 
 echo
+date
+# change to fuzzing directory.
+if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
+    then
+	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
+        ./analysis.sh
+        echo
+        echo 'PRESENT WORKING DIRECTORY:'
+        pwd
+    else
+	cd ~/Desktop/jsfunfuzz-$compileType-$branchType
+        ./analysis.sh
+        echo
+        echo 'PRESENT WORKING DIRECTORY:'
+        pwd
+fi
+
+echo 'REMEMBER TO CHECK TIMED_OUTs, ABNORMALs and CRASHes.'
 date
 echo

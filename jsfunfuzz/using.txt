@@ -30,6 +30,22 @@ Hints for building testkjs:
   The shell will be a file called testkjs in WebKit/WebKitBuild/Release/ or WebKit/WebKitBuild/Debug/.
 
 
+TESTING V8
+
+Bugs in V8 found with this fuzzer are tracked by <not yet set up>.
+
+
+Recommended command line:
+  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ./shell_g ~/z/jsfunfuzz/jsfunfuzz.js | tee log2
+  
+Hints for building v8:
+  http://code.google.com/apis/v8/build.html
+  |scons mode=release library=static snapshot=on sample=shell| or
+  |scons mode=debug library=shared snapshot=on sample=shell| in v8/
+  
+  The shell will be a file called shell or shell_g (debug) in v8/
+  
+
 TESTING WEB BROWSERS
 
 Load jsfunfuzz.html in a web browser.  For Firefox, you might need to set the <script>'s type attribute.
