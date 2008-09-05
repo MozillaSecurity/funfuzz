@@ -1412,7 +1412,7 @@ function randomRepeater()
 function randomVarName()
 {
   var i, s = "";
-  for (i = 0; i < 4; ++i)
+  for (i = 0; i < 6; ++i)
     s += String.fromCharCode(97 + rnd(26)); // a lowercase english letter
   return s;
 }
