@@ -1085,7 +1085,7 @@ function testForExtraParens(f, code)
   var dps = deParen(uf);
   // skip the first, which is the function's formal params.
 
-  for (i = 1; i < dps.length; ++i) {
+  for (var i = 1; i < dps.length; ++i) {
     var uf2 = dps[i];
     
     try {
