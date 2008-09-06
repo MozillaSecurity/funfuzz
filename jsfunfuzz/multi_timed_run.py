@@ -55,5 +55,7 @@ def many_timed_runs():
         else:
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
+            if (os.path.exists(logPrefix + "-crash")):
+                os.remove(logPrefix + "-crash")
 
 many_timed_runs()
