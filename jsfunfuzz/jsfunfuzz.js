@@ -157,12 +157,10 @@ function whatToTestSpidermonkeyTrunk(code)
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
       && (code.indexOf("#") == -1)                    // avoid bug 367731
-      && !( code.match( /for.*\(.*in.*const/ )) // avoid bug 352083, with for loops or array comprehensions
       && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
       && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
       && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
-      && !( code.match( /do.*let.*while/ ))   // avoid bug 352421
       && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
       && !( code.match( /new.*\.\./ )) // avoid bug 382339
@@ -502,44 +500,42 @@ function tryItOut(code)
     }
 
     // Use trap
-    if (!code.match(/let/)) { // bug 429266
 
-      if (verbose)
-        dumpln("About to try the trap test.");
-  
-      var ode;
-      if (wtt.allowDecompile)
-        ode = "" + f;
-        
-      if (nextTrapCode) {
-        trapCode = nextTrapCode;
-        nextTrapCode = null;
-        print("trapCode = " + simpleSource(trapCode));
-      } else {
-        trapCode = "print('Trap hit!')";
-      }
+    if (verbose)
+      dumpln("About to try the trap test.");
+
+    var ode;
+    if (wtt.allowDecompile)
+      ode = "" + f;
+      
+    if (nextTrapCode) {
+      trapCode = nextTrapCode;
+      nextTrapCode = null;
+      print("trapCode = " + simpleSource(trapCode));
+    } else {
+      trapCode = "print('Trap hit!')";
+    }
 
 
-      trapOffset = offsets[count % offsets.length];
-      print("trapOffset: " + trapOffset);
-      if (!(trapOffset > -1)) {
-        print(disassembly);
-        print(count);
-        print(uneval(offsets));
-        print(offsets.length);
-        printAndStop("WTF");
-      }
-        
-      trap(f, trapOffset, trapCode);
-  
-      if (wtt.allowDecompile) {
-        nde = "" + f;
-        
-        if (ode != nde) {
-          print(ode);
-          print(nde);
-          printAndStop("Trap decompilation mismatch");
-        }
+    trapOffset = offsets[count % offsets.length];
+    print("trapOffset: " + trapOffset);
+    if (!(trapOffset > -1)) {
+      print(disassembly);
+      print(count);
+      print(uneval(offsets));
+      print(offsets.length);
+      printAndStop("WTF");
+    }
+      
+    trap(f, trapOffset, trapCode);
+
+    if (wtt.allowDecompile) {
+      nde = "" + f;
+      
+      if (ode != nde) {
+        print(ode);
+        print(nde);
+        printAndStop("Trap decompilation mismatch");
       }
     }
 
@@ -903,7 +899,7 @@ function checkRoundTripToString(f, code, wtt)
 
   checkForCookies(uf);
   
-  if (uf == "[object Function]") {
+  if (uf == "[object Function]" && engine == ENGINE_SPIDERMONKEY_MOZ_1_8) {
     print("Skipping round-trip test -- bug 432075");
     return;
   }
@@ -1489,16 +1485,6 @@ var littleStatementMakers =
   // Break/continue [to label].
   function(dr) { return cat([rndElt(["continue", "break"]), " ", rndElt(["L", "M", "", ""]), ";"]); },
 
-  // Import and export.  (I have not idea what these actually do.)
-  // Commented out due to bug 421621 and bug 432077 and bug 432075
-  // (Did they get more active lately?)
-  /*
-  function(dr) { return cat(["export ", makeId(dr), ";"]); },
-  function(dr) { return cat(["export ", "*", ";"]); },
-  function(dr) { return cat(["import ", makeId(dr), ".", makeId(dr), ";"]); },
-  function(dr) { return cat(["import ", makeId(dr), ".", "*", ";"]); },
-  */
-  
   // Named and unnamed functions (which have different behaviors in different places: both can be expressions,
   // but unnamed functions "want" to be expressions and named functions "want" to be special statements)
   function(dr) { return makeFunction(dr); },
