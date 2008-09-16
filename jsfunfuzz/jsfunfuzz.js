@@ -216,7 +216,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
       && code.indexOf("valueOf")  == -1 // avoid bug 355829
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
-      && (code.indexOf("yield")    == -1 || !jitEnabled) // avoid bug 453411
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       ,
