@@ -1526,7 +1526,8 @@ function makeStatementOrBlock(depth)
 
   var dr = depth - 1;
   return (rndElt(statementBlockMakers))(dr)
-} 
+}
+
 var statementBlockMakers = [
   function(dr) { return makeStatement(dr); },
   function(dr) { return makeStatement(dr); },
@@ -1544,7 +1545,7 @@ function makeExceptionyStatement(depth)
   var dr = depth - 1;
   if (dr < 1)
     return makeLittleStatement(dr);
-    
+
   return (rndElt(exceptionyStatementMakers))(dr);
 }
 
