@@ -689,7 +689,7 @@ function tryRunning(f)
   try { 
     if (verbose)
       dumpln("About to run it!");
-    rv = f();
+    var rv = f();
     if (verbose)
       dumpln("It ran!");
     return rv;
