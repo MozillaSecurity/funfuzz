@@ -79,7 +79,7 @@ cat ~/fuzzing/dom/automation/how-to-use.txt
 echo
 echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-debug-fx-trunk-A/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
 echo
-cd ~/Desktop/dom-debug-fx-trunk-A/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/
+cd ~/Desktop/dom-debug-fx-trunk-A/fx-trunk-hg-debug/objdir/browser/dist/MinefieldDebug.app/Contents/MacOS/
 pwd
 echo
 #cd ~/Desktop/dom-debug-fx-trunk-A
