@@ -38,14 +38,14 @@
 # 
 # Version History:
 # 
-# end-April 2008 - 1.0, 1.1:
+# end-April 2008 - 1.x:
 # 	Initial idea, previously called ./jsfunfuzz-moz18branch-start-intelmac
-# June 2008 - 2.0:
+# June 2008 - 2.x:
 # 	Rewritten from scratch to support the new hg fuzzing branch.
-# end-August 2008 - 3.0:
+# end-August 2008 - 3.0.x:
 # 	Rewritten from scratch again to support command-line inputs and
 # 	consolidate all existing jsfunfuzz bash scripts.
-# start-September 2008 - 3.1:
+# start-September 2008 - 3.1.x:
 # 	Support fuzzing v8 engine.
 # 
 # Note:
@@ -60,7 +60,7 @@ compileType=$1
 branchType=$2
 
 echo
-echo 'compileFuzz-jsfunfuzz.sh v3.0 by Gary Kwong';
+echo 'compileFuzz-jsfunfuzz.sh v3.1.1 by Gary Kwong';
 echo ' - for use with jsfunfuzz';
 
 # Checks for a second parameter input.
@@ -133,12 +133,12 @@ if ( [ $branchType = "moz181" ] || [ $branchType = "moz190" ] ) then
     export CVSROOT=:pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
     
     # Check out CVS source files depending on parameters.
-    if [ $compileType = "moz181" ]
+    if [ $branchType = "moz181" ]
         then
-            cvs co -r MOZILLA_1_8_BRANCH -l mozilla/js/src mozilla/js/src/fdlibm
+			cvs co -r MOZILLA_1_8_BRANCH -l mozilla/js/src mozilla/js/src/fdlibm
             cvs co -l mozilla/js/src/config mozilla/js/src/editline
         else
-            cvs co -l mozilla/js/src mozilla/js/src/config mozilla/js/src/editline mozilla/js/src/fdlibm
+			cvs co -l mozilla/js/src mozilla/js/src/config mozilla/js/src/editline mozilla/js/src/fdlibm
     fi
     cd ..
     

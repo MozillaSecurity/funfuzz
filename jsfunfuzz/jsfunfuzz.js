@@ -354,7 +354,7 @@ function start()
     // Number of iterations: 20000 is good for use with multi_timed_run.py.  (~40 seconds on a PowerBook G4; reduction isn't bad.)
     // Raise for use without multi_timed_run.py (perhaps to Infinity).
     // Lower for use with WAY_TOO_MUCH_GC, to 70 or so.
-    for (var i = 0; i < 20000; ++i)
+    for (var i = 0; i < 32000; ++i)
       testOne();
     dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
   } else {
