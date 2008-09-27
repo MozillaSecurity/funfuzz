@@ -62,7 +62,7 @@ cd mozilla
 time make -f client.mk checkout MOZ_CO_PROJECT=browser
 cp ~/fuzzing/dom/automation/mozconfig-opt-fx ~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/mozilla/.mozconfig
 date
-time make -f client.mk build MOZ_CURRENT_PROJECT=browser
+time make -f client.mk build
 
 
 # Start fuzzing the newly compiled opt fx build.
@@ -73,12 +73,12 @@ echo 'Done compiling!'
 echo
 cat ~/fuzzing/dom/automation/how-to-use.txt
 echo
-echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir/browser/dist/BonEcho.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
+echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir-fx/browser/dist/BonEcho.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
 echo 'These may be useful:'
-echo '~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir/browser/dist/BonEcho.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
-echo 'python -u ./af_timed_run.py 120 urls-random "~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir/browser/dist/BonEcho.app/Contents/MacOS/firefox-bin" -P fuzz2-moz181 | tee wlog`date +%Y-%m-%d-%H-%M-%S%z`'
+echo '~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir-fx/browser/dist/BonEcho.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
+echo 'python -u ./af_timed_run.py 120 urls-random "~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir-fx/browser/dist/BonEcho.app/Contents/MacOS/firefox-bin" -P fuzz2-moz181 | tee wlog`date +%Y-%m-%d-%H-%M-%S%z`'
 echo
-cd ~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir/browser/dist/BonEcho.app/Contents/MacOS/
+cd ~/Desktop/dom-opt-fx-moz181-A/fx-moz181-cvs-opt/objdir-fx/browser/dist/BonEcho.app/Contents/MacOS/
 pwd
 echo
 #cd ~/Desktop/dom-opt-fx-moz181-A

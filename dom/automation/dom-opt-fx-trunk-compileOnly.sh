@@ -66,7 +66,7 @@ cd fx-trunk-hg-opt
 cp -R ~/mozilla-central/ .
 cp ~/fuzzing/dom/automation/mozconfig-opt-fx ~/Desktop/dom-opt-fx-trunk-A/fx-trunk-hg-opt/.mozconfig
 date
-time make -f client.mk build MOZ_CURRENT_PROJECT=browser
+time make -f client.mk build
 
 
 # Start fuzzing the newly compiled opt fx build.
@@ -77,9 +77,9 @@ echo 'Done compiling!'
 echo
 cat ~/fuzzing/dom/automation/how-to-use.txt
 echo
-echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-opt-fx-trunk-A/objdir/browser/dist/Minefield.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
+echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-opt-fx-trunk-A/objdir-fx/browser/dist/Minefield.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
 echo
-cd ~/Desktop/dom-opt-fx-trunk-A/objdir/browser/dist/Minefield.app/Contents/MacOS/
+cd ~/Desktop/dom-opt-fx-trunk-A/objdir-fx/browser/dist/Minefield.app/Contents/MacOS/
 pwd
 echo
 #cd ~/Desktop/dom-opt-fx-trunk-A
