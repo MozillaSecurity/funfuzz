@@ -49,7 +49,7 @@
 
 date
 echo
-echo 'This script assumes that you have an up-to-date mozilla-central directory at ~/mozilla-central/'
+echo 'This script assumes that you have an up-to-date m-central directory at ~/comm-central/mozilla/'
 echo
 echo 'Starting in 7s...'
 sleep 7
@@ -63,7 +63,7 @@ cd ~/Desktop/dom-opt-fx-trunk-A
 
 mkdir -p fx-trunk-hg-opt  #  This will overwrite your existing directory's files.
 cd fx-trunk-hg-opt
-cp -R ~/mozilla-central/ .
+cp -R ~/comm-central/mozilla/ .
 cp ~/fuzzing/dom/automation/mozconfig-opt-fx ~/Desktop/dom-opt-fx-trunk-A/fx-trunk-hg-opt/.mozconfig
 date
 time make -f client.mk build
