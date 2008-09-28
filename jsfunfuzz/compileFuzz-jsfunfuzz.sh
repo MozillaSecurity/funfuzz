@@ -170,8 +170,8 @@ if ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] )
         # 
         # NOTE: Gecko 1.9.1.x has not yet branched from the trunk.
         # 
-        # This assumes you have an updated mozilla-central directory.
-        cp -r ~/mozilla-central/js/src/ .
+        # This assumes you have an updated comm and mozilla-central directory.
+        cp -r ~/comm-central/mozilla/js/src/ .
         cd ..
         
         # Debug builds, keeping the debug source code directory,
