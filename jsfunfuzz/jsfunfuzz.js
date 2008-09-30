@@ -156,6 +156,7 @@ function whatToTestSpidermonkeyTrunk(code)
   
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
+      && !( code.match( /new/ ))                     // avoid bug 457824 ........
       && (code.indexOf("#") == -1)                    // avoid bug 367731
       && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
@@ -166,15 +167,16 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /new.*\.\./ )) // avoid bug 382339
       && !( code.match( /new.*\.\(/ )) // avoid bug 377059 most of the time
       && !( code.match( /while.*for.*in/ )) // avoid bug 381963
+      && !( code.match( /const.*arguments/ ))        // avoid bug 355480
+      && !( code.match( /var.*arguments/ ))          // avoid bug 355480
+      && !( code.match( /let.*arguments/ ))          // avoid bug 355480
       ,
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: true
+      && !( code.match( /new/ ))                     // avoid bug 457824
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
-      && !( code.match( /const.*arguments/ ))        // avoid bug 355480
-      && !( code.match( /var.*arguments/ ))          // avoid bug 355480
-      && !( code.match( /let.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let.*,/ ))                  // avoid bug 382400
       && !( code.match( /for.*;.*;/ ))               // avoid bug 381195 :(
       && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558
@@ -400,7 +402,7 @@ function testOne()
 
 function tryItOut(code)
 {
-  if ("gczeal" in this && !jitEnabled) // avoid bug 452900
+  if ("gczeal" in this)
     gczeal(count % 100 == 42 ? 2 : 0);
 
   // regexps can't match across lines, so strip line breaks.
