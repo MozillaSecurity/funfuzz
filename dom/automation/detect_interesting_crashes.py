@@ -16,7 +16,9 @@ def amiss(logPrefix, msg):
         currentFile.close()
         
         if len(igmatch) == 0:
-            # Would be great to print [@ nsFoo::Bar] in addition to the filename
+            # Would be great to print [@ nsFoo::Bar] in addition to the filename, but
+            # that would require understanding the crash log format much better than
+            # this script currently does.
             print "Unknown crash: " + fn
             return True
         else:
@@ -33,11 +35,12 @@ def amiss(logPrefix, msg):
 
 def getIgnores():
     global ignoreList
-    ignoreFile = open(os.path.dirname(sys.argv[0]) + os.sep + "known_crashes.txt", "r")
+    ignoreFile = file(os.path.dirname(sys.argv[0]) + os.sep + "known_crashes.txt", "r")
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):
             ignoreList.append(line)
+    ignoreFile.close()
 
 def ignore(assertion):
     global ignoreList
