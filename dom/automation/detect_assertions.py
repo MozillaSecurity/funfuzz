@@ -36,7 +36,7 @@ def fs(currentFile):
 def getIgnores():
 
     global simpleIgnoreList
-    ignoreFile = open(os.path.dirname(sys.argv[0]) + os.sep + "known_assertions.txt", "r")
+    ignoreFile = file(os.path.dirname(sys.argv[0]) + os.sep + "known_assertions.txt", "r")
 
     for line in ignoreFile:
         line = line.strip()
@@ -48,6 +48,8 @@ def getIgnores():
                 simpleIgnoreList.append(line)
             else:
                 twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:].replace("/", os.sep)))
+                
+    ignoreFile.close()
                 
 def ignore(assertion):
     global simpleIgnoreList
