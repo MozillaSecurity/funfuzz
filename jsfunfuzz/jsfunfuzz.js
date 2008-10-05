@@ -156,7 +156,6 @@ function whatToTestSpidermonkeyTrunk(code)
   
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
-      && !( code.match( /new/ ))                     // avoid bug 457824 ........
       && (code.indexOf("#") == -1)                    // avoid bug 367731
       && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
@@ -174,7 +173,6 @@ function whatToTestSpidermonkeyTrunk(code)
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: true
-      && !( code.match( /new/ ))                     // avoid bug 457824
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
       && !( code.match( /let.*,/ ))                  // avoid bug 382400
@@ -218,7 +216,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
       && code.indexOf("valueOf")  == -1 // avoid bug 355829
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
-      && (code.indexOf("watch")    == -1 || !jitEnabled) // avoid bug 455413
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       ,
