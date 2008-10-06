@@ -62,6 +62,10 @@ branchType=$2
 echo
 echo 'compileFuzz-jsfunfuzz.sh v3.1.1 by Gary Kwong';
 echo ' - for use with jsfunfuzz';
+echo
+echo 'NOTE1: You must have a ~/fuzzing/ directory.';
+echo 'NOTE2: You must have a mozilla hg repository within comm-central';
+echo '         in ~/comm-central/mozilla/ for moz191 or mozTrunk to work properly.';
 
 # Checks for a second parameter input.
 
