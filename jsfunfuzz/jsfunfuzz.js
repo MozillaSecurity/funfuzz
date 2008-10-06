@@ -2153,6 +2153,7 @@ function makeId(depth)
 
   return rndElt(["x", "x", "x", "x", "x", "x", "x", "x", // repeat "x" so it's likely to be bound more than once, causing "already bound" errors, elimination of assign-to-const, or conflicts
                  "x1", "x2", "x3", "x4", "x5",
+                 "c", // this appears as a variable name in tryItOut, so eval has fun with it
                  "y", "window", "this", "\u3056", "NaN",
 //                 "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
                  "functional", // perhaps decompiler code looks for "function"?
