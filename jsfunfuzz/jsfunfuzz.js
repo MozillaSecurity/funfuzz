@@ -710,8 +710,10 @@ function tryEnsureSanity()
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
   try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
 
-  // Restore important stuff that might have been broken as soon as possible :)
+  // Try to get rid of any fake 'unwatch' functions.
+  delete unwatch;
 
+  // Restore important stuff that might have been broken as soon as possible :)
   if ('unwatch' in this) {
     this.unwatch("eval")
     this.unwatch("Function")
