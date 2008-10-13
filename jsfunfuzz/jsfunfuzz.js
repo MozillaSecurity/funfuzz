@@ -967,6 +967,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
+  if (e.indexOf("illegal XML character") != -1) {
+    dumpln("Ignoring bug 355674.");
+    return;
+  }
+  
   var message = issue + "\n\n" +
                 "Code: " + uneval(code) + "\n\n" +  
                 "fs: " + fs + "\n\n" +
