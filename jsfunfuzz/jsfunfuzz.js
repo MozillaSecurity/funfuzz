@@ -962,11 +962,6 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
-  if (e.indexOf("missing ; after for-loop condition") != -1) {
-    dumpln("Looks like bug 443074.");
-    return;
-  }
-  
   if (e.indexOf("illegal XML character") != -1) {
     dumpln("Ignoring bug 355674.");
     return;
