@@ -909,8 +909,11 @@ function checkRoundTripToString(f, code, wtt)
   if (wtt.checkRecompiling) {
     try {
       g = eval("(" + uf + ")");
-      if (wtt.checkForMismatch && (""+g) != (""+f) ) {
-        reportRoundTripIssue("Round-trip with implicit toString", code, f, g, "mismatch");
+      var fs = "" + f;
+      var gs = "" + g;
+      if (wtt.checkForMismatch && fs != gs) {
+        reportRoundTripIssue("Round-trip with implicit toString", code, fs, gs, "mismatch");
+        wtt.checkForMismatch = false;
       }
     } catch(e) {
       reportRoundTripIssue("Round-trip with implicit toString: error", code, f, g, errorToString(e));
@@ -934,6 +937,7 @@ function checkRoundTripUneval(f, code, wtt)
       ug = uneval(g);
       if (wtt.checkForMismatch && ug != uf) {
         reportRoundTripIssue("Round-trip with uneval: mismatch", code, uf, ug, "mismatch");
+        wtt.checkForMismatch = false;
       }
     } catch(e) { reportRoundTripIssue("Round-trip with uneval: error", code, uf, ug, errorToString(e)); }
   }
@@ -964,6 +968,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
   
   if (e.indexOf("illegal XML character") != -1) {
     dumpln("Ignoring bug 355674.");
+    return;
+  }
+  
+  if (e == "mismatch" && fs.match(/(true|false) (\&\&|\|\|)/)) {
+    dumpln("Ignoring bug 460158.");
     return;
   }
   
