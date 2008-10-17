@@ -972,6 +972,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
+  if (e.indexOf("missing ; after for-loop condition") != -1) {
+    dumpln("Looks like bug 460504.");
+    return;
+  }
+
   if (e == "mismatch" && fs.match(/(true|false) (\&\&|\|\|)/)) {
     dumpln("Ignoring bug 460158.");
     return;
