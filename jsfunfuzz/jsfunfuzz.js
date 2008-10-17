@@ -183,6 +183,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
       && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
       && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
+      && !( code.match( /(\&\&|\|\|).*(eval|valueOf)/ )) // avoid bug 460501
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
