@@ -2,7 +2,7 @@
 
 import os, sys, platform, signal
 
-def amiss(logPrefix, msg):
+def amiss(logPrefix, verbose, msg):
     global ignoreList
     igmatch = []
     fn = logPrefix + "-crash"
@@ -22,7 +22,8 @@ def amiss(logPrefix, msg):
             print "Unknown crash: " + fn
             return True
         else:
-            # print "Known crash: " + ", ".join(igmatch)
+            if verbose:
+                print "@ Known crash: " + ", ".join(igmatch)
             return False
     else:
         if platform.mac_ver()[0].startswith("10.4") and msg.find("SIGABRT") != -1:

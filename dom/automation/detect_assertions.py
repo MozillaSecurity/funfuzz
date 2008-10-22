@@ -7,7 +7,7 @@
 import os, sys
 
 
-def fs(currentFile):
+def fs(currentFile, verbose):
     global ignoreList
 
     foundSomething = False
@@ -27,6 +27,8 @@ def fs(currentFile):
             if not (ignore(line)):
                 print line
                 foundSomething = True
+            elif verbose:
+                print "@ Known assertion: " + line
 
     currentFile.close()
     
@@ -68,9 +70,9 @@ getIgnores()
 #print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
 
 # For use by af_timed_run
-def amiss(logPrefix):
+def amiss(logPrefix, verbose):
     currentFile = file(logPrefix + "-err", "r")
-    return fs(currentFile)
+    return fs(currentFile, verbose)
 
 # For standalone use
 if __name__ == "__main__":

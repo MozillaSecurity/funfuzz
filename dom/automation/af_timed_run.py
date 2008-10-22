@@ -15,10 +15,10 @@ def many_timed_runs(fullURLs):
         logPrefix = tempDir + os.sep + "w" + str(iteration)
         (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:] + [fullURL], int(sys.argv[1]), logPrefix)
         
-        amissAssert = detect_assertions.amiss(logPrefix)
+        amissAssert = detect_assertions.amiss(logPrefix, False)
         amissLeak = detect_leaks.amiss(logPrefix)
         amissMalloc = detect_malloc_errors.amiss(logPrefix)
-        amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix, msg)
+        amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix, False, msg)
 
         amiss = ((sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc or amissInterestingCrash)
         amissStr = "" if not amiss else "*"

@@ -30,9 +30,9 @@ def many_timed_runs():
         (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[2:], int(sys.argv[1]), logPrefix)
         issues = []
 
-        if detect_assertions.amiss(logPrefix):
+        if detect_assertions.amiss(logPrefix, True):
           issues.append("unknown assertion")
-        if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, msg):
+        if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, True, msg):
           issues.append("unknown crash")
         if detect_malloc_errors.amiss(logPrefix):
           issues.append("malloc error")
