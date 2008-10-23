@@ -212,7 +212,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
       && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !code.match( /,/)                  // ignore bug 461111 with a sledgehammer
+      && !code.match( /,/),                 // ignore bug 461111 with a sledgehammer
     
     allowExec: true
       && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
