@@ -190,6 +190,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
       && (code.indexOf("?") == -1)         // avoid bug 355203
       && (code.indexOf("p.z") == -1)       // avoid bug 355672 (this is the most common trigger)
+      && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
+      && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
   
       // avoid bug 352085: keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
