@@ -707,6 +707,10 @@ function tryRunning(f)
 var realEval = eval;
 var realFunction = Function;
 var realGC = gc;
+var realUneval = uneval;
+var realToString = toString;
+var realToSource = toSource;
+
 
 function tryEnsureSanity()
 {
@@ -721,6 +725,9 @@ function tryEnsureSanity()
     this.unwatch("eval")
     this.unwatch("Function")
     this.unwatch("gc")
+    this.unwatch("uneval")
+    this.unwatch("toSource")
+    this.unwatch("toString")
   }
 
   if ('__defineSetter__' in this) {
@@ -729,11 +736,17 @@ function tryEnsureSanity()
     if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 on branch
       delete Function;
     delete gc;
+    delete uneval;
+    delete toSource;
+    delete toString;
   }
 
   eval = realEval;
   Function = realFunction;
   gc = realGC;
+  uneval = realUneval;
+  toSource = realToSource;
+  toString = realToString;
 
   // These can fail if the page creates a getter for "eval", for example.
   if (!eval)
