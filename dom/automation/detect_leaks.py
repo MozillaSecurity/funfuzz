@@ -21,21 +21,13 @@ knownHash = ath([
 "nsRunnable",
 
 # Bug 403199
-"nsSimpleNestedURI",
+"nsSimpleNestedURI"
 
-# Bug 415112
-"AtomImpl",
-"nsInstantiationNode",
-
-# Bug 427922
-"nsStringBuffer"
 ])
 
 # Things that are known to leak AND entrain smaller objects.
 # If one of these leaks, leaks of small objects will not be reported.
 knownLargeHash = ath([
-# Bug 425821
-"nsDocument",
 
 # Bug 397206
 "BackstagePass",
@@ -46,15 +38,6 @@ knownLargeHash = ath([
 # Bug 424418
 "nsRDFResource",
 
-# Bug 413582 and friends
-"nsGenericElement",
-
-# Bug 429085 (which also entrains a bunch of the above)
-"nsGlobalWindow",
-
-# Bug 429085 or bug 425821?
-"nsDocShell", 
-
 # Bug 417630 and friends
 "nsJVMManager"
 ])
@@ -64,6 +47,9 @@ knownLargeHash = ath([
 # - should quell the reporting of smaller objects
 # currently empty :(
 otherLargeHash = ath([
+"nsGlobalWindow",
+"nsDocument",
+"nsDocShell" 
 ])
 
 
