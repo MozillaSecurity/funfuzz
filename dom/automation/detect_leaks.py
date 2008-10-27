@@ -20,7 +20,7 @@ knownHash = ath([
 "nsBaseAppShell",
 "nsRunnable",
 
-# Bug 400926
+# Bug 403199
 "nsSimpleNestedURI",
 
 # Bug 415112
@@ -40,7 +40,7 @@ knownLargeHash = ath([
 # Bug 397206
 "BackstagePass",
 
-# Bug 102229 or bug 403694
+# Bug 102229 or bug 419562
 "nsDNSService",
 
 # Bug 424418
