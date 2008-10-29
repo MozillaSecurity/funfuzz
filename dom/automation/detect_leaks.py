@@ -61,6 +61,7 @@ def amiss(logPrefix):
         if (line.startswith("nsTraceRefcntImpl::DumpStatistics")):
             break
     else:
+        # print "Didn't see leak stats"
         currentFile.close()
         return False
         
@@ -72,6 +73,7 @@ def amiss(logPrefix):
         line = line.strip("\x07").rstrip("\n").lstrip(" ")
         if (line == "nsStringStats"):
             break
+        print line
         a = line.split(" ")[1]
         if a in knownLargeHash:
             largeKnownLeaks += "*** Large K object " + a + "\n"
@@ -87,7 +89,8 @@ def amiss(logPrefix):
         currentFile.close()
         return True
     elif largeKnownLeaks != "":
-        # print "(Known large leaks, and no other large leaks, so all leaks were ignored)"
+        print "(Known large leaks, and no other large leaks, so all leaks were ignored)"
+        print largeKnownLeaks
         currentFile.close()
         return False
     elif smallLeaks != "":
