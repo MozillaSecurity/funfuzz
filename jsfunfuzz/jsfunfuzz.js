@@ -169,6 +169,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /const.*arguments/ ))        // avoid bug 355480
       && !( code.match( /var.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480
+      && !( code.match( /let/ ))   // avoid bug 462309 :( :( :(
       ,
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
@@ -420,7 +421,7 @@ function tryItOut(code)
     && !( code.match( /const.*for/ )) // can be an infinite loop: function() { const x = 1; for each(x in ({a1:1})) dumpln(3); }
     && !( code.match( /for.*const/ )) // can be an infinite loop: for each(x in ...); const x;
     && !( code.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
-    && !( code.match( /for.*for.*for.*for.*for/ )) // nested for loops (array comprehensions, etc) can take a while
+    && !( code.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
     ;
 
 
@@ -1632,6 +1633,28 @@ var statementMakers = [
   // These don't get T'd because we don't want to set up infinite loops.
   function(dr) { return randomRepeater() + makeStatementOrBlock(dr); },
 
+  // Unstable loops, e.g. to test tracing "multitrees" when these loops
+  // happen to create type instabilities.
+  function(dr) {
+    var reps = 1 + rnd(12);
+    var v = randomVarName();
+    var mod = rnd(5) + 2;
+    var target = rnd(mod);
+    var loopHead = ("/*NUUL*/for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
+    return loopHead + " { " + 
+      "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(dr) + " } " +
+      "else { " + makeStatement(dr) + " } " +
+      " } "
+  },
+  
+  // Type-unstable loops
+  function(dr) {
+    var a = makeMixedTypeArray();
+    var s = "/*TUUL*/for each (let " + makeId(dr) + " in " + a + ") { " + makeStatement(dr) + " }";
+    return s;
+  },
+
+
   // "for..in" loops
 
   // -- for (key in obj)
@@ -2793,8 +2816,28 @@ function makeSubE4X(depth)
   return (rndElt(y))(depth);
 }
 
-
-
+function makeMixedTypeArray()
+{
+  
+  var a = [
+           // integers commented out due to bug 462282
+           // "1", "2", "0", "-0",
+           "1.5", 
+           "(1/0)", "(-1/0)", "(0/0)",
+           "(void 0)", "null", 
+           "''", "new String('')",
+           "false", "true", "new Boolean(true)", "new Boolean(false)",
+           "/x/", "function(){}", "{}", "[]", "this", "eval", "arguments",
+           "x"];
+  // Pick two or three of those
+  var b = [rndElt(a), rndElt(a), rndElt(a)];
+  var c = [];
+  // var count = rnd(15);
+  var count = 10;
+  for (var j = 0; j < count; ++j)
+    c.push(rndElt(b));
+  return "[" + c.join(", ") + "]";
+}
 
 
 
@@ -2812,6 +2855,20 @@ var nextTrapCode = null;
 // Remember the number of countHeap.
 tryItOut("");
 init();
+
+
+/*
+// When bug 462282 is fixed, enable integers above and give it a few rounds of:
+count = 1;
+for (var j = 0; j < 20000; ++j) {
+  if (j % 100 == 0) gc();
+  var a = makeMixedTypeArray();
+  print(uneval(a));
+  var s = "for each (let i in " + a + ") { }";
+  eval(s);
+}
+throw 1;
+*/
 
 
 /**************************************
