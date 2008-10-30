@@ -2820,8 +2820,8 @@ function makeMixedTypeArray()
 {
   
   var a = [
-           // integers commented out due to bug 462282
-           // "1", "2", "0", "-0",
+           // integers commented out due to bug 462407
+           //"1", "2", "0", "-0",
            "1.5", 
            "(1/0)", "(-1/0)", "(0/0)",
            "(void 0)", "null", 
@@ -2858,9 +2858,10 @@ init();
 
 
 /*
-// When bug 462282 is fixed, enable integers above and give it a few rounds of:
+// When bug 462407 is fixed, enable integers above and give it a few rounds of:
 count = 1;
 for (var j = 0; j < 20000; ++j) {
+  x = null;
   if (j % 100 == 0) gc();
   var a = makeMixedTypeArray();
   print(uneval(a));
