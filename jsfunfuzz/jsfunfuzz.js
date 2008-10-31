@@ -1908,7 +1908,7 @@ var exceptionyStatementMakers = [
   // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
   function(dr) { return "for(let y in []);"; }, 
-  function(dr) { return "for(let y in [5,6,7,8]) " + makeExceptionyStatement(dr); }, 
+  function(dr) { return "for(let y in " + makeMixedTypeArray(dr) + ") " + makeExceptionyStatement(dr); }, 
   
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
@@ -2513,14 +2513,16 @@ function makeComprehension(dr)
   if (dr < 0)
     return "";
 
-  switch(rnd(4)) {
+  switch(rnd(5)) {
   case 0:
     return "";
   case 1:
-    return cat([" for ",          "(", makeForInLHS(dr), " in ", makeExpr(dr-2), ")"]) + makeComprehension(dr - 1);
+    return cat([" for ",          "(", makeForInLHS(dr), " in ", makeExpr(dr-2),           ")"]) + makeComprehension(dr - 1);
   case 2:
-    return cat([" for ", "each ", "(", makeId(dr),       " in ", makeExpr(dr-2), ")"]) + makeComprehension(dr - 1);
-  case 3:    
+    return cat([" for ", "each ", "(", makeId(dr),       " in ", makeExpr(dr-2),           ")"]) + makeComprehension(dr - 1);
+  case 3:
+    return cat([" for ", "each ", "(", makeId(dr),       " in ", makeMixedTypeArray(dr-2), ")"]) + makeComprehension(dr - 1);
+  case 4:    
     return cat([" if ", "(", makeExpr(dr-2), ")"]); // this is always last (and must be preceded by a "for", oh well)
   }
 }
@@ -2820,15 +2822,15 @@ function makeMixedTypeArray()
 {
   
   var a = [
-           // integers commented out due to bug 462407
-           //"1", "2", "0", "-0",
-           "1.5", 
+           "1", "2", "0", "-0",
+           "1.5", "-1e81",
            "(1/0)", "(-1/0)", "(0/0)",
            "(void 0)", "null", 
            "''", "new String('')",
            "false", "true", "new Boolean(true)", "new Boolean(false)",
            "/x/", "function(){}", "{}", "[]", "this", "eval", "arguments",
-           "x"];
+           "x"
+         ];
   // Pick two or three of those
   var b = [rndElt(a), rndElt(a), rndElt(a)];
   var c = [];
@@ -2857,8 +2859,9 @@ tryItOut("");
 init();
 
 
+
 /*
-// When bug 462407 is fixed, enable integers above and give it a few rounds of:
+// Aggressive test for type-unstable arrays
 count = 1;
 for (var j = 0; j < 20000; ++j) {
   x = null;
@@ -2866,6 +2869,7 @@ for (var j = 0; j < 20000; ++j) {
   var a = makeMixedTypeArray();
   print(uneval(a));
   var s = "for each (let i in " + a + ") { }";
+  //var s = "[i for each (i in " + a + ") if (i)]";
   eval(s);
 }
 throw 1;
