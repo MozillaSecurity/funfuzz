@@ -181,21 +181,21 @@ if ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] )
         # Debug builds.
         cd debug-$branchType
         autoconf213
-        cd ..
         mkdir dbg-objdir
         cd dbg-objdir
-        ../debug-$branchType/configure
+        ../configure --disable-optimize --enable-debug
         make
-        cp js ../js-$compileType-$branchType-intelmac
+        cp js ../../js-dbg-$branchType-intelmac
         cd ..
         
         # Opt builds.
         mkdir opt-objdir
         cd opt-objdir
-        ../debug-$branchType/configure --enable-optimize --disable-debug
+        ../configure --enable-optimize --disable-debug
         make
-        cp js ../js-$compileType-$branchType-intelmac
-        cd ..
+        cp js ../../js-opt-$branchType-intelmac
+        cd ../../
+        rmdir opt-$branchType  # Obsoleted by new compile method.
 fi
 
 # TraceMonkey is still in a separate branch from trunk.
@@ -209,21 +209,21 @@ if [ $branchType = "tm" ]
         # Debug builds.
         cd debug-$branchType
         autoconf213
-        cd ..
         mkdir dbg-objdir
         cd dbg-objdir
-        ../debug-$branchType/configure
+        ../configure --disable-optimize --enable-debug
         make
-        cp js ../js-$compileType-$branchType-intelmac
+        cp js ../../js-dbg-$branchType-intelmac
         cd ..
         
         # Opt builds.
         mkdir opt-objdir
         cd opt-objdir
-        ../debug-$branchType/configure --enable-optimize --disable-debug
+        ../configure --enable-optimize --disable-debug
         make
-        cp js ../js-$compileType-$branchType-intelmac
-        cd ..
+        cp js ../../js-opt-$branchType-intelmac
+        cd ../../
+        rmdir opt-$branchType  # Obsoleted by new compile method.
 fi
 
 
@@ -300,7 +300,7 @@ if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
     	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
     	cp ../../jsfunfuzz.js .
       	cp ../../analysis.sh .
-	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz.js
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz
 fi
 
 if ( [ $branchType = "tm" ] && ! ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) )
