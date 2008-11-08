@@ -60,7 +60,7 @@ compileType=$1
 branchType=$2
 
 echo
-echo 'compileFuzz-jsfunfuzz.sh v3.1.1 by Gary Kwong';
+echo 'compileFuzz-jsfunfuzz.sh v3.1.2 by Gary Kwong';
 echo ' - for use with jsfunfuzz';
 echo
 echo 'NOTE1: You must have a ~/fuzzing/ directory.';
@@ -178,24 +178,24 @@ if ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] )
         cp -r ~/comm-central/mozilla/js/src/ .
         cd ..
         
-        # Debug builds, keeping the debug source code directory,
-        #   in case gdb is needed for symbols.
-        cp -r debug-$branchType/* opt-$branchType/
+        # Debug builds.
         cd debug-$branchType
-        # |Make| sometimes screws up when compiling a build using 2 jobs.
-        make -f Makefile.ref
-        cd Darwin_DBG.OBJ
-        cp js ../../js-dbg-$branchType-intelmac
-        cd ../../
+        autoconf213
+        cd ..
+        mkdir dbg-objdir
+        cd dbg-objdir
+        ../debug-$branchType/configure
+        make
+        cp js ../js-$compileType-$branchType-intelmac
+        cd ..
         
-        # Opt build, removing the opt source code directory.
-        cd opt-$branchType
-        # |Make| sometimes screws up when compiling a build using 2 jobs.
-        make BUILD_OPT=1 -f Makefile.ref
-        cd Darwin_OPT.OBJ
-        cp js ../../js-opt-$branchType-intelmac
-        cd ../../
-        rm -r opt-$branchType
+        # Opt builds.
+        mkdir opt-objdir
+        cd opt-objdir
+        ../debug-$branchType/configure --enable-optimize --disable-debug
+        make
+        cp js ../js-$compileType-$branchType-intelmac
+        cd ..
 fi
 
 # TraceMonkey is still in a separate branch from trunk.
@@ -206,24 +206,24 @@ if [ $branchType = "tm" ]
         cp -r ~/tracemonkey/js/src/ .
         cd ..
         
-        # Debug builds, keeping the debug source code directory,
-        #   in case gdb is needed for symbols.
-        cp -r debug-$branchType/* opt-$branchType/
+        # Debug builds.
         cd debug-$branchType
-        # |Make| sometimes screws up when compiling a build using 2 jobs.
-        make -f Makefile.ref
-        cd Darwin_DBG.OBJ
-        cp js ../../js-dbg-$branchType-intelmac
-        cd ../../
+        autoconf213
+        cd ..
+        mkdir dbg-objdir
+        cd dbg-objdir
+        ../debug-$branchType/configure
+        make
+        cp js ../js-$compileType-$branchType-intelmac
+        cd ..
         
-        # Opt build, removing the opt source code directory.
-        cd opt-$branchType
-        # |Make| sometimes screws up when compiling a build using 2 jobs.
-        make BUILD_OPT=1 -f Makefile.ref
-        cd Darwin_OPT.OBJ
-        cp js ../../js-opt-$branchType-intelmac
-        cd ../../
-        rm -r opt-$branchType
+        # Opt builds.
+        mkdir opt-objdir
+        cd opt-objdir
+        ../debug-$branchType/configure --enable-optimize --disable-debug
+        make
+        cp js ../js-$compileType-$branchType-intelmac
+        cd ..
 fi
 
 
