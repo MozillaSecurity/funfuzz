@@ -2685,7 +2685,10 @@ var termMakers = [
     "arguments"
     ]);
   },
-  function(dr) { return rndElt([ "0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", (""+Math.PI), "3/0", "-3/0", "0/0" /*, "(0x50505050 >> 1)" */ ]); },
+  function(dr) { return rndElt([ "0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", (""+Math.PI), "3/0", "-3/0", "0/0"
+    // these are commented out due to bug 379294
+    // "0x2D413CCC", "0x5a827999", "0xB504F332", "(0x50505050 >> 1)"
+  ]); },
   function(dr) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(dr) { return rndElt([ "this", "window" ]); },
   function(dr) { return rndElt([" \"\" ", " '' ", " /x/ ", " /x/g "]) },
