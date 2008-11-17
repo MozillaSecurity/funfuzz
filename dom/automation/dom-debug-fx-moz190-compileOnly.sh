@@ -73,9 +73,9 @@ echo 'Done compiling!'
 echo
 cat ~/fuzzing/dom/automation/how-to-use.txt
 echo
-echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-debug-fx-moz190-A/fx-moz190-cvs-debug/objdir-fx/browser/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
+echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-debug-fx-moz190-A/fx-moz190-cvs-debug/objdir-fx/dist/MinefieldDebug.app/Contents/MacOS/firefox-bin -P fuzz1-moz190'
 echo
-cd ~/Desktop/dom-debug-fx-moz190-A/fx-moz190-cvs-debug/objdir-fx/browser/dist/MinefieldDebug.app/Contents/MacOS/
+cd ~/Desktop/dom-debug-fx-moz190-A/fx-moz190-cvs-debug/objdir-fx/dist/MinefieldDebug.app/Contents/MacOS/
 pwd
 echo
 #cd ~/Desktop/dom-debug-fx-moz190-A

@@ -73,12 +73,12 @@ echo 'Done compiling!'
 echo
 cat ~/fuzzing/dom/automation/how-to-use.txt
 echo
-echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/browser/dist/BonEchoDebug.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
+echo '~/fuzzing/dom/automation/how-to-use.txt - your build is located at ~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/dist/BonEchoDebug.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
 echo 'These may be useful:'
-echo '~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/browser/dist/BonEchoDebug.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
-echo 'python -u ./af_timed_run.py 120 urls-random "~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/browser/dist/BonEchoDebug.app/Contents/MacOS/firefox-bin" -P fuzz2-moz181 | tee wlog`date +%Y-%m-%d-%H-%M-%S%z`'
+echo '~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/dist/BonEchoDebug.app/Contents/MacOS/firefox-bin -P fuzz2-moz181'
+echo 'python -u ./af_timed_run.py 120 urls-random "~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/dist/BonEchoDebug.app/Contents/MacOS/firefox-bin" -P fuzz2-moz181 | tee wlog`date +%Y-%m-%d-%H-%M-%S%z`'
 echo
-cd ~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/browser/dist/BonEchoDebug.app/Contents/MacOS/
+cd ~/Desktop/dom-debug-fx-moz181-A/fx-moz181-cvs-debug/objdir-fx/dist/BonEchoDebug.app/Contents/MacOS/
 pwd
 echo
 #cd ~/Desktop/dom-debug-fx-moz181-A
