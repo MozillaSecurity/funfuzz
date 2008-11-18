@@ -2129,7 +2129,7 @@ var exprMakers =
   function(dr) { return cat(["[15,16,17,18]",        ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(dr), ", ", makeExpr(dr), ")"]); },
   function(dr) { return cat(["[", makeExpr(dr), "]", ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(dr), ")"]); },
   
-  // RegExp replace.  This is interesting for same same reason as array extras.
+  // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
   function(dr) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(dr), ")"]); },
 
   // Dot (property access)
@@ -2180,11 +2180,12 @@ var exprMakers =
   function(dr) { return cat([     makeExpr(dr), makeComprehension(dr)     ]); },
   function(dr) { return cat(["(", makeExpr(dr), makeComprehension(dr), ")"]); },
   
-
+  // Comments and whitespace
   function(dr) { return cat([" /* Comment */", makeExpr(dr)]); },
   function(dr) { return cat(["\n", makeExpr(dr)]); }, // perhaps trigger semicolon insertion and stuff
   function(dr) { return cat([makeExpr(dr), "\n"]); },
 
+  // LValue as an expression
   function(dr) { return cat([makeLValue(dr)]); },
 
   // Assignment (can be destructuring)
@@ -2243,7 +2244,7 @@ var exprMakers =
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(dr) { return "(uneval(" + makeExpr(dr) + "))"; },
   
-  // Constructors.  No "T" -- don't screw with the constructors themselves; just call them.
+  // Constructors.  No cat() because I don't want to screw with the constructors themselves, just call them.
   function(dr) { return "new " + rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; },
   function(dr) { return          rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; }
 ];
@@ -2830,6 +2831,7 @@ function makeMixedTypeArray()
            "(1/0)", "(-1/0)", "(0/0)",
            "(void 0)", "null", 
            "''", "new String('')",
+           "'q'", "new String('q')",
            "false", "true", "new Boolean(true)", "new Boolean(false)",
            "/x/", "function(){}", "{}", "[]", "this", "eval", "arguments",
            "x"
