@@ -94,6 +94,8 @@ if (typeof gc == "undefined")
 var haveUsefulDis = typeof dis == "function" && typeof dis() == "string";
 
 var haveE4X = (typeof XML == "function");
+if (haveE4X)
+  XML.ignoreComments = false; // to make uneval saner -- see bug 465908
 
 function simpleSource(s)
 {
@@ -557,7 +559,7 @@ function tryItOut(code)
 
   var rv = null;
   if (wtt.allowExec && f) {
-    rv = tryRunning(f);
+    rv = tryRunning(f, code);
     tryEnsureSanity();
     
     if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
@@ -687,7 +689,7 @@ function tryRoundTripStuff(f, code, wtt)
 }
 
 
-function tryRunning(f)
+function tryRunning(f, code)
 {
   try { 
     if (verbose)
@@ -699,8 +701,68 @@ function tryRunning(f)
   } catch(runError) {
     if(verbose)
       dumpln("Running threw!  About to toString to error.");
-    dumpln("Running threw: " + errorToString(runError)); 
+    var err = errorToString(runError);
+    dumpln("Running threw: " + err);
+    tryEnsureSanity();
+    checkErrorMessage(err, code);
     return null;
+  }
+}
+
+function checkErrorMessage(err, code)
+{
+  if (code.indexOf("<") != -1 && code.indexOf(">") != -1) {
+    // Ignore E4X issues: bug 465908, bug 380946, etc.
+    return;
+  }
+  
+  // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
+  checkErrorMessage2(err, "TypeError: ", " is not a function");
+  checkErrorMessage2(err, "TypeError: ", " is not a constructor");
+  checkErrorMessage2(err, "TypeError: ", " is undefined");
+  
+  // These should probably be tested too:XML.ignoreComments
+  // XML filter is applied to non-XML value ...
+  // invalid 'instanceof' operand ...
+  // invalid 'in' operand ...
+  // missing argument 0 when calling function ...
+  // ... has invalid __iterator__ value ... (two of them!!)
+}
+
+function checkErrorMessage2(err, prefix, suffix)
+{
+  var P = prefix.length;
+  var S = suffix.length;
+  if (err.substr(0, P) == prefix) {
+    if (err.substr(-S, S) == suffix) {
+      var dvg = err.substr(11, err.length - P - S);
+      print("Testing an expression in a recent error message: " + dvg);
+      
+      if (dvg.match(/\#\d\=\</)) {
+        print("Ignoring bug 380946");
+        return;
+      }
+      if (dvg.indexOf("[native code]") != -1) {
+        print("Ignoring DVG-using error message due to [native code]");
+        return;
+      }
+      if (dvg.indexOf("#") != -1) {
+        print("Avoiding bug 367731");
+        return;
+      }
+      if (dvg == "") {
+        print("Ignoring E4X uneval bogosity"); 
+        // e.g. the error message from (<x/>.(false))()
+        // bug 465908, bug 380946, etc.
+        return;
+      }
+
+      try {
+        eval("(function() { return (" + dvg + "); })");
+      } catch(e) {
+        printAndStop("DVG has apparently failed us: " + e);
+      }
+    }
   }
 }
 
