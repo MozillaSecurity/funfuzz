@@ -55,42 +55,53 @@ otherLargeHash = ath([
 
 def amiss(logPrefix):
     currentFile = file(logPrefix + "-out", "r")
+    sawLeakStats = False
     
     for line in currentFile:
-        # line = line.strip("\x07").rstrip("\n")
-        if (line.startswith("nsTraceRefcntImpl::DumpStatistics")):
+        line = line.rstrip("\n")
+        if (line == "== BloatView: ALL (cumulative) LEAK STATISTICS"):
+            sawLeakStats = True
+        # This line appears only if there are leaks
+        if (line.endswith("Mean       StdDev")):
             break
     else:
-        # print "Didn't see leak stats"
+        if sawLeakStats:
+            #print "No leaks :)"
+            pass
+        else:
+            print "Didn't see leak stats"
         currentFile.close()
         return False
-        
+
     smallLeaks = ""
     largeKnownLeaks = ""
     largeOtherLeaks = ""
 
     for line in currentFile:
         line = line.strip("\x07").rstrip("\n").lstrip(" ")
-        if (line == "nsStringStats"):
+        if (line == ""):
             break
-        print line
         a = line.split(" ")[1]
+        if a == "TOTAL":
+            continue
+        # print "Leaked at least one: " + a
         if a in knownLargeHash:
-            largeKnownLeaks += "*** Large K object " + a + "\n"
+            largeKnownLeaks += "*** Large object " + a + "\n"
         if a in otherLargeHash:
-            largeOtherLeaks += "*** Large O object " + a + "\n"
+            largeOtherLeaks += "*** Large object " + a + " (known)\n"
         if not a in knownHash:
             smallLeaks += a + "\n"
 
     if largeOtherLeaks != "":
-        print "Leaked:"
+        print "Leaked large objects:"
         print largeOtherLeaks
+        print "Also leaked 'known' large objects:"
         print largeKnownLeaks
         currentFile.close()
         return True
     elif largeKnownLeaks != "":
-        print "(Known large leaks, and no other large leaks, so all leaks were ignored)"
-        print largeKnownLeaks
+        # print "(Known large leaks, and no other large leaks, so all leaks were ignored)"
+        # print largeKnownLeaks
         currentFile.close()
         return False
     elif smallLeaks != "":
@@ -99,7 +110,7 @@ def amiss(logPrefix):
         currentFile.close()
         return True
     else:
-        # print "No leaks :)"
+        # print "(Only known small leaks)"
         currentFile.close()
         return False
 

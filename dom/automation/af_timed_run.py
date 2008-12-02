@@ -30,7 +30,7 @@ def many_timed_runs(fullURLs):
         (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:] + [fullURL], int(sys.argv[1]), logPrefix)
         
         amissAssert = detect_assertions.amiss(logPrefix, False)
-        amissLeak = detect_leaks.amiss(logPrefix)
+        amissLeak = detect_leaks.amiss(logPrefix) if (sta == ntr.NORMAL) else False
         amissMalloc = detect_malloc_errors.amiss(logPrefix)
         amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix, False, msg)
 
