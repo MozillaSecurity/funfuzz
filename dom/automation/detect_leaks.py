@@ -86,17 +86,17 @@ def amiss(logPrefix):
             continue
         # print "Leaked at least one: " + a
         if a in knownLargeHash:
-            largeKnownLeaks += "*** Large object " + a + "\n"
+            largeKnownLeaks += "*** Leaked large object " + a + " (known)\n"
         if a in otherLargeHash:
-            largeOtherLeaks += "*** Large object " + a + " (known)\n"
+            largeOtherLeaks += "*** Leaked large object " + a + "\n"
         if not a in knownHash:
             smallLeaks += a + "\n"
 
     if largeOtherLeaks != "":
         print "Leaked large objects:"
         print largeOtherLeaks
-        print "Also leaked 'known' large objects:"
-        print largeKnownLeaks
+        # print "Also leaked 'known' large objects:"
+        # print largeKnownLeaks
         currentFile.close()
         return True
     elif largeKnownLeaks != "":
