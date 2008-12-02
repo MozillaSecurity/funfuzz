@@ -45,7 +45,6 @@ knownLargeHash = ath([
 # Large items that
 # - should be reported even if things in knownLargeHash leak
 # - should quell the reporting of smaller objects
-# currently empty :(
 otherLargeHash = ath([
 "nsGlobalWindow",
 "nsDocument",
