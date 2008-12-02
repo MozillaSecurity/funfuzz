@@ -10,6 +10,9 @@ def ath(array):
 
 knownHash = ath([
 
+# Bug 467008, bug 467647
+"nsDocument",
+
 # bug 391976
 "nsMathMLContainerFrame",
 "nsMathMLmtableOuterFrame",
@@ -47,7 +50,6 @@ knownLargeHash = ath([
 # - should quell the reporting of smaller objects
 otherLargeHash = ath([
 "nsGlobalWindow",
-"nsDocument",
 "nsDocShell" 
 ])
 
