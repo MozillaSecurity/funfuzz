@@ -10,9 +10,6 @@ def ath(array):
 
 knownHash = ath([
 
-# Bug 467008, bug 467647
-"nsDocument",
-
 # bug 391976
 "nsMathMLContainerFrame",
 "nsMathMLmtableOuterFrame",
@@ -31,6 +28,13 @@ knownHash = ath([
 # Things that are known to leak AND entrain smaller objects.
 # If one of these leaks, leaks of small objects will not be reported.
 knownLargeHash = ath([
+
+# Bug 467008, bug 467647
+"nsDocument",
+
+# Bug 467686
+"nsGlobalWindow",
+"nsGenericElement",
 
 # Bug 397206
 "BackstagePass",
@@ -52,7 +56,6 @@ knownLargeHash = ath([
 # - should be reported even if things in knownLargeHash leak
 # - should quell the reporting of smaller objects
 otherLargeHash = ath([
-"nsGlobalWindow",
 "nsDocShell" 
 ])
 
