@@ -21,7 +21,10 @@ knownHash = ath([
 "nsRunnable",
 
 # Bug 403199
-"nsSimpleNestedURI"
+"nsSimpleNestedURI",
+
+# Bug 467693
+"nsStringBuffer"
 
 ])
 
