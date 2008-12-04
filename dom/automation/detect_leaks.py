@@ -52,7 +52,11 @@ knownLargeHash = ath([
 "nsRDFResource",
 
 # Bug 417630 and friends
-"nsJVMManager"
+"nsJVMManager",
+
+# Bug 467873
+"gfxTextRun"
+
 ])
 
 # Large items that
