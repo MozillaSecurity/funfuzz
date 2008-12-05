@@ -55,7 +55,10 @@ knownLargeHash = ath([
 "nsJVMManager",
 
 # Bug 467873
-"gfxTextRun"
+"gfxTextRun",
+
+# Bug 468160
+"imgRequest"
 
 ])
 
