@@ -24,7 +24,10 @@ knownHash = ath([
 "nsSimpleNestedURI",
 
 # Bug 467693
-"nsStringBuffer"
+"nsStringBuffer",
+
+# Bug 468208
+"txNodeTest"
 
 ])
 
