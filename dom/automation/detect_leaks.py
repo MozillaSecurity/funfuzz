@@ -34,6 +34,7 @@ knownLargeHash = ath([
 
 # Bug 467008, bug 467647
 "nsDocument",
+"nsDocShell", # maybe
 
 # Bug 467686
 "nsGlobalWindow",
@@ -66,7 +67,6 @@ knownLargeHash = ath([
 # - should be reported even if things in knownLargeHash leak
 # - should quell the reporting of smaller objects
 otherLargeHash = ath([
-"nsDocShell" 
 ])
 
 
