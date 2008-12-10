@@ -59,9 +59,6 @@ knownLargeHash = ath([
 # Bug 417630 and friends
 "nsJVMManager",
 
-# Bug 467873
-"gfxTextRun",
-
 # Bug 468160
 "imgRequest"
 
