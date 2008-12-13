@@ -35,7 +35,7 @@ knownHash = ath([
 # If one of these leaks, leaks of small objects will not be reported.
 knownLargeHash = ath([
 
-# Bug 467008, bug 467647
+# Bug 467647
 "nsDocument",
 "nsDocShell", # maybe
 
