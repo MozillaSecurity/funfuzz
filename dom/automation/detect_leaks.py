@@ -49,6 +49,9 @@ knownLargeHash = ath([
 # Bug 102229 or bug 419562
 "nsDNSService",
 
+# Bug 463724
+"nsHTMLDNSPrefetch::nsDeferrals",
+
 # Bug 424418
 "nsRDFResource",
 
