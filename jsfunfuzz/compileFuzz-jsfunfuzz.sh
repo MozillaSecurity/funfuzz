@@ -38,15 +38,17 @@
 # 
 # Version History:
 # 
-# end-April 2008 - 1.x:
+# April 2008 - 1.x:
 # 	Initial idea, previously called ./jsfunfuzz-moz18branch-start-intelmac
 # June 2008 - 2.x:
 # 	Rewritten from scratch to support the new hg fuzzing branch.
-# end-August 2008 - 3.0.x:
+# August 2008 - 3.0.x:
 # 	Rewritten from scratch again to support command-line inputs and
 # 	consolidate all existing jsfunfuzz bash scripts.
-# start-September 2008 - 3.1.x:
+# September 2008 - 3.1.x:
 # 	Support fuzzing v8 engine.
+# mid-December 2008 - 3.2.x:
+#   Supports 1.9.1.x branch.
 # 
 # Note:
 #   If something screws up, trash the entire existing
@@ -60,12 +62,12 @@ compileType=$1
 branchType=$2
 
 echo
-echo 'compileFuzz-jsfunfuzz.sh v3.1.2 by Gary Kwong';
+echo 'compileFuzz-jsfunfuzz.sh v3.2.0 by Gary Kwong';
 echo ' - for use with jsfunfuzz';
 echo
 echo 'NOTE1: You must have a ~/fuzzing/ directory.';
-echo 'NOTE2: You must have a mozilla hg repository within comm-central';
-echo '         in ~/comm-central/mozilla/ for moz191 or mozTrunk to work properly.';
+echo 'NOTE2: You must have a mozilla hg repository in ~/mozilla-1.9.1/';
+echo '         and/or in ~/mozilla-central/ for moz191 or mozTrunk to work properly.';
 
 # Checks for a second parameter input.
 
@@ -166,16 +168,38 @@ if ( [ $branchType = "moz181" ] || [ $branchType = "moz190" ] ) then
     rm -r opt-$branchType
 fi
 
+# Gecko 1.9.1.x is in Mercurial.
 
-# Gecko 1.9.1.x and the trunk are in Mercurial.
-
-if ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] )
+if [ $branchType = "moz191" ]
     then
-        # 
-        # NOTE: Gecko 1.9.1.x has not yet branched from the trunk.
-        # 
-        # This assumes you have an updated comm and mozilla-central directory.
-        cp -r ~/comm-central/mozilla/js/src/ .
+        cp -r ~/mozilla-1.9.1/ .
+        cd ..
+        
+        # Debug builds.
+        cd debug-$branchType
+        autoconf213
+        mkdir dbg-objdir
+        cd dbg-objdir
+        ../configure --disable-optimize --enable-debug
+        make
+        cp js ../../js-dbg-$branchType-intelmac
+        cd ..
+        
+        # Opt builds.
+        mkdir opt-objdir
+        cd opt-objdir
+        ../configure --enable-optimize --disable-debug
+        make
+        cp js ../../js-opt-$branchType-intelmac
+        cd ../../
+        rmdir opt-$branchType  # Obsoleted by new compile method.
+fi
+
+# Trunk is in Mercurial.
+
+if [ $branchType = "mozTrunk" ]
+    then
+        cp -r ~/mozilla-central/ .
         cd ..
         
         # Debug builds.
