@@ -172,7 +172,7 @@ fi
 
 if [ $branchType = "moz191" ]
     then
-        cp -r ~/mozilla-1.9.1/ .
+        cp -r ~/mozilla-1.9.1/js/src/ .
         cd ..
         
         # Debug builds.
@@ -199,7 +199,7 @@ fi
 
 if [ $branchType = "mozTrunk" ]
     then
-        cp -r ~/mozilla-central/ .
+        cp -r ~/mozilla-central/js/src/ .
         cd ..
         
         # Debug builds.
