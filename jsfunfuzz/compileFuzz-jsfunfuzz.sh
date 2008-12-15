@@ -327,7 +327,7 @@ if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz
 fi
 
-if ( ( [ $branchType = "moz191" ] || [ $branchType = "tm" ] ) && ! ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) )
+if ( ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] || [ $branchType = "tm" ] ) && ! ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) )
     then
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
     else
