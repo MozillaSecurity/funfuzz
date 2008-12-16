@@ -46,10 +46,11 @@ def many_timed_runs(fullURLs):
             print ""
             print ""
         
-        if sta == ntr.NORMAL and not amiss:
+        if not amiss:
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             os.remove(logPrefix + "-url")
+            # Note: -crash is not deleted
 
 
 def getURLs():
