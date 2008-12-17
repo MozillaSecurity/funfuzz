@@ -8,7 +8,7 @@ import randomURL
 
 
 urlListFilename = sys.argv[2]
-maxIterations = 100000
+maxIterations = 300000
 yummy = (urlListFilename == "urls-random")
 
 
