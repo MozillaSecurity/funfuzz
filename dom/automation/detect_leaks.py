@@ -55,6 +55,9 @@ knownLargeHash = ath([
 "nsDNSAsyncRequest",
 "nsHostResolver",
 
+# Bug 470418
+"nsStyleContext",
+
 # Bug 424418
 "nsRDFResource",
 
