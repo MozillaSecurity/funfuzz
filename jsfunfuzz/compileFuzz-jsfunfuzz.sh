@@ -48,7 +48,7 @@
 # September 2008 - 3.1.x:
 # 	Support fuzzing v8 engine.
 # mid-December 2008 - 3.2.x:
-#   Supports 1.9.1.x branch.
+#   Supports 1.9.1.x branch. Rip out 1.8.1.x code.
 # 
 # Note:
 #   If something screws up, trash the entire existing
@@ -56,13 +56,13 @@
 # 
 # Receive user input on compileType and branchType.
 #   compileType can be debug or opt.
-#   branchType can be Gecko 1.8.1.x, 1.9.0.x, 1.9.1.x branches, the trunk, or the v8 engine.
+#   branchType can be Gecko 1.9.0.x, 1.9.1.x branches, the trunk, or the v8 engine.
 
 compileType=$1
 branchType=$2
 
 echo
-echo 'compileFuzz-jsfunfuzz.sh v3.2.0 by Gary Kwong';
+echo 'compileFuzz-jsfunfuzz.sh v3.2.1 by Gary Kwong';
 echo ' - for use with jsfunfuzz';
 echo
 echo 'NOTE1: You must have a ~/fuzzing/ directory.';
@@ -74,7 +74,7 @@ echo '         and/or in ~/mozilla-central/ for moz191 or mozTrunk to work prope
 if [ "$2" = "" ]
     then
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz181|moz190|moz191|mozTrunk|tm|v8]';
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8]';
         echo
         exit 0;
 fi
@@ -86,7 +86,7 @@ case $compileType in
     "opt" ) ;;
     *     )
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz181|moz190|moz191|mozTrunk|tm|v8]'
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8]'
         echo
         exit 0;;
 esac
@@ -94,7 +94,6 @@ esac
 # Determine actions based on second parameter, branchType.
 
 case $branchType in
-    "moz181"   ) ;;
     "moz190"   ) ;;
     "moz191"   ) ;;
     "mozTrunk" ) ;;
@@ -102,7 +101,7 @@ case $branchType in
     "v8" ) ;;
     *       )
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz181|moz190|moz191|mozTrunk|tm|v8]'
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8]'
         echo
         exit 0;;
 esac
@@ -133,19 +132,11 @@ mkdir -p debug-$branchType opt-$branchType
 cd debug-$branchType
 
 
-# Gecko 1.8.1.x and 1.9.0.x are in CVS.
+# Gecko 1.9.0.x is in CVS.
 
-if ( [ $branchType = "moz181" ] || [ $branchType = "moz190" ] ) then
+if [ $branchType = "moz190" ] then
     export CVSROOT=:pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
-    
-    # Check out CVS source files depending on parameters.
-    if [ $branchType = "moz181" ]
-        then
-			cvs co -r MOZILLA_1_8_BRANCH -l mozilla/js/src mozilla/js/src/fdlibm
-            cvs co -l mozilla/js/src/config mozilla/js/src/editline
-        else
-			cvs co -l mozilla/js/src mozilla/js/src/config mozilla/js/src/editline mozilla/js/src/fdlibm
-    fi
+    cvs co -l mozilla/js/src mozilla/js/src/config mozilla/js/src/editline mozilla/js/src/fdlibm
     cd ..
     
     # Debug builds, keeping the debug source code directory,
@@ -327,11 +318,24 @@ if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz
 fi
 
-if ( ( [ $branchType = "moz191" ] || [ $branchType = "mozTrunk" ] || [ $branchType = "tm" ] ) && ! ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) )
+if [ $branchType = "moz190" ]
     then
-	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
-    else
-	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-1.9.0/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+fi
+
+if [ $branchType = "moz191" ]
+    then
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-1.9.1/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+fi
+
+if [ $branchType = "mozTrunk" ]
+    then
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+fi
+
+if [ $branchType = "tm" ]
+    then
+	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
 fi
 
 echo
