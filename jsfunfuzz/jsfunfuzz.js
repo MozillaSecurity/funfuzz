@@ -357,10 +357,10 @@ function start()
   count = 0;
 
   if (jsshell) {
-    // Number of iterations: 20000 is good for use with multi_timed_run.py.  (~40 seconds on a PowerBook G4; reduction isn't bad.)
+    // Number of iterations.
     // Raise for use without multi_timed_run.py (perhaps to Infinity).
-    // Lower for use with WAY_TOO_MUCH_GC, to 70 or so.
-    for (var i = 0; i < 32000; ++i)
+    // Lower for use with WAY_TOO_MUCH_GC or valgrind.
+    for (var i = 0; i < 5000; ++i)
       testOne();
     dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
   } else {
@@ -2947,14 +2947,11 @@ throw 1;
  * To reproduce a crash or assertion: *
  **************************************/
 
-// 1. Comment "start();" out.
-start();
-
-// 2. Paste the "tryItOut" lines from the run's output in here.
-//         grep tryIt LOGFILE | grep -v "function tryIt"
-// If you're lucky, you'll only need the last line.  Otherwise, use Lithium to
-// figure out which lines are needed.
+// 1. grep tryIt LOGFILE | grep -v "function tryIt" | pbcopy
+// 2. Paste the result between DDBEGIN and DDEND, replacing "start();"
+// 3. Run Lithium to remove unnecessary lines between DDBEGIN and DDEND.
 // DDBEGIN
+start();
 // DDEND
 
 
