@@ -17,12 +17,7 @@ def fs(currentFile, verbose):
 
     for line in currentFile:
         line = line.strip("\x07").rstrip("\n")
-        if ((line.startswith("###!!!") or 
-             line.startswith("Assertion failure:") or # spidermonkey
-             line.find("Mozilla has caught an Obj-C exception") != -1 or
-             line.find("Assertion failed:") != -1 or # nanojit
-             line.find("failed assertion") != -1 # nanojit
-            ) and not (line in seenInCurrentFile)):
+        if (assertiony(line) and not (line in seenInCurrentFile)):
             seenInCurrentFile[line] = True
             if not (ignore(line)):
                 print line
@@ -31,9 +26,16 @@ def fs(currentFile, verbose):
                 print "@ Known assertion: " + line
 
     currentFile.close()
-    
+
     return foundSomething
 
+def assertiony(line):
+    return (line.startswith("###!!!") or # NS_ASSERTION and also aborts
+             line.startswith("Assertion failure:") or # spidermonkey
+             line.find("Mozilla has caught an Obj-C exception") != -1 or
+             line.find("Assertion failed:") != -1 or # nanojit
+             line.find("failed assertion") != -1 # nanojit
+            )
 
 def getIgnores():
 
