@@ -134,7 +134,7 @@ cd debug-$branchType
 
 # Gecko 1.9.0.x is in CVS.
 
-if [ $branchType = "moz190" ] then
+if ( [ $branchType = "moz190" ] ) then
     export CVSROOT=:pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
     cvs co -l mozilla/js/src mozilla/js/src/config mozilla/js/src/editline mozilla/js/src/fdlibm
     cd ..
@@ -159,135 +159,129 @@ if [ $branchType = "moz190" ] then
     rm -r opt-$branchType
 fi
 
-# Gecko 1.9.1.x is in Mercurial.
+# Gecko 1.9.1.x is in Mercurial and has a different compile method from 1.9.0.x.
 
-if [ $branchType = "moz191" ]
-    then
-        cp -r ~/mozilla-1.9.1/js/src/ .
-        cd ..
-        
-        # Debug builds.
-        cd debug-$branchType
-        autoconf213
-        mkdir dbg-objdir
-        cd dbg-objdir
-        ../configure --disable-optimize --enable-debug
-        make
-        cp js ../../js-dbg-$branchType-intelmac
-        cd ..
-        
-        # Opt builds.
-        mkdir opt-objdir
-        cd opt-objdir
-        ../configure --enable-optimize --disable-debug
-        make
-        cp js ../../js-opt-$branchType-intelmac
-        cd ../../
-        rmdir opt-$branchType  # Obsoleted by new compile method.
+if ( [ $branchType = "moz191" ] ) then
+    cp -r ~/mozilla-1.9.1/js/src/ .
+    cd ..
+    
+    # Debug builds.
+    cd debug-$branchType
+    autoconf213
+    mkdir dbg-objdir
+    cd dbg-objdir
+    ../configure --disable-optimize --enable-debug
+    make
+    cp js ../../js-dbg-$branchType-intelmac
+    cd ..
+    
+    # Opt builds.
+    mkdir opt-objdir
+    cd opt-objdir
+    ../configure --enable-optimize --disable-debug
+    make
+    cp js ../../js-opt-$branchType-intelmac
+    cd ../../
+    rmdir opt-$branchType  # Obsoleted by new compile method.
 fi
 
-# Trunk is in Mercurial.
+# Trunk is in Mercurial and has a different compile method from 1.9.0.x.
 
-if [ $branchType = "mozTrunk" ]
-    then
-        cp -r ~/mozilla-central/js/src/ .
-        cd ..
-        
-        # Debug builds.
-        cd debug-$branchType
-        autoconf213
-        mkdir dbg-objdir
-        cd dbg-objdir
-        ../configure --disable-optimize --enable-debug
-        make
-        cp js ../../js-dbg-$branchType-intelmac
-        cd ..
-        
-        # Opt builds.
-        mkdir opt-objdir
-        cd opt-objdir
-        ../configure --enable-optimize --disable-debug
-        make
-        cp js ../../js-opt-$branchType-intelmac
-        cd ../../
-        rmdir opt-$branchType  # Obsoleted by new compile method.
+if ( [ $branchType = "mozTrunk" ] ) then
+    cp -r ~/mozilla-central/js/src/ .
+    cd ..
+    
+    # Debug builds.
+    cd debug-$branchType
+    autoconf213
+    mkdir dbg-objdir
+    cd dbg-objdir
+    ../configure --disable-optimize --enable-debug
+    make
+    cp js ../../js-dbg-$branchType-intelmac
+    cd ..
+    
+    # Opt builds.
+    mkdir opt-objdir
+    cd opt-objdir
+    ../configure --enable-optimize --disable-debug
+    make
+    cp js ../../js-opt-$branchType-intelmac
+    cd ../../
+    rmdir opt-$branchType  # Obsoleted by new compile method.
 fi
 
-# TraceMonkey is still in a separate branch from trunk.
+# TraceMonkey is in a separate branch from trunk and has a different compile method from 1.9.0.x.
 
-if [ $branchType = "tm" ]
-    then
-        # This assumes you have an updated tracemonkey directory.
-        cp -r ~/tracemonkey/js/src/ .
-        cd ..
-        
-        # Debug builds.
-        cd debug-$branchType
-        autoconf213
-        mkdir dbg-objdir
-        cd dbg-objdir
-        ../configure --disable-optimize --enable-debug
-        make
-        cp js ../../js-dbg-$branchType-intelmac
-        cd ..
-        
-        # Opt builds.
-        mkdir opt-objdir
-        cd opt-objdir
-        ../configure --enable-optimize --disable-debug
-        make
-        cp js ../../js-opt-$branchType-intelmac
-        cd ../../
-        rmdir opt-$branchType  # Obsoleted by new compile method.
+if ( [ $branchType = "tm" ] ) then
+    cp -r ~/tracemonkey/js/src/ .
+    cd ..
+    
+    # Debug builds.
+    cd debug-$branchType
+    autoconf213
+    mkdir dbg-objdir
+    cd dbg-objdir
+    ../configure --disable-optimize --enable-debug
+    make
+    cp js ../../js-dbg-$branchType-intelmac
+    cd ..
+    
+    # Opt builds.
+    mkdir opt-objdir
+    cd opt-objdir
+    ../configure --enable-optimize --disable-debug
+    make
+    cp js ../../js-opt-$branchType-intelmac
+    cd ../../
+    rmdir opt-$branchType  # Obsoleted by new compile method.
 fi
 
 
 # Google Chrome uses the v8 Javascript engine.
 
-if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
-    then
-    	# 
-        # SVN checks out five times, it seems to consistently error out 1 or 2 times.
-        # Sample:
-        # svn: REPORT request failed on '/svn/!svn/vcc/default'
+if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) then
+	# 
+    # SVN checks out five times, it seems to consistently error out 1 or 2 times.
+    # Sample:
+    # svn: REPORT request failed on '/svn/!svn/vcc/default'
 	# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
 	
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        cd ..
-        
-        # Debug builds, keeping the debug source code directory,
-        #   in case gdb is needed for symbols.
-        cd debug-$branchType/v8/
-        scons mode=debug library=shared snapshot=on sample=shell
-        cd ../../
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    cd ..
+    
+    # Debug builds, keeping the debug source code directory,
+    #   in case gdb is needed for symbols.
+    cd debug-$branchType/v8/
+    scons mode=debug library=shared snapshot=on sample=shell
+    cd ../../
 fi
 
-if ( [ $compileType = "opt" ] && [ $branchType = "v8" ] )
-    then
-    	# 
-        # SVN checks out five times, it seems to consistently error out 1 or 2 times.
-        # Sample:
-        # svn: REPORT request failed on '/svn/!svn/vcc/default'
+if ( [ $compileType = "opt" ] && [ $branchType = "v8" ] ) then
+	# 
+    # SVN checks out five times, it seems to consistently error out 1 or 2 times.
+    # Sample:
+    # svn: REPORT request failed on '/svn/!svn/vcc/default'
 	# svn: REPORT of '/svn/!svn/vcc/default': 200 OK (http://v8.googlecode.com)
         
 	cd ../opt-$branchType
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
-        cd ..
-        
-        # Opt build.
-        cd opt-$branchType/v8/
-        scons mode=release library=static snapshot=on sample=shell
-        cp shell ../../js-opt-$branchType-intelmac
-        cd ../../
-        #rm -r opt-$branchType  # do not remove source yet.
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8
+    cd ..
+    
+    # Opt build.
+    cd opt-$branchType/v8/
+    scons mode=release library=static snapshot=on sample=shell
+    cp shell ../../js-opt-$branchType-intelmac
+    cd ../../
+    #rm -r opt-$branchType  # do not remove source yet.
 fi
 
 cd ~/Desktop/jsfunfuzz-$compileType-$branchType
@@ -309,47 +303,41 @@ echo '============================================'
 echo
 
 # Start fuzzing the newly compiled builds.
-if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
-    then
+if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) then
 	# v8 engine doesn't allow moving of debug shell.
-    	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
-    	cp ../../jsfunfuzz.js .
-      	cp ../../analysis.sh .
+	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
+	cp ../../jsfunfuzz.js .
+  	cp ../../analysis.sh .
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz
 fi
 
-if [ $branchType = "moz190" ]
-    then
+if ( [ $branchType = "moz190" ] ) then
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-1.9.0/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
 fi
 
-if [ $branchType = "moz191" ]
-    then
+if ( [ $branchType = "moz191" ] ) then
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-1.9.1/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
 fi
 
-if [ $branchType = "mozTrunk" ]
-    then
+if ( [ $branchType = "mozTrunk" ] ) then
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
 fi
 
-if [ $branchType = "tm" ]
-    then
+if ( [ $branchType = "tm" ] ) then
 	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
 fi
 
 echo
 date
 # change to fuzzing directory.
-if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] )
-    then
+if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) then
 	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
-        ./analysis.sh
-        echo
-        echo 'PRESENT WORKING DIRECTORY:'
-        pwd
+    ./analysis.sh
+    echo
+    echo 'PRESENT WORKING DIRECTORY:'
+    pwd
     else
-	cd ~/Desktop/jsfunfuzz-$compileType-$branchType
+	    cd ~/Desktop/jsfunfuzz-$compileType-$branchType
         ./analysis.sh
         echo
         echo 'PRESENT WORKING DIRECTORY:'
