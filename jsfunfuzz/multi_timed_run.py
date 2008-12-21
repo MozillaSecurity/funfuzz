@@ -4,6 +4,7 @@ import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 sys.path.append(os.path.dirname(sys.argv[0]) + "/../lithium/")
 import ntr
 
+knownPath = os.path.expanduser(sys.argv[2])
 
 def succeeded(logPrefix):
     logfile = open(logPrefix + "-out", "r")
@@ -27,7 +28,7 @@ def many_timed_runs():
     while True:
         iteration += 1
         logPrefix = "w%d" % iteration
-        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[2:], int(sys.argv[1]), logPrefix)
+        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:], int(sys.argv[1]), logPrefix)
         issues = []
 
         if detect_assertions.amiss(logPrefix, True):
@@ -60,4 +61,6 @@ def many_timed_runs():
             if (os.path.exists(logPrefix + "-core")):
                 os.remove(logPrefix + "-core")
 
+detect_assertions.init(knownPath)
+detect_interesting_crashes.init(knownPath)
 many_timed_runs()

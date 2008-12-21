@@ -6,6 +6,8 @@
 
 import os, sys
 
+simpleIgnoreList = []
+twoPartIgnoreList = []
 
 def fs(currentFile, verbose):
     global ignoreList
@@ -37,11 +39,10 @@ def assertiony(line):
              line.find("failed assertion") != -1 # nanojit
             )
 
-def getIgnores():
-
+def init(knownPath):
     global simpleIgnoreList
-    ignoreFile = file(os.path.dirname(sys.argv[0]) + os.sep + "known_assertions.txt", "r")
-
+    global twoPartIgnoreList
+    ignoreFile = file(knownPath + "assertions.txt", "r")
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):
@@ -52,9 +53,10 @@ def getIgnores():
                 simpleIgnoreList.append(line)
             else:
                 twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:].replace("/", os.sep)))
-                
     ignoreFile.close()
-                
+    print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
+
+        
 def ignore(assertion):
     global simpleIgnoreList
     for ig in simpleIgnoreList:
@@ -66,11 +68,6 @@ def ignore(assertion):
     return False
 
 
-simpleIgnoreList = []
-twoPartIgnoreList = []
-getIgnores()
-#print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
-
 # For use by af_timed_run
 def amiss(logPrefix, verbose):
     currentFile = file(logPrefix + "-err", "r")
@@ -78,5 +75,6 @@ def amiss(logPrefix, verbose):
 
 # For standalone use
 if __name__ == "__main__":
+    init() # ???
     currentFile = file(sys.argv[1], "r")
     fs(currentFile, False)

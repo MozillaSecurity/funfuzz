@@ -8,6 +8,7 @@ import randomURL
 
 
 urlListFilename = sys.argv[2]
+knownPath = sys.argv[3]
 maxIterations = 300000
 yummy = (urlListFilename == "urls-random")
 
@@ -27,7 +28,7 @@ def many_timed_runs(fullURLs):
         c.write(fullURL)
         c.close()
 
-        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:] + [fullURL], int(sys.argv[1]), logPrefix)
+        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[4:] + [fullURL], int(sys.argv[1]), logPrefix)
         
         amissAssert = detect_assertions.amiss(logPrefix, False)
         amissLeak = detect_leaks.amiss(logPrefix) if (sta == ntr.NORMAL) else False
@@ -93,7 +94,9 @@ def randomHash():
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5
     return "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,3000,0"
 
-if len(sys.argv) >= 4:
+if len(sys.argv) >= 5:
+    detect_assertions.init(knownPath)
+    detect_interesting_crashes.init(knownPath)
     createTempDir()
     if yummy: # hacky
         many_timed_runs(None)
@@ -101,4 +104,4 @@ if len(sys.argv) >= 4:
         many_timed_runs(getURLs())
 else:
     print "Not enough command-line arguments"
-    print "Usage: ./af_timed_run.py timeout urllist firefoxpath [firefoxargs ...]"
+    print "Usage: ./af_timed_run.py timeout urllist knownpath firefoxpath [firefoxargs ...]"

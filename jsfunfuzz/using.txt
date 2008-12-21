@@ -3,9 +3,9 @@ TESTING SPIDERMONKEY
 Bugs in SpiderMonkey found with this fuzzer are tracked by https://bugzilla.mozilla.org/show_bug.cgi?id=349611.
 
 Without JIT:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ./js ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee log1
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee log1
 With JIT:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ./js -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee log1
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee log1
 
 
 Hints for building spidermonkey:

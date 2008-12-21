@@ -2,6 +2,7 @@
 
 import os, sys, platform, signal
 
+
 def amiss(logPrefix, verbose, msg):
     global ignoreList
     igmatch = []
@@ -34,14 +35,17 @@ def amiss(logPrefix, verbose, msg):
             return True
 
 
-def getIgnores():
+def init(knownPath):
     global ignoreList
-    ignoreFile = file(os.path.dirname(sys.argv[0]) + os.sep + "known_crashes.txt", "r")
+    ignoreList = []
+    ignoreFile = file(knownPath + "crashes.txt", "r")
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):
             ignoreList.append(line)
     ignoreFile.close()
+    print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
+
 
 def ignore(assertion):
     global ignoreList
@@ -49,9 +53,3 @@ def ignore(assertion):
         if assertion.find(ig) != -1:
             return True
     return False
-
-
-ignoreList = []
-getIgnores()
-
-#print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
