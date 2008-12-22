@@ -2948,8 +2948,8 @@ throw 1;
  **************************************/
 
 // 1. grep tryIt LOGFILE | grep -v "function tryIt" | pbcopy
-// 2. Paste the result between DDBEGIN and DDEND, replacing "start();"
-// 3. Run Lithium to remove unnecessary lines between DDBEGIN and DDEND.
+// 2. Paste the result between "ddbegin" and "ddend", replacing "start();"
+// 3. Run Lithium to remove unnecessary lines between "ddbegin" and "ddend".
 // DDBEGIN
 start();
 // DDEND
