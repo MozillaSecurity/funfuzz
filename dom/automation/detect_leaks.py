@@ -24,10 +24,7 @@ knownHash = ath([
 "nsSimpleNestedURI",
 
 # Bug 467693
-"nsStringBuffer",
-
-# Bug 468208
-"txNodeTest"
+"nsStringBuffer"
 
 ])
 
@@ -62,10 +59,7 @@ knownLargeHash = ath([
 "nsRDFResource",
 
 # Bug 417630 and friends
-"nsJVMManager",
-
-# Bug 468160
-"imgRequest"
+"nsJVMManager"
 
 ])
 
