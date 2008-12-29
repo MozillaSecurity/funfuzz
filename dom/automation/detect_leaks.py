@@ -54,6 +54,7 @@ knownLargeHash = ath([
 
 # Bug 470418
 "nsStyleContext",
+"gfxTextRun",
 
 # Bug 424418
 "nsRDFResource",
