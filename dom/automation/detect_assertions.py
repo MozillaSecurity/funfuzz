@@ -75,6 +75,6 @@ def amiss(logPrefix, verbose):
 
 # For standalone use
 if __name__ == "__main__":
-    init() # ???
-    currentFile = file(sys.argv[1], "r")
+    init(sys.argv[1])
+    currentFile = file(sys.argv[2], "r")
     fs(currentFile, False)
