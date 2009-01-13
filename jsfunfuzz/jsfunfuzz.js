@@ -772,7 +772,7 @@ var realFunction = Function;
 var realGC = gc;
 var realUneval = uneval;
 var realToString = toString;
-var realToSource = toSource;
+var realToSource = this.toSource; // "this." because it only exists in spidermonkey
 
 
 function tryEnsureSanity()
