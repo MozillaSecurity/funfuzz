@@ -717,9 +717,11 @@ function checkErrorMessage(err, code)
   }
   
   // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
-  checkErrorMessage2(err, "TypeError: ", " is not a function");
-  checkErrorMessage2(err, "TypeError: ", " is not a constructor");
-  checkErrorMessage2(err, "TypeError: ", " is undefined");
+  if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    checkErrorMessage2(err, "TypeError: ", " is not a function");
+    checkErrorMessage2(err, "TypeError: ", " is not a constructor");
+    checkErrorMessage2(err, "TypeError: ", " is undefined");
+  }
   
   // These should probably be tested too:XML.ignoreComments
   // XML filter is applied to non-XML value ...
