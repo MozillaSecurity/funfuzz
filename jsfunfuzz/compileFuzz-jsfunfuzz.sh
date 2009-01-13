@@ -47,8 +47,10 @@
 # 	consolidate all existing jsfunfuzz bash scripts.
 # September 2008 - 3.1.x:
 # 	Support fuzzing v8 engine.
-# mid-December 2008 - 3.2.x:
+# December 2008 - 3.2.x:
 #   Supports 1.9.1.x branch. Rip out 1.8.1.x code.
+# January 2009 - 3.3.x:
+#   Rework v8 support, add JavaScriptCore support.
 # 
 # Note:
 #   If something screws up, trash the entire existing
@@ -56,13 +58,13 @@
 # 
 # Receive user input on compileType and branchType.
 #   compileType can be debug or opt.
-#   branchType can be Gecko 1.9.0.x, 1.9.1.x branches, the trunk, or the v8 engine.
+#   branchType can be Gecko 1.9.0.x, 1.9.1.x, trunk, tm, v8, or JavaScriptCore engines.
 
 compileType=$1
 branchType=$2
 
 echo
-echo 'compileFuzz-jsfunfuzz.sh v3.2.1 by Gary Kwong';
+echo 'compileFuzz-jsfunfuzz.sh v3.3.0 by Gary Kwong';
 echo ' - for use with jsfunfuzz';
 echo
 echo 'NOTE1: You must have a ~/fuzzing/ directory.';
@@ -74,7 +76,7 @@ echo '         and/or in ~/mozilla-central/ for moz191 or mozTrunk to work prope
 if [ "$2" = "" ]
     then
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8]';
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8|jscore]';
         echo
         exit 0;
 fi
@@ -86,7 +88,7 @@ case $compileType in
     "opt" ) ;;
     *     )
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8]'
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8|jscore]'
         echo
         exit 0;;
 esac
@@ -99,9 +101,10 @@ case $branchType in
     "mozTrunk" ) ;;
     "tm" ) ;;
     "v8" ) ;;
+    "jscore" ) ;;
     *       )
         echo
-        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8]'
+        echo 'usage: ./compileFuzz-jsfunfuzz.sh [dbg|opt] [moz190|moz191|mozTrunk|tm|v8|jscore]'
         echo
         exit 0;;
 esac
@@ -162,7 +165,7 @@ fi
 # Gecko 1.9.1.x is in Mercurial and has a different compile method from 1.9.0.x.
 
 if ( [ $branchType = "moz191" ] ) then
-    cp -r ~/mozilla-1.9.1/js/src/ .
+    cp -r ~/mozilla-1.9.1/js/src/* .
     cd ..
     
     # Debug builds.
@@ -188,7 +191,7 @@ fi
 # Trunk is in Mercurial and has a different compile method from 1.9.0.x.
 
 if ( [ $branchType = "mozTrunk" ] ) then
-    cp -r ~/mozilla-central/js/src/ .
+    cp -r ~/mozilla-central/js/src/* .
     cd ..
     
     # Debug builds.
@@ -214,7 +217,7 @@ fi
 # TraceMonkey is in a separate branch from trunk and has a different compile method from 1.9.0.x.
 
 if ( [ $branchType = "tm" ] ) then
-    cp -r ~/tracemonkey/js/src/ .
+    cp -r ~/tracemonkey/js/src/* .
     cd ..
     
     # Debug builds.
@@ -284,6 +287,40 @@ if ( [ $compileType = "opt" ] && [ $branchType = "v8" ] ) then
     #rm -r opt-$branchType  # do not remove source yet.
 fi
 
+# Webkit browsers use the JavaScriptCore engine.
+
+if ( [ $compileType = "dbg" ] && [ $branchType = "jscore" ] ) then
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    cd ..
+    
+    # Debug builds, keeping the debug source code directory,
+    #   in case gdb is needed for symbols.
+    cd debug-$branchType/jscore/JavaScriptCore/
+    make debug
+    cd ../../../
+fi
+
+if ( [ $compileType = "opt" ] && [ $branchType = "jscore" ] ) then
+	cd ../opt-$branchType
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    svn checkout http://svn.webkit.org/repository/webkit/trunk/ jscore
+    cd ..
+    
+    # Opt build.
+    cd opt-$branchType/jscore/JavaScriptCore/
+    make release
+    cp ../WebKitBuild/Release/jsc ../../../js-opt-$branchType-intelmac
+    cd ../../../
+    #rm -r opt-$branchType  # do not remove source yet.
+fi
+
 cd ~/Desktop/jsfunfuzz-$compileType-$branchType
 
 # Copy over useful files that are updated in hg fuzzing branch.
@@ -303,12 +340,29 @@ echo '============================================'
 echo
 
 # Start fuzzing the newly compiled builds.
-if ( [ $compileType = "dbg" ] && [ $branchType = "v8" ] ) then
-	# v8 engine doesn't allow moving of debug shell.
-	cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
-	cp ../../jsfunfuzz.js .
-  	cp ../../analysis.sh .
-	time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz
+if ( [ $branchType = "v8" ] ) then
+    if ( [ $compileType = "dbg" ] ) then
+    	# v8 engine doesn't allow moving of debug shell.
+	    cd ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/
+	    cp ../../jsfunfuzz.js .
+  	    cp ../../analysis.sh .
+	    time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/v8/ ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/shell_g ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-v8/debug-v8/v8/log-jsfunfuzz
+	fi
+	if ( [ $compileType = "opt" ] ) then
+        time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/v8/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+    fi
+fi
+
+if ( [ $branchType = "jscore" ] ) then
+    if ( [ $compileType = "dbg" ] ) then
+	    cd ~/Desktop/jsfunfuzz-dbg-jscore/debug-jscore/jscore/WebKitBuild/Debug/
+	    cp ../../../jsfunfuzz.js .
+  	    cp ../../../analysis.sh .
+	    time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/jscore/ ~/Desktop/jsfunfuzz-dbg-jscore/debug-jscore/jscore/jsc ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-dbg-jscore/debug-jscore/jscore/log-jsfunfuzz
+	fi
+	if ( [ $compileType = "opt" ] ) then
+        time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/jscore/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+    fi
 fi
 
 if ( [ $branchType = "moz190" ] ) then

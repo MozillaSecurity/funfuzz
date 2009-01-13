@@ -21,13 +21,13 @@ Bugs in JavaScriptCore found with this fuzzer are tracked by http://bugs.webkit.
 
 
 Recommended command line:
-  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ./testkjs -f ~/z/jsfunfuzz/jsfunfuzz.js | tee log2
+  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/jscore/ ./jscore -f ~/z/jsfunfuzz/jsfunfuzz.js | tee log2
 
 Hints for building testkjs:
   http://webkit.org/building/checkout.html
   |make release| or |make debug| in WebKit/JavaScriptCore/
 
-  The shell will be a file called testkjs in WebKit/WebKitBuild/Release/ or WebKit/WebKitBuild/Debug/.
+  The shell will be a file called jsc in WebKit/WebKitBuild/Release/ or WebKit/WebKitBuild/Debug/.
 
 
 TESTING V8
@@ -36,7 +36,7 @@ Bugs in V8 found with this fuzzer are tracked by <not yet set up>.
 
 
 Recommended command line:
-  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ./shell_g ~/z/jsfunfuzz/jsfunfuzz.js | tee log2
+  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/v8/ ./shell_g ~/z/jsfunfuzz/jsfunfuzz.js | tee log2
   
 Hints for building v8:
   http://code.google.com/apis/v8/build.html
