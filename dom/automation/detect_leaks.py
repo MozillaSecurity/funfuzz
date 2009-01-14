@@ -10,12 +10,6 @@ def ath(array):
 
 knownHash = ath([
 
-# bug 391976
-"nsMathMLContainerFrame",
-"nsMathMLmtableOuterFrame",
-"nsMathMLmtdInnerFrame",
-"nsMathMLmactionFrame",
-
 # Bug 398462
 "nsBaseAppShell",
 "nsRunnable",
