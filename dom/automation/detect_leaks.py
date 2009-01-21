@@ -49,7 +49,10 @@ knownLargeHash = ath([
 "nsRDFResource",
 
 # Bug 417630 and friends
-"nsJVMManager"
+"nsJVMManager",
+
+# Bug 474704
+"nsFontFaceLoader"
 
 ])
 
