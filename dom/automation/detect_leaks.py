@@ -31,7 +31,7 @@ knownLargeHash = ath([
 
 # Bug 467686
 "nsGlobalWindow",
-"nsGenericElement", # also bug 474041
+"nsGenericElement",
 
 # Bug 397206
 "BackstagePass",
