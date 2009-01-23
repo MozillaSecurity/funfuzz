@@ -475,7 +475,7 @@ function tryItOut(code)
     testUneval(rv);
   }
   
-  if(verbose)
+  if (verbose)
     dumpln("Done trying out that function!");
     
   dumpln("");
