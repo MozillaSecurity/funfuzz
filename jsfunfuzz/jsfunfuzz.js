@@ -381,7 +381,8 @@ function start()
     // Number of iterations.
     // Raise for use without multi_timed_run.py (perhaps to Infinity).
     // Lower for use with WAY_TOO_MUCH_GC or valgrind.
-    for (var i = 0; i < 32000; ++i)
+    // Usually 32000, but temporarily lowered to 10000 until Andreas Gal fixes bug 475127 for me.
+    for (var i = 0; i < 10000; ++i)
       testOne();
     dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
   } else {
