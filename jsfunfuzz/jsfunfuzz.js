@@ -1791,8 +1791,10 @@ function maybeLabel()
 
 function randomRepeater()
 {
-  // tracing bugs usually require 4 or 5 iterations.
-  var reps = 1 + rnd(5);
+  // tracemonkey currently requires 2 iterations to record, 3 iterations to run
+  var reps = 1;
+  if (jitEnabled)
+    reps += rnd(5);
   var v = randomVarName();
   return ("for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
 }
