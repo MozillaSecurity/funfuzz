@@ -764,30 +764,7 @@ function testUneval(o)
     return;
   }
   
-  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
-
-  // dumpln("uneval returned the string: " + uo);
-  if (    true
-  
-      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
-      &&  uo.indexOf(":<") == -1  // ignore the combination of bug 334628 with bug 379519(a)
-      && (uo.indexOf("#") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 379519(b)
-      && (uo.indexOf("{") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 463360
-      && (uo.indexOf("}") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 463360
-      && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
-      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
-      &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
-      &&  uo.indexOf("Infinity") == -1                     // ignore bug 379521
-      &&  uo.indexOf("[,") == -1                           // avoid  bug 379551
-      &&  uo.indexOf(", ,") == -1                          // avoid  bug 379551
-      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
-      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
-      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
-      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
-      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
-      && !(uo == "{}" && !jsshell)                         // ignore bug 380959
-     )
-  {
+  if (testUnevalString(uo)) {
     // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
     uo = uo.replace(/\[native code\]/g, "");
     if (uo.charAt(0) == "/")
@@ -811,8 +788,31 @@ function testUneval(o)
 }
 
 
-// These error messages can involve decompilation of expressions (DVG),
-// but in some situations they can just be uneval of a value.
+function testUnevalString(uo)
+{
+  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
+
+  return true
+      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
+      &&  uo.indexOf(":<") == -1  // ignore the combination of bug 334628 with bug 379519(a)
+      && (uo.indexOf("#") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 379519(b)
+      && (uo.indexOf("{") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 463360
+      && (uo.indexOf("}") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 463360
+      && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
+      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
+      &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
+      &&  uo.indexOf("Infinity") == -1                     // ignore bug 379521
+      &&  uo.indexOf("[,") == -1                           // avoid  bug 379551
+      &&  uo.indexOf(", ,") == -1                          // avoid  bug 379551
+      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
+      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
+      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
+      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
+      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
+      && !(uo == "{}" && !jsshell)                         // ignore bug 380959
+  ;
+}
+
 
 function checkErrorMessage(err, code)
 {
@@ -845,18 +845,19 @@ function checkErrorMessage2(err, prefix, suffix)
       var dvg = err.substr(11, err.length - P - S);
       print("Testing an expression in a recent error message: " + dvg);
       
+      // These error messages can involve decompilation of expressions (DVG),
+      // but in some situations they can just be uneval of a value.  In those
+      // cases, we don't want to complain about known uneval bugs.
+      if (!testUnevalString(dvg)) {
+        print("Ignoring error message string because it looks like a known-bogus uneval");
+        return;
+      }
+
       if (dvg.match(/\#\d\=\</)) {
         print("Ignoring bug 380946");
         return;
       }
-      if (dvg.indexOf("[native code]") != -1) {
-        print("Ignoring DVG-using error message due to [native code]");
-        return;
-      }
-      if (dvg.indexOf("#") != -1) {
-        print("Avoiding bug 367731");
-        return;
-      }
+      
       if (dvg == "") {
         print("Ignoring E4X uneval bogosity"); 
         // e.g. the error message from (<x/>.(false))()
@@ -872,9 +873,6 @@ function checkErrorMessage2(err, prefix, suffix)
     }
   }
 }
-
-
-
 
 
 
