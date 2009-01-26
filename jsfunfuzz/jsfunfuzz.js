@@ -608,79 +608,10 @@ function tryIteration(rv)
 }
 
 
-function testUneval(o)
-{
-  // If it happens to return an object, especially an array or hash, 
-  // let's test uneval.  Note that this is a different code path than decompiling
-  // an array literal within a function, although the two code paths often have
-  // similar bugs!
 
-  var uo, euo, ueuo;
-
-  try {
-    uo = uneval(o);
-  } catch(e) {
-    if (errorToString(e).indexOf("called on incompatible") != -1) {
-      dumpln("Ignoring bug 379528!".toUpperCase());
-      return;
-    }
-    else
-      throw e;
-  }
-
-  if (uo == "({})") {
-    // ?
-    return;
-  }
-  
-  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
-
-  // dumpln("uneval returned the string: " + uo);
-  if (    true
-  
-      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
-      &&  uo.indexOf(":<") == -1  // ignore the combination of bug 334628 with bug 379519(a)
-      && (uo.indexOf("#") == -1 || uo.indexOf("<") == -1)  // ignore bug 379519(b)
-      && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
-      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
-      &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
-      &&  uo.indexOf("Infinity") == -1                     // ignore bug 379521
-      &&  uo.indexOf("[,") == -1                           // avoid  bug 379551
-      &&  uo.indexOf(", ,") == -1                          // avoid  bug 379551
-      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
-      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
-      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
-      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
-      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
-      && !(uo == "{}" && !jsshell)                         // ignore bug 380959
-     )
-  {
-    // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
-    uo = uo.replace(/\[native code\]/g, "");
-    if (uo.charAt(0) == "/")
-      return; // ignore bug 362582
-    
-    try {
-      euo = eval(uo); // if this throws, something's wrong with uneval, probably
-    } catch(e) {
-      dumpln("The string returned by uneval failed to eval!");
-      printAndStop(e);
-      return;
-    }
-    ueuo = uneval(euo);
-    if (ueuo != uo) {
-      printAndStop("Mismatch with uneval/eval on the function's return value! " + "\n" + uo + "\n" + ueuo);
-    }
-  } else {
-    dumpln("Skipping re-eval test");
-  }
-}
-
-
-
-/********************
- * DECOMPILER TESTS *
- ********************/
+/***********************************
+ * WHOLE-FUNCTION DECOMPILER TESTS *
+ ***********************************/
 
 function tryRoundTripStuff(f, code, wtt)
 {
@@ -803,6 +734,152 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
 }
 
 
+/*************************************************
+ * EXPRESSION DECOMPILATION & VALUE UNEVAL TESTS *
+ *************************************************/
+
+
+function testUneval(o)
+{
+  // If it happens to return an object, especially an array or hash, 
+  // let's test uneval.  Note that this is a different code path than decompiling
+  // an array literal within a function, although the two code paths often have
+  // similar bugs!
+
+  var uo, euo, ueuo;
+
+  try {
+    uo = uneval(o);
+  } catch(e) {
+    if (errorToString(e).indexOf("called on incompatible") != -1) {
+      dumpln("Ignoring bug 379528!".toUpperCase());
+      return;
+    }
+    else
+      throw e;
+  }
+
+  if (uo == "({})") {
+    // ?
+    return;
+  }
+  
+  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
+
+  // dumpln("uneval returned the string: " + uo);
+  if (    true
+  
+      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
+      &&  uo.indexOf(":<") == -1  // ignore the combination of bug 334628 with bug 379519(a)
+      && (uo.indexOf("#") == -1 || uo.indexOf("<") == -1)  // ignore bug 379519(b)
+      && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
+      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
+      &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
+      &&  uo.indexOf("Infinity") == -1                     // ignore bug 379521
+      &&  uo.indexOf("[,") == -1                           // avoid  bug 379551
+      &&  uo.indexOf(", ,") == -1                          // avoid  bug 379551
+      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
+      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
+      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
+      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
+      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
+      && !(uo == "{}" && !jsshell)                         // ignore bug 380959
+     )
+  {
+    // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
+    uo = uo.replace(/\[native code\]/g, "");
+    if (uo.charAt(0) == "/")
+      return; // ignore bug 362582
+    
+    try {
+      euo = eval(uo); // if this throws, something's wrong with uneval, probably
+    } catch(e) {
+      dumpln("The string returned by uneval failed to eval!");
+      printAndStop(e);
+      return;
+    }
+    ueuo = uneval(euo);
+    if (ueuo != uo) {
+      printAndStop("Mismatch with uneval/eval on the function's return value! " + "\n" + uo + "\n" + ueuo);
+    }
+  } else {
+    dumpln("Skipping re-eval test");
+  }
+}
+
+
+// These error messages can involve decompilation of expressions (DVG),
+// but in some situations they can just be uneval of a value.
+
+function checkErrorMessage(err, code)
+{
+  if (code.indexOf("<") != -1 && code.indexOf(">") != -1) {
+    // Ignore E4X issues: bug 465908, bug 380946, etc.
+    return;
+  }
+  
+  // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
+  if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    checkErrorMessage2(err, "TypeError: ", " is not a function");
+    checkErrorMessage2(err, "TypeError: ", " is not a constructor");
+    checkErrorMessage2(err, "TypeError: ", " is undefined");
+  }
+  
+  // These should probably be tested too:XML.ignoreComments
+  // XML filter is applied to non-XML value ...
+  // invalid 'instanceof' operand ...
+  // invalid 'in' operand ...
+  // missing argument 0 when calling function ...
+  // ... has invalid __iterator__ value ... (two of them!!)
+}
+
+function checkErrorMessage2(err, prefix, suffix)
+{
+  var P = prefix.length;
+  var S = suffix.length;
+  if (err.substr(0, P) == prefix) {
+    if (err.substr(-S, S) == suffix) {
+      var dvg = err.substr(11, err.length - P - S);
+      print("Testing an expression in a recent error message: " + dvg);
+      
+      if (dvg.match(/\#\d\=\</)) {
+        print("Ignoring bug 380946");
+        return;
+      }
+      if (dvg.indexOf("[native code]") != -1) {
+        print("Ignoring DVG-using error message due to [native code]");
+        return;
+      }
+      if (dvg.indexOf("#") != -1) {
+        print("Avoiding bug 367731");
+        return;
+      }
+      if (dvg == "") {
+        print("Ignoring E4X uneval bogosity"); 
+        // e.g. the error message from (<x/>.(false))()
+        // bug 465908, bug 380946, etc.
+        return;
+      }
+
+      try {
+        eval("(function() { return (" + dvg + "); })");
+      } catch(e) {
+        printAndStop("DVG has apparently failed us: " + e);
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+/**************************
+ * PARENTHESIZATION TESTS *
+ **************************/
+
 
 // Returns an array of strings of length (code.length-2), 
 // each having one pair of matching parens removed.
@@ -915,7 +992,7 @@ function testForExtraParens(f, code)
  * SPECIALIZED TESTS *
  *********************/
 
-function tryTestDVG(code)
+function simpleDVGTest(code)
 {
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
   
@@ -951,7 +1028,7 @@ function optionalTests(f, code, wtt)
   }
 
   if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    tryTestDVG(code);
+    simpleDVGTest(code);
     tryEnsureSanity();
   }
 }
@@ -1119,67 +1196,6 @@ function tryHalves(code)
   catch(e) {
     if (verbose)
       dumpln("Second half compilation error: " + e);   
-  }
-}
-
-
-
-function checkErrorMessage(err, code)
-{
-  if (code.indexOf("<") != -1 && code.indexOf(">") != -1) {
-    // Ignore E4X issues: bug 465908, bug 380946, etc.
-    return;
-  }
-  
-  // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
-  if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    checkErrorMessage2(err, "TypeError: ", " is not a function");
-    checkErrorMessage2(err, "TypeError: ", " is not a constructor");
-    checkErrorMessage2(err, "TypeError: ", " is undefined");
-  }
-  
-  // These should probably be tested too:XML.ignoreComments
-  // XML filter is applied to non-XML value ...
-  // invalid 'instanceof' operand ...
-  // invalid 'in' operand ...
-  // missing argument 0 when calling function ...
-  // ... has invalid __iterator__ value ... (two of them!!)
-}
-
-function checkErrorMessage2(err, prefix, suffix)
-{
-  var P = prefix.length;
-  var S = suffix.length;
-  if (err.substr(0, P) == prefix) {
-    if (err.substr(-S, S) == suffix) {
-      var dvg = err.substr(11, err.length - P - S);
-      print("Testing an expression in a recent error message: " + dvg);
-      
-      if (dvg.match(/\#\d\=\</)) {
-        print("Ignoring bug 380946");
-        return;
-      }
-      if (dvg.indexOf("[native code]") != -1) {
-        print("Ignoring DVG-using error message due to [native code]");
-        return;
-      }
-      if (dvg.indexOf("#") != -1) {
-        print("Avoiding bug 367731");
-        return;
-      }
-      if (dvg == "") {
-        print("Ignoring E4X uneval bogosity"); 
-        // e.g. the error message from (<x/>.(false))()
-        // bug 465908, bug 380946, etc.
-        return;
-      }
-
-      try {
-        eval("(function() { return (" + dvg + "); })");
-      } catch(e) {
-        printAndStop("DVG has apparently failed us: " + e);
-      }
-    }
   }
 }
 
