@@ -771,7 +771,9 @@ function testUneval(o)
   
       &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
       &&  uo.indexOf(":<") == -1  // ignore the combination of bug 334628 with bug 379519(a)
-      && (uo.indexOf("#") == -1 || uo.indexOf("<") == -1)  // ignore bug 379519(b)
+      && (uo.indexOf("#") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 379519(b)
+      && (uo.indexOf("{") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 463360
+      && (uo.indexOf("}") == -1 || uo.indexOf("<") == -1 || uo.indexOf(">") == -1)  // ignore bug 463360
       && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
       && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
       &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
@@ -795,6 +797,7 @@ function testUneval(o)
       euo = eval(uo); // if this throws, something's wrong with uneval, probably
     } catch(e) {
       dumpln("The string returned by uneval failed to eval!");
+      dumpln("The string was: " + uo);
       printAndStop(e);
       return;
     }
