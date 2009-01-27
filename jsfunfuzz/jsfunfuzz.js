@@ -381,7 +381,7 @@ function start()
     // Number of iterations.
     // Raise for use without multi_timed_run.py (perhaps to Infinity).
     // Lower for use with WAY_TOO_MUCH_GC or valgrind.
-    // Usually 32000, but temporarily lowered to 10000 until Andreas Gal fixes bug 475127 for me.
+    // Normally 32000; temporarily lowered due to mysterious slowness.
     for (var i = 0; i < 10000; ++i)
       testOne();
     dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
@@ -407,8 +407,8 @@ function testOne()
 
   var code = makeStatement(8);
   
-  // Test tracing heavily.
-  if (rnd(2))
+  // Test tracing frequently -- but not so often that jsfunfuzz slows down too much to hit interesting combinations.
+  if (rnd(20) == 0)
     code = randomRepeater() + " { " + code + " } ";
 
 //  if (rnd(10) == 1) {
@@ -1544,9 +1544,9 @@ function cat(toks)
     //   return "/*foo*/" + ...
     // Unary plus in the first one coerces the string that follows to number!
     if(typeof(toks[i]) != "string") {
-      dumpln("Strange item in the array passed to Tmean: toks[" + i + "] == " + toks[i]);
-      dumpln(Tmean.caller)
-      dumpln(Tmean.caller.caller)
+      dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + toks[i]);
+      dumpln(cat.caller)
+      dumpln(cat.caller.caller)
       printAndStop('yarr')
     }
       
@@ -1928,7 +1928,7 @@ var littleStatementMakers =
   function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
   
   // Turn on gczeal in the middle of something
-  function(dr) { return "gczeal(" + rnd(3) + ")" + ";" }
+  function(dr) { return "gczeal(" + makeZealLevel() + ")" + ";"; }
 ];
 
 
@@ -2322,9 +2322,21 @@ var exprMakers =
   function(dr) { return          rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; },
 
   // Turn on gczeal in the middle of something
-  function(dr) { return "gczeal(" + rnd(3) + ")" }
+  function(dr) { return "gczeal(" + makeZealLevel() + ")"; }
 ];
 
+function makeZealLevel()
+{
+  // gczeal is really slow, so only turn it on very occasionally.
+  switch(rnd(100)) {
+  case 0:
+    return "2";
+  case 1:
+    return "1";
+  default:
+    return "0";
+  }
+}
 
 if (haveE4X) {
   exprMakers = exprMakers.concat([
