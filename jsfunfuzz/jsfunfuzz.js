@@ -378,12 +378,18 @@ function start()
   count = 0;
 
   if (jsshell) {
-    // Number of iterations.
-    // Raise for use without multi_timed_run.py (perhaps to Infinity).
-    // Lower for use with WAY_TOO_MUCH_GC or valgrind.
-    // Normally 32000; temporarily lowered due to mysterious slowness.
-    for (var i = 0; i < 10000; ++i)
+    var MAX_TOTAL_TIME = 200/* seconds */ * 1000;
+    var startTime = new Date();
+
+    do {
       testOne();
+      var elapsed1 = new Date() - lastTime;
+      if (elapsed1 > 1000) {
+        print("That took " + elapsed1 + "ms!");
+      }
+      var lastTime = new Date();
+    } while(lastTime - startTime < MAX_TOTAL_TIME);
+    
     dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
   } else {
     setTimeout(testStuffForAWhile, 200);
