@@ -190,6 +190,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
       && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
       && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
+      && !( code.match( /\?.*\?/ ))        // avoid bug 475895
+      && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
@@ -216,7 +218,9 @@ function whatToTestSpidermonkeyTrunk(code)
 
     // Exclude things here if the decompilation doesn't match what the function actually does
     checkDisassembly: true
-      && !( code.match( /\@.*\:\:/ )),  // avoid bug 381197 harder than above
+      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
+      && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899
+    ,  
     
     checkForExtraParens: true
       && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
@@ -1114,6 +1118,10 @@ function checkRoundTripDisassembly(f, code)
         // The other direction
         // var __proto__ hoisting, for example
         print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854 comment 1)");
+        return;
+      }
+      if (dfl[i].indexOf("pcdelta") != -1 && dgl[i].indexOf("pcdelta") != -1) {
+        print("checkRoundTripDisassembly: pcdelta changed, who cares? (bug 475908)");
         return;
       }
       
