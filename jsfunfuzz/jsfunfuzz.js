@@ -220,6 +220,7 @@ function whatToTestSpidermonkeyTrunk(code)
     checkDisassembly: true
       && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
       && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899
+      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985
     ,  
     
     checkForExtraParens: true
@@ -1011,7 +1012,7 @@ function checkRoundTripDisassembly(f, code)
     return;
   }
   
-  if (code.indexOf("[@") != -1 ||code.indexOf("[*") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1) {
+  if (code.indexOf("[@") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1 || code.match(/\[.*\*/)) {
     dumpln("checkRoundTripDisassembly: ignoring bug 475859");
     return;
   }
