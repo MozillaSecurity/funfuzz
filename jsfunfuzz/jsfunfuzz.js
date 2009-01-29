@@ -1048,6 +1048,11 @@ function checkRoundTripDisassembly(f, code)
     return;
   }
 
+  if (code.match(/for.*\(.*in.*\).*if/)) {
+    print("checkRoundTripDisassembly: ignoring array comprehension with 'if' (bug 475882)");
+    return;
+  }
+
   try { var g = eval(uf); } catch(e) { return; /* separate uneval test will catch this */ }
 
   var df = dis(f);
@@ -1059,17 +1064,17 @@ function checkRoundTripDisassembly(f, code)
 
   var dg = dis(g);
 
+  if (df == dg) {
+    // Happy!
+    return;
+  }
+
   if (dg.indexOf("newline") != -1) {
     // Really should just ignore these lines, instead of bailing...
     return;
   }
   if (dg.indexOf("popn") != -1 && df.indexOf("popn") == -1) {
     print("Ignoring conversion to use popn-style group assignment (bug 475843)");
-    return;
-  }
-
-  if (df == dg) {
-    // Happy!
     return;
   }
 
@@ -1096,6 +1101,10 @@ function checkRoundTripDisassembly(f, code)
       }
       if (dfl[i].indexOf("string") != -1 && (dfl[i+1].indexOf("toxml") != -1 || dfl[i+1].indexOf("startxml") != -1)) {
         print("checkRoundTripDisassembly: ignoring e4x-string mismatch (likely bug 355674)");
+        return;
+      }
+      if (dfl[i].indexOf("string") != -1 && df.indexOf("startxmlexpr") != -1) {
+        print("checkRoundTripDisassembly: ignoring complicated e4x-string mismatch (likely bug 355674)");
         return;
       }
       if (dfl[i].indexOf("newinit") != -1 && dgl[i].indexOf("newarray 0") != -1) {
@@ -1164,7 +1173,7 @@ function optionalTests(f, code, wtt)
     return;
   }
   
-  if (0 & f && engine == ENGINE_SPIDERMONKEY_TRUNK && haveUsefulDis) {
+  if (0 && f && engine == ENGINE_SPIDERMONKEY_TRUNK && haveUsefulDis) {
     spiderMonkeyTrapTest(f, code, wtt);
   }
 
