@@ -195,7 +195,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
-      && (code.indexOf("?") == -1)         // avoid bug 355203
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
       // avoid bug 352085: keep operators that coerce to number (or integer)
@@ -222,7 +221,9 @@ function whatToTestSpidermonkeyTrunk(code)
     checkForExtraParens: true
       && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
       && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
-      && !code.match( /while.*\(.*=.*\)/),  // ignore extra parens added to avoid strict warning
+      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !code.match( /\?.*\=/)             // ignore bug 475893
+    ,
     
     allowExec: unlikelyToHang(code)
       && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
