@@ -204,7 +204,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("p.z") == -1)       // avoid bug 355672 (this is the most common trigger)
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
-  
       // avoid bug 352085: keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
@@ -221,6 +220,10 @@ function whatToTestSpidermonkeyTrunk(code)
              )
           )
       ,
+
+    // Exclude things here if the decompilation doesn't match what the function actually does
+    checkDisassembly: true
+      && !( code.match( /\@.*\:\:/ )),  // avoid bug 381197 harder than above
     
     checkForExtraParens: true
       && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
@@ -464,6 +467,8 @@ function tryItOut(code)
 
   if (f && wtt.allowDecompile) {
     tryRoundTripStuff(f, code, wtt);
+    if (0 && haveUsefulDis && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
+      checkRoundTripDisassembly(f, code);
   }
 
   var rv = null;
@@ -678,7 +683,7 @@ function checkRoundTripUneval(f, code, wtt)
     uf = uneval(f);
   } catch(e) { reportRoundTripIssue("Round-trip with uneval: can't uneval", code, null, null, errorToString(e)); return; }
   
-  checkForCookies(uf)
+  checkForCookies(uf);
 
   if (wtt.checkRecompiling) {
     try {
@@ -993,6 +998,135 @@ function testForExtraParens(f, code)
   }
 }
 
+
+/********************
+ * DISASSEMBLY TEST *
+ ********************/
+
+// Finds decompiler bugs and bytecode inefficiencies by complaining when a round trip
+// through the decompiler changes the bytecode.
+function checkRoundTripDisassembly(f, code)
+{
+  if (code.match(/for.*\(.*;.*\(.*\).*;.*\)/)) {
+    dumpln("checkRoundTripDisassembly: ignoring what might be a parenthesized for-loop condition (bug 475849)");
+    return;
+  }
+  
+  if (code.indexOf("[@") != -1 ||code.indexOf("[*") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1) {
+    dumpln("checkRoundTripDisassembly: ignoring bug 475859");
+    return;
+  }
+  
+  if (code.indexOf("=") != -1 && code.indexOf("const") != -1) {
+    dumpln("checkRoundTripDisassembly: ignoring function with const and assignment, because that's boring.");
+    return;
+  }
+  
+  var uf = uneval(f);
+
+  if (uf.match(/(true|false) (\&\&|\|\|)/)) {
+    dumpln("checkRoundTripDisassembly: ignoring bug 460158.");
+    return;
+  }
+  if (uf.indexOf("switch") != -1) {
+    // Bug 355509 :(
+    return;
+  }
+  
+  if (code.indexOf("new") != code.lastIndexOf("new")) {
+    dumpln("checkRoundTripDisassembly: ignoring function with two 'new' operators (bug 475848)");
+    return;
+  }
+
+  if (code.indexOf("&&") != code.lastIndexOf("&&")) {
+    dumpln("checkRoundTripDisassembly: ignoring && associativity issues (bug 475863)");
+    return;
+  }
+
+  if (code.indexOf("||") != code.lastIndexOf("||")) {
+    dumpln("checkRoundTripDisassembly: ignoring || associativity issues (bug 475863)");
+    return;
+  }
+
+  try { var g = eval(uf); } catch(e) { return; /* separate uneval test will catch this */ }
+
+  var df = dis(f);
+
+  if (df.indexOf("newline") != -1)
+    return;
+  if (df.indexOf("lineno") != -1)
+    return;
+
+  var dg = dis(g);
+
+  if (dg.indexOf("newline") != -1) {
+    // Really should just ignore these lines, instead of bailing...
+    return;
+  }
+  if (dg.indexOf("popn") != -1 && df.indexOf("popn") == -1) {
+    print("Ignoring conversion to use popn-style group assignment (bug 475843)");
+    return;
+  }
+
+  if (df == dg) {
+    // Happy!
+    return;
+  }
+
+  var dfl = df.split("\n");
+  var dgl = dg.split("\n");
+  for (var i = 0; i < dfl.length && i < dgl.length; ++i) {
+    if (dfl[i] != dgl[i]) {
+      if (dfl[i] == "00000:  generator") {
+        print("checkRoundTripDisassembly: ignoring loss of generator (bug 350743)");
+        return;
+      }
+      if (dfl[i].indexOf("goto") != -1 && dgl[i].indexOf("stop") != -1 && uf.indexOf("switch") != -1) {
+        // Actually, this might just be bug 355509.
+        print("checkRoundTripDisassembly: ignoring extra 'goto' in switch (bug 475838)");
+        return;
+      }
+      if (dfl[i].indexOf("regexp null") != -1) {
+        print("checkRoundTripDisassembly: ignoring 475844 / regexp");
+        return;
+      }
+      if (dfl[i].indexOf("namedfunobj null") != -1 || dfl[i].indexOf("anonfunobj null") != -1) {
+        print("checkRoundTripDisassembly: ignoring 475844 / function");
+        return;
+      }
+      if (dfl[i].indexOf("string") != -1 && (dfl[i+1].indexOf("toxml") != -1 || dfl[i+1].indexOf("startxml") != -1)) {
+        print("checkRoundTripDisassembly: ignoring e4x-string mismatch (likely bug 355674)");
+        return;
+      }
+      if (dfl[i].indexOf("newinit") != -1 && dgl[i].indexOf("newarray 0") != -1) {
+        print("checkRoundTripDisassembly: ignoring array comprehension disappearance (bug 475847)");
+        return;
+      }
+      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") != -1 && dgl[i].indexOf("HEAVYWEIGHT") == -1) {
+        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854)");
+        return;
+      }
+      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") == -1 && dgl[i].indexOf("HEAVYWEIGHT") != -1) {
+        // The other direction
+        // var __proto__ hoisting, for example
+        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854 comment 1)");
+        return;
+      }
+      
+      print("First line that does not match:");
+      print(dfl[i]);
+      print(dgl[i]);
+      break;
+    }
+  }
+  print("Function from original code:");
+  print(code);
+  print(df);
+  print("Function from recompiling:");
+  print(uf);
+  print(dg);
+  printAndStop("Disassembly was not stable through decompilation");
+}
 
 
 /*********************
