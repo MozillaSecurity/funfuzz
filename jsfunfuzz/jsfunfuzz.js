@@ -162,8 +162,7 @@ function whatToTestSpidermonkeyTrunk(code)
     allowParse: true,
     
     // Exclude things here if decompiling the function causes a crash.
-    allowDecompile: true
-      && !(code.match( /for.*for.*in.*in/ )),         // avoid bug 376370
+    allowDecompile: true,
   
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
@@ -174,8 +173,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
       && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( code.match( /new.*\.\./ )) // avoid bug 382339
-      && !( code.match( /new.*\.\(/ )) // avoid bug 377059 most of the time
       && !( code.match( /while.*for.*in/ )) // avoid bug 381963
       && !( code.match( /const.*arguments/ ))        // avoid bug 355480
       && !( code.match( /var.*arguments/ ))          // avoid bug 355480
@@ -187,8 +184,6 @@ function whatToTestSpidermonkeyTrunk(code)
     checkForMismatch: true
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
-      && !( code.match( /let.*,/ ))                  // avoid bug 382400
-      && !( code.match( /for.*;.*;/ ))               // avoid bug 381195 :(
       && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558
       && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
@@ -201,7 +196,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
       && (code.indexOf("?") == -1)         // avoid bug 355203
-      && (code.indexOf("p.z") == -1)       // avoid bug 355672 (this is the most common trigger)
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
       // avoid bug 352085: keep operators that coerce to number (or integer)
