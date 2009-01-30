@@ -463,12 +463,12 @@ function tryItOut(code)
 
   var f = tryCompiling(code, wtt.allowExec);
 
-  // optionalTests(f, code, wtt);
+  optionalTests(f, code, wtt);
 
   if (f && wtt.allowDecompile) {
     tryRoundTripStuff(f, code, wtt);
-    if (0 && haveUsefulDis && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
-      checkRoundTripDisassembly(f, code);
+    if (haveUsefulDis && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
+      checkRoundTripDisassembly(f, code, wtt);
   }
 
   var rv = null;
@@ -531,7 +531,8 @@ function tryRunning(f, code)
     var err = errorToString(runError);
     dumpln("Running threw: " + err);
     tryEnsureSanity();
-    checkErrorMessage(err, code);
+    // bug 465908 and other e4x uneval nonsense make this show lots of false positives
+    // checkErrorMessage(err, code);
     return null;
   }
 }
@@ -548,6 +549,10 @@ var realToSource = this.toSource; // "this." because it only exists in spidermon
 
 function tryEnsureSanity()
 {
+  // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
+  if ("gczeal" in this)
+    gczeal(0);
+
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
   try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
 
@@ -999,13 +1004,13 @@ function testForExtraParens(f, code)
 }
 
 
-/********************
- * DISASSEMBLY TEST *
- ********************/
+/*********************************
+ * SPIDERMONKEY DISASSEMBLY TEST *
+ *********************************/
 
 // Finds decompiler bugs and bytecode inefficiencies by complaining when a round trip
 // through the decompiler changes the bytecode.
-function checkRoundTripDisassembly(f, code)
+function checkRoundTripDisassembly(f, code, wtt)
 {
   if (code.match(/for.*\(.*;.*\(.*\).*;.*\)/)) {
     dumpln("checkRoundTripDisassembly: ignoring what might be a parenthesized for-loop condition (bug 475849)");
@@ -1061,11 +1066,17 @@ function checkRoundTripDisassembly(f, code)
     return;
   if (df.indexOf("lineno") != -1)
     return;
+  if (df.indexOf("trap") != -1) {
+    print("checkRoundTripDisassembly: trapped");
+    return;
+  }
 
   var dg = dis(g);
 
   if (df == dg) {
     // Happy!
+    if (wtt.allowExec)
+      trapCorrectnessTest(f);
     return;
   }
 
@@ -1142,6 +1153,181 @@ function checkRoundTripDisassembly(f, code)
 }
 
 
+
+/*****************************
+ * SPIDERMONKEY TRAP TESTING *
+ *****************************/
+
+
+function getBytecodeOffsets(f)
+{
+  var disassembly = dis(f);
+  var lines = disassembly.split("\n");
+  var i;
+  
+  offsets = [];
+  
+  for (i = 0; i < lines.length; ++i) {
+    if (lines[i] == "main:")
+      break;
+    if (i + 1 == lines.length)
+      printAndStop("disassembly -- no main?");
+  }
+  for (++i; i < lines.length; ++i) {
+    if (lines[i] == "")
+      break;
+    if (i + 1 == lines.length)
+      printAndStop("disassembly -- ended suddenly?")
+
+    var c = lines[i].charCodeAt(0);
+    var c0 = "0".charCodeAt(0);
+    var c9 = "9".charCodeAt(0);
+    
+    if (c0 <= c && c <= c9) // e.g. |tableswitch| and |lookupswitch| add indented lists
+      offsets.push({
+        offset: parseInt(lines[i], 10),
+        op: lines[i].substr(8).split(" ")[0]  // used only for avoiding known bugs
+      });
+  }
+  
+  return offsets;
+}
+
+function trapCorrectnessTest(f)
+{
+  var uf = uneval(f);
+  if (uf.indexOf("try") != -1) { return; } // bug 476072
+  if (uf.indexOf("set") != -1) { return; } // bug 476073
+  if (uf.indexOf("get") != -1) { return; } // bug 476073
+  
+  print("trapCorrectnessTest...");
+  var offsets = getBytecodeOffsets(f);
+  var prefix = "var fff = " + f + "; ";
+  var r1 = sandboxResult(prefix + "fff();");
+  for (var i = 0; i < offsets.length; ++i) {
+    var offset = offsets[i].offset;
+    var op = offsets[i].op;
+    // print(offset + " " + op);
+
+    if (op == "call")     continue;  // bug 476076
+    if (op == "new")      continue;  // bug 476076
+    if (op == "enditer")  continue;  // bug 476079
+    if (op == "goto")     continue;  // bug 476086
+
+    var trapStr = "trap(fff, " + offset + ", ''); ";
+    var r2 = sandboxResult(prefix + trapStr + " fff();");
+
+    if (r1 != r2) {
+      if (op == "typeof")   continue;  // bug 476082
+
+      var syntheticAssignmentOps = ["*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|="];
+      if (syntheticAssignmentOps.some(function(op) (uf.indexOf(op) != -1))) {
+        print("Ignoring change at pc " + offset + " due to += etc (bug 476066)");
+        print("  Change from: " + r1);
+        print("  Change to: " + r2);
+        continue;
+      }
+      
+      if (r1.indexOf("TypeError") != -1 && r2.indexOf("TypeError") != -1) {
+        // Why does this get printed multiple times???
+        // count=6544; tIO("var x; x.y;");
+        print("A TypeError changed. Might be bug 476088.");
+        continue;
+      }
+
+      print("Adding a trap changed the result!");
+      print(f);
+      print(r1);
+      print(trapStr);
+      print(r2);
+      printAndStop(":(");
+    }
+  }
+  //print("Happy: " + f + r1);
+}
+
+function sandboxResult(code)
+{
+  // Use sandbox to isolate side-effects.
+  // This might be wrong in cases where the sandbox manages to return objects with getters and stuff!
+  var result;
+  try {
+    // result = evalcx(code, {trap:trap, print:print}); // WRONG
+    var sandbox = evalcx("");
+    sandbox.trap = trap;
+    sandbox.print = print;
+    sandbox.dis = dis;
+    result = evalcx(code, sandbox);
+  } catch(e) {
+    result = "Error: " + errorToString(e);
+  }
+  return "" + result;
+}
+
+// This tests two aspects of trap:
+// 1) put a trap in a random place; does decompilation get horked?
+// 2) traps that do things
+// These should probably be split into different tests.
+function spiderMonkeyTrapTest(f, code, wtt)
+{
+  var offsets = getBytecodeOffsets(f);
+
+  if ("trap" in this
+        && code.indexOf("eval") == -1 // bug 432365
+        ) {
+
+    // Save for trap      
+    //if (wtt.allowExec && count % 2 == 0) {
+      //nextTrapCode = code;
+    //  return;
+    //}
+
+    // Use trap
+
+    if (verbose)
+      dumpln("About to try the trap test.");
+
+    var ode;
+    if (wtt.allowDecompile)
+      ode = "" + f;
+      
+    //if (nextTrapCode) {
+    //  trapCode = nextTrapCode;
+    //  nextTrapCode = null;
+    //  print("trapCode = " + simpleSource(trapCode));
+    //} else {
+      trapCode = "print('Trap hit!')";
+    //}
+
+
+    trapOffset = offsets[count % offsets.length].offset;
+    print("trapOffset: " + trapOffset);
+    if (!(trapOffset > -1)) {
+      print(dis(f));
+      print(count);
+      print(uneval(offsets));
+      print(offsets.length);
+      printAndStop("WTF");
+    }
+    
+    trap(f, trapOffset, trapCode);
+
+    if (wtt.allowDecompile) {
+      nde = "" + f;
+      
+      if (ode != nde) {
+        print(ode);
+        print(nde);
+        printAndStop("Trap decompilation mismatch");
+      }
+    }
+
+  }
+}
+
+
+
+
 /*********************
  * SPECIALIZED TESTS *
  *********************/
@@ -1187,92 +1373,6 @@ function optionalTests(f, code, wtt)
   }
 }
 
-
-function spiderMonkeyTrapTest(f, code, wtt)
-{
-  var offsets;
-
-  var disassembly = dis(f); // requires fix for bug 396512, which is bitrotten
-  var lines = disassembly.split("\n");
-  var i;
-  
-  offsets = [];
-  
-  for (i = 0; i < lines.length; ++i) {
-    if (lines[i] == "main:")
-      break;
-    if (i + 1 == lines.length)
-      printAndStop("disassembly -- no main?");
-  }
-  for (++i; i < lines.length; ++i) {
-    if (lines[i] == "")
-      break;
-    if (i + 1 == lines.length)
-      printAndStop("disassembly -- ended suddenly?")
-
-    var c = lines[i].charCodeAt(0);
-    var c0 = "0".charCodeAt(0);
-    var c9 = "9".charCodeAt(0);
-    
-    if (c0 <= c && c <= c9) // e.g. |tableswitch| and |lookupswitch| add indented lists
-      offsets.push(parseInt(lines[i], 10));
-  }
-
-  if (0 // triggers lots of bugs until bug 430293 is fixed
-        && offsets
-        && "trap" in this
-        && f
-        && code.indexOf("eval") == -1 // bug 432365
-        ) {
-
-    // Save for trap      
-    if (wtt.allowExec && count % 2 == 0) {
-      nextTrapCode = code;
-      return;
-    }
-
-    // Use trap
-
-    if (verbose)
-      dumpln("About to try the trap test.");
-
-    var ode;
-    if (wtt.allowDecompile)
-      ode = "" + f;
-      
-    if (nextTrapCode) {
-      trapCode = nextTrapCode;
-      nextTrapCode = null;
-      print("trapCode = " + simpleSource(trapCode));
-    } else {
-      trapCode = "print('Trap hit!')";
-    }
-
-
-    trapOffset = offsets[count % offsets.length];
-    print("trapOffset: " + trapOffset);
-    if (!(trapOffset > -1)) {
-      print(disassembly);
-      print(count);
-      print(uneval(offsets));
-      print(offsets.length);
-      printAndStop("WTF");
-    }
-      
-    trap(f, trapOffset, trapCode);
-
-    if (wtt.allowDecompile) {
-      nde = "" + f;
-      
-      if (ode != nde) {
-        print(ode);
-        print(nde);
-        printAndStop("Trap decompilation mismatch");
-      }
-    }
-
-  }
-}
 
 
 function trySandboxEval(code, isRetry)
@@ -2219,7 +2319,7 @@ function makeExpr(depth)
 var binaryOps = [
   // Long-standing JavaScript operators, roughly in order from http://www.codehouse.com/javascript/precedence/
   " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", " < ", " > ", " <= ", " >= ", " instanceof ", " in ", " == ", " != ", " === ", " !== ",
-  " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>=", " &= ", " ^= ", " |= ", " , ",
+  " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>= ", " &= ", " ^= ", " |= ", " , ",
 
   // . is special, so test it as a group of right-unary ops, a special exprMaker for property access, and a special exprMaker for the xml filtering predicate operator
   // " . ", 
@@ -3097,7 +3197,7 @@ var verbose = false;
 
 var maxHeapCount = 0;
 var sandbox = null;
-var nextTrapCode = null;
+//var nextTrapCode = null;
 // https://bugzilla.mozilla.org/show_bug.cgi?id=394853#c19
 //try { eval("/") } catch(e) { }
 // Remember the number of countHeap.
