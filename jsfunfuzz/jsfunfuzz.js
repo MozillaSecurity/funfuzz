@@ -91,7 +91,7 @@ if (jsshell) {
 if (typeof gc == "undefined")
   gc = function(){};
 
-var haveUsefulDis = typeof dis == "function" && typeof dis() == "string";
+var haveUsefulDis = engine == ENGINE_SPIDERMONKEY_TRUNK && typeof dis == "function" && typeof dis(function(){}) == "string";
 
 var haveE4X = (typeof XML == "function");
 if (haveE4X)
@@ -1364,7 +1364,7 @@ function optionalTests(f, code, wtt)
     return;
   }
   
-  if (0 && f && engine == ENGINE_SPIDERMONKEY_TRUNK && haveUsefulDis) {
+  if (0 && f && haveUsefulDis) {
     spiderMonkeyTrapTest(f, code, wtt);
   }
 
