@@ -1222,7 +1222,7 @@ function trapCorrectnessTest(f)
       if (op == "typeof")   continue;  // bug 476082
 
       var syntheticAssignmentOps = ["*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|="];
-      if (syntheticAssignmentOps.some(function(op) (uf.indexOf(op) != -1))) {
+      if (syntheticAssignmentOps.some(function(op) { return uf.indexOf(op) != -1; })) {
         print("Ignoring change at pc " + offset + " due to += etc (bug 476066)");
         print("  Change from: " + r1);
         print("  Change to: " + r2);
