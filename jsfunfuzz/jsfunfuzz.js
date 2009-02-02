@@ -1180,15 +1180,18 @@ function getBytecodeOffsets(f)
     if (i + 1 == lines.length)
       printAndStop("disassembly -- ended suddenly?")
 
+    // The opcodes |tableswitch| and |lookupswitch| add indented lists,
+    // which we want to ignore.
     var c = lines[i].charCodeAt(0);
-    var c0 = "0".charCodeAt(0);
-    var c9 = "9".charCodeAt(0);
-    
-    if (c0 <= c && c <= c9) // e.g. |tableswitch| and |lookupswitch| add indented lists
-      offsets.push({
-        offset: parseInt(lines[i], 10),
-        op: lines[i].substr(8).split(" ")[0]  // used only for avoiding known bugs
-      });
+    if (!(0x30 <= c && c <= 0x39))
+      continue;
+
+    var op = lines[i].substr(8).split(" ")[0]; // used only for avoiding known bugs
+    var offset = parseInt(lines[i], 10);
+    offsets.push({ offset: offset, op: op });
+    if (op == "getter" || op == "setter") {
+      ++i; // skip the next opcode per bug 476073 comment 4
+    }
   }
   
   return offsets;
@@ -1198,8 +1201,6 @@ function trapCorrectnessTest(f)
 {
   var uf = uneval(f);
   if (uf.indexOf("try") != -1) { return; } // bug 476072
-  if (uf.indexOf("set") != -1) { return; } // bug 476073
-  if (uf.indexOf("get") != -1) { return; } // bug 476073
   
   print("trapCorrectnessTest...");
   var offsets = getBytecodeOffsets(f);
