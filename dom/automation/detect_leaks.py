@@ -51,9 +51,6 @@ knownLargeHash = ath([
 # Bug 417630 and friends
 "nsJVMManager",
 
-# Bug 474704
-"nsFontFaceLoader"
-
 ])
 
 # Large items that
