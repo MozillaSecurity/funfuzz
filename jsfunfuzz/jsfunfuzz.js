@@ -413,7 +413,24 @@ function testStuffForAWhile()
 
 function testOne()
 {
+  var dumpEachSeed = false; // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
   ++count;
+  // Split this string across two source strings to ensure that if a 
+  // generated function manages to output the entire jsfunfuzz source, 
+  // that output won't match the grep command.
+  var grepforme = "/*F";
+  grepforme += "RC*/"
+
+  if (dumpEachSeed) {
+    // More complicated, but results in a much shorter script, making SpiderMonkey happier.
+    var MTA = uneval(rnd.fuzzMT.export_mta());
+    var MTI = rnd.fuzzMT.export_mti();
+    if (MTA != rnd.lastDumpedMTA) {
+      dumpln(grepforme + "rnd.fuzzMT.import_mta(" + MTA + ");");
+      rnd.lastDumpedMTA = MTA;
+    }
+    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(8));");
+  }
 
   var code = makeStatement(8);
   
@@ -426,7 +443,7 @@ function testOne()
 //    if (dp)
 //      code = dp;
 //  }
-  dumpln("count=" + count + "; tryItOut(" + uneval(code) + ");");
+  dumpln(grepforme + "count=" + count + "; tryItOut(" + uneval(code) + ");");
 
   tryItOut(code);
 }
@@ -1615,6 +1632,13 @@ function MersenneTwister19937()
 		}
 		mt[0] = 0x80000000; /* MSB is 1; assuring non-zero initial array */
 	}
+	
+    this.export_state = function() { return [mt, mti]; };
+    this.import_state = function(s) { mt = s[0]; mti = s[1]; };
+    this.export_mta = function() { return mt; };
+    this.import_mta = function(_mta) { mt = _mta };
+    this.export_mti = function() { return mti; };
+    this.import_mti = function(_mti) { mti = _mti; }
 
 	/* generates a random number on [0,0xffffffff]-interval */
 	//c//unsigned long genrand_int32(void)
