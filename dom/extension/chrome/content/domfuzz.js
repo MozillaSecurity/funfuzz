@@ -1,5 +1,7 @@
 (function() { // just for scoping
 
+function dumpln(s) { dump(s + "\n"); }
+
 // readFile fnuction from logan
 // http://www.gozer.org/mozilla/userChrome.js/scripts/userScripts.uc.js
 // |file| must be an nsIFile.
@@ -49,6 +51,7 @@ function domFuzzInit(event)
   // Setting the last argument to |true| means we're allowing untrusted events to trigger this chrome event handler.
   window.addEventListener("please-quit", pleaseQuitCalled, true, true);
   window.addEventListener("please-gc", pleaseGCCalled, true, true);
+  window.addEventListener("please-run-soon", pleaseRunSoonCalled, true, true);
   
 }
 
@@ -141,17 +144,44 @@ function pleaseGCCalled()
   dump("GC!\n");
   Components.utils.forceGC();
 
-        window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-              .getInterface(Components.interfaces.nsIDOMWindowUtils)
-              .garbageCollect(); 
-        window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-              .getInterface(Components.interfaces.nsIDOMWindowUtils)
-              .garbageCollect(); 
-        window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-              .getInterface(Components.interfaces.nsIDOMWindowUtils)
-              .garbageCollect(); 
+  window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+        .getInterface(Components.interfaces.nsIDOMWindowUtils)
+        .garbageCollect(); 
+  window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+        .getInterface(Components.interfaces.nsIDOMWindowUtils)
+        .garbageCollect(); 
+  window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+        .getInterface(Components.interfaces.nsIDOMWindowUtils)
+        .garbageCollect(); 
 }
 
+// Stick an event on the thread's queue.
+// Useful for precise interactions with interruptible reflow (much more precise than setTimeout);
+// also potentially faster than setTimeout (which always takes at least 10ms).
+// Based on "executeSoon" in
+// http://mxr.mozilla.org/mozilla-central/source/testing/mochitest/tests/SimpleTest/SimpleTest.js
+function pleaseRunSoonCalled(event)
+{
+  var target = event.originalTarget;
+  var detail = event.detail; // an opaque string that is returned to the page
+  var tm = Components.classes["@mozilla.org/thread-manager;1"]
+             .getService(Components.interfaces.nsIThreadManager);
+
+  tm.mainThread.dispatch({
+    run: function() {
+      dispatchBackToPage(target, detail);
+    }
+  }, Components.interfaces.nsIThread.DISPATCH_NORMAL);
+}
+
+function dispatchBackToPage(target, detail)
+{
+  //dumpln("Dispatching back to page: " + target + " " + detail);
+  var evt = document.createEvent("Events");
+  evt.detail = detail;
+  evt.initEvent("run-now", true, false);
+  target.dispatchEvent(evt);
+}
 
 
 // From quit.js, which Bob Clary extracted from mozilla/toolkit/content
