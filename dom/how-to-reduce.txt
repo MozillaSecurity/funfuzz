@@ -5,7 +5,7 @@ This document assumes you found a bug with fuzzer-combined.js and want to make a
 
 The fast way:
 
-1. grep FRC w1234-out | pbcopy
+1. grep FRC w1234-out
 2. Paste into a copy of a-template.html (call it b0.html), replacing the "var fuzzSettings = null;" and "var fuzzCommands = null;" lines.
 3. Add a "]" on a separate line if it's missing from the end.  (It will be missing from the output if Firefox crashed, for example.)
 4. Load b0.html in Firefox.
@@ -47,12 +47,7 @@ var fuzzCommands = [
 
 Now the testcase is ready for you to use Lithium: it will always cause Firefox to exit without human intervention (either by crashing or by hitting the goQuitApplication line), and Lithium just needs to find a minimal subsequence of the recorded commands that triggers the bug.
 
-For a crash, use one of the following:
-./lithium L foo.html ~/.../firefox-bin crashes 120
-./lithium L foo.html ~/.../firefox outputs1 "running" "Quitting"
-
-For an assertion, use:
-./lithium L foo.html ~/.../firefox outputs "index out of range"
+See the Lithium docs for how to use Lithium.
 
 
 === Dealing with bugs that are not 100% reproducible ===
@@ -110,11 +105,16 @@ You'll only have to do this the hard way if you deleted the FRC2 bits, and you c
 
 This is useful for SVG:
 
-      for each (i in [68, 118, 82, 122, 108]) {        dumpln("allNodes[" + i + "]:");        dumpln((new XMLSerializer).serializeToString(allNodes[i]));        dumpln("");      }
+      for each (i in [68, 118, 82, 122, 108]) {
+        dumpln("allNodes[" + i + "]:");
+        dumpln((new XMLSerializer).serializeToString(allNodes[i]));
+        dumpln("");
+      }
 
 This is useful in conjunction with DOM Inspector's "Find" feature:
 
-      for (i in allNodes) {        try {
+      for (i in allNodes) {
+        try {
           allNodes[i].setAttribute("id", "n" + i);
         } catch (e) { }
       }

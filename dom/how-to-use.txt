@@ -7,18 +7,12 @@ This is fast and easy, but you don't want to leave it running with a single seed
 
 
 * Load the default test page using "scan=1":
-file:///Users/jruderman/Sites/fuzz3/fuzzer-stir-table.xhtml?fuzz=0,0,100,100,500&scan=1
+file:///Users/jruderman/fuzzing/dom/fuzzers/fuzzer-combined.xhtml?fuzz=0,0,100,100,500&scan=1
 
 When it gets to maxSteps (500 in this case) or otherwise decides that it's done, it will increment the seed and start over.  This is good for quick regression testing and demos.
 
 
-* Turn the fuzzer into a bookmarklet using "make-fuzz-bookmarklet.html", then use the bookmarklet on any loaded page.  This is good for quick exploration and demos.
+* Turn the fuzzer into a bookmarklet using "make-fuzz-bookmarklet.html", then use the bookmarklet on any loaded page.  This is good for quick exploration and great for demos.
 
 
 * Use the stuff in the "automation" directory for hours of unattended fuzzing (e.g. overnight).
-
-
-
-To check for strict warnings:
-
-ls *.js | xargs -n 1 ~/central/mozilla/js/src/Darwin_DBG.obj/js -s -C 
