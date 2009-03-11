@@ -174,7 +174,7 @@ if ( [ $branchType = "moz191" ] ) then
     mkdir dbg-objdir
     cd dbg-objdir
     ../configure --disable-optimize --enable-debug
-    make
+    make -j2
     cp js ../../js-dbg-$branchType-intelmac
     cd ..
     
@@ -182,7 +182,7 @@ if ( [ $branchType = "moz191" ] ) then
     mkdir opt-objdir
     cd opt-objdir
     ../configure --enable-optimize --disable-debug
-    make
+    make -j2
     cp js ../../js-opt-$branchType-intelmac
     cd ../../
     rmdir opt-$branchType  # Obsoleted by new compile method.
@@ -200,7 +200,7 @@ if ( [ $branchType = "mozTrunk" ] ) then
     mkdir dbg-objdir
     cd dbg-objdir
     ../configure --disable-optimize --enable-debug
-    make
+    make -j2
     cp js ../../js-dbg-$branchType-intelmac
     cd ..
     
@@ -208,7 +208,7 @@ if ( [ $branchType = "mozTrunk" ] ) then
     mkdir opt-objdir
     cd opt-objdir
     ../configure --enable-optimize --disable-debug
-    make
+    make -j2
     cp js ../../js-opt-$branchType-intelmac
     cd ../../
     rmdir opt-$branchType  # Obsoleted by new compile method.
@@ -226,7 +226,7 @@ if ( [ $branchType = "tm" ] ) then
     mkdir dbg-objdir
     cd dbg-objdir
     ../configure --disable-optimize --enable-debug
-    make
+    make -j2
     cp js ../../js-dbg-$branchType-intelmac
     cd ..
     
@@ -234,7 +234,7 @@ if ( [ $branchType = "tm" ] ) then
     mkdir opt-objdir
     cd opt-objdir
     ../configure --enable-optimize --disable-debug
-    make
+    make -j2
     cp js ../../js-opt-$branchType-intelmac
     cd ../../
     rmdir opt-$branchType  # Obsoleted by new compile method.
