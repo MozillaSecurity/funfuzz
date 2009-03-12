@@ -853,7 +853,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
-  if (e.indexOf("missing ; after for-loop condition") != -1) {
+  if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("missing ; after for-loop condition") != -1) {
     dumpln("Looks like bug 460504.");
     return;
   }
@@ -1322,7 +1322,6 @@ function getBytecodeOffsets(f)
 function trapCorrectnessTest(f)
 {
   var uf = uneval(f);
-  if (uf.indexOf("try") != -1) { return; } // bug 476072
   
   print("trapCorrectnessTest...");
   var offsets = getBytecodeOffsets(f);
@@ -1332,11 +1331,6 @@ function trapCorrectnessTest(f)
     var offset = offsets[i].offset;
     var op = offsets[i].op;
     // print(offset + " " + op);
-
-    if (op == "call")     continue;  // bug 476076
-    if (op == "new")      continue;  // bug 476076
-    if (op == "enditer")  continue;  // bug 476079
-    if (op == "goto")     continue;  // bug 476086
 
     var trapStr = "trap(fff, " + offset + ", ''); ";
     var r2 = sandboxResult(prefix + trapStr + " fff();");
@@ -1396,9 +1390,7 @@ function spiderMonkeyTrapTest(f, code, wtt)
 {
   var offsets = getBytecodeOffsets(f);
 
-  if ("trap" in this
-        && code.indexOf("eval") == -1 // bug 432365
-        ) {
+  if ("trap" in this) {
 
     // Save for trap      
     //if (wtt.allowExec && count % 2 == 0) {
@@ -2114,7 +2106,7 @@ var statementMakers = [
   // -- for (key in generator())
   function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeForInLHS(dr), " in ", "(", "(", makeFunction(dr), ")", "(", makeExpr(dr), ")", ")", ")", makeStatementOrBlock(dr)]); },
   // -- for each (value in obj)
-  function(dr) { return "/*for..in*/" + "/* nogeckoex bug 349964 */" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinder), makeLValue(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
+  function(dr) { return "/*for..in*/" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinder), makeLValue(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
   
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
