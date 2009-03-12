@@ -45,9 +45,10 @@
 // a web browser, but you might have trouble reproducing bugs that way.
 
 var ENGINE_UNKNOWN = 0;
-var ENGINE_SPIDERMONKEY_TRUNK = 1;
-var ENGINE_SPIDERMONKEY_MOZ_1_8 = 2;
-var ENGINE_JAVASCRIPTCORE = 3;
+var ENGINE_SPIDERMONKEY_TRUNK = 1; // also 1.9.1 and tracemonkey branch
+var ENGINE_SPIDERMONKEY_MOZ_1_9_0 = 2;
+var ENGINE_SPIDERMONKEY_MOZ_1_8 = 3;
+var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
 var jsshell = (typeof window == "undefined");
@@ -56,10 +57,14 @@ if (jsshell) {
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
   if (typeof line2pc == "function") {
-    if (typeof countHeap == "function")
+
+    if (typeof snarf == "function")
       engine = ENGINE_SPIDERMONKEY_TRUNK;
+    else if (typeof countHeap == "function")
+      engine = ENGINE_SPIDERMONKEY_MOZ_1_9_0
     else
       engine = ENGINE_SPIDERMONKEY_MOZ_1_8;
+
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
     options("anonfunfix");
   } else if (typeof debug == "function") {
@@ -70,6 +75,8 @@ if (jsshell) {
     engine = ENGINE_JAVASCRIPTCORE;
     // This worked in Safari 3.0, but it might not work in Safari 3.1.
     dump = function(s) { console.log(s); } 
+  } else if (navigator.userAgent.indexOf("Gecko") != -1 && navigator.userAgent.indexOf("rv:1.9.0") != -1) {
+    engine = ENGINE_SPIDERMONKEY_MOZ_1_9_0;
   } else if (navigator.userAgent.indexOf("Gecko") != -1 && navigator.userAgent.indexOf("rv:1.8") != -1) {
     engine = ENGINE_SPIDERMONKEY_MOZ_1_8;
   } else if (navigator.userAgent.indexOf("Gecko") != -1) {
@@ -127,8 +134,10 @@ if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_8)
   printImportant("Targeting SpiderMonkey / Gecko (Mozilla 1.8 branch).");
+else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0)
+  printImportant("Targeting SpiderMonkey / Gecko (Mozilla 1.9.0 branch).");
 else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
-  printImportant("Targeting SpiderMonkey / Gecko (Mozilla 1.9 or trunk).");
+  printImportant("Targeting SpiderMonkey / Gecko (trunk).");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
 
@@ -156,6 +165,102 @@ var jitEnabled = (engine == ENGINE_SPIDERMONKEY_TRUNK) && jsshell && options().i
  ***********************/
 
 function whatToTestSpidermonkeyTrunk(code)
+{
+  return {
+  
+    allowParse: true,
+    
+    // Exclude things here if decompiling the function causes a crash.
+    allowDecompile: true,
+  
+    // Exclude things here if decompiling returns something bogus that won't compile.
+    checkRecompiling: true
+      && (code.indexOf("#") == -1)                    // avoid bug 367731
+      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
+      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
+      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
+      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
+      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
+      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
+      && !( code.match( /while.*for.*in/ )) // avoid bug 381963
+      && !( code.match( /const.*arguments/ ))        // avoid bug 355480
+      && !( code.match( /var.*arguments/ ))          // avoid bug 355480
+      && !( code.match( /let.*arguments/ ))          // avoid bug 355480
+      && !( code.match( /let/ ))   // avoid bug 462309 :( :( :(
+      ,
+  
+    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
+    checkForMismatch: true
+      && !( code.match( /const.*if/ ))               // avoid bug 352985
+      && !( code.match( /if.*const/ ))               // avoid bug 352985
+      && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558
+      && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558
+      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
+      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
+      && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
+      && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
+      && !( code.match( /\?.*\?/ ))        // avoid bug 475895
+      && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
+      && !( code.match( /new.*\?/ ))                 // avoid bug 476210
+      && (code.indexOf("-0") == -1)        // constant folding isn't perfect
+      && (code.indexOf("-1") == -1)        // constant folding isn't perfect
+      && (code.indexOf("default") == -1)   // avoid bug 355509
+      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
+      && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
+      && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
+      && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
+      // avoid bug 352085: keep operators that coerce to number (or integer)
+      // at constant-folding time (?) away from strings
+      &&
+           (
+             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
+             ||
+             (
+                  (code.indexOf("%")  == -1)
+               && (code.indexOf("/")  == -1)
+               && (code.indexOf("*")  == -1)
+               && (code.indexOf("-")  == -1)
+               && (code.indexOf(">>") == -1)
+               && (code.indexOf("<<") == -1)
+             )
+          )
+      ,
+
+    // Exclude things here if the decompilation doesn't match what the function actually does
+    checkDisassembly: true
+      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
+      && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899
+      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985
+    ,  
+    
+    checkForExtraParens: true
+      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
+      && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
+      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !code.match( /\?.*\=/)             // ignore bug 475893
+    ,
+    
+    allowExec: unlikelyToHang(code)
+      && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
+      && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
+      && code.indexOf("valueOf")  == -1 // avoid bug 355829
+      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
+      && (jsshell || code.indexOf("nogeckoex") == -1)
+      && !( code.match( /function.*::.*=/ )) // avoid ????
+      ,
+  
+    allowIter: true,
+  
+    checkUneval: true
+      // exclusions won't be perfect, since functions can return things they don't
+      // appear to contain, e.g. with "return x;"
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628
+  };
+}
+
+
+function whatToTestSpidermonkey190Branch(code)
 {
   return {
   
@@ -333,6 +438,8 @@ function whatToTestGeneric(code)
 
 if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
+else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0)
+  whatToTest = whatToTestSpidermonkey190Branch;
 else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_8)
   whatToTest = whatToTestSpidermonkey18Branch;
 else if (engine == ENGINE_JAVASCRIPTCORE)
