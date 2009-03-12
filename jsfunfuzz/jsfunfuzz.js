@@ -15,10 +15,11 @@
  *
  * The Initial Developer of the Original Code is
  * Jesse Ruderman.
- * Portions created by the Initial Developer are Copyright (C) 2006-2008
+ * Portions created by the Initial Developer are Copyright (C) 2006-2009
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Gary Kwong
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -182,7 +183,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
       && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( code.match( /while.*for.*in/ )) // avoid bug 381963
       && !( code.match( /const.*arguments/ ))        // avoid bug 355480
       && !( code.match( /var.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480
@@ -242,8 +242,6 @@ function whatToTestSpidermonkeyTrunk(code)
     
     allowExec: unlikelyToHang(code)
       && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
-      && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
-      && code.indexOf("valueOf")  == -1 // avoid bug 355829
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
@@ -489,7 +487,7 @@ function start()
   count = 0;
 
   if (jsshell) {
-    var MAX_TOTAL_TIME = 200/* seconds */ * 1000;
+    var MAX_TOTAL_TIME = 650/* seconds */ * 1000;
     var startTime = new Date();
 
     do {
