@@ -337,7 +337,6 @@ function whatToTestSpidermonkey190Branch(code)
     allowExec: unlikelyToHang(code)
       && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
       && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
-      && code.indexOf("valueOf")  == -1 // avoid bug 355829
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
