@@ -1,7 +1,13 @@
 import os, sys
-sys.path.append(os.path.dirname(sys.argv[0]) + "/../dom/automation/")
+
+p0=os.path.dirname(sys.argv[0])
+p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
+p2=os.path.abspath(os.path.join(p0, "..", "lithium"))
+
+sys.path.append(p1)
+sys.path.append(p2)
+
 import detect_assertions, detect_malloc_errors, detect_interesting_crashes
-sys.path.append(os.path.dirname(sys.argv[0]) + "/../lithium/")
 import ntr
 
 knownPath = os.path.expanduser(sys.argv[2])
