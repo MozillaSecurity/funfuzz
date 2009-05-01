@@ -486,7 +486,7 @@ function start()
   count = 0;
 
   if (jsshell) {
-    var MAX_TOTAL_TIME = 650/* seconds */ * 1000;
+    var MAX_TOTAL_TIME = 1000/* seconds */ * 1000;
     var startTime = new Date();
 
     do {
