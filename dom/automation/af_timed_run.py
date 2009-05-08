@@ -28,7 +28,10 @@ def many_timed_runs(fullURLs):
         c.write(fullURL)
         c.close()
 
-        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[4:] + [fullURL], int(sys.argv[1]), logPrefix)
+        runinfo = ntr.timed_run(sys.argv[4:] + [fullURL], int(sys.argv[1]), logPrefix)
+        sta = runinfo.sta
+        msg = runinfo.msg
+        elapsedtime = runinfo.elapsedtime
         
         amissAssert = detect_assertions.amiss(logPrefix, False)
         amissLeak = detect_leaks.amiss(logPrefix) if (sta == ntr.NORMAL) else False

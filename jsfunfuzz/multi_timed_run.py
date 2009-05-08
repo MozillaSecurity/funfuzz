@@ -34,7 +34,10 @@ def many_timed_runs():
     while True:
         iteration += 1
         logPrefix = "w%d" % iteration
-        (sta, msg, elapsedtime) = ntr.timed_run(sys.argv[3:], int(sys.argv[1]), logPrefix)
+
+        runinfo = ntr.timed_run(sys.argv[3:], int(sys.argv[1]), logPrefix)
+        (sta, msg, elapsedtime) = (runinfo.sta, runinfo.msg, runinfo.elapsedtime)
+
         issues = []
 
         if detect_assertions.amiss(logPrefix, True):
