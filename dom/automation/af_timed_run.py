@@ -40,14 +40,14 @@ def many_timed_runs(fullURLs):
 
         amiss = ((sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc or amissInterestingCrash)
         amissStr = "" if not amiss else "*"
-        print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
+
 
         if amiss:
+            print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
             print fullURL
             for line in file(logPrefix + "-out"):
                 if line.startswith("Chosen"):
                     print line
-            print ""
             print ""
         
         if not amiss:
