@@ -166,6 +166,8 @@ fi
 
 if ( [ $branchType = "moz191" ] ) then
     cp -r ~/mozilla-1.9.1/js/src/* .
+    # Use comm-central's mozilla-1.9.1 - choose among the above or below lines.
+    #cp -r ~/comm-central/mozilla/js/src/* .
     cd ..
     
     # Debug builds.
