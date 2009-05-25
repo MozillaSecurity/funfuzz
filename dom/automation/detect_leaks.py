@@ -78,6 +78,7 @@ def amiss(logPrefix):
             pass
         else:
             print "Didn't see leak stats"
+            pass
         currentFile.close()
         return False
 
