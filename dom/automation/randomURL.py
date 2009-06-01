@@ -5,7 +5,6 @@
 # http://diveintopython.org/http_web_services/index.html
 
 import random
-import urllib
 import urllib2
 import socket
 import httplib
@@ -43,7 +42,8 @@ def randomURL():
     if saneURLs.match(f.redirectURL):
       return f.redirectURL
     else:
-      print "Skipping a delicious redirect to a URL that looks weird"
+      #print "Skipping a delicious redirect to a URL that looks weird"
+      pass
   except IOError, e:
     # I think timeouts will land here.
     print "randomURL caught: " + str(e)
