@@ -193,20 +193,17 @@ function whatToTestSpidermonkeyTrunk(code)
     checkForMismatch: true
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
-      && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558
-      && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
       && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
       && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
       && !( code.match( /\?.*\?/ ))        // avoid bug 475895
       && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
-      && !( code.match( /new.*\?/ ))                 // avoid bug 476210
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
-      && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
+      && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
       // avoid bug 352085: keep operators that coerce to number (or integer)
@@ -229,7 +226,6 @@ function whatToTestSpidermonkeyTrunk(code)
     // Exclude things here if the decompilation doesn't match what the function actually does
     checkDisassembly: true
       && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
-      && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899
       && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985
     ,  
     
@@ -842,7 +838,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
-  if (e.indexOf("invalid object initializer") != -1) {
+  if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("invalid object initializer") != -1) {
     dumpln("Ignoring bug 452561.");
     return;
   }
@@ -940,8 +936,6 @@ function testUnevalString(uo)
       && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
       &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
       &&  uo.indexOf("Infinity") == -1                     // ignore bug 379521
-      &&  uo.indexOf("[,") == -1                           // avoid  bug 379551
-      &&  uo.indexOf(", ,") == -1                          // avoid  bug 379551
       &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
       &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
       &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
@@ -1081,7 +1075,6 @@ function testForExtraParens(f, code)
 
   if (uf.indexOf("(<") != -1) return; // bug 381204
   if (uf.indexOf(".(") != -1) return; // bug 381207
-  if (uf.indexOf("else if") != -1) return; // bug 381742
   if (code.indexOf("new") != -1) return; // "new" is weird. what can i say?
   if (code.indexOf("let") != -1) return; // reasonable to overparenthesize "let" (see expclo#c33)
   if (code.match(/for.*in.*=/)) return; // bug 381213
@@ -1335,16 +1328,6 @@ function trapCorrectnessTest(f)
     var r2 = sandboxResult(prefix + trapStr + " fff();");
 
     if (r1 != r2) {
-      if (op == "typeof")   continue;  // bug 476082
-
-      var syntheticAssignmentOps = ["*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|="];
-      if (syntheticAssignmentOps.some(function(op) { return uf.indexOf(op) != -1; })) {
-        print("Ignoring change at pc " + offset + " due to += etc (bug 476066)");
-        print("  Change from: " + r1);
-        print("  Change to: " + r2);
-        continue;
-      }
-      
       if (r1.indexOf("TypeError") != -1 && r2.indexOf("TypeError") != -1) {
         // Why does this get printed multiple times???
         // count=6544; tIO("var x; x.y;");
