@@ -190,7 +190,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let/ ))   // avoid bug 462309 :( :( :(
       && !( code.match( /function.*\:.*arguments/ ))   // avoid bug 496985
-      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1) // avoid bug 492010
+      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
+      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       ,
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
