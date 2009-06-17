@@ -1,24 +1,19 @@
-import os, sys
+#!/usr/bin/env python -u
+
+import os, sys, subprocess
 
 p0=os.path.dirname(sys.argv[0])
-p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
 p2=os.path.abspath(os.path.join(p0, "..", "lithium"))
-
-sys.path.append(p1)
 sys.path.append(p2)
+lithiumpy = os.path.join(p2, "lithium.py")
+jsunhappypy = os.path.join(p0, "jsunhappy.py")
 
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes
-import ntr
+import jsunhappy
 
+timeout = int(sys.argv[1])
 knownPath = os.path.expanduser(sys.argv[2])
-
-def succeeded(logPrefix):
-    logfile = open(logPrefix + "-out", "r")
-    for line in logfile:
-        if (line == "It's looking good!\n"):
-            return True
-    return False
-
+runThis = sys.argv[3:]
+jsfunfuzzPath = runThis[-1]
 
 def showtail(filename):
     cmd = "tail -n 20 %s" % filename
@@ -35,33 +30,28 @@ def many_timed_runs():
         iteration += 1
         logPrefix = "w%d" % iteration
 
-        runinfo = ntr.timed_run(sys.argv[3:], int(sys.argv[1]), logPrefix)
-        (sta, msg, elapsedtime) = (runinfo.sta, runinfo.msg, runinfo.elapsedtime)
+        level = jsunhappy.level(runThis, timeout, logPrefix)
 
-        issues = []
-
-        if detect_assertions.amiss(logPrefix, True):
-          issues.append("unknown assertion")
-        if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, True, msg):
-          issues.append("unknown crash")
-        if detect_malloc_errors.amiss(logPrefix):
-          issues.append("malloc error")
-
-        if len(issues) == 0 and sta == ntr.NORMAL and not succeeded(logPrefix):
-          issues.append("nothing really bad happened, yet jsfunfuzz didn't finish")
-        if sta == ntr.ABNORMAL:
-          issues.append("abnormal exit")
-        if sta == ntr.TIMED_OUT:
-          issues.append("timed out")
-
-        amiss = len(issues) != 0
-        amissStr = "" if not amiss else "*" + repr(issues) + " "
-        print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
-
-        if amiss:
+        if level > jsunhappy.JS_TIMED_OUT:
             showtail(logPrefix + "-out")
             showtail(logPrefix + "-err")
-            print ""
+            
+            # splice jsfunfuzz.js with `grep FRC wN-out`
+            filenameToReduce = logPrefix + "-reduced.js"
+            [before, after] = fuzzSplice(open(jsfunfuzzPath))
+            newfileLines = before + linesWith(open(logPrefix + "-out"), "FRC") + after
+            writeLinesToFile(newfileLines, logPrefix + "-orig.js")
+            writeLinesToFile(newfileLines, filenameToReduce)
+            
+            # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
+            lithArgs = [jsunhappypy, str(level), str(timeout), knownPath] + runThis[:-1] + [filenameToReduce]
+            print "multi_timed_run is running Lithium..."
+            print repr([lithiumpy] + lithArgs)
+            subprocess.call([lithiumpy] + lithArgs, stdout=open(logPrefix + "lith1", "w"))
+            if level > jsunhappy.JS_DID_NOT_FINISH:
+                subprocess.call([lithiumpy, "-c"] + lithArgs, stdout=open(logPrefix + "lith2", "w"))
+            print "Done running Lithium"
+
         else:
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
@@ -70,6 +60,39 @@ def many_timed_runs():
             if (os.path.exists(logPrefix + "-core")):
                 os.remove(logPrefix + "-core")
 
-detect_assertions.init(knownPath)
-detect_interesting_crashes.init(knownPath)
+
+def fuzzSplice(file):
+    '''Returns the lines of a file, minus the ones between lines containing SPLICE'''
+    before = []
+    after = []
+    for line in file:
+        before.append(line)
+        if line.find("SPLICE") != -1:
+            break
+    for line in file:
+        if line.find("SPLICE") != -1:
+            after.append(line)
+            break
+    for line in file:
+        after.append(line)
+    file.close()
+    return [before, after]
+
+
+def linesWith(file, searchFor):
+    '''Returns the lines from a file that contain a given string'''
+    matchingLines = []
+    for line in file:
+        if line.find(searchFor) != -1:
+            matchingLines.append(line)
+    file.close()
+    return matchingLines
+
+
+def writeLinesToFile(lines, filename):
+      f = open(filename, "w")
+      f.writelines(lines)
+      f.close()
+
+jsunhappy.initWithKnownPath(knownPath)
 many_timed_runs()

@@ -145,8 +145,10 @@ else if (engine == ENGINE_JAVASCRIPTCORE)
 function printAndStop(s)
 {
   printImportant(s)
-  if (jsshell)
+  if (jsshell) {
+    print("jsfunfuzz stopping due to above error!"); // Magic string that jsunhappy.py looks for
     quit();
+  }
 }
 
 function errorToString(e)
@@ -496,7 +498,7 @@ function start()
       var lastTime = new Date();
     } while(lastTime - startTime < MAX_TOTAL_TIME);
     
-    dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
+    print("It's looking good!"); // Magic string that jsunhappy.py looks for
   } else {
     setTimeout(testStuffForAWhile, 200);
   }
@@ -3336,9 +3338,9 @@ throw 1;
 // 1. grep tryIt LOGFILE | grep -v "function tryIt" | pbcopy
 // 2. Paste the result between "ddbegin" and "ddend", replacing "start();"
 // 3. Run Lithium to remove unnecessary lines between "ddbegin" and "ddend".
-// DDBEGIN
+// SPLICE DDBEGIN
 start();
-// DDEND
+// SPLICE DDEND
 
 
 // 3. Run it.
