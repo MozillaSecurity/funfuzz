@@ -575,14 +575,16 @@ function tryItOut(code)
   if (!wtt.allowParse)
     return;
     
-  if (wtt.allowExec && count % 5 == 0) {
-    try {
-      print("Plain eval");
-      eval(code);
-    } catch(e) {
-      print(errorToString(e));
+  if (count % 20 == 1) {
+    if (wtt.allowExec) {
+      try {
+        print("Plain eval");
+        eval(code);
+      } catch(e) {
+        print(errorToString(e));
+      }
+      tryEnsureSanity();
     }
-    tryEnsureSanity();
     return;
   }
 
