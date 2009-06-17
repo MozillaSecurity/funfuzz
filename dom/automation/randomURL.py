@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python
 
 # http://www.python.org/doc/2.5.2/lib/module-urllib2.html
 # http://delicious.com/recent

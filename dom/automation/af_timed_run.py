@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python
 
 import sys, random, time, os
 import detect_assertions, detect_leaks, detect_malloc_errors, detect_interesting_crashes
@@ -54,7 +54,7 @@ def many_timed_runs(fullURLs):
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             os.remove(logPrefix + "-url")
-            # Note: -crash is not deleted
+            # Note: -crash, -core are not deleted
 
 
 def getURLs():
