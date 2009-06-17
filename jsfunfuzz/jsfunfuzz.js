@@ -203,8 +203,11 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
       && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
       && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
+      && !( code.match( /\[.*\].*\=.*\[.*\yield/ ))  // avoid bug 498934
+      && !( code.match( /\{.*\}.*\=.*\[.*\yield/ ))  // avoid bug 498934 where empty {} becomes []
       && !( code.match( /\?.*\?/ ))        // avoid bug 475895
       && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
+      && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
@@ -212,7 +215,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
-      && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
       // avoid bug 352085: keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
