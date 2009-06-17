@@ -192,6 +192,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /function.*\:.*arguments/ ))   // avoid bug 496985
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
+      && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       ,
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
@@ -211,6 +212,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
+      && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
       // avoid bug 352085: keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
