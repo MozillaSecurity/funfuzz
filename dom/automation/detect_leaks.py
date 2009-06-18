@@ -10,10 +10,6 @@ def ath(array):
 
 knownHash = ath([
 
-# Bug 398462
-"nsBaseAppShell",
-"nsRunnable",
-
 # Bug 403199
 "nsSimpleNestedURI",
 
