@@ -38,20 +38,20 @@ def level(runthis, timeout, logPrefix):
 
     # But we also check several other places...
     if detect_assertions.amiss(logPrefix, True):
-      issues.append("unknown assertion")
-      lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+        issues.append("unknown assertion")
+        lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
     if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, True, msg):
-      issues.append("unknown crash")
-      lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+        issues.append("unknown crash")
+        lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
     if detect_malloc_errors.amiss(logPrefix):
-      issues.append("malloc error")
-      lev = max(lev, JS_MALLOC_ERROR)
+        issues.append("malloc error")
+        lev = max(lev, JS_MALLOC_ERROR)
     if sta == ntr.ABNORMAL:
-      issues.append("abnormal exit")
-      lev = max(lev, JS_ABNORMAL_EXIT)
+        issues.append("abnormal exit")
+        lev = max(lev, JS_ABNORMAL_EXIT)
     if sta == ntr.TIMED_OUT:
-      issues.append("timed out")
-      lev = max(lev, JS_TIMED_OUT)
+        issues.append("timed out")
+        lev = max(lev, JS_TIMED_OUT)
 
     amiss = len(issues) != 0
     amissStr = "" if not amiss else "*" + repr(issues) + " "
