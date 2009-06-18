@@ -502,8 +502,6 @@ function start()
       }
       var lastTime = new Date();
     } while(lastTime - startTime < MAX_TOTAL_TIME);
-    
-    print("It's looking good!"); // Magic string that jsunhappy.py looks for
   } else {
     setTimeout(testStuffForAWhile, 200);
   }
@@ -3348,6 +3346,9 @@ throw 1;
 // SPLICE DDBEGIN
 start();
 // SPLICE DDEND
+
+if (jsshell)
+  print("It's looking good!"); // Magic string that jsunhappy.py looks for
 
 
 // 3. Run it.
