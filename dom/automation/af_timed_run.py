@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 import sys, random, time, os
-import detect_assertions, detect_leaks, detect_malloc_errors, detect_interesting_crashes
-sys.path.append("../../lithium/")
-import ntr
+import domunhappy
 import randomURL
 
-
+timeout = int(sys.argv[1])
 urlListFilename = sys.argv[2]
 knownPath = sys.argv[3]
 maxIterations = 300000
@@ -28,33 +26,23 @@ def many_timed_runs(fullURLs):
         c.write(fullURL)
         c.close()
 
-        runinfo = ntr.timed_run(sys.argv[4:] + [fullURL], int(sys.argv[1]), logPrefix)
-        sta = runinfo.sta
-        msg = runinfo.msg
-        elapsedtime = runinfo.elapsedtime
-        
-        amissAssert = detect_assertions.amiss(logPrefix, False)
-        amissLeak = detect_leaks.amiss(logPrefix) if (sta == ntr.NORMAL) else False
-        amissMalloc = detect_malloc_errors.amiss(logPrefix)
-        amissInterestingCrash = False if (sta != ntr.CRASHED) else detect_interesting_crashes.amiss(logPrefix, False, msg)
+        runThis = sys.argv[4:] + [fullURL]
+        level = domunhappy.level(runThis, timeout, logPrefix)
 
-        amiss = ((sta == ntr.ABNORMAL) or amissAssert or amissLeak or amissMalloc or amissInterestingCrash)
-        amissStr = "" if not amiss else "*"
-
-
-        if amiss:
-            print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
+        if level > domunhappy.DOM_TIMED_OUT:
             print fullURL
             for line in file(logPrefix + "-out"):
                 if line.startswith("Chosen"):
                     print line
+            # XXX run Lithium
             print ""
-        
-        if not amiss:
+        else:
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
-            os.remove(logPrefix + "-url")
-            # Note: -crash, -core are not deleted
+            if (os.path.exists(logPrefix + "-crash")):
+                os.remove(logPrefix + "-crash")
+            if (os.path.exists(logPrefix + "-core")):
+                os.remove(logPrefix + "-core")
 
 
 def getURLs():
@@ -98,8 +86,7 @@ def randomHash():
     return "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,3000,0"
 
 if len(sys.argv) >= 5:
-    detect_assertions.init(knownPath)
-    detect_interesting_crashes.init(knownPath)
+    domunhappy.initWithKnownPath(knownPath)
     createTempDir()
     if yummy: # hacky
         many_timed_runs(None)
