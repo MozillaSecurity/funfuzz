@@ -44,10 +44,7 @@ knownLargeHash = ath([
 "nsRDFResource",
 
 # Bug 417630 and friends
-"nsJVMManager",
-
-# Bug 478185
-"nsStyleContext"
+"nsJVMManager"
 ])
 
 # Large items that
