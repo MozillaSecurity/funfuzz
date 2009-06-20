@@ -71,3 +71,4 @@ def init(args):
 def initWithKnownPath(knownPath):
     detect_assertions.init(knownPath)
     detect_interesting_crashes.init(knownPath)
+

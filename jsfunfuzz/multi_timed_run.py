@@ -47,9 +47,9 @@ def many_timed_runs():
             lithArgs = [jsunhappypy, str(level), str(timeout), knownPath] + runThis[:-1] + [filenameToReduce]
             print "multi_timed_run is running Lithium..."
             print repr([lithiumpy] + lithArgs)
-            subprocess.call([lithiumpy] + lithArgs, stdout=open(logPrefix + "lith1", "w"))
+            subprocess.call([lithiumpy] + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
             if level > jsunhappy.JS_DID_NOT_FINISH:
-                subprocess.call([lithiumpy, "-c"] + lithArgs, stdout=open(logPrefix + "lith2", "w"))
+                subprocess.call([lithiumpy, "-c"] + lithArgs, stdout=open(logPrefix + "-lith2", "w"))
             print "Done running Lithium"
 
         else:
@@ -61,8 +61,9 @@ def many_timed_runs():
                 os.remove(logPrefix + "-core")
 
 
+
 def fuzzSplice(file):
-    '''Returns the lines of a file, minus the ones between lines containing SPLICE'''
+    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
     before = []
     after = []
     for line in file:
@@ -73,6 +74,19 @@ def fuzzSplice(file):
         if line.find("SPLICE") != -1:
             after.append(line)
             break
+    for line in file:
+        after.append(line)
+    file.close()
+    return [before, after]
+
+def fuzzDice(file):
+    '''Returns the lines of the file, except for the one line containing DICE'''
+    before = []
+    after = []
+    for line in file:
+        if line.find("SPLICE") != -1:
+            break
+        before.append(line)
     for line in file:
         after.append(line)
     file.close()
