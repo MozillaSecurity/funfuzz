@@ -65,8 +65,13 @@ function onPageLoad(event)
 
   var r = hash.split("!");
 
-  if (r[0] != "#squarefree-af")
+  if (r[0] == "#squarefree-autoquit") {
+    setTimeout(goQuitApplication, 1000);
     return;
+  }
+  else if (r[0] != "#squarefree-af") {
+    return;
+  }
   if (!(/^[a-zA-Z0-9\-.]*$/.test(r[1]))) {
     dump("Sketchy fuzzer filename!\n");
     return;
