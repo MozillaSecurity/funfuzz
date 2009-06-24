@@ -8,18 +8,27 @@ p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
 
 sys.path.append(p1)
 
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes
+import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_valgrind_errors
 
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-(JS_FINE, JS_TIMED_OUT, JS_ABNORMAL_EXIT, JS_DID_NOT_FINISH, JS_DECIDED_TO_EXIT, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH) = range(7)
+(JS_FINE, JS_TIMED_OUT, JS_ABNORMAL_EXIT, JS_DID_NOT_FINISH, JS_DECIDED_TO_EXIT, JS_VG_AMISS, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH) = range(8)
 
 
 
-def level(runthis, timeout, logPrefix):
+def level(runthis, timeout, knownPath, logPrefix):
+    if runthis[0] == "valgrind":
+        runthis = [
+            "valgrind",
+            "--smc-check=all", # needed for -j if i don't use --enable-valgrind to build js
+            "--xml=yes",
+            "--log-file=" + logPrefix + "-vg.xml",
+            "--suppressions=" + knownPath + "valgrind.txt"
+        ] + runthis[1:]
+
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)
     (sta, msg, elapsedtime) = (runinfo.sta, runinfo.msg, runinfo.elapsedtime)
 
@@ -52,6 +61,9 @@ def level(runthis, timeout, logPrefix):
     if sta == ntr.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, JS_TIMED_OUT)
+    if runthis[0] == "valgrind" and detect_valgrind_errors.amiss(logPrefix + "-vg.xml"):
+        issues.append("valgrind reported an error")
+        lev = max(lev, JS_VG_AMISS)
 
     amiss = len(issues) != 0
     amissStr = "" if not amiss else "*" + repr(issues) + " "
@@ -62,7 +74,8 @@ def level(runthis, timeout, logPrefix):
 def interesting(args, tempPrefix):
     minimumInterestingLevel = int(args[0])
     timeout = int(args[1])
-    actualLevel = level(args[3:], timeout, tempPrefix)
+    knownPath = args[2]
+    actualLevel = level(args[3:], timeout, knownPath, tempPrefix)
     return actualLevel >= minimumInterestingLevel
 
 def init(args):

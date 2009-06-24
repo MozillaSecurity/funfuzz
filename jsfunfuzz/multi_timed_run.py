@@ -30,7 +30,7 @@ def many_timed_runs():
         iteration += 1
         logPrefix = "w%d" % iteration
 
-        level = jsunhappy.level(runThis, timeout, logPrefix)
+        level = jsunhappy.level(runThis, timeout, knownPath, logPrefix)
 
         if level > jsunhappy.JS_TIMED_OUT:
             showtail(logPrefix + "-out")

@@ -34,7 +34,7 @@ def many_timed_runs(fullURLs):
         c.close()
 
         runThis = browser + [fullURL]
-        level = domunhappy.level(runThis, timeout, logPrefix)
+        level = domunhappy.level(runThis, timeout, knownPath, logPrefix)
 
         if level > domunhappy.DOM_TIMED_OUT:
             print fullURL
@@ -140,7 +140,7 @@ def createTempDir():
 def randomHash():
     metaSeed = random.randint(1, 10000)
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5
-    return "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,3000,0"
+    return "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,1000,0"
 
 
 
