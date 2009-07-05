@@ -7,6 +7,9 @@ Without JIT:
 With JIT:
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee log1
 
+Valgrind+JIT: (opt build recommended; --enable-valgrind(?) even better)
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ valgrind ./js -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee log1
+
 
 Hints for building spidermonkey:
   http://developer.mozilla.org/en/docs/SpiderMonkey_Build_Documentation
