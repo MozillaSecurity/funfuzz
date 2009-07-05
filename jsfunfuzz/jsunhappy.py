@@ -26,7 +26,7 @@ def level(runthis, timeout, knownPath, logPrefix):
             "--smc-check=all", # needed for -j if i don't use --enable-valgrind to build js
             "--xml=yes",
             "--log-file=" + logPrefix + "-vg.xml",
-            "--suppressions=" + knownPath + "valgrind.txt"
+            "--suppressions=" + os.path.join(knownPath, "valgrind.txt")
         ] + runthis[1:]
 
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)

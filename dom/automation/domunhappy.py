@@ -23,7 +23,7 @@ def level(runthis, timeout, knownPath, logPrefix):
             "valgrind",
             "--xml=yes",
             "--log-file=" + logPrefix + "-vg.xml",
-            "--suppressions=" + knownPath + "valgrind.txt",
+            "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
             "--auto-run-dsymutil=yes"
         ] + runthis[1:]
 
