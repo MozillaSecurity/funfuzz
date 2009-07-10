@@ -25,9 +25,6 @@ knownHash = ath([
 # If one of these leaks, leaks of small objects will not be reported.
 knownLargeHash = ath([
 
-# Bug 493915
-"nsGlobalWindow",
-
 # Bug 397206
 "BackstagePass",
 
