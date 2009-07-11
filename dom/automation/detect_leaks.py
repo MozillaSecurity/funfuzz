@@ -17,7 +17,10 @@ knownHash = ath([
 "nsStringBuffer",
 
 # ...
-"nsStorageStream"
+"nsStorageStream",
+
+# Bug 499607
+"nsLineList"
 
 ])
 
