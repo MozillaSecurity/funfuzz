@@ -50,7 +50,11 @@ knownLargeHash = ath([
 # Large items that
 # - should be reported even if things in knownLargeHash leak
 # - should quell the reporting of smaller objects
+# XXX make this list permanent instead of having to remember to re-add things here
 otherLargeHash = ath([
+"nsGlobalWindow",
+"nsDocument",
+"nsDocShell"
 ])
 
 
