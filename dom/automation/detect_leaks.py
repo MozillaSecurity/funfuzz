@@ -28,6 +28,10 @@ knownHash = ath([
 # If one of these leaks, leaks of small objects will not be reported.
 knownLargeHash = ath([
 
+# Bug 503989, bug 503991.  When removing, be sure to add to otherLargeHash below.
+"nsGlobalWindow",
+"nsDocument",
+
 # Bug 397206
 "BackstagePass",
 
@@ -52,8 +56,6 @@ knownLargeHash = ath([
 # - should quell the reporting of smaller objects
 # XXX make this list permanent instead of having to remember to re-add things here
 otherLargeHash = ath([
-"nsGlobalWindow",
-"nsDocument",
 "nsDocShell"
 ])
 
