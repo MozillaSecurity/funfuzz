@@ -42,10 +42,9 @@ def level(runthis, timeout, knownPath, logPrefix):
     if sta == ntr.NORMAL and detect_leaks.amiss(logPrefix):
         issues.append("unknown leak")
         lev = max(lev, DOM_NEW_LEAK)
-    # Bug 503981
-    #if detect_malloc_errors.amiss(logPrefix):
-    #    issues.append("malloc error")
-    #    lev = max(lev, DOM_MALLOC_ERROR)
+    if detect_malloc_errors.amiss(logPrefix):
+        issues.append("malloc error")
+        lev = max(lev, DOM_MALLOC_ERROR)
     if sta == ntr.ABNORMAL:
         issues.append("abnormal exit")
         lev = max(lev, DOM_ABNORMAL_EXIT)
