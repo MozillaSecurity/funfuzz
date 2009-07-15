@@ -41,22 +41,22 @@ def prettyStack(error):
     stack = error.getElementsByTagName("stack")[0]
     for frame in stack.childNodes:
         if frame.nodeType == frame.ELEMENT_NODE:
-             objs = frame.getElementsByTagName("obj")
-             obj = objs[0].firstChild.data if len(objs) > 0 else "noobj"
-             fns = frame.getElementsByTagName("fn")
-             fn = fns[0].firstChild.data if len(fns) > 0 else "unknown"
-             files = frame.getElementsByTagName("file")
-             lines = frame.getElementsByTagName("line")
-             file = None
-             r += fn + " ("
-             if len(files) > 0:
-                 file = files[0].firstChild.data
-                 if len(lines) > 0:
-                     file += ":" + lines[0].firstChild.data
-                 r += file
-             else:
-                 r += "in " + obj
-             r += ")\n"
+            objs = frame.getElementsByTagName("obj")
+            obj = objs[0].firstChild.data if len(objs) > 0 else "noobj"
+            fns = frame.getElementsByTagName("fn")
+            fn = fns[0].firstChild.data if len(fns) > 0 else "unknown"
+            files = frame.getElementsByTagName("file")
+            lines = frame.getElementsByTagName("line")
+            file = None
+            r += fn + " ("
+            if len(files) > 0:
+                file = files[0].firstChild.data
+                if len(lines) > 0:
+                    file += ":" + lines[0].firstChild.data
+                r += file
+            else:
+                r += "in " + obj
+            r += ")\n"
     return r
 
 def amiss(fn):
