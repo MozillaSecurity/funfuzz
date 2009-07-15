@@ -10,7 +10,14 @@ def blame(error):
     stack = error.getElementsByTagName("stack")[0]
     for frame in stack.childNodes:
         if frame.nodeType == frame.ELEMENT_NODE:
-            obj = frame.getElementsByTagName("obj")[0].firstChild.data
+            fns = frame.getElementsByTagName("fn")
+            if len(fns) > 0:
+                if fns[0].firstChild.data == "__static_initialization_and_destruction_0(int, int)":
+                    return BLAME_DONT_CARE # XXX TEMPORARY (should try firefox debug or objdump/asm)
+            objs = frame.getElementsByTagName("obj")
+            if len(objs) == 0:
+                pass
+            obj = objs[0].firstChild.data
             if obj.find("valgrind") != -1:
                 pass
             elif obj.find("nssutil") != -1:
@@ -34,7 +41,8 @@ def prettyStack(error):
     stack = error.getElementsByTagName("stack")[0]
     for frame in stack.childNodes:
         if frame.nodeType == frame.ELEMENT_NODE:
-             obj = frame.getElementsByTagName("obj")[0].firstChild.data
+             objs = frame.getElementsByTagName("obj")
+             obj = objs[0].firstChild.data if len(objs) > 0 else "noobj"
              fns = frame.getElementsByTagName("fn")
              fn = fns[0].firstChild.data if len(fns) > 0 else "unknown"
              files = frame.getElementsByTagName("file")
