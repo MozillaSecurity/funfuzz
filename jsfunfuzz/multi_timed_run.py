@@ -47,9 +47,9 @@ def many_timed_runs():
             lithArgs = [jsunhappypy, str(level), str(timeout), knownPath] + runThis[:-1] + [filenameToReduce]
             print "multi_timed_run is running Lithium..."
             print repr([lithiumpy] + lithArgs)
-            subprocess.call([lithiumpy] + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
+            subprocess.call(["python", lithiumpy] + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
             if level > jsunhappy.JS_DID_NOT_FINISH:
-                subprocess.call([lithiumpy, "-c"] + lithArgs, stdout=open(logPrefix + "-lith2", "w"))
+                subprocess.call(["python", lithiumpy, "-c"] + lithArgs, stdout=open(logPrefix + "-lith2", "w"))
             print "Done running Lithium"
 
         else:
