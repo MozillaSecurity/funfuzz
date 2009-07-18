@@ -569,8 +569,8 @@ function tryItOut(code)
     realGC();
   }
 
-  // regexps can't match across lines, so replace line breaks with spaces.
-  var wtt = whatToTest(code.replace(/\n/g, " ").replace(/\r/g, " "));
+  // regexps can't match across lines, so replace whitespace with spaces.
+  var wtt = whatToTest(code.replace(/\s/g, " "));
 
   if (!wtt.allowParse)
     return;
