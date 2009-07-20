@@ -65,7 +65,9 @@
 #   compileType can be debug or opt.
 #   branchType can be Gecko 1.9.1.x, TM or v8 engines.
 
-import sys, os, subprocess
+import sys, os, subprocess, shutil
+
+supportedBranches = "[191|tm|v8]"
 
 # The corresponding CLI requirements should be input, else output this error.
 def error():
@@ -74,14 +76,14 @@ def error():
     print "| Error! |"
     print "=========="
     print
-    print "Usage: ./run-jsfunfuzz.py [dbg|opt] [191|tm|v8]"
+    print "General usage: ./run-jsfunfuzz.py [dbg|opt] " + supportedBranches
     print
 
 # Detect platform and set appropriate fuzzing path.
 if os.name == "posix":
-    startPath = "~/Desktop/jsfunfuzz-"
+    startPath = "~/Desktop/jsfunfuzz-"  # Use Desktop for convenience.
 elif os.name == "nt":
-    startPath = "/c/jsfunfuzz-"
+    startPath = "/c/jsfunfuzz-"  # Use c: to bypass MozillaBuild limitations.
 else:
     print "\nPlatform is not supported.\n"
     quit()
@@ -94,23 +96,78 @@ else:
     print "Error reason: Only \'dbg\' or \'opt\' are accepted as compileType.\n"
     quit()
 
+# Accept appropriate parameters for branchType.
+if (sys.argv[2] == "191") or (sys.argv[2] == "tm") or (sys.argv[2] == "v8"):
+    branchType = sys.argv[2]
+else:
+    error()
+    print "Error reason: Please double-check your branchType " + \
+    supportedBranches + ".\n"
+    quit()
 
-
-branchType = sys.argv[2]
-
-fuzzPath = os.path.expanduser(startPath + compileType + "-" + branchType)
-
-#print fuzzDir
-print fuzzPath
-#os.makedirs(unixFuzzPath)
-#os.chdir(unixFuzzPath)
-subprocess.call(["ls"])
-print "boo"
-
+# Expand the ~ folder on Linux/Mac.
 if os.name == "posix":
-    if os.uname()[0] == "Darwin":
-        print "This is Mac."
-    if os.uname()[0] == "Linux":
-        print "This is Linux."
-if os.name == "nt":
-    print "This is Windows."
+    fuzzPath = os.path.expanduser(startPath + compileType + "-" + branchType)
+
+# Create the fuzzing folder.
+try:
+    os.makedirs(fuzzPath)
+except OSError:
+    error()
+    print "Error reason: The fuzzing path at \'" + fuzzPath + \
+    "\' already exists! Exiting ...\n"
+    # print "Do you want to remove it? (y/n)"   # FIXME Suggested removal.
+                                                # Use shutil.rmtree ...
+    quit()
+    
+# Change to the fuzzing directory.
+os.chdir(fuzzPath)
+
+# Create and change to the compile directory.
+#OBSOLETE wrt.shutil.copytree??
+#os.mkdir("compilePath")
+#os.chdir("compilePath")
+
+# Gecko 1.9.1.x uses Mercurial.
+if branchType == "191":
+    if os.name == "posix":
+        shutil.copytree(os.path.expanduser("~/mozilla-1.9.1/js/src/*"),"compilePath")
+    elif os.name == "nt":
+        shutil.copytree("/c/mozilla-1.9.1/js/src/*","compilePath")
+        
+    os.chdir("compilePath")
+    
+    #subprocess.call("cp -r ~/mozilla-1.9.1/js/src/* .")  # FIXME any Python eqv?
+    # Use comm-central's mozilla-1.9.1 - choose among the above or below lines.
+    #subprocess.call("cp -r ~/comm-central/mozilla/js/src/* .")
+    
+    # Sniff platform and run different autoconf types:
+    if os.name == "posix":
+        if os.uname()[0] == "Darwin":
+            subprocess.call("autoconf213")
+        elif os.uname()[0] == "Linux":
+            subprocess.call("autoconf2.13")
+    elif os.name == "nt":
+        subprocess.call("autoconf-2.13")
+    
+    # Create objdirs within the compilePaths.
+    compileobjdir = compileType + "-objdir"
+    os.mkdir(compileobjdir)
+    os.chdir(compileobjdir)
+    
+    # Configure settings depending on compileType.
+    if compileType == "dbg":
+        subprocess.call("../configure --disable-optimize --enable-debug")
+    elif compileType == "opt":
+        subprocess.call("../configure --enable-optimize --disable-debug")
+        
+    # Run make using 2 cores.
+    subprocess.call("make -j2")  # FIXME fallback single core compile on CLI arg
+    
+    #corresponding versions of this line:
+    #cp js ../../js-dbg-$branchType-intelmac
+    #os.chdir("../../")
+    
+
+
+
