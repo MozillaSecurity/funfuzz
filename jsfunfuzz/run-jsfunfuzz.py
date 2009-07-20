@@ -2,26 +2,26 @@
 
 #/* ***** BEGIN LICENSE BLOCK	****
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
-# 
+#
 # The contents of this file are subject to the Mozilla Public License Version
 # 1.1 (the "License"); you may not use this file except in compliance with
 # the License. You may obtain a copy of the License at
 # http://www.mozilla.org/MPL/
-# 
+#
 # Software distributed under the License is distributed on an "AS IS" basis,
 # WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
 # for the specific language governing rights and limitations under the
 # License.
-# 
+#
 # The Original Code is jsfunfuzz.
-# 
+#
 # The Initial Developer of the Original Code is
 # Gary Kwong.
 # Portions created by the Initial Developer are Copyright (C) 2006-2008
 # the Initial Developer. All Rights Reserved.
-# 
+#
 # Contributor(s):
-# 
+#
 # Alternatively, the contents of this file may be used under the terms of
 # either the GNU General Public License Version 2 or later (the "GPL"), or
 # the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -33,11 +33,11 @@
 # and other provisions required by the GPL or the LGPL. If you do not delete
 # the provisions above, a recipient may use your version of this file under
 # the terms of any one of the MPL, the GPL or the LGPL.
-# 
+#
 # * ***** END LICENSE BLOCK	****	/
-# 
+#
 # Version History:
-# 
+#
 # April 2008 - 1.x:
 #   Initial idea, previously called ./jsfunfuzz-moz18branch-start-intelmac
 # June 2008 - 2.x:
@@ -56,11 +56,11 @@
 #   becoming obsolete in 5.5 months, mozTrunk is rarely fuzzed in favour of TM
 #   and JavaScriptCore simply isn't a significant competing engine, and Safari
 #   uses its own Nitro engine.
-# 
+#
 # Note:
 #   If something screws up, trash the entire existing
 #       ~/Desktop/jsfunfuzz-$compileType-$branchType folder.
-# 
+#
 # Receive user input on compileType and branchType.
 #   compileType can be debug or opt.
 #   branchType can be Gecko 1.9.1.x, TM or v8 engines.
@@ -119,28 +119,21 @@ except OSError:
     # print "Do you want to remove it? (y/n)"   # FIXME Suggested removal.
                                                 # Use shutil.rmtree ...
     quit()
-    
+
 # Change to the fuzzing directory.
 os.chdir(fuzzPath)
 
-# Create and change to the compile directory.
-#OBSOLETE wrt.shutil.copytree??
-#os.mkdir("compilePath")
-#os.chdir("compilePath")
-
 # Gecko 1.9.1.x uses Mercurial.
-if branchType == "191":
+if branchType == "191":  # FIXME Incorporate TM branch.
+
+    # Copy the entire js tree to the fuzzPath.
     if os.name == "posix":
-        shutil.copytree(os.path.expanduser("~/mozilla-1.9.1/js/src/*"),"compilePath")
+        shutil.copytree(os.path.expanduser("~/mozilla-1.9.1/js/src/"),"compilePath")  # FIXME incorporate c-c mozilla 191 support.
     elif os.name == "nt":
-        shutil.copytree("/c/mozilla-1.9.1/js/src/*","compilePath")
-        
+        shutil.copytree("/c/mozilla-1.9.1/js/src/","compilePath")
+
     os.chdir("compilePath")
-    
-    #subprocess.call("cp -r ~/mozilla-1.9.1/js/src/* .")  # FIXME any Python eqv?
-    # Use comm-central's mozilla-1.9.1 - choose among the above or below lines.
-    #subprocess.call("cp -r ~/comm-central/mozilla/js/src/* .")
-    
+
     # Sniff platform and run different autoconf types:
     if os.name == "posix":
         if os.uname()[0] == "Darwin":
@@ -149,25 +142,25 @@ if branchType == "191":
             subprocess.call("autoconf2.13")
     elif os.name == "nt":
         subprocess.call("autoconf-2.13")
-    
+
     # Create objdirs within the compilePaths.
     compileobjdir = compileType + "-objdir"
     os.mkdir(compileobjdir)
     os.chdir(compileobjdir)
-    
+
     # Configure settings depending on compileType.
     if compileType == "dbg":
-        subprocess.call("../configure --disable-optimize --enable-debug")
+        subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
     elif compileType == "opt":
-        subprocess.call("../configure --enable-optimize --disable-debug")
-        
+        subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
+
     # Run make using 2 cores.
-    subprocess.call("make -j2")  # FIXME fallback single core compile on CLI arg
-    
-    #corresponding versions of this line:
-    #cp js ../../js-dbg-$branchType-intelmac
-    #os.chdir("../../")
-    
+    subprocess.call(["make", "-j2"])
 
+    shellName = "js-" + compileType + "-" + branchType + "-"  # FIXME add os name behind.
 
+    # Copy js executable out into fuzzPath.
+    shutil.copy("js","../../" + shellName)
 
+    # Change into fuzzPath directory.
+    os.chdir("../../")
