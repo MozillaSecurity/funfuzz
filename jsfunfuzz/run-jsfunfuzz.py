@@ -120,7 +120,7 @@ except OSError:
     error()
     print "Error reason: The fuzzing path at \'" + fuzzPath + \
     "\' already exists! Exiting ...\n"
-    # Use shell's form of read.
+    # Use shell's form of read. `value = raw_input(optional_prompt)`
     # print "Do you want to remove it? (y/n)"   # FIXME Suggested removal.
                                                 # Use shutil.rmtree ...
     quit()
@@ -131,7 +131,6 @@ os.chdir(fuzzPath)
 # Copy the entire js tree to the fuzzPath.
 if os.name == "posix":
     if branchType == "191":
-        # FIXME: Turn copy operations verbose?
         shutil.copytree(os.path.expanduser("~/comm-central/mozilla/js/src/"),"compilePath")  # FIXME incorporate c-c mozilla 191 support.
     elif branchType == "tm":
         shutil.copytree(os.path.expanduser("~/tracemonkey/js/src"),"compilePath")
@@ -159,7 +158,7 @@ if compileType == "dbg":
     subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
 elif compileType == "opt":
     subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
-    
+
 # FIXME: I should compile both debug and opt for every fuzzer round.
 
 # Run make using 2 cores.
@@ -203,8 +202,9 @@ subprocess.call(["python", "-u", \
                 "-j", os.path.expanduser("~/fuzzing/jsfunfuzz/jsfunfuzz.js")], \
                 stdout=open("log-jsfunfuzz", "w"))
 # FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :)
-# FIXME: I want to pipe stdout both to console output as well as to the file, just like the `tee` command.
-# FIXME: Implement the time command like in shell to the above.
+# FIXME: I want to pipe stdout both to console output as well as to the file, just like the `tee` command.  stdout=subprocess.Popen(['tee', ...], stdin=subprocess.PIPE).stdin; of course
+# FIXME: Implement the time command like in shell to the above. time.time then subtraction
 # FIXME: Port above to windows.
 # FIXME: Move paths to another place above.
+# FIXME: make use of analysis.sh somewhere, not necessarily here.
 #time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
