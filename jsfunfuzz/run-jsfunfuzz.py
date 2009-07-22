@@ -149,17 +149,37 @@ elif os.name == "nt":
     subprocess.call("autoconf-2.13")
 
 # Create objdirs within the compilePaths.
-compileobjdir = compileType + "-objdir"
-os.mkdir(compileobjdir)
-os.chdir(compileobjdir)
+os.mkdir("dbg-objdir")
+os.mkdir("opt-objdir")
 
-# Configure settings depending on compileType.
-if compileType == "dbg":
-    subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
-elif compileType == "opt":
-    subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
 
-# FIXME: I should compile both debug and opt for every fuzzer round.
+# Compile the debug build.
+os.chdir("dbg-objdir")
+subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
+
+#shellName = ""  # shellName is used later.
+#def compileCopy():
+# Run make using 2 cores.
+subprocess.call(["make", "-j2"])
+
+# Sniff platform and rename executable accordingly:
+if os.name == "posix":
+    shellName = "js-" + compileType + "-" + branchType + "-" + \
+                os.uname()[0].lower()
+elif os.name == "nt":
+    shellName = "js-" + compileType + "-" + branchType + "-" + os.name.lower()
+
+# Copy js executable out into fuzzPath.
+shutil.copy2("js","../../" + shellName)
+
+#compileCopy()
+
+# Change into compilePath directory for the opt build.
+os.chdir("../")
+
+# Compile the opt build.
+os.chdir("opt-objdir")
+subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
 
 # Run make using 2 cores.
 subprocess.call(["make", "-j2"])
@@ -174,8 +194,11 @@ elif os.name == "nt":
 # Copy js executable out into fuzzPath.
 shutil.copy2("js","../../" + shellName)
 
+#compileCopy()    #FIXME!!!!
+
 # Change into fuzzPath directory.
 os.chdir("../../")
+
 
 # FIXME v8 checkout.
 
@@ -195,16 +218,22 @@ print "============================================"
 print
 
 # Start fuzzing the newly compiled builds.
+print shellName
+print fuzzPath + shellName
+print "python", "-u", \
+                os.path.expanduser("~/fuzzing/jsfunfuzz/multi_timed_run.py"), "1800", \
+                os.path.expanduser("~/fuzzing/js-known/mozilla-central/"), fuzzPath + shellName, \
+                "-j", os.path.expanduser("~/fuzzing/jsfunfuzz/jsfunfuzz.js")
 subprocess.call(["python", "-u", \
                 os.path.expanduser("~/fuzzing/jsfunfuzz/multi_timed_run.py"), "1800", \
                 os.path.expanduser("~/fuzzing/js-known/mozilla-central/"), fuzzPath + shellName, \
-                #os.path.expanduser("~/fuzzing/js-known/mozilla-central/"), os.path.expanduser("~/Desktop/jsfunfuzz-dbg-tm/js-dbg-tm-linux"), \
                 "-j", os.path.expanduser("~/fuzzing/jsfunfuzz/jsfunfuzz.js")], \
                 stdout=open("log-jsfunfuzz", "w"))
-# FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :)
+# FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :) EDIT - 191 works too?
 # FIXME: I want to pipe stdout both to console output as well as to the file, just like the `tee` command.  stdout=subprocess.Popen(['tee', ...], stdin=subprocess.PIPE).stdin; of course
 # FIXME: Implement the time command like in shell to the above. time.time then subtraction
 # FIXME: Port above to windows.
 # FIXME: Move paths to another place above.
 # FIXME: make use of analysis.sh somewhere, not necessarily here.
+# FIXME: cleanup multiple elifs to if.. return.
 #time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
