@@ -68,17 +68,25 @@
 import sys, os, subprocess, shutil
 from time import gmtime, strftime
 
-###############
-#  Variables  #
-###############
+#######################
+#  Variables (START)  #
+#######################
 
+supportedBranches = "[191|tm|v8]"  # Get 1.9.2 support through FIXMEFOR192.
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
     print
     print "DEBUG - output:"
-supportedBranches = "[191|tm|v8]"  # 1.9.2 support can be easily added later. Implement FIXMEFOR192 ?
+def exceptionBadOs():
+    raise Exception("Unknown OS - Platform is unsupported.")
+def exceptionBadCompileType():
+    raise Exception("Unknown compileType - choose from [dbg|opt].")
+def exceptionBadPosixBranchType()():
+    raise Exception("Not a supported POSIX branchType")
+def exceptionBadNtBranchType()():
+    raise Exception("Not a supported NT branchType")
 
-# FIXME: Use optparse here.
+# FIXME: Use optparse here. Move error() into optparse, turn other else: statements that quit() into raising exceptions - there's 3 below.
 
 # The corresponding CLI requirements should be input, else output this error.
 def error():
@@ -133,7 +141,7 @@ elif os.name == "nt":
         fuzzPathStart = "/c/jsfunfuzz-"   # Start of the fuzzing directory.
         return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
 else:
-    raise Exception("Unknown OS - Platform is unsupported.")
+    exceptionBadOs()
     
 repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
 
@@ -142,6 +150,9 @@ if verbose:
     print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
     print "DEBUG - " + ", ".join(locations())
 
+#####################
+#  Variables (END)  #
+#####################
 
 # Expand the ~ folder on Linux/Mac.
 if os.name == "posix":
@@ -163,18 +174,37 @@ except OSError:
 # Change to the fuzzing directory.
 os.chdir(fuzzPath)
 
+
+# Methods to copy the entire js source directory.
+def posixCopyJsTree(repo):
+    shutil.copytree(os.path.expanduser(repo + "js/src/"),"compilePath")
+def ntCopyJsTree(repo):
+    shutil.copytree(repo + "js/src/","compilePath")
+
 # Copy the entire js tree to the fuzzPath.
 if os.name == "posix":
     if branchType == "191":
-        shutil.copytree(os.path.expanduser(repo191 + "js/src/"),"compilePath")
+        posixCopyJsTree(repo191)
     elif branchType == "192":
-        shutil.copytree(os.path.expanduser(repo192 + "js/src/"),"compilePath")
+        posixCopyJsTree(repo192)
     elif branchType == "tm":
-        shutil.copytree(os.path.expanduser(repoTM + "js/src/"),"compilePath")
+        posixCopyJsTree(repoTM)
+    else:
+        exceptionBadPosixBranchType()()
 elif os.name == "nt":
-    shutil.copytree("/c/mozilla-1.9.1/js/src/","compilePath") # FIXME write the proper NT paths. without expanduser, basically. Also, consider copytree2 if any.
+    if branchType == "191":
+        ntCopyJsTree(repo191)
+    elif branchType == "192":
+        ntCopyJsTree(repo192)
+    elif branchType == "tm":
+        ntCopyJsTree(repoTM)
+    else:
+        exceptionBadNtBranchType()()
+else:
+    exceptionBadOs()
 
 os.chdir("compilePath")
+
 
 # Sniff platform and run different autoconf types:
 if os.name == "posix":
@@ -184,6 +214,9 @@ if os.name == "posix":
         subprocess.call("autoconf2.13")
 elif os.name == "nt":
     subprocess.call("autoconf-2.13")
+else:
+    exceptionBadOs()
+
 
 # Create objdirs within the compilePaths.
 os.mkdir("dbg-objdir")
@@ -197,6 +230,8 @@ if compileType == "dbg":
 elif compileType == "opt":
     os.chdir("opt-objdir")
     subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
+else:
+    exceptionBadCompileType()
 
 def compileCopy(dbgOpt):
     # Run make using 2 cores.
@@ -208,6 +243,8 @@ def compileCopy(dbgOpt):
                     os.uname()[0].lower()
     elif os.name == "nt":
         shellName = "js-" + dbgOpt + "-" + branchType + "-" + os.name.lower()
+    else:
+        exceptionBadOs()
     
     # Copy js executable out into fuzzPath.
     shutil.copy2("js","../../" + shellName)
@@ -223,6 +260,7 @@ if verbose:
     verbose()
     print "DEBUG - This should be the compilePath:"
     print "DEBUG - " + os.getcwdu()
+    # FIXME raise exception if compilePath is not found in the string returned.
     
 # Compile the other build.
 # No need to assign jsShellName here.
@@ -234,6 +272,8 @@ elif compileType == "opt":
     os.chdir("dbg-objdir")
     subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
     compileCopy("dbg")
+else:
+    exceptionBadCompileType()
 
 # Change into fuzzPath directory.
 os.chdir("../../")
@@ -242,6 +282,7 @@ if verbose:
     verbose()
     print "DEBUG - This should be the fuzzPath:"
     print "DEBUG - " + os.getcwdu()
+    # FIXME raise exception if fuzzPath is not found in the string returned.
 
 
 # FIXME v8 checkout.
@@ -252,6 +293,8 @@ if os.name == "posix":
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.sh"), ".")
 elif os.name == "nt":
     shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.sh", ".")
+else:
+    exceptionBadOs()
 
 print
 print "============================================"
@@ -291,9 +334,8 @@ subprocess.call(["python", "-u", \
 # 	print "r:", r
 # FIXME: Implement the time command like in shell to the above. time.time then subtraction
 # FIXME: Port above to windows. Basically take out expanduser?
-# FIXME: Move paths to another place above.
 # FIXME: make use of analysis.sh somewhere, not necessarily here.
-# FIXME: Ensure debug builds are debug builds and opt builds are opt! Add unit test? test gczeal(2) - js-dbg should return nothing while opt should return a referenceerror
+# FIXME: Ensure debug builds are debug builds and opt builds are opt! Add unit test? test -Z 2 - js-dbg should start while opt should return an error code 2 - check subprocess returncode?
 # FIXME: cleanup multiple elifs to if.. return. See below.
 #>>> config = {}
 #>>> def foo():
