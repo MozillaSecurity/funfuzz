@@ -279,6 +279,16 @@ subprocess.call(["python", "-u", \
                 stdout=open("log-jsfunfuzz", "w"))
 # FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :) EDIT - 191 works too? change js-known to 191
 # FIXME: I want to pipe stdout both to console output as well as to the file, just like the `tee` command.  stdout=subprocess.Popen(['tee', ...], stdin=subprocess.PIPE).stdin; of course
+# def main(args=None):
+# 	if args is None:
+# 		args = []
+# 
+# 	tee = subprocess.Popen(["tee", "filename"],
+# 		stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+# 	r = subprocess.call(["ls"], stdout=tee.stdin)
+# 	output = tee.communicate()[0]
+# 	print output
+# 	print "r:", r
 # FIXME: Implement the time command like in shell to the above. time.time then subtraction
 # FIXME: Port above to windows. Basically take out expanduser?
 # FIXME: Move paths to another place above.
