@@ -65,7 +65,8 @@
 #   compileType can be debug or opt.
 #   branchType can be Gecko 1.9.1.x, TM or v8 engines.
 
-import sys, os, subprocess, shutil, time
+import sys, os, subprocess, shutil
+from time import gmtime, strftime
 
 ###############
 #  Variables  #
@@ -73,7 +74,8 @@ import sys, os, subprocess, shutil, time
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
-    print "VERBOSE output:"
+    print
+    print "DEBUG - output:"
 supportedBranches = "[191|tm|v8]"  # 1.9.2 support can be easily added later. Implement FIXMEFOR192 ?
 
 # FIXME: Use optparse here.
@@ -137,8 +139,8 @@ repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
 
 if verbose:
     verbose()
-    print "repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
-    print locations()
+    print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
+    print "DEBUG - " + ", ".join(locations())
 
 
 # Expand the ~ folder on Linux/Mac.
@@ -188,11 +190,14 @@ os.mkdir("dbg-objdir")
 os.mkdir("opt-objdir")
 
 
-# Compile the debug build.
-os.chdir("dbg-objdir")
-subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
+# Compile the first build.
+if compileType == "dbg":
+    os.chdir("dbg-objdir")
+    subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
+elif compileType == "opt":
+    os.chdir("opt-objdir")
+    subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
 
-#shellName = ""  # shellName is used later.
 def compileCopy(dbgOpt):
     # Run make using 2 cores.
     subprocess.call(["make", "-j2"])
@@ -206,21 +211,28 @@ def compileCopy(dbgOpt):
     
     # Copy js executable out into fuzzPath.
     shutil.copy2("js","../../" + shellName)
+    
+    return shellName
 
-compileCopy(compileType)
+jsShellName = compileCopy(compileType)
 
 # Change into compilePath directory for the opt build.
 os.chdir("../")
 
 if verbose:
     verbose()
-    print "This should be the compilePath:"
-    print os.getcwdu()
-
-# We want to compile both debug and opt builds for a particular revision.
+    print "DEBUG - This should be the compilePath:"
+    print "DEBUG - " + os.getcwdu()
+    
+# Compile the other build.
+# No need to assign jsShellName here.
 if compileType == "dbg":
+    os.chdir("opt-objdir")
+    subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
     compileCopy("opt")
 elif compileType == "opt":
+    os.chdir("dbg-objdir")
+    subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
     compileCopy("dbg")
 
 # Change into fuzzPath directory.
@@ -228,8 +240,8 @@ os.chdir("../../")
 
 if verbose:
     verbose()
-    print "This should be the fuzzPath:"
-    print os.getcwdu()
+    print "DEBUG - This should be the fuzzPath:"
+    print "DEBUG - " + os.getcwdu()
 
 
 # FIXME v8 checkout.
@@ -254,15 +266,15 @@ print
 jsknownTM = repoFuzzing + "js-known/mozilla-central/"  # We use mozilla-central's js-known directories.
 # Start fuzzing the newly compiled builds.
 if verbose:
-    print "shellName is " + shellName
-    print "fuzzPath + shellName is " + fuzzPath + shellName
+    print "jsShellName is " + jsShellName
+    print "fuzzPath + jsShellName is " + fuzzPath + jsShellName
     print "python", "-u", \
                 os.path.expanduser(repoFuzzing + "jsfunfuzz/multi_timed_run.py"), "1800", \
-                os.path.expanduser(jsknownTM), fuzzPath + shellName, \
+                os.path.expanduser(jsknownTM), fuzzPath + jsShellName, \
                 "-j", os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js")
 subprocess.call(["python", "-u", \
                 os.path.expanduser(repoFuzzing + "jsfunfuzz/multi_timed_run.py"), "1800", \
-                os.path.expanduser(jsknownTM), fuzzPath + shellName, \
+                os.path.expanduser(jsknownTM), fuzzPath + jsShellName, \
                 "-j", os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js")], \
                 stdout=open("log-jsfunfuzz", "w"))
 # FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :) EDIT - 191 works too? change js-known to 191
@@ -271,6 +283,7 @@ subprocess.call(["python", "-u", \
 # FIXME: Port above to windows. Basically take out expanduser?
 # FIXME: Move paths to another place above.
 # FIXME: make use of analysis.sh somewhere, not necessarily here.
+# FIXME: Ensure debug builds are debug builds and opt builds are opt! Add unit test? test gczeal(2) - js-dbg should return nothing while opt should return a referenceerror
 # FIXME: cleanup multiple elifs to if.. return. See below.
 #>>> config = {}
 #>>> def foo():
