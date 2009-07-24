@@ -65,13 +65,18 @@
 #   compileType can be debug or opt.
 #   branchType can be Gecko 1.9.1.x, TM or v8 engines.
 
-import sys, os, subprocess, shutil
-from time import gmtime, strftime
+import sys, os, subprocess, shutil, time
 
-supportedBranches = "[191|tm|v8]"
-fuzzRepo = "~/fuzzing/"      # Location of the fuzzing repository.
-ccRepo = "~/comm-central/"   # Location of the comm-central repository.
-tmRepo = "~/tracemonkey/"    # Location of the tracemonkey repository.
+###############
+#  Variables  #
+###############
+
+verbose = True  # Turn this to True to enable verbose output for debugging.
+def verbose():
+    print "VERBOSE output:"
+supportedBranches = "[191|tm|v8]"  # 1.9.2 support can be easily added later. Implement FIXMEFOR192 ?
+
+# FIXME: Use optparse here.
 
 # The corresponding CLI requirements should be input, else output this error.
 def error():
@@ -83,35 +88,63 @@ def error():
     print "General usage: ./run-jsfunfuzz.py [dbg|opt] " + supportedBranches
     print
 
-# Detect platform and set appropriate fuzzing path.
-if os.name == "posix":
-    startPath = "~/Desktop/jsfunfuzz-"  # Use Desktop for convenience. FIXME change this to user customizable above.
-elif os.name == "nt":
-    startPath = "/c/jsfunfuzz-"  # Use c: to bypass MozillaBuild limitations.
-else:
-    print "\nPlatform is not supported.\n"
-    quit()
 
 # Accept dbg and opt parameters for compileType only.
 if (sys.argv[1] == "dbg") or (sys.argv[1] == "opt"):
     compileType = sys.argv[1]
 else:
     error()
+    print "Your compileType variable is \'" + compileType + "\'"
     print "Error reason: Only \'dbg\' or \'opt\' are accepted as compileType.\n"
     quit()
 
+
 # Accept appropriate parameters for branchType.
+# FIXMEFOR192: Add 192 support here once the 1.9.2 branch is created.
 if (sys.argv[2] == "191") or (sys.argv[2] == "tm") or (sys.argv[2] == "v8"):
     branchType = sys.argv[2]
 else:
     error()
+    print "Your branchType variable is \'" + branchType + "\'"
     print "Error reason: Please double-check your branchType " + \
     supportedBranches + ".\n"
     quit()
 
+
+# Definitions of the different repository and fuzzing locations.
+if os.name == "posix":
+    def locations():
+        repoFuzzing = "~/fuzzing/"     # Location of the fuzzing repository.
+        repo191 = "~/mozilla-1.9.1/"   # Location of the 1.9.1 repository.
+        repo192 = "~/mozilla-1.9.2/"   # Location of the 1.9.2 repository.
+        repoTM = "~/tracemonkey/"      # Location of the tracemonkey repository.
+        fuzzPathStart = "~/Desktop/jsfunfuzz-" # Start of the fuzzing directory.
+        return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
+elif os.name == "nt":
+    def locations():
+        # ~ is not used because in XP, ~ contains spaces in
+        # "Documents and Settings".
+        repoFuzzing = "/c/fuzzing/"    # Location of the fuzzing repository.
+        repo191 = "/c/mozilla-1.9.1/"  # Location of the 1.9.1 repository.
+        repo192 = "/c/mozilla-1.9.2/"  # Location of the 1.9.2 repository.
+        repoTM = "/c/tracemonkey/"     # Location of the tracemonkey repository.
+        fuzzPathStart = "/c/jsfunfuzz-"   # Start of the fuzzing directory.
+        return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
+else:
+    raise Exception("Unknown OS - Platform is unsupported.")
+    
+repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
+
+if verbose:
+    verbose()
+    print "repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
+    print locations()
+
+
 # Expand the ~ folder on Linux/Mac.
 if os.name == "posix":
-    fuzzPath = os.path.expanduser(startPath + compileType + "-" + branchType + "/")
+    fuzzPath = os.path.expanduser(fuzzPathStart + compileType + "-" + \
+                                  branchType + "/")
 
 # Create the fuzzing folder.
 try:
@@ -120,7 +153,7 @@ except OSError:
     error()
     print "Error reason: The fuzzing path at \'" + fuzzPath + \
     "\' already exists! Exiting ...\n"
-    # Use shell's form of read. `value = raw_input(optional_prompt)`
+    # FIXME: Use shell's form of read. `value = raw_input(optional_prompt)`
     # print "Do you want to remove it? (y/n)"   # FIXME Suggested removal.
                                                 # Use shutil.rmtree ...
     quit()
@@ -131,11 +164,13 @@ os.chdir(fuzzPath)
 # Copy the entire js tree to the fuzzPath.
 if os.name == "posix":
     if branchType == "191":
-        shutil.copytree(os.path.expanduser("~/comm-central/mozilla/js/src/"),"compilePath")  # FIXME incorporate c-c mozilla 191 support.
+        shutil.copytree(os.path.expanduser(repo191 + "js/src/"),"compilePath")
+    elif branchType == "192":
+        shutil.copytree(os.path.expanduser(repo192 + "js/src/"),"compilePath")
     elif branchType == "tm":
-        shutil.copytree(os.path.expanduser("~/tracemonkey/js/src"),"compilePath")
+        shutil.copytree(os.path.expanduser(repoTM + "js/src/"),"compilePath")
 elif os.name == "nt":
-    shutil.copytree("/c/mozilla-1.9.1/js/src/","compilePath")
+    shutil.copytree("/c/mozilla-1.9.1/js/src/","compilePath") # FIXME write the proper NT paths. without expanduser, basically. Also, consider copytree2 if any.
 
 os.chdir("compilePath")
 
@@ -158,56 +193,53 @@ os.chdir("dbg-objdir")
 subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
 
 #shellName = ""  # shellName is used later.
-#def compileCopy():
-# Run make using 2 cores.
-subprocess.call(["make", "-j2"])
+def compileCopy(dbgOpt):
+    # Run make using 2 cores.
+    subprocess.call(["make", "-j2"])
+    
+    # Sniff platform and rename executable accordingly:
+    if os.name == "posix":
+        shellName = "js-" + dbgOpt + "-" + branchType + "-" + \
+                    os.uname()[0].lower()
+    elif os.name == "nt":
+        shellName = "js-" + dbgOpt + "-" + branchType + "-" + os.name.lower()
+    
+    # Copy js executable out into fuzzPath.
+    shutil.copy2("js","../../" + shellName)
 
-# Sniff platform and rename executable accordingly:
-if os.name == "posix":
-    shellName = "js-" + compileType + "-" + branchType + "-" + \
-                os.uname()[0].lower()
-elif os.name == "nt":
-    shellName = "js-" + compileType + "-" + branchType + "-" + os.name.lower()
-
-# Copy js executable out into fuzzPath.
-shutil.copy2("js","../../" + shellName)
-
-#compileCopy()
+compileCopy(compileType)
 
 # Change into compilePath directory for the opt build.
 os.chdir("../")
 
-# Compile the opt build.
-os.chdir("opt-objdir")
-subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
+if verbose:
+    verbose()
+    print "This should be the compilePath:"
+    print os.getcwdu()
 
-# Run make using 2 cores.
-subprocess.call(["make", "-j2"])
-
-# Sniff platform and rename executable accordingly:
-if os.name == "posix":
-    shellName = "js-" + compileType + "-" + branchType + "-" + \
-                os.uname()[0].lower()
-elif os.name == "nt":
-    shellName = "js-" + compileType + "-" + branchType + "-" + os.name.lower()
-
-# Copy js executable out into fuzzPath.
-shutil.copy2("js","../../" + shellName)
-
-#compileCopy()    #FIXME!!!!
+# We want to compile both debug and opt builds for a particular revision.
+if compileType == "dbg":
+    compileCopy("opt")
+elif compileType == "opt":
+    compileCopy("dbg")
 
 # Change into fuzzPath directory.
 os.chdir("../../")
+
+if verbose:
+    verbose()
+    print "This should be the fuzzPath:"
+    print os.getcwdu()
 
 
 # FIXME v8 checkout.
 
 # Copy over useful files that are updated in hg fuzzing branch.
 if os.name == "posix":
-    shutil.copy2(os.path.expanduser("~/fuzzing/jsfunfuzz/jsfunfuzz.js"), ".")
-    shutil.copy2(os.path.expanduser("~/fuzzing/jsfunfuzz/analysis.sh"), ".")
+    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), ".")
+    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.sh"), ".")
 elif os.name == "nt":
-    shutil.copy2("/c/fuzzing/jsfunfuzz/analysis.sh", ".")
+    shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.sh", ".")
 
 print
 print "============================================"
@@ -217,23 +249,43 @@ print "   DATE: " + strftime("%a, %d %b %Y %H:%M:%S +0000 %Z", gmtime())
 print "============================================"
 print
 
+
+# FIXME: of course have the 191 version of jsknownTM - sniff platform again. what about 192?
+jsknownTM = repoFuzzing + "js-known/mozilla-central/"  # We use mozilla-central's js-known directories.
 # Start fuzzing the newly compiled builds.
-print shellName
-print fuzzPath + shellName
-print "python", "-u", \
-                os.path.expanduser("~/fuzzing/jsfunfuzz/multi_timed_run.py"), "1800", \
-                os.path.expanduser("~/fuzzing/js-known/mozilla-central/"), fuzzPath + shellName, \
-                "-j", os.path.expanduser("~/fuzzing/jsfunfuzz/jsfunfuzz.js")
+if verbose:
+    print "shellName is " + shellName
+    print "fuzzPath + shellName is " + fuzzPath + shellName
+    print "python", "-u", \
+                os.path.expanduser(repoFuzzing + "jsfunfuzz/multi_timed_run.py"), "1800", \
+                os.path.expanduser(jsknownTM), fuzzPath + shellName, \
+                "-j", os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js")
 subprocess.call(["python", "-u", \
-                os.path.expanduser("~/fuzzing/jsfunfuzz/multi_timed_run.py"), "1800", \
-                os.path.expanduser("~/fuzzing/js-known/mozilla-central/"), fuzzPath + shellName, \
-                "-j", os.path.expanduser("~/fuzzing/jsfunfuzz/jsfunfuzz.js")], \
+                os.path.expanduser(repoFuzzing + "jsfunfuzz/multi_timed_run.py"), "1800", \
+                os.path.expanduser(jsknownTM), fuzzPath + shellName, \
+                "-j", os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js")], \
                 stdout=open("log-jsfunfuzz", "w"))
-# FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :) EDIT - 191 works too?
+# FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :) EDIT - 191 works too? change js-known to 191
 # FIXME: I want to pipe stdout both to console output as well as to the file, just like the `tee` command.  stdout=subprocess.Popen(['tee', ...], stdin=subprocess.PIPE).stdin; of course
 # FIXME: Implement the time command like in shell to the above. time.time then subtraction
-# FIXME: Port above to windows.
+# FIXME: Port above to windows. Basically take out expanduser?
 # FIXME: Move paths to another place above.
 # FIXME: make use of analysis.sh somewhere, not necessarily here.
-# FIXME: cleanup multiple elifs to if.. return.
+# FIXME: cleanup multiple elifs to if.. return. See below.
+#>>> config = {}
+#>>> def foo():
+#...     config['boom'] = 'BANG'
+#...     config['wat'] = 'YES'
+#... 
+#>>> def bar():
+#...     config['boom'] = 'AAARGH'
+#...     config['wat'] = 'NO'
+#... 
+#>>> {'a': foo, 'b': bar}['a']()
+#>>> print config
+#{'wat': 'YES', 'boom': 'BANG'}
+#>>> {'a': foo, 'b': bar}['b']()
+#>>> print config
+#{'wat': 'NO', 'boom': 'AAARGH'}
+#>>> 
 #time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
