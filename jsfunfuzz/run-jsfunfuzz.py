@@ -81,9 +81,9 @@ def exceptionBadOs():
     raise Exception("Unknown OS - Platform is unsupported.")
 def exceptionBadCompileType():
     raise Exception("Unknown compileType - choose from [dbg|opt].")
-def exceptionBadPosixBranchType()():
+def exceptionBadPosixBranchType():
     raise Exception("Not a supported POSIX branchType")
-def exceptionBadNtBranchType()():
+def exceptionBadNtBranchType():
     raise Exception("Not a supported NT branchType")
 
 # FIXME: Use optparse here. Move error() into optparse, turn other else: statements that quit() into raising exceptions - there's 3 below.
