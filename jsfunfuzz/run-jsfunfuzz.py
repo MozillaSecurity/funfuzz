@@ -86,7 +86,7 @@ def exceptionBadPosixBranchType():
 def exceptionBadNtBranchType():
     raise Exception("Not a supported NT branchType")
 
-# FIXME: Use optparse here. Move error() into optparse, turn other else: statements that quit() into raising exceptions - there's 3 below.
+# FIXME: Use optparse here. Move error() into optparse.
 
 # The corresponding CLI requirements should be input, else output this error.
 def error():
@@ -105,8 +105,7 @@ if (sys.argv[1] == "dbg") or (sys.argv[1] == "opt"):
 else:
     error()
     print "Your compileType variable is \'" + compileType + "\'"
-    print "Error reason: Only \'dbg\' or \'opt\' are accepted as compileType.\n"
-    quit()
+    raise Exception("Only \'dbg\' or \'opt\' are accepted as compileType.")
 
 
 # Accept appropriate parameters for branchType.
@@ -116,9 +115,8 @@ if (sys.argv[2] == "191") or (sys.argv[2] == "tm") or (sys.argv[2] == "v8"):
 else:
     error()
     print "Your branchType variable is \'" + branchType + "\'"
-    print "Error reason: Please double-check your branchType " + \
-    supportedBranches + ".\n"
-    quit()
+    raise Exception("Please double-check your branchType from " + \
+                    supportedBranches + ".")
 
 
 # Definitions of the different repository and fuzzing locations.
@@ -164,12 +162,7 @@ try:
     os.makedirs(fuzzPath)
 except OSError:
     error()
-    print "Error reason: The fuzzing path at \'" + fuzzPath + \
-    "\' already exists! Exiting ...\n"
-    # FIXME: Use shell's form of read. `value = raw_input(optional_prompt)`
-    # print "Do you want to remove it? (y/n)"   # FIXME Suggested removal.
-                                                # Use shutil.rmtree ...
-    quit()
+    raise Exception("The fuzzing path at \'" + fuzzPath + "\' already exists!")
 
 # Change to the fuzzing directory.
 os.chdir(fuzzPath)
@@ -221,14 +214,13 @@ else:
 # Create objdirs within the compilePaths.
 os.mkdir("dbg-objdir")
 os.mkdir("opt-objdir")
+os.chdir(compileType + "-objdir")
 
 
 # Compile the first build.
 if compileType == "dbg":
-    os.chdir("dbg-objdir")
     subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
 elif compileType == "opt":
-    os.chdir("opt-objdir")
     subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
 else:
     exceptionBadCompileType()
@@ -260,7 +252,10 @@ if verbose:
     verbose()
     print "DEBUG - This should be the compilePath:"
     print "DEBUG - " + os.getcwdu()
-    # FIXME raise exception if compilePath is not found in the string returned.
+    if "compilePath" in os.getcwdu():
+        pass
+    else:
+        raise Exception("We are not in compilePath.")
     
 # Compile the other build.
 # No need to assign jsShellName here.
@@ -282,7 +277,10 @@ if verbose:
     verbose()
     print "DEBUG - This should be the fuzzPath:"
     print "DEBUG - " + os.getcwdu()
-    # FIXME raise exception if fuzzPath is not found in the string returned.
+    if "fuzzPath" in os.getcwdu():
+        pass
+    else:
+        raise Exception("We are not in fuzzPath.")
 
 
 # FIXME v8 checkout.
@@ -290,6 +288,7 @@ if verbose:
 # Copy over useful files that are updated in hg fuzzing branch.
 if os.name == "posix":
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), ".")
+    # FIXME: analysis.sh replacement ?
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.sh"), ".")
 elif os.name == "nt":
     shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.sh", ".")
@@ -299,8 +298,7 @@ else:
 print
 print "============================================"
 print "!  Fuzzing " + compileType + " " + branchType + " js shell builds now  !"
-print "   DATE: " + strftime("%a, %d %b %Y %H:%M:%S +0000 %Z", gmtime())
-# FIXME: Dates look stupid.
+print "   DATE: " + time.asctime( time.localtime(time.time()) )
 print "============================================"
 print
 
