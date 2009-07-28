@@ -65,8 +65,7 @@
 #   compileType can be debug or opt.
 #   branchType can be Gecko 1.9.1.x, TM or v8 engines.
 
-import sys, os, subprocess, shutil
-from time import gmtime, strftime
+import sys, os, subprocess, shutil, time
 
 #######################
 #  Variables (START)  #
@@ -146,7 +145,7 @@ repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
 if verbose:
     verbose()
     print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
-    print "DEBUG - " + ", ".join(locations())
+    print "DEBUG - " + ", ".join(locations()) + "\n"
 
 #####################
 #  Variables (END)  #
@@ -251,7 +250,7 @@ os.chdir("../")
 if verbose:
     verbose()
     print "DEBUG - This should be the compilePath:"
-    print "DEBUG - " + os.getcwdu()
+    print "DEBUG - " + os.getcwdu() + "\n"
     if "compilePath" in os.getcwdu():
         pass
     else:
@@ -275,9 +274,10 @@ os.chdir("../../")
 
 if verbose:
     verbose()
-    print "DEBUG - This should be the fuzzPath:"
-    print "DEBUG - " + os.getcwdu()
-    if "fuzzPath" in os.getcwdu():
+    print "DEBUG - os.getcwdu() should be the fuzzPath:"
+    print "DEBUG - " + os.getcwdu() + "/"
+    print "DEBUG - fuzzPath is: " + fuzzPath + "\n"
+    if fuzzPath == os.getcwdu() + "/":
         pass
     else:
         raise Exception("We are not in fuzzPath.")
@@ -296,10 +296,10 @@ else:
     exceptionBadOs()
 
 print
-print "============================================"
+print "========================================"
 print "!  Fuzzing " + compileType + " " + branchType + " js shell builds now  !"
 print "   DATE: " + time.asctime( time.localtime(time.time()) )
-print "============================================"
+print "========================================"
 print
 
 
