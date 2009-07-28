@@ -195,6 +195,7 @@ elif os.name == "nt":
 else:
     exceptionBadOs()
 
+# Change into compilation directory.
 os.chdir("compilePath")
 
 
@@ -287,7 +288,8 @@ if verbose:
 
 # Copy over useful files that are updated in hg fuzzing branch.
 if os.name == "posix":
-    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), ".")
+    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), \
+                 ".")
     # FIXME: analysis.sh replacement ?
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.sh"), ".")
 elif os.name == "nt":
@@ -303,8 +305,35 @@ print "========================================"
 print
 
 
-# FIXME: of course have the 191 version of jsknownTM - sniff platform again. what about 192?
-jsknownTM = repoFuzzing + "js-known/mozilla-central/"  # We use mozilla-central's js-known directories.
+# Define the corresponding js-known directories.
+jsknown191 = repoFuzzing + "js-known/mozilla-1.9.1/"
+jsknown192 = repoFuzzing + "js-known/mozilla-1.9.2/"
+# For TM, we use mozilla-central's js-known directories.
+jsknownTM = repoFuzzing + "js-known/mozilla-central/"
+jsknownV8 = repoFuzzing + "js-known/v8/"
+
+##PORT THE ABOVE TO BELOW....
+if os.name == "posix":
+    if branchType == "191":
+        pass
+    elif branchType == "192":
+        pass
+    elif branchType == "tm":
+        pass
+    else:
+        exceptionBadPosixBranchType()()
+elif os.name == "nt":
+    if branchType == "191":
+        pass
+    elif branchType == "192":
+        pass
+    elif branchType == "tm":
+        pass
+    else:
+        exceptionBadNtBranchType()()
+else:
+    exceptionBadOs()
+
 # Start fuzzing the newly compiled builds.
 if verbose:
     print "jsShellName is " + jsShellName
