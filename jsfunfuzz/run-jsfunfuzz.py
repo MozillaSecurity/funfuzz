@@ -85,8 +85,6 @@ def exceptionBadPosixBranchType():
 def exceptionBadNtBranchType():
     raise Exception("Not a supported NT branchType")
 
-# FIXME: Use optparse here. Move error() into optparse.
-
 # The corresponding CLI requirements should be input, else output this error.
 def error():
     print
@@ -283,14 +281,10 @@ if verbose:
     else:
         raise Exception("We are not in fuzzPath.")
 
-
-# FIXME v8 checkout.
-
 # Copy over useful files that are updated in hg fuzzing branch.
 if os.name == "posix":
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), \
                  ".")
-    # FIXME: analysis.sh replacement ?
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.sh"), ".")
 elif os.name == "nt":
     shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.sh", ".")
@@ -311,73 +305,68 @@ jsknown192 = repoFuzzing + "js-known/mozilla-1.9.2/"
 # For TM, we use mozilla-central's js-known directories.
 jsknownTM = repoFuzzing + "js-known/mozilla-central/"
 jsknownV8 = repoFuzzing + "js-known/v8/"
+multiTimedRun = repoFuzzing + "jsfunfuzz/multi_timed_run.py"
+multiTimedRunTimeout = "1800"  # Timeout in 1800s or 30mins
+jsfunfuzzPath = repoFuzzing + "jsfunfuzz/jsfunfuzz.js"
+# Activate JIT fuzzing here, turned on by default.
+jsJitSwitch = True
+if jsJitSwitch == True:
+    jsJit = " -j "
+else:
+    jsJit = " "
 
-##PORT THE ABOVE TO BELOW....
+# Commands to simulate bash's `tee`.
+tee = subprocess.Popen(["tee", "log-jsfunfuzz"], stdin=subprocess.PIPE)
+
+# Define command for the appropriate OS and branchType.
+# POSIX systems include Linux and Mac OS X.
 if os.name == "posix":
+    posixFuzzCommandPart1 = "python -u " + os.path.expanduser(multiTimedRun) + \
+                            " " + multiTimedRunTimeout + " "
+    posixFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit + \
+                            os.path.expanduser(jsfunfuzzPath)
+    # Have a different js-known directory for each branchType.
     if branchType == "191":
-        pass
+        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown191) + \
+                      posixFuzzCommandPart2
     elif branchType == "192":
-        pass
+        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown192) + \
+                      posixFuzzCommandPart2
     elif branchType == "tm":
-        pass
+        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknownTM) + \
+                      posixFuzzCommandPart2
     else:
         exceptionBadPosixBranchType()()
+# NT systems include MozillaBuild on supported Windows platforms.
 elif os.name == "nt":
+    ntFuzzCommandPart1 = "python -u " + multiTimedRun + " " + \
+                         multiTimedRunTimeout + " "
+    ntFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit + jsfunfuzzPath
+    # Have a different js-known directory for each branchType.
     if branchType == "191":
-        pass
+        fuzzCommand = ntFuzzCommandPart1 + jsknown191 + ntFuzzCommandPart2
     elif branchType == "192":
-        pass
+        fuzzCommand = ntFuzzCommandPart1 + jsknown192 + ntFuzzCommandPart2
     elif branchType == "tm":
-        pass
+        fuzzCommand = ntFuzzCommandPart1 + jsknownTM + ntFuzzCommandPart2
     else:
         exceptionBadNtBranchType()()
 else:
     exceptionBadOs()
 
-# Start fuzzing the newly compiled builds.
 if verbose:
-    print "jsShellName is " + jsShellName
-    print "fuzzPath + jsShellName is " + fuzzPath + jsShellName
-    print "python", "-u", \
-                os.path.expanduser(repoFuzzing + "jsfunfuzz/multi_timed_run.py"), "1800", \
-                os.path.expanduser(jsknownTM), fuzzPath + jsShellName, \
-                "-j", os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js")
-subprocess.call(["python", "-u", \
-                os.path.expanduser(repoFuzzing + "jsfunfuzz/multi_timed_run.py"), "1800", \
-                os.path.expanduser(jsknownTM), fuzzPath + jsShellName, \
-                "-j", os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js")], \
-                stdout=open("log-jsfunfuzz", "w"))
-# FIXME: Implement 191, tm and v8 fuzzing for the above which right now is only hardcoded for tm. Works though. :) EDIT - 191 works too? change js-known to 191
-# FIXME: I want to pipe stdout both to console output as well as to the file, just like the `tee` command.  stdout=subprocess.Popen(['tee', ...], stdin=subprocess.PIPE).stdin; of course
-# def main(args=None):
-# 	if args is None:
-# 		args = []
-# 
-# 	tee = subprocess.Popen(["tee", "filename"],
-# 		stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-# 	r = subprocess.call(["ls"], stdout=tee.stdin)
-# 	output = tee.communicate()[0]
-# 	print output
-# 	print "r:", r
-# FIXME: Implement the time command like in shell to the above. time.time then subtraction
-# FIXME: Port above to windows. Basically take out expanduser?
-# FIXME: make use of analysis.sh somewhere, not necessarily here.
+    verbose()
+    print "DEBUG - jsShellName is " + jsShellName
+    print "DEBUG - fuzzPath + jsShellName is " + fuzzPath + jsShellName
+    print "DEBUG - fuzzCommand is " + fuzzCommand
+    print
+
+# Commands to simulate bash's `tee`.
+# Start fuzzing the newly compiled builds.
+subprocess.call([fuzzCommand], stdout=tee.stdin, shell=True)
+
 # FIXME: Ensure debug builds are debug builds and opt builds are opt! Add unit test? test -Z 2 - js-dbg should start while opt should return an error code 2 - check subprocess returncode?
-# FIXME: cleanup multiple elifs to if.. return. See below.
-#>>> config = {}
-#>>> def foo():
-#...     config['boom'] = 'BANG'
-#...     config['wat'] = 'YES'
-#... 
-#>>> def bar():
-#...     config['boom'] = 'AAARGH'
-#...     config['wat'] = 'NO'
-#... 
-#>>> {'a': foo, 'b': bar}['a']()
-#>>> print config
-#{'wat': 'YES', 'boom': 'BANG'}
-#>>> {'a': foo, 'b': bar}['b']()
-#>>> print config
-#{'wat': 'NO', 'boom': 'AAARGH'}
-#>>> 
-#time python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 1800 ~/fuzzing/js-known/mozilla-central/ ~/Desktop/jsfunfuzz-$compileType-$branchType/js-$compileType-$branchType-intelmac -j ~/fuzzing/jsfunfuzz/jsfunfuzz.js | tee ~/Desktop/jsfunfuzz-$compileType-$branchType/log-jsfunfuzz
+# FIXME: make use of analysis.sh somewhere, not necessarily here.
+# FIXME: Implement the time command like in shell to the above. time.time then subtraction OR put this in the super-script?
+# FIXME: Use optparse if necessary. In that case, move error() into optparse.
+# FIXME: v8 checkout.
