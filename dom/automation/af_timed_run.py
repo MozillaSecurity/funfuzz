@@ -94,10 +94,12 @@ def wheeLith(level, logPrefix):
     writeLinesToFile(linesToWrite, rFN)
     
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
-    lithArgs = [domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
+    lithtmp = logPrefix + "-lith1-tmp"
+    os.mkdir(lithtmp)
+    lithArgs = ["--tempdir=" + lithtmp, domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
-    subprocess.call(lithiumpy + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
+    subprocess.call(lithiumpy + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
     print "Done running Lithium"
 
 

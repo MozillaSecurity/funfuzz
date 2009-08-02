@@ -28,7 +28,7 @@ def many_timed_runs():
     iteration = 0
     while True:
         iteration += 1
-        logPrefix = "w%d" % iteration
+        logPrefix = tempDir + os.sep + "w" + str(iteration)
 
         level = jsunhappy.level(runThis, timeout, knownPath, logPrefix)
 
@@ -44,12 +44,16 @@ def many_timed_runs():
             writeLinesToFile(newfileLines, filenameToReduce)
             
             # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
+            lith1tmp = logPrefix + "-lith1-tmp"
+            os.mkdir(lith1tmp)
             lithArgs = [jsunhappypy, str(level), str(timeout), knownPath] + runThis[:-1] + [filenameToReduce]
             print "multi_timed_run is running Lithium..."
             print repr([lithiumpy] + lithArgs)
-            subprocess.call(["python", lithiumpy] + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
+            subprocess.call(["python", lithiumpy, "--tempdir=" + lith1tmp] + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
             if level > jsunhappy.JS_DID_NOT_FINISH:
-                subprocess.call(["python", lithiumpy, "-c"] + lithArgs, stdout=open(logPrefix + "-lith2", "w"))
+                lith2tmp = logPrefix + "-lith2-tmp"
+                os.mkdir(lith2tmp)
+                subprocess.call(["python", lithiumpy, "--tempdir=" + lith2tmp, "-c"] + lithArgs, stdout=open(logPrefix + "-lith2-out", "w"))
             print "Done running Lithium"
 
         else:
@@ -110,5 +114,21 @@ def writeLinesToFile(lines, filename):
       f.writelines(lines)
       f.close()
 
+def createTempDir():
+    global tempDir
+    i = 1
+    while 1:
+        tempDir = "wtmp" + str(i)
+        # To avoid race conditions, we use try/except instead of exists/create
+        # Hopefully we don't get any errors other than "File exists" :)
+        try:
+            os.mkdir(tempDir)
+            break
+        except OSError, e:
+            i += 1
+    print tempDir + os.sep
+
+
 jsunhappy.initWithKnownPath(knownPath)
+createTempDir()
 many_timed_runs()
