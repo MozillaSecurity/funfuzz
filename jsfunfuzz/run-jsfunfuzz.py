@@ -75,7 +75,7 @@ supportedBranches = "[191|tm|v8]"  # Get 1.9.2 support through FIXMEFOR192.
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
     print
-    print "DEBUG - output:"
+    print "DEBUG - Debug output follows..."
 def exceptionBadOs():
     raise Exception("Unknown OS - Platform is unsupported.")
 def exceptionBadCompileType():
@@ -250,9 +250,7 @@ if verbose:
     verbose()
     print "DEBUG - This should be the compilePath:"
     print "DEBUG - " + os.getcwdu() + "\n"
-    if "compilePath" in os.getcwdu():
-        pass
-    else:
+    if "compilePath" not in os.getcwdu():
         raise Exception("We are not in compilePath.")
     
 # Compile the other build.
@@ -276,18 +274,16 @@ if verbose:
     print "DEBUG - os.getcwdu() should be the fuzzPath:"
     print "DEBUG - " + os.getcwdu() + "/"
     print "DEBUG - fuzzPath is: " + fuzzPath + "\n"
-    if fuzzPath == os.getcwdu() + "/":
-        pass
-    else:
+    if fuzzPath != os.getcwdu() + "/":
         raise Exception("We are not in fuzzPath.")
 
 # Copy over useful files that are updated in hg fuzzing branch.
 if os.name == "posix":
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), \
                  ".")
-    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.sh"), ".")
+    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.py"), ".")
 elif os.name == "nt":
-    shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.sh", ".")
+    shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.py", ".")
 else:
     exceptionBadOs()
 
@@ -360,13 +356,42 @@ if verbose:
     print "DEBUG - fuzzPath + jsShellName is " + fuzzPath + jsShellName
     print "DEBUG - fuzzCommand is " + fuzzCommand
     print
+    
+print "=== Performing self-test... ==="
+# Create a testfile with the gczeal() function.
+subprocess.call(["echo 'gczeal()' > compileTypeTest"], shell=True)
+testFileErrorCode = subprocess.call(["./" + jsShellName + " compileTypeTest"], \
+    shell=True)
+os.remove("compileTypeTest")  # Remove testfile after grabbing the error code.
+
+if verbose:
+    verbose()
+    print "DEBUG - The error code for debug shells should be 0."
+    print "DEBUG - The error code for opt shells should be 3."
+    print "DEBUG - The actual error code for " + jsShellName + " now, is: " + \
+          str(testFileErrorCode)
+
+# The error code for debug shells when passing in the gczeal() function should
+# be 0.
+if compileType == "dbg" and testFileErrorCode != 0:
+    print "ERROR: compileType == \"dbg\" and testFileErrorCode != 0"
+    print "compileType is: " + compileType
+    print "testFileErrorCode is: " + str(testFileErrorCode)
+    print
+    raise Exception("The compiled binary is not a debug shell.")
+# The error code for optimized shells when passing in the gczeal() function
+# should be 3, because they don't have the function compiled in.
+elif compileType == "opt" and testFileErrorCode != 3:
+    print "ERROR: compileType == \"opt\" and testFileErrorCode != 3"
+    print "compileType is: " + compileType
+    print "testFileErrorCode is: " + str(testFileErrorCode)
+    print
+    raise Exception("The compiled binary is not an optimized shell.")
+print "\n=== End of self-test... ===\n"
 
 # Commands to simulate bash's `tee`.
 # Start fuzzing the newly compiled builds.
 subprocess.call([fuzzCommand], stdout=tee.stdin, shell=True)
 
-# FIXME: Ensure debug builds are debug builds and opt builds are opt! Add unit test? test -Z 2 - js-dbg should start while opt should return an error code 2 - check subprocess returncode?
-# FIXME: make use of analysis.sh somewhere, not necessarily here.
-# FIXME: Implement the time command like in shell to the above. time.time then subtraction OR put this in the super-script?
-# FIXME: Use optparse if necessary. In that case, move error() into optparse.
+# FIXME: rewrite analysis.sh into analysis.py
 # FIXME: v8 checkout.
