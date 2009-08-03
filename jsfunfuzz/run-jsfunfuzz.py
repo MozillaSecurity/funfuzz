@@ -52,26 +52,19 @@
 # January 2009 - 3.3.x:
 #   Rework v8 support, add JavaScriptCore support.
 # July 2009 - 4.x:
-#   Python rewrite - only 1.9.1.x, TM and v8 planned for support. 1.9.0.x is
+#   Python rewrite - only 1.9.1.x and TM planned for support. 1.9.0.x is
 #   becoming obsolete in 5.5 months, mozTrunk is rarely fuzzed in favour of TM,
 #   JavaScriptCore doesn't feel like a significant competing engine, and Safari
-#   uses its own Nitro engine.
+#   uses its own Nitro engine. 1.9.2.x will come later, v8 might too.
 #
-# Note:
-#   If something screws up, trash the entire existing
-#       ~/Desktop/jsfunfuzz-$compileType-$branchType folder.
 #
-# Receive user input on compileType and branchType.
-#   compileType can be debug or opt.
-#   branchType can be Gecko 1.9.1.x, TM or v8 engines.
+# Usage: python run-jsfunfuzz [dbg|opt] [191|tm]
+#
 
 import sys, os, subprocess, shutil, time
 
-#######################
-#  Variables (START)  #
-#######################
 
-supportedBranches = "[191|tm|v8]"  # Get 1.9.2 support through FIXMEFOR192.
+supportedBranches = "[191|tm]"  # Get 1.9.2 support through FIXMEFOR192.
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
     print
@@ -107,7 +100,7 @@ else:
 
 # Accept appropriate parameters for branchType.
 # FIXMEFOR192: Add 192 support here once the 1.9.2 branch is created.
-if (sys.argv[2] == "191") or (sys.argv[2] == "tm") or (sys.argv[2] == "v8"):
+if (sys.argv[2] == "191") or (sys.argv[2] == "tm"):
     branchType = sys.argv[2]
 else:
     error()
@@ -145,9 +138,6 @@ if verbose:
     print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
     print "DEBUG - " + ", ".join(locations()) + "\n"
 
-#####################
-#  Variables (END)  #
-#####################
 
 # Expand the ~ folder on Linux/Mac.
 if os.name == "posix":
@@ -300,7 +290,6 @@ jsknown191 = repoFuzzing + "js-known/mozilla-1.9.1/"
 jsknown192 = repoFuzzing + "js-known/mozilla-1.9.2/"
 # For TM, we use mozilla-central's js-known directories.
 jsknownTM = repoFuzzing + "js-known/mozilla-central/"
-jsknownV8 = repoFuzzing + "js-known/v8/"
 multiTimedRun = repoFuzzing + "jsfunfuzz/multi_timed_run.py"
 multiTimedRunTimeout = "1800"  # Timeout in 1800s or 30mins
 jsfunfuzzPath = repoFuzzing + "jsfunfuzz/jsfunfuzz.js"
@@ -392,6 +381,3 @@ print "\n=== End of self-test... ===\n"
 # Commands to simulate bash's `tee`.
 # Start fuzzing the newly compiled builds.
 subprocess.call([fuzzCommand], stdout=tee.stdin, shell=True)
-
-# FIXME: rewrite analysis.sh into analysis.py
-# FIXME: v8 checkout.
