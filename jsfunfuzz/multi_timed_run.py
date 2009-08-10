@@ -9,6 +9,7 @@ lithiumpy = os.path.join(p2, "lithium.py")
 jsunhappypy = os.path.join(p0, "jsunhappy.py")
 
 import jsunhappy
+import compareJIT
 
 timeout = int(sys.argv[1])
 knownPath = os.path.expanduser(sys.argv[2])
@@ -57,6 +58,8 @@ def many_timed_runs():
             print "Done running Lithium"
 
         else:
+            if level == jsunhappy.JS_FINE:
+                compareJIT.compareJIT("\n".join(linesWith(open(logPrefix + "-out"), "FCM")) + "\nprint(uneval(this));")
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
@@ -65,7 +68,6 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core")):
                 os.remove(logPrefix + "-core")
-
 
 
 def fuzzSplice(file):
