@@ -206,7 +206,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\[.*\].*\=.*\[.*\yield/ ))  // avoid bug 498934
       && !( code.match( /\{.*\}.*\=.*\[.*\yield/ ))  // avoid bug 498934 where empty {} becomes []
       && !( code.match( /\?.*\?/ ))        // avoid bug 475895
-      && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
       && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
@@ -511,7 +510,7 @@ function start()
   count = 0;
 
   if (jsshell) {
-    var MAX_TOTAL_TIME = 3/* seconds */ * 1000;
+    var MAX_TOTAL_TIME = 5/* seconds */ * 1000;
     var startTime = new Date();
 
     do {
@@ -704,43 +703,47 @@ var realToSource = this.toSource; // "this." because it only exists in spidermon
 
 function tryEnsureSanity()
 {
-  // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
-  if ("gczeal" in this)
-    gczeal(0);
-
-  // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
-  try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
-
-  // Try to get rid of any fake 'unwatch' functions.
-  delete unwatch;
-
-  // Restore important stuff that might have been broken as soon as possible :)
-  if ('unwatch' in this) {
-    this.unwatch("eval")
-    this.unwatch("Function")
-    this.unwatch("gc")
-    this.unwatch("uneval")
-    this.unwatch("toSource")
-    this.unwatch("toString")
+  try {
+    // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
+    if ("gczeal" in this)
+      gczeal(0);
+  
+    // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
+    try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
+  
+    // Try to get rid of any fake 'unwatch' functions.
+    delete unwatch;
+  
+    // Restore important stuff that might have been broken as soon as possible :)
+    if ('unwatch' in this) {
+      this.unwatch("eval")
+      this.unwatch("Function")
+      this.unwatch("gc")
+      this.unwatch("uneval")
+      this.unwatch("toSource")
+      this.unwatch("toString")
+    }
+  
+    if ('__defineSetter__' in this) {
+      // The only way to get rid of getters/setters is to delete the property.
+      delete eval;
+      if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 on branch
+        delete Function;
+      delete gc;
+      delete uneval;
+      delete toSource;
+      delete toString;
+    }
+  
+    eval = realEval;
+    Function = realFunction;
+    gc = realGC;
+    uneval = realUneval;
+    toSource = realToSource;
+    toString = realToString;
+  } catch(e) {
+    printImportant("tryEnsureSanity failed: " + e);
   }
-
-  if ('__defineSetter__' in this) {
-    // The only way to get rid of getters/setters is to delete the property.
-    delete eval;
-    if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 on branch
-      delete Function;
-    delete gc;
-    delete uneval;
-    delete toSource;
-    delete toString;
-  }
-
-  eval = realEval;
-  Function = realFunction;
-  gc = realGC;
-  uneval = realUneval;
-  toSource = realToSource;
-  toString = realToString;
 
   // These can fail if the page creates a getter for "eval", for example.
   if (!eval)
@@ -890,11 +893,6 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
 
-  if (e == "mismatch" && fs.match(/(true|false) (\&\&|\|\|)/)) {
-    dumpln("Ignoring bug 460158.");
-    return;
-  }
-  
   var message = issue + "\n\n" +
                 "Code: " + uneval(code) + "\n\n" +  
                 "fs: " + fs + "\n\n" +
@@ -1164,11 +1162,6 @@ function testForExtraParens(f, code)
 // through the decompiler changes the bytecode.
 function checkRoundTripDisassembly(f, code, wtt)
 {
-  if (code.match(/for.*\(.*;.*\(.*\).*;.*\)/)) {
-    dumpln("checkRoundTripDisassembly: ignoring what might be a parenthesized for-loop condition (bug 475849)");
-    return;
-  }
-  
   if (code.indexOf("[@") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1 || code.match(/\[.*\*/)) {
     dumpln("checkRoundTripDisassembly: ignoring bug 475859");
     return;
@@ -1181,10 +1174,6 @@ function checkRoundTripDisassembly(f, code, wtt)
   
   var uf = uneval(f);
 
-  if (uf.match(/(true|false) (\&\&|\|\|)/)) {
-    dumpln("checkRoundTripDisassembly: ignoring bug 460158.");
-    return;
-  }
   if (uf.indexOf("switch") != -1) {
     // Bug 355509 :(
     return;
@@ -1234,10 +1223,6 @@ function checkRoundTripDisassembly(f, code, wtt)
 
   if (dg.indexOf("newline") != -1) {
     // Really should just ignore these lines, instead of bailing...
-    return;
-  }
-  if (dg.indexOf("popn") != -1 && df.indexOf("popn") == -1) {
-    print("Ignoring conversion to use popn-style group assignment (bug 475843)");
     return;
   }
 
