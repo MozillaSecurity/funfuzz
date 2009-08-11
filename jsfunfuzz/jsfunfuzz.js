@@ -558,12 +558,8 @@ function testOne()
     dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(8));");
   }
 
-  var code = makeStatement(8, ["x"]);
+  var code = makeStatement(10, ["x"]);
   
-  // Test tracing frequently -- but not so often that jsfunfuzz slows down too much to hit interesting combinations.
-  if (rnd(20) == 0)
-    code = randomRepeater() + " { " + code + " } ";
-
 //  if (rnd(10) == 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
 //    if (dp)
@@ -617,8 +613,8 @@ function tryItOut(code)
       checkRoundTripDisassembly(f, code, wtt);
   }
 
-  if (f && wtt.checkRecompiling && wtt.allowExec) {
-    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("/*") == -1 && code.indexOf("//") == -1) {
+  if (f && wtt.allowExec) {
+    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
       var cookie1 = "/*F";
       var cookie2 = "CM*/";
       dumpln(cookie1 + cookie2 + " try { (function(){ " + code + "})() } catch(e) { }");
@@ -2047,83 +2043,111 @@ function makeStatement(d, b)
 var varBinder = ["var ", "let ", "const ", ""];
 var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
 
-var statementMakers = [
-  // Late-defined consts can cause problems, so let's late-define them!
-  function(d, b) { return cat([makeStatement(d, b), " const ", makeNewId(d, b), ";"]); },
+// The reason there are several types of loops here is to create different
+// types of scripts without introducing infinite loops.
 
-  function(d, b) { return cat([makeStatement(d, b), makeStatement(d, b)]); },
-  function(d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); },
+function makeOpaqueIdiomaticLoop(d, b)
+{
+  var reps = 1 + rnd(7);
+  var vHidden = uniqueVarName();
+  return ("/*oLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x) ").replace(/x/g, vHidden) + 
+      makeStatement(d - 2, b);
+}
+
+function makeTransparentIdiomaticLoop(d, b)
+{
+  var reps = 1 + rnd(7);
+  var vHidden = uniqueVarName();
+  var vVisible = makeNewId(d, b);
+  return ("/*vLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x)").replace(/x/g, vHidden) + 
+    " { " + 
+      rndElt(varBinder) + vVisible + " = " + vHidden + "; " +
+      makeStatement(d - 2, b.concat([vVisible])) +
+    " } "
+}
+
+function makeBranchUnstableLoop(d, b)
+{
+  var reps = 1 + rnd(24);
+  var v = uniqueVarName();
+  var mod = rnd(5) + 2;
+  var target = rnd(mod);
+  var loopHead = ("/*bLoop*/for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
+  return loopHead + " { " + 
+    "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
+    "else { " + makeStatement(d - 2, b) + " } " +
+    " } "
+}
+
+function makeTypeUnstableLoop(d, b) {
+  var a = makeMixedTypeArray(d, b);
+  var v = makeNewId(d, b);
+  var bv = b.concat([v]);
+  return "/*tLoop*/for each (let " + v + " in " + a + ") { " + makeStatement(d - 2, bv) + " }";
+}
+
+function weighted(wa)
+{
+  var a = [];
+  for (var i = 0; i < wa.length; ++i) {
+    for (var j = 0; j < wa[i].w; ++j) {
+      a.push(wa[i].fun);
+    }
+  }
+  return a;
+}
+  
+var statementMakers = weighted([
+
+  // Any two statements in sequence
+  { w: 4, fun: function(d, b) { return cat([makeStatement(d, b), makeStatement(d, b)]); } },
+  { w: 4, fun: function(d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); } },
 
   // Stripping semilcolons.  What happens if semicolons are missing?  Especially with line breaks used in place of semicolons (semicolon insertion).
-  function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n", makeStatement(d, b)]); },
-  function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n"                   ]); },
-  function(d, b) { return stripSemicolon(makeStatement(d, b)); }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
+  { w: 1, fun: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n", makeStatement(d, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n"                   ]); } },
+  { w: 1, fun: function(d, b) { return stripSemicolon(makeStatement(d, b)); } }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
 
-  // Simple variable declarations, followed by statements using those variables
-  function(d, b) { var v = makeNewId(d, b); return cat([rndElt(varBinder), v, " = ", makeExpr(d, b), ";", makeStatement(d - 1, b.concat([v]))]); },
+  // Simple variable declarations, followed (or preceded) by statements using those variables
+  { w: 4, fun: function(d, b) { var v = makeNewId(d, b); return cat([rndElt(varBinder), v, " = ", makeExpr(d, b), ";", makeStatement(d - 1, b.concat([v]))]); } },
+  { w: 4, fun: function(d, b) { var v = makeNewId(d, b); return cat([makeStatement(d - 1, b.concat([v])), rndElt(varBinder), v, " = ", makeExpr(d, b), ";"]); } },
 
   // Complex variable declarations, e.g. "const [a,b] = [3,4];"
-  function(d, b) { return cat([rndElt(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); },
+  { w: 1, fun: function(d, b) { return cat([rndElt(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); } },
   
-  // Blocks and loops
-  function(d, b) { return cat(["{", makeStatement(d, b), " }"]); },
-  function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); },
-
-  // Sequential statements
-  function(d, b) { return cat([makeStatement(d - 1, b), makeStatement(d - 1, b)]); },
+  // Blocks
+  { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d, b), " }"]); } },
+  { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); } },
 
   // "with" blocks
-  function(d, b) {                          return cat([maybeLabel(), "with", "(", makeExpr(d, b), ")",                    makeStatementOrBlock(d, b)]);             },
-  function(d, b) { var v = makeNewId(d, b); return cat([maybeLabel(), "with", "(", "{", v, ": ", makeExpr(d, b), "}", ")", makeStatementOrBlock(d, b.concat([v]))]); }, 
+  { w: 2, fun: function(d, b) {                          return cat([maybeLabel(), "with", "(", makeExpr(d, b), ")",                    makeStatementOrBlock(d, b)]);             } },
+  { w: 2, fun: function(d, b) { var v = makeNewId(d, b); return cat([maybeLabel(), "with", "(", "{", v, ": ", makeExpr(d, b), "}", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
 
   // C-style "for" loops
   // Two kinds of "for" loops: one with an expression as the first part, one with a var or let binding 'statement' as the first part.
   // I'm not sure if arbitrary statements are allowed there; I think not.
-  function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); }, 
-  function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); }, 
-  function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); }, 
-  function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); }, 
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } }, 
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } }, 
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } }, 
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } }, 
   
-  // C-style "for" loops for the purpose of repetition (e.g. to test tracing)
-  // These don't get T'd because we don't want to set up infinite loops.
-  function(d, b) { return randomRepeater() + makeStatementOrBlock(d, b); },
-
-  // Unstable loops, e.g. to test tracing "multitrees" when these loops
-  // happen to create type instabilities.
-  function(d, b) {
-    var reps = 1 + rnd(24);
-    var v = uniqueVarName();
-    //  var bv = b.concat([v]); // no, because this can cause infinite loops :(
-    var mod = rnd(5) + 2;
-    var target = rnd(mod);
-    var loopHead = ("/*NUUL*/for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
-    return loopHead + " { " + 
-      "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d, b) + " } " +
-      "else { " + makeStatement(d, b) + " } " +
-      " } "
-  },
-  
-  // Type-unstable loops
-  function(d, b) {
-    var a = makeMixedTypeArray(d, b);
-    var v = makeNewId(d, b);
-    var bv = b.concat([v]);
-    var s = "/*TUUL*/for each (let " + v + " in " + a + ") { " + makeStatement(d, bv) + " }";
-    return s;
-  },
-
+  // Various types of "for" loops, specially set up to test tracing, carefully avoiding infinite loops
+  { w: 6, fun: makeTransparentIdiomaticLoop },
+  { w: 6, fun: makeOpaqueIdiomaticLoop },
+  { w: 6, fun: makeBranchUnstableLoop },
+  { w: 8, fun: makeTypeUnstableLoop }, 
 
   // "for..in" loops
-
+  // arbitrary-LHS marked as infloop because
   // -- for (key in obj)
-  function(d, b) {                          return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); },
-  function(d, b) { var v = makeNewId(d, b); return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                  " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); },
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                  " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for (key in generator())
-  function(d, b) {                          return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); },
-  function(d, b) { var v = makeNewId(d, b); return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); },
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for each (value in obj)
-  function(d, b) {                          return "/*for..in*/" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); },
-  function(d, b) { var v = makeNewId(d, b); return "/*for..in*/" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); },
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", " each", "(", rndElt(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
@@ -2132,64 +2156,48 @@ var statementMakers = [
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
-  // XXX add to list of bound variables
-  function(d, b) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeId(d, b), " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); },
-  function(d, b) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), "[", makeId(d, b), ", ", makeId(d, b), "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); },
+  // XXX add to list of bound variables, kill for..in
+  { w: 1, fun: function(d, b) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeId(d, b), " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), "[", makeId(d, b), ", ", makeId(d, b), "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
 
-  function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(d, b)]); },
-  function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)]); },
-  function(d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); },
-  function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"]); },
+  // do..while
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); } },
+  { w: 1, fun: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"]); } },
 
   // Switch statement
-  function(d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); },
+  { w: 3, fun: function(d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
   
   // Let blocks, with and without multiple bindings, with and without initial values
-  function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); },
+  { w: 3, fun: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
 
   // Conditionals, perhaps with 'else if' / 'else'
-  function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); },
-  function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); },
-  function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b)]); },
-  function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
 
   // A tricky pair of if/else cases.
   // In the SECOND case, braces must be preserved to keep the final "else" associated with the first "if".
-  function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); },
-  function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); } },
   
   // Expression statements
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat([makeExpr(d, b), ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
+  { w: 5, fun: function(d, b) { return cat([makeExpr(d, b), ";"]); } },
+  { w: 5, fun: function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); } },
 
   // Exception-related statements :)
-  function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); },
-  function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); },
-  function(d, b) { return makeExceptionyStatement(d, b); },
-  function(d, b) { return makeExceptionyStatement(d, b); },
-  function(d, b) { return makeExceptionyStatement(d, b); },
-  function(d, b) { return makeExceptionyStatement(d, b); },
-  function(d, b) { return makeExceptionyStatement(d, b); },
+  { w: 2, fun: function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); } },
+  { w: 5, fun: function(d, b) { return makeExceptionyStatement(d, b); } },
 
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
-  function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); },
+  { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
   
   // Functions which are called?
   // Tends to trigger OOM bugs
   // function(d, b) { return cat(["/*hhh*/function ", "x", "(", ")", "{", makeStatement(d, b), "}", " ", "x", "(", makeActualArgList(d, b), ")"]); }
-];
+]);
 
 function makePrintStatement(d, b)
 {
@@ -2208,16 +2216,6 @@ function maybeLabel()
     return "";
 }
 
-
-function randomRepeater()
-{
-  // tracemonkey currently requires 2 iterations to record, 3 iterations to run
-  var reps = 1;
-  if (jitEnabled)
-    reps += rnd(5);
-  var v = uniqueVarName();
-  return ("for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
-}
 
 function uniqueVarName()
 {
