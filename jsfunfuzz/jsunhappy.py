@@ -33,7 +33,8 @@ def level(runthis, timeout, knownPath, logPrefix):
     (sta, msg, elapsedtime) = (runinfo.sta, runinfo.msg, runinfo.elapsedtime)
 
     # Initially, the level will be based on whether certain magic strings appear in the jsfunfuzz output.
-    lev = JS_DID_NOT_FINISH
+    # (This might be backwards; maybe this should be last, only if no larger issues were found)
+    lev = JS_DID_NOT_FINISH if sta == ntr.NORMAL else JS_FINE
     issues = ["jsfunfuzz didn't finish"]
     logfile = open(logPrefix + "-out", "r")
     for line in logfile:
