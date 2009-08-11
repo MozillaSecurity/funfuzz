@@ -888,6 +888,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     dumpln("Looks like bug 460504.");
     return;
   }
+  
+  if (fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
+    dumpln("Ignoring quote mismatch (bug 346898).");
+    return;
+  }
 
   var message = issue + "\n\n" +
                 "Code: " + uneval(code) + "\n\n" +  
