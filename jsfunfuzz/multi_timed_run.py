@@ -59,7 +59,10 @@ def many_timed_runs():
 
         else:
             if level == jsunhappy.JS_FINE:
-                compareJIT.compareJIT("\n".join(linesWith(open(logPrefix + "-out"), "FCM")) + "\ntry{print(uneval(this));}catch(e){}")
+                jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
+                jitcomparefilename = logPrefix + "-cmpin.js"
+                writeLinesToFile(jitcomparelines, jitcomparefilename)
+                compareJIT.compareJIT(jitcomparefilename, logPrefix)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
