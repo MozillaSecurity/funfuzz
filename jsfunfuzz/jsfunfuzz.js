@@ -809,29 +809,28 @@ function tryRoundTripStuff(f, code, wtt)
 // Function round-trip with implicit toString
 function checkRoundTripToString(f, code, wtt)
 {
-  var uf, g;
+  var fs, g;
   try {
-    uf = "" + f;
+    fs = "" + f;
   } catch(e) { reportRoundTripIssue("Round-trip with implicit toString: can't toString", code, null, null, errorToString(e)); return; }
 
-  checkForCookies(uf);
+  checkForCookies(fs);
   
-  if (uf == "[object Function]" && engine == ENGINE_SPIDERMONKEY_MOZ_1_8) {
+  if (fs == "[object Function]" && engine == ENGINE_SPIDERMONKEY_MOZ_1_8) {
     print("Skipping round-trip test -- bug 432075");
     return;
   }
 
   if (wtt.checkRecompiling) {
     try {
-      g = eval("(" + uf + ")");
-      var fs = "" + f;
+      g = eval("(" + fs + ")");
       var gs = "" + g;
       if (wtt.checkForMismatch && fs != gs) {
         reportRoundTripIssue("Round-trip with implicit toString", code, fs, gs, "mismatch");
         wtt.checkForMismatch = false;
       }
     } catch(e) {
-      reportRoundTripIssue("Round-trip with implicit toString: error", code, f, g, errorToString(e));
+      reportRoundTripIssue("Round-trip with implicit toString: error", code, fs, gs, errorToString(e));
     }
   }
 }
