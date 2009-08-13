@@ -62,7 +62,7 @@ def many_timed_runs():
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cmpin.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(jitcomparefilename, logPrefix)
+                compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
