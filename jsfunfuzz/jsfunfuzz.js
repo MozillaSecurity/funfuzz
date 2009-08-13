@@ -245,7 +245,6 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
     
     allowExec: unlikelyToHang(code)
-      && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
@@ -339,7 +338,6 @@ function whatToTestSpidermonkey190Branch(code)
     ,
     
     allowExec: unlikelyToHang(code)
-      && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
       && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
@@ -376,7 +374,6 @@ function whatToTestSpidermonkey18Branch(code)
     checkForExtraParens: false,
       
     allowExec: unlikelyToHang(code)
-      && code.indexOf("for..in")  == -1 // for (x.y in x) causes infinite loops :(
       && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
       && code.indexOf("valueOf")  == -1 // avoid bug 355829
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
@@ -2162,9 +2159,11 @@ var statementMakers = weighted([
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
-  // XXX add to list of bound variables, kill for..in
-  { w: 1, fun: function(d, b) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeId(d, b), " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), "[", makeId(d, b), ", ", makeId(d, b), "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  // The first form could be an infinite loop because of "for (x.y in x)" with e4x.
+  // The last form is specific to JavaScript 1.7 (only).
+  { w: 1, fun: function(d, b) {                       return "/*infloop*/" +         cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b);                      return cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", rndElt(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
 
   // do..while
   { w: 1, fun: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(d, b)]); } },
