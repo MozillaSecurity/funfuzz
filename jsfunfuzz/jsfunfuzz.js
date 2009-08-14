@@ -2453,6 +2453,9 @@ function makeExpr(d, b)
   if (d <= 0 || (rnd(7) == 1))
     return makeTerm(d - 1, b);
 
+  if (rnd(6) == 1 && b.length)
+    return rndElt(b);
+
   d = rnd(d); // !
 
   var expr = (rndElt(exprMakers))(d, b);
@@ -2713,7 +2716,9 @@ var exprMakers =
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
   function(d, b) { return makeExpr(d, b) + ".eval(" + makeExpr(d, b) + ")"; },
-  function(d, b) { return "eval(" + uneval(makeExpr(d, b)) + ", " + makeExpr(d, b) + ")"; },  
+  function(d, b) { return "eval(" + uneval(makeExpr(d, b)) + ")"; },
+  function(d, b) { return "eval(" + uneval(makeExpr(d, b)) + ", " + makeExpr(d, b) + ")"; },
+  function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ")"; },
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
   
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
@@ -2851,27 +2856,21 @@ function makeFunctionBody(d, b)
 
 
 
-// XXX increase bound variables in function body
 var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
 
   // Functions and expression closures
-  function(d, b) { return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
-  function(d, b) { return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
-  function(d, b) { return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
-  function(d, b) { return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
+  function(d, b) { var v = makeNewId(d, b); return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
+  function(d, b) {                          return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
   
   // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); }, 
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); }, 
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); }, 
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); }, 
 
   // The identity function
   function(d, b) { return "function(q) { return q; }" },
 
   // A generator that does something
-  function(d, b) { return "function(y) { yield y; " + makeStatement(d, b) + "; yield y; }" }, 
+  function(d, b) { return "function(y) { yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" }, 
   
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
