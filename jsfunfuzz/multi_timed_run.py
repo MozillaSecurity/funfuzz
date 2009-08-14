@@ -63,7 +63,7 @@ def many_timed_runs():
                 jitcomparefilename = logPrefix + "-cmpin.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
                 # Bug 496816 explains why we disable compareJIT on Linux.
-                if os.name == "posix" and os.uname()[0] != "Linux":
+                if os.name != "posix" or os.uname()[0] != "Linux":
                     compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
