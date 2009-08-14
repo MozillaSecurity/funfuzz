@@ -52,19 +52,19 @@
 # January 2009 - 3.3.x:
 #   Rework v8 support, add JavaScriptCore support.
 # July 2009 - 4.x:
-#   Python rewrite - only 1.9.1.x and TM planned for support. 1.9.0.x is
-#   becoming obsolete in 5.5 months, mozTrunk is rarely fuzzed in favour of TM,
-#   JavaScriptCore doesn't feel like a significant competing engine, and Safari
-#   uses its own Nitro engine. 1.9.2.x will come later, v8 might too.
+#   Python rewrite - only 1.9.1.x, 1.9.2.x and TM planned for support. 1.9.0.x
+#   is becoming obsolete in 5.5 months, mozTrunk is rarely fuzzed in favour of
+#   TM, JavaScriptCore doesn't feel like a significant competing engine,
+#   and Safari uses its own Nitro engine. v8 might come later too.
 #
 #
-# Usage: python run-jsfunfuzz [dbg|opt] [191|tm]
+# Usage: python run-jsfunfuzz.py [dbg|opt] <supportedBranches>
 #
 
 import sys, os, subprocess, shutil, time
 
 
-supportedBranches = "[191|tm]"  # Get 1.9.2 support through FIXMEFOR192.
+supportedBranches = "[191|192|tm]"
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
     print
@@ -99,8 +99,7 @@ else:
 
 
 # Accept appropriate parameters for branchType.
-# FIXMEFOR192: Add 192 support here once the 1.9.2 branch is created.
-if (sys.argv[2] == "191") or (sys.argv[2] == "tm"):
+if (sys.argv[2] == "191") or (sys.argv[2] == "192") or (sys.argv[2] == "tm"):
     branchType = sys.argv[2]
 else:
     error()

@@ -62,7 +62,9 @@ def many_timed_runs():
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cmpin.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
+                # Bug 496816 explains why we disable compareJIT on Linux.
+                if os.name == "posix" and os.uname()[0] != "Linux":
+                    compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
@@ -71,6 +73,8 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core")):
                 os.remove(logPrefix + "-core")
+            if (os.path.exists(logPrefix + "-cmpin.js")):
+                os.remove(logPrefix + "-cmpin.js")
 
 
 def fuzzSplice(file):
