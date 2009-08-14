@@ -94,19 +94,6 @@ def fuzzSplice(file):
     file.close()
     return [before, after]
 
-def fuzzDice(file):
-    '''Returns the lines of the file, except for the one line containing DICE'''
-    before = []
-    after = []
-    for line in file:
-        if line.find("SPLICE") != -1:
-            break
-        before.append(line)
-    for line in file:
-        after.append(line)
-    file.close()
-    return [before, after]
-
 
 def linesWith(file, searchFor):
     '''Returns the lines from a file that contain a given string'''
