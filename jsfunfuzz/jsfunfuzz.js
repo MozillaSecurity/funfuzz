@@ -2173,9 +2173,12 @@ var statementMakers = weighted([
 
   // Switch statement
   { w: 3, fun: function(d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
-  
-  // Let blocks, with and without multiple bindings, with and without initial values
-  { w: 3, fun: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
+
+  // "let" blocks, with bound variable used inside the block
+  { w: 2, fun: function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, ")", " { ", makeStatement(d, b.concat([v])), " }"]); } },
+
+  // "let" blocks, with and without multiple bindings, with and without initial values
+  { w: 2, fun: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
 
   // Conditionals, perhaps with 'else if' / 'else'
   { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
@@ -2193,8 +2196,8 @@ var statementMakers = weighted([
   { w: 5, fun: function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); } },
 
   // Exception-related statements :)
-  { w: 2, fun: function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); } },
-  { w: 5, fun: function(d, b) { return makeExceptionyStatement(d, b); } },
+  { w: 6, fun: function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); } },
+  { w: 7, fun: function(d, b) { return makeExceptionyStatement(d, b); } },
 
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
   { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
@@ -2380,13 +2383,15 @@ var exceptionyStatementMakers = [
 
   // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
-  function(d, b) { return "for(let y in []);"; }, 
-  function(d, b) { return "for(let y in " + makeMixedTypeArray(d, b) + ") " + makeExceptionyStatement(d, b); }, 
+  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; }, 
+  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeMixedTypeArray(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); }, 
   
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
   function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
   function(d, b) { return "with({}) { " + makeExceptionyStatement(d, b) + " } "; },
+  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])); + "}"},
+  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());" },
   function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b); + "}"},
   function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());" },
 
