@@ -156,9 +156,20 @@ os.chdir(fuzzPath)
 
 # Methods to copy the entire js source directory.
 def posixCopyJsTree(repo):
-    shutil.copytree(os.path.expanduser(repo + "js/src/"),"compilePath")
+    try:
+        shutil.copytree(os.path.expanduser(repo + "js/src/"),"compilePath")
+    except OSError:
+        error()
+        raise Exception("The js code repository directory located at '" + \
+                        os.path.expanduser(repo + "js/src/") + \
+                        "' doesn't exist!")
 def ntCopyJsTree(repo):
-    shutil.copytree(repo + "js/src/","compilePath")
+    try:
+        shutil.copytree(repo + "js/src/","compilePath")
+    except OSError:
+        error()
+        raise Exception("The js code repository directory located at '" + \
+                        repo + "js/src/' doesn't exist!")
 
 # Copy the entire js tree to the fuzzPath.
 if os.name == "posix":
