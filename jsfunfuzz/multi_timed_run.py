@@ -59,11 +59,11 @@ def many_timed_runs():
 
         else:
             if level == jsunhappy.JS_FINE:
-                jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
-                jitcomparefilename = logPrefix + "-cmpin.js"
-                writeLinesToFile(jitcomparelines, jitcomparefilename)
                 # Bug 496816 explains why we disable compareJIT on Linux.
-                if os.name == "posix" and os.uname()[0] != "Linux":
+                if os.name != "posix" or os.uname()[0] != "Linux":
+                    jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
+                    jitcomparefilename = logPrefix + "-cmpin.js"
+                    writeLinesToFile(jitcomparelines, jitcomparefilename)
                     compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
@@ -89,19 +89,6 @@ def fuzzSplice(file):
         if line.find("SPLICE") != -1:
             after.append(line)
             break
-    for line in file:
-        after.append(line)
-    file.close()
-    return [before, after]
-
-def fuzzDice(file):
-    '''Returns the lines of the file, except for the one line containing DICE'''
-    before = []
-    after = []
-    for line in file:
-        if line.find("SPLICE") != -1:
-            break
-        before.append(line)
     for line in file:
         after.append(line)
     file.close()
