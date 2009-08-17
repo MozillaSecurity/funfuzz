@@ -73,8 +73,8 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core")):
                 os.remove(logPrefix + "-core")
-            if (os.path.exists(logPrefix + "-cmpin.js")):
-                os.remove(logPrefix + "-cmpin.js")
+            #if (os.path.exists(logPrefix + "-cmpin.js")):
+                #os.remove(logPrefix + "-cmpin.js")
 
 
 def fuzzSplice(file):
