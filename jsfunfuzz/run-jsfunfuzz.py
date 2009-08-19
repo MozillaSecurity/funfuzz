@@ -142,6 +142,10 @@ if verbose:
 if os.name == "posix":
     fuzzPath = os.path.expanduser(fuzzPathStart + compileType + "-" + \
                                   branchType + "/")
+elif os.name == "nt":
+    fuzzPath = fuzzPathStart + compileType + "-" + branchType + "/"
+else:
+    exceptionBadOs()
 
 # Create the fuzzing folder.
 try:
