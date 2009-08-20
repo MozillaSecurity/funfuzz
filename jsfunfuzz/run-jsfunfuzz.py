@@ -292,7 +292,7 @@ if verbose:
     print "DEBUG - %s/" % os.getcwdu()
     print "DEBUG - fuzzPath is: %s\n" % fuzzPath
     #FIXME
-    if fuzzPath[1:] != os.getcwdu() + "/":
+    if fuzzPath[1:] != (os.getcwdu() + "/")[3:]:  # Ignore drive letter.
         raise Exception("We are not in fuzzPath.")
 
 # Copy over useful files that are updated in hg fuzzing branch.
