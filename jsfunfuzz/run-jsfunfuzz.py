@@ -120,12 +120,13 @@ if os.name == "posix":
 elif os.name == "nt":
     def locations():
         # ~ is not used because in XP, ~ contains spaces in
-        # "Documents and Settings".
-        repoFuzzing = "/c/fuzzing/"    # Location of the fuzzing repository.
-        repo191 = "/c/mozilla-1.9.1/"  # Location of the 1.9.1 repository.
-        repo192 = "/c/mozilla-1.9.2/"  # Location of the 1.9.2 repository.
-        repoTM = "/c/tracemonkey/"     # Location of the tracemonkey repository.
-        fuzzPathStart = "/c/jsfunfuzz-"   # Start of the fuzzing directory.
+        # "Documents and Settings". This file assumes the repositories to be in
+        # the root directory of the same drive as this file.
+        repoFuzzing = "/fuzzing/"    # Location of the fuzzing repository.
+        repo191 = "/mozilla-1.9.1/"  # Location of the 1.9.1 repository.
+        repo192 = "/mozilla-1.9.2/"  # Location of the 1.9.2 repository.
+        repoTM = "/tracemonkey/"     # Location of the tracemonkey repository.
+        fuzzPathStart = "/jsfunfuzz-"   # Start of the fuzzing directory.
         return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
 else:
     exceptionBadOs()
