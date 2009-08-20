@@ -218,7 +218,7 @@ if os.name == "posix":
     elif os.uname()[0] == "Linux":
         subprocess.call(["autoconf2.13"])
 elif os.name == "nt":
-    subprocess.call(["local/bin/autoconf-2.13"])
+    subprocess.call(["local/bin/autoconf-2.13"], shell=True)
 else:
     exceptionBadOs()
 
