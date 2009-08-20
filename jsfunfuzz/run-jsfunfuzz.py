@@ -380,8 +380,14 @@ if verbose:
 print "=== Performing self-test... ==="
 # Create a testfile with the gczeal() function.
 subprocess.call(["echo 'gczeal()' > compileTypeTest"], shell=True)
-testFileErrorCode = subprocess.call(["./" + jsShellName + " compileTypeTest"], \
-    shell=True)
+if os.name == "posix":
+    testFileErrorCode = subprocess.call(["./" + jsShellName + \
+                                         " compileTypeTest"], shell=True)
+elif os.name == "nt":
+    testFileErrorCode = subprocess.call([jsShellName + " compileTypeTest"], \
+        shell=True)
+else:
+    exceptionBadOs()
 os.remove("compileTypeTest")  # Remove testfile after grabbing the error code.
 
 if verbose:
