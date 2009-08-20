@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#
 #/* ***** BEGIN LICENSE BLOCK	****
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
 #
@@ -65,10 +65,17 @@ import sys, os, subprocess, shutil, time
 
 
 supportedBranches = "[191|192|tm]"
+supportedBranchFOO = []
+# Add supported branches here.
+supportedBranchFOO.append('191')
+supportedBranchFOO.append('192')
+supportedBranchFOO.append('tm')
+# FIXME supportedBranchFOO
+# FIXME or use optparse (recommended, based on instinct feeling)
+
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
-    print
-    print "DEBUG - Debug output follows..."
+    print "\nDEBUG - Debug output follows..."
 def exceptionBadOs():
     raise Exception("Unknown OS - Platform is unsupported.")
 def exceptionBadCompileType():
@@ -80,13 +87,15 @@ def exceptionBadNtBranchType():
 
 # The corresponding CLI requirements should be input, else output this error.
 def error():
-    print
-    print "=========="
-    print "| Error! |"
-    print "=========="
-    print
-    print "General usage: ./run-jsfunfuzz.py [dbg|opt] " + supportedBranches
-    print
+    print """
+    
+==========
+| Error! |
+==========
+    
+General usage: ./run-jsfunfuzz.py [dbg|opt] %s
+
+    """ % supportedBranches
 
 
 # Accept dbg and opt parameters for compileType only.
@@ -136,15 +145,15 @@ repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
 if verbose:
     verbose()
     print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
-    print "DEBUG - " + ", ".join(locations()) + "\n"
+    print "DEBUG - %s\n" % ", ".join(locations())
 
 
 # Expand the ~ folder on Linux/Mac.
+fuzzPathRaw = fuzzPathStart + compileType + "-" + branchType + "/"
 if os.name == "posix":
-    fuzzPath = os.path.expanduser(fuzzPathStart + compileType + "-" + \
-                                  branchType + "/")
+    fuzzPath = os.path.expanduser(fuzzPathRaw)
 elif os.name == "nt":
-    fuzzPath = fuzzPathStart + compileType + "-" + branchType + "/"
+    fuzzPath = fuzzPathRaw
 else:
     exceptionBadOs()
 
@@ -205,11 +214,11 @@ os.chdir("compilePath")
 # Sniff platform and run different autoconf types:
 if os.name == "posix":
     if os.uname()[0] == "Darwin":
-        subprocess.call("autoconf213")
+        subprocess.call(["autoconf213"])
     elif os.uname()[0] == "Linux":
-        subprocess.call("autoconf2.13")
+        subprocess.call(["autoconf2.13"])
 elif os.name == "nt":
-    subprocess.call("autoconf-2.13")
+    subprocess.call(["autoconf-2.13"], shell=True)
 else:
     exceptionBadOs()
 
@@ -254,7 +263,7 @@ os.chdir("../")
 if verbose:
     verbose()
     print "DEBUG - This should be the compilePath:"
-    print "DEBUG - " + os.getcwdu() + "\n"
+    print "DEBUG - %s\n" % os.getcwdu()
     if "compilePath" not in os.getcwdu():
         raise Exception("We are not in compilePath.")
     
@@ -277,8 +286,9 @@ os.chdir("../../")
 if verbose:
     verbose()
     print "DEBUG - os.getcwdu() should be the fuzzPath:"
-    print "DEBUG - " + os.getcwdu() + "/"
-    print "DEBUG - fuzzPath is: " + fuzzPath + "\n"
+    print "DEBUG - %s/" % os.getcwdu()
+    print "DEBUG - fuzzPath is: %s\n" % fuzzPath
+    #FIXME
     if fuzzPath != os.getcwdu() + "/":
         raise Exception("We are not in fuzzPath.")
 
@@ -288,10 +298,12 @@ if os.name == "posix":
                  ".")
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.py"), ".")
 elif os.name == "nt":
+    shutil.copy2(repoFuzzing + "jsfunfuzz/jsfunfuzz.js", ".")
     shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.py", ".")
 else:
     exceptionBadOs()
 
+#FIXME
 print
 print "========================================"
 print "!  Fuzzing " + compileType + " " + branchType + " js shell builds now  !"
@@ -360,6 +372,7 @@ if verbose:
     print "DEBUG - fuzzPath + jsShellName is " + fuzzPath + jsShellName
     print "DEBUG - fuzzCommand is " + fuzzCommand
     print
+    #FIXME
     
 print "=== Performing self-test... ==="
 # Create a testfile with the gczeal() function.
@@ -374,6 +387,7 @@ if verbose:
     print "DEBUG - The error code for opt shells should be 3."
     print "DEBUG - The actual error code for " + jsShellName + " now, is: " + \
           str(testFileErrorCode)
+    #FIXME
 
 # The error code for debug shells when passing in the gczeal() function should
 # be 0.
@@ -382,6 +396,7 @@ if compileType == "dbg" and testFileErrorCode != 0:
     print "compileType is: " + compileType
     print "testFileErrorCode is: " + str(testFileErrorCode)
     print
+    #FIXME
     raise Exception("The compiled binary is not a debug shell.")
 # The error code for optimized shells when passing in the gczeal() function
 # should be 3, because they don't have the function compiled in.
@@ -390,6 +405,7 @@ elif compileType == "opt" and testFileErrorCode != 3:
     print "compileType is: " + compileType
     print "testFileErrorCode is: " + str(testFileErrorCode)
     print
+    #FIXME
     raise Exception("The compiled binary is not an optimized shell.")
 print "\n=== End of self-test... ===\n"
 
