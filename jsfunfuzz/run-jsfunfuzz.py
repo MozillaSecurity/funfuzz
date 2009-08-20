@@ -218,7 +218,7 @@ if os.name == "posix":
     elif os.uname()[0] == "Linux":
         subprocess.call(["autoconf2.13"])
 elif os.name == "nt":
-    subprocess.call(["local/bin/autoconf-2.13"], shell=True)
+    subprocess.call(["sh", "autoconf-2.13"])
 else:
     exceptionBadOs()
 
@@ -231,9 +231,11 @@ os.chdir(compileType + "-objdir")
 
 # Compile the first build.
 if compileType == "dbg":
-    subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
+    subprocess.call(["sh", "../configure", "--disable-optimize",
+                     "--enable-debug"])
 elif compileType == "opt":
-    subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
+    subprocess.call(["sh", "../configure", "--enable-optimize",
+                     "--disable-debug"])
 else:
     exceptionBadCompileType()
 
@@ -245,13 +247,12 @@ def compileCopy(dbgOpt):
     if os.name == "posix":
         shellName = "js-" + dbgOpt + "-" + branchType + "-" + \
                     os.uname()[0].lower()
+        shutil.copy2("js","../../" + shellName)
     elif os.name == "nt":
         shellName = "js-" + dbgOpt + "-" + branchType + "-" + os.name.lower()
+        shutil.copy2("js.exe","../../" + shellName + ".exe")
     else:
         exceptionBadOs()
-    
-    # Copy js executable out into fuzzPath.
-    shutil.copy2("js","../../" + shellName)
     
     return shellName
 
@@ -271,11 +272,13 @@ if verbose:
 # No need to assign jsShellName here.
 if compileType == "dbg":
     os.chdir("opt-objdir")
-    subprocess.call(["../configure", "--enable-optimize", "--disable-debug"])
+    subprocess.call(["sh", "../configure", "--enable-optimize",
+                     "--disable-debug"])
     compileCopy("opt")
 elif compileType == "opt":
     os.chdir("dbg-objdir")
-    subprocess.call(["../configure", "--disable-optimize", "--enable-debug"])
+    subprocess.call(["sh", "../configure", "--disable-optimize",
+                     "--enable-debug"])
     compileCopy("dbg")
 else:
     exceptionBadCompileType()
