@@ -327,7 +327,7 @@ jsknown192 = repoFuzzing + "js-known/mozilla-1.9.2/"
 # For TM, we use mozilla-central's js-known directories.
 jsknownTM = repoFuzzing + "js-known/mozilla-central/"
 multiTimedRun = repoFuzzing + "jsfunfuzz/multi_timed_run.py"
-multiTimedRunTimeout = "1800"  # Timeout in 1800s or 30mins
+multiTimedRunTimeout = "800"  # Timeout in 800s
 jsfunfuzzPath = repoFuzzing + "jsfunfuzz/jsfunfuzz.js"
 # Activate JIT fuzzing here, turned on by default.
 jsJitSwitch = True
