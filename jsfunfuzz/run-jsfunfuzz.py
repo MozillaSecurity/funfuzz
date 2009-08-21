@@ -378,12 +378,13 @@ if verbose:
     #FIXME
     
 print "=== Performing self-test... ==="
-# Create a testfile with the gczeal() function.
-subprocess.call(["echo 'gczeal()' > compileTypeTest"], shell=True)
 if os.name == "posix":
+    subprocess.call(["echo 'gczeal()' > compileTypeTest"], shell=True)
     testFileErrorCode = subprocess.call(["./" + jsShellName + \
                                          " compileTypeTest"], shell=True)
+    # Create a testfile with the gczeal() function.
 elif os.name == "nt":
+    subprocess.call(["echo gczeal() > compileTypeTest"], shell=True)
     testFileErrorCode = subprocess.call([jsShellName + " compileTypeTest"], \
         shell=True)
 else:
