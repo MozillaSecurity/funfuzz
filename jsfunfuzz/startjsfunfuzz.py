@@ -58,7 +58,7 @@
 #   and Safari uses its own Nitro engine. v8 might come later too.
 #
 #
-# Usage: python run-jsfunfuzz.py [dbg|opt] <supportedBranches>
+# Usage: python startjsfunfuzz.py [dbg|opt] <supportedBranches>
 #
 
 import sys, os, subprocess, shutil, time
@@ -93,7 +93,7 @@ def error():
 | Error! |
 ==========
     
-General usage: ./run-jsfunfuzz.py [dbg|opt] %s
+General usage: python startjsfunfuzz.py [dbg|opt] %s
 
     """ % supportedBranches
 
