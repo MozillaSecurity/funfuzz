@@ -59,12 +59,10 @@ def many_timed_runs():
 
         else:
             if level == jsunhappy.JS_FINE:
-                # Bug 496816 explains why we disable compareJIT on Linux.
-                if os.name != "posix" or os.uname()[0] != "Linux":
-                    jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
-                    jitcomparefilename = logPrefix + "-cmpin.js"
-                    writeLinesToFile(jitcomparelines, jitcomparefilename)
-                    compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
+                jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
+                jitcomparefilename = logPrefix + "-cmpin.js"
+                writeLinesToFile(jitcomparelines, jitcomparefilename)
+                compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
