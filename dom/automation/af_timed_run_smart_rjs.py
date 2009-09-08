@@ -79,7 +79,7 @@ def wheeLith(level, logPrefix):
             
     fuzzjs = open(os.path.join(fuzzersDir, "fuzz.js")).readlines()
     fuzzstartjs = open(os.path.join(fuzzersDir, "fuzz-start.js")).readlines()
-    [jbefore, jafter] = fuzzSplice(open(os.path.join(fuzzersDir, "fuzzer-combined.js")))
+    [jbefore, jafter] = fuzzSplice(open(os.path.join(fuzzersDir, "fuzzer-combined-smart-rjs.js")))
     fuzzlines = linesWith(open(logPrefix + "-out"), "FRC")
     quittage = [
       "// DDEND\n",
@@ -94,12 +94,10 @@ def wheeLith(level, logPrefix):
     writeLinesToFile(linesToWrite, rFN)
     
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
-    lithtmp = logPrefix + "-lith1-tmp"
-    os.mkdir(lithtmp)
-    lithArgs = ["--tempdir=" + lithtmp, domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
+    lithArgs = [domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
-    subprocess.call(lithiumpy + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
+    subprocess.call(lithiumpy + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
     print "Done running Lithium"
 
 
@@ -142,10 +140,7 @@ def createTempDir():
 def randomHash():
     metaSeed = random.randint(1, 10000)
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5
-    return "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,1000,0"
-
-
-
+    return "#squarefree-af!fuzzer-combined-smart-rjs.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,9000,0"
 
 def fuzzSplice(file):
     '''Returns the lines of a file, minus the ones between the two lines containing SPLICE and between the two lines containing IDLINFO'''
@@ -173,7 +168,6 @@ def fuzzSplice(file):
 
     file.close()
     return [before, after]
-	
 
 def fuzzDice(file):
     '''Returns the lines of the file, except for the one line containing DICE'''

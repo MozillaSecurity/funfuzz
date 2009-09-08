@@ -79,7 +79,7 @@ def wheeLith(level, logPrefix):
             
     fuzzjs = open(os.path.join(fuzzersDir, "fuzz.js")).readlines()
     fuzzstartjs = open(os.path.join(fuzzersDir, "fuzz-start.js")).readlines()
-    [jbefore, jafter] = fuzzSplice(open(os.path.join(fuzzersDir, "fuzzer-combined.js")))
+    [jbefore, jafter] = fuzzSplice(fuzzRemoveIDLInfo(open(os.path.join(fuzzersDir, "fuzzer-combined-smart-rjs.js"))))
     fuzzlines = linesWith(open(logPrefix + "-out"), "FRC")
     quittage = [
       "// DDEND\n",
@@ -94,12 +94,10 @@ def wheeLith(level, logPrefix):
     writeLinesToFile(linesToWrite, rFN)
     
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
-    lithtmp = logPrefix + "-lith1-tmp"
-    os.mkdir(lithtmp)
-    lithArgs = ["--tempdir=" + lithtmp, domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
+    lithArgs = [domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
-    subprocess.call(lithiumpy + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
+    subprocess.call(lithiumpy + lithArgs, stdout=open(logPrefix + "-lith1", "w"))
     print "Done running Lithium"
 
 
@@ -142,13 +140,27 @@ def createTempDir():
 def randomHash():
     metaSeed = random.randint(1, 10000)
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5
-    return "#squarefree-af!fuzzer-combined.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,1000,0"
+    return "#squarefree-af!fuzzer-combined-smart-rjs.js!" + str(metaSeed) + ",0," + str(metaPer) + ",10,9000,0"
 
-
-
-
+def fuzzRemoveIDLInfo(file):
+    '''Returns the lines of a file, minus the IDL info code used for smart random javascript fuzzing'''
+    code = []
+    for line in file:
+        code.append(line)
+        if line.find("IDLINFO") != -1:
+            break
+    for line in file:
+        if line.find("IDLINFO") != -1:
+            code.append(line)
+            break
+    for line in file:
+        code.append(line)
+    file.close()
+    return code
+	
+	
 def fuzzSplice(file):
-    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE and between the two lines containing IDLINFO'''
+    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
     before = []
     after = []
     for line in file:
@@ -159,21 +171,10 @@ def fuzzSplice(file):
         if line.find("SPLICE") != -1:
             after.append(line)
             break
-
     for line in file:
         after.append(line)
-        if line.find("IDLINFO") != -1:
-            break
-    for line in file:
-        if line.find("IDLINFO") != -1:
-            after.append(line)
-            break
-    for line in file:
-        after.append(line)
-
     file.close()
     return [before, after]
-	
 
 def fuzzDice(file):
     '''Returns the lines of the file, except for the one line containing DICE'''
@@ -212,10 +213,7 @@ def afterColon(s):
 if len(sys.argv) >= 5:
     domunhappy.initWithKnownPath(knownPath)
     createTempDir()
-    if yummy: # hacky
-        many_timed_runs(None)
-    else:
-        many_timed_runs(getURLs())
+    wheeLith(6, "C:\w54")
 else:
     print "Not enough command-line arguments"
     print "Usage: ./af_timed_run.py timeout urllist knownpath firefoxpath [firefoxargs ...]"
