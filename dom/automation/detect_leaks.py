@@ -20,7 +20,11 @@ knownHash = ath([
 "nsStorageStream",
 
 # Bug 499607
-"nsLineList"
+"nsLineList",
+
+# Bug 515278
+"nsHtml5ElementName",
+"AtomImpl"
 ])
 
 # Things that are known to leak AND entrain smaller objects.
