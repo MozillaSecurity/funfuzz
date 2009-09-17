@@ -887,7 +887,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
-  if (fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
+  if (fs && gs && fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
     dumpln("Ignoring quote mismatch (bug 346898).");
     return;
   }
