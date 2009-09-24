@@ -25,6 +25,7 @@ def level(runthis, timeout, knownPath, logPrefix):
             "valgrind",
             "--smc-check=all", # needed for -j if i don't use --enable-valgrind to build js
             "--xml=yes",
+            "--xml-file=valgrind-xml-log.xml",
             "--log-file=" + logPrefix + "-vg.xml",
             "--suppressions=" + os.path.join(knownPath, "valgrind.txt")
         ] + runthis[1:]
