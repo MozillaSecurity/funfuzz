@@ -63,7 +63,6 @@
 
 import sys, os, subprocess, shutil, time
 
-
 supportedBranches = "[191|192|tm]"
 supportedBranchFOO = []
 # Add supported branches here.
@@ -335,6 +334,7 @@ if jsJitSwitch == True:
     jsJit = " -j "
 else:
     jsJit = " "
+valgrindSupport = False  # Set this to True for valgrind fuzzing.
 
 # Commands to simulate bash's `tee`.
 tee = subprocess.Popen(["tee", "log-jsfunfuzz"], stdin=subprocess.PIPE)
@@ -346,6 +346,8 @@ if os.name == "posix":
                             " " + multiTimedRunTimeout + " "
     posixFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit + \
                             os.path.expanduser(jsfunfuzzPath)
+    if valgrindSupport == True:
+        posixFuzzCommandPart2 = " valgrind" + posixFuzzCommandPart2
     # Have a different js-known directory for each branchType.
     if branchType == "191":
         fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown191) + \
