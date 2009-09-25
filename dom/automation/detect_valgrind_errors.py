@@ -73,7 +73,7 @@ def amiss(fn):
         b = blame(error)
         if b == BLAME_MOZILLA or b == BLAME_UNKNOWN:
             print "Blame: " + str(b)
-            print error.getElementsByTagName("what")[0].firstChild.data
+            print error.getElementsByTagName("xwhat")[0].getElementsByTagName("text")[0].firstChild.data
             print prettyStack(error)
             a = True
     dom.unlink()
