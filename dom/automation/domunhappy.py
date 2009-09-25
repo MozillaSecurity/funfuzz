@@ -22,9 +22,9 @@ def level(runthis, timeout, knownPath, logPrefix):
         runthis = [
             "valgrind",
             "--xml=yes",
-            "--log-file=" + logPrefix + "-vg.xml",
+            "--xml-file=" + logPrefix + "-vg.xml",
             "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
-            "--auto-run-dsymutil=yes"
+            "--dsymutil=yes"
         ] + runthis[1:]
 
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)
