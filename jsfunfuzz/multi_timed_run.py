@@ -58,7 +58,7 @@ def many_timed_runs():
             print "Done running Lithium"
 
         else:
-            if level == jsunhappy.JS_FINE:
+            if level == jsunhappy.JS_FINE and runThis[0] != "valgrind":
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cmpin.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
