@@ -11,9 +11,19 @@ jsunhappypy = os.path.join(p0, "jsunhappy.py")
 import jsunhappy
 import compareJIT
 
-timeout = int(sys.argv[1])
-knownPath = os.path.expanduser(sys.argv[2])
-runThis = sys.argv[3:]
+jsfunfuzzjs = os.path.join(p0, "jsfunfuzz.js")
+
+# Can't use optparse because it barfs when there's a "-j" in the positional arguments.
+# Don't want to use getopt because it's ugly.
+useCompareJIT = False
+args = sys.argv[1:]
+if args[0] == "--comparejit":
+    useCompareJIT = True
+    args = args[1:]
+
+timeout = int(args[0])
+knownPath = os.path.expanduser(args[1])
+runThis = args[2:] + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzjs]
 jsfunfuzzPath = runThis[-1]
 
 def showtail(filename):
@@ -58,7 +68,7 @@ def many_timed_runs():
             print "Done running Lithium"
 
         else:
-            if level == jsunhappy.JS_FINE and runThis[0] != "valgrind":
+            if useCompareJIT and level == jsunhappy.JS_FINE:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cmpin.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)

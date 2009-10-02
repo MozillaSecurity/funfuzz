@@ -507,7 +507,8 @@ function start()
   count = 0;
 
   if (jsshell) {
-    var MAX_TOTAL_TIME = 5/* seconds */ * 1000;
+    // If another script specified a "maxRunTime" argument, use it; otherwise, run forever
+    var MAX_TOTAL_TIME = (this.maxRunTime) || (Infinity);
     var startTime = new Date();
 
     do {
