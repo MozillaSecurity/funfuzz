@@ -73,7 +73,11 @@ def amiss(fn):
         b = blame(error)
         if b == BLAME_MOZILLA or b == BLAME_UNKNOWN:
             print "Blame: " + str(b)
-            print error.getElementsByTagName("xwhat")[0].getElementsByTagName("text")[0].firstChild.data
+            # Apparently some Valgrind errors (e.g. leaks) give "xwhat" while others (e.g. UMR) give "what".  xwtf.
+            if len(error.getElementsByTagName("xwhat")) > 0:
+                print error.getElementsByTagName("xwhat")[0].getElementsByTagName("text")[0].firstChild.data
+            elif len(error.getElementsByTagName("what")) > 0:
+                print error.getElementsByTagName("what")[0].firstChild.data
             print prettyStack(error)
             a = True
     dom.unlink()
