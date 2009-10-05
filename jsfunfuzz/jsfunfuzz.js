@@ -1864,11 +1864,18 @@ if (1) {
 }
 
 
+function errorstack()
+{
+  print("EEE");
+  try { [].qwerty.qwerty } catch(e) { print(e.stack) }
+}
 
 function rndElt(a)
 { 
-  if (typeof a == "string")
+  if (typeof a == "string") {
     dumpln("String passed to rndElt: " + a);
+    errorstack();
+  }
     
   if (typeof a == "function")
     dumpln("Function passed to rndElt: " + a);
@@ -2228,6 +2235,7 @@ function maybeLabel()
 
 function uniqueVarName()
 {
+  // Make a random variable name.
   var i, s = "";
   for (i = 0; i < 6; ++i)
     s += String.fromCharCode(97 + rnd(26)); // a lowercase english letter
@@ -2461,6 +2469,9 @@ function makeExpr(d, b)
 
   if (rnd(6) == 1 && b.length)
     return rndElt(b);
+
+  if (rnd(10) == 1)
+    return makeImmediateRecursiveCall(d, b);
 
   d = rnd(d); // !
 
@@ -2893,6 +2904,95 @@ var functionMakers = [
 ];
   
 
+
+
+/*
+David Anderson suggested creating the following recursive structures:
+  - recurse down an array of mixed types, car cdr kinda thing
+  - multiple recursive calls in a function, like binary search left/right, sometimes calls neither and sometimes calls both
+
+  the recursion support in spidermonkey only works with self-recursion.
+  that is, two functions that call each other recursively will not be traced.
+
+  two trees are formed, going down and going up.
+  type instability matters on both sides.
+  so the values returned from the function calls matter.
+
+  so far, what i've thought of means recursing from the top of a function and if..else.
+  but i'd probably also want to recurse from other points, e.g. loops.
+
+  special code for tail recursion likely coming soon, but possibly as a separate patch, because it requires changes to the interpreter.
+*/
+
+// "@" indicates a point at which a statement can be inserted. XXX allow use of variables, as consts
+// variable names will be replaced, and should be uppercase to reduce the chance of matching things they shouldn't.
+// take care to ensure infinite recursion never occurs unexpectedly, especially with doubly-recursive functions.
+var recursiveFunctions = [
+  /*
+  {
+    // spidermonkey interpreter recursion limit is 3000, but jit recursion limit is higher (see bug 520498)
+    // this is meant to test for possible bad interactions.  unfortunately, it also shows behavior differences,
+    // so it is disabled.
+    text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); } @ })",
+    vars: ["depth"],
+    args: function(d, b) { return rnd(10000); },
+    test: function(f) { try { f(5000); } catch(e) { } return true; }
+  },
+  */
+  {
+    text: "(function factorial(N) { @; if (N == 0) return 1; @; return N * factorial(N - 1); @ })",
+    vars: ["N"],
+    args: function(d, b) { return "" + rnd(20); },
+    test: function(f) { return f(10) == 3628800; }
+  },
+  {
+    text: "(function factorial_tail(N, Acc) { @; if (N == 0) { @; return Acc; } @; return factorial_tail(N - 1, Acc * N); @ })",
+    vars: ["N", "Acc"],
+    args: function(d, b) { return rnd(20) + ", 1"; },
+    test: function(f) { return f(10, 1) == 3628800; }
+  },
+  {
+    // two recursive calls
+    text: "(function fibonacci(N) { @; if (N <= 1) { @; return 1; } @; return fibonacci(N - 1) + fibonacci(N - 2); @ })",
+    vars: ["N"],
+    args: function(d, b) { return "" + rnd(8); },
+    test: function(f) { return f(6) == 13; }
+  },
+  {
+    // this lets us play a little with mixed-type arrays
+    text: "(function sum_indexing(array, start) { @; return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
+    vars: ["array", "start"],
+    args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
+    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; }
+  },
+  {
+    text: "(function sum_slicing(array) { @; return array.length == 0 ? 0 : array[0] + sum_slicing(array.slice(1)); })",
+    vars: ["array"],
+    args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
+    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; }
+  }
+];
+
+(function testAllRecursiveFunctions() {
+  for (var i = 0; i < recursiveFunctions.length; ++i) {
+    var a = recursiveFunctions[i];
+    var f = eval(a.text.replace(/@/g, ""))
+    if (!a.test(f))
+      throw "Failed test of: " + a.text;
+  }
+})();
+
+function makeImmediateRecursiveCall(d, b)
+{
+  var a = rndElt(recursiveFunctions);
+  var s = a.text;
+  for (var i = 0; i < a.vars.length; ++i)
+    s = s.replace(new RegExp(a.vars[i], "g"), uniqueVarName());
+  s = s + "(" + a.args(d, b) + ")";
+  s = s.replace(/@/g, function() { if (rnd(4) == 0) return makeExpr(d-2, b); return ""; });
+  s = "(" + s + ")";
+  return s;
+}
 
 function makeLetHead(d, b)
 {
