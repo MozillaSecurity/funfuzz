@@ -69,8 +69,6 @@ supportedBranchFOO = []
 supportedBranchFOO.append('191')
 supportedBranchFOO.append('192')
 supportedBranchFOO.append('tm')
-# FIXME supportedBranchFOO
-# FIXME or use optparse (recommended, based on instinct feeling)
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 def verbose():
@@ -87,11 +85,11 @@ def exceptionBadNtBranchType():
 # The corresponding CLI requirements should be input, else output this error.
 def error():
     print """
-    
+
 ==========
 | Error! |
 ==========
-    
+
 General usage: python startjsfunfuzz.py [dbg|opt] %s
 
     """ % supportedBranches
@@ -122,8 +120,8 @@ if os.name == "posix":
         repoFuzzing = "~/fuzzing/"     # Location of the fuzzing repository.
         repo191 = "~/mozilla-1.9.1/"   # Location of the 1.9.1 repository.
         repo192 = "~/mozilla-1.9.2/"   # Location of the 1.9.2 repository.
-        repoTM = "~/tracemonkey/"      # Location of the tracemonkey repository.
-        fuzzPathStart = "~/Desktop/jsfunfuzz-" # Start of the fuzzing directory.
+        repoTM = "~/tracemonkey/"      # Location of the tracemonkey repository
+        fuzzPathStart = "~/Desktop/jsfunfuzz-" # Start of the fuzzing directory
         return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
 elif os.name == "nt":
     def locations():
@@ -138,13 +136,13 @@ elif os.name == "nt":
         return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
 else:
     exceptionBadOs()
-    
+
 repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
 
 if verbose:
     verbose()
     print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
-    print "DEBUG - %s\n" % ", ".join(locations())
+    print "DEBUG - %s" % ", ".join(locations())
 
 
 # Expand the ~ folder on Linux/Mac.
@@ -170,6 +168,9 @@ os.chdir(fuzzPath)
 # Methods to copy the entire js source directory.
 def posixCopyJsTree(repo):
     try:
+        if verbose:
+            verbose()
+            print 'DEBUG - Copying the entire js tree to the fuzzPath'
         shutil.copytree(os.path.expanduser(repo + "js/src/"),"compilePath")
     except OSError:
         error()
@@ -178,6 +179,9 @@ def posixCopyJsTree(repo):
                         "' doesn't exist!")
 def ntCopyJsTree(repo):
     try:
+        if verbose:
+            verbose()
+            print 'DEBUG - Copying the entire js tree to the fuzzPath'
         shutil.copytree(repo + "js/src/","compilePath")
     except OSError:
         error()
@@ -241,7 +245,7 @@ else:
 def compileCopy(dbgOpt):
     # Run make using 2 cores.
     subprocess.call(["make", "-j2"])
-    
+
     # Sniff platform and rename executable accordingly:
     if os.name == "posix":
         shellName = "js-" + dbgOpt + "-" + branchType + "-" + \
@@ -252,7 +256,7 @@ def compileCopy(dbgOpt):
         shutil.copy2("js.exe","../../" + shellName + ".exe")
     else:
         exceptionBadOs()
-    
+
     return shellName
 
 jsShellName = compileCopy(compileType)
@@ -266,7 +270,7 @@ if verbose:
     print "DEBUG - %s\n" % os.getcwdu()
     if "compilePath" not in os.getcwdu():
         raise Exception("We are not in compilePath.")
-    
+
 # Compile the other build.
 # No need to assign jsShellName here.
 if compileType == "dbg":
@@ -304,7 +308,8 @@ if verbose:
 if os.name == "posix":
     shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/jsfunfuzz.js"), \
                  ".")
-    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.py"), ".")
+    shutil.copy2(os.path.expanduser(repoFuzzing + "jsfunfuzz/analysis.py"), \
+                 ".")
 elif os.name == "nt":
     shutil.copy2(repoFuzzing + "jsfunfuzz/jsfunfuzz.js", ".")
     shutil.copy2(repoFuzzing + "jsfunfuzz/analysis.py", ".")
@@ -314,7 +319,8 @@ else:
 #FIXME
 print
 print "========================================"
-print "!  Fuzzing " + compileType + " " + branchType + " js shell builds now  !"
+print "!  Fuzzing " + compileType + " " + branchType + \
+" js shell builds now  !"
 print "   DATE: " + time.asctime( time.localtime(time.time()) )
 print "========================================"
 print
@@ -326,8 +332,7 @@ jsknown192 = repoFuzzing + "js-known/mozilla-1.9.2/"
 # For TM, we use mozilla-central's js-known directories.
 jsknownTM = repoFuzzing + "js-known/mozilla-central/"
 multiTimedRun = repoFuzzing + "jsfunfuzz/multi_timed_run.py"
-multiTimedRunTimeout = "800"  # Timeout in 800s
-jsfunfuzzPath = repoFuzzing + "jsfunfuzz/jsfunfuzz.js"
+multiTimedRunTimeout = "10"
 # Activate JIT fuzzing here, turned on by default.
 jsJitSwitch = True
 if jsJitSwitch == True:
@@ -335,6 +340,14 @@ if jsJitSwitch == True:
 else:
     jsJit = " "
 valgrindSupport = False  # Set this to True for valgrind fuzzing.
+if valgrindSupport == True:
+    multiTimedRunTimeout = "1000"
+# Activate compareJIT here, turned on by default.
+jsCompareJITSwitch = True
+if jsCompareJITSwitch == True and valgrindSupport != True:
+    jsCompareJIT = " --comparejit "
+else:
+    jsCompareJIT = " "
 
 # Commands to simulate bash's `tee`.
 tee = subprocess.Popen(["tee", "log-jsfunfuzz"], stdin=subprocess.PIPE)
@@ -342,18 +355,17 @@ tee = subprocess.Popen(["tee", "log-jsfunfuzz"], stdin=subprocess.PIPE)
 # Define command for the appropriate OS and branchType.
 # POSIX systems include Linux and Mac OS X.
 if os.name == "posix":
-    posixFuzzCommandPart1 = "python -u " + os.path.expanduser(multiTimedRun) + \
-                            " " + multiTimedRunTimeout + " "
-    posixFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit + \
-                            os.path.expanduser(jsfunfuzzPath)
+    posixFuzzCommandPart1 = "python -u " + os.path.expanduser(multiTimedRun) +\
+                            " " + jsCompareJIT + multiTimedRunTimeout + " "
+    posixFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit
     if valgrindSupport == True:
         posixFuzzCommandPart2 = " valgrind" + posixFuzzCommandPart2
     # Have a different js-known directory for each branchType.
     if branchType == "191":
-        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown191) + \
+        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown191) +\
                       posixFuzzCommandPart2
     elif branchType == "192":
-        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown192) + \
+        fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown192) +\
                       posixFuzzCommandPart2
     elif branchType == "tm":
         fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknownTM) + \
@@ -362,9 +374,9 @@ if os.name == "posix":
         exceptionBadPosixBranchType()()
 # NT systems include MozillaBuild on supported Windows platforms.
 elif os.name == "nt":
-    ntFuzzCommandPart1 = "python -u " + multiTimedRun + " " + \
+    ntFuzzCommandPart1 = "python -u " + multiTimedRun + " " + jsCompareJIT + \
                          multiTimedRunTimeout + " "
-    ntFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit + jsfunfuzzPath
+    ntFuzzCommandPart2 = " " + fuzzPath + jsShellName + jsJit
     # Have a different js-known directory for each branchType.
     if branchType == "191":
         fuzzCommand = ntFuzzCommandPart1 + jsknown191 + ntFuzzCommandPart2
@@ -384,7 +396,7 @@ if verbose:
     print "DEBUG - fuzzCommand is " + fuzzCommand
     print
     #FIXME
-    
+
 print "=== Performing self-test... ==="
 if os.name == "posix":
     subprocess.call(["echo 'gczeal()' > compileTypeTest"], shell=True)
