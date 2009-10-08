@@ -39,7 +39,7 @@ def level(runthis, timeout, knownPath, logPrefix):
     if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, False, msg):
         issues.append("unknown crash")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    if sta == ntr.NORMAL and detect_leaks.amiss(logPrefix):
+    if runthis[0] != "valgrind" and sta == ntr.NORMAL and detect_leaks.amiss(logPrefix):
         issues.append("unknown leak")
         lev = max(lev, DOM_NEW_LEAK)
     if detect_malloc_errors.amiss(logPrefix):
