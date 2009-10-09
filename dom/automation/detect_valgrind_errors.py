@@ -12,28 +12,28 @@ def blame(error):
         if frame.nodeType == frame.ELEMENT_NODE:
             fns = frame.getElementsByTagName("fn")
             if len(fns) > 0:
-                if fns[0].firstChild.data == "__static_initialization_and_destruction_0(int, int)":
+                fn = fns[0].firstChild.data
+                if fn == "__static_initialization_and_destruction_0(int, int)":
                     return BLAME_DONT_CARE # XXX TEMPORARY (should try firefox debug or objdump/asm)
             objs = frame.getElementsByTagName("obj")
-            if len(objs) == 0:
-                pass
-            obj = objs[0].firstChild.data
-            if obj.find("valgrind") != -1:
-                pass
-            elif obj.find("nssutil") != -1:
-                return BLAME_DONT_CARE # NSS
-            elif obj.find("Darwin_SINGLE_SHLIB") != -1:
-                return BLAME_DONT_CARE # NSS
-            elif obj.find("central/opt-obj") != -1:
-                return BLAME_MOZILLA
-            elif obj == "./js":
-                return BLAME_MOZILLA
-            elif obj.find("tracemonkey") != -1:
-                return BLAME_MOZILLA
-            elif obj.find("/System/Library/") != -1:
-                return BLAME_MAC_LIBRARIES
-            elif obj.find("/usr/lib/") != -1:
-                return BLAME_MAC_LIBRARIES
+            if len(objs) > 0:
+                obj = objs[0].firstChild.data
+                if obj.find("valgrind") != -1:
+                    pass
+                elif obj.find("nssutil") != -1:
+                    return BLAME_DONT_CARE # NSS
+                elif obj.find("Darwin_SINGLE_SHLIB") != -1:
+                    return BLAME_DONT_CARE # NSS
+                elif obj.find("central/opt-obj") != -1:
+                    return BLAME_MOZILLA
+                elif obj == "./js":
+                    return BLAME_MOZILLA
+                elif obj.find("tracemonkey") != -1:
+                    return BLAME_MOZILLA
+                elif obj.find("/System/Library/") != -1:
+                    return BLAME_MAC_LIBRARIES
+                elif obj.find("/usr/lib/") != -1:
+                    return BLAME_MAC_LIBRARIES
     return BLAME_UNKNOWN
 
 def prettyStack(error):
