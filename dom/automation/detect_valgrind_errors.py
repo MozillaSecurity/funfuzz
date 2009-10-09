@@ -59,7 +59,7 @@ def prettyStack(error):
             r += ")\n"
     return r
 
-def amiss(fn):
+def amiss(fn, ignoreLeaks):
     a = False
     try:
         dom = xml.dom.minidom.parse(fn)
@@ -69,7 +69,9 @@ def amiss(fn):
     for error in dom.getElementsByTagName("error"):
         kind = error.getElementsByTagName("kind")[0].firstChild.data
         if kind == "Leak_PossiblyLost":
-            continue
+            continue # many false positives, or system library leaks, or something.
+        if kind == "Leak_DefinitelyLost" and ignoreLeaks:
+            continue # this is the easiest way to work around bug 102229. more sophisticated would be to scan for DNS leaks first.
         b = blame(error)
         if b == BLAME_MOZILLA or b == BLAME_UNKNOWN:
             print "Blame: " + str(b)
@@ -84,4 +86,4 @@ def amiss(fn):
     return a
 
 if __name__ == '__main__':
-    print amiss(sys.argv[1])
+    print amiss(sys.argv[1], True)

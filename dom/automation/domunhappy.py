@@ -52,7 +52,7 @@ def level(runthis, timeout, knownPath, logPrefix):
     if sta == ntr.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, DOM_TIMED_OUT)
-    if runthis[0] == "valgrind" and detect_valgrind_errors.amiss(logPrefix + "-vg.xml"):
+    if runthis[0] == "valgrind" and detect_valgrind_errors.amiss(logPrefix + "-vg.xml", True):
         issues.append("valgrind reported an error")
         lev = max(lev, DOM_VG_AMISS)
 
