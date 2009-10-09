@@ -2968,7 +2968,7 @@ var recursiveFunctions = [
     text: "(function sum_slicing(array) { @; return array.length == 0 ? 0 : array[0] + sum_slicing(array.slice(1)); })",
     vars: ["array"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b); },
-    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; }
+    test: function(f) { return f([1,2,3,"4",5,6,7]) == "123418"; }
   }
 ];
 
