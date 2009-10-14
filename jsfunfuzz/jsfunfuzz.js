@@ -1101,7 +1101,7 @@ function deParen(code)
 
 function testForExtraParens(f, code)
 {
-  var code = code.replace(/\n/g, " ").replace(/\r/g, " "); // regexps can't match across lines
+  code = code.replace(/\n/g, " ").replace(/\r/g, " "); // regexps can't match across lines
 
   var uf = "" + f;
 
@@ -2302,7 +2302,7 @@ var littleStatementMakers =
 [
   // Tiny
   function(d, b) { return cat([";"]); }, // e.g. empty "if" block
-  function(d, b) { return cat(["{", "}"]); ; }, // e.g. empty "if" block
+  function(d, b) { return cat(["{", "}"]); }, // e.g. empty "if" block
   function(d, b) { return cat([""]); },
 
   // Force garbage collection
@@ -2399,9 +2399,9 @@ var exceptionyStatementMakers = [
   // And I think he was right.
   function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
   function(d, b) { return "with({}) { " + makeExceptionyStatement(d, b) + " } "; },
-  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])); + "}"},
+  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])) + "}"; },
   function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());" },
-  function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b); + "}"},
+  function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b) + "}"; },
   function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());" },
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
@@ -2864,10 +2864,10 @@ function makeFunctionBody(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch(rnd(4)) {
-    case 0: return cat([" { ", makeStatement(d - 1, b),   " } "]);
-    case 1: return cat([" { ", "return ", makeExpr(d, b), " } "]);
-    case 2: return cat([" { ", "yield ",  makeExpr(d, b), " } "]);
-    case 3: return makeExpr(d, b); // make an "expression closure"
+    case 0:  return cat([" { ", makeStatement(d - 1, b),   " } "]);
+    case 1:  return cat([" { ", "return ", makeExpr(d, b), " } "]);
+    case 2:  return cat([" { ", "yield ",  makeExpr(d, b), " } "]);
+    default: return makeExpr(d, b); // make an "expression closure"
   }
 }
 
