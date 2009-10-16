@@ -1587,7 +1587,7 @@ function tryHalves(code)
 // this program is a JavaScript version of Mersenne Twister, with concealment and encapsulation in class,
 // an almost straight conversion from the original program, mt19937ar.c,
 // translated by y. okada on July 17, 2006.
-// slight change by Jesse Ruderman on June 19, 2008: added "var" keyword in a few spots; pasted into fuzz.js.
+// Changes by Jesse Ruderman: added "var" keyword in a few spots; added export_mta etc; pasted into fuzz.js.
 // in this program, procedure descriptions and comments of original source code were not removed.
 // lines commented with //c// were originally descriptions of c procedure. and a few following lines are appropriate JavaScript descriptions.
 // lines commented with /* and */ are original comments.
@@ -1736,12 +1736,12 @@ function MersenneTwister19937()
 		mt[0] = 0x80000000; /* MSB is 1; assuring non-zero initial array */
 	}
 	
-    this.export_state = function() { return [mt, mti]; };
-    this.import_state = function(s) { mt = s[0]; mti = s[1]; };
-    this.export_mta = function() { return mt; };
-    this.import_mta = function(_mta) { mt = _mta };
-    this.export_mti = function() { return mti; };
-    this.import_mti = function(_mti) { mti = _mti; }
+  this.export_state = function() { return [mt, mti]; };
+  this.import_state = function(s) { mt = s[0]; mti = s[1]; };
+  this.export_mta = function() { return mt; };
+  this.import_mta = function(_mta) { mt = _mta };
+  this.export_mti = function() { return mti; };
+  this.import_mti = function(_mti) { mti = _mti; }
 
 	/* generates a random number on [0,0xffffffff]-interval */
 	//c//unsigned long genrand_int32(void)
