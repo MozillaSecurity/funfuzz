@@ -208,6 +208,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\?.*\?/ ))        // avoid bug 475895
       && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
       && !( code.match( /new.*eval/ ))               // avoid bug 521456
+      && !( code.match( /new.*call/ ))               // avoid bug 522749
+      && !( code.match( /new.*apply/ ))              // avoid bug 522749
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
