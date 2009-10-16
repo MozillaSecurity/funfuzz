@@ -24,7 +24,10 @@ knownHash = ath([
 
 # Bug 515278
 "nsHtml5ElementName",
-"AtomImpl"
+"AtomImpl",
+
+# Bug 522512
+"nsHtml5HtmlAttributes"
 ])
 
 # Things that are known to leak AND entrain smaller objects.
