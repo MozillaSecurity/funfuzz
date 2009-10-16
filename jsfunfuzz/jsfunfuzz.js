@@ -2928,17 +2928,12 @@ David Anderson suggested creating the following recursive structures:
 // variable names will be replaced, and should be uppercase to reduce the chance of matching things they shouldn't.
 // take care to ensure infinite recursion never occurs unexpectedly, especially with doubly-recursive functions.
 var recursiveFunctions = [
-  /*
   {
-    // spidermonkey interpreter recursion limit is 3000, but jit recursion limit is higher (see bug 520498)
-    // this is meant to test for possible bad interactions.  unfortunately, it also shows behavior differences,
-    // so it is disabled.
     text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); } @ })",
     vars: ["depth"],
     args: function(d, b) { return rnd(10000); },
     test: function(f) { try { f(5000); } catch(e) { } return true; }
   },
-  */
   {
     text: "(function factorial(N) { @; if (N == 0) return 1; @; return N * factorial(N - 1); @ })",
     vars: ["N"],
