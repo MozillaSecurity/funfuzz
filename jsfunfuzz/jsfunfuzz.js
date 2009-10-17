@@ -2604,9 +2604,9 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   rndElt(binaryOps), makeId(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   rndElt(binaryOps), makeId(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   rndElt(binaryOps), makeId(d, b)]); },
   
   // Ternary operator
   function(d, b) { return cat([makeExpr(d, b), " ? ", makeExpr(d, b), " : ", makeExpr(d, b)]); },
@@ -2956,6 +2956,23 @@ var recursiveFunctions = [
     test: function(f) { return f(6) == 13; }
   },
   {
+    // do *anything* while indexing over mixed-type arrays
+    text: "(function a_indexing(array, start) { @; if (array.length == start) { @; return EXPR1; } var thisitem = array[start]; var recval = a_indexing(array, start + 1); STATEMENT1 })",
+    vars: ["array", "start", "thisitem", "recval"],
+    args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
+    testSub: function(text) { return text.replace(/EXPR1/, "0").replace(/STATEMENT1/, "return thisitem + recval;"); },
+    randSub: function(text, varMap, d, b) {
+        var expr1 =      makeExpr(d, b.concat([varMap["array"], varMap["start"]]));
+        var statement1 = rnd(2) ?
+                                   makeStatement(d, b.concat([varMap["thisitem"], varMap["recval"]]))        :
+                            "return " + makeExpr(d, b.concat([varMap["thisitem"], varMap["recval"]])) + ";";
+
+        return (text.replace(/EXPR1/,      expr1)
+                    .replace(/STATEMENT1/, statement1)
+        ); },
+    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; }
+  },
+  {
     // this lets us play a little with mixed-type arrays
     text: "(function sum_indexing(array, start) { @; return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
     vars: ["array", "start"],
@@ -2973,20 +2990,28 @@ var recursiveFunctions = [
 (function testAllRecursiveFunctions() {
   for (var i = 0; i < recursiveFunctions.length; ++i) {
     var a = recursiveFunctions[i];
-    var f = eval(a.text.replace(/@/g, ""))
+    var text = a.text;
+    if (a.testSub) text = a.testSub(text);
+    var f = eval(text.replace(/@/g, ""))
     if (!a.test(f))
       throw "Failed test of: " + a.text;
   }
 })();
 
-function makeImmediateRecursiveCall(d, b)
+function makeImmediateRecursiveCall(d, b, cheat1, cheat2)
 {
-  var a = rndElt(recursiveFunctions);
+  var a = (cheat1 == null) ? rndElt(recursiveFunctions) : recursiveFunctions[cheat1];
   var s = a.text;
-  for (var i = 0; i < a.vars.length; ++i)
-    s = s.replace(new RegExp(a.vars[i], "g"), uniqueVarName());
-  s = s + "(" + a.args(d, b) + ")";
+  var varMap = {};
+  for (var i = 0; i < a.vars.length; ++i) {
+    var prettyName = a.vars[i];
+    varMap[prettyName] = uniqueVarName();
+    s = s.replace(new RegExp(prettyName, "g"), varMap[prettyName]);
+  }
+  var actualArgs = cheat2 == null ? a.args(d, b) : cheat2;
+  s = s + "(" + actualArgs + ")";
   s = s.replace(/@/g, function() { if (rnd(4) == 0) return makeExpr(d-2, b); return ""; });
+  if (a.randSub) s = a.randSub(s, varMap, d, b);
   s = "(" + s + ")";
   return s;
 }
