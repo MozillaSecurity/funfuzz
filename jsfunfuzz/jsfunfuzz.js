@@ -2931,6 +2931,7 @@ David Anderson suggested creating the following recursive structures:
 // take care to ensure infinite recursion never occurs unexpectedly, especially with doubly-recursive functions.
 var recursiveFunctions = [
   {
+    // Unless the recursive call is in the tail position, this will throw.
     text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); } @ })",
     vars: ["depth"],
     args: function(d, b) { return rnd(10000); },
