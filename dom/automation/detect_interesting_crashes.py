@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
 import os, sys, platform, signal
+ready = False
 
-
-def amiss(logPrefix, verbose, msg):
+def amiss(knownPath, logPrefix, verbose, msg):
     global ignoreList
+    
+    if not ready:
+        readIgnoreList(knownPath)
+
     igmatch = []
     fn = logPrefix + "-crash"
     
@@ -35,8 +39,9 @@ def amiss(logPrefix, verbose, msg):
             return True
 
 
-def init(knownPath):
+def readIgnoreList(knownPath):
     global ignoreList
+    global ready
     ignoreList = []
     ignoreFile = file(knownPath + "crashes.txt", "r")
     for line in ignoreFile:
@@ -44,7 +49,8 @@ def init(knownPath):
         if ((len(line) > 0) and not line.startswith("#")):
             ignoreList.append(line)
     ignoreFile.close()
-    print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
+    ready = True
+    #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
 
 
 def ignore(assertion):

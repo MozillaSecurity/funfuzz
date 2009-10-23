@@ -34,10 +34,10 @@ def level(runthis, timeout, knownPath, logPrefix):
     lev = DOM_FINE
     issues = []
 
-    if detect_assertions.amiss(logPrefix, False):
+    if detect_assertions.amiss(knownPath, logPrefix, False):
         issues.append("unknown assertion")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, False, msg):
+    if sta == ntr.CRASHED and detect_interesting_crashes.amiss(knownPath, logPrefix, False, msg):
         issues.append("unknown crash")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     if runthis[0] != "valgrind" and sta == ntr.NORMAL and detect_leaks.amiss(logPrefix):
@@ -61,7 +61,7 @@ def level(runthis, timeout, knownPath, logPrefix):
     print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
     return lev
 
-
+# For use by Lithium
 def interesting(args, tempPrefix):
     minimumInterestingLevel = int(args[0])
     timeout = int(args[1])
@@ -69,17 +69,10 @@ def interesting(args, tempPrefix):
     actualLevel = level(args[3:], timeout, knownPath, tempPrefix)
     return actualLevel >= minimumInterestingLevel
 
-def init(args):
-    initWithKnownPath(args[2])
-
-def initWithKnownPath(knownPath):
-    detect_assertions.init(knownPath)
-    detect_interesting_crashes.init(knownPath)
-
+# For standalone use
 if __name__ == "__main__":
     timeout = int(sys.argv[1])
     knownPath = sys.argv[2]
     logPrefix = "t1"
     runThis = sys.argv[3:]
-    initWithKnownPath(knownPath)
     level(runThis, timeout, knownPath, logPrefix)

@@ -15,11 +15,17 @@ import detect_assertions, detect_malloc_errors, detect_interesting_crashes, dete
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-(JS_FINE, JS_TIMED_OUT, JS_ABNORMAL_EXIT, JS_DID_NOT_FINISH, JS_DECIDED_TO_EXIT, JS_VG_AMISS, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH) = range(8)
+(  JS_FINE, 
+   JS_KNOWN_CRASH, JS_TIMED_OUT,                          # frustrates understanding of stdout; not even worth reducing
+   JS_ABNORMAL_EXIT,                                      # frustrates understanding of stdout; can mean several things
+   JS_DID_NOT_FINISH, JS_DECIDED_TO_EXIT,                 # specific to jsfunfuzz
+   JS_OVERALL_MISMATCH,                                   # specific to comparejit (set in compareJIT.py)
+   JS_VG_AMISS, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH   # stuff really going wrong 
+) = range(10)
 
 
 
-def level(runthis, timeout, knownPath, logPrefix):
+def baseLevel(runthis, timeout, knownPath, logPrefix):
     if runthis[0] == "valgrind":
         runthis = [
             "valgrind",
@@ -32,29 +38,21 @@ def level(runthis, timeout, knownPath, logPrefix):
         ] + runthis[1:]
 
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)
-    (sta, msg, elapsedtime) = (runinfo.sta, runinfo.msg, runinfo.elapsedtime)
+    sta = runinfo.sta
 
-    # Initially, the level will be based on whether certain magic strings appear in the jsfunfuzz output.
-    # (This might be backwards; maybe this should be last, only if no larger issues were found)
-    lev = JS_DID_NOT_FINISH if sta == ntr.NORMAL else JS_FINE
-    issues = ["jsfunfuzz didn't finish"]
-    logfile = open(logPrefix + "-out", "r")
-    for line in logfile:
-        if (line == "It's looking good!\n"):
-            lev = JS_FINE
-            issues = []
-        elif (line == "jsfunfuzz stopping due to above error!\n"):
-            lev = JS_DECIDED_TO_EXIT
-            issues = ["jsfunfuzz decided to exit"]
-    logfile.close()
-
-    # But we also check several other places...
-    if detect_assertions.amiss(logPrefix, True):
+    lev = JS_FINE
+    issues = []
+    
+    if detect_assertions.amiss(knownPath, logPrefix, True):
         issues.append("unknown assertion")
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-    if sta == ntr.CRASHED and detect_interesting_crashes.amiss(logPrefix, True, msg):
-        issues.append("unknown crash")
-        lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+    if sta == ntr.CRASHED and lev != JS_NEW_ASSERT_OR_CRASH:
+        if detect_interesting_crashes.amiss(knownPath, logPrefix, True, runinfo.msg):
+            issues.append("unknown crash")
+            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+        else:
+            issues.append("known crash")
+            lev = max(lev, JS_KNOWN_CRASH)
     if detect_malloc_errors.amiss(logPrefix):
         issues.append("malloc error")
         lev = max(lev, JS_MALLOC_ERROR)
@@ -68,23 +66,35 @@ def level(runthis, timeout, knownPath, logPrefix):
         issues.append("valgrind reported an error")
         lev = max(lev, JS_VG_AMISS)
 
+    return (lev, issues, runinfo)
+
+
+def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix):
+    (lev, issues, runinfo) = baseLevel(runthis, timeout, knownPath, logPrefix)
+
+    if lev == JS_FINE:
+        logfile = open(logPrefix + "-out", "r")
+        for line in logfile:
+            if (line == "It's looking good!\n"):
+                break
+            elif (line == "jsfunfuzz stopping due to above error!\n"):
+                lev = JS_DECIDED_TO_EXIT
+                issues.append("jsfunfuzz decided to exit")
+        else:
+            issues.append("jsfunfuzz didn't finish")
+            lev = JS_DID_NOT_FINISH
+        logfile.close()
+
     amiss = len(issues) != 0
     amissStr = "" if not amiss else "*" + repr(issues) + " "
-    print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, msg, elapsedtime)
+    print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, runinfo.msg, runinfo.elapsedtime)
     return lev
 
 
+# For use by Lithium
 def interesting(args, tempPrefix):
     minimumInterestingLevel = int(args[0])
     timeout = int(args[1])
     knownPath = args[2]
-    actualLevel = level(args[3:], timeout, knownPath, tempPrefix)
+    actualLevel = jsfunfuzzLevel(args[3:], timeout, knownPath, tempPrefix)
     return actualLevel >= minimumInterestingLevel
-
-def init(args):
-    initWithKnownPath(args[2])
-
-def initWithKnownPath(knownPath):
-    detect_assertions.init(knownPath)
-    detect_interesting_crashes.init(knownPath)
-

@@ -210,7 +210,6 @@ def afterColon(s):
 
 
 if len(sys.argv) >= 5:
-    domunhappy.initWithKnownPath(knownPath)
     createTempDir()
     if yummy: # hacky
         many_timed_runs(None)

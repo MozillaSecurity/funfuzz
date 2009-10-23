@@ -8,9 +8,12 @@ import os, sys
 
 simpleIgnoreList = []
 twoPartIgnoreList = []
+ready = False
 
-def fs(currentFile, verbose):
+def fs(knownPath, currentFile, verbose):
     global ignoreList
+    if not ready:
+        readIgnoreList(knownPath)
 
     foundSomething = False
 
@@ -39,9 +42,10 @@ def assertiony(line):
              line.find("failed assertion") != -1 # nanojit
             )
 
-def init(knownPath):
+def readIgnoreList(knownPath):
     global simpleIgnoreList
     global twoPartIgnoreList
+    global ready
     ignoreFile = file(knownPath + "assertions.txt", "r")
     for line in ignoreFile:
         line = line.strip()
@@ -54,7 +58,8 @@ def init(knownPath):
             else:
                 twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:].replace("/", os.sep)))
     ignoreFile.close()
-    print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
+    ready = True
+    #print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
 
         
 def ignore(assertion):
@@ -69,12 +74,12 @@ def ignore(assertion):
 
 
 # For use by af_timed_run
-def amiss(logPrefix, verbose):
+def amiss(knownPath, logPrefix, verbose):
     currentFile = file(logPrefix + "-err", "r")
-    return fs(currentFile, verbose)
+    return fs(knownPath, currentFile, verbose)
 
 # For standalone use
 if __name__ == "__main__":
-    init(sys.argv[1])
+    knownPath = sys.argv[1]
     currentFile = file(sys.argv[2], "r")
-    fs(currentFile, False)
+    fs(knownPath, currentFile, False)

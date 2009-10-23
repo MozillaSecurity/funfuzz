@@ -41,7 +41,7 @@ def many_timed_runs():
         iteration += 1
         logPrefix = tempDir + os.sep + "w" + str(iteration)
 
-        level = jsunhappy.level(runThis, timeout, knownPath, logPrefix)
+        level = jsunhappy.jsfunfuzzLevel(runThis, timeout, knownPath, logPrefix)
 
         if level > jsunhappy.JS_TIMED_OUT:
             showtail(logPrefix + "-out")
@@ -70,9 +70,9 @@ def many_timed_runs():
         else:
             if useCompareJIT and level == jsunhappy.JS_FINE:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
-                jitcomparefilename = logPrefix + "-cmpin.js"
+                jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix)
+                compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix + "-cj", knownPath, timeout)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
@@ -81,8 +81,6 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core")):
                 os.remove(logPrefix + "-core")
-            #if (os.path.exists(logPrefix + "-cmpin.js")):
-                #os.remove(logPrefix + "-cmpin.js")
 
 
 def fuzzSplice(file):
@@ -133,6 +131,5 @@ def createTempDir():
     print tempDir + os.sep
 
 
-jsunhappy.initWithKnownPath(knownPath)
 createTempDir()
 many_timed_runs()
