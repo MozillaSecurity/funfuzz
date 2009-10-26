@@ -171,8 +171,9 @@ function whatToTestSpidermonkeyTrunk(code)
 {
   return {
   
-    allowParse: true,
+    allowParse: true
       && !( code.match( /yield/  ))  // avoid bug 524264
+      ,
     
     // Exclude things here if decompiling the function causes a crash.
     allowDecompile: true,
