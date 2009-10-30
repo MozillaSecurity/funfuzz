@@ -11,7 +11,7 @@ lithiumpy = ["python", "-u", os.path.join(p0, "..", "..", "lithium", "lithium.py
 domunhappypy = os.path.join(p0, "domunhappy.py")
 
 timeout = int(sys.argv[1])
-urlListFilename = sys.argv[2]
+urlListFilename = os.path.join(p0, sys.argv[2])
 knownPath = sys.argv[3]
 browser = sys.argv[4:] # e.g. 'firefox-bin -P fuzz1', should be able to accept a testcase filename appended
 maxIterations = 300000
