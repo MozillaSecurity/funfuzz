@@ -575,7 +575,7 @@ function tryItOut(code)
 {
   var c; // a harmless variable for closure fun
 
-  // Accidenally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
+  // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
   if ("gczeal" in this)
     gczeal(0);
 
