@@ -214,9 +214,11 @@ else:
 os.chdir("compilePath")
 
 if len(sys.argv) >= 5 and sys.argv[3] == 'patch':
+    # This subprocess command should throw an exception if the patch file does not exist.
 	subprocess.call(["patch -p3 < " + sys.argv[4]], shell=True)
 	
 if len(sys.argv) >= 7 and sys.argv[5] == 'patch':
+    # This subprocess command should throw an exception if the patch file does not exist.
 	subprocess.call(["patch -p3 < " + sys.argv[6]], shell=True)
 
 # Sniff platform and run different autoconf types:
