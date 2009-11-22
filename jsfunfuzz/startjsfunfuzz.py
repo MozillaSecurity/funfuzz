@@ -58,7 +58,7 @@
 #   and Safari uses its own Nitro engine. v8 might come later too.
 #
 #
-# Usage: python startjsfunfuzz.py [dbg|opt] <supportedBranches>
+# Usage: python startjsfunfuzz.py [dbg|opt] <supportedBranches> [patch <directory to patch>] [patch <directory to patch>]
 #
 
 import sys, os, subprocess, shutil, time
@@ -90,7 +90,7 @@ def error():
 | Error! |
 ==========
 
-General usage: python startjsfunfuzz.py [dbg|opt] %s
+General usage: python startjsfunfuzz.py [dbg|opt] %s [patch <directory to patch>] [patch <directory to patch>]
 
     """ % supportedBranches
 
@@ -213,6 +213,11 @@ else:
 # Change into compilation directory.
 os.chdir("compilePath")
 
+if len(sys.argv) >= 5 and sys.argv[3] == 'patch':
+	subprocess.call(["patch -p3 < " + sys.argv[4]], shell=True)
+	
+if len(sys.argv) >= 7 and sys.argv[5] == 'patch':
+	subprocess.call(["patch -p3 < " + sys.argv[6]], shell=True)
 
 # Sniff platform and run different autoconf types:
 if os.name == "posix":
