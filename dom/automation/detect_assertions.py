@@ -10,7 +10,7 @@ simpleIgnoreList = []
 twoPartIgnoreList = []
 ready = False
 
-def fs(knownPath, currentFile, verbose):
+def scanFile(knownPath, currentFile, verbose):
     global ignoreList
     if not ready:
         readIgnoreList(knownPath)
@@ -76,10 +76,10 @@ def ignore(assertion):
 # For use by af_timed_run
 def amiss(knownPath, logPrefix, verbose):
     currentFile = file(logPrefix + "-err", "r")
-    return fs(knownPath, currentFile, verbose)
+    return scanFile(knownPath, currentFile, verbose)
 
 # For standalone use
 if __name__ == "__main__":
     knownPath = sys.argv[1]
     currentFile = file(sys.argv[2], "r")
-    fs(knownPath, currentFile, False)
+    print scanFile(knownPath, currentFile, False)
