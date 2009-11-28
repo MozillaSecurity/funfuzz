@@ -37,7 +37,7 @@ def level(runthis, timeout, knownPath, logPrefix):
     if detect_assertions.amiss(knownPath, logPrefix, False):
         issues.append("unknown assertion")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    if sta == ntr.CRASHED and detect_interesting_crashes.amiss(knownPath, logPrefix, False, msg):
+    if sta == ntr.CRASHED and detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash", False, msg):
         issues.append("unknown crash")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     if runthis[0] != "valgrind" and sta == ntr.NORMAL and detect_leaks.amiss(logPrefix):
