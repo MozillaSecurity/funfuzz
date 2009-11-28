@@ -10,6 +10,19 @@ simpleIgnoreList = []
 twoPartIgnoreList = []
 ready = False
 
+def scanLine(knownPath, line):
+    global ignoreList
+    if not ready:
+        readIgnoreList(knownPath)
+
+    line = line.strip("\x07").rstrip("\n")
+
+    if assertiony(line) and not ignore(line):
+        print "@@@ " + line
+        return True
+
+    return False
+
 def scanFile(knownPath, currentFile, verbose):
     global ignoreList
     if not ready:
@@ -46,7 +59,7 @@ def readIgnoreList(knownPath):
     global simpleIgnoreList
     global twoPartIgnoreList
     global ready
-    ignoreFile = file(knownPath + "assertions.txt", "r")
+    ignoreFile = file(os.path.join(knownPath, "assertions.txt"), "r")
     for line in ignoreFile:
         line = line.strip()
         if ((len(line) > 0) and not line.startswith("#")):
