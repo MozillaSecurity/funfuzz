@@ -93,7 +93,7 @@ function onPageLoad(event)
                     .createInstance(Components.interfaces.nsILocalFile);
   f.initWithPath(extensionLocation);
 
-  dir = f.parent;
+  var dir = f.parent;
   dir.append("fuzzers");
   // dir now points to the directory containing fuzzer-combined.js, etc.
 
@@ -105,7 +105,7 @@ function onPageLoad(event)
   + "fuzzSettings = [" + r[2] + "];\n"
   + "setTimeout(fuzzOnload, 400);\n";
 
-  insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
+  var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
   
   if (!insertionPoint)
     return;
