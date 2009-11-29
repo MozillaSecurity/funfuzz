@@ -47,7 +47,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
         issues.append("unknown assertion")
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
     if sta == ntr.CRASHED and lev != JS_NEW_ASSERT_OR_CRASH:
-        if detect_interesting_crashes.amiss(knownPath, logPrefix, True, runinfo.msg):
+        if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash", True, runinfo.msg):
             issues.append("unknown crash")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         else:

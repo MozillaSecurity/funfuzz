@@ -3,17 +3,16 @@
 import os, sys, platform, signal
 ready = False
 
-def amiss(knownPath, logPrefix, verbose, msg):
+def amiss(knownPath, crashLogFilename, verbose, msg):
     global ignoreList
     
     if not ready:
         readIgnoreList(knownPath)
 
     igmatch = []
-    fn = logPrefix + "-crash"
     
-    if os.path.exists(fn):
-        currentFile = file(fn, "r")
+    if os.path.exists(crashLogFilename):
+        currentFile = file(crashLogFilename, "r")
         for line in currentFile:
             for ig in ignoreList:
                 if line.find(ig) != -1:
@@ -24,7 +23,7 @@ def amiss(knownPath, logPrefix, verbose, msg):
             # Would be great to print [@ nsFoo::Bar] in addition to the filename, but
             # that would require understanding the crash log format much better than
             # this script currently does.
-            print "Unknown crash: " + fn
+            print "Unknown crash: " + crashLogFilename
             return True
         else:
             if verbose:
