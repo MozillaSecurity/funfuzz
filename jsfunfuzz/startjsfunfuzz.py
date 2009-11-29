@@ -56,62 +56,61 @@
 #   is becoming obsolete in 5.5 months, mozTrunk is rarely fuzzed in favour of
 #   TM, JavaScriptCore doesn't feel like a significant competing engine,
 #   and Safari uses its own Nitro engine. v8 might come later too.
-#
-#
-# Usage: python startjsfunfuzz.py [dbg|opt] <supportedBranches> [patch <directory to patch>] [patch <directory to patch>]
-#
+# November 2009 - 5.x:
+#   (version numbers are now obsolete but are added just for fun now)
+#   Add 32-bit and 64-bit compilation, patching support. Host of other
+#   improvements. Now only supports 1.9.1.x, 1.9.2.x, TM and a future 1.9.3.x.
 
-import sys, os, subprocess, shutil, time
+import sys, os, subprocess, shutil, time, errno, platform
+
+from functionStartjsfunfuzz import *
 
 supportedBranches = "[191|192|tm]"
+#193support
+#supportedBranches = "[191|192|193|tm]"
 supportedBranchFOO = []
 # Add supported branches here.
 supportedBranchFOO.append('191')
 supportedBranchFOO.append('192')
+#193support
+#supportedBranchFOO.append('193')
 supportedBranchFOO.append('tm')
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
-def verbose():
-    print "\nDEBUG - Debug output follows..."
-def exceptionBadOs():
-    raise Exception("Unknown OS - Platform is unsupported.")
-def exceptionBadCompileType():
-    raise Exception("Unknown compileType - choose from [dbg|opt].")
-def exceptionBadPosixBranchType():
-    raise Exception("Not a supported POSIX branchType")
-def exceptionBadNtBranchType():
-    raise Exception("Not a supported NT branchType")
 
-# The corresponding CLI requirements should be input, else output this error.
-def error():
-    print """
-
-==========
-| Error! |
-==========
-
-General usage: python startjsfunfuzz.py [dbg|opt] %s [patch <directory to patch>] [patch <directory to patch>]
-
-    """ % supportedBranches
-
+# Accept 32-bit and 64-bit parameters only.
+if (sys.argv[1] == "32") or (sys.argv[1] == "64"):
+    archNum = sys.argv[1]
+else:
+    error(supportedBranches)
+    print "Your archNum variable is \'" + archNum + "\'"
+    raise Exception("Choose only to compile either 32-bit or 64-bit binaries."+
+                    " Note that this choice only applies to Mac OS X 10.6.x, "+
+                    "every other operating system will compile in 32-bit.")
 
 # Accept dbg and opt parameters for compileType only.
-if (sys.argv[1] == "dbg") or (sys.argv[1] == "opt"):
-    compileType = sys.argv[1]
+if (sys.argv[2] == "dbg") or (sys.argv[2] == "opt"):
+    compileType = sys.argv[2]
 else:
-    error()
+    error(supportedBranches)
     print "Your compileType variable is \'" + compileType + "\'"
-    raise Exception("Only \'dbg\' or \'opt\' are accepted as compileType.")
+    exceptionBadCompileType()
 
 
 # Accept appropriate parameters for branchType.
-if (sys.argv[2] == "191") or (sys.argv[2] == "192") or (sys.argv[2] == "tm"):
-    branchType = sys.argv[2]
+if (sys.argv[3] == "191") or (sys.argv[3] == "192") or (sys.argv[3] == "tm"):
+#193support
+#if (sys.argv[3] == "191") or (sys.argv[3] == "192") or (sys.argv[3] == "192")\
+#    or (sys.argv[3] == "tm"):
+    branchType = sys.argv[3]
 else:
-    error()
+    error(supportedBranches)
     print "Your branchType variable is \'" + branchType + "\'"
     raise Exception("Please double-check your branchType from " + \
                     supportedBranches + ".")
+
+if (sys.argv[1] == "64") and (sys.argv[3] == "191"):
+    raise Exception("64-bit compilation is not supported on 1.9.1 branch.")
 
 
 # Definitions of the different repository and fuzzing locations.
@@ -120,9 +119,13 @@ if os.name == "posix":
         repoFuzzing = "~/fuzzing/"     # Location of the fuzzing repository.
         repo191 = "~/mozilla-1.9.1/"   # Location of the 1.9.1 repository.
         repo192 = "~/mozilla-1.9.2/"   # Location of the 1.9.2 repository.
+        #193support
+        #repo193 = "~/mozilla-1.9.3/"   # Location of the 1.9.3 repository.
         repoTM = "~/tracemonkey/"      # Location of the tracemonkey repository
         fuzzPathStart = "~/Desktop/jsfunfuzz-" # Start of the fuzzing directory
         return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
+        #193support
+        #return repoFuzzing, repo191, repo192, repo193, repoTM, fuzzPathStart
 elif os.name == "nt":
     def locations():
         # ~ is not used because in XP, ~ contains spaces in
@@ -131,22 +134,31 @@ elif os.name == "nt":
         repoFuzzing = "/fuzzing/"    # Location of the fuzzing repository.
         repo191 = "/mozilla-1.9.1/"  # Location of the 1.9.1 repository.
         repo192 = "/mozilla-1.9.2/"  # Location of the 1.9.2 repository.
+        #193support
+        #repo193 = "/mozilla-1.9.3/"   # Location of the 1.9.3 repository.
         repoTM = "/tracemonkey/"     # Location of the tracemonkey repository.
         fuzzPathStart = "/jsfunfuzz-"   # Start of the fuzzing directory.
         return repoFuzzing, repo191, repo192, repoTM, fuzzPathStart
+        #193support
+        #return repoFuzzing, repo191, repo192, repo193, repoTM, fuzzPathStart
 else:
     exceptionBadOs()
 
 repoFuzzing, repo191, repo192, repoTM, fuzzPathStart = locations()
+#193support
+#repoFuzzing, repo191, repo192, repo193, repoTM, fuzzPathStart = locations()
 
 if verbose:
-    verbose()
+    verboseMsg()
     print "DEBUG - repoFuzzing, repo191, repo192, repoTM, fuzzPathStart are:"
+    #193support
+    #print "DEBUG - repoFuzzing, repo191, repo192, repo193, repoTM, " + \
+    #    "fuzzPathStart are:"
     print "DEBUG - %s" % ", ".join(locations())
 
-
 # Expand the ~ folder on Linux/Mac.
-fuzzPathRaw = fuzzPathStart + compileType + "-" + branchType + "/"
+fuzzPathRaw = fuzzPathStart + archNum + "-" + compileType + "-" + branchType \
+              + "/"
 if os.name == "posix":
     fuzzPath = os.path.expanduser(fuzzPathRaw)
 elif os.name == "nt":
@@ -154,39 +166,65 @@ elif os.name == "nt":
 else:
     exceptionBadOs()
 
+# Save the current directory as a variable.
+currDir = os.getcwd()
+
+# Note and attach the numbers and hashes of the current changeset in the
+# fuzzPath.
+if os.name == "posix":
+    if branchType == "191":
+        os.chdir(os.path.expanduser(repo191))
+        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+    elif branchType == "192":
+        os.chdir(os.path.expanduser(repo192))
+        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+    #193support
+    #elif branchType == "193":
+    #    os.chdir(os.path.expanduser(repo193))
+    #    fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+    elif branchType == "tm":
+        os.chdir(os.path.expanduser(repoTM))
+        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+elif os.name == "nt":
+    if branchType == "191":
+        os.chdir(repo191)
+        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+    elif branchType == "192":
+        os.chdir(repo192)
+        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+    #193support
+    #elif branchType == "193":
+    #    os.chdir(repo193)
+    #    fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+    elif branchType == "tm":
+        os.chdir(repoTM)
+        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+else:
+    exceptionBadOs()
+
+fuzzPath += "/"
+
+# Switch back to original directory.
+if os.name == "posix":
+    os.chdir(os.path.expanduser(currDir))
+elif os.name == "nt":
+    os.chdir(currDir)
+else:
+    exceptionBadOs()
+
 # Create the fuzzing folder.
 try:
+    # Rename directory if patches are applied, accept up to 2 patches.
+    if len(sys.argv) >= 6 and \
+      (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
+        fuzzPath += "patched/"
     os.makedirs(fuzzPath)
 except OSError:
-    error()
+    error(supportedBranches)
     raise Exception("The fuzzing path at \'" + fuzzPath + "\' already exists!")
 
 # Change to the fuzzing directory.
 os.chdir(fuzzPath)
-
-
-# Methods to copy the entire js source directory.
-def posixCopyJsTree(repo):
-    try:
-        if verbose:
-            verbose()
-            print 'DEBUG - Copying the entire js tree to the fuzzPath'
-        shutil.copytree(os.path.expanduser(repo + "js/src/"),"compilePath")
-    except OSError:
-        error()
-        raise Exception("The js code repository directory located at '" + \
-                        os.path.expanduser(repo + "js/src/") + \
-                        "' doesn't exist!")
-def ntCopyJsTree(repo):
-    try:
-        if verbose:
-            verbose()
-            print 'DEBUG - Copying the entire js tree to the fuzzPath'
-        shutil.copytree(repo + "js/src/","compilePath")
-    except OSError:
-        error()
-        raise Exception("The js code repository directory located at '" + \
-                        repo + "js/src/' doesn't exist!")
 
 # Copy the entire js tree to the fuzzPath.
 if os.name == "posix":
@@ -194,6 +232,9 @@ if os.name == "posix":
         posixCopyJsTree(repo191)
     elif branchType == "192":
         posixCopyJsTree(repo192)
+    #193support
+    #elif branchType == "193":
+    #    posixCopyJsTree(repo193)
     elif branchType == "tm":
         posixCopyJsTree(repoTM)
     else:
@@ -203,6 +244,9 @@ elif os.name == "nt":
         ntCopyJsTree(repo191)
     elif branchType == "192":
         ntCopyJsTree(repo192)
+    #193support
+    #elif branchType == "193":
+    #    ntCopyJsTree(repo193)
     elif branchType == "tm":
         ntCopyJsTree(repoTM)
     else:
@@ -213,13 +257,19 @@ else:
 # Change into compilation directory.
 os.chdir("compilePath")
 
-if len(sys.argv) >= 5 and sys.argv[3] == 'patch':
-    # This subprocess command should throw an exception if the patch file does not exist.
-	subprocess.call(["patch -p3 < " + sys.argv[4]], shell=True)
-	
-if len(sys.argv) >= 7 and sys.argv[5] == 'patch':
-    # This subprocess command should throw an exception if the patch file does not exist.
-	subprocess.call(["patch -p3 < " + sys.argv[6]], shell=True)
+patchReturnCode = 0
+patchReturnCode2 = 0
+# Patch the codebase if specified, accept up to 2 patches.
+if len(sys.argv) < 8 and len(sys.argv) >= 6 and sys.argv[4] == 'patch':
+    patchReturnCode = subprocess.call(["patch -p3 < " + sys.argv[5]],
+        shell=True)
+
+if len(sys.argv) >= 8 and sys.argv[6] == 'patch':
+    patchReturnCode2 = subprocess.call(["patch -p3 < " + sys.argv[7]],
+        shell=True)
+
+if patchReturnCode == 1 or patchReturnCode2 == 1:
+    raise Exception("Patching failed.")
 
 # Sniff platform and run different autoconf types:
 if os.name == "posix":
@@ -232,47 +282,31 @@ elif os.name == "nt":
 else:
     exceptionBadOs()
 
+# Sniff for 10.6, as it compiles 64-bit by default and we want to compile
+# 32-bit by default for now.
+macVer, _, _ = platform.mac_ver()
+macVer = float('.'.join(macVer.split('.')[:2]))
 
 # Create objdirs within the compilePaths.
 os.mkdir("dbg-objdir")
 os.mkdir("opt-objdir")
 os.chdir(compileType + "-objdir")
 
-
 # Compile the first build.
 if compileType == "dbg":
-    subprocess.call(["sh", "../configure", "--disable-optimize",
-                     "--enable-debug"])
+    dbgCompile(macVer, archNum)
 elif compileType == "opt":
-    subprocess.call(["sh", "../configure", "--enable-optimize",
-                     "--disable-debug"])
+    optCompile(macVer, archNum)
 else:
     exceptionBadCompileType()
 
-def compileCopy(dbgOpt):
-    # Run make using 2 cores.
-    subprocess.call(["make", "-j2"])
-
-    # Sniff platform and rename executable accordingly:
-    if os.name == "posix":
-        shellName = "js-" + dbgOpt + "-" + branchType + "-" + \
-                    os.uname()[0].lower()
-        shutil.copy2("js","../../" + shellName)
-    elif os.name == "nt":
-        shellName = "js-" + dbgOpt + "-" + branchType + "-" + os.name.lower()
-        shutil.copy2("js.exe","../../" + shellName + ".exe")
-    else:
-        exceptionBadOs()
-
-    return shellName
-
-jsShellName = compileCopy(compileType)
+jsShellName = compileCopy(branchType, compileType, archNum)
 
 # Change into compilePath directory for the opt build.
 os.chdir("../")
 
 if verbose:
-    verbose()
+    verboseMsg()
     print "DEBUG - This should be the compilePath:"
     print "DEBUG - %s\n" % os.getcwdu()
     if "compilePath" not in os.getcwdu():
@@ -282,14 +316,12 @@ if verbose:
 # No need to assign jsShellName here.
 if compileType == "dbg":
     os.chdir("opt-objdir")
-    subprocess.call(["sh", "../configure", "--enable-optimize",
-                     "--disable-debug"])
-    compileCopy("opt")
+    optCompile(macVer, archNum)
+    compileCopy(branchType, "opt", archNum)
 elif compileType == "opt":
     os.chdir("dbg-objdir")
-    subprocess.call(["sh", "../configure", "--disable-optimize",
-                     "--enable-debug"])
-    compileCopy("dbg")
+    dbgCompile(macVer, archNum)
+    compileCopy(branchType, "dbg", archNum)
 else:
     exceptionBadCompileType()
 
@@ -297,7 +329,7 @@ else:
 os.chdir("../../")
 
 if verbose:
-    verbose()
+    verboseMsg()
     print "DEBUG - os.getcwdu() should be the fuzzPath:"
     print "DEBUG - %s/" % os.getcwdu()
     print "DEBUG - fuzzPath is: %s\n" % fuzzPath
@@ -323,19 +355,21 @@ elif os.name == "nt":
 else:
     exceptionBadOs()
 
-#FIXME
-print
-print "========================================"
-print "!  Fuzzing " + compileType + " " + branchType + \
-" js shell builds now  !"
-print "   DATE: " + time.asctime( time.localtime(time.time()) )
-print "========================================"
-print
+
+print '''
+=============================================
+!  Fuzzing %s %s %s js shell builds now  !
+   DATE: %s
+=============================================
+''' % (archNum + "-bit", compileType, branchType,
+       time.asctime( time.localtime(time.time()) ))
 
 
 # Define the corresponding js-known directories.
 jsknown191 = repoFuzzing + "js-known/mozilla-1.9.1/"
 jsknown192 = repoFuzzing + "js-known/mozilla-1.9.2/"
+#193support
+#jsknown193 = repoFuzzing + "js-known/mozilla-1.9.3/"
 # For TM, we use mozilla-central's js-known directories.
 jsknownTM = repoFuzzing + "js-known/mozilla-central/"
 multiTimedRun = repoFuzzing + "jsfunfuzz/multi_timed_run.py"
@@ -374,6 +408,10 @@ if os.name == "posix":
     elif branchType == "192":
         fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown192) +\
                       posixFuzzCommandPart2
+    #193support
+    #elif branchType == "193":
+    #    fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknown193) +\
+    #                  posixFuzzCommandPart2
     elif branchType == "tm":
         fuzzCommand = posixFuzzCommandPart1 + os.path.expanduser(jsknownTM) + \
                       posixFuzzCommandPart2
@@ -389,6 +427,9 @@ elif os.name == "nt":
         fuzzCommand = ntFuzzCommandPart1 + jsknown191 + ntFuzzCommandPart2
     elif branchType == "192":
         fuzzCommand = ntFuzzCommandPart1 + jsknown192 + ntFuzzCommandPart2
+    #193support
+    #elif branchType == "193":
+    #    fuzzCommand = ntFuzzCommandPart1 + jsknown193 + ntFuzzCommandPart2
     elif branchType == "tm":
         fuzzCommand = ntFuzzCommandPart1 + jsknownTM + ntFuzzCommandPart2
     else:
@@ -397,19 +438,22 @@ else:
     exceptionBadOs()
 
 if verbose:
-    verbose()
+    verboseMsg()
     print "DEBUG - jsShellName is " + jsShellName
     print "DEBUG - fuzzPath + jsShellName is " + fuzzPath + jsShellName
     print "DEBUG - fuzzCommand is " + fuzzCommand
     print
     #FIXME
 
-print "=== Performing self-test... ==="
+test32or64bit(jsShellName, macVer, archNum)
+
+print "\n=== Performing self-test... ==="
+# Create a testfile with the gczeal() function.
 if os.name == "posix":
     subprocess.call(["echo 'gczeal()' > compileTypeTest"], shell=True)
     testFileErrorCode = subprocess.call(["./" + jsShellName + \
                                          " compileTypeTest"], shell=True)
-    # Create a testfile with the gczeal() function.
+
 elif os.name == "nt":
     subprocess.call(["echo gczeal() > compileTypeTest"], shell=True)
     testFileErrorCode = subprocess.call([jsShellName + " compileTypeTest"], \
@@ -419,7 +463,7 @@ else:
 os.remove("compileTypeTest")  # Remove testfile after grabbing the error code.
 
 if verbose:
-    verbose()
+    verboseMsg()
     print "DEBUG - The error code for debug shells should be 0."
     print "DEBUG - The error code for opt shells should be 3."
     print "DEBUG - The actual error code for " + jsShellName + " now, is: " + \
@@ -445,6 +489,23 @@ elif compileType == "opt" and testFileErrorCode != 3:
     #FIXME
     raise Exception("The compiled binary is not an optimized shell.")
 print "\n=== End of self-test... ===\n"
+
+# Try to remove objdirs if they are empty. Both should not be empty.
+try:
+    os.rmdir("compilePath/dbg-objdir/")
+except OSError, err:
+    if err.errno == errno.ENOTEMPTY:
+        pass
+    else:
+        raise
+
+try:
+    os.rmdir("compilePath/opt-objdir/")
+except OSError, err:
+    if err.errno == errno.ENOTEMPTY:
+        pass
+    else:
+        raise
 
 # Commands to simulate bash's `tee`.
 # Start fuzzing the newly compiled builds.
