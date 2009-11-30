@@ -141,11 +141,11 @@ def compileCopy(branchType, dbgOpt, archNum):
 
     # Sniff platform and rename executable accordingly:
     if os.name == "posix":
-        shellName = "js-" + archNum + "-" + dbgOpt + "-" + branchType + "-" + \
+        shellName = "js-" + dbgOpt + "-" + archNum + "-" + branchType + "-" + \
                     os.uname()[0].lower()
         shutil.copy2("js","../../" + shellName)
     elif os.name == "nt":
-        shellName = "js-" + archNum + "-" + dbgOpt + "-" + branchType + "-" + \
+        shellName = "js-" + dbgOpt + "-" + archNum + "-" + branchType + "-" + \
                     os.name.lower()
         shutil.copy2("js.exe","../../" + shellName + ".exe")
     else:

@@ -157,7 +157,7 @@ if verbose:
     print "DEBUG - %s" % ", ".join(locations())
 
 # Expand the ~ folder on Linux/Mac.
-fuzzPathRaw = fuzzPathStart + archNum + "-" + compileType + "-" + branchType \
+fuzzPathRaw = fuzzPathStart + compileType + "-" + archNum + "-" + branchType \
               + "/"
 if os.name == "posix":
     fuzzPath = os.path.expanduser(fuzzPathRaw)
