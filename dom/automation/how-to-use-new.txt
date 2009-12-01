@@ -1,0 +1,14 @@
+Just run:
+./loopdomfuzz.py objdir
+
+It will:
+* Figure out which version of Firefox you are testing and use appropriate ignore lists.
+* Create temporary Firefox profiles.
+* Keep fuzzing new instances of Firefox until it finds a new bug.
+* If it finds a bug, it will place a file in a wtmp*/ directory, and try to reduce it with Lithium.
+
+objdir must be a Firefox object directory built with --enable-tests.
+It's probably best if it has --enable-breakpad and you have minidump_stackwalk installed, but the breakpad integration isn't fully working yet.
+
+To reproduce a bug with the extension in place (usually not needed):
+./rundomfuzz.py objdir url
