@@ -93,11 +93,17 @@ def wheeLith(iteration, level, lines):
 def getURLs():
     URLs = []
     fullURLs = []
+
+    if urlListFilename == "urls-reftests":
+        urlPrefix = "file://" + os.path.join(browserObjDir, "..") + os.sep # XXX this will not work on Windows
+        print urlPrefix
+    else:
+        urlPrefix = ""
     
     urlfile = open(urlListFilename, "r")
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
-            URLs.append(line.rstrip())
+            URLs.append(urlPrefix + line.rstrip())
             
     #plan = file(tempDir + os.sep + "wplan", 'w')
 

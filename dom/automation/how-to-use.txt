@@ -1,7 +1,5 @@
 === One-time setup ===
 
--- not needed: Grep all the files for "jruderman" and fix the paths ;)
-
 Install the "DOM Fuzzer" extension into the profile(s) you plan to use for fuzzing.  Don't install it as an XPI; instead, install it using a text file pointing to the directory containing the extension.
 
 From the fuzzing directory:

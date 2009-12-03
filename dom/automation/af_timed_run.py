@@ -108,6 +108,12 @@ def getURLs():
     URLs = []
     fullURLs = []
     
+    if urlListFilename == "urls-reftests":
+        urlPrefix = "file:///Users/jruderman/central/" # XXX wrong
+        print urlPrefix
+    else:
+        urlPrefix = ""
+
     urlfile = open(urlListFilename, "r")
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
