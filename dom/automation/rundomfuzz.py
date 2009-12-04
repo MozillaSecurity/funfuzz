@@ -62,6 +62,9 @@ def createDOMFuzzProfile(options, profileDir):
   prefsFile.write('user_pref("dom.disable_window_move_resize", true);\n')
   prefsFile.write('user_pref("browser.tabs.warnOnClose", false);\n')
   prefsFile.write('user_pref("browser.shell.checkDefaultBrowser", false);\n')
+  prefsFile.write('user_pref("browser.EULA.override", true);\n')
+  prefsFile.write('user_pref("security.warn_submit_insecure", false);\n')
+  prefsFile.write('user_pref("security.warn_viewing_mixed", false);\n')
 
   # Turn off various things in firefox that try to update themselves,
   # to improve performance and sanity and reduce risk of hitting 479373.
