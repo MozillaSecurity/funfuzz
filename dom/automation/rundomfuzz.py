@@ -209,6 +209,7 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Got Firefox version: " + fxv.firefoxBranch)
     knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", fxv.firefoxBranch)
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Ignoring known bugs in: " + knownPath)
+    fxv.close()
     
     # run once with -silent to let the extension manager do its thing
     # and then exit the app
@@ -247,7 +248,6 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
     automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, status " + str(status))
     
     lev = DOM_FINE
-
 
     if alh.newAssertionFailure:
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
@@ -289,7 +289,11 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
     if profileDir:
       shutil.rmtree(profileDir)
 
-  return (lev, alh.FRClines)
+  FRClines = alh.FRClines
+  alh.close()
+
+  return (lev, FRClines)
+
 
 if __name__ == "__main__":
   level, lines = levelAndLines(sys.argv[1], sys.argv[2], sys.argv[3:])
