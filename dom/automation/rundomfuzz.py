@@ -295,19 +295,6 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
   return (lev, FRClines)
 
 
-if __name__ == "__main__":
-  level, lines = levelAndLines(sys.argv[1], sys.argv[2], sys.argv[3:])
-  print level
-
-# For use by Lithium
-def interesting(args, tempPrefix):
-    minimumInterestingLevel = int(args[0])
-    browserObjDir = args[1]
-    url = args[2]
-    actualLevel, lines = levelAndLines(browserObjDir, url, args[3:])
-    return actualLevel >= minimumInterestingLevel
-
-
 # XXX try to squeeze this into automation.py or automationutils.py
 def grabCrashLog(progname, crashedPID, logPrefix, signum):
     import os, platform, time
@@ -385,3 +372,17 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
                 return macCrashLogFilename
                 #return open(macCrashLogFilename).read()
     return None
+
+
+
+# For use by Lithium
+def interesting(args, tempPrefix):
+    minimumInterestingLevel = int(args[0])
+    browserObjDir = args[1]
+    url = args[2]
+    actualLevel, lines = levelAndLines(browserObjDir, url, args[3:])
+    return actualLevel >= minimumInterestingLevel
+
+if __name__ == "__main__":
+  level, lines = levelAndLines(sys.argv[1], sys.argv[2], sys.argv[3:])
+  print level
