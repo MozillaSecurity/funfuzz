@@ -11,6 +11,7 @@ Comparing JIT against non-JIT:
 Valgrind+JIT: (opt build recommended; --enable-valgrind(?) even better)
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ valgrind ./js -j
 
+For maximum coverage, test spidermonkey in all 6 modes: http://blog.mozilla.com/nnethercote/2009/11/18/nanojit-test-coverage/
 
 Hints for building spidermonkey:
   http://developer.mozilla.org/en/docs/SpiderMonkey_Build_Documentation
