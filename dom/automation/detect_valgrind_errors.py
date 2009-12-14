@@ -24,7 +24,7 @@ def blame(error):
                     return BLAME_DONT_CARE # NSS
                 elif obj.find("Darwin_SINGLE_SHLIB") != -1:
                     return BLAME_DONT_CARE # NSS
-                elif obj.find("central/opt-obj") != -1:
+                elif obj.find("central/opt-obj") != -1: # XXX WRONG
                     return BLAME_MOZILLA
                 elif obj == "./js":
                     return BLAME_MOZILLA
