@@ -92,6 +92,7 @@ def createDOMFuzzProfile(options, profileDir):
   shutil.copyfile(os.path.join(THIS_SCRIPT_DIRECTORY, "empty-bookmarks.html"), os.path.join(profileDir, "bookmarks.html"))
 
 class FirefoxVersionLogHandler(logging.Handler):
+  # XXX look at application.ini instead
   def emit(self, record):
     msg = record.msg
     if msg.startswith("Mozilla Firefox "):
