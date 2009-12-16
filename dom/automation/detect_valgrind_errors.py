@@ -17,6 +17,8 @@ def blame(error):
                     return BLAME_DONT_CARE # XXX TEMPORARY (should try firefox debug or objdump/asm)
             objs = frame.getElementsByTagName("obj")
             if len(objs) > 0:
+                # XXX I really should use 'obj:' suppressions rather than this kind of thing.
+                # See http://valgrind.org/docs/manual/manual-core.html#manual-core.suppress
                 obj = objs[0].firstChild.data
                 if obj.find("valgrind") != -1:
                     pass
