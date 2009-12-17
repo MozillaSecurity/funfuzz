@@ -240,10 +240,7 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
                                xrePath=options.xrePath,
                                debuggerInfo=debuggerInfo,
                                symbolsPath=options.symbolsPath,
-                               # give the JS harness 30 seconds to deal
-                               # with its own timeouts XXX; give crash reporter two minutes.
                                timeout = options.timeout + 120.0,
-                               # kill kill kill XXX
                                maxTime = options.timeout + 300.0)
     automation.log.removeHandler(alh)
     automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, status " + str(status))
