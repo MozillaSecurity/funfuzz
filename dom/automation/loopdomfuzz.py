@@ -44,13 +44,13 @@ def many_timed_runs(fullURLs):
                 level2, lines2 = rundomfuzz.levelAndLines(browserObjDir, fullURL, logPrefix=None)
                 if level2 > rundomfuzz.DOM_TIMED_OUT:
                     print "%%% Yet it is reproducible"
-                    reproOnlyFile = open(logPrefix + "-repro-only.txt")
+                    reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                     reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n")
                     reproOnlyFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
                     reproOnlyFile.close()
                 else:
                     print "%%% Not reproducible at all"
-                    sorryFile = open(logPrefix + "-sorry.txt")
+                    sorryFile = open(logPrefix + "-sorry.txt", "w")
                     sorryFile.write("I wasn't even able to reproduce with the same URL.\n")
                     sorryFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
                     sorryFile.close()
