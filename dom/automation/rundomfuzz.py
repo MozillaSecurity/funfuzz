@@ -6,6 +6,7 @@ Based on runreftest.py.  Uses automation.py.
 """
 
 
+from __future__ import with_statement
 import sys, shutil, os, signal, logging
 from optparse import OptionParser
 from tempfile import mkdtemp
@@ -91,18 +92,13 @@ def createDOMFuzzProfile(options, profileDir):
   # Give the profile an empty bookmarks file, so there are no live-bookmark requests
   shutil.copyfile(os.path.join(THIS_SCRIPT_DIRECTORY, "empty-bookmarks.html"), os.path.join(profileDir, "bookmarks.html"))
 
-class FirefoxVersionLogHandler(logging.Handler):
-  # XXX look at application.ini instead
-  def emit(self, record):
-    msg = record.msg
-    if msg.startswith("Mozilla Firefox "):
-      if msg.startswith("Mozilla Firefox 3.7"):
-        self.firefoxBranch = "mozilla-central"
-      elif msg.startswith("Mozilla Firefox 3.6"):
-        self.firefoxBranch = "mozilla-1.9.2"
-      else:
-        self.firefoxBranch = "domfuzz is not familiar with this version of Firefox: " + msg
-        
+def getFirefoxBranch(appini):
+  with file(appini) as f:
+    for line in f:
+      if line.startswith("SourceRepository="):
+        return line.split("/")[-2]
+
+
 class AmissLogHandler(logging.Handler):
   def __init__(self, knownPath):
     logging.Handler.__init__(self)
@@ -198,20 +194,11 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
     # not XPCOM_MEM_LEAK_LOG??? see automationutils.py comments about these two env vars.
 
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Getting Firefox version")
-
-    fxv = FirefoxVersionLogHandler()
-    automation.log.addHandler(fxv)
-    status = automation.runApp(None, browserEnv, options.app, profileDir,
-                               ["--version"],
-                               utilityPath = options.utilityPath,
-                               xrePath=options.xrePath,
-                               symbolsPath=options.symbolsPath)
-    automation.log.removeHandler(fxv)
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Got Firefox version: " + fxv.firefoxBranch)
-    knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", fxv.firefoxBranch)
+    firefoxBranch = getFirefoxBranch(os.path.join(automation.DIST_BIN, "application.ini"))
+    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Firefox version: " + firefoxBranch)
+    knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Ignoring known bugs in: " + knownPath)
-    fxv.close()
-    
+
     # run once with -silent to let the extension manager do its thing
     # and then exit the app
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: start.\n")
