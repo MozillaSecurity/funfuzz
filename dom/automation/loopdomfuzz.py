@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement
 import sys, random, time, os, subprocess, datetime
 import rundomfuzz
 import randomURL
@@ -19,7 +20,7 @@ yummy = (urlListFilename == "urls-random")
 
 
 def many_timed_runs(fullURLs):
-    
+
     for iteration in range(0, maxIterations):
 
         if yummy:
@@ -33,9 +34,28 @@ def many_timed_runs(fullURLs):
 
         if level > rundomfuzz.DOM_TIMED_OUT:
             print "lopdomfuzz.py: will try reducing from " + fullURL
-            wheeLith(iteration, level, lines)
+            lithSuccess = wheeLith(iteration, level, lines)
+            if not lithSuccess:
+                print "%%% Failed to reduce using Lithium"
+                level2, lines2 = rundomfuzz.levelAndLines(browserObjDir, fullURL)
+                fPrefix = os.path.join(tempDir, "q" + str(iteration))
+                if level2 > rundomfuzz.DOM_TIMED_OUT:
+                    print "%%% Yet it is reproducible"
+                    reproOnlyFile = open(fPrefix + "-repro-only.txt")
+                    reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n")
+                    reproOnlyFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
+                    reproOnlyFile.close()
+                else:
+                    print "%%% Not reproducible at all"
+                    sorryFile = open(fPrefix + "-sorry.txt")
+                    sorryFile.write("I wasn't even able to reproduce with the same URL.\n")
+                    sorryFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
+                    sorryFile.close()
+
             print ""
 
+# Stuffs "lines" into a fresh file, then runs Lithium to reduce that file.
+# Returns True if Lithium was able to reproduce (and reduce).
 def wheeLith(iteration, level, lines):
     contentTypes = linesWith(lines, "XA Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
@@ -50,7 +70,7 @@ def wheeLith(iteration, level, lines):
     if contentType not in extDict:
         # In particular, 'text/xml' is tricky... we'd want to know the xmlns of the root, and steal its contents but use .xml, perhaps
         print "af_timed_run does not know what to do with content type " + repr(contentType) + " :("
-        return
+        return False
         
     extension = extDict[contentType]
 
@@ -85,8 +105,26 @@ def wheeLith(iteration, level, lines):
     lithArgs = ["--tempdir=" + lithtmp, rundomfuzzpy, str(level), browserObjDir, rFN]
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
-    subprocess.call(lithiumpy + lithArgs, stdout=open(fPrefix + "-lith1-out", "w"))
+    lithlogfn = fPrefix + "-lith1-out"
+    subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"))
     print "Done running Lithium"
+
+    # Rename the "-reduced" file to indicate how large it is.
+    rFN2 = None
+    with file(lithlogfn) as f:
+      inLithSummary = False
+      for line in f:
+        if inLithSummary:
+          if line.startswith("  Final size:"):
+            rFN2 = fPrefix + "-splice-reduced-" + line[14:].rstrip().replace(" ", "-") + "." + extension
+        if line.rstrip() == "=== LITHIUM SUMMARY ===":
+          inLithSummary = True
+    if rFN2:
+      os.rename(rFN, rFN2)
+      return True
+    else:
+      os.remove(rFN)
+      return False
 
 
 
