@@ -95,6 +95,7 @@ def getURLs():
     fullURLs = []
 
     if urlListFilename == "urls-reftests":
+        # This has to be a file: URL rather than just a path so that hash parts work
         urlPrefix = "file://" + os.path.join(browserObjDir, "..") + os.sep # XXX this will not work on Windows
         print urlPrefix
     else:
