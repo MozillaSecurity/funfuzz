@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 from __future__ import with_statement
-import sys, random, time, os, subprocess, datetime
+import sys, random, time, os, subprocess, datetime, urllib
 import rundomfuzz
 import randomURL
 
+if len(sys.argv) != 2:
+   print "Usage: ./loopdomfuzz.py firefox-objdir"
+   sys.exit(2)
 
 p0 = os.path.dirname(sys.argv[0])
 emptiesDir = os.path.abspath(os.path.join(p0, "..", "empties"))
@@ -14,7 +17,7 @@ rundomfuzzpy = os.path.join(p0, "rundomfuzz.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
-browserObjDir = sys.argv[1]
+browserObjDir = os.path.abspath(sys.argv[1])
 maxIterations = 300000
 yummy = (urlListFilename == "urls-random")
 
@@ -132,17 +135,15 @@ def getURLs():
     URLs = []
     fullURLs = []
 
-    if urlListFilename == "urls-reftests":
-        # This has to be a file: URL rather than just a path so that hash parts work
-        urlPrefix = "file://" + os.path.join(browserObjDir, "..") + os.sep # XXX this will not work on Windows
-        print urlPrefix
-    else:
-        urlPrefix = ""
-    
     urlfile = open(urlListFilename, "r")
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
-            URLs.append(urlPrefix + line.rstrip())
+            if urlListFilename == "urls-reftests":
+                # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
+                localPath = os.path.join(browserObjDir, "..", line.rstrip()) # XXX will be different for packaged builds
+                URLs.append("file://" + urllib.pathname2url(localPath))
+            else:
+                URLs.append(line.rstrip())
             
     #plan = file(tempDir + os.sep + "wplan", 'w')
 
