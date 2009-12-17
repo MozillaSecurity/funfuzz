@@ -31,26 +31,26 @@ def many_timed_runs(fullURLs):
         else:
             fullURL = fullURLs[iteration]
 
+        logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + fullURL
-        level, lines = rundomfuzz.levelAndLines(browserObjDir, fullURL)
+        level, lines = rundomfuzz.levelAndLines(browserObjDir, fullURL, logPrefix=logPrefix)
 
         if level > rundomfuzz.DOM_TIMED_OUT:
             print "lopdomfuzz.py: will try reducing from " + fullURL
-            lithSuccess = wheeLith(iteration, level, lines)
+            lithSuccess = wheeLith(level, lines, logPrefix)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
-                level2, lines2 = rundomfuzz.levelAndLines(browserObjDir, fullURL)
-                fPrefix = os.path.join(tempDir, "q" + str(iteration))
+                level2, lines2 = rundomfuzz.levelAndLines(browserObjDir, fullURL, logPrefix=None)
                 if level2 > rundomfuzz.DOM_TIMED_OUT:
                     print "%%% Yet it is reproducible"
-                    reproOnlyFile = open(fPrefix + "-repro-only.txt")
+                    reproOnlyFile = open(logPrefix + "-repro-only.txt")
                     reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n")
                     reproOnlyFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
                     reproOnlyFile.close()
                 else:
                     print "%%% Not reproducible at all"
-                    sorryFile = open(fPrefix + "-sorry.txt")
+                    sorryFile = open(logPrefix + "-sorry.txt")
                     sorryFile.write("I wasn't even able to reproduce with the same URL.\n")
                     sorryFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
                     sorryFile.close()
@@ -59,7 +59,7 @@ def many_timed_runs(fullURLs):
 
 # Stuffs "lines" into a fresh file, then runs Lithium to reduce that file.
 # Returns True if Lithium was able to reproduce (and reduce).
-def wheeLith(iteration, level, lines):
+def wheeLith(level, lines, logPrefix):
     contentTypes = linesWith(lines, "XA Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
 
@@ -96,19 +96,18 @@ def wheeLith(iteration, level, lines):
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + fuzzjs + fuzzstartjs + wafter
     
-    fPrefix = os.path.join(tempDir, "q" + str(iteration))
-    oFN = fPrefix + "-splice-orig." + extension
-    rFN = fPrefix + "-splice-reduced." + extension
+    oFN = logPrefix + "-splice-orig." + extension
+    rFN = logPrefix + "-splice-reduced." + extension
     writeLinesToFile(linesToWrite, oFN)
     writeLinesToFile(linesToWrite, rFN)
     
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
-    lithtmp = fPrefix + "-lith1-tmp"
+    lithtmp = logPrefix + "-lith1-tmp"
     os.mkdir(lithtmp)
     lithArgs = ["--tempdir=" + lithtmp, rundomfuzzpy, str(level), browserObjDir, rFN]
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
-    lithlogfn = fPrefix + "-lith1-out"
+    lithlogfn = logPrefix + "-lith1-out"
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"))
     print "Done running Lithium"
 
@@ -119,7 +118,7 @@ def wheeLith(iteration, level, lines):
       for line in f:
         if inLithSummary:
           if line.startswith("  Final size:"):
-            rFN2 = fPrefix + "-splice-reduced-" + line[14:].rstrip().replace(" ", "-") + "." + extension
+            rFN2 = logPrefix + "-splice-reduced-" + line[14:].rstrip().replace(" ", "-") + "." + extension
         if line.rstrip() == "=== LITHIUM SUMMARY ===":
           inLithSummary = True
     if rFN2:

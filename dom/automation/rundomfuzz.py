@@ -107,9 +107,12 @@ class AmissLogHandler(logging.Handler):
     self.knownPath = knownPath
     self.FRClines = []
     self.pid = None
+    self.fullLogHead = []
   def emit(self, record):
     msg = record.msg
     msgLF = msg + "\n"
+    if len(self.fullLogHead) < 100000:
+      self.fullLogHead.append(msgLF)
     if self.pid == None and msg.startswith("INFO | automation.py | Application pid:"):
       self.pid = record.args[0]
       print "Got the pid!" + repr(self.pid)
@@ -117,10 +120,12 @@ class AmissLogHandler(logging.Handler):
       self.FRClines.append(msgLF)
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
+      self.fullLogHead.append("@@@ New assertion: " + msgLF)
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
+      self.fullLogHead.append("@@@ Malloc is unhappy\n")
 
-def levelAndLines(browserObjDir, url, additionalArgs = []):
+def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
 
   # Relying on reftest, which should exist in any --enable-tests build!
   # This directory contains a compiled automation.py and stuff.
@@ -257,12 +262,19 @@ def levelAndLines(browserObjDir, url, additionalArgs = []):
           print open(crashlog).read()
           if detect_interesting_crashes.amiss(knownPath, crashlog, False, signame):
             automation.log.info("DOMFUZZ INFO | rundomfuzz.py | New crash")
+            if logPrefix:
+              shutil.copyfile(crashlog, logPrefix + "-crash.txt")
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
           else:
             automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Known crash")
     
     if status > 0:
       lev = max(lev, DOM_ABNORMAL_EXIT)
+
+    if (lev > DOM_TIMED_OUT) and logPrefix:
+      outlog = open(logPrefix + "-output.txt", "w")
+      outlog.writelines(alh.fullLogHead)
+      outlog.close()
 
     #if sta == ntr.TIMED_OUT:
     #  lev = max(lev, DOM_TIMED_OUT)
