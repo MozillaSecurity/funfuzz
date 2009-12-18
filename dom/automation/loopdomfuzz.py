@@ -60,7 +60,7 @@ def many_timed_runs(fullURLs):
 # Stuffs "lines" into a fresh file, then runs Lithium to reduce that file.
 # Returns True if Lithium was able to reproduce (and reduce).
 def wheeLith(level, lines, logPrefix):
-    contentTypes = linesWith(lines, "XA Content type: ")
+    contentTypes = linesWith(lines, "FRCX Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
 
     extDict = {
@@ -81,14 +81,14 @@ def wheeLith(level, lines, logPrefix):
 
     possibleDoctype = []
     if contentType == "text/html":
-        docTypes = linesWith(lines, "XA Doctype: ")
+        docTypes = linesWith(lines, "FRCX Doctype: ")
         if len(docTypes) > 0:
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
             
     fuzzjs = open(os.path.join(fuzzersDir, "fuzz.js")).readlines()
     fuzzstartjs = open(os.path.join(fuzzersDir, "fuzz-start.js")).readlines()
     [jbefore, jafter] = fuzzSplice(open(os.path.join(fuzzersDir, fuzzerJS)))
-    fuzzlines = linesWith(lines, "FRC")
+    fuzzlines = linesWith(lines, "FRCA")
     quittage = [
       "// DDEND\n",
       "fuzzCommands.push({origCount: 9999, rest: true});\n",
