@@ -3,7 +3,6 @@
 from __future__ import with_statement
 import sys, random, time, os, subprocess, datetime, urllib
 import rundomfuzz
-import randomURL
 
 if len(sys.argv) != 2:
    print "Usage: ./loopdomfuzz.py firefox-objdir"
@@ -19,17 +18,13 @@ urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
 browserObjDir = os.path.abspath(sys.argv[1])
 maxIterations = 300000
-yummy = (urlListFilename == "urls-random")
 
 
 def many_timed_runs(fullURLs):
 
     for iteration in range(0, maxIterations):
 
-        if yummy:
-            fullURL = randomURL.randomURL() + randomHash()
-        else:
-            fullURL = fullURLs[iteration]
+        fullURL = fullURLs[iteration]
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
@@ -238,13 +233,9 @@ def afterColon(s):
     return tail.strip()
 
 
-
 if len(sys.argv) >= 1:
     createTempDir()
-    if yummy: # hacky
-        many_timed_runs(None)
-    else:
-        many_timed_runs(getURLs())
+    many_timed_runs(getURLs())
 else:
     print "Not enough command-line arguments"
     print "Usage: loopdomfuzz.py fxobjdir [options for automation.py]"
