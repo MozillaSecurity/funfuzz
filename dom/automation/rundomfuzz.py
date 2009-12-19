@@ -96,7 +96,11 @@ def getFirefoxBranch(appini):
   with file(appini) as f:
     for line in f:
       if line.startswith("SourceRepository="):
-        return line.split("/")[-2]
+        line = line.rstrip()
+        if line.endswith("/"):
+          return line.split("/")[-2]
+        else:
+          return line.split("/")[-1]
 
 
 class AmissLogHandler(logging.Handler):
@@ -125,30 +129,71 @@ class AmissLogHandler(logging.Handler):
       self.mallocFailure = True
       self.fullLogHead.append("@@@ Malloc is unhappy\n")
 
-def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
+class FigureOutDirs:
+  def __init__(self, browserDir):
+    #self.appDir = None
+    self.reftestFilesDir = None
+    self.reftestScriptDir = None
+    self.symbolsDir = None
+    self.utilityDir = None
 
-  # Relying on reftest, which should exist in any --enable-tests build!
-  # This directory contains a compiled automation.py and stuff.
+    if os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "tests")):
+      # browserDir is a downloaded packaged build, perhaps downloaded with build_downloader.py.  Great!
+      #self.appDir = os.path.join(browserDir, "dist")
+      self.reftestFilesDir = os.path.join(browserDir, "tests", "reftest", "tests")
+      self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
+      self.symbolsDir = os.path.join(browserDir, "symbols")
+      self.utilityDir = os.path.join(browserDir, "tests", "bin")
+      if not os.path.exists(self.symbolsDir):
+        self.symbolsDir = None
+    elif os.path.exists(os.path.join(browserDir, "..", "layout", "reftests")):
+      # browserDir is an objdir whose parent is a srcdir.  That works too (more convenient for local builds)
+      #self.appDir = browserDir
+      self.reftestScriptDir = os.path.join(browserDir, "_tests", "reftest")
+      self.reftestFilesDir = os.path.join(browserDir, "..")
+      self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
+    else:
+      raise Exception("browserDir is not the kind of directory I expected")
+
+    #if not os.path.exists(self.appDir):
+    #  raise Exception("Oops! appDir does not exist!")
+    if not os.path.exists(self.reftestScriptDir):
+      raise Exception("Oops! reftestScriptDir does not exist!")
+    if not os.path.exists(self.reftestFilesDir):
+      raise Exception("Oops! reftestFilesDir does not exist!")
+    if not os.path.exists(self.utilityDir):
+      raise Exception("Oops! utilityDir does not exist!")
+
+    if self.symbolsDir:
+      self.symbolsDir = getFullPath(self.symbolsDir)
+
+
+def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
+
+  dirs = FigureOutDirs(browserDir)
+
   # Fun issue: we don't know where automation.py is until we have our first argument,
   # but we can't parse our arguments until we have automation.py.  So the objdir
   # gets to be our first argument.
+  print dirs.reftestScriptDir
+  sys.path.append(dirs.reftestScriptDir)
   try:
-    REFTEST_SCRIPT_DIRECTORY = os.path.join(browserObjDir, "_tests", "reftest")
-    sys.path.append(REFTEST_SCRIPT_DIRECTORY)
     import automation
     import automationutils
-  except (ImportError, IndexError):
-    print "First argument to rundomfuzz.py must be a Firefox objdir built with --enable-tests."
-    sys.exit(2)
+  finally:
+    sys.path.pop()
 
   parser = OptionParser()
+
+  print "Wut? " + automation.DEFAULT_APP
+  print "Mmf! " + os.path.join(dirs.reftestScriptDir, automation.DEFAULT_APP)
 
   # we want to pass down everything from automation.__all__
   automationutils.addCommonOptions(parser, defaults=dict(zip(automation.__all__, [getattr(automation, x) for x in automation.__all__])))
   automation.addExtraCommonOptions(parser)
   parser.add_option("--appname",
                     action = "store", type = "string", dest = "app",
-                    default = os.path.join(REFTEST_SCRIPT_DIRECTORY, automation.DEFAULT_APP),
+                    default = os.path.join(dirs.reftestScriptDir, automation.DEFAULT_APP),
                     help = "absolute path to application, overriding default")
   parser.add_option("--timeout",              
                     action = "store", dest = "timeout", type = "int", 
@@ -156,7 +201,7 @@ def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
                     help = "Time out in specified number of seconds. [default %default s].")
   parser.add_option("--utility-path",
                     action = "store", type = "string", dest = "utilityPath",
-                    default = automation.DIST_BIN,
+                    default = dirs.utilityDir,
                     help = "absolute path to directory containing utility "
                            "programs (xpcshell, ssltunnel, certutil)")
 
@@ -174,8 +219,6 @@ def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
     # allow relative paths
     options.xrePath = getFullPath(options.xrePath)
 
-  if options.symbolsPath:
-    options.symbolsPath = getFullPath(options.symbolsPath)
   options.utilityPath = getFullPath(options.utilityPath)
 
   debuggerInfo = automationutils.getDebuggerInfo(oldcwd, options.debugger, options.debuggerArgs,
@@ -199,7 +242,7 @@ def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
     # not XPCOM_MEM_LEAK_LOG??? see automationutils.py comments about these two env vars.
 
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Getting Firefox version")
-    firefoxBranch = getFirefoxBranch(os.path.join(automation.DIST_BIN, "application.ini"))
+    firefoxBranch = getFirefoxBranch(os.path.normpath(os.path.join(options.app, "..", "application.ini")))
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Firefox version: " + firefoxBranch)
     knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Ignoring known bugs in: " + knownPath)
@@ -231,9 +274,10 @@ def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
                                utilityPath = options.utilityPath,
                                xrePath=options.xrePath,
                                debuggerInfo=debuggerInfo,
-                               symbolsPath=options.symbolsPath,
-                               timeout = options.timeout + 120.0,
-                               maxTime = options.timeout + 300.0)
+                               symbolsPath=dirs.symbolsDir, # bypassing options, not sure this is a good idea
+                               #maxTime = options.timeout + 300.0,
+                               timeout = options.timeout + 120.0
+                               )
     automation.log.removeHandler(alh)
     automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, status " + str(status))
     
@@ -256,7 +300,7 @@ def levelAndLines(browserObjDir, url, additionalArgs = [], logPrefix = None):
         lev = max(lev, DOM_TIMED_OUT)
       else:
         crashlog = None
-        if signum != signal.SIGKILL:
+        if signum != signal.SIGKILL and dirs.symbolsDir == None:
             crashlog = grabCrashLog(os.path.basename(options.app), alh.pid, None, signum)
         if crashlog:
           print open(crashlog).read()
@@ -375,11 +419,13 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
 # For use by Lithium
 def interesting(args, tempPrefix):
     minimumInterestingLevel = int(args[0])
-    browserObjDir = args[1]
+    browserDir = args[1]
     url = args[2]
-    actualLevel, lines = levelAndLines(browserObjDir, url, args[3:])
+    actualLevel, lines = levelAndLines(browserDir, url, additionalArgs = args[3:])
     return actualLevel >= minimumInterestingLevel
 
 if __name__ == "__main__":
-  level, lines = levelAndLines(sys.argv[1], sys.argv[2], sys.argv[3:])
+  browserDir = sys.argv[1]
+  url = sys.argv[2]
+  level, lines = levelAndLines(browserDir, url, additionalArgs = sys.argv[3:])
   print level

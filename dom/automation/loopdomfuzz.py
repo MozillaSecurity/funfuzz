@@ -16,7 +16,8 @@ rundomfuzzpy = os.path.join(p0, "rundomfuzz.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
-browserObjDir = os.path.abspath(sys.argv[1])
+browserDir = os.path.abspath(sys.argv[1])
+reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
 maxIterations = 300000
 
 
@@ -29,25 +30,25 @@ def many_timed_runs(fullURLs):
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + fullURL
-        level, lines = rundomfuzz.levelAndLines(browserObjDir, fullURL, logPrefix=logPrefix)
+        level, lines = rundomfuzz.levelAndLines(browserDir, fullURL, logPrefix=logPrefix)
 
         if level > rundomfuzz.DOM_TIMED_OUT:
             print "lopdomfuzz.py: will try reducing from " + fullURL
             lithSuccess = wheeLith(level, lines, logPrefix)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
-                level2, lines2 = rundomfuzz.levelAndLines(browserObjDir, fullURL, logPrefix=None)
+                level2, lines2 = rundomfuzz.levelAndLines(browserDir, fullURL, logPrefix=None)
                 if level2 > rundomfuzz.DOM_TIMED_OUT:
                     print "%%% Yet it is reproducible"
                     reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                     reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n")
-                    reproOnlyFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
+                    reproOnlyFile.write("./rundomfuzz.py " + browserDir + " " + fullURL + "\n")
                     reproOnlyFile.close()
                 else:
                     print "%%% Not reproducible at all"
                     sorryFile = open(logPrefix + "-sorry.txt", "w")
                     sorryFile.write("I wasn't even able to reproduce with the same URL.\n")
-                    sorryFile.write("./rundomfuzz.py " + browserObjDir + " " + fullURL + "\n")
+                    sorryFile.write("./rundomfuzz.py " + browserDir + " " + fullURL + "\n")
                     sorryFile.close()
 
             print ""
@@ -99,7 +100,7 @@ def wheeLith(level, lines, logPrefix):
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
     lithtmp = logPrefix + "-lith1-tmp"
     os.mkdir(lithtmp)
-    lithArgs = ["--tempdir=" + lithtmp, rundomfuzzpy, str(level), browserObjDir, rFN]
+    lithArgs = ["--tempdir=" + lithtmp, rundomfuzzpy, str(level), browserDir, rFN]
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
     lithlogfn = logPrefix + "-lith1-out"
@@ -133,8 +134,8 @@ def getURLs():
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
             if urlListFilename == "urls-reftests":
+                localPath = os.path.join(reftestFilesDir, line.rstrip())
                 # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
-                localPath = os.path.join(browserObjDir, "..", line.rstrip()) # XXX will be different for packaged builds
                 URLs.append("file://" + urllib.pathname2url(localPath))
             else:
                 URLs.append(line.rstrip())
