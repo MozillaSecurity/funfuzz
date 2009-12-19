@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import urllib, re, os, shutil, subprocess, time
-devnull = open("/dev/null", "w")
+devnull = open(os.devnull, "w")
 
 def httpDirList(dir):
   print "Looking in " + dir + "..."
