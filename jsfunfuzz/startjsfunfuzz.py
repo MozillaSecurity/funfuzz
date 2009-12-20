@@ -218,6 +218,7 @@ try:
     if len(sys.argv) >= 6 and \
       (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
         fuzzPath += "patched/"
+        print 'DEBUG - patched fuzzPath is:', fuzzPath
     os.makedirs(fuzzPath)
 except OSError:
     error(supportedBranches)
