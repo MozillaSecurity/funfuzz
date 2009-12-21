@@ -142,8 +142,8 @@ class FigureOutDirs:
       #self.appDir = os.path.join(browserDir, "dist")
       self.reftestFilesDir = os.path.join(browserDir, "tests", "reftest", "tests")
       self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
-      self.symbolsDir = os.path.join(browserDir, "symbols")
       self.utilityDir = os.path.join(browserDir, "tests", "bin")
+      self.symbolsDir = os.path.join(browserDir, "symbols")
       if not os.path.exists(self.symbolsDir):
         self.symbolsDir = None
     elif os.path.exists(os.path.join(browserDir, "..", "layout", "reftests")):
