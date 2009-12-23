@@ -4,7 +4,7 @@ from __future__ import with_statement
 import sys, random, time, os, subprocess, datetime, urllib
 import rundomfuzz
 
-p0 = os.path.dirname(sys.argv[0])
+p0 = os.path.dirname(__file__)
 emptiesDir = os.path.abspath(os.path.join(p0, "..", "empties"))
 fuzzersDir = os.path.abspath(os.path.join(p0, "..", "fuzzers"))
 lithiumpy = ["python", "-u", os.path.join(p0, "..", "..", "lithium", "lithium.py")]
@@ -153,7 +153,7 @@ def getURLs(reftestFilesDir):
     URLs = []
     fullURLs = []
 
-    urlfile = open(urlListFilename, "r")
+    urlfile = open(os.path.join(p0, urlListFilename), "r")
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
             if urlListFilename == "urls-reftests":

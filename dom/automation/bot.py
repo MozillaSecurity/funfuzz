@@ -103,7 +103,7 @@ if __name__ == "__main__":
     preferredBuild = readTinyFile(job + "preferred-build.txt")
     if len(preferredBuild) > 7: # shortcut for local running that i should probably remove
       build_downloader.downloadBuild(preferredBuild)
-    lithargs = ["python", "../../lithium/lithium.py", "--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
+    lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
     print repr(lithargs)
     subprocess.call(lithargs, stdout=open("lithiumlog", "w"), stderr=subprocess.STDOUT)
     lithlog = "lithiumlog"
