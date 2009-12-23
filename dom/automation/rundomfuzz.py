@@ -185,9 +185,6 @@ def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
 
   parser = OptionParser()
 
-  print "Wut? " + automation.DEFAULT_APP
-  print "Mmf! " + os.path.join(dirs.reftestScriptDir, automation.DEFAULT_APP)
-
   # we want to pass down everything from automation.__all__
   automationutils.addCommonOptions(parser, defaults=dict(zip(automation.__all__, [getattr(automation, x) for x in automation.__all__])))
   automation.addExtraCommonOptions(parser)
