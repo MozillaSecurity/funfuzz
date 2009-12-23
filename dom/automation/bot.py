@@ -5,6 +5,7 @@
 import sys, os, subprocess, time, socket, random, shutil
 import build_downloader
 import loopdomfuzz
+devnull = open(os.devnull, "w")
 
 targetTime = 60 # for build machines, use 20 minutes (20*60)
 
@@ -14,9 +15,13 @@ targetTime = 60 # for build machines, use 20 minutes (20*60)
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
 
-remoteLoginAndMachine = None
-remoteBase = "/Users/jruderman/domfuzzjobs/"
-remotePrefix = (remoteLoginAndMachine + " ") if remoteLoginAndMachine else "" # used as a prefix for remoteBase when using scp
+remoteLoginAndMachine = "jruderman@jesse-arm-1"
+remoteBase = "/mnt/jruderman/domfuzzjobs/"
+
+#remoteLoginAndMachine = None
+#remoteBase = "/Users/jruderman/domfuzzjobs/"
+
+remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else "" # used as a prefix for remoteBase when using scp
 
 def ensureTrailingSlash(d):
   if d[-1] != "/":
@@ -31,7 +36,7 @@ def copyFiles(srcDir, destParent):
   if remoteLoginAndMachine == None:
     subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
   else:
-    subprocess.check_call(["scp", "-r", srcDir, destParent])
+    subprocess.check_call(["scp", "-r", srcDir, destParent], stdout=devnull)
     # XXX synchronize at destination, especially if destParent is the remote one, perhaps by using mktemp remotely
   return destParent + srcDir.split("/")[-2] + "/"
 
@@ -63,7 +68,7 @@ def grabReductionJob(relevantJobsDir):
       shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
       takenName = relevantJobsDir + jobs[0].split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
       if tryCommand("mv " + relevantJobsDir + jobs[0] + " " + takenName + ""):
-        print "Grabbed " + jobs[0] + " as " + takenName
+        print "Grabbed " + jobs[0] + " by renaming it to " + takenName
         return takenName
       else:
         print "Raced to grab " + relevantJobsDir + jobs[0] + ", trying again"
@@ -146,7 +151,7 @@ if __name__ == "__main__":
     else:
       os.rename("lithiumlog", job + "sad-lithium-log.txt") # only in this case do we save a lithium log
       statePostfix = "_sad"
-    print "oldjobname: " + oldjobname
+    #print "oldjobname: " + oldjobname
     newjobname = oldjobname.split("_")[0] + statePostfix
     print "Uploading as: " + newjobname
     os.rename(job, newjobname)
