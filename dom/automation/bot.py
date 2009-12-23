@@ -32,7 +32,7 @@ def copyFiles(srcDir, destParent):
     subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
   else:
     subprocess.check_call(["scp", "-r", srcDir, destParent])
-    # XXX synchronize at destination, especially if destParent is the remote one
+    # XXX synchronize at destination, especially if destParent is the remote one, perhaps by using mktemp remotely
   return destParent + srcDir.split("/")[-2] + "/"
 
 def tryCommand(cmd):
@@ -61,7 +61,7 @@ def grabReductionJob(relevantJobsDir):
     jobs = filter( (lambda s: s.endswith("_needsreduction")), runCommand("ls -1 " + relevantJobsDir).split("\n") )
     if len(jobs) > 0:
       shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
-      takenName = relevantJobsDir + jobs[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
+      takenName = relevantJobsDir + jobs[0].split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
       if tryCommand("mv " + relevantJobsDir + jobs[0] + " " + takenName + ""):
         print "Grabbed " + jobs[0] + " as " + takenName
         return takenName
@@ -119,7 +119,9 @@ if __name__ == "__main__":
     if r:
       job = "wtmp1/"
       writeTinyFile(job + "preferred-build.txt", latestBuild)
-      oldjobname = "ohai" + str(random.randint(0, 1000000)) # not really "oldjobname", but this is how i get newjobname to be what i want below
+      # not really "oldjobname", but this is how i get newjobname to be what i want below
+      # avoid putting underscores in this part, because those get split on
+      oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
       os.rename("wtmp1", oldjobname)
       job = oldjobname + "/"
       lithlog = job + "lith1-out"
@@ -130,6 +132,7 @@ if __name__ == "__main__":
     # We could be cool and move some of this code into loopdomfuzz.runLithium()
     for line in open(lithlog):
       if line.startswith("Lithium result: the original testcase is not"):
+        # Unfortunately, this single state can mean three things: never reproducible, reproducible with url only, lithium made it nonrepro
         statePostfix = "_nolongerreproducible"
         break
       if line.startswith("Lithium result: succeeded"):
