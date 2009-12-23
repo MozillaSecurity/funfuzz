@@ -4,10 +4,6 @@ from __future__ import with_statement
 import sys, random, time, os, subprocess, datetime, urllib
 import rundomfuzz
 
-if len(sys.argv) != 2:
-   print "Usage: ./loopdomfuzz.py firefox-objdir"
-   sys.exit(2)
-
 p0 = os.path.dirname(sys.argv[0])
 emptiesDir = os.path.abspath(os.path.join(p0, "..", "empties"))
 fuzzersDir = os.path.abspath(os.path.join(p0, "..", "fuzzers"))
@@ -16,46 +12,62 @@ rundomfuzzpy = os.path.join(p0, "rundomfuzz.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
-browserDir = os.path.abspath(sys.argv[1])
-reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
+
+tempDir = None
+
 maxIterations = 300000
 
+# If targetTime is None, this loops forever.
+# If targetTime is a number, tries not to run for more than targetTime seconds.
+#   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
+def many_timed_runs(browserDir, targetTime):
+    createTempDir()
+    startTime = time.time()
 
-def many_timed_runs(fullURLs):
-
+    reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
+    urls = getURLs(os.path.abspath(reftestFilesDir))
+    
     for iteration in range(0, maxIterations):
+        if targetTime and time.time() > startTime + targetTime:
+            print "Out of time!"
+            if len(os.listdir(tempDir)) == 0:
+                os.rmdir(tempDir)
+            return False
 
-        fullURL = fullURLs[iteration]
+        url = urls[iteration]
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
-        print "%%% " + now + " starting q" + str(iteration) + ": " + fullURL
-        level, lines = rundomfuzz.levelAndLines(browserDir, fullURL, logPrefix=logPrefix)
+        print "%%% " + now + " starting q" + str(iteration) + ": " + url
+        level, lines = rundomfuzz.levelAndLines(browserDir, url, logPrefix=logPrefix)
 
         if level > rundomfuzz.DOM_TIMED_OUT:
-            print "lopdomfuzz.py: will try reducing from " + fullURL
-            lithSuccess = wheeLith(level, lines, logPrefix)
+            print "lopdomfuzz.py: will try reducing from " + url
+            rFN = createReproFile(lines, logPrefix)
+            lithSuccess = runLithium(browserDir, level, rFN, logPrefix, targetTime//2)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
-                level2, lines2 = rundomfuzz.levelAndLines(browserDir, fullURL, logPrefix=None)
+                level2, lines2 = rundomfuzz.levelAndLines(browserDir, url, logPrefix=None)
                 if level2 > rundomfuzz.DOM_TIMED_OUT:
                     print "%%% Yet it is reproducible"
                     reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                     reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n")
-                    reproOnlyFile.write("./rundomfuzz.py " + browserDir + " " + fullURL + "\n")
+                    reproOnlyFile.write("./rundomfuzz.py " + browserDir + " " + url + "\n")
                     reproOnlyFile.close()
                 else:
                     print "%%% Not reproducible at all"
                     sorryFile = open(logPrefix + "-sorry.txt", "w")
                     sorryFile.write("I wasn't even able to reproduce with the same URL.\n")
-                    sorryFile.write("./rundomfuzz.py " + browserDir + " " + fullURL + "\n")
+                    sorryFile.write("./rundomfuzz.py " + browserDir + " " + url + "\n")
                     sorryFile.close()
 
             print ""
+            if targetTime:
+                return True
 
-# Stuffs "lines" into a fresh file, then runs Lithium to reduce that file.
-# Returns True if Lithium was able to reproduce (and reduce).
-def wheeLith(level, lines, logPrefix):
+# Stuffs "lines" into a fresh file, which Lithium should be able to reduce.
+# Returns the name of the repro file.
+def createReproFile(lines, logPrefix):
     contentTypes = linesWith(lines, "FRCX Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
 
@@ -97,36 +109,47 @@ def wheeLith(level, lines, logPrefix):
     writeLinesToFile(linesToWrite, oFN)
     writeLinesToFile(linesToWrite, rFN)
     
+    return rFN
+
+# Returns True if Lithium was able to reproduce.
+def runLithium(browserDir, level, rFN, logPrefix, targetTime):
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
     lithtmp = logPrefix + "-lith1-tmp"
     os.mkdir(lithtmp)
-    lithArgs = ["--tempdir=" + lithtmp, rundomfuzzpy, str(level), browserDir, rFN]
+    # "--tempdir=" + lithtmp,
+    lithArgs = [rundomfuzzpy, str(level), browserDir, rFN]
+    if targetTime:
+      lithArgs = ["--maxruntime=" + str(targetTime)] + lithArgs
     print "af_timed_run is running Lithium..."
     print repr(lithiumpy + lithArgs)
-    lithlogfn = logPrefix + "-lith1-out"
+    if targetTime:
+      lithlogfn = logPrefix.split(os.sep)[0] + os.sep + "lith1-out"
+    else:
+      lithlogfn = logPrefix + "-lith1-out"
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"))
     print "Done running Lithium"
 
-    # Rename the "-reduced" file to indicate how large it is.
+    
     rFN2 = None
     with file(lithlogfn) as f:
       inLithSummary = False
       for line in f:
-        if inLithSummary:
-          if line.startswith("  Final size:"):
-            rFN2 = logPrefix + "-splice-reduced-" + line[14:].rstrip().replace(" ", "-") + "." + extension
-        if line.rstrip() == "=== LITHIUM SUMMARY ===":
-          inLithSummary = True
-    if rFN2:
-      os.rename(rFN, rFN2)
-      return True
-    else:
-      os.remove(rFN)
-      return False
+        if line.startswith("Lithium result"):
+          print line.rstrip()
+        if line.startswith("Lithium result: succeeded, reduced to: "):
+          # Hooray! Reduced in one shot!!! Rename the "-reduced" file to indicate how large it is.
+          extension = rFN.split(".")[-1]
+          rFN2 = logPrefix + "-splice-reduced-" + line[len("Lithium result: succeeded, reduced to: "):].rstrip().replace(" ", "-") + "." + extension
+          os.rename(rFN, rFN2)
+          return True
+        elif line.startswith("Lithium result: the original testcase is not"):
+          os.remove(rFN)
+          return False
+      else:
+        return True
 
 
-
-def getURLs():
+def getURLs(reftestFilesDir):
     URLs = []
     fullURLs = []
 
@@ -140,14 +163,9 @@ def getURLs():
             else:
                 URLs.append(line.rstrip())
             
-    #plan = file(tempDir + os.sep + "wplan", 'w')
-
     for iteration in range(0, maxIterations):
         u = random.choice(URLs) + randomHash()
         fullURLs.append(u)
-        #plan.write(tempDir + os.sep + "w" + str(iteration) + " = " + u + "\n")
-    
-    #plan.close()
     
     return fullURLs
 
@@ -234,9 +252,13 @@ def afterColon(s):
     return tail.strip()
 
 
-if len(sys.argv) >= 1:
-    createTempDir()
-    many_timed_runs(getURLs())
-else:
-    print "Not enough command-line arguments"
-    print "Usage: loopdomfuzz.py fxobjdir [options for automation.py]"
+def standalone():
+    args = sys.argv[1:]
+    if len(args) != 1:
+        raise Exception("Use bot.py, or invoke using: loopdomfuzz.py browserDir") # [options for automation.py] after browserDir??
+    browserDir = os.path.abspath(args[0])
+    print browserDir
+    many_timed_runs(browserDir, None)
+
+if __name__ == "__main__":
+    standalone()
