@@ -75,15 +75,17 @@ def createReproFile(lines, logPrefix):
         'text/html': 'html',
         'application/xhtml+xml': 'xhtml',
         'image/svg+xml': 'svg',
-        'application/vnd.mozilla.xul+xml': 'xul'
+        'application/vnd.mozilla.xul+xml': 'xul',
+        # 'text/xml' is tricky.  We'd want to know the xmlns of the root, and steal its contents but use .xml.
+        # But treating it as xhtml is better than doing nothing, for now.
+        'text/xml': 'xhtml' 
     }
     
-    if contentType not in extDict:
-        # In particular, 'text/xml' is tricky... we'd want to know the xmlns of the root, and steal its contents but use .xml, perhaps
-        print "af_timed_run does not know what to do with content type " + repr(contentType) + " :("
-        return False
-        
-    extension = extDict[contentType]
+    if contentType in extDict:
+        extension = extDict[contentType]
+    else:
+        print "loopdomfuzz is not sure what to do with content type " + repr(contentType) + " :("
+        extension = "xhtml"
 
     [wbefore, wafter] = fuzzDice(open(os.path.join(emptiesDir, "a." + extension)))
 
@@ -120,7 +122,7 @@ def runLithium(browserDir, level, rFN, logPrefix, targetTime):
     lithArgs = [rundomfuzzpy, str(level), browserDir, rFN]
     if targetTime:
       lithArgs = ["--maxruntime=" + str(targetTime)] + lithArgs
-    print "af_timed_run is running Lithium..."
+    print "loopdomfuzz.py is running Lithium..."
     print repr(lithiumpy + lithArgs)
     if targetTime:
       lithlogfn = logPrefix.split(os.sep)[0] + os.sep + "lith1-out"
