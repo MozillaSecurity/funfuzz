@@ -118,10 +118,11 @@ def runLithium(browserDir, level, rFN, logPrefix, targetTime):
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
     lithtmp = logPrefix + "-lith1-tmp"
     os.mkdir(lithtmp)
-    # "--tempdir=" + lithtmp,
     lithArgs = [rundomfuzzpy, str(level), browserDir, rFN]
     if targetTime:
       lithArgs = ["--maxruntime=" + str(targetTime//2)] + lithArgs
+    else:
+      lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     print "loopdomfuzz.py is running Lithium..."
     print repr(lithiumpy + lithArgs)
     if targetTime:
