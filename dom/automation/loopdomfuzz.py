@@ -44,7 +44,7 @@ def many_timed_runs(browserDir, targetTime):
         if level > rundomfuzz.DOM_TIMED_OUT:
             print "lopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
-            lithSuccess = runLithium(browserDir, level, rFN, logPrefix, targetTime//2)
+            lithSuccess = runLithium(browserDir, level, rFN, logPrefix, targetTime)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
                 level2, lines2 = rundomfuzz.levelAndLines(browserDir, url, logPrefix=None)
@@ -121,7 +121,7 @@ def runLithium(browserDir, level, rFN, logPrefix, targetTime):
     # "--tempdir=" + lithtmp,
     lithArgs = [rundomfuzzpy, str(level), browserDir, rFN]
     if targetTime:
-      lithArgs = ["--maxruntime=" + str(targetTime)] + lithArgs
+      lithArgs = ["--maxruntime=" + str(targetTime//2)] + lithArgs
     print "loopdomfuzz.py is running Lithium..."
     print repr(lithiumpy + lithArgs)
     if targetTime:
