@@ -983,6 +983,7 @@ function testUnevalString(uo)
       &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
       && !uowlb.match(/new.*Error/)                        // ignore bug 380578
       && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
+      && !uowlb.match(/\\0\d/)                             // ignore bug 537849
   ;
 }
 
