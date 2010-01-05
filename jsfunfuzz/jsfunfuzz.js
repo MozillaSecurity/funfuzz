@@ -210,6 +210,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /new.*eval/ ))               // avoid bug 521456
       && !( code.match( /new.*call/ ))               // avoid bug 522749
       && !( code.match( /new.*apply/ ))              // avoid bug 522749
+      && !( code.match( /\=.*\:\:/ ))                // avoid bug 504957
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
@@ -302,6 +303,7 @@ function whatToTestSpidermonkey190Branch(code)
       && !( code.match( /\?.*\?/ ))        // avoid bug 475895
       && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
       && !( code.match( /new.*\?/ ))                 // avoid bug 476210
+      && !( code.match( /\=.*\:\:/ ))                // avoid bug 504957
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
       && (code.indexOf("default") == -1)   // avoid bug 355509
