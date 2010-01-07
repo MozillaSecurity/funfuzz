@@ -253,7 +253,10 @@ def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
                                ["-silent"],
                                utilityPath = options.utilityPath,
                                xrePath=options.xrePath,
-                               symbolsPath=options.symbolsPath)
+                               symbolsPath=options.symbolsPath,
+                               maxTime = options.timeout + 300.0,
+                               timeout = options.timeout + 120.0
+                               )
     # We don't care to call |automationutils.processLeakLog()| for this step.
     automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: end.")
 
@@ -272,7 +275,7 @@ def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
                                xrePath=options.xrePath,
                                debuggerInfo=debuggerInfo,
                                symbolsPath=dirs.symbolsDir, # bypassing options, not sure this is a good idea
-                               #maxTime = options.timeout + 300.0,
+                               maxTime = options.timeout + 300.0,
                                timeout = options.timeout + 120.0
                                )
     automation.log.removeHandler(alh)
