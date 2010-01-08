@@ -48,7 +48,6 @@
 var ENGINE_UNKNOWN = 0;
 var ENGINE_SPIDERMONKEY_TRUNK = 1; // also 1.9.1 and tracemonkey branch
 var ENGINE_SPIDERMONKEY_MOZ_1_9_0 = 2;
-var ENGINE_SPIDERMONKEY_MOZ_1_8 = 3;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
@@ -63,8 +62,6 @@ if (jsshell) {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
     else if (typeof countHeap == "function")
       engine = ENGINE_SPIDERMONKEY_MOZ_1_9_0
-    else
-      engine = ENGINE_SPIDERMONKEY_MOZ_1_8;
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
     options("anonfunfix");
@@ -78,8 +75,6 @@ if (jsshell) {
     dump = function(s) { console.log(s); } 
   } else if (navigator.userAgent.indexOf("Gecko") != -1 && navigator.userAgent.indexOf("rv:1.9.0") != -1) {
     engine = ENGINE_SPIDERMONKEY_MOZ_1_9_0;
-  } else if (navigator.userAgent.indexOf("Gecko") != -1 && navigator.userAgent.indexOf("rv:1.8") != -1) {
-    engine = ENGINE_SPIDERMONKEY_MOZ_1_8;
   } else if (navigator.userAgent.indexOf("Gecko") != -1) {
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof dump != "function") {
@@ -133,8 +128,6 @@ if (!haveRealUneval)
 
 if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
-else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_8)
-  printImportant("Targeting SpiderMonkey / Gecko (Mozilla 1.8 branch).");
 else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0)
   printImportant("Targeting SpiderMonkey / Gecko (Mozilla 1.9.0 branch).");
 else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
@@ -406,8 +399,6 @@ if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
 else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0)
   whatToTest = whatToTestSpidermonkey190Branch;
-else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_8)
-  whatToTest = whatToTestSpidermonkey18Branch;
 else if (engine == ENGINE_JAVASCRIPTCORE)
   whatToTest = whatToTestJavaScriptCore;
 else
@@ -693,8 +684,7 @@ function tryEnsureSanity()
     if ('__defineSetter__' in this) {
       // The only way to get rid of getters/setters is to delete the property.
       delete eval;
-      if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 (branch)
-        delete Function;
+      delete Function;
       delete gc;
       delete uneval;
       delete toSource;
@@ -784,11 +774,6 @@ function checkRoundTripToString(f, code, wtt)
 
   checkForCookies(fs);
   
-  if (fs == "[object Function]" && engine == ENGINE_SPIDERMONKEY_MOZ_1_8) {
-    print("Skipping round-trip test -- bug 432075 (branch)");
-    return;
-  }
-
   if (wtt.checkRecompiling) {
     try {
       g = eval("(" + fs + ")");
