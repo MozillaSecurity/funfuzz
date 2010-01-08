@@ -167,9 +167,9 @@ class FigureOutDirs:
     if self.symbolsDir:
       self.symbolsDir = getFullPath(self.symbolsDir)
 
-
-def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
-
+def rdfInit(browserDir, additionalArgs = []):
+  """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
+  
   dirs = FigureOutDirs(browserDir)
 
   # Fun issue: we don't know where automation.py is until we have our first argument,
@@ -224,50 +224,52 @@ def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
      options.debuggerInteractive);
 
   profileDir = None
-  try:
-    profileDir = mkdtemp()
-    createDOMFuzzProfile(options, profileDir)
 
-    # browser environment
-    browserEnv = automation.environment(xrePath = options.xrePath)
-    browserEnv["XPCOM_DEBUG_BREAK"] = "stack"
-    browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
-    browserEnv["MallocScribble"] = "1"
-    browserEnv["MallocPreScribble"] = "1"
+  profileDir = mkdtemp()
+  createDOMFuzzProfile(options, profileDir)
 
-    # Enable leaks detection to its own log file.
-    #leakLogFile = os.path.join(profileDir, "runreftest_leaks.log")
-    #browserEnv["XPCOM_MEM_BLOAT_LOG"] = leakLogFile
-    # not XPCOM_MEM_LEAK_LOG??? see automationutils.py comments about these two env vars.
+  # browser environment
+  browserEnv = automation.environment(xrePath = options.xrePath)
+  browserEnv["XPCOM_DEBUG_BREAK"] = "stack"
+  browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
+  browserEnv["MallocScribble"] = "1"
+  browserEnv["MallocPreScribble"] = "1"
 
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Getting Firefox version")
-    firefoxBranch = getFirefoxBranch(os.path.normpath(os.path.join(options.app, "..", "application.ini")))
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Firefox version: " + firefoxBranch)
-    knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Ignoring known bugs in: " + knownPath)
+  # Enable leaks detection to its own log file.
+  #leakLogFile = os.path.join(profileDir, "runreftest_leaks.log")
+  #browserEnv["XPCOM_MEM_BLOAT_LOG"] = leakLogFile
+  # not XPCOM_MEM_LEAK_LOG??? see automationutils.py comments about these two env vars.
 
-    # run once with -silent to let the extension manager do its thing
-    # and then exit the app
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: start.\n")
-    
-    # Don't care about this |status|: |runApp()| reporting it should be enough.
-    status = automation.runApp(None, browserEnv, options.app, profileDir,
-                               ["-silent"],
-                               utilityPath = options.utilityPath,
-                               xrePath=options.xrePath,
-                               symbolsPath=options.symbolsPath,
-                               maxTime = options.timeout + 300.0,
-                               timeout = options.timeout + 120.0
-                               )
-    # We don't care to call |automationutils.processLeakLog()| for this step.
-    automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: end.")
+  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Getting Firefox version")
+  firefoxBranch = getFirefoxBranch(os.path.normpath(os.path.join(options.app, "..", "application.ini")))
+  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Firefox version: " + firefoxBranch)
+  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
+  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Ignoring known bugs in: " + knownPath)
 
-    # Remove the leak detection file so it can't "leak" to the tests run.
-    # The file is not there if leak logging was not enabled in the application build.
-    #if os.path.exists(leakLogFile):
-    #  os.remove(leakLogFile)
+  # run once with -silent to let the extension manager do its thing
+  # and then exit the app
+  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: start.\n")
+  
+  # Don't care about this |status|: |runApp()| reporting it should be enough.
+  status = automation.runApp(None, browserEnv, options.app, profileDir,
+                             ["-silent"],
+                             utilityPath = options.utilityPath,
+                             xrePath=options.xrePath,
+                             symbolsPath=options.symbolsPath,
+                             maxTime = options.timeout + 300.0,
+                             timeout = options.timeout + 120.0
+                             )
+  # We don't care to call |automationutils.processLeakLog()| for this step.
+  automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: end.")
 
-    # then again to actually run domfuzz
+  # Remove the leak detection file so it can't "leak" to the tests run.
+  # The file is not there if leak logging was not enabled in the application build.
+  #if os.path.exists(leakLogFile):
+  #  os.remove(leakLogFile)
+
+  def levelAndLines(url, logPrefix=None):
+    """Run Firefox using the profile created above, detecting bugs and stuff."""
+
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
     automation.log.addHandler(alh)
@@ -284,14 +286,14 @@ def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
     automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, status " + str(status))
     
     lev = DOM_FINE
-
+  
     if alh.newAssertionFailure:
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     #if runthis[0] != "valgrind" and status == 0 and detect_leaks.amiss(logPrefix):
     #  lev = max(lev, DOM_NEW_LEAK)
     if alh.mallocFailure:
       lev = max(lev, DOM_MALLOC_ERROR)
-
+  
     if status < 0:
       # The program was terminated by a signal, which usually indicates a crash.
       # Mac/Linux only!
@@ -316,26 +318,25 @@ def levelAndLines(browserDir, url, additionalArgs = [], logPrefix = None):
     
     if status > 0:
       lev = max(lev, DOM_ABNORMAL_EXIT)
-
+  
     if (lev > DOM_TIMED_OUT) and logPrefix:
       outlog = open(logPrefix + "-output.txt", "w")
       outlog.writelines(alh.fullLogHead)
       outlog.close()
-
+  
     #if sta == ntr.TIMED_OUT:
     #  lev = max(lev, DOM_TIMED_OUT)
     #if runthis[0] == "valgrind" and detect_valgrind_errors.amiss(logPrefix + "-vg.xml", True):
     #  lev = max(lev, DOM_VG_AMISS)
-
+  
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
-  finally:
-    if profileDir:
-      shutil.rmtree(profileDir)
-
-  FRClines = alh.FRClines
-  alh.close()
-
-  return (lev, FRClines)
+  
+    FRClines = alh.FRClines
+    alh.close()
+  
+    return (lev, FRClines)
+    
+  return levelAndLines # return a closure
 
 
 # XXX try to squeeze this into automation.py or automationutils.py
@@ -419,15 +420,25 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
 
 
 # For use by Lithium
+def init(args):
+  global levelAndLinesForLithium, minimumInterestingLevel, lithiumURL
+  minimumInterestingLevel = int(args[0])
+  browserDir = args[1]
+  lithiumURL = args[2]
+  levelAndLinesForLithium = rdfInit(browserDir, additionalArgs = args[3:])
 def interesting(args, tempPrefix):
-    minimumInterestingLevel = int(args[0])
-    browserDir = args[1]
-    url = args[2]
-    actualLevel, lines = levelAndLines(browserDir, url, additionalArgs = args[3:])
-    return actualLevel >= minimumInterestingLevel
+  actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix)
+  return actualLevel >= minimumInterestingLevel
+# no appropriate callback from lithium for deleteProfile -- especially since we don't get to try..finally for Ctrl+C
+# could this be fixed by using a generator with yield??
 
 if __name__ == "__main__":
   browserDir = sys.argv[1]
   url = sys.argv[2]
-  level, lines = levelAndLines(browserDir, url, additionalArgs = sys.argv[3:])
+  level, lines = rdfInit(browserDir, additionalArgs = sys.argv[3:])(url)
   print level
+  #deleteProfile()
+
+#def deleteProfile():
+#  if profileDir:
+#    shutil.rmtree(profileDir)

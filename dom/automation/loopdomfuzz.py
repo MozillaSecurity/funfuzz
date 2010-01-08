@@ -26,7 +26,9 @@ def many_timed_runs(browserDir, targetTime):
 
     reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
     urls = getURLs(os.path.abspath(reftestFilesDir))
-    
+
+    levelAndLines = rundomfuzz.rdfInit(browserDir)
+
     for iteration in range(0, maxIterations):
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
@@ -39,7 +41,7 @@ def many_timed_runs(browserDir, targetTime):
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
-        level, lines = rundomfuzz.levelAndLines(browserDir, url, logPrefix=logPrefix)
+        level, lines = levelAndLines(url, logPrefix=logPrefix)
 
         if level > rundomfuzz.DOM_TIMED_OUT:
             print "lopdomfuzz.py: will try reducing from " + url
@@ -47,7 +49,7 @@ def many_timed_runs(browserDir, targetTime):
             lithSuccess = runLithium(browserDir, level, rFN, logPrefix, targetTime)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
-                level2, lines2 = rundomfuzz.levelAndLines(browserDir, url, logPrefix=None)
+                level2, lines2 = levelAndLines(url, logPrefix=None)
                 if level2 > rundomfuzz.DOM_TIMED_OUT:
                     print "%%% Yet it is reproducible"
                     reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
