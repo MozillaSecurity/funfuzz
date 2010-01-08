@@ -276,42 +276,42 @@ function whatToTestSpidermonkey190Branch(code)
   
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
-      && (code.indexOf("#") == -1)                    // avoid bug 367731
-      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
-      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
-      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
-      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
-      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
-      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( code.match( /while.*for.*in/ )) // avoid bug 381963
-      && !( code.match( /const.*arguments/ ))        // avoid bug 355480
-      && !( code.match( /var.*arguments/ ))          // avoid bug 355480
-      && !( code.match( /let.*arguments/ ))          // avoid bug 355480
-      && !( code.match( /let/ ))   // avoid bug 462309 :( :( :(
+      && (code.indexOf("#") == -1)                    // avoid bug 367731 (branch)
+      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197 (branch)
+      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506 (branch)
+      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921 (branch)
+      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921 (branch)
+      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (branch) (more rebracing stuff)
+      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255 (branch)
+      && !( code.match( /while.*for.*in/ )) // avoid bug 381963 (branch)
+      && !( code.match( /const.*arguments/ ))        // avoid bug 355480 (branch)
+      && !( code.match( /var.*arguments/ ))          // avoid bug 355480 (branch)
+      && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (branch)
+      && !( code.match( /let/ ))   // avoid bug 462309 (branch) :( :( :(
       ,
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: true
-      && !( code.match( /const.*if/ ))               // avoid bug 352985
-      && !( code.match( /if.*const/ ))               // avoid bug 352985
-      && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558
-      && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558
-      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
-      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
-      && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
-      && !( code.match( /\?.*\?/ ))        // avoid bug 475895
-      && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269
-      && !( code.match( /new.*\?/ ))                 // avoid bug 476210
-      && !( code.match( /\=.*\:\:/ ))                // avoid bug 504957
+      && !( code.match( /const.*if/ ))               // avoid bug 352985 (branch)
+      && !( code.match( /if.*const/ ))               // avoid bug 352985 (branch)
+      && !( code.match( /\{.*\}.*=.*\[.*=.*\]/ ))    // avoid bug 376558 (branch)
+      && !( code.match( /\[.*\].*=.*\[.*=.*\]/ ))    // avoid bug 376558 (branch)
+      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285 (branch)
+      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285 (branch)
+      && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051 (branch)
+      && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 (branch) where empty {} becomes []
+      && !( code.match( /\?.*\?/ ))        // avoid bug 475895 (branch)
+      && !( code.match( /for.*;.*;/ ))               // avoid wackiness related to bug 461269 (branch)
+      && !( code.match( /new.*\?/ ))                 // avoid bug 476210 (branch)
+      && !( code.match( /\=.*\:\:/ ))                // avoid bug 504957 (branch)
       && (code.indexOf("-0") == -1)        // constant folding isn't perfect
       && (code.indexOf("-1") == -1)        // constant folding isn't perfect
-      && (code.indexOf("default") == -1)   // avoid bug 355509
-      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
-      && (code.indexOf("const") == -1)     // avoid bug 352985, bug 353020, and bug 355480 :(
-      && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
-      && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
-      // avoid bug 352085: keep operators that coerce to number (or integer)
+      && (code.indexOf("default") == -1)   // avoid bug 355509 (branch)
+      && (code.indexOf("delete") == -1)    // avoid bug 352027 (branch), which won't be fixed for a while :(
+      && (code.indexOf("const") == -1)     // avoid bug 352985 (branch), bug 353020 (branch), and bug 355480 (branch) :(
+      && (code.indexOf("&&") == -1)        // ignore bug 461226 (branch) with a hatchet
+      && (code.indexOf("||") == -1)        // ignore bug 461226 (branch) with a hatchet
+      // avoid bug 352085 (branch): keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
            (
@@ -330,21 +330,21 @@ function whatToTestSpidermonkey190Branch(code)
 
     // Exclude things here if the decompilation doesn't match what the function actually does
     checkDisassembly: true
-      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
-      && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899
-      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985
+      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 (branch) harder than above
+      && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899 (branch)
+      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (branch)
     ,  
     
     checkForExtraParens: true
-      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
+      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213 (branch), and unfortunately anything with genexps
       && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !code.match( /\?.*\=/)             // ignore bug 475893
+      && !code.match( /\?.*\=/)             // ignore bug 475893 (branch)
     ,
     
     allowExec: unlikelyToHang(code)
-      && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
-      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
+      && code.indexOf("finally")  == -1 // avoid bug 380018 (branch) and bug 381107 (branch) :(
+      && code.indexOf("<>")       == -1 // avoid bug 334628 (branch), hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       ,
@@ -354,44 +354,13 @@ function whatToTestSpidermonkey190Branch(code)
     checkUneval: true
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (branch)
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (branch)
   };
 }
 
 
-function whatToTestSpidermonkey18Branch(code)
-{
-  return {
-  
-    allowParse: true
-      && !(code.match(/=.*#.*=/)),   // avoid bug 390231
 
-    // Exclude things here if decompiling the function causes a crash.
-    allowDecompile: true
-      && !(code.match( /for.*for.*in.*in/ )),         // avoid bug 376370
-  
-    // Exclude things here if decompiling returns something bogus that won't compile.
-    checkRecompiling: false, // on branch, only interested in crashes for now
-  
-    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: false,
-    checkForExtraParens: false,
-      
-    allowExec: unlikelyToHang(code)
-      && code.indexOf("finally")  == -1 // avoid bug 380018 and bug 381107 :(
-      && code.indexOf("valueOf")  == -1 // avoid bug 355829
-      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
-      && (jsshell || code.indexOf("nogeckoex") == -1)
-      && !( code.match( /delete.*Function/ )) // avoid bug 352604 (exclusion needed despite the realFunction stuff?!)
-      && !( code.match( /function.*::.*=/ )) // avoid ????
-      ,
-  
-    allowIter: true,
-  
-    checkUneval: false
-  };
-}
 
 
 function whatToTestJavaScriptCore(code)
@@ -405,17 +374,11 @@ function whatToTestJavaScriptCore(code)
     checkRecompiling: true,
     
     checkForMismatch: true
-      && !code.match( /new.*\(.*\).*\./ )      // avoid bug 17931
-      && !code.match( /new.*\(.*\).*\[/ )      // avoid bug 17931
       ,
 
     checkForExtraParens: false, // ?
 
     allowExec: unlikelyToHang(code)
-      && !code.match(/with.*const/)            // avoid bug 17924
-      && !code.match(/catch.*const/)           // avoid bug 17924
-      && !code.match(/break.*finally/)         // avoid bug 17932
-      && !code.match(/continue.*finally/)      // avoid bug 17932
       ,
 
     allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
@@ -730,7 +693,7 @@ function tryEnsureSanity()
     if ('__defineSetter__' in this) {
       // The only way to get rid of getters/setters is to delete the property.
       delete eval;
-      if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 on branch
+      if (engine != ENGINE_SPIDERMONKEY_MOZ_1_8) // avoid bug 352604 (branch)
         delete Function;
       delete gc;
       delete uneval;
@@ -822,7 +785,7 @@ function checkRoundTripToString(f, code, wtt)
   checkForCookies(fs);
   
   if (fs == "[object Function]" && engine == ENGINE_SPIDERMONKEY_MOZ_1_8) {
-    print("Skipping round-trip test -- bug 432075");
+    print("Skipping round-trip test -- bug 432075 (branch)");
     return;
   }
 
@@ -881,7 +844,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
   }
   
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("invalid object initializer") != -1) {
-    dumpln("Ignoring bug 452561.");
+    dumpln("Ignoring bug 452561 (branch).");
     return;
   }
   
@@ -891,12 +854,12 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
   }
   
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("missing ; after for-loop condition") != -1) {
-    dumpln("Looks like bug 460504.");
+    dumpln("Looks like bug 460504 (branch).");
     return;
   }
   
   if (fs && gs && fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
-    dumpln("Ignoring quote mismatch (bug 346898).");
+    dumpln("Ignoring quote mismatch (bug 346898 (wontfix)).");
     return;
   }
 
