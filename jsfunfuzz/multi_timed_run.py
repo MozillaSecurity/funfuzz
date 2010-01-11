@@ -14,6 +14,7 @@ import compareJIT
 jsfunfuzzjs = os.path.join(p0, "jsfunfuzz.js")
 
 # Can't use optparse because it barfs when there's a "-j" in the positional arguments.
+# XXX actually, optparse with disable_interspersed_args is what i want.
 # Don't want to use getopt because it's ugly.
 useCompareJIT = False
 args = sys.argv[1:]
