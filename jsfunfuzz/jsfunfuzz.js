@@ -3429,7 +3429,7 @@ function makeMixedTypeArray(d, b)
     // Strings and regular expressions
     [" \"\" ", " '' ", " 'A' ", " '\\0' "],
     
-    // Regular expressions (can have "side effects" due to bug 98409)
+    // Regular expressions
     [ " /x/ ", " /x/g "],
    
     // Booleans
