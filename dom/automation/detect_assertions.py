@@ -42,11 +42,11 @@ def scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions):
                 print "! New assertion: "
                 print line
                 foundSomething = True
-            elif verbose or not ignoreKnownAssertions:
+            elif not ignoreKnownAssertions:
+                foundSomething = True
+            elif verbose:
                 print "@ Known assertion: "
                 print line
-                if ignoreKnownAssertions:
-                    foundSomething = True
 
     currentFile.close()
 

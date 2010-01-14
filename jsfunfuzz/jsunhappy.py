@@ -48,7 +48,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
     if sta == ntr.CRASHED and lev != JS_NEW_ASSERT_OR_CRASH:
         if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash", True, runinfo.msg):
-            if detect_assertions.amiss(knownPath, logPrefix, True, ignoreKnownAssertions=False):
+            if detect_assertions.amiss(knownPath, logPrefix, False, ignoreKnownAssertions=False):
                 print "Warning: detect_interesting_crashes complained but there was a fatal assertion"
             else:
                 issues.append("unknown crash")
