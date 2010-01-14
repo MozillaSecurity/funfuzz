@@ -10,6 +10,7 @@ simpleIgnoreList = []
 twoPartIgnoreList = []
 ready = False
 
+# Called directly by rundomfuzz.py
 def scanLine(knownPath, line):
     global ignoreList
     if not ready:
@@ -23,7 +24,7 @@ def scanLine(knownPath, line):
 
     return False
 
-def scanFile(knownPath, currentFile, verbose):
+def scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions):
     global ignoreList
     if not ready:
         readIgnoreList(knownPath)
@@ -38,10 +39,14 @@ def scanFile(knownPath, currentFile, verbose):
         if (assertiony(line) and not (line in seenInCurrentFile)):
             seenInCurrentFile[line] = True
             if not (ignore(line)):
+                print "! New assertion: "
                 print line
                 foundSomething = True
-            elif verbose:
-                print "@ Known assertion: " + line
+            elif verbose or not ignoreKnownAssertions:
+                print "@ Known assertion: "
+                print line
+                if ignoreKnownAssertions:
+                    foundSomething = True
 
     currentFile.close()
 
@@ -86,13 +91,13 @@ def ignore(assertion):
     return False
 
 
-# For use by af_timed_run
-def amiss(knownPath, logPrefix, verbose):
+# For use by af_timed_run and jsunhappy.py
+def amiss(knownPath, logPrefix, verbose, ignoreKnownAssertions=True):
     currentFile = file(logPrefix + "-err", "r")
-    return scanFile(knownPath, currentFile, verbose)
+    return scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions)
 
 # For standalone use
 if __name__ == "__main__":
     knownPath = sys.argv[1]
     currentFile = file(sys.argv[2], "r")
-    print scanFile(knownPath, currentFile, False)
+    print scanFile(knownPath, currentFile, False, True)
