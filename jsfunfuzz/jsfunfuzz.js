@@ -189,7 +189,7 @@ function whatToTestSpidermonkeyTrunk(code)
       ,
   
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: true
+    checkForMismatch: false // bug 539819
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
@@ -249,7 +249,7 @@ function whatToTestSpidermonkeyTrunk(code)
   
     allowIter: true,
   
-    checkUneval: true
+    checkUneval: false // bug 539819
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
       && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
