@@ -178,16 +178,18 @@ def rdfInit(browserDir, additionalArgs = []):
   print dirs.reftestScriptDir
   sys.path.append(dirs.reftestScriptDir)
   try:
-    import automation
+    from automation import Automation
     import automationutils
   finally:
     sys.path.pop()
+
+  automation = Automation()
 
   parser = OptionParser()
 
   # we want to pass down everything from automation.__all__
   automationutils.addCommonOptions(parser, defaults=dict(zip(automation.__all__, [getattr(automation, x) for x in automation.__all__])))
-  automation.addExtraCommonOptions(parser)
+  automation.addCommonOptions(parser)
   parser.add_option("--appname",
                     action = "store", type = "string", dest = "app",
                     default = os.path.join(dirs.reftestScriptDir, automation.DEFAULT_APP),
