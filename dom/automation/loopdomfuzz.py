@@ -50,7 +50,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
             lithSuccess = runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
-                level2, lines2 = levelAndLines(url, logPrefix=None)
+                level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry")
                 if level2 > rundomfuzz.DOM_TIMED_OUT:
                     print "%%% Yet it is reproducible"
                     reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
