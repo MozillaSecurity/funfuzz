@@ -286,14 +286,16 @@ def rdfInit(browserDir, additionalArgs = []):
     if options.valgrind:
       print "About to use valgrind"
       # _change_ debuggerInfo!!!
-      debuggerInfo = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
-      debuggerInfo["args"] = [
+      debuggerInfo2 = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
+      debuggerInfo2["args"] = [
         "--xml=yes",
         "--xml-file=" + logPrefix + "-vg.xml",
         "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
         "--gen-suppressions=all",
         "--dsymutil=yes"
       ]
+    else:
+      debuggerInfo2 = debuggerInfo
   
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
@@ -302,7 +304,7 @@ def rdfInit(browserDir, additionalArgs = []):
                                [url],
                                utilityPath = options.utilityPath,
                                xrePath=options.xrePath,
-                               debuggerInfo=debuggerInfo,
+                               debuggerInfo=debuggerInfo2,
                                symbolsPath=dirs.symbolsDir, # bypassing options, not sure this is a good idea
                                maxTime = options.timeout + 300.0,
                                timeout = options.timeout + 120.0
