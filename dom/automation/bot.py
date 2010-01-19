@@ -120,7 +120,7 @@ if __name__ == "__main__":
       build_downloader.downloadBuild(latestBuild)
     else:
       latestBuild = "haha"
-    r = loopdomfuzz.many_timed_runs("build", targetTime)
+    r = loopdomfuzz.many_timed_runs("build", targetTime, []) # xxx support --valgrind for additionalArgs
     if r:
       job = "wtmp1/"
       writeTinyFile(job + "preferred-build.txt", latestBuild)

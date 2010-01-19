@@ -10,7 +10,7 @@ from __future__ import with_statement
 import sys, shutil, os, signal, logging
 from optparse import OptionParser
 from tempfile import mkdtemp
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes
+import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_valgrind_errors
 
 # could also use sys._getframe().f_code.co_filename, but this seems cleaner
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +35,7 @@ def getFullPath(path):
   "Get an absolute path relative to oldcwd."
   return os.path.normpath(os.path.join(oldcwd, os.path.expanduser(path)))
 
-def createDOMFuzzProfile(options, profileDir):
+def createDOMFuzzProfile(options, profileDir, valgrindMode):
   "Sets up a profile for domfuzz."
 
   # Set preferences.
@@ -78,6 +78,12 @@ def createDOMFuzzProfile(options, profileDir):
   prefsFile.write('user_pref("extensions.blocklist.enabled", false);\n')
   prefsFile.write('user_pref("lightweightThemes.update.enabled", false);\n')
   prefsFile.write('user_pref("browser.microsummary.enabled", false);\n')
+  
+  # Extra prefs for Valgrind
+  if valgrindMode:
+    prefsFile.write('user_pref("javascript.options.jit.content", false);\n')
+    prefsFile.write('user_pref("javascript.options.jit.chrome", false);\n')
+    # XXX disable plugins
 
   prefsFile.close()
 
@@ -119,7 +125,7 @@ class AmissLogHandler(logging.Handler):
       self.fullLogHead.append(msgLF)
     if self.pid == None and msg.startswith("INFO | automation.py | Application pid:"):
       self.pid = record.args[0]
-      print "Got the pid!" + repr(self.pid)
+      #print "Got the pid: " + repr(self.pid)
     if msg.find("FRC") != -1:
       self.FRClines.append(msgLF)
     if detect_assertions.scanLine(self.knownPath, msgLF):
@@ -190,6 +196,10 @@ def rdfInit(browserDir, additionalArgs = []):
   # we want to pass down everything from automation.__all__
   automationutils.addCommonOptions(parser, defaults=dict(zip(automation.__all__, [getattr(automation, x) for x in automation.__all__])))
   automation.addCommonOptions(parser)
+  parser.add_option("--valgrind",
+                    action = "store_true", dest = "valgrind",
+                    default = False,
+                    help = "use valgrind with a reasonable set of options")
   parser.add_option("--appname",
                     action = "store", type = "string", dest = "app",
                     default = os.path.join(dirs.reftestScriptDir, automation.DEFAULT_APP),
@@ -226,14 +236,15 @@ def rdfInit(browserDir, additionalArgs = []):
   profileDir = None
 
   profileDir = mkdtemp()
-  createDOMFuzzProfile(options, profileDir)
+  createDOMFuzzProfile(options, profileDir, options.valgrind)
 
   # browser environment
   browserEnv = automation.environment(xrePath = options.xrePath)
   browserEnv["XPCOM_DEBUG_BREAK"] = "stack"
   browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
-  browserEnv["MallocScribble"] = "1"
-  browserEnv["MallocPreScribble"] = "1"
+  if not options.valgrind:
+    browserEnv["MallocScribble"] = "1"
+    browserEnv["MallocPreScribble"] = "1"
 
   # Enable leaks detection to its own log file.
   #leakLogFile = os.path.join(profileDir, "runreftest_leaks.log")
@@ -270,6 +281,20 @@ def rdfInit(browserDir, additionalArgs = []):
   def levelAndLines(url, logPrefix=None):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
 
+    # This is a little sketchy, changing debugger and debuggerArgs after calling runApp once.
+    # But it saves a lot of time, and by this point we know what knownPath and logPrefix are.
+    if options.valgrind:
+      print "About to use valgrind"
+      # _change_ debuggerInfo!!!
+      debuggerInfo = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
+      debuggerInfo["args"] = [
+        "--xml=yes",
+        "--xml-file=" + logPrefix + "-vg.xml",
+        "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
+        "--gen-suppressions=all",
+        "--dsymutil=yes"
+      ]
+  
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
     automation.log.addHandler(alh)
@@ -289,7 +314,7 @@ def rdfInit(browserDir, additionalArgs = []):
   
     if alh.newAssertionFailure:
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    #if runthis[0] != "valgrind" and status == 0 and detect_leaks.amiss(logPrefix):
+    #if not options.valgrind and status == 0 and detect_leaks.amiss(logPrefix):
     #  lev = max(lev, DOM_NEW_LEAK)
     if alh.mallocFailure:
       lev = max(lev, DOM_MALLOC_ERROR)
@@ -326,8 +351,8 @@ def rdfInit(browserDir, additionalArgs = []):
   
     #if sta == ntr.TIMED_OUT:
     #  lev = max(lev, DOM_TIMED_OUT)
-    #if runthis[0] == "valgrind" and detect_valgrind_errors.amiss(logPrefix + "-vg.xml", True):
-    #  lev = max(lev, DOM_VG_AMISS)
+    if options.valgrind and detect_valgrind_errors.amiss(logPrefix + "-vg.xml", True):
+      lev = max(lev, DOM_VG_AMISS)
   
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
   
@@ -336,7 +361,7 @@ def rdfInit(browserDir, additionalArgs = []):
   
     return (lev, FRClines)
     
-  return levelAndLines # return a closure
+  return levelAndLines, options # return a closure along with the set of options
 
 
 # XXX try to squeeze this into automation.py or automationutils.py
@@ -425,7 +450,7 @@ def init(args):
   minimumInterestingLevel = int(args[0])
   browserDir = args[1]
   lithiumURL = args[2]
-  levelAndLinesForLithium = rdfInit(browserDir, additionalArgs = args[3:])
+  levelAndLinesForLithium, options = rdfInit(browserDir, additionalArgs = args[3:])
 def interesting(args, tempPrefix):
   actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix)
   return actualLevel >= minimumInterestingLevel
@@ -435,7 +460,7 @@ def interesting(args, tempPrefix):
 if __name__ == "__main__":
   browserDir = sys.argv[1]
   url = sys.argv[2]
-  level, lines = rdfInit(browserDir, additionalArgs = sys.argv[3:])(url)
+  level, lines = rdfInit(browserDir, additionalArgs = sys.argv[3:])[0](url)
   print level
   #deleteProfile()
 

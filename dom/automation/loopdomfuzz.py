@@ -20,14 +20,14 @@ maxIterations = 300000
 # If targetTime is None, this loops forever.
 # If targetTime is a number, tries not to run for more than targetTime seconds.
 #   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
-def many_timed_runs(browserDir, targetTime):
+def many_timed_runs(browserDir, targetTime, additionalArgs):
     createTempDir()
     startTime = time.time()
 
     reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
     urls = getURLs(os.path.abspath(reftestFilesDir))
 
-    levelAndLines = rundomfuzz.rdfInit(browserDir)
+    levelAndLines, options = rundomfuzz.rdfInit(browserDir, additionalArgs)
 
     for iteration in range(0, maxIterations):
         if targetTime and time.time() > startTime + targetTime:
@@ -46,7 +46,8 @@ def many_timed_runs(browserDir, targetTime):
         if level > rundomfuzz.DOM_TIMED_OUT:
             print "lopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
-            lithSuccess = runLithium(browserDir, level, rFN, logPrefix, targetTime)
+            extraRDFArgs = ["--valgrind"] if options.valgrind else []
+            lithSuccess = runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime)
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
                 level2, lines2 = levelAndLines(url, logPrefix=None)
@@ -116,11 +117,12 @@ def createReproFile(lines, logPrefix):
     return rFN
 
 # Returns True if Lithium was able to reproduce.
-def runLithium(browserDir, level, rFN, logPrefix, targetTime):
+def runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime):
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
     lithtmp = logPrefix + "-lith1-tmp"
     os.mkdir(lithtmp)
-    lithArgs = [rundomfuzzpy, str(level), browserDir, rFN]
+    # We need the --testcase because of the terrible hack of --valgrind going at the end as extraRDFArgs.
+    lithArgs = ["--testcase=" + rFN, rundomfuzzpy, str(level), browserDir, rFN] + extraRDFArgs
     if targetTime:
       lithArgs = ["--maxruntime=" + str(targetTime//2)] + lithArgs
     else:
@@ -259,11 +261,12 @@ def afterColon(s):
 
 def standalone():
     args = sys.argv[1:]
-    if len(args) != 1:
+    if len(args) < 1:
         raise Exception("Use bot.py, or invoke using: loopdomfuzz.py browserDir") # [options for automation.py] after browserDir??
     browserDir = os.path.abspath(args[0])
     print browserDir
-    many_timed_runs(browserDir, None)
+    print repr(args[1:])
+    many_timed_runs(browserDir, None, args[1:])
 
 if __name__ == "__main__":
     standalone()
