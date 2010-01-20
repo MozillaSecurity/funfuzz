@@ -28,9 +28,6 @@ knownLargeHash = ath([
 "nsGlobalWindow",
 "nsDocument",
 
-# Some Flash-related leak that I don't care about.  When removing, be sure to add to otherLargeHash below.  Will retest in Q1 2010.
-"nsDocShell",
-
 # Bug 397206
 "BackstagePass",
 
@@ -59,6 +56,7 @@ knownLargeHash = ath([
 # - should quell the reporting of smaller objects
 # XXX make this list permanent instead of having to remember to re-add things here
 otherLargeHash = ath([
+"nsDocShell"
 ])
 
 
