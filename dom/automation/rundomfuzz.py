@@ -10,7 +10,7 @@ from __future__ import with_statement
 import sys, shutil, os, signal, logging
 from optparse import OptionParser
 from tempfile import mkdtemp
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_valgrind_errors
+import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
 # could also use sys._getframe().f_code.co_filename, but this seems cleaner
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
