@@ -8,7 +8,7 @@ p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
 
 sys.path.append(p1)
 
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_valgrind_errors
+import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
 
 # Levels of unhappiness.
@@ -24,18 +24,19 @@ import detect_assertions, detect_malloc_errors, detect_interesting_crashes, dete
 ) = range(10)
 
 
+VALGRIND_ERROR_EXIT_CODE = 77
 
 def baseLevel(runthis, timeout, knownPath, logPrefix):
     if runthis[0] == "valgrind":
-        runthis = [
+        runthis = ([
             "valgrind",
-            "--xml=yes",
-            "--xml-file=" + logPrefix + "-vg.xml",
+            "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
             "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
             "--gen-suppressions=all",
-            "--dsymutil=yes",
-            "--smc-check=all", # needed for -j if i don't use --enable-valgrind to build js
-        ] + runthis[1:]
+            "--smc-check=all" # needed for -j if i don't use --enable-valgrind to build js
+          ] +
+            (["--dsymutil=yes"] if sys.platform=='darwin' else []) + # only need this on mac
+         runthis[1:])
 
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)
     sta = runinfo.sta
@@ -66,7 +67,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
     if sta == ntr.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, JS_TIMED_OUT)
-    if runthis[0] == "valgrind" and detect_valgrind_errors.amiss(logPrefix + "-vg.xml", False):
+    if runthis[0] == "valgrind" and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
         issues.append("valgrind reported an error")
         lev = max(lev, JS_VG_AMISS)
 
