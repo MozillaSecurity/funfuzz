@@ -24,6 +24,8 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 oldcwd = os.getcwd()
 #os.chdir(SCRIPT_DIRECTORY)
 
+VALGRIND_ERROR_EXIT_CODE = 77
+
 def getSignalName(num, default=None):
     for p in dir(signal):
         if p.startswith("SIG") and not p.startswith("SIG_"):
@@ -285,18 +287,18 @@ def rdfInit(browserDir, additionalArgs = []):
     # But it saves a lot of time, and by this point we know what knownPath and logPrefix are.
     if options.valgrind:
       print "About to use valgrind"
-      # _change_ debuggerInfo!!!
+      assert not debuggerInfo
       debuggerInfo2 = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
       debuggerInfo2["args"] = [
-        "--xml=yes",
-        "--xml-file=" + logPrefix + "-vg.xml",
+        "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
         "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
-        "--gen-suppressions=all",
-        "--dsymutil=yes"
+        "--gen-suppressions=all"
       ]
+      if automation.IS_MAC:
+        debuggerInfo2["args"].append("--dsymutil=yes")
     else:
       debuggerInfo2 = debuggerInfo
-  
+
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
     automation.log.addHandler(alh)
@@ -343,7 +345,9 @@ def rdfInit(browserDir, additionalArgs = []):
           else:
             automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Known crash")
     
-    if status > 0:
+    if options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
+      lev = max(lev, DOM_VG_AMISS)
+    elif status > 0:
       lev = max(lev, DOM_ABNORMAL_EXIT)
   
     if (lev > DOM_TIMED_OUT) and logPrefix:
@@ -353,8 +357,6 @@ def rdfInit(browserDir, additionalArgs = []):
   
     #if sta == ntr.TIMED_OUT:
     #  lev = max(lev, DOM_TIMED_OUT)
-    if options.valgrind and detect_valgrind_errors.amiss(logPrefix + "-vg.xml", True):
-      lev = max(lev, DOM_VG_AMISS)
   
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
   
