@@ -1,125 +1,96 @@
 #!/usr/bin/env python
 
+import os, sys
 
-def ath(array):
-    hash = {}
-    for s in array:
-        hash[s] = True
-    return hash
+ready = False
+knownObjects = dict()
+sizes = 0
 
+def readKnownLeakList(knownPath):
+    global ready, knownObjects, sizes
 
-knownHash = ath([
+    f = file(os.path.join(knownPath, "rleak.txt"), "r")
+    for line in f:
+        line = line.split("#")[0]
+        line = line.strip()
+        parts = line.split(" ")
+        if parts[0] == "":
+            continue
+        elif parts[0] == "SIZE":
+            sizes += 1
+        elif parts[0] == "LEAK" and len(parts) == 2:
+            objname = parts[1]
+            knownObjects[objname] = {'size': 10-sizes, 'knownToLeak': True}
+        elif len(parts) == 1:
+            objname = parts[0]
+            knownObjects[objname] = {'size': 10-sizes, 'knownToLeak': False}
+        else:
+            raise Exception("What? " + repr(parts))
+    f.close()
 
-# Bug 403199
-"nsSimpleNestedURI",
+    #print "detect_leaks is ready"
+    #print repr(knownObjects)
 
-# Bug 467693
-"nsStringBuffer",
-
-# ...
-"nsStorageStream"
-])
-
-# Things that are known to leak AND entrain smaller objects.
-# If one of these leaks, leaks of small objects will not be reported.
-knownLargeHash = ath([
-
-# Bug 503989, bug 503991.  When removing, be sure to add to otherLargeHash below.
-"nsGlobalWindow",
-"nsDocument",
-
-# Bug 397206
-"BackstagePass",
-
-# Bug 102229 or bug 419562
-"nsDNSService",
-
-# Bug 463724
-"nsHTMLDNSPrefetch::nsDeferrals",
-"nsDNSPrefetch",
-"nsDNSAsyncRequest",
-"nsHostResolver",
-
-# Bug 424418
-"nsRDFResource",
-
-# Bug 417630 and friends
-"nsJVMManager",
-
-# Bug 509547
-"nsJSChannel"
-
-])
-
-# Large items that
-# - should be reported even if things in knownLargeHash leak
-# - should quell the reporting of smaller objects
-# XXX make this list permanent instead of having to remember to re-add things here
-otherLargeHash = ath([
-"nsDocShell"
-])
-
-
-def amiss(logPrefix):
-    currentFile = file(logPrefix + "-out", "r")
-    sawLeakStats = False
+    ready = True
     
-    for line in currentFile:
-        line = line.rstrip("\n")
+
+def amiss(knownPath, leakLogFn, verbose=False):
+    if not ready:
+        readKnownLeakList(knownPath)
+    sawLeakStats = False
+    leakLog = file(leakLogFn)
+    
+    for line in leakLog:
+        line = line.rstrip()
+        if line.startswith("nsTraceRefcntImpl::DumpStatistics"):
+            continue
         if (line == "== BloatView: ALL (cumulative) LEAK STATISTICS"):
             sawLeakStats = True
-        # This line appears only if there are leaks
+        # This line appears only if there are leaks with XPCOM_MEM_LEAK_LOG (but always shows with XPCOM_MEM_BLOAT_LOG, oops)
         if (line.endswith("Mean       StdDev")):
             break
     else:
-        if sawLeakStats:
-            #print "No leaks :)"
-            pass
-        else:
-            print "Didn't see leak stats"
-            pass
-        currentFile.close()
+        if verbose:
+            if sawLeakStats:
+                print "detect_leaks: PASS with no leaks at all :)"
+            else:
+                print "detect_leaks: Didn't see leak stats"
+        leakLog.close()
         return False
 
-    smallLeaks = ""
-    largeKnownLeaks = ""
-    largeOtherLeaks = ""
+    largestA = -1 # largest object known to leak
+    largestB = -2 # largest object not known to leak
 
-    for line in currentFile:
+    for line in leakLog:
         line = line.strip("\x07").rstrip("\n").lstrip(" ")
         if (line == ""):
             break
-        a = line.split(" ")[1]
-        if a == "TOTAL":
+        if line.startswith("nsTraceRefcntImpl::DumpStatistics"):
             continue
-        # print "Leaked at least one: " + a
-        if a in knownLargeHash:
-            largeKnownLeaks += "*** Leaked large object " + a + " (known)\n"
-        if a in otherLargeHash:
-            largeOtherLeaks += "*** Leaked large object " + a + "\n"
-        if not a in knownHash:
-            smallLeaks += a + "\n"
+        objname = line.split(" ")[1]
+        if objname == "TOTAL":
+            continue
+        info = knownObjects.get(objname, {'size': 10-sizes, 'knownToLeak': False})
+        if verbose:
+            print "Leaked " + repr(info) + " " + repr(objname)
+        if info.get("knownToLeak"):
+            largestA = max(largestA, info.get("size"))
+        else:
+            largestB = max(largestB, info.get("size"))
 
-    if largeOtherLeaks != "":
-        print "Leaked large objects:"
-        print largeOtherLeaks
-        # print "Also leaked 'known' large objects:"
-        # print largeKnownLeaks
-        currentFile.close()
-        return True
-    elif largeKnownLeaks != "":
-        # print "(Known large leaks, and no other large leaks, so all leaks were ignored)"
-        # print largeKnownLeaks
-        currentFile.close()
-        return False
-    elif smallLeaks != "":
-        print "Leaked:"
-        print smallLeaks
-        currentFile.close()
+    leakLog.close()
+
+    if largestB >= largestA:
+        if verbose:
+            print "detect_leaks: FAIL " + str(largestB) + " " + str(largestA)
         return True
     else:
-        # print "(Only known small leaks)"
-        currentFile.close()
+        if verbose:
+            print "detect_leaks: PASS " + str(largestB) + " " + str(largestA)
         return False
 
-# print "detect_leaks is ready"
+# For standalone use
+if __name__ == "__main__":
+    knownPath = sys.argv[1]
+    leakLog = sys.argv[2]
+    print amiss(knownPath, leakLog, verbose=True)

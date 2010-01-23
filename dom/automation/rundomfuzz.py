@@ -10,7 +10,7 @@ from __future__ import with_statement
 import sys, shutil, os, signal, logging
 from optparse import OptionParser
 from tempfile import mkdtemp
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes
+import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_leaks
 
 # could also use sys._getframe().f_code.co_filename, but this seems cleaner
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -248,11 +248,6 @@ def rdfInit(browserDir, additionalArgs = []):
     browserEnv["MallocScribble"] = "1"
     browserEnv["MallocPreScribble"] = "1"
 
-  # Enable leaks detection to its own log file.
-  #leakLogFile = os.path.join(profileDir, "runreftest_leaks.log")
-  #browserEnv["XPCOM_MEM_BLOAT_LOG"] = leakLogFile
-  # not XPCOM_MEM_LEAK_LOG??? see automationutils.py comments about these two env vars.
-
   automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Getting Firefox version")
   firefoxBranch = getFirefoxBranch(os.path.normpath(os.path.join(options.app, "..", "application.ini")))
   automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Firefox version: " + firefoxBranch)
@@ -275,10 +270,6 @@ def rdfInit(browserDir, additionalArgs = []):
   # We don't care to call |automationutils.processLeakLog()| for this step.
   automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: end.")
 
-  # Remove the leak detection file so it can't "leak" to the tests run.
-  # The file is not there if leak logging was not enabled in the application build.
-  #if os.path.exists(leakLogFile):
-  #  os.remove(leakLogFile)
 
   def levelAndLines(url, logPrefix=None):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
@@ -299,6 +290,13 @@ def rdfInit(browserDir, additionalArgs = []):
     else:
       debuggerInfo2 = debuggerInfo
 
+    leakLogFile = None
+
+    if automation.IS_DEBUG_BUILD and not options.valgrind:
+        # This breaks if logPrefix is None. Not sure what to do. :(
+        leakLogFile = logPrefix + "-leaks.txt"
+        browserEnv["XPCOM_MEM_LEAK_LOG"] = leakLogFile
+
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
     automation.log.addHandler(alh)
@@ -318,8 +316,6 @@ def rdfInit(browserDir, additionalArgs = []):
   
     if alh.newAssertionFailure:
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    #if not options.valgrind and status == 0 and detect_leaks.amiss(logPrefix):
-    #  lev = max(lev, DOM_NEW_LEAK)
     if alh.mallocFailure:
       lev = max(lev, DOM_MALLOC_ERROR)
   
@@ -349,7 +345,12 @@ def rdfInit(browserDir, additionalArgs = []):
       lev = max(lev, DOM_VG_AMISS)
     elif status > 0:
       lev = max(lev, DOM_ABNORMAL_EXIT)
-  
+
+    if leakLogFile and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
+      lev = max(lev, DOM_NEW_LEAK)
+    elif leakLogFile:
+      os.remove(leakLogFile)
+
     if (lev > DOM_TIMED_OUT) and logPrefix:
       outlog = open(logPrefix + "-output.txt", "w")
       outlog.writelines(alh.fullLogHead)
