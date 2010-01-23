@@ -50,12 +50,12 @@ def amiss(knownPath, leakLogFn, verbose=False):
         if (line.endswith("Mean       StdDev")):
             break
     else:
+        leakLog.close()
         if verbose:
             if sawLeakStats:
                 print "detect_leaks: PASS with no leaks at all :)"
             else:
-                print "detect_leaks: Didn't see leak stats"
-        leakLog.close()
+                print "detect_leaks: PASS missing leak stats, don't care enough to fail"
         return False
 
     largestA = -1 # largest object known to leak
@@ -72,7 +72,7 @@ def amiss(knownPath, leakLogFn, verbose=False):
             continue
         info = knownObjects.get(objname, {'size': 10-sizes, 'knownToLeak': False})
         if verbose:
-            print "Leaked " + repr(info) + " " + repr(objname)
+            print "detect_leaks: Leaked " + repr(info) + " " + repr(objname)
         if info.get("knownToLeak"):
             largestA = max(largestA, info.get("size"))
         else:
