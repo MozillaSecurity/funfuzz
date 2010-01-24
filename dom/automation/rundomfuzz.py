@@ -356,9 +356,6 @@ def rdfInit(browserDir, additionalArgs = []):
       outlog.writelines(alh.fullLogHead)
       outlog.close()
   
-    #if sta == ntr.TIMED_OUT:
-    #  lev = max(lev, DOM_TIMED_OUT)
-  
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
   
     FRClines = alh.FRClines
