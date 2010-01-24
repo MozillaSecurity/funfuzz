@@ -19,7 +19,7 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-(DOM_FINE, DOM_TIMED_OUT, DOM_ABNORMAL_EXIT, DOM_VG_AMISS, DOM_NEW_LEAK, DOM_MALLOC_ERROR, DOM_NEW_ASSERT_OR_CRASH) = range(7)
+(DOM_FINE, DOM_TIMED_OUT_UNEXPECTEDLY, DOM_ABNORMAL_EXIT, DOM_VG_AMISS, DOM_NEW_LEAK, DOM_MALLOC_ERROR, DOM_NEW_ASSERT_OR_CRASH) = range(7)
 
 oldcwd = os.getcwd()
 #os.chdir(SCRIPT_DIRECTORY)
@@ -120,6 +120,7 @@ class AmissLogHandler(logging.Handler):
     self.FRClines = []
     self.pid = None
     self.fullLogHead = []
+    self.expectedToHang = True
   def emit(self, record):
     msg = record.msg
     msgLF = msg + "\n"
@@ -130,6 +131,8 @@ class AmissLogHandler(logging.Handler):
       #print "Got the pid: " + repr(self.pid)
     if msg.find("FRC") != -1:
       self.FRClines.append(msgLF)
+    if msg == "Not expected to hang":
+      self.expectedToHang = False
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.fullLogHead.append("@@@ New assertion: " + msgLF)
@@ -326,7 +329,11 @@ def rdfInit(browserDir, additionalArgs = []):
       signame = getSignalName(signum, "unknown signal")
       automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
       if signum == signal.SIGKILL:
-        lev = max(lev, DOM_TIMED_OUT)
+        if alh.expectedToHang:
+          print "Expected hang"
+        else:
+          print "Unexpected hang"
+          lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
       else:
         crashlog = None
         if signum != signal.SIGKILL and dirs.symbolsDir == None:
@@ -351,7 +358,7 @@ def rdfInit(browserDir, additionalArgs = []):
     elif leakLogFile:
       os.remove(leakLogFile)
 
-    if (lev > DOM_TIMED_OUT) and logPrefix:
+    if (lev > DOM_FINE) and logPrefix:
       outlog = open(logPrefix + "-output.txt", "w")
       outlog.writelines(alh.fullLogHead)
       outlog.close()

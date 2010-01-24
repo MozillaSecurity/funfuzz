@@ -43,7 +43,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
         level, lines = levelAndLines(url, logPrefix=logPrefix)
 
-        if level > rundomfuzz.DOM_TIMED_OUT:
+        if level > rundomfuzz.DOM_FINE:
             print "lopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
@@ -51,7 +51,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
             if not lithSuccess:
                 print "%%% Failed to reduce using Lithium"
                 level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry")
-                if level2 > rundomfuzz.DOM_TIMED_OUT:
+                if level2 > rundomfuzz.DOM_FINE:
                     print "%%% Yet it is reproducible"
                     reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                     reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
