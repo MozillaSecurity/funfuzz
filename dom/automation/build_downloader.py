@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 
-import urllib, re, os, shutil, subprocess, time
+import re, os, shutil, subprocess, time, StringIO
 devnull = open(os.devnull, "w")
+
+# Use curl rather than urllib because curl can check certificates.
+def readFromURL(url):
+  p = subprocess.Popen(["curl", "--silent", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (out, err) = p.communicate()
+  return StringIO.StringIO(out)
+def downloadURL(url, dest):
+  subprocess.check_call(["curl", "--output", dest, url])
+  return dest
 
 def httpDirList(dir):
   print "Looking in " + dir + "..."
   files = []
-  page = urllib.urlopen(dir)
+  page = readFromURL(dir)
   for line in page:
     if line.startswith("<tr>"):
       match = re.search("<a href=\"([^\"]*)\">", line)
@@ -47,23 +56,22 @@ def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
     localfn = os.path.join(downloadDir, remotefn.split("/")[-1])
     if remotefn.endswith(".linux-i686.tar.bz2"):
       print "Downloading application..."
-      untarbz2(urllib.urlretrieve(remotefn, localfn)[0], appDir)
+      untarbz2(downloadURL(remotefn, localfn), appDir)
     if remotefn.endswith(".win32.zip"):
       print "Downloading application..."
-      unzip(urllib.urlretrieve(remotefn, localfn)[0], appDir)
+      unzip(downloadURL(remotefn, localfn), appDir)
     if remotefn.endswith(".mac.dmg"):
       print "Downloading application..."
-      undmg(urllib.urlretrieve(remotefn, localfn)[0], appDir, os.path.join("build", "MOUNTEDDMG"))
+      undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
     if remotefn.endswith(".tests.tar.bz2") and wantTests:
       print "Downloading tests..."
-      untarbz2(urllib.urlretrieve(remotefn, localfn)[0], testsDir)
+      untarbz2(downloadURL(remotefn, localfn), testsDir)
     if remotefn.endswith(".crashreporter-symbols.zip") and wantSymbols:
       print "Downloading crash reporter symbols..."
-      unzip(urllib.urlretrieve(remotefn, localfn)[0], symbolsDir)
+      unzip(downloadURL(remotefn, localfn), symbolsDir)
 
 def findLatestBuild(branchName, osName):
-  # I would like to use https, but Python's urllib does not check certificates :(
-  buildsDir = "http://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + branchName + "-" + osName + "-debug/"
+  buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + branchName + "-" + osName + "-debug/"
   latestBuild = httpDirList(buildsDir)[-1]
   return latestBuild
 
