@@ -2,7 +2,7 @@
 
 function dumpln(s) { dump(s + "\n"); }
 
-// readFile fnuction from logan
+// readFile function from logan
 // http://www.gozer.org/mozilla/userChrome.js/scripts/userScripts.uc.js
 // |file| must be an nsIFile.
 // Returns the contents of the file as a string.
