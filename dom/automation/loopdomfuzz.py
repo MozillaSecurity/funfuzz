@@ -194,7 +194,7 @@ def createTempDir():
 def randomHash():
     metaSeed = random.randint(1, 10000)
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5
-    return "#squarefree-af!" + fuzzerJS + "!" + str(metaSeed) + ",0," + str(metaPer) + ",10,3000,0"
+    return "#squarefree-af," + fuzzerJS + "," + str(metaSeed) + ",0," + str(metaPer) + ",10,3000,0"
 
 
 

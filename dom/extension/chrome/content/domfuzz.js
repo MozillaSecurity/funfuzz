@@ -63,7 +63,7 @@ function onPageLoad(event)
 
   var hash = doc.location.hash;
 
-  var r = hash.split("!");
+  var r = hash.split(",");
 
   if (r[0] == "#squarefree-autoquit") {
     setTimeout(goQuitApplication, 1000);
@@ -102,7 +102,7 @@ function onPageLoad(event)
   + readFile(indir(dir, r[1])) + "\n"
   + readFile(indir(dir, "fuzz-finish-auto.js")) + "\n"
   + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
-  + "fuzzSettings = [" + r[2] + "];\n"
+  + "fuzzSettings = [" + r.slice(2).join(",") + "];\n"
   + "setTimeout(fuzzOnload, 400);\n";
 
   var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
