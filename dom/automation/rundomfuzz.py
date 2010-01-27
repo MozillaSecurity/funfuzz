@@ -121,6 +121,7 @@ class AmissLogHandler(logging.Handler):
     self.pid = None
     self.fullLogHead = []
     self.expectedToHang = True
+    self.nsassertionCount = 0
   def emit(self, record):
     msg = record.msg
     msgLF = msg + "\n"
@@ -133,6 +134,11 @@ class AmissLogHandler(logging.Handler):
       self.FRClines.append(msgLF)
     if msg == "Not expected to hang":
       self.expectedToHang = False
+    if msg.find("###!!! ASSERTION") != -1:
+      self.nsassertionCount += 1
+      if self.nsassertionCount == 100:
+        print "rundomfuzz.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
+        self.expectedToHang = True
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.fullLogHead.append("@@@ New assertion: " + msgLF)
@@ -467,9 +473,12 @@ def interesting(args, tempPrefix):
 # could this be fixed by using a generator with yield??
 
 if __name__ == "__main__":
+  import tempfile
+  logPrefix = tempfile.mkdtemp() + "t"
+  print logPrefix
   browserDir = sys.argv[1]
   url = sys.argv[2]
-  level, lines = rdfInit(browserDir, additionalArgs = sys.argv[3:])[0](url)
+  level, lines = rdfInit(browserDir, additionalArgs = sys.argv[3:])[0](url, logPrefix)
   print level
   #deleteProfile()
 
