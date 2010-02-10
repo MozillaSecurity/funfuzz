@@ -35,6 +35,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
+//"use strict";
+var jsStrictMode = false;
 
 
 
@@ -52,6 +54,9 @@ var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
 var jsshell = (typeof window == "undefined");
+var dump;
+var dumpln;
+var printImportant;
 if (jsshell) {
   dump = print;
   dumpln = print;
@@ -395,6 +400,7 @@ function whatToTestGeneric(code)
   };
 }
 
+var whatToTest;
 if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
 else if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0)
@@ -619,6 +625,8 @@ function tryCompiling(code, allowExec)
     else {
       if (verbose)
         dumpln("About to compile, using new Function.")
+      if (jsStrictMode)
+        code = "'use strict'; " + code; // bug 545326
       return new Function(code);
     }
   } catch(compileError) {
@@ -669,7 +677,7 @@ function tryEnsureSanity()
     try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
   
     // Try to get rid of any fake 'unwatch' functions.
-    delete unwatch;
+    delete this.unwatch;
   
     // Restore important stuff that might have been broken as soon as possible :)
     if ('unwatch' in this) {
@@ -683,28 +691,29 @@ function tryEnsureSanity()
   
     if ('__defineSetter__' in this) {
       // The only way to get rid of getters/setters is to delete the property.
-      delete eval;
-      delete Function;
-      delete gc;
-      delete uneval;
-      delete toSource;
-      delete toString;
+      if (!jsStrictMode)
+        delete this.eval;
+      delete this.Function;
+      delete this.gc;
+      delete this.uneval;
+      delete this.toSource;
+      delete this.toString;
     }
   
-    eval = realEval;
-    Function = realFunction;
-    gc = realGC;
-    uneval = realUneval;
-    toSource = realToSource;
-    toString = realToString;
+    this.eval = realEval;
+    this.Function = realFunction;
+    this.gc = realGC;
+    this.uneval = realUneval;
+    this.toSource = realToSource;
+    this.toString = realToString;
   } catch(e) {
     printImportant("tryEnsureSanity failed: " + e);
   }
 
   // These can fail if the page creates a getter for "eval", for example.
-  if (!eval)
+  if (!this.eval)
     printImportant("WTF did my |eval| go?");
-  if (eval != realEval)
+  if (this.eval != realEval)
     printImportant("WTF did my |eval| get replaced by?")
   if (Function != realFunction)
     printImportant("WTF did my |Function| get replaced by?")
@@ -838,6 +847,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
   
+  if (e.indexOf("strict mode code may not contain 'with' statements") != -1) {
+    dumpln("Ignoring bug 545326.");
+    return;
+  }
+
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("missing ; after for-loop condition") != -1) {
     dumpln("Looks like bug 460504 (branch).");
     return;
