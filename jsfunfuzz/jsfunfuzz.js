@@ -626,7 +626,7 @@ function tryCompiling(code, allowExec)
       if (verbose)
         dumpln("About to compile, using new Function.")
       if (jsStrictMode)
-        code = "'use strict'; " + code; // bug 545326
+        code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
       return new Function(code);
     }
   } catch(compileError) {
