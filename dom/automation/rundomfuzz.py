@@ -309,6 +309,8 @@ def rdfInit(browserDir, additionalArgs = []):
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
     automation.log.addHandler(alh)
+    if options.valgrind:
+      alh.expectedToHang = True
     status = automation.runApp(None, browserEnv, options.app, profileDir,
                                [url],
                                utilityPath = options.utilityPath,
