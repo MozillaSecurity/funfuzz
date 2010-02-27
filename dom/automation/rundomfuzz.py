@@ -309,8 +309,6 @@ def rdfInit(browserDir, additionalArgs = []):
     automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
     alh = AmissLogHandler(knownPath)
     automation.log.addHandler(alh)
-    if options.valgrind:
-      alh.expectedToHang = True
     status = automation.runApp(None, browserEnv, options.app, profileDir,
                                [url],
                                utilityPath = options.utilityPath,
@@ -337,7 +335,7 @@ def rdfInit(browserDir, additionalArgs = []):
       signame = getSignalName(signum, "unknown signal")
       automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
       if signum == signal.SIGKILL:
-        if alh.expectedToHang:
+        if alh.expectedToHang or options.valgrind:
           print "Expected hang"
         else:
           print "Unexpected hang"
