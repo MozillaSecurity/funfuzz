@@ -140,7 +140,7 @@ def main():
         (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or
         (len(sys.argv) == 9 and sys.argv[8] == 'valgrind')):
         valgrindSupport = True
-        multiTimedRunTimeout = '1000'  # Increase timeout to 1000 in Valgrind.
+        multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
     
     
     repoDict = {}
@@ -211,6 +211,13 @@ def main():
     copyJsTree(repoDict[branchType])  # Copy the js tree to the fuzzPath.
     os.chdir('compilePath')  # Change into compilation directory.
     
+    
+    if jsCompareJITSwitch:
+        # This patch makes the gc() function return an empty string (consistently)
+        # rather than returning some information about the gc heap.
+        jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
+        if jsCompareJITCode == 1:
+            raise Exception('Required js patch for --comparejit failed to patch.')
     
     # Patch the codebase if specified, accept up to 2 patches.
     patchReturnCode = 0

@@ -75,8 +75,12 @@ def error(branchSupp):
     print 'General usage: python startjsfunfuzz.py [32|64] [dbg|opt]',
     print '%s [patch <directory to patch>] [patch <directory to patch>]' % branchSupp,
     print '[valgrind]\n'
+    print
+    print 'System requirements: Python 2.6.x, Mozilla build prerequisites and repositories at "~/" (POSIX) or "/" (NT).'
+    print
     print 'Windows platforms only compile in 32-bit.'
     print 'Linux platforms only compile in 64-bit.'
+    print 'Valgrind only works for Linux platforms.'
     print 'Choice of a 32-bit or 64-bit binary is only applicable to Mac OS X 10.6.x.\n'
 
 # This function prints verbose letterheads.
