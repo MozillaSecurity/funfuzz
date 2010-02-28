@@ -101,8 +101,9 @@ def main():
 
     # Check supported operating systems.
     osCheck()
-    if (sys.argv[1] == '32') and (os.uname()[0] == 'Linux'):
-        raise Exception('32-bit compilation is not supported on Linux platforms.')
+    if (sys.argv[1] == '32') and (os.name == 'posix'):
+        if (os.uname()[0] == 'Linux'):
+            raise Exception('32-bit compilation is not supported on Linux platforms.')
     elif (sys.argv[1] == '64'):
         if (os.name == 'nt'):
             raise Exception('64-bit compilation is not supported on Windows platforms.')
@@ -139,12 +140,13 @@ def main():
         exceptionBadBranchType()
 
     valgrindSupport = False
-    if (os.uname()[0] == 'Linux' and
-        (len(sys.argv) == 5 and sys.argv[4] == 'valgrind') or
-        (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or
-        (len(sys.argv) == 9 and sys.argv[8] == 'valgrind')):
-        valgrindSupport = True
-        multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
+    if (os.name == 'posix'):
+        if (os.uname()[0] == 'Linux' and
+            (len(sys.argv) == 5 and sys.argv[4] == 'valgrind') or
+            (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or
+            (len(sys.argv) == 9 and sys.argv[8] == 'valgrind')):
+            valgrindSupport = True
+            multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
 
 
     repoDict = {}
@@ -353,8 +355,9 @@ def main():
 
 
     # 32-bit or 64-bit verification test.
-    if os.uname()[0] == 'Darwin':
-        test32or64bit(jsShellName, archNum)
+    if (os.name == 'posix'):
+        if os.uname()[0] == 'Darwin':
+            test32or64bit(jsShellName, archNum)
 
     # Debug or optimized binary verification test.
     testDbgOrOpt(jsShellName, compileType)
