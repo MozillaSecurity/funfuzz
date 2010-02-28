@@ -173,7 +173,6 @@ def main():
         fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
 
     if verbose:
-        verboseMsg()
         for repo in repoDict.keys():
             print 'DEBUG - The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"'
 
@@ -206,7 +205,6 @@ def main():
         if len(sys.argv) >= 6 and (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
             fuzzPath += 'patched/'
             if verbose:
-                verboseMsg()
                 print 'DEBUG - Patched fuzzPath is:', fuzzPath
         os.makedirs(fuzzPath)
     except OSError:
@@ -222,7 +220,6 @@ def main():
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         if verbose:
-            verboseMsg()
             print 'DEBUG - Patching the gc() function now.'
         jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
         if jsCompareJITCode == 1:
@@ -263,7 +260,6 @@ def main():
 
     # Test compilePath.
     if verbose:
-        verboseMsg()
         print 'DEBUG - This should be the compilePath:'
         print 'DEBUG - %s\n' % os.getcwdu()
         if 'compilePath' not in os.getcwdu():
@@ -285,7 +281,6 @@ def main():
 
     # Test fuzzPath.
     if verbose:
-        verboseMsg()
         print 'DEBUG - os.getcwdu() should be the fuzzPath:'
         print 'DEBUG - %s/' % os.getcwdu()
         print 'DEBUG - fuzzPath is: %s\n' % fuzzPath
@@ -347,7 +342,6 @@ def main():
     fuzzCmd = fuzzCmd1 + jsknownDict[branchType] + fuzzCmd2
 
     if verbose:
-        verboseMsg()
         print 'DEBUG - jsShellName is: ' + jsShellName
         print 'DEBUG - fuzzPath + jsShellName is: ' + fuzzPath + jsShellName
         print 'DEBUG - fuzzCmd is: ' + fuzzCmd

@@ -83,10 +83,6 @@ def error(branchSupp):
     print 'Valgrind only works for Linux platforms.'
     print 'Choice of a 32-bit or 64-bit binary is only applicable to Mac OS X 10.6.x.\n'
 
-# This function prints verbose letterheads.
-def verboseMsg():
-    print '\nDEBUG - Debug output follows...'
-
 # This function captures standard output into a python string.
 def captureStdout(input):
     p = subprocess.Popen([input], stdin=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
@@ -130,7 +126,6 @@ def copyJsTree(repo):
         repo = os.path.expanduser(repo)
     try:
         if verbose:
-            verboseMsg()
             print 'DEBUG - Copying the js tree to the fuzzPath.'
         shutil.copytree(repo, "compilePath")
         if verbose:
@@ -161,7 +156,6 @@ def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threads
         configureCmd += ' --enable-threadsafe --with-system-nspr'
 
     if verbose:
-        verboseMsg()
         print 'DEBUG - This is the configure command:'
         print 'DEBUG - %s\n' % configureCmd
 
@@ -186,7 +180,6 @@ def test32or64bit(jsShellName, archNum):
     test32or64bitStr = captureStdout(test32or64bitCmd)[:-1]
     if archNum == '32':
         if verbose:
-            verboseMsg()
             # Searching the last 10 characters will be sufficient.
             if 'i386' in test32or64bitStr[-10:]:
                 print 'test32or64bitStr is:', test32or64bitStr
@@ -195,7 +188,6 @@ def test32or64bit(jsShellName, archNum):
             raise Exception('Compiled binary is not 32-bit.')
     elif archNum == '64':
         if verbose:
-            verboseMsg()
             if 'x86_64' in test32or64bitStr[-10:]:
                 print 'test32or64bitStr is:', test32or64bitStr
                 print 'DEBUG - Compiled binary is 64-bit.'
@@ -213,7 +205,6 @@ def testDbgOrOpt(jsShellName, compileType):
     os.remove('compileTypeTest')  # Remove testfile after grabbing the error code.
 
     if verbose:
-        verboseMsg()
         print 'DEBUG - The error code for debug shells should be 0.'
         print 'DEBUG - The error code for opt shells should be 3.'
         print 'DEBUG - The actual error code for', jsShellName, 'now, is:', str(testFileErrNum)
