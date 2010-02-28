@@ -201,7 +201,7 @@ def main():
             fuzzPath += "patched/"
             if verbose:
                 verboseMsg()
-                print 'DEBUG - patched fuzzPath is:', fuzzPath
+                print 'DEBUG - Patched fuzzPath is:', fuzzPath
         os.makedirs(fuzzPath)
     except OSError:
         raise Exception("The fuzzing path at \'" + fuzzPath + "\' already exists!")
@@ -215,6 +215,9 @@ def main():
     if jsCompareJITSwitch:
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
+        if verbose:
+            verboseMsg()
+            print 'DEBUG - Patching the gc() function now.'
         jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
         if jsCompareJITCode == 1:
             raise Exception('Required js patch for --comparejit failed to patch.')
