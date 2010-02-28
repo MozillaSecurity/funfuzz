@@ -61,7 +61,7 @@
 #   Add 32-bit and 64-bit compilation, patching support. Host of other
 #   improvements. Now only supports 1.9.1.x, 1.9.2.x, TM and a future 1.9.3.x.
 # February 2010:
-#   Massive rewrite, reducing code by >10%. Support Valgrind on Linux, 64-bit
+#   Massive rewrite, reducing code by ~8%. Support Valgrind on Linux, 64-bit
 #   Linux and Jaegermonkey. No longer supports 10.5.x, 32-bit Linux.
 
 import sys, os, subprocess, shutil, time, errno, platform
