@@ -40,179 +40,193 @@ import os, shutil, subprocess
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 
-# This function prints verbose letterheads.
-def verboseMsg():
-    print "\nDEBUG - Debug output follows..."
-
 
 # These functions throw various custom exceptions.
+def exceptionBadCompileType():
+    raise Exception('Unknown compileType')
+def exceptionBadBranchType():
+    raise Exception('Unknown branchType')
 def exceptionBadOs():
     raise Exception("Unknown OS - Platform is unsupported.")
 
-def exceptionBadCompileType():
-    raise Exception("Unknown compileType - choose from [dbg|opt].")
 
-def exceptionBadPosixBranchType():
-    raise Exception("Not a supported POSIX branchType")
-
-def exceptionBadNtBranchType():
-    raise Exception("Not a supported NT branchType")
-
-
-# This function prints the corresponding CLI requirements that should be input.
-def error(supportedBranches):
-    print """
-
-==========
-| Error! |
-==========
-"""
-    print 'General usage: python startjsfunfuzz.py [32|64] [dbg|opt] ' + \
-      '%s [patch <directory to patch>] [patch <directory to patch>]' \
-    % supportedBranches
-    print "Note that the choice of 32-bit or 64-bit binaries is only " + \
-          "applicable to Mac OS X 10.6.x."
-
-
-# This function copies the entire js source directory on POSIX (Linux / Mac)
-# platforms.
-def posixCopyJsTree(repo):
-    try:
-        if verbose:
-            verboseMsg()
-            print 'DEBUG - Copying the entire js tree to the fuzzPath'
-        shutil.copytree(os.path.expanduser(repo + "js/src/"),"compilePath")
-    except OSError:
-        error()
-        raise Exception("The js code repository directory located at '" + \
-                        os.path.expanduser(repo + "js/src/") + \
-                        "' doesn't exist!")
-
-
-# This function copies the entire js source directory on Windows platforms.
-def ntCopyJsTree(repo):
-    try:
-        if verbose:
-            verboseMsg()
-            print 'DEBUG - Copying the entire js tree to the fuzzPath'
-        shutil.copytree(repo + "js/src/","compilePath")
-    except OSError:
-        error()
-        raise Exception("The js code repository directory located at '" + \
-                        repo + "js/src/' doesn't exist!")
-
-
-# This function compiles debug builds, and Mac OS X 10.6.x compiles 64-bit by
-# default, so this also provides the option of compiling 32-bit in 10.6.x only.
-def dbgCompile(macVer, archNum):
-    if ('10.6' not in str(macVer)) or (archNum == "64"):
-        subprocess.call(['sh', '../configure', '--disable-optimize',
-                         '--enable-debug'])
-    else:  # if archNum == "32":
-        subprocess.call(['CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' +\
-                         'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
-                         'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
-                         'STRIP="strip -x -S" CROSS_COMPILE=1' + \
-                         'sh ../configure ' + \
-                         '--target=i386-apple-darwin8.0.0 ' + \
-                         '--disable-optimize --enable-debug'], shell=True)
-
-
-# This function compiles opt builds, and Mac OS X 10.6.x compiles 64-bit by
-# default, so this also provides the option of compiling 32-bit in 10.6.x only.
-def optCompile(macVer, archNum):
-    if ('10.6' not in str(macVer)) or (archNum == "64"):
-        subprocess.call(['sh', '../configure', '--enable-optimize',
-                         '--disable-debug'])
-    else:  # if archNum == "32":
-        subprocess.call(['CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' +\
-                         'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
-                         'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
-                         'STRIP="strip -x -S" CROSS_COMPILE=1' + \
-                         'sh ../configure ' + \
-                         '--target=i386-apple-darwin8.0.0 ' + \
-                         '--enable-optimize --disable-debug'], shell=True)
-
-
-# This function compiles and copies a binary.
-def compileCopy(branchType, dbgOpt, archNum):
-    # Run make using 2 cores.
-    subprocess.call(["make", "-j2"])
-
-    # Sniff platform and rename executable accordingly:
-    if os.name == "posix":
-        shellName = "js-" + dbgOpt + "-" + archNum + "-" + branchType + "-" + \
-                    os.uname()[0].lower()
-        shutil.copy2("js","../../" + shellName)
-    elif os.name == "nt":
-        shellName = "js-" + dbgOpt + "-" + archNum + "-" + branchType + "-" + \
-                    os.name.lower()
-        shutil.copy2("js.exe","../../" + shellName + ".exe")
+# This function checks for supported operating systems.
+# It returns macVer in the case of 10.6.x.
+def osCheck():
+    if os.name == 'posix':
+        if os.uname()[0] == 'Darwin':
+            macVer, _, _ = platform.mac_ver()
+            macVer = float('.'.join(macVer.split('.')[:2]))
+            if ('10.6' in str(macVer)):
+                return macVer
+            else:
+                exceptionBadOs()  # Only 10.6.x is supported.
+        elif os.uname()[0] == 'Linux':
+            pass
+    elif os.name == 'nt':
+        pass
     else:
-        exceptionBadOs()
-    return shellName
+        print '\nOnly Windows XP/Vista/7, Linux or Mac OS X 10.6.x are supported.\n'
+        raise Exception('Unknown OS - Platform is unsupported.')
+    
+# This function prints the corresponding CLI requirements that should be input.
+def error(branchSupp):
+    print '\n==========\n| Error! |\n=========='
+    print 'General usage: python startjsfunfuzz.py [32|64] [dbg|opt]',
+    print '%s [patch <directory to patch>] [patch <directory to patch>]' % branchSupp,
+    print '[valgrind]\n'
+    print 'Windows platforms only compile in 32-bit.'
+    print 'Linux platforms only compile in 64-bit.'
+    print 'Choice of a 32-bit or 64-bit binary is only applicable to Mac OS X 10.6.x.\n'
 
+# This function prints verbose letterheads.
+def verboseMsg():
+    print '\nDEBUG - Debug output follows...'
 
 # This function captures standard output into a python string.
 def captureStdout(input):
-    p = subprocess.Popen([input],
-        stdin=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen([input], stdin=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
     (stdout, stderr) = p.communicate()
     return stdout
 
+# This function finds the mercurial revision and appends it to the directory name.
+# It also prompts if the user wants to continue, should the repository not be on tip.
+def hgHashAddToFuzzPath(fuzzPath):
+    if verbose:
+        print '\nDEBUG - About to start running `hg identify` commands...'
+    tipOrNot = captureStdout('hg identify')[:-1]
+    hgIdentifynMinus1 = captureStdout('hg identify -n')[:-1]
+    # -5 is to remove the " tip\n" portion of `hg identify` output if on tip.
+    hgIdentifyMinus5 = captureStdout('hg identify')[:-5]
+    if tipOrNot.endswith('tip'):
+        fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
+        fuzzPath = fuzzPath2 + '-' + hgIdentifyMinus5
+    else:
+        print '`hg identify` shows the repository is on this changeset -', hgIdentifynMinus1 + ':' + tipOrNot
+        notOnTipApproval = str(raw_input('Not on tip! Are you sure you want to continue? (y/n): '))
+        if notOnTipApproval == ('y' or 'yes'):
+            fuzzPath = fuzzPath[:-1] + '-' + hgIdentifynMinus1 + '-' + tipOrNot
+        else:
+            switchToTipApproval = str(raw_input('Do you want to switch to the default tip? (y/n): '))
+            if switchToTipApproval == ('y' or 'yes'):
+                subprocess.call(['hg up default'], shell=True)
+                fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
+                fuzzPath = fuzzPath2 + '-' + hgIdentifyMinus5
+            else:
+                raise Exception('Not on tip.')
+    fuzzPath += '/'
+    if verbose:
+        print '\nDEBUG - Finished running `hg identify` commands.'
+    return fuzzPath
+
+# This function copies the js source directory.
+def copyJsTree(repo):
+    repo += 'js/src/'
+    if os.name == 'posix':
+        repo = os.path.expanduser(repo)
+    try:
+        if verbose:
+            verboseMsg()
+            print 'DEBUG - Copying the js tree to the fuzzPath.'
+        shutil.copytree(repo, "compilePath")
+        if verbose:
+            print 'DEBUG - Finished copying the js tree to the fuzzPath.'
+    except OSError:
+        raise Exception("The js code repository directory located at '" + repo + "' doesn't exist!")
+
+# This function compiles a js binary depending on the parameters.
+def configureJsBinary(archNum, compileType, branchType, valgrindSupport):
+    configureCmd = 'sh ../configure'
+    if (archNum == '32'):
+        if os.uname()[0] == "Darwin":
+            configureCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
+                         'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
+                         'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
+                         'STRIP="strip -x -S" CROSS_COMPILE=1' + \
+                         'sh ../configure --target=i386-apple-darwin8.0.0'
+    if compileType == 'dbg':
+        configureCmd += ' --disable-optimize --enable-debug'
+    elif compileType == 'opt':
+        configureCmd += ' --enable-optimize --disable-debug'
+    
+    if branchType == 'jm':
+        configureCmd += ' --enable-methodjit'
+    if valgrindSupport:
+        configureCmd += ' --enable-valgrind'
+    
+    if verbose:
+        verboseMsg()
+        print 'DEBUG - This is the configure command:'
+        print 'DEBUG - %s\n' % configureCmd
+    
+    subprocess.call([configureCmd], shell=True)
+
+# This function compiles and copies a binary.
+def compileCopy(archNum, compileType, branchType):
+    # Run make using 2 cores.
+    subprocess.call(['make', '-j2'])
+    # Sniff platform and rename executable accordingly:
+    if os.name == 'posix':
+        shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.uname()[0].lower()
+        shutil.copy2('js', '../../' + shellName)
+    elif os.name == 'nt':
+        shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.name.lower()
+        shutil.copy2('js.exe', '../../' + shellName + '.exe')
+    return shellName
 
 # This function tests if a binary is 32-bit or 64-bit.
-def test32or64bit(jsShellName, macVer, archNum):
-    test32or64bitCmd = "file " + jsShellName
+def test32or64bit(jsShellName, archNum):
+    test32or64bitCmd = 'file ' + jsShellName
     test32or64bitStr = captureStdout(test32or64bitCmd)[:-1]
-    if '10.6' not in str(macVer):
-        pass
-    elif archNum == "64":
+    if archNum == '32':
         if verbose:
             verboseMsg()
             # Searching the last 10 characters will be sufficient.
-            if 'x86_64' in test32or64bitStr[-10:]:
-                print "DEBUG - Compiled binary is 64-bit."
-        if 'x86_64' not in test32or64bitStr[-10:]:
-            raise Exception("Compiled binary is not 64-bit.")
-    elif archNum == "32":
+            if 'i386' in test32or64bitStr[-10:]:
+                print 'test32or64bitStr is:', test32or64bitStr
+                print 'DEBUG - Compiled binary is 32-bit.'
+        if 'i386' not in test32or64bitStr[-10:]:
+            raise Exception('Compiled binary is not 32-bit.')
+    elif archNum == '64':
         if verbose:
             verboseMsg()
-            if 'i386' in test32or64bitStr[-10:]:
-                print "DEBUG - Compiled binary is 32-bit."
-        if 'i386' not in test32or64bitStr[-10:]:
-            raise Exception("Compiled binary is not 32-bit.")
-    else:
-        raise
+            if 'x86_64' in test32or64bitStr[-10:]:
+                print 'test32or64bitStr is:', test32or64bitStr
+                print 'DEBUG - Compiled binary is 64-bit.'
+        if 'x86_64' not in test32or64bitStr[-10:]:
+            raise Exception('Compiled binary is not 64-bit.')
 
-
-# This function identifies the mercurial revision and appends it to the
-# directory name. It also prompts if the user wants to continue should the
-# repository not be on tip.
-def hgHashAddToFuzzPath(fuzzPath):
-    tipOrNot = captureStdout("hg identify")[:-1]
-    if tipOrNot.endswith('tip'):
-        fuzzPath = fuzzPath[:-1] + "-" + captureStdout("hg identify -n")[:-1]
-        fuzzPath = fuzzPath + "-" + captureStdout("hg identify")[:-5]
-    else:
-        print '`hg identify` shows the repository is on this changeset -', \
-            captureStdout("hg identify -n")[:-1] + ':' + tipOrNot
-        notOnTipApproval = str(raw_input("Not on tip! Are you sure you want " +
-                                         "to continue? (y/n): "))
-        if notOnTipApproval == ("y" or "yes"):
-            fuzzPath = fuzzPath + "-" + captureStdout("hg identify")[:-1]
-        else:
-            switchToTipApproval = str(raw_input("Do you want to switch to " +
-                                                "the default tip? (y/n): "))
-            if switchToTipApproval == ("y" or "yes"):
-                subprocess.call(["hg up default"], shell=True)
-                fuzzPath = fuzzPath[:-1] + "-" + \
-                    captureStdout("hg identify -n")[:-1]
-                fuzzPath = fuzzPath + "-" + captureStdout("hg identify")[:-5]
-            else:
-                raise Exception("Not on tip.")
-    return fuzzPath
-
+# This function tests if a binary is a debug or optimized shell.
+def testDbgOrOpt(jsShellName, compileType):
+    # Create a testfile with the gczeal() function.
+    subprocess.call(['echo \'gczeal()\' > compileTypeTest'], shell=True)
+    if os.name == 'posix':
+        testFileErrNum = subprocess.call(['./' + jsShellName, 'compileTypeTest'])
+    elif os.name == 'nt':
+        testFileErrNum = subprocess.call([jsShellName, 'compileTypeTest'], shell=True)
+    os.remove('compileTypeTest')  # Remove testfile after grabbing the error code.
+    
+    if verbose:
+        verboseMsg()
+        print 'DEBUG - The error code for debug shells should be 0.'
+        print 'DEBUG - The error code for opt shells should be 3.'
+        print 'DEBUG - The actual error code for', jsShellName, 'now, is:', str(testFileErrNum)
+    
+    # The error code for debug shells when passing in the gczeal() function should be 0.
+    if compileType == 'dbg' and testFileErrNum != 0:
+        print 'ERROR: A debug shell when tested with the gczeal() should return "0" as the error code.'
+        print 'compileType is: ' + compileType
+        print 'testFileErrNum is: ' + str(testFileErrNum)
+        print
+        raise Exception('The compiled binary is not a debug shell.')
+    # The error code for debug shells when passing in the gczeal() function
+    # should be 3, because they don't have the function compiled in.
+    elif compileType == 'opt' and testFileErrNum != 3:
+        print 'ERROR: An optimized shell when tested with the gczeal() should return "3" as the error code.'
+        print 'compileType is: ' + compileType
+        print 'testFileErrNum is: ' + str(testFileErrNum)
+        print
+        raise Exception('The compiled binary is not an optimized shell.')
 
 if '__name__' == '__main__':
     pass
