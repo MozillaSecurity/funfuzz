@@ -73,6 +73,10 @@ def main():
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
     jsCompareJITSwitch = True  # Activate compareJIT here.
+    # Activate to True to --enable-threadsafe for a multithreaded js shell.
+    # Make sure NSPR is first installed! (Use `make` instead of `gmake`)
+    #   https://developer.mozilla.org/en/NSPR_build_instructions
+    threadsafe = False
     multiTimedRunTimeout = '10'
     
     
@@ -249,7 +253,7 @@ def main():
     os.chdir(compileType + '-objdir')
     
     # Compile the first binary.
-    configureJsBinary(archNum, compileType, branchType, valgrindSupport)
+    configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType)
     # Change into compilePath for the second binary.
@@ -267,11 +271,11 @@ def main():
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
         os.chdir('opt-objdir')
-        configureJsBinary(archNum, 'opt', branchType, valgrindSupport)
+        configureJsBinary(archNum, 'opt', branchType, valgrindSupport, threadsafe)
         compileCopy(archNum, 'opt', branchType)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
-        configureJsBinary(archNum, 'dbg', branchType, valgrindSupport)
+        configureJsBinary(archNum, 'dbg', branchType, valgrindSupport, threadsafe)
         compileCopy(archNum, 'dbg', branchType)
     
     

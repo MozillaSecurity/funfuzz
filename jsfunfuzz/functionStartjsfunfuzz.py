@@ -139,7 +139,7 @@ def copyJsTree(repo):
         raise Exception("The js code repository directory located at '" + repo + "' doesn't exist!")
 
 # This function compiles a js binary depending on the parameters.
-def configureJsBinary(archNum, compileType, branchType, valgrindSupport):
+def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe):
     configureCmd = 'sh ../configure'
     if (archNum == '32'):
         if os.uname()[0] == "Darwin":
@@ -157,6 +157,8 @@ def configureJsBinary(archNum, compileType, branchType, valgrindSupport):
         configureCmd += ' --enable-methodjit'
     if valgrindSupport:
         configureCmd += ' --enable-valgrind'
+    if threadsafe:
+        configureCmd += ' --enable-threadsafe --with-system-nspr'
     
     if verbose:
         verboseMsg()
