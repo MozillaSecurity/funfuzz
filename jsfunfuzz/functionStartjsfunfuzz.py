@@ -36,7 +36,7 @@
 
 # This file contains functions for startjsfunfuzz.py.
 
-import os, shutil, subprocess
+import os, shutil, subprocess, platform
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 

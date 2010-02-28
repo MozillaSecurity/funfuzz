@@ -64,7 +64,7 @@
 #   Massive rewrite, reducing code by ~8%. Support Valgrind on Linux, 64-bit
 #   Linux and Jaegermonkey. No longer supports 10.5.x, 32-bit Linux.
 
-import sys, os, subprocess, shutil, time, errno, platform
+import sys, os, subprocess, shutil, time
 from functionStartjsfunfuzz import *
 
 def main():
