@@ -68,7 +68,7 @@ def osCheck():
     else:
         print '\nOnly Windows XP/Vista/7, Linux or Mac OS X 10.6.x are supported.\n'
         raise Exception('Unknown OS - Platform is unsupported.')
-    
+
 # This function prints the corresponding CLI requirements that should be input.
 def error(branchSupp):
     print '\n==========\n| Error! |\n=========='
@@ -141,7 +141,7 @@ def copyJsTree(repo):
 # This function compiles a js binary depending on the parameters.
 def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe):
     configureCmd = 'sh ../configure'
-    if (archNum == '32'):
+    if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
             configureCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
                          'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
@@ -152,19 +152,19 @@ def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threads
         configureCmd += ' --disable-optimize --enable-debug'
     elif compileType == 'opt':
         configureCmd += ' --enable-optimize --disable-debug'
-    
+
     if branchType == 'jm':
         configureCmd += ' --enable-methodjit'
     if valgrindSupport:
         configureCmd += ' --enable-valgrind'
     if threadsafe:
         configureCmd += ' --enable-threadsafe --with-system-nspr'
-    
+
     if verbose:
         verboseMsg()
         print 'DEBUG - This is the configure command:'
         print 'DEBUG - %s\n' % configureCmd
-    
+
     subprocess.call([configureCmd], shell=True)
 
 # This function compiles and copies a binary.
@@ -211,13 +211,13 @@ def testDbgOrOpt(jsShellName, compileType):
     elif os.name == 'nt':
         testFileErrNum = subprocess.call([jsShellName, 'compileTypeTest'], shell=True)
     os.remove('compileTypeTest')  # Remove testfile after grabbing the error code.
-    
+
     if verbose:
         verboseMsg()
         print 'DEBUG - The error code for debug shells should be 0.'
         print 'DEBUG - The error code for opt shells should be 3.'
         print 'DEBUG - The actual error code for', jsShellName, 'now, is:', str(testFileErrNum)
-    
+
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if compileType == 'dbg' and testFileErrNum != 0:
         print 'ERROR: A debug shell when tested with the gczeal() should return "0" as the error code.'
