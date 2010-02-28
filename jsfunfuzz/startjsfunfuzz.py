@@ -68,7 +68,7 @@ import sys, os, subprocess, shutil, time, errno, platform
 from functionStartjsfunfuzz import *
 
 def main():
-    
+
     # Variables
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
@@ -78,8 +78,8 @@ def main():
     #   https://developer.mozilla.org/en/NSPR_build_instructions
     threadsafe = False
     multiTimedRunTimeout = '10'
-    
-    
+
+
     branchSuppArray = []
     # Add supported branches here.
     branchSuppArray.append('191')
@@ -89,27 +89,27 @@ def main():
     #branchSuppArray.append('194')
     branchSuppArray.append('tm')
     branchSuppArray.append('jm')
-    
+
     branchSupp = '['
     branchSupp += '|'.join('%s' % n for n in branchSuppArray)
     branchSupp += ']'
-    
+
     # There should be a minimum of 4 command-line parameters.
     if len(sys.argv) < 4:
         error(branchSupp)
         raise Exception('Too little command-line parameters.')
-    
+
     # Check supported operating systems.
     osCheck()
     if (sys.argv[1] == '32') and (os.uname()[0] == 'Linux'):
         raise Exception('32-bit compilation is not supported on Linux platforms.')
     elif (sys.argv[1] == '64'):
         if (os.name == 'nt'):
-            raise Exception('64-bit compilation is not supported on Windows platforms.')    
+            raise Exception('64-bit compilation is not supported on Windows platforms.')
         elif (sys.argv[3] == '191'):
             raise Exception('64-bit compilation is not supported on 1.9.1 branch.')
-    
-    
+
+
     # Accept 32-bit and 64-bit parameters only.
     if (sys.argv[1] == '32') or (sys.argv[1] == '64'):
         archNum = sys.argv[1]
@@ -117,7 +117,7 @@ def main():
         error(branchSupp)
         print '\nYour archNum variable is "' + sys.argv[1] + '".',
         raise Exception('archNum not among list of [32|64].')
-    
+
     # Accept dbg and opt parameters for compileType only.
     if (sys.argv[2] == 'dbg') or (sys.argv[2] == 'opt'):
         compileType = sys.argv[2]
@@ -126,7 +126,7 @@ def main():
         print '\nYour compileType variable is "' + sys.argv[2] + '".',
         print 'Choose only from [dbg|opt].\n'
         exceptionBadCompileType()
-    
+
     # Accept appropriate parameters for branchType.
     branchType = ''
     for brnch in branchSuppArray:
@@ -137,7 +137,7 @@ def main():
         print '\nYour branchType variable is "' + sys.argv[3] + '".',
         print 'Choose only from %s.\n' % branchSupp
         exceptionBadBranchType()
-    
+
     valgrindSupport = False
     if (os.uname()[0] == 'Linux' and
         (len(sys.argv) == 5 and sys.argv[4] == 'valgrind') or
@@ -145,8 +145,8 @@ def main():
         (len(sys.argv) == 9 and sys.argv[8] == 'valgrind')):
         valgrindSupport = True
         multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
-    
-    
+
+
     repoDict = {}
     # Definitions of the different repository and fuzzing locations.
     if os.name == 'posix':
@@ -169,53 +169,53 @@ def main():
         repoDict['tm'] = '/tracemonkey/'
         repoDict['jm'] = '/jaegermonkey/'
         fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
-    
+
     if verbose:
         verboseMsg()
         for repo in repoDict.keys():
             print 'DEBUG - The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"'
-    
-    fuzzPath = fuzzPathStart + compileType + "-" + archNum + "-" + branchType + "/"
-    if os.name == "posix":
+
+    fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + '/'
+    if os.name == 'posix':
         fuzzPath = os.path.expanduser(fuzzPath)  # Expand the ~ folder on Linux/Mac.
-    
+
     # Save the current directory as a variable.
     currDir = os.getcwd()
-    
+
     # Note and attach the numbers and hashes of the current changeset in the fuzzPath.
-    if os.name == "posix":
+    if os.name == 'posix':
         try:
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
         fuzzPath = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(os.path.expanduser(currDir))
-    elif os.name == "nt":
+    elif os.name == 'nt':
         try:
             os.chdir(repoDict[branchType])
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
         fuzzPath = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(currDir)
-    
+
     # Create the fuzzing folder.
     try:
         # Rename directory if patches are applied, accept up to 2 patches.
         if len(sys.argv) >= 6 and (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
-            fuzzPath += "patched/"
+            fuzzPath += 'patched/'
             if verbose:
                 verboseMsg()
                 print 'DEBUG - Patched fuzzPath is:', fuzzPath
         os.makedirs(fuzzPath)
     except OSError:
-        raise Exception("The fuzzing path at \'" + fuzzPath + "\' already exists!")
-    
-    
+        raise Exception('The fuzzing path at \'' + fuzzPath + '\' already exists!')
+
+
     os.chdir(fuzzPath)  # Change to the fuzzing directory.
     copyJsTree(repoDict[branchType])  # Copy the js tree to the fuzzPath.
     os.chdir('compilePath')  # Change into compilation directory.
-    
-    
+
+
     if jsCompareJITSwitch:
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
@@ -225,7 +225,7 @@ def main():
         jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
         if jsCompareJITCode == 1:
             raise Exception('Required js patch for --comparejit failed to patch.')
-    
+
     # Patch the codebase if specified, accept up to 2 patches.
     patchReturnCode = 0
     patchReturnCode2 = 0
@@ -235,8 +235,8 @@ def main():
         patchReturnCode2 = subprocess.call(['patch -p3 < ' + sys.argv[7]], shell=True)
     if patchReturnCode == 1 or patchReturnCode2 == 1:
         raise Exception('Patching failed.')
-    
-    
+
+
     # Sniff platform and run different autoconf types:
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
@@ -245,20 +245,20 @@ def main():
             subprocess.call(['autoconf2.13'])
     elif os.name == 'nt':
         subprocess.call(['sh', 'autoconf-2.13'])
-    
-    
+
+
     # Create objdirs within the compilePaths.
     os.mkdir('dbg-objdir')
     os.mkdir('opt-objdir')
     os.chdir(compileType + '-objdir')
-    
+
     # Compile the first binary.
     configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType)
     # Change into compilePath for the second binary.
     os.chdir('../')
-    
+
     # Test compilePath.
     if verbose:
         verboseMsg()
@@ -266,7 +266,7 @@ def main():
         print 'DEBUG - %s\n' % os.getcwdu()
         if 'compilePath' not in os.getcwdu():
             raise Exception('We are not in compilePath.')
-    
+
     # Compile the other binary.
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
@@ -277,10 +277,10 @@ def main():
         os.chdir('dbg-objdir')
         configureJsBinary(archNum, 'dbg', branchType, valgrindSupport, threadsafe)
         compileCopy(archNum, 'dbg', branchType)
-    
-    
+
+
     os.chdir('../../')  # Change into fuzzPath directory.
-    
+
     # Test fuzzPath.
     if verbose:
         verboseMsg()
@@ -293,7 +293,7 @@ def main():
         elif os.name == 'nt':
             if fuzzPath[1:] != (os.getcwdu() + '/')[3:]:  # Ignore drive letter.
                 raise Exception('We are not in fuzzPath.')
-    
+
     # Copy over useful files that are updated in hg fuzzing branch.
     jsfunfuzzFilePath = repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js'
     analysisFilePath = repoDict['fuzzing'] + 'jsfunfuzz/analysis.py'
@@ -302,8 +302,8 @@ def main():
         analysisFilePath = os.path.expanduser(analysisFilePath)
     shutil.copy2(jsfunfuzzFilePath, '.')
     shutil.copy2(analysisFilePath, '.')
-    
-    
+
+
     jsknownDict = {}
     # Define the corresponding js-known directories.
     jsknownDict['191'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.1/'
@@ -314,9 +314,9 @@ def main():
     # For TM and JM, we use mozilla-central's js-known directories.
     jsknownDict['tm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
     jsknownDict['jm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
-    
+
     multiTimedRun = repoDict['fuzzing'] + 'jsfunfuzz/multi_timed_run.py'
-    
+
     if jsJitSwitch:
         jsJit = ' -j '
     else:
@@ -329,12 +329,12 @@ def main():
         jsMethodJit = ' -m '
     else:
         jsMethodJit = ' '
-    
-    
+
+
     # Commands to simulate bash's `tee`.
     tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE)
-    
-    
+
+
     # Define fuzzing command with the required parameters.
     if os.name == 'posix':
         multiTimedRun = os.path.expanduser(multiTimedRun)
@@ -343,7 +343,7 @@ def main():
     if valgrindSupport:
         fuzzCmd2 = ' valgrind' + fuzzCmd2
     fuzzCmd = fuzzCmd1 + jsknownDict[branchType] + fuzzCmd2
-    
+
     if verbose:
         verboseMsg()
         print 'DEBUG - jsShellName is: ' + jsShellName
@@ -352,21 +352,21 @@ def main():
         print
 
 
-    # 32-bit or 64-bit verification test.    
+    # 32-bit or 64-bit verification test.
     if os.uname()[0] == 'Darwin':
         test32or64bit(jsShellName, archNum)
-    
+
     # Debug or optimized binary verification test.
     testDbgOrOpt(jsShellName, compileType)
 
-    
+
     print '''
     ================================================
     !  Fuzzing %s %s %s js shell builds now  !
        DATE: %s
     ================================================
     ''' % (archNum + '-bit', compileType, branchType, time.asctime( time.localtime(time.time()) ))
-    
+
     # Commands to simulate bash's `tee`.
     # Start fuzzing the newly compiled builds.
     subprocess.call([fuzzCmd], stdout=tee.stdin, shell=True)
