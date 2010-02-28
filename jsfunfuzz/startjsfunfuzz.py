@@ -160,15 +160,15 @@ def main():
         repoDict['jm'] = '~/jaegermonkey/'
         fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
     elif os.name == 'nt':
-        repoDict['fuzzing'] = '/fuzzing/'
-        repoDict['191'] = '/mozilla-1.9.1/'
-        repoDict['192'] = '/mozilla-1.9.2/'
-        repoDict['193'] = '/mozilla-1.9.3/'
+        repoDict['fuzzing'] = '/c/fuzzing/'
+        repoDict['191'] = '/c/mozilla-1.9.1/'
+        repoDict['192'] = '/c/mozilla-1.9.2/'
+        repoDict['193'] = '/c/mozilla-1.9.3/'
         #194support
-        #repoDict['194'] = '/mozilla-1.9.4/'
-        repoDict['tm'] = '/tracemonkey/'
-        repoDict['jm'] = '/jaegermonkey/'
-        fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
+        #repoDict['194'] = '/c/mozilla-1.9.4/'
+        repoDict['tm'] = '/c/tracemonkey/'
+        repoDict['jm'] = '/c/jaegermonkey/'
+        fuzzPathStart = '/c/jsfunfuzz-'  # Start of fuzzing directory
 
     if verbose:
         verboseMsg()
