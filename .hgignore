@@ -5,6 +5,7 @@
 \.pyc$
 \.DS_Store
 \.gdb_history
+badmatch.log
 refdyn.log
 autoconf.js
 wlog
