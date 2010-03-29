@@ -146,6 +146,8 @@ def main():
             (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or
             (len(sys.argv) == 9 and sys.argv[8] == 'valgrind')):
             valgrindSupport = True
+            # compareJIT is too slow..
+            jsCompareJITSwitch = False  # Turn off compareJIT when in Valgrind.
             multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
 
 
