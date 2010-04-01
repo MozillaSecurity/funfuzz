@@ -80,18 +80,18 @@ def main():
     multiTimedRunTimeout = '10'
 
 
-    branchSuppArray = []
+    branchSuppList = []
     # Add supported branches here.
-    branchSuppArray.append('191')
-    branchSuppArray.append('192')
-    #branchSuppArray.append('193')  # Uncomment this for immediate 1.9.3 support
+    branchSuppList.append('191')
+    branchSuppList.append('192')
+    #branchSuppList.append('193')  # Uncomment this for immediate 1.9.3 support
     #194support
-    #branchSuppArray.append('194')
-    branchSuppArray.append('tm')
-    branchSuppArray.append('jm')
+    #branchSuppList.append('194')
+    branchSuppList.append('tm')
+    branchSuppList.append('jm')
 
     branchSupp = '['
-    branchSupp += '|'.join('%s' % n for n in branchSuppArray)
+    branchSupp += '|'.join('%s' % n for n in branchSuppList)
     branchSupp += ']'
 
     # There should be a minimum of 4 command-line parameters.
@@ -105,9 +105,7 @@ def main():
         if (os.uname()[0] == 'Linux'):
             raise Exception('32-bit compilation is not supported on Linux platforms.')
     elif (sys.argv[1] == '64'):
-        if (os.name == 'nt'):
-            raise Exception('64-bit compilation is not supported on Windows platforms.')
-        elif (sys.argv[3] == '191'):
+        if (sys.argv[3] == '191'):
             raise Exception('64-bit compilation is not supported on 1.9.1 branch.')
 
 
@@ -130,7 +128,7 @@ def main():
 
     # Accept appropriate parameters for branchType.
     branchType = ''
-    for brnch in branchSuppArray:
+    for brnch in branchSuppList:
         if (brnch == sys.argv[3]):
             branchType = sys.argv[3]
     if branchType == '':
