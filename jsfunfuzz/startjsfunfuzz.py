@@ -87,6 +87,7 @@ def main():
     #branchSuppList.append('193')  # Uncomment this for immediate 1.9.3 support
     #194support
     #branchSuppList.append('194')
+    branchSuppList.append('mc')
     branchSuppList.append('tm')
     branchSuppList.append('jm')
 
@@ -158,6 +159,7 @@ def main():
         repoDict['193'] = '~/mozilla-1.9.3/'
         #194support
         #repoDict['194'] = '~/mozilla-1.9.4/'
+        repoDict['mc'] = '~/mozilla-central/'
         repoDict['tm'] = '~/tracemonkey/'
         repoDict['jm'] = '~/jaegermonkey/'
         fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
@@ -168,6 +170,7 @@ def main():
         repoDict['193'] = '/mozilla-1.9.3/'
         #194support
         #repoDict['194'] = '/mozilla-1.9.4/'
+        repoDict['mc'] = '/mozilla-central/'
         repoDict['tm'] = '/tracemonkey/'
         repoDict['jm'] = '/jaegermonkey/'
         fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
@@ -308,6 +311,7 @@ def main():
     jsknownDict['193'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.3/'
     #194support
     #jsknownDict['194'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.4/'
+    jsknownDict['mc'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
     # For TM and JM, we use mozilla-central's js-known directories.
     jsknownDict['tm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
     jsknownDict['jm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
