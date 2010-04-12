@@ -102,4 +102,11 @@ def interesting(args, tempPrefix):
     timeout = int(args[1])
     knownPath = args[2]
     actualLevel = jsfunfuzzLevel(args[3:], timeout, knownPath, tempPrefix)
+    truncateFile(tempPrefix + "-out", 1000000)
+    truncateFile(tempPrefix + "-err", 1000000)
     return actualLevel >= minimumInterestingLevel
+
+def truncateFile(fn, maxSize):
+    if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
+        with open(fn, "r+") as f:
+            f.truncate(maxSize)
