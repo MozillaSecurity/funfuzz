@@ -44,7 +44,7 @@ def amiss(knownPath, leakLogFn, verbose=False):
         line = line.rstrip()
         if line.startswith("nsTraceRefcntImpl::DumpStatistics"):
             continue
-        if (line == "== BloatView: ALL (cumulative) LEAK STATISTICS"):
+        if (line.startswith("== BloatView: ALL (cumulative) LEAK STATISTICS")):
             sawLeakStats = True
         # This line appears only if there are leaks with XPCOM_MEM_LEAK_LOG (but always shows with XPCOM_MEM_BLOAT_LOG, oops)
         if (line.endswith("Mean       StdDev")):
