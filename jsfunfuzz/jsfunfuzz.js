@@ -2526,8 +2526,10 @@ var objectMethods = [
   "toSource", "toString", "valueOf", "constructor", "prototype", "__proto__",
 
   // General -- same implementation inherited from Object.prototype
-  "__defineGetter__", "__defineSetter__", "hasOwnProperty", "isPrototypeOf", "__lookupGetter__", "__lookupSetter__", "__noSuchMethod__", "propertyIsEnumerable", "unwatch", "watch"
+  "__defineGetter__", "__defineSetter__", "hasOwnProperty", "isPrototypeOf", "__lookupGetter__", "__lookupSetter__", "__noSuchMethod__", "propertyIsEnumerable", "unwatch", "watch",
 
+  // Things that are only built-in on Object itself
+  "defineProperty", "defineProperties", "create", "getOwnPropertyDescriptor", "getPrototypeOf"
 ];
     
 
@@ -2666,13 +2668,16 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", uneval(makeId(d, b)), ")"]); },
   
-  // New-style getter/setter, imperative
+  // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
+  function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", simpleSource(makeId(d, b)), ", ", makePropertyDescriptor(d, b), ")"]); },
+
+  // Old getter/setter syntax, imperative
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineGetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineSetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat(["this", ".", "__defineGetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat(["this", ".", "__defineSetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
-  
-  // Old-style getter/setter, imperative
+
+  // Very old getter/setter syntax, imperative (removed in Gecko 1.9.3)
   function(d, b) { return cat([makeId(d, b), ".", makeId(d, b), " ", rndElt(["getter", "setter"]), "= ", makeFunction(d, b)]); },
 
   // Object literal
@@ -2715,6 +2720,34 @@ var exprMakers =
   // Binary Math functions
   function (d, b) { return "Math." + rndElt(["atan2", "max", "min", "pow"]) + "(" + makeExpr(d, b) + ", " + makeExpr(d, b) + ")"; }
 ];
+
+function makePropertyDescriptor(d, b)
+{
+  var s = "({"
+
+  switch(rnd(3)) {
+  case 0:
+    // Data descriptor. Can have 'value' and 'writable'.
+    if (rnd(2)) s += "value: " + makeExpr(d, b) + ", ";
+    if (rnd(2)) s += "writable: " + makeExpr(d, b) + ", ";
+    break;
+  case 1:
+    // Accessor descriptor. Can have 'get' and 'set'.
+    if (rnd(2)) s += "get: " + makeFunction(d, b) + ", ";
+    if (rnd(2)) s += "set: " + makeFunction(d, b) + ", ";
+    break;
+  default:
+  }
+
+  if (rnd(2)) s += "configurable: " + makeExpr(d, b) + ", ";
+  if (rnd(2)) s += "enumerable: " + makeExpr(d, b) + ", ";
+
+  if (s.length > 1)
+    s = s.substr(0, s.length - 2)
+
+  s += "})";
+  return s;
+}
 
 function makeZealLevel()
 {
