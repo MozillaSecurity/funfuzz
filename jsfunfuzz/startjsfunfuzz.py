@@ -72,7 +72,12 @@ def main():
     # Variables
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
-    jsCompareJITSwitch = True  # Activate compareJIT here.
+
+    jsCompareJITSwitch = False
+    # Disable compareJIT for 1.9.1 and 1.9.2 branches.
+    if sys.argv[3] != '191' and sys.argv[3] != '192':
+        jsCompareJITSwitch = True
+
     # Activate to True to --enable-threadsafe for a multithreaded js shell.
     # Make sure NSPR is first installed! (Use `make` instead of `gmake`)
     #   https://developer.mozilla.org/en/NSPR_build_instructions
