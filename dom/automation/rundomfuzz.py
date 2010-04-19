@@ -19,7 +19,7 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-(DOM_FINE, DOM_TIMED_OUT_UNEXPECTEDLY, DOM_ABNORMAL_EXIT, DOM_VG_AMISS, DOM_NEW_LEAK, DOM_MALLOC_ERROR, DOM_NEW_ASSERT_OR_CRASH) = range(7)
+(DOM_FINE, DOM_TIMED_OUT_UNEXPECTEDLY, DOM_ABNORMAL_EXIT, DOM_FUZZER_COMPLAINED, DOM_VG_AMISS, DOM_NEW_LEAK, DOM_MALLOC_ERROR, DOM_NEW_ASSERT_OR_CRASH) = range(8)
 
 oldcwd = os.getcwd()
 #os.chdir(SCRIPT_DIRECTORY)
@@ -122,6 +122,7 @@ class AmissLogHandler(logging.Handler):
     self.fullLogHead = []
     self.expectedToHang = True
     self.nsassertionCount = 0
+    self.fuzzerComplained = False
   def emit(self, record):
     msg = record.msg
     msgLF = msg + "\n"
@@ -134,6 +135,9 @@ class AmissLogHandler(logging.Handler):
       self.FRClines.append(msgLF)
     if msg == "Not expected to hang":
       self.expectedToHang = False
+    if msg.startswith("FAILURE:"):
+      self.fuzzerComplained = True
+      self.fullLogHead.append("@@@ " + msgLF)
     if msg.find("###!!! ASSERTION") != -1:
       self.nsassertionCount += 1
       if self.nsassertionCount == 100:
@@ -327,7 +331,9 @@ def rdfInit(browserDir, additionalArgs = []):
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     if alh.mallocFailure:
       lev = max(lev, DOM_MALLOC_ERROR)
-  
+    if alh.fuzzerComplained:
+      lev = max(lev, DOM_FUZZER_COMPLAINED)
+
     if status < 0:
       # The program was terminated by a signal, which usually indicates a crash.
       # Mac/Linux only!
