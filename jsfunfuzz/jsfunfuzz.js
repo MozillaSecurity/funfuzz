@@ -2742,7 +2742,8 @@ function makePropertyDescriptor(d, b)
   if (rnd(2)) s += "configurable: " + makeExpr(d, b) + ", ";
   if (rnd(2)) s += "enumerable: " + makeExpr(d, b) + ", ";
 
-  if (s.length > 1)
+  // remove trailing comma
+  if (s.length > 2)
     s = s.substr(0, s.length - 2)
 
   s += "})";
