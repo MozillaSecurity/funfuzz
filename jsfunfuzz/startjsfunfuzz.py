@@ -239,6 +239,7 @@ def main():
     if len(sys.argv) < 8 and len(sys.argv) >= 6 and sys.argv[4] == 'patch':
         patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
     elif len(sys.argv) >= 8 and sys.argv[6] == 'patch':
+        patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
         patchReturnCode2 = subprocess.call(['patch -p3 < ' + sys.argv[7]], shell=True)
     if patchReturnCode == 1 or patchReturnCode2 == 1:
         raise Exception('Patching failed.')
