@@ -73,7 +73,7 @@ def main():
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
     # Pymake is activated on Windows platforms by default, for tip only.
-    usePymake = True if os.name == 'nt' else False
+    usePymake = False if os.name != 'nt' else True
 
     jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
@@ -279,7 +279,7 @@ def main():
     # Compile the first binary.
     configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
     if usePymake and os.name == 'nt':
-        subprocess.call(['export SHELL'])  # See https://developer.mozilla.org/en/pymake
+        subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType)
     # Change into compilePath for the second binary.
