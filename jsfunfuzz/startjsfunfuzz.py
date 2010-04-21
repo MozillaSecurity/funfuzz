@@ -73,7 +73,10 @@ def main():
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
     # Pymake is activated on Windows platforms by default, for tip only.
-    usePymake = False if os.name != 'nt' else True
+    if os.name == 'nt':
+        usePymake = True
+    else:
+        usePymake = False
 
     jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
@@ -229,7 +232,7 @@ def main():
     # Copy the js tree to the fuzzPath.
     cpJsTreeOrPymakeDir(repoDict[branchType], 'js')
     # Copy the pymake build directory to the fuzzPath, if enabled.
-    if usePymake:
+    if usePymake and os.name == 'nt':
         cpJsTreeOrPymakeDir(repoDict[branchType], 'build')
     os.chdir('compilePath')  # Change into compilation directory.
 
