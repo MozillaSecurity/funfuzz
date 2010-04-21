@@ -72,6 +72,7 @@ def main():
     # Variables
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
+    usePymake = True  # Pymake is on by default, for tip only.
 
     jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
@@ -197,15 +198,19 @@ def main():
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
-        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+        (fuzzPath, onTip) = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(os.path.expanduser(currDir))
     elif os.name == 'nt':
         try:
             os.chdir(repoDict[branchType])
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
-        fuzzPath = hgHashAddToFuzzPath(fuzzPath)
+        (fuzzPath, onTip) = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(currDir)
+
+    # Turn off pymake if not on tip.
+    if onTip == False:
+        usePymake = False
 
     # Create the fuzzing folder.
     try:
@@ -220,8 +225,11 @@ def main():
 
 
     os.chdir(fuzzPath)  # Change to the fuzzing directory.
-    copyJsTree(repoDict[branchType])  # Copy the js tree to the fuzzPath.
-    copyPymakeBuildDir(repoDict[branchType])  # Copy the pymake build directory to the fuzzPath.
+    # Copy the js tree to the fuzzPath.
+    cpJsTreeOrPymakeDir(repoDict[branchType], 'js')
+    # Copy the pymake build directory to the fuzzPath, if enabled.
+    if usePymake:
+        cpJsTreeOrPymakeDir(repoDict[branchType], 'build')
     os.chdir('compilePath')  # Change into compilation directory.
 
 
@@ -269,6 +277,8 @@ def main():
 
     # Compile the first binary.
     configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
+    if usePymake and os.name == 'nt':
+        subprocess.call(['export SHELL'])  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType)
     # Change into compilePath for the second binary.

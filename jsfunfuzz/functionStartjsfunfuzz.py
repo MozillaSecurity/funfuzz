@@ -98,6 +98,7 @@ def hgHashAddToFuzzPath(fuzzPath):
     hgIdentifynMinus1 = captureStdout('hg identify -n')[:-1]
     # -5 is to remove the " tip\n" portion of `hg identify` output if on tip.
     hgIdentifyMinus5 = captureStdout('hg identify')[:-5]
+    onTip = True
     if tipOrNot.endswith('tip'):
         fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
         fuzzPath = fuzzPath2 + '-' + hgIdentifyMinus5
@@ -105,6 +106,7 @@ def hgHashAddToFuzzPath(fuzzPath):
         print '`hg identify` shows the repository is on this changeset -', hgIdentifynMinus1 + ':' + tipOrNot
         notOnTipApproval = str(raw_input('Not on tip! Are you sure you want to continue? (y/n): '))
         if notOnTipApproval == ('y' or 'yes'):
+            onTip = False
             fuzzPath = fuzzPath[:-1] + '-' + hgIdentifynMinus1 + '-' + tipOrNot
         else:
             switchToTipApproval = str(raw_input('Do you want to switch to the default tip? (y/n): '))
@@ -117,35 +119,22 @@ def hgHashAddToFuzzPath(fuzzPath):
     fuzzPath += '/'
     if verbose:
         print '\nDEBUG - Finished running `hg identify` commands.'
-    return fuzzPath
+    return fuzzPath, onTip
 
-# This function copies the js source directory.
-def copyJsTree(repo):
-    repo += 'js/src/'
+# This function copies the js tree or the pymake build directory.
+def cpJsTreeOrPymakeDir(repo, jsOrBuild):
+    repo += 'js/src/' if jsOrBuild == 'js' else 'build/'
     if os.name == 'posix':
         repo = os.path.expanduser(repo)
     try:
+        jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
         if verbose:
-            print 'DEBUG - Copying the js tree to the fuzzPath.'
-        shutil.copytree(repo, "compilePath")
+            print 'DEBUG - Copying the', jsOrBuildText, 'to the fuzzPath, which is located at', repo
+        shutil.copytree(repo, "compilePath") if jsOrBuild == 'js' else shutil.copytree(repo, "build")
         if verbose:
-            print 'DEBUG - Finished copying the js tree to the fuzzPath.'
+            print 'DEBUG - Finished copying the', jsOrBuildText, 'to the fuzzPath.'
     except OSError:
-        raise Exception("The js code repository directory located at '" + repo + "' doesn't exist!")
-
-# This function copies the pymake build directory.
-def copyPymakeBuildDir(dir):
-    dir += 'build/'
-    if os.name == 'posix':
-        dir = os.path.expanduser(dir)
-    try:
-        if verbose:
-            print 'DEBUG - Copying the pymake build dir to the fuzzPath.'
-        shutil.copytree(dir, "build")
-        if verbose:
-            print 'DEBUG - Finished copying the pymake build dir to the fuzzPath.'
-    except OSError:
-        raise Exception("The pymake build dir directory located at '" + dir + "' doesn't exist!")
+        raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
 
 # This function compiles a js binary depending on the parameters.
 def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe):
