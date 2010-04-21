@@ -2,6 +2,7 @@
 
 import os, sys
 import ntr
+from __future__ import with_statement
 
 p0=os.path.dirname(sys.argv[0])
 p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
