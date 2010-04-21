@@ -221,6 +221,7 @@ def main():
 
     os.chdir(fuzzPath)  # Change to the fuzzing directory.
     copyJsTree(repoDict[branchType])  # Copy the js tree to the fuzzPath.
+    copyPymakeBuildDir(repoDict[branchType])  # Copy the pymake build directory to the fuzzPath.
     os.chdir('compilePath')  # Change into compilation directory.
 
 

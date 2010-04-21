@@ -133,6 +133,20 @@ def copyJsTree(repo):
     except OSError:
         raise Exception("The js code repository directory located at '" + repo + "' doesn't exist!")
 
+# This function copies the pymake build directory.
+def copyPymakeBuildDir(dir):
+    dir += 'build/'
+    if os.name == 'posix':
+        dir = os.path.expanduser(dir)
+    try:
+        if verbose:
+            print 'DEBUG - Copying the pymake build dir to the fuzzPath.'
+        shutil.copytree(dir, "build")
+        if verbose:
+            print 'DEBUG - Finished copying the pymake build dir to the fuzzPath.'
+    except OSError:
+        raise Exception("The pymake build dir directory located at '" + dir + "' doesn't exist!")
+
 # This function compiles a js binary depending on the parameters.
 def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe):
     configureCmd = 'sh ../configure'
@@ -164,7 +178,9 @@ def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threads
 # This function compiles and copies a binary.
 def compileCopy(archNum, compileType, branchType):
     # Run make using 2 cores.
-    subprocess.call(['make', '-j2'])
+    #subprocess.call(['make', '-j2'])
+    # Try out pymake
+    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2'])
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
         shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.uname()[0].lower()
