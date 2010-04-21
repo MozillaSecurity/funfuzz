@@ -72,7 +72,8 @@ def main():
     # Variables
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
-    usePymake = True  # Pymake is on by default, for tip only.
+    # Pymake is activated on Windows platforms by default, for tip only.
+    usePymake = True if os.name == 'nt' else False
 
     jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
@@ -209,7 +210,7 @@ def main():
         os.chdir(currDir)
 
     # Turn off pymake if not on tip.
-    if onTip == False:
+    if os.name == 'nt' and not onTip:
         usePymake = False
 
     # Create the fuzzing folder.
