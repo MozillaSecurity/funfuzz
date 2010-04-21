@@ -165,11 +165,9 @@ def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threads
     subprocess.call([configureCmd], shell=True)
 
 # This function compiles and copies a binary.
-def compileCopy(archNum, compileType, branchType):
-    # Run make using 2 cores.
-    #subprocess.call(['make', '-j2'])
-    # Try out pymake
-    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2'])
+def compileCopy(archNum, compileType, branchType, usePymake):
+    # Run make using 2 cores, not sure if pymake allows parallel compilation yet.
+    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2']) if usePymake else subprocess.call(['make', '-j2'])
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
         shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.uname()[0].lower()

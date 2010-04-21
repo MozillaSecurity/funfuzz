@@ -73,10 +73,7 @@ def main():
     verbose = True  # Turning this on also enables tests.
     jsJitSwitch = True  # Activate JIT fuzzing here.
     # Pymake is activated on Windows platforms by default, for tip only.
-    if os.name == 'nt':
-        usePymake = True
-    else:
-        usePymake = False
+    usePymake = True if os.name == 'nt' else False
 
     jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
@@ -213,7 +210,7 @@ def main():
         os.chdir(currDir)
 
     # Turn off pymake if not on tip.
-    if os.name == 'nt' and not onTip:
+    if usePymake and not onTip:
         usePymake = False
 
     # Create the fuzzing folder.
@@ -232,7 +229,7 @@ def main():
     # Copy the js tree to the fuzzPath.
     cpJsTreeOrPymakeDir(repoDict[branchType], 'js')
     # Copy the pymake build directory to the fuzzPath, if enabled.
-    if usePymake and os.name == 'nt':
+    if usePymake:
         cpJsTreeOrPymakeDir(repoDict[branchType], 'build')
     os.chdir('compilePath')  # Change into compilation directory.
 
@@ -284,7 +281,7 @@ def main():
     if usePymake and os.name == 'nt':
         subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
-    jsShellName = compileCopy(archNum, compileType, branchType)
+    jsShellName = compileCopy(archNum, compileType, branchType, usePymake)
     # Change into compilePath for the second binary.
     os.chdir('../')
 
@@ -300,11 +297,11 @@ def main():
     if compileType == 'dbg':
         os.chdir('opt-objdir')
         configureJsBinary(archNum, 'opt', branchType, valgrindSupport, threadsafe)
-        compileCopy(archNum, 'opt', branchType)
+        compileCopy(archNum, 'opt', branchType, usePymake)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
         configureJsBinary(archNum, 'dbg', branchType, valgrindSupport, threadsafe)
-        compileCopy(archNum, 'dbg', branchType)
+        compileCopy(archNum, 'dbg', branchType, usePymake)
 
 
     os.chdir('../../')  # Change into fuzzPath directory.
