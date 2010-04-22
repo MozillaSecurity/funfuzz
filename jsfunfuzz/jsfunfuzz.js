@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is
  * Jesse Ruderman.
- * Portions created by the Initial Developer are Copyright (C) 2006-2009
+ * Portions created by the Initial Developer are Copyright (C) 2006-2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,7 +34,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 //"use strict";
 var jsStrictMode = false;
 
@@ -77,7 +77,7 @@ if (jsshell) {
   if (navigator.userAgent.indexOf("WebKit") != -1) {
     engine = ENGINE_JAVASCRIPTCORE;
     // This worked in Safari 3.0, but it might not work in Safari 3.1.
-    dump = function(s) { console.log(s); } 
+    dump = function(s) { console.log(s); }
   } else if (navigator.userAgent.indexOf("Gecko") != -1 && navigator.userAgent.indexOf("rv:1.9.0") != -1) {
     engine = ENGINE_SPIDERMONKEY_MOZ_1_9_0;
   } else if (navigator.userAgent.indexOf("Gecko") != -1) {
@@ -88,7 +88,7 @@ if (jsshell) {
   }
   dumpln = function(s) { dump(s + "\n"); }
 
-  printImportant = function(s) { 
+  printImportant = function(s) {
     dumpln(s);
     var p = document.createElement("pre");
     p.appendChild(document.createTextNode(s));
@@ -168,12 +168,12 @@ var jitEnabled = (engine == ENGINE_SPIDERMONKEY_TRUNK) && jsshell && options().i
 function whatToTestSpidermonkeyTrunk(code)
 {
   return {
-  
+
     allowParse: true,
-    
+
     // Exclude things here if decompiling the function causes a crash.
     allowDecompile: true,
-  
+
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
       && (code.indexOf("#") == -1)                    // avoid bug 367731
@@ -192,7 +192,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       ,
-  
+
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: false // bug 539819
       && !( code.match( /const.*if/ ))               // avoid bug 352985
@@ -234,23 +234,23 @@ function whatToTestSpidermonkeyTrunk(code)
     checkDisassembly: true
       && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
       && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985
-    ,  
-    
+    ,
+
     checkForExtraParens: true
       && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
       && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
       && !code.match( /\?.*\=/)             // ignore bug 475893
     ,
-    
+
     allowExec: unlikelyToHang(code)
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       ,
-  
+
     allowIter: true,
-  
+
     checkUneval: false // bug 539819
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
@@ -263,12 +263,12 @@ function whatToTestSpidermonkeyTrunk(code)
 function whatToTestSpidermonkey190Branch(code)
 {
   return {
-  
+
     allowParse: true,
-    
+
     // Exclude things here if decompiling the function causes a crash.
     allowDecompile: true,
-  
+
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
       && (code.indexOf("#") == -1)                    // avoid bug 367731 (branch)
@@ -284,7 +284,7 @@ function whatToTestSpidermonkey190Branch(code)
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (branch)
       && !( code.match( /let/ ))   // avoid bug 462309 (branch) :( :( :(
       ,
-  
+
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: true
       && !( code.match( /const.*if/ ))               // avoid bug 352985 (branch)
@@ -328,24 +328,24 @@ function whatToTestSpidermonkey190Branch(code)
       && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 (branch) harder than above
       && !( code.match( /\(.*\?.*\:.*\).*\(.*\)/ ))   // avoid bug 475899 (branch)
       && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (branch)
-    ,  
-    
+    ,
+
     checkForExtraParens: true
       && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213 (branch), and unfortunately anything with genexps
       && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
       && !code.match( /\?.*\=/)             // ignore bug 475893 (branch)
     ,
-    
+
     allowExec: unlikelyToHang(code)
       && code.indexOf("finally")  == -1 // avoid bug 380018 (branch) and bug 381107 (branch) :(
       && code.indexOf("<>")       == -1 // avoid bug 334628 (branch), hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       ,
-  
+
     allowIter: true,
-  
+
     checkUneval: true
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
@@ -361,13 +361,13 @@ function whatToTestSpidermonkey190Branch(code)
 function whatToTestJavaScriptCore(code)
 {
   return {
-  
+
     allowParse: true,
 
     allowDecompile: true,
 
     checkRecompiling: true,
-    
+
     checkForMismatch: true
       ,
 
@@ -501,8 +501,8 @@ function testOne()
 {
   var dumpEachSeed = false; // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
   ++count;
-  // Split this string across two source strings to ensure that if a 
-  // generated function manages to output the entire jsfunfuzz source, 
+  // Split this string across two source strings to ensure that if a
+  // generated function manages to output the entire jsfunfuzz source,
   // that output won't match the grep command.
   var grepforme = "/*F";
   grepforme += "RC*/"
@@ -519,7 +519,7 @@ function testOne()
   }
 
   var code = makeStatement(10, ["x"]);
-  
+
 //  if (rnd(10) == 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
 //    if (dp)
@@ -549,7 +549,7 @@ function tryItOut(code)
 
   if (!wtt.allowParse)
     return;
-    
+
   if (count % 20 == 1) {
     if (wtt.allowExec) {
       try {
@@ -604,20 +604,20 @@ function tryItOut(code)
     rv = tryRunning(f, code);
     tryEnsureSanity();
   }
-    
+
   if (wtt.allowIter && rv && typeof rv == "object") {
     tryIteration(rv);
     tryEnsureSanity();
   }
-  
+
   // "checkRecompiling && checkForMismatch" here to catch returned functions
   if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
     testUneval(rv);
   }
-  
+
   if (verbose)
     dumpln("Done trying out that function!");
-    
+
   dumpln("");
 }
 
@@ -626,7 +626,7 @@ function tryCompiling(code, allowExec)
   var c; // harmless local variable for closure fun
 
   try {
-  
+
     // Try two methods of creating functions, just in case there are differences.
     if (count % 2 == 0 && allowExec) {
       if (verbose)
@@ -648,7 +648,7 @@ function tryCompiling(code, allowExec)
 
 function tryRunning(f, code)
 {
-  try { 
+  try {
     if (verbose)
     dumpln("About to run it!");
     var rv = f();
@@ -683,13 +683,13 @@ function tryEnsureSanity()
     // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
     if ("gczeal" in this)
       gczeal(0);
-  
+
     // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
     try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
-  
+
     // Try to get rid of any fake 'unwatch' functions.
     delete this.unwatch;
-  
+
     // Restore important stuff that might have been broken as soon as possible :)
     if ('unwatch' in this) {
       this.unwatch("eval")
@@ -699,7 +699,7 @@ function tryEnsureSanity()
       this.unwatch("toSource")
       this.unwatch("toString")
     }
-  
+
     if ('__defineSetter__' in this) {
       // The only way to get rid of getters/setters is to delete the property.
       if (!jsStrictMode)
@@ -710,7 +710,7 @@ function tryEnsureSanity()
       delete this.toSource;
       delete this.toString;
     }
-  
+
     this.eval = realEval;
     this.Function = realFunction;
     this.gc = realGC;
@@ -742,7 +742,7 @@ function tryIteration(rv)
     dumpln("The error was: " + e);
     return;
   }
-  
+
   dumpln("It's an iterator!");
   try {
     var iterCount = 0;
@@ -769,14 +769,14 @@ function tryRoundTripStuff(f, code, wtt)
     dumpln("About to do the 'toString' round-trip test");
 
   // Functions are prettier with line breaks, so test toString before uneval.
-  checkRoundTripToString(f, code, wtt); 
+  checkRoundTripToString(f, code, wtt);
 
   if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkForExtraParens) {
     try {
       testForExtraParens(f, code);
     } catch(e) { /* bug 355667 is annoying here too */ }
   }
-  
+
   if (haveRealUneval) {
     if (verbose)
       dumpln("About to do the 'uneval' round-trip test");
@@ -793,7 +793,7 @@ function checkRoundTripToString(f, code, wtt)
   } catch(e) { reportRoundTripIssue("Round-trip with implicit toString: can't toString", code, null, null, errorToString(e)); return; }
 
   checkForCookies(fs);
-  
+
   if (wtt.checkRecompiling) {
     try {
       g = eval("(" + fs + ")");
@@ -815,7 +815,7 @@ function checkRoundTripUneval(f, code, wtt)
   try {
     uf = uneval(f);
   } catch(e) { reportRoundTripIssue("Round-trip with uneval: can't uneval", code, null, null, errorToString(e)); return; }
-  
+
   checkForCookies(uf);
 
   if (wtt.checkRecompiling) {
@@ -847,29 +847,29 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     dumpln("Bug 355667 sure is annoying!");
     return;
   }
-  
+
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("invalid object initializer") != -1) {
     dumpln("Ignoring bug 452561 (branch).");
     return;
   }
-  
+
   if (e.indexOf("illegal XML character") != -1) {
     dumpln("Ignoring bug 355674.");
     return;
   }
-  
+
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("missing ; after for-loop condition") != -1) {
     dumpln("Looks like bug 460504 (branch).");
     return;
   }
-  
+
   if (fs && gs && fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
     dumpln("Ignoring quote mismatch (bug 346898 (wontfix)).");
     return;
   }
 
   var message = issue + "\n\n" +
-                "Code: " + uneval(code) + "\n\n" +  
+                "Code: " + uneval(code) + "\n\n" +
                 "fs: " + fs + "\n\n" +
                 "gs: " + gs + "\n\n" +
                 "error: " + e;
@@ -885,7 +885,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
 
 function testUneval(o)
 {
-  // If it happens to return an object, especially an array or hash, 
+  // If it happens to return an object, especially an array or hash,
   // let's test uneval.  Note that this is a different code path than decompiling
   // an array literal within a function, although the two code paths often have
   // similar bugs!
@@ -907,13 +907,13 @@ function testUneval(o)
     // ?
     return;
   }
-  
+
   if (testUnevalString(uo)) {
     // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
     uo = uo.replace(/\[native code\]/g, "");
     if (uo.charAt(0) == "/")
       return; // ignore bug 362582
-    
+
     try {
       euo = eval(uo); // if this throws, something's wrong with uneval, probably
     } catch(e) {
@@ -962,14 +962,14 @@ function checkErrorMessage(err, code)
     // Ignore E4X issues: bug 465908, bug 380946, etc.
     return;
   }
-  
+
   // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
   if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
     checkErrorMessage2(err, "TypeError: ", " is not a function");
     checkErrorMessage2(err, "TypeError: ", " is not a constructor");
     checkErrorMessage2(err, "TypeError: ", " is undefined");
   }
-  
+
   // These should probably be tested too:XML.ignoreComments
   // XML filter is applied to non-XML value ...
   // invalid 'instanceof' operand ...
@@ -986,7 +986,7 @@ function checkErrorMessage2(err, prefix, suffix)
     if (err.substr(-S, S) == suffix) {
       var dvg = err.substr(11, err.length - P - S);
       print("Testing an expression in a recent error message: " + dvg);
-      
+
       // These error messages can involve decompilation of expressions (DVG),
       // but in some situations they can just be uneval of a value.  In those
       // cases, we don't want to complain about known uneval bugs.
@@ -999,9 +999,9 @@ function checkErrorMessage2(err, prefix, suffix)
         print("Ignoring bug 380946");
         return;
       }
-      
+
       if (dvg == "") {
-        print("Ignoring E4X uneval bogosity"); 
+        print("Ignoring E4X uneval bogosity");
         // e.g. the error message from (<x/>.(false))()
         // bug 465908, bug 380946, etc.
         return;
@@ -1024,7 +1024,7 @@ function checkErrorMessage2(err, prefix, suffix)
  **************************/
 
 
-// Returns an array of strings of length (code.length-2), 
+// Returns an array of strings of length (code.length-2),
 // each having one pair of matching parens removed.
 // Assumes all parens in code are significant.  This assumption fails
 // for strings or regexps, but whatever.
@@ -1035,30 +1035,30 @@ function deParen(code)
   var unmatched = []; // stack of indices into parenPairs
 
   var i, c;
-  
+
   for (i = 0; i < code.length; ++i) {
     c = code.charCodeAt(i);
     if (c == 40) {
       // left paren
       unmatched.push(parenPairs.length);
       parenPairs.push({ left: i });
-    } else if (c == 41) { 
+    } else if (c == 41) {
       // right paren
       if (unmatched.length == 0)
         return []; // eep! unmatched rparen!
       parenPairs[unmatched.pop()].right = i;
     }
   }
-  
+
   if (unmatched.length > 0)
     return []; // eep! unmatched lparen!
-    
+
   var rs = [];
-  
+
   // Don't add spaces in place of the parens, because we don't
   // want to detect things like (5).x as being unnecessary use
   // of parens.
-  
+
   for (i = 0; i < parenPairs.length; ++i) {
     var left = parenPairs[i].left, right = parenPairs[i].right;
     rs.push(
@@ -1067,7 +1067,7 @@ function deParen(code)
       + code.substr(right + 1)
     );
   }
-  
+
   return rs;
 }
 
@@ -1110,13 +1110,13 @@ function testForExtraParens(f, code)
 
   for (var i = 1; i < dps.length; ++i) {
     var uf2 = dps[i];
-    
+
     try {
       var euf2 = eval("(" + uf2 + ")");
     } catch(e) { /* print("The latter did not compile.  That's fine."); */ continue; }
-  
+
     var ueuf2 = "" + euf2
-  
+
     if (ueuf2 == ueuf) {
       print(uf);
       print("    vs    ");
@@ -1141,19 +1141,19 @@ function checkRoundTripDisassembly(f, code, wtt)
     dumpln("checkRoundTripDisassembly: ignoring bug 475859");
     return;
   }
-  
+
   if (code.indexOf("=") != -1 && code.indexOf("const") != -1) {
     dumpln("checkRoundTripDisassembly: ignoring function with const and assignment, because that's boring.");
     return;
   }
-  
+
   var uf = uneval(f);
 
   if (uf.indexOf("switch") != -1) {
     // Bug 355509 :(
     return;
   }
-  
+
   if (code.indexOf("new") != code.lastIndexOf("new")) {
     dumpln("checkRoundTripDisassembly: ignoring function with two 'new' operators (bug 475848)");
     return;
@@ -1248,7 +1248,7 @@ function checkRoundTripDisassembly(f, code, wtt)
         print("checkRoundTripDisassembly: pcdelta changed, who cares? (bug 475908)");
         return;
       }
-      
+
       print("First line that does not match:");
       print(dfl[i]);
       print(dgl[i]);
@@ -1276,9 +1276,9 @@ function getBytecodeOffsets(f)
   var disassembly = dis(f);
   var lines = disassembly.split("\n");
   var i;
-  
+
   offsets = [];
-  
+
   for (i = 0; i < lines.length; ++i) {
     if (lines[i] == "main:")
       break;
@@ -1304,14 +1304,14 @@ function getBytecodeOffsets(f)
       ++i; // skip the next opcode per bug 476073 comment 4
     }
   }
-  
+
   return offsets;
 }
 
 function trapCorrectnessTest(f)
 {
   var uf = uneval(f);
-  
+
   print("trapCorrectnessTest...");
   var offsets = getBytecodeOffsets(f);
   var prefix = "var fff = " + f + "; ";
@@ -1371,7 +1371,7 @@ function spiderMonkeyTrapTest(f, code, wtt)
 
   if ("trap" in this) {
 
-    // Save for trap      
+    // Save for trap
     //if (wtt.allowExec && count % 2 == 0) {
       //nextTrapCode = code;
     //  return;
@@ -1385,7 +1385,7 @@ function spiderMonkeyTrapTest(f, code, wtt)
     var ode;
     if (wtt.allowDecompile)
       ode = "" + f;
-      
+
     //if (nextTrapCode) {
     //  trapCode = nextTrapCode;
     //  nextTrapCode = null;
@@ -1404,12 +1404,12 @@ function spiderMonkeyTrapTest(f, code, wtt)
       print(offsets.length);
       printAndStop("WTF");
     }
-    
+
     trap(f, trapOffset, trapCode);
 
     if (wtt.allowDecompile) {
       nde = "" + f;
-      
+
       if (ode != nde) {
         print(ode);
         print(nde);
@@ -1430,7 +1430,7 @@ function spiderMonkeyTrapTest(f, code, wtt)
 function simpleDVGTest(code)
 {
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
-  
+
   try {
     eval(fullCode);
   } catch(e) {
@@ -1446,7 +1446,7 @@ function optionalTests(f, code, wtt)
   if (0) {
     tryHalves(code);
   }
-  
+
   if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
     if (wtt.allowExec && ('sandbox' in this)) {
       f = null;
@@ -1457,7 +1457,7 @@ function optionalTests(f, code, wtt)
     }
     return;
   }
-  
+
   if (0 && f && haveUsefulDis) {
     spiderMonkeyTrapTest(f, code, wtt);
   }
@@ -1485,7 +1485,7 @@ function trySandboxEval(code, isRetry)
   } catch(e) {
     rv = "Error from sandbox: " + errorToString(e);
   }
-  
+
   try {
     if (typeof rv != "undefined")
       dumpln(rv);
@@ -1493,7 +1493,7 @@ function trySandboxEval(code, isRetry)
     dumpln("Sandbox error printing: " + errorToString(e));
   }
   rv = null;
-  
+
   if (1 || count % 100 == 0) { // count % 100 *here* is sketchy.
     dumpln("Done with this sandbox.");
     sandbox = null;
@@ -1509,30 +1509,30 @@ function trySandboxEval(code, isRetry)
       return true;
     }
   }
-  
+
   return false;
-}  
-  
+}
+
 
 function tryHalves(code)
 {
   // See if there are any especially horrible bugs that appear when the parser has to start/stop in the middle of something. this is kinda evil.
 
   // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)
-  
+
   var f, firstHalf, secondHalf;
-  
+
   try {
-    
+
     firstHalf = code.substr(0, code.length / 2);
     if (verbose)
       dumpln("First half: " + firstHalf);
-    f = new Function(firstHalf); 
+    f = new Function(firstHalf);
     "" + f;
   }
-  catch(e) { 
+  catch(e) {
     if (verbose)
-      dumpln("First half compilation error: " + e); 
+      dumpln("First half compilation error: " + e);
   }
 
   try {
@@ -1544,7 +1544,7 @@ function tryHalves(code)
   }
   catch(e) {
     if (verbose)
-      dumpln("Second half compilation error: " + e);   
+      dumpln("Second half compilation error: " + e);
   }
 }
 
@@ -1555,7 +1555,7 @@ function tryHalves(code)
 /***************************
  * REPRODUCIBLE RANDOMNESS *
  ***************************/
- 
+
 
 // this program is a JavaScript version of Mersenne Twister, with concealment and encapsulation in class,
 // an almost straight conversion from the original program, mt19937ar.c,
@@ -1660,7 +1660,7 @@ function MersenneTwister19937()
 		//c//mt[0]= s & 0xffffffff;
 		mt[0]= unsigned32(s & 0xffffffff);
 		for (mti=1; mti<N; mti++) {
-			mt[mti] = 
+			mt[mti] =
 			//c//(1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
 			addition32(multiplication32(1812433253, unsigned32(mt[mti-1] ^ (mt[mti-1] >>> 30))), mti);
 			/* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
@@ -1690,7 +1690,7 @@ function MersenneTwister19937()
 			//c//mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525))
 			//c//	+ init_key[j] + j; /* non linear */
 			mt[i] = addition32(addition32(unsigned32(mt[i] ^ multiplication32(unsigned32(mt[i-1] ^ (mt[i-1] >>> 30)), 1664525)), init_key[j]), j);
-			mt[i] = 
+			mt[i] =
 			//c//mt[i] &= 0xffffffff; /* for WORDSIZE > 32 machines */
 			unsigned32(mt[i] & 0xffffffff);
 			i++; j++;
@@ -1708,7 +1708,7 @@ function MersenneTwister19937()
 		}
 		mt[0] = 0x80000000; /* MSB is 1; assuring non-zero initial array */
 	}
-	
+
   this.export_state = function() { return [mt, mti]; };
   this.import_state = function(s) { mt = s[0]; mti = s[1]; };
   this.export_mta = function() { return mt; };
@@ -1846,24 +1846,24 @@ function errorstack()
 }
 
 function rndElt(a)
-{ 
+{
   if (typeof a == "string") {
     dumpln("String passed to rndElt: " + a);
     errorstack();
   }
-    
+
   if (typeof a == "function")
     dumpln("Function passed to rndElt: " + a);
 
   if (a == null)
     dumpln("Null passed to rndElt");
-  
+
   if (!a.length) {
     dumpln("Empty thing passed to rndElt");
     return null;
   }
-  
-  return a[rnd(a.length)]; 
+
+  return a[rnd(a.length)];
 }
 
 
@@ -1892,11 +1892,11 @@ function cat(toks)
 {
   if (rnd(1700) == 0)
     return totallyRandom(2, []);
-  
+
   var torture = (rnd(1700) == 57);
   if (torture)
     dumpln("Torture!!!");
-    
+
   var s = maybeLineBreak();
   for (var i = 0; i < toks.length; ++i) {
 
@@ -1911,14 +1911,14 @@ function cat(toks)
       dumpln(cat.caller.caller)
       printAndStop('yarr')
     }
-      
+
     if (!(torture && rnd(12) == 0))
       s += toks[i];
-    
+
     s += maybeLineBreak();
-    
+
     if (torture) switch(rnd(120)) {
-      case 0: 
+      case 0:
       case 1:
       case 2:
       case 3:
@@ -1940,7 +1940,7 @@ function cat(toks)
         s += UNTERMINATED_STRING_LITERAL;
         break;
       case 10:
-        if (rnd(2)) 
+        if (rnd(2))
           s += "(";
         s += UNTERMINATED_REGEXP_LITERAL;
         break;
@@ -1975,8 +1975,8 @@ var UNTERMINATED_STRING_LITERAL = "'";
 var UNTERMINATED_REGEXP_LITERAL = "/";
 
 function maybeLineBreak()
-{ 
-  if (rnd(900) == 3) 
+{
+  if (rnd(900) == 3)
     return rndElt(["\r", "\n", "//h\n", "/*\n*/"]); // line break to trigger semicolon insertion and stuff
   else if (rnd(400) == 3)
     return rnd(2) ? "\u000C" : "\t"; // weird space-like characters
@@ -2017,12 +2017,12 @@ function makeStatement(d, b)
 
   if (d < 6 && rnd(3) == 0)
     return makePrintStatement(d, b);
-  
+
   if (d < rnd(8)) // frequently for small depth, infrequently for large depth
     return makeLittleStatement(d, b);
 
   d = rnd(d); // !
-  
+
   return (rndElt(statementMakers))(d, b)
 }
 
@@ -2036,7 +2036,7 @@ function makeOpaqueIdiomaticLoop(d, b)
 {
   var reps = 1 + rnd(7);
   var vHidden = uniqueVarName();
-  return ("/*oLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x) ").replace(/x/g, vHidden) + 
+  return ("/*oLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x) ").replace(/x/g, vHidden) +
       makeStatement(d - 2, b);
 }
 
@@ -2045,8 +2045,8 @@ function makeTransparentIdiomaticLoop(d, b)
   var reps = 1 + rnd(7);
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
-  return ("/*vLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x)").replace(/x/g, vHidden) + 
-    " { " + 
+  return ("/*vLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x)").replace(/x/g, vHidden) +
+    " { " +
       rndElt(varBinder) + vVisible + " = " + vHidden + "; " +
       makeStatement(d - 2, b.concat([vVisible])) +
     " } "
@@ -2059,7 +2059,7 @@ function makeBranchUnstableLoop(d, b)
   var mod = rnd(5) + 2;
   var target = rnd(mod);
   var loopHead = ("/*bLoop*/for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
-  return loopHead + " { " + 
+  return loopHead + " { " +
     "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
     "else { " + makeStatement(d - 2, b) + " } " +
     " } "
@@ -2082,7 +2082,7 @@ function weighted(wa)
   }
   return a;
 }
-  
+
 var statementMakers = weighted([
 
   // Any two statements in sequence
@@ -2100,7 +2100,7 @@ var statementMakers = weighted([
 
   // Complex variable declarations, e.g. "const [a,b] = [3,4];"
   { w: 1, fun: function(d, b) { return cat([rndElt(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); } },
-  
+
   // Blocks
   { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d, b), " }"]); } },
   { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); } },
@@ -2112,16 +2112,16 @@ var statementMakers = weighted([
   // C-style "for" loops
   // Two kinds of "for" loops: one with an expression as the first part, one with a var or let binding 'statement' as the first part.
   // I'm not sure if arbitrary statements are allowed there; I think not.
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } }, 
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } }, 
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } }, 
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } }, 
-  
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+
   // Various types of "for" loops, specially set up to test tracing, carefully avoiding infinite loops
   { w: 6, fun: makeTransparentIdiomaticLoop },
   { w: 6, fun: makeOpaqueIdiomaticLoop },
   { w: 6, fun: makeBranchUnstableLoop },
-  { w: 8, fun: makeTypeUnstableLoop }, 
+  { w: 8, fun: makeTypeUnstableLoop },
 
   // "for..in" loops
   // arbitrary-LHS marked as infloop because
@@ -2134,7 +2134,7 @@ var statementMakers = weighted([
   // -- for each (value in obj)
   { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", " each", "(", rndElt(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  
+
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
 //  function(d, b) { return "let forCount = 0; for (let " + makeId(d, b) + " in " + makeExpr(d, b) + ") { if (forCount++ == " + rnd(3) + ") { " + makeStatement(d - 1, b) + " } }"; },
@@ -2173,7 +2173,7 @@ var statementMakers = weighted([
   // In the SECOND case, braces must be preserved to keep the final "else" associated with the first "if".
   { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); } },
   { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); } },
-  
+
   // Expression statements
   { w: 5, fun: function(d, b) { return cat([makeExpr(d, b), ";"]); } },
   { w: 5, fun: function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); } },
@@ -2184,7 +2184,7 @@ var statementMakers = weighted([
 
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
   { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
-  
+
   // Function-declaration-statements, along with calls to those functions
   { w: 8, fun: makeNamedFunctionAndUse }
 ]);
@@ -2249,7 +2249,7 @@ function makeSwitchBody(d, b)
 
     if (!haveSomething || rnd(2)) {
       // Want a case/default (or, if this is the beginning, "need").
-      
+
       if (!haveDefault && rnd(2)) {
         output += "default: ";
         haveDefault = true;
@@ -2262,7 +2262,7 @@ function makeSwitchBody(d, b)
 
       haveSomething = true;
     }
-    
+
     // Might want a statement.
     if (rnd(2))
       output += makeStatement(d, b)
@@ -2270,12 +2270,12 @@ function makeSwitchBody(d, b)
     // Might want to break, or might want to fall through.
     if (rnd(2))
       output += "break; ";
-    
+
     if (rnd(2))
       --d;
 
   } while (d && rnd(5));
-  
+
   return output;
 }
 
@@ -2287,11 +2287,11 @@ function makeLittleStatement(d, b)
 
   if (rnd(4) == 1)
     return makeStatement(d, b);
-  
+
   return (rndElt(littleStatementMakers))(d, b);
 }
 
-var littleStatementMakers = 
+var littleStatementMakers =
 [
   // Tiny
   function(d, b) { return cat([";"]); }, // e.g. empty "if" block
@@ -2300,7 +2300,7 @@ var littleStatementMakers =
 
   // Force garbage collection
   function(d, b) { return "gc()"; },
-  
+
   // Throw stuff.
   function(d, b) { return cat(["throw ", makeExpr(d, b), ";"]); },
 
@@ -2310,7 +2310,7 @@ var littleStatementMakers =
   // Named and unnamed functions (which have different behaviors in different places: both can be expressions,
   // but unnamed functions "want" to be expressions and named functions "want" to be special statements)
   function(d, b) { return makeFunction(d, b); },
-  
+
   // Return, yield
   function(d, b) { return cat(["return ", makeExpr(d, b), ";"]); },
   function(d, b) { return "return;"; }, // return without a value is allowed in generators; return with a value is not.
@@ -2332,7 +2332,7 @@ var littleStatementMakers =
   function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
   function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
   function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-  
+
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ")" + ";"; }
 ];
@@ -2385,9 +2385,9 @@ var exceptionyStatementMakers = [
 
   // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
-  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; }, 
-  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeMixedTypeArray(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); }, 
-  
+  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
+  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeMixedTypeArray(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
   function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
@@ -2404,7 +2404,7 @@ var exceptionyStatementMakers = [
 
   function(d, b) { return "(function () { try { yield " + makeExpr(d, b) + " } finally { " + makeStatement(d, b) + " } })()"; },
   function(d, b) { return "(function () { try { yield " + makeExpr(d, b) + " } finally { " + makeStatement(d, b) + " } })"; },
-  function(d, b) { 
+  function(d, b) {
     return "function gen() { try { yield 1; } finally { " + makeStatement(d, b) + " } } var i = gen(); i.next(); i = null;";
   }
 
@@ -2416,17 +2416,17 @@ function makeTryBlock(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   // Catches: 1/6 chance of having none
-  // Catches: maybe 2 + 1/2 
+  // Catches: maybe 2 + 1/2
   // So approximately 4 recursions into makeExceptionyStatement on average!
   // Therefore we want to keep the chance of recursing too much down...
-  
+
   d = d - rnd(3);
-  
+
 
   var s = cat(["try", " { ", makeExceptionyStatement(d, b), " } "]);
 
   var numCatches = 0;
-  
+
   while(rnd(3) == 0) {
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
@@ -2435,18 +2435,18 @@ function makeTryBlock(d, b)
     else
       s += cat(["catch", "(", makeId(d, b), " if ", "(function(){", makeExceptionyStatement(d, b), "})())", " { ", makeExceptionyStatement(d, b), " } "]);
   }
-  
+
   if (rnd(2)) {
     // Add an unguarded catch.
     ++numCatches;
     s +=   cat(["catch", "(", makeId(d, b),                                                          ")", " { ", makeExceptionyStatement(d, b), " } "]);
   }
-  
+
   if (numCatches == 0 || rnd(2) == 1) {
     // Add a finally.
     s += cat(["finally", " { ", makeExceptionyStatement(d, b), " } "]);
   }
-  
+
   return s;
 }
 
@@ -2469,7 +2469,7 @@ function makeExpr(d, b)
   d = rnd(d); // !
 
   var expr = (rndElt(exprMakers))(d, b);
-  
+
   if (rnd(4) == 1)
     return "(" + expr + ")";
   else
@@ -2482,7 +2482,7 @@ var binaryOps = [
   " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>= ", " &= ", " ^= ", " |= ", " , ",
 
   // . is special, so test it as a group of right-unary ops, a special exprMaker for property access, and a special exprMaker for the xml filtering predicate operator
-  // " . ", 
+  // " . ",
 ];
 
 if (haveE4X) {
@@ -2493,11 +2493,11 @@ if (haveE4X) {
   " .@ ", " .@*:: ", " .@x:: ",
   ]);
 }
-  
+
 var leftUnaryOps = [
-  "--", "++", 
+  "--", "++",
   "!", "+", "-", "~",
-  "void ", "typeof ", "delete ", 
+  "void ", "typeof ", "delete ",
   "new ", // but note that "new" can also be a very strange left-binary operator
   "yield " // see http://www.python.org/dev/peps/pep-0342/ .  Often needs to be parenthesized, so there's also a special exprMaker for it.
 ];
@@ -2512,8 +2512,8 @@ if (haveE4X)
 
 
 var specialProperties = [
-  "prop", 
-  "__iterator__", "__count__", 
+  "prop",
+  "__iterator__", "__count__",
   "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype"
 ]
@@ -2522,15 +2522,15 @@ var specialProperties = [
 // An incomplete list of builtin methods for various data types.
 var objectMethods = [
   // String
-  "fromCharCode", 
-  
+  "fromCharCode",
+
   // Strings
   "charAt", "charCodeAt", "concat", "indexOf", "lastIndexOf", "localeCompare",
   "match", "quote", "replace", "search", "slice", "split", "substr", "substring",
   "toLocaleUpperCase", "toLocaleLowerCase", "toLowerCase", "toUpperCase",
-  
+
   // Regular expressions
-  "test", "exec", 
+  "test", "exec",
 
   // Arrays
   "splice", "shift", "sort", "pop", "push", "reverse", "unshift",
@@ -2543,7 +2543,7 @@ var objectMethods = [
   "reduce", "reduceRight",
 
   // Functions
-  "call", "apply", 
+  "call", "apply",
 
   // Date
   "now", "parse", "UTC",
@@ -2563,7 +2563,7 @@ var objectMethods = [
   // Things that are only built-in on Object itself
   "defineProperty", "defineProperties", "create", "getOwnPropertyDescriptor", "getPrototypeOf"
 ];
-    
+
 
 var exprMakers =
 [
@@ -2571,7 +2571,7 @@ var exprMakers =
   function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
-  
+
   // Right-unary operators
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
@@ -2581,7 +2581,7 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(specialProperties)]); },
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(specialProperties), " = ", makeExpr(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   ".", rndElt(specialProperties), " = ", makeExpr(d, b)]); },
-  
+
   // Methods
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods), "(", makeActualArgList(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", "valueOf", "(", uneval("number"), ")"]); },
@@ -2600,7 +2600,7 @@ var exprMakers =
   function(d, b) { return cat([makeId(d, b),   rndElt(binaryOps), makeId(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   rndElt(binaryOps), makeId(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   rndElt(binaryOps), makeId(d, b)]); },
-  
+
   // Ternary operator
   function(d, b) { return cat([makeExpr(d, b), " ? ", makeExpr(d, b), " : ", makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), " ? ", makeExpr(d, b), " : ", makeExpr(d, b)]); },
@@ -2608,7 +2608,7 @@ var exprMakers =
   // In most contexts, yield expressions must be parenthesized, so including explicitly parenthesized yields makes actually-compiling yields appear more often.
   function(d, b) { return cat(["yield ", makeExpr(d, b)]); },
   function(d, b) { return cat(["(", "yield ", makeExpr(d, b), ")"]); },
-  
+
   // Array functions (including extras).  The most interesting are map and filter, I think.
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
   // This fuzzer isn't the best for attacking this kind of thing, since it's unlikely that the code in the function will attempt to modify the array or make it go away.
@@ -2616,7 +2616,7 @@ var exprMakers =
   function(d, b) { return cat(["[11,12,13,14]",        ".", rndElt(["map", "filter", "some", "sort"]) ]); },
   function(d, b) { return cat(["[15,16,17,18]",        ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
   function(d, b) { return cat(["[", makeExpr(d, b), "]", ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
-  
+
   // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
 
@@ -2646,7 +2646,7 @@ var exprMakers =
 
   // Try to test function.call heavily.
   function(d, b) { return cat(["(", makeFunction(d, b), ")", ".", "call", "(", makeExpr(d, b), ", ", makeActualArgList(d, b), ")"]); },
-  
+
   // Binary "new", with and without clarifying parentheses, with expressions or functions
   function(d, b) { return cat(["new ",      makeExpr(d, b),          "(", makeActualArgList(d, b), ")"]); },
   function(d, b) { return cat(["new ", "(", makeExpr(d, b), ")",     "(", makeActualArgList(d, b), ")"]); },
@@ -2669,7 +2669,7 @@ var exprMakers =
   // Generator expressions (JavaScript 1.8)
   function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); },
   function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); },
-  
+
   // Comments and whitespace
   function(d, b) { return cat([" /* Comment */", makeExpr(d, b)]); },
   function(d, b) { return cat(["\n", makeExpr(d, b)]); }, // perhaps trigger semicolon insertion and stuff
@@ -2689,17 +2689,17 @@ var exprMakers =
   function(d, b) { return cat([     makeDestructuringLValue(d, b),      " = ", makeExpr(d, b)     ]); },
   function(d, b) { return cat(["(", makeDestructuringLValue(d, b),      " = ", makeExpr(d, b), ")"]); },
   function(d, b) { return cat(["(", makeDestructuringLValue(d, b), ")", " = ", makeExpr(d, b)     ]); },
-  
+
   // Destructuring assignment with lots of group assignment
   function(d, b) { return cat([makeDestructuringLValue(d, b), " = ", makeDestructuringLValue(d, b)]); },
-  
+
   // Modifying assignment, with operators that do various coercions
   function(d, b) { return cat([makeLValue(d, b), rndElt(["|=", "%=", "+=", "-="]), makeExpr(d, b)]); },
 
   // Watchpoints (similar to setters)
   function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", uneval(makeId(d, b)), ")"]); },
-  
+
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
   function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", simpleSource(makeId(d, b)), ", ", makePropertyDescriptor(d, b), ")"]); },
 
@@ -2715,7 +2715,7 @@ var exprMakers =
   // Object literal
   function(d, b) { return cat(["(", "{", makeObjLiteralPart(d, b), " }", ")"]); },
   function(d, b) { return cat(["(", "{", makeObjLiteralPart(d, b), ", ", makeObjLiteralPart(d, b), " }", ")"]); },
-  
+
   // Test js_ReportIsNotFunction heavily.
   function(d, b) { return "(p={}, (p.z = " + makeExpr(d, b) + ")())"; },
 
@@ -2726,8 +2726,8 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), ".", "yoyo",   "(", makeExpr(d, b), ")"]); },
 
   // Throws, but more importantly, tests js_DecompileValueGenerator in various contexts.
-  function(d, b) { return "this.zzz.zzz"; }, 
-  
+  function(d, b) { return "this.zzz.zzz"; },
+
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
   function(d, b) { return makeExpr(d, b) + ".eval(" + makeExpr(d, b) + ")"; },
@@ -2735,10 +2735,10 @@ var exprMakers =
   function(d, b) { return "eval(" + uneval(makeExpr(d, b)) + ", " + makeExpr(d, b) + ")"; },
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ")"; },
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
-  
+
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(d, b) { return "(uneval(" + makeExpr(d, b) + "))"; },
-  
+
   // Constructors.  No cat() because I don't want to screw with the constructors themselves, just call them.
   function(d, b) { return "new " + rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
   function(d, b) { return          rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
@@ -2806,7 +2806,7 @@ if (haveE4X) {
 
 var constructors = [
   "Error", "RangeError", "Exception",
-  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean", 
+  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean",
   // "Date",  // commented out due to appearing "random, but XXX want to use it sometimes...
   "Iterator"
 ];
@@ -2829,11 +2829,11 @@ function makeObjLiteralPart(d, b)
     // Old-style literal getter/setter
     case 0: return cat([makeId(d, b), " getter: ", makeFunction(d, b)]);
     case 1: return cat([makeId(d, b), " setter: ", makeFunction(d, b)]);
-    
+
     // New-style literal getter/setter
     case 2: return cat([" get ", makeId(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
     case 3: return cat([" set ", makeId(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
-    
+
 
 
 /*
@@ -2856,7 +2856,7 @@ function makeFunction(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
-  
+
   if(rnd(5) == 1)
     return makeExpr(d, b);
 
@@ -2906,19 +2906,19 @@ var functionMakers = [
   // Functions and expression closures
   function(d, b) { var v = makeNewId(d, b); return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
   function(d, b) {                          return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
-  
+
   // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); }, 
+  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); },
 
   // The identity function
   function(d, b) { return "function(q) { return q; }" },
 
   // A generator that does something
-  function(d, b) { return "function(y) { yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" }, 
-  
+  function(d, b) { return "function(y) { yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" },
+
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
-  
+
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented -- a special bytecode.
   function(d, b) { return "new Function" }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
@@ -2929,7 +2929,7 @@ var functionMakers = [
   function(d, b) { return "Math.pow" },
   function(d, b) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
 ];
-  
+
 
 
 
@@ -3060,13 +3060,13 @@ function makeLetHeadItem(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
-  
+
   // 0 or more things being declared
   var lhs = (rnd(3) == 1) ? makeDestructuringLValue(d, b) : makeId(d, b);
-  
+
   // initial value
   var rhs = (rnd(2) == 1) ? (" = " + makeExpr(d, b)) : "";
-  
+
   return lhs + rhs;
 }
 
@@ -3101,7 +3101,7 @@ function makeFormalArgList(d, b)
 
   for (var i = 1; i < nArgs; ++i)
     argList += ", " + makeFormalArg(d - i, b);
-    
+
   return argList;
 }
 
@@ -3111,7 +3111,7 @@ function makeFormalArg(d, b)
 
   if (rnd(4) == 1)
     return makeDestructuringLValue(d, b);
-  
+
   return makeId(d, b);
 }
 
@@ -3119,14 +3119,14 @@ function makeFormalArg(d, b)
 function makeNewId(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  
+
   return rndElt(["a", "b", "c", "d", "e", "w", "x", "y", "z"]);
 }
 
-function makeId(d, b) 
+function makeId(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  
+
   if (rnd(2) == 1 && b.length)
     return rndElt(b);
 
@@ -3134,9 +3134,9 @@ function makeId(d, b)
   {
   case 0:
     return makeTerm(d, b);
-  case 1:  
+  case 1:
     return makeExpr(d, b);
-  case 2: case 3: case 4: case 5:  
+  case 2: case 3: case 4: case 5:
     return makeLValue(d, b);
   case 6: case 7:
     return makeDestructuringLValue(d, b);
@@ -3226,7 +3226,7 @@ var lvalueMakers = [
   // Destructuring
   function(d, b) { return makeDestructuringLValue(d, b); },
   function(d, b) { return "(" + makeDestructuringLValue(d, b) + ")"; },
-  
+
   // Properties
   function(d, b) { return cat([makeId(d, b), ".", makeId(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), ".", makeId(d, b)]); },
@@ -3262,23 +3262,23 @@ function makeDestructuringLValue(d, b)
 
 var destructuringLValueMakers = [
   // destructuring assignment: arrays
-  function(d, b) 
-  { 
+  function(d, b)
+  {
     var len = rnd(d, b);
     if (len == 0)
       return "[]";
-      
+
     var Ti = [];
     Ti.push("[");
     Ti.push(maybeMakeDestructuringLValue(d, b));
     for (var i = 1; i < len; ++i) {
       Ti.push(", ");
-      Ti.push(maybeMakeDestructuringLValue(d, b));    
+      Ti.push(maybeMakeDestructuringLValue(d, b));
     }
-    
+
     Ti.push("]");
-    
-    return cat(Ti);    
+
+    return cat(Ti);
   },
 
   // destructuring assignment: objects
@@ -3299,7 +3299,7 @@ var destructuringLValueMakers = [
       } // else, this is a shorthand destructuring, treated as "id: id".
     }
     Ti.push("}");
-    
+
     return cat(Ti);
   }
 ];
@@ -3309,7 +3309,7 @@ function maybeMakeDestructuringLValue(d, b)
 {
   if (rnd(2) == 0)
     return ""
-    
+
   return makeDestructuringLValue(d, b)
 }
 
@@ -3327,11 +3327,11 @@ var termMakers = [
   function(d, b) { return makeId(d, b); },
 
   // Simple literals (no recursion required to make them)
-  function(d, b) { return rndElt([ 
+  function(d, b) { return rndElt([
     // Arrays
     "[]", "[1]", "[[]]", "[[1]]", "[,]", "[,,]", "[1,,]",
     // Objects
-    "{}", "({})", "({a1:1})", 
+    "{}", "({})", "({a1:1})",
     // Possibly-destructuring arrays
     "[z1]", "[z1,,]", "[,,z1]",
     // Possibly-destructuring objects
@@ -3343,7 +3343,7 @@ var termMakers = [
     "function(id) { return id }",
     "function ([y]) { }",
     "(function ([y]) { })()",
-    
+
     "arguments"
     ]);
   },
@@ -3388,22 +3388,22 @@ function makeCrazyToken()
   // Some of this is from reading jsscan.h.
 
   // Comments; comments hiding line breaks.
-  "//", UNTERMINATED_COMMENT, (UNTERMINATED_COMMENT + "\n"), "/*\n*/", 
-  
+  "//", UNTERMINATED_COMMENT, (UNTERMINATED_COMMENT + "\n"), "/*\n*/",
+
   // groupers (which will usually be unmatched if they come from here ;)
-  "[", "]", 
-  "{", "}", 
+  "[", "]",
+  "{", "}",
   "(", ")",
-  
+
   // a few operators
-  "!", "@", "%", "^", "*", "|", ":", "?", "'", "\"", ",", ".", "/", 
-  "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=", 
+  "!", "@", "%", "^", "*", "|", ":", "?", "'", "\"", ",", ".", "/",
+  "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=",
   "#", "#1", "#1=", // usually an "invalid character", but used as sharps too
-  
+
   // most real keywords plus a few reserved keywords
-  " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ", 
-  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " break ", " continue ", " typeof ", " var ", " const ", 
-    
+  " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
+  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " break ", " continue ", " typeof ", " var ", " const ",
+
   // several keywords can be used as identifiers. these are just a few of them.
   " enum ", // JS_HAS_RESERVED_ECMA_KEYWORDS
   " debugger ", // JS_HAS_DEBUGGER_KEYWORD
@@ -3413,7 +3413,7 @@ function makeCrazyToken()
   " null ", // TOK_PRIMARY!
   " undefined ", // not a keyword, but a default part of the global object
   "\n", // trigger semicolon insertion, also acts as whitespace where it might not be expected
-  "\r", 
+  "\r",
   "\u2028", // LINE_SEPARATOR?
   "\u2029", // PARA_SEPARATOR?
   "<" + "!" + "--", // beginning of HTML-style to-end-of-line comment (!)
@@ -3430,31 +3430,31 @@ function makeE4X(d, b)
 
   if (d <= 0)
     return cat(["<", "x", ">", "<", "y", "/", ">", "<", "/", "x", ">"]);
-    
+
   d = d - 1;
-  
+
   var y = [
     function(d, b) { return '<employee id="1"><name>Joe</name><age>20</age></employee>' },
     function(d, b) { return cat(["<", ">", makeSubE4X(d, b), "<", "/", ">"]); }, // xml list
 
     function(d, b) { return cat(["<", ">", makeExpr(d, b), "<", "/", ">"]); }, // bogus or text
     function(d, b) { return cat(["<", "zzz", ">", makeExpr(d, b), "<", "/", "zzz", ">"]); }, // bogus or text
-    
+
     // mimic parts of this example at a time, from the e4x spec: <x><{tagname} {attributename}={attributevalue+attributevalue}>{content}</{tagname}></x>;
 
     function(d, b) { var tagId = makeId(d, b); return cat(["<", "{", tagId, "}", ">", makeSubE4X(d, b), "<", "/", "{", tagId, "}", ">"]); },
     function(d, b) { var attrId = makeId(d, b); var attrValExpr = makeExpr(d, b); return cat(["<", "yyy", " ", "{", attrId, "}", "=", "{", attrValExpr, "}", " ", "/", ">"]); },
     function(d, b) { var contentId = makeId(d, b); return cat(["<", "yyy", ">", "{", contentId, "}", "<", "/", "yyy", ">"]); },
-    
+
     // namespace stuff
     function(d, b) { var contentId = makeId(d, b); return cat(['<', 'bbb', ' ', 'xmlns', '=', '"', makeExpr(d, b), '"', '>', makeSubE4X(d, b), '<', '/', 'bbb', '>']); },
     function(d, b) { var contentId = makeId(d, b); return cat(['<', 'bbb', ' ', 'xmlns', ':', 'ccc', '=', '"', makeExpr(d, b), '"', '>', '<', 'ccc', ':', 'eee', '>', '<', '/', 'ccc', ':', 'eee', '>', '<', '/', 'bbb', '>']); },
-    
+
     function(d, b) { return makeExpr(d, b); },
-    
+
     function(d, b) { return makeSubE4X(d, b); }, // naked cdata things, etc.
   ]
-  
+
   return (rndElt(y))(d, b);
 }
 
@@ -3479,62 +3479,62 @@ function makeSubE4X(d, b)
     function(d, b) { return " "; },
     function(d, b) { return ""; },
   ];
-  
+
   return (rndElt(y))(d, b);
 }
 
 function makeMixedTypeArray(d, b)
 {
-  
+
   var a = [
     // Numbers and number-like things
     [
-    "0", "1", "2", "3", "0.1", ".2", "1.3", "4.", "5.0000000000000000000000", 
+    "0", "1", "2", "3", "0.1", ".2", "1.3", "4.", "5.0000000000000000000000",
     "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "-0", "(-0)",
-    "-1", "(-1)", "0x99", "033", "3/0", "-3/0", "0/0", 
+    "-1", "(-1)", "0x99", "033", "3/0", "-3/0", "0/0",
     "Math.PI",
     "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
     // various powers of two, with values near JSVAL_INT_MAX especially tested
-    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001", "0x80000000", "-0x80000000", 
+    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001", "0x80000000", "-0x80000000",
     ],
-  
+
     // Special numbers
     [ "(1/0)", "(-1/0)", "(0/0)" ],
-  
+
     // Strings and regular expressions
     [" \"\" ", " '' ", " 'A' ", " '\\0' "],
-    
+
     // Regular expressions
     [ " /x/ ", " /x/g "],
-   
+
     // Booleans
     [ "true", "false" ],
-    
+
     // Undefined and null
     [ "(void 0)", "null" ],
-    
+
     // Object literals
     [ "[]", "[1]", "[(void 0)]", "{}", "{x:3}", "({})", "({x:3})" ],
-  
+
     // Variables that really should have been constants in the ecmascript spec
     [ "NaN", "Infinity", "-Infinity", "undefined"],
-    
+
     // Boxed booleans
     [ "new Boolean(true)", "new Boolean(false)" ],
-    
+
     // Boxed numbers
     [ "new Number(1)", "new Number(1.5)" ],
-    
+
     // Boxed strings
     [ "new String('')", "new String('q')" ],
-  
+
     // Fun stuff
     [ "function(){}", "{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments" ],
-  
+
     // Actual variables (slightly dangerous)
     [ rndElt(b), rndElt(b) ]
   ];
-  
+
   // Pick two to five of those
   var q = rnd(4) + 2;
   var picks = [];
