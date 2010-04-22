@@ -582,7 +582,7 @@ function tryItOut(code)
         // Avoid compile-time errors because those are no fun.
         // But leave some things out of function(){} because some bugs are only detectable at top-level, and
         // pure jsfunfuzz doesn't test top-level at all.
-        // (This is a good reason to us compareJIT even if I'm not interested in finding JIT bugs!)
+        // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
         function failsToCompileInTry(code) {
           // Why would this happen? One way is "let x, x"
           try {
