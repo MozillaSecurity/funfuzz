@@ -366,6 +366,7 @@ def main():
     # Define fuzzing command with the required parameters.
     if os.name == 'posix':
         multiTimedRun = os.path.expanduser(multiTimedRun)
+        jsknownDict[branchType] = os.path.expanduser(jsknownDict[branchType])
     fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT + multiTimedRunTimeout + ' '
     fuzzCmd2 = ' ' + fuzzPath + jsShellName + jsJit + jsMethodJit
     if valgrindSupport:
