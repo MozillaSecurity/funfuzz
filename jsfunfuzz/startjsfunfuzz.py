@@ -321,11 +321,14 @@ def main():
     # Copy over useful files that are updated in hg fuzzing branch.
     jsfunfuzzFilePath = repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js'
     analysisFilePath = repoDict['fuzzing'] + 'jsfunfuzz/analysis.py'
+    findInterestingFilesFilePath = repoDict['fuzzing'] + 'jsfunfuzz/findInterestingFiles.py'
     if os.name == 'posix':
         jsfunfuzzFilePath = os.path.expanduser(jsfunfuzzFilePath)
         analysisFilePath = os.path.expanduser(analysisFilePath)
+        findInterestingFilesFilePath = os.path.expanduser(findInterestingFilesFilePath)
     shutil.copy2(jsfunfuzzFilePath, '.')
     shutil.copy2(analysisFilePath, '.')
+    shutil.copy2(findInterestingFilesFilePath, '.')
 
 
     jsknownDict = {}
