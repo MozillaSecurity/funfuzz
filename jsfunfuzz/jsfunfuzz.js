@@ -575,12 +575,26 @@ function tryItOut(code)
 
   if (f && wtt.allowExec) {
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      if (code.indexOf("<") == -1 || code.indexOf(">") == -1) { // avoid bug 470316
-        if (code.indexOf("Error") != -1) { // avoid bug 525518
-          var cookie1 = "/*F";
-          var cookie2 = "CM*/";
-          dumpln(cookie1 + cookie2 + " try { (function(){ " + code + "})() } catch(e) { }");
+      if (code.indexOf("Error") == -1) { // avoid bug 525518
+        var cookie1 = "/*F";
+        var cookie2 = "CM*/";
+        var nCode = code;
+        // Avoid compile-time errors because those are no fun.
+        // But leave some things out of function(){} because some bugs are only detectable at top-level, and
+        // pure jsfunfuzz doesn't test top-level at all.
+        // (This is a good reason to us compareJIT even if I'm not interested in finding JIT bugs!)
+        function failsToCompileInTry(code) {
+          // Why would this happen? One way is "let x, x"
+          try {
+            new Function(" try { " + code + " } catch(e) { }");
+            return false;
+          } catch(e) {
+            return true;
+          }
         }
+        if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
+          nCode = "(function(){" + nCode + "})()"
+        dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
       }
     }
   }
@@ -2171,10 +2185,28 @@ var statementMakers = weighted([
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
   { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
   
-  // Functions which are called?
-  // Tends to trigger OOM bugs
-  // function(d, b) { return cat(["/*hhh*/function ", "x", "(", ")", "{", makeStatement(d, b), "}", " ", "x", "(", makeActualArgList(d, b), ")"]); }
+  // Function-declaration-statements, along with calls to those functions
+  { w: 8, fun: makeNamedFunctionAndUse }
 ]);
+
+function makeNamedFunctionAndUse(d, b) {
+  // Use a unique function name to make it less likely that we'll accidentally make a recursive call
+  var funcName = uniqueVarName();
+  var declStatement = cat(["/*hhh*/function ", funcName, "(", makeFormalArgList(d, b), ")", "{", makeStatement(d - 2, b), "}"]);
+  var useStatement;
+  if (rnd(2)) {
+    // Direct call
+    useStatement = cat([funcName, "(", makeActualArgList(d, b), ")", ";"]);
+  } else {
+    // Any statement, allowed to use the name of the function
+    useStatement = "/*iii*/" + makeStatement(d - 1, b.concat([funcName]));
+  }
+  if (rnd(2)) {
+    return declStatement + useStatement;
+  } else {
+    return useStatement + declStatement;
+  }
+}
 
 function makePrintStatement(d, b)
 {
