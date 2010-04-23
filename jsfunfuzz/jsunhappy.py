@@ -91,11 +91,12 @@ def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix):
             lev = JS_DID_NOT_FINISH
         logfile.close()
 
-    amiss = len(issues) != 0
-    amissStr = "" if not amiss else "*" + repr(issues) + " "
-    print "%s: %s%s (%.1f seconds)" % (logPrefix, amissStr, runinfo.msg, runinfo.elapsedtime)
+    print logPrefix + ": " + summaryString(issues, runinfo)
     return lev
 
+def summaryString(issues, runinfo):
+    amissStr = ("") if (len(issues) == 0) else ("*" + repr(issues) + " ")
+    return "%s%s (%.1f seconds)" % (amissStr, runinfo.msg, runinfo.elapsedtime)
 
 # For use by Lithium
 def interesting(args, tempPrefix):
