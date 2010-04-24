@@ -242,6 +242,8 @@ def main():
         jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
         if jsCompareJITCode == 1:
             raise Exception('Required js patch for --comparejit failed to patch.')
+        if verbose:
+            print 'DEBUG - Finished incorporating the gc() patch that is needed for compareJIT.'
 
     # Patch the codebase if specified, accept up to 2 patches.
     patchReturnCode = 0
@@ -249,14 +251,14 @@ def main():
     if len(sys.argv) < 8 and len(sys.argv) >= 6 and sys.argv[4] == 'patch':
         patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
         if verbose:
-            print 'DEBUG - Successfully incorporated the first patch.'
+            print 'DEBUG - Finished incorporating the first patch.'
     elif len(sys.argv) >= 8 and sys.argv[6] == 'patch':
         patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
         if verbose:
-            print 'DEBUG - Successfully incorporated the first patch.'
+            print 'DEBUG - Finished incorporating the first patch.'
         patchReturnCode2 = subprocess.call(['patch -p3 < ' + sys.argv[7]], shell=True)
         if verbose:
-            print 'DEBUG - Successfully incorporated the second patch.'
+            print 'DEBUG - Finished incorporating the second patch.'
     if patchReturnCode == 1 or patchReturnCode2 == 1:
         raise Exception('Patching failed.')
 
