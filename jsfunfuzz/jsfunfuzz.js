@@ -2537,6 +2537,9 @@ var objectMethods = [
   "match", "quote", "replace", "search", "slice", "split", "substr", "substring",
   "toLocaleUpperCase", "toLocaleLowerCase", "toLowerCase", "toUpperCase",
 
+  // String methods added in ES5
+  "trim", "trimLeft", "trimRight",
+
   // Regular expressions
   "test", "exec",
 
@@ -2852,6 +2855,8 @@ function makeObjLiteralPart(d, b)
     case 7: return cat(["valueOf: function() { return " + makeExpr(d, b) + "; } }", ")"]); },
 */
 
+    // Note that string literals, integer literals, and float literals are also good!
+    // (See https://bugzilla.mozilla.org/show_bug.cgi?id=520696.)
     default: return cat([makeId(d, b), ": ", makeExpr(d, b)]);
   }
 }
@@ -2928,11 +2933,26 @@ var functionMakers = [
   function(d, b) { return "(1 for (x in []))"; },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
-  function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented -- a special bytecode.
+  function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
+  function(d, b) { return "(let (e=eval) e)" },
   function(d, b) { return "new Function" }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
   function(d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
   function(d, b) { return "Function" }, // without "new"!  it does seem to work...
   function(d, b) { return "gc" },
+  function(d, b) { return "Object.defineProperty" },
+  function(d, b) { return "Object.defineProperties" },
+  function(d, b) { return "Object.create" },
+  function(d, b) { return "Object.getOwnPropertyDescriptor" },
+  function(d, b) { return "Object.getPrototypeOf" },
+  function(d, b) { return "Object.keys" },
+  function(d, b) { return "decodeURI" },
+  function(d, b) { return "decodeURIComponent" },
+  function(d, b) { return "encodeURI" },
+  function(d, b) { return "encodeURIComponent" },
+  function(d, b) { return "Array.reduce" }, // also known as Array.prototype.reduce
+  function(d, b) { return "Array.isArray" },
+  function(d, b) { return "JSON.parse" },
+  function(d, b) { return "JSON.stringify" }, // has interesting arguments...
   function(d, b) { return "Math.sin" },
   function(d, b) { return "Math.pow" },
   function(d, b) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
@@ -3361,8 +3381,22 @@ var termMakers = [
   ]); },
   function(d, b) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(d, b) { return rndElt([ "this", "window" ]); },
-  function(d, b) { return rndElt([" \"\" ", " '' ", " /x/ ", " /x/g "]) },
+  function(d, b) { return rndElt([" \"\" ", " '' "]) },
+  randomUnitStringLiteral,
+  function(d, b) { return rndElt([" /x/ ", " /x/g "]) },
 ];
+
+function randomUnitStringLiteral()
+{
+  var s = "\"\\u";
+  var nDigits = rnd(6) + 1;
+  for (var i = 0; i < nDigits; ++i) {
+    s += "0123456789ABCDEF".charAt(rnd(16));
+  }
+  s += "\""
+  print(s);
+  return s;
+}
 
 if (haveE4X) {
   // E4X literals
@@ -3509,10 +3543,10 @@ function makeMixedTypeArray(d, b)
     // Special numbers
     [ "(1/0)", "(-1/0)", "(0/0)" ],
 
-    // Strings and regular expressions
+    // String literals
     [" \"\" ", " '' ", " 'A' ", " '\\0' "],
 
-    // Regular expressions
+    // Regular expression literals
     [ " /x/ ", " /x/g "],
 
     // Booleans
