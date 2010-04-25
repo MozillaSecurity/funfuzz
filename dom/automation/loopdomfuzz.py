@@ -166,7 +166,7 @@ def getURLs(reftestFilesDir):
             if urlListFilename == "urls-reftests":
                 localPath = os.path.join(reftestFilesDir, line.rstrip())
                 # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
-                URLs.append("file://" + urllib.pathname2url(localPath))
+                URLs.append("file:" + urllib.pathname2url(localPath))
             else:
                 URLs.append(line.rstrip())
             
