@@ -84,7 +84,6 @@ def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix):
         # makes line endings platform-specific.
         logfile = open(logPrefix + "-out", "rb")
         for line in logfile:
-            print(repr(line))
             if (line.rstrip() == "It's looking good!"):
                 break
             elif (line.rstrip() == "jsfunfuzz stopping due to above error!"):
