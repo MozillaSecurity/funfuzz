@@ -2,13 +2,13 @@
 from __future__ import with_statement
 
 import os, sys
-import ntr
 
 p0=os.path.dirname(sys.argv[0])
-p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
-
+p1=os.path.abspath(os.path.join(p0, "..", "lithium"))
 sys.path.append(p1)
-
+import ntr
+p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
+sys.path.append(p1)
 import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
 
@@ -79,11 +79,15 @@ def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix):
     (lev, issues, runinfo) = baseLevel(runthis, timeout, knownPath, logPrefix)
 
     if lev == JS_FINE:
-        logfile = open(logPrefix + "-out", "r")
+        # Read in binary mode, because otherwise Python on Windows will
+        # throw a fit when it encounters certain unicode.  Note that this
+        # makes line endings platform-specific.
+        logfile = open(logPrefix + "-out", "rb")
         for line in logfile:
-            if (line == "It's looking good!\n"):
+            print(repr(line))
+            if (line.rstrip() == "It's looking good!"):
                 break
-            elif (line == "jsfunfuzz stopping due to above error!\n"):
+            elif (line.rstrip() == "jsfunfuzz stopping due to above error!"):
                 lev = JS_DECIDED_TO_EXIT
                 issues.append("jsfunfuzz decided to exit")
         else:
@@ -112,3 +116,8 @@ def truncateFile(fn, maxSize):
     if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
         with open(fn, "r+") as f:
             f.truncate(maxSize)
+
+if __name__ == "__main__":
+    timeout = 120
+    knownPath = sys.argv[1]
+    print jsfunfuzzLevel(sys.argv[2:], timeout, knownPath, "m")
