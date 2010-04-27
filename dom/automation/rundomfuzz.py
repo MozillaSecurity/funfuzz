@@ -255,7 +255,7 @@ def rdfInit(browserDir, additionalArgs = []):
 
   # browser environment
   browserEnv = automation.environment(xrePath = options.xrePath)
-  browserEnv["XPCOM_DEBUG_BREAK"] = "stack"
+  browserEnv["XPCOM_DEBUG_BREAK"] = "warn"
   browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
   if not options.valgrind:
     browserEnv["MallocScribble"] = "1"
