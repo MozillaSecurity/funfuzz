@@ -44,7 +44,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
         level, lines = levelAndLines(url, logPrefix=logPrefix)
 
         if level > rundomfuzz.DOM_FINE:
-            print "lopdomfuzz.py: will try reducing from " + url
+            print "loopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
             lithSuccess = runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime)
