@@ -66,6 +66,7 @@ function onPageLoad(event)
   var r = hash.split(",");
 
   if (r[0] == "#squarefree-autoquit") {
+    dump("Quitting in 1 second\n");
     setTimeout(goQuitApplication, 1000);
     return;
   }
