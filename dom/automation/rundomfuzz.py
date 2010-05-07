@@ -165,14 +165,13 @@ class FigureOutDirs:
       self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
       self.utilityDir = os.path.join(browserDir, "tests", "bin")
       self.symbolsDir = os.path.join(browserDir, "symbols")
-      if not os.path.exists(self.symbolsDir):
-        self.symbolsDir = None
     elif os.path.exists(os.path.join(browserDir, "..", "layout", "reftests")):
       # browserDir is an objdir whose parent is a srcdir.  That works too (more convenient for local builds)
       #self.appDir = browserDir
       self.reftestScriptDir = os.path.join(browserDir, "_tests", "reftest")
       self.reftestFilesDir = os.path.join(browserDir, "..")
       self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
+      self.symbolsDir = os.path.join(browserDir, "dist", "crashreporter-symbols")
     else:
       raise Exception("browserDir is not the kind of directory I expected")
 
@@ -185,6 +184,8 @@ class FigureOutDirs:
     if not os.path.exists(self.utilityDir):
       raise Exception("Oops! utilityDir does not exist!")
 
+    if not os.path.exists(self.symbolsDir):
+      self.symbolsDir = None
     if self.symbolsDir:
       self.symbolsDir = getFullPath(self.symbolsDir)
 
