@@ -429,7 +429,7 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
                     # of files and when we tried to open this file.  If so, it's
                     # clearly not The One.
                     pass
-          if macCrashLogFilename == None:
+            if macCrashLogFilename == None:
                 # print "[grabCrashLog] Waiting for the crash log to appear..."
                 time.sleep(0.100)
                 loops += 1
