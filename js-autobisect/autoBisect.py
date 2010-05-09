@@ -43,7 +43,6 @@ from optparse import OptionParser
 
 def optparseFunction():
     # bash ~/Desktop/autoBisect.sh ~/Desktop/2interesting/563210.js dbg bug "ssertion fail" # REPLACEME
-    # support 64 bit and specify source code dir. What about -cat and notExitCode?
     #usage = 'Usage: %prog -d <dir> -f "<js binary w/ optional parameters>"'
     usage = ''
     parser = OptionParser(usage)
@@ -51,7 +50,14 @@ def optparseFunction():
     parser.disable_interspersed_args()
     parser.add_option('-d', '--dir', dest='dir', help='Source code directory')
     parser.add_option('-f', '--file', dest='file', help='File to be bisected')
-    # --binType, --bugType, -m --msg
+    # -s --start startRepo
+    # -e --end badRepo
+    # -a --architecture 32 or 64
+    # -b --bugOrWfm bug wfm bug by default
+    # -o --output null by default
+    # -j is on by default, action="store_true"
+    # -m is off by default (methodJIT), default=False, action="store_true", dest=""??
+    # Watch out for -w, --watchExitCode 3; this is for notExitCode, cat into interactive shell. Off by default
     (options, args) = parser.parse_args()
     return options.dir, options.file
 
