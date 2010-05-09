@@ -10,6 +10,7 @@ from __future__ import with_statement
 import sys
 import shutil
 import os
+import platform
 import signal
 import logging
 import glob
@@ -341,7 +342,7 @@ def rdfInit(browserDir, additionalArgs = []):
     if alh.fuzzerComplained:
       lev = max(lev, DOM_FUZZER_COMPLAINED)
 
-    if status < 0:
+    if status < 0 and False:
       # The program was terminated by a signal, which usually indicates a crash.
       # Mac/Linux only!
       signum = -status
@@ -369,7 +370,7 @@ def rdfInit(browserDir, additionalArgs = []):
     
     if options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
       lev = max(lev, DOM_VG_AMISS)
-    elif status > 0:
+    elif status > 0 and False:
       lev = max(lev, DOM_ABNORMAL_EXIT)
 
     if leakLogFile and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
