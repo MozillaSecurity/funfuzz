@@ -7,7 +7,12 @@ Based on runreftest.py.  Uses automation.py.
 
 
 from __future__ import with_statement
-import sys, shutil, os, signal, logging
+import sys
+import shutil
+import os
+import signal
+import logging
+import glob
 from optparse import OptionParser
 from tempfile import mkdtemp
 import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_leaks
@@ -369,7 +374,9 @@ def rdfInit(browserDir, additionalArgs = []):
     if leakLogFile and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
       lev = max(lev, DOM_NEW_LEAK)
     elif leakLogFile:
-      os.remove(leakLogFile)
+      # Remove the main leak log file, plus any plugin-process leak log files
+      for f in glob.glob(leakLogFile + "*"):
+        os.remove(f)
 
     if (lev > DOM_FINE) and logPrefix:
       outlog = open(logPrefix + "-output.txt", "w")
