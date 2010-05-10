@@ -36,17 +36,44 @@
 #
 # * ***** END LICENSE BLOCK	****	/
 
-import os, sys
+import os, subprocess, sys
 from optparse import OptionParser
 
-#sys.path.append('../jsfunfuzz/')
-#from fnStartjsfunfuzz import *
+sys.path.append('../jsfunfuzz/')
+from fnStartjsfunfuzz import *
 
 def main():
+    # Parse options and parameters from the command-line.
     filename = sys.argv[-1:][0]
     options = parseOpts()
     (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, archi, \
      tracingjitBool, methodjitBool, watchExitCode) = options
+
+    os.chdir(sourceDir)
+
+    # Refresh source directory (overwrite all local changes) to default tip if required.
+    if resetBool:
+        subprocess.call(['hg up -C default'], shell=True)
+
+    # Reverse if a bisect range to find a WFM issue is specified.
+    if bugOrWfm == 'wfm':
+        tempVal = ''
+        tempVal = startRepo
+        startRepo = endRepo
+        endRepo = tempVal
+
+    # Specify `hg bisect` ranges.
+    subprocess.call(['hg bisect -r'], shell=True)
+    # If in "bug" mode, this startRepo changeset does not exhibit the issue.
+    subprocess.call(['hg bisect -g ' + startRepo], shell=True)
+    # If in "bug" mode, this endRepo changeset exhibits the issue.
+    stdoutNumOfTests = captureStdout('hg bisect -b ' + endRepo)
+
+    # Find out the number of tests to be executed based on the initial hg bisect output.
+    numOfTests = checkNumOfTests(stdoutNumOfTests)
+
+    print 'numOfTests is', numOfTests
+    print 'stdoutNumOfTests is ' + stdoutNumOfTests
     print options
     print bugOrWfm
     print filename
@@ -67,8 +94,8 @@ def parseOpts():
                       choices=['bug', 'wfm'],
                       default='bug',
                       help='Bisect to find a bug or WFM issue. ' + \
-                           'Only acceptss of "bug" or "wfm". ' + \
-                           'Defaults is "bug"')
+                           'Only accepts "bug" or "wfm". ' + \
+                           'Defaults to "bug"')
     parser.add_option('-c', '--compileType',
                       dest='compileType',
                       type='choice',
@@ -133,6 +160,24 @@ def parseOpts():
     return options.bugOrWfm, options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
             options.tracingjitBool, options.methodjitBool, options.watchExitCode
+
+def checkNumOfTests(str):
+    testNum = 0
+    i = 0
+    while i < len(str):
+        if (str[i] == '~'):
+            # This works no matter it is a one-digit or two-digit number.
+            testNum = int(str[i+1] + str[i+2])
+            # Sometimes estimation is not entirely accurate, one more test
+            # round may be needed.
+            # It will be checked to stop when the First bad changeset is found.
+            testNum = testNum + 1;
+            break
+        i = i + 1
+    if testNum == 0:
+        raise Exception('The number of tests to be executed should not be 0.')
+    return testNum
+
 
 if __name__ == '__main__':
     main()
