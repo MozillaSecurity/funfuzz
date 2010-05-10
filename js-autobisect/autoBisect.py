@@ -36,9 +36,11 @@
 #
 # * ***** END LICENSE BLOCK	****	/
 
-#import os, subprocess
-import sys
+import os, sys
 from optparse import OptionParser
+
+#sys.path.append('../jsfunfuzz/')
+#from functionStartjsfunfuzz import *
 
 def main():
     filename = sys.argv[-1:][0]
@@ -49,8 +51,6 @@ def main():
     print filename
 
 # cat into interactive shell if passing as a CLI argument cannot reproduce the issue
-
-# set the required compulsory flags - at least -s and -e
 
 def parseOpts():
 
@@ -65,15 +65,16 @@ def parseOpts():
                       type='choice',
                       choices=['bug', 'wfm'],
                       default='bug',
-                      help='(Optional, "bug" by default) ' + \
-                           'Bisect to find a bug or WFM issue. ' + \
-                           'Only accept values of "bug" or "wfm"')
+                      help='Bisect to find a bug or WFM issue. ' + \
+                           'Only accept values of "bug" or "wfm". ' + \
+                           'Default value is "bug"')
     parser.add_option('-d', '--dir',
                       dest='dir',
-                      help='Source code directory')
+                      default=os.path.expanduser('~/tracemonkey/'),
+                      help='Source code directory. Default value is "~/tracemonkey/"')
     parser.add_option('-o', '--output',
                       dest='output',
-                      help='(Optional) Stdout or stderr output to be observed')
+                      help='Stdout or stderr output to be observed')
 
     # Define the start and end repositories.
     parser.add_option('-s', '--start',
@@ -81,7 +82,8 @@ def parseOpts():
                       help='Start repository (earlier)')
     parser.add_option('-e', '--end',
                       dest='endRepo',
-                      help='End repository (later)')
+                      default='tip',
+                      help='End repository (later). Default value is "tip"')
 
     # Define the architecture to be tested.
     parser.add_option('-a', '--architecture',
@@ -95,23 +97,25 @@ def parseOpts():
                       dest='tracingjitBool',
                       action='store_true',
                       default=False,
-                      help='(Optional) Enable -j, tracing JIT when autoBisecting')
+                      help='Enable -j, tracing JIT when autoBisecting. Default is "False"')
     parser.add_option('-m', '--methodjit',
                       dest='methodjitBool',
                       action='store_true',
                       default=False,
-                      help='(Optional) Enable -m, method JIT when autoBisecting')
+                      help='Enable -m, method JIT when autoBisecting. Default is "False"')
 
     # Special case in which a specific exit code needs to be observed.
     parser.add_option('-w', '--watchExitCode',
                       dest='watchExitCode',
                       type='choice',
                       choices=['3', '4', '5', '6'],
-                      help='(Optional) Look out for a specific exit code in the range [3,6]')
+                      help='Look out for a specific exit code in the range [3,6]')
 
     (options, args) = parser.parse_args()
     if len(args) != 1:
-        parser.error("There is a wrong number of arguments.")
+        parser.error('There is a wrong number of arguments.')
+    if options.startRepo == None:
+        parser.error('Please specify an earlier start repository for the bisect range.')
     return options.bugOrWfm, options.dir, options.output, \
             options.startRepo, options.endRepo, options.archi, options.tracingjitBool, \
             options.methodjitBool, options.watchExitCode
