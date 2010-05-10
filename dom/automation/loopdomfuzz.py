@@ -133,7 +133,7 @@ def runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime):
       lithlogfn = logPrefix.split(os.sep)[0] + os.sep + "lith1-out"
     else:
       lithlogfn = logPrefix + "-lith1-out"
-    subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"))
+    subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
 
     
