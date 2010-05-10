@@ -37,44 +37,84 @@
 # * ***** END LICENSE BLOCK	****	/
 
 #import os, subprocess
+import sys
 from optparse import OptionParser
 
+def main():
+    filename = sys.argv[-1:][0]
+    (bugOrWfm, dir, output, startRepo, endRepo, archi, \
+     tracingjitBool, methodjitBool, watchExitCode) = parseOpts()
+    print (bugOrWfm, dir, output, startRepo, endRepo, archi, \
+     tracingjitBool, methodjitBool, watchExitCode)
+    print filename
 
+# cat into interactive shell if passing as a CLI argument cannot reproduce the issue
 
-def optparseFunction():
-    # bash ~/Desktop/autoBisect.sh ~/Desktop/2interesting/563210.js dbg bug "ssertion fail" # REPLACEME
-    #usage = 'Usage: %prog -d <dir> -f "<js binary w/ optional parameters>"'
-    usage = ''
+# set the required compulsory flags - at least -s and -e
+
+def parseOpts():
+
+    usage = 'Usage: %prog [options] filename'
     parser = OptionParser(usage)
     # See http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
-    parser.add_option('-d', '--dir', dest='dir', help='Source code directory')
-    parser.add_option('-f', '--file', dest='file', help='File to be bisected')
-    # -s --start startRepo
-    # -e --end badRepo
-    # -a --architecture 32 or 64
-    # -b --bugOrWfm bug wfm bug by default
-    # -o --output null by default
-    # -j is on by default, action="store_true"
-    # -m is off by default (methodJIT), default=False, action="store_true", dest=""??
-    # Watch out for -w, --watchExitCode 3; this is for notExitCode, cat into interactive shell. Off by default
+
+    # autoBisect details
+    parser.add_option('-b', '--bugOrWfm',
+                      dest='bugOrWfm',
+                      type='choice',
+                      choices=['bug', 'wfm'],
+                      default='bug',
+                      help='(Optional, "bug" by default) ' + \
+                           'Bisect to find a bug or WFM issue. ' + \
+                           'Only accept values of "bug" or "wfm"')
+    parser.add_option('-d', '--dir',
+                      dest='dir',
+                      help='Source code directory')
+    parser.add_option('-o', '--output',
+                      dest='output',
+                      help='(Optional) Stdout or stderr output to be observed')
+
+    # Define the start and end repositories.
+    parser.add_option('-s', '--start',
+                      dest='startRepo',
+                      help='Start repository (earlier)')
+    parser.add_option('-e', '--end',
+                      dest='endRepo',
+                      help='End repository (later)')
+
+    # Define the architecture to be tested.
+    parser.add_option('-a', '--architecture',
+                      dest='archi',
+                      type='choice',
+                      choices=['32', '64'],
+                      help='Test architecture. Only accept values of "32" or "64"')
+
+    # Define parameters to be passed to the binary.
+    parser.add_option('-j', '--tracingjit',
+                      dest='tracingjitBool',
+                      action='store_true',
+                      default=False,
+                      help='(Optional) Enable -j, tracing JIT when autoBisecting')
+    parser.add_option('-m', '--methodjit',
+                      dest='methodjitBool',
+                      action='store_true',
+                      default=False,
+                      help='(Optional) Enable -m, method JIT when autoBisecting')
+
+    # Special case in which a specific exit code needs to be observed.
+    parser.add_option('-w', '--watchExitCode',
+                      dest='watchExitCode',
+                      type='choice',
+                      choices=['3', '4', '5', '6'],
+                      help='(Optional) Look out for a specific exit code in the range [3,6]')
+
     (options, args) = parser.parse_args()
-    return options.dir, options.file
+    if len(args) != 1:
+        parser.error("There is a wrong number of arguments.")
+    return options.bugOrWfm, options.dir, options.output, \
+            options.startRepo, options.endRepo, options.archi, options.tracingjitBool, \
+            options.methodjitBool, options.watchExitCode
 
-
-
-
-
-
-
-#
-#def main():
-#    (dir, binaryAndParams) = optparseFunction()
-#    (workingBugs, bugRetVal) = execBinaryParams(fileSearch(dir), binaryAndParams)
-#
-#    workingBugs.sort()
-#    print '\nThe following bugs have js files that have weird return codes:'
-#    for item in workingBugs:
-#        print 'File number is:', item, 'and return value is:', bugRetVal[item]
-#    print
-#
+if __name__ == '__main__':
+    main()
