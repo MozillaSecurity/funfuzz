@@ -40,13 +40,13 @@ import os, sys
 from optparse import OptionParser
 
 #sys.path.append('../jsfunfuzz/')
-#from functionStartjsfunfuzz import *
+#from fnStartjsfunfuzz import *
 
 def main():
     filename = sys.argv[-1:][0]
-    (bugOrWfm, dir, output, startRepo, endRepo, archi, \
+    (bugOrWfm, dir, output, resetBool, startRepo, endRepo, archi, \
      tracingjitBool, methodjitBool, watchExitCode) = parseOpts()
-    print (bugOrWfm, dir, output, startRepo, endRepo, archi, \
+    print (bugOrWfm, dir, output, resetBool, startRepo, endRepo, archi, \
      tracingjitBool, methodjitBool, watchExitCode)
     print filename
 
@@ -75,6 +75,13 @@ def parseOpts():
     parser.add_option('-o', '--output',
                       dest='output',
                       help='Stdout or stderr output to be observed')
+    parser.add_option('-r', '--resetToTipFirstBool',
+                      dest='resetBool',
+                      action='store_true',
+                      default=False,
+                      help='First reset to default tip overwriting all local changes. ' + \
+                           'Equivalent to first executing `hg update -C default`. ' + \
+                           'Default is "False"')
 
     # Define the start and end repositories.
     parser.add_option('-s', '--start',
@@ -116,7 +123,7 @@ def parseOpts():
         parser.error('There is a wrong number of arguments.')
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
-    return options.bugOrWfm, options.dir, options.output, \
+    return options.bugOrWfm, options.dir, options.output, options.resetBool, \
             options.startRepo, options.endRepo, options.archi, options.tracingjitBool, \
             options.methodjitBool, options.watchExitCode
 
