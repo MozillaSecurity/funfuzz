@@ -266,16 +266,7 @@ def main():
     if patchReturnCode == 1 or patchReturnCode2 == 1:
         raise Exception('Patching failed.')
 
-
-    # Sniff platform and run different autoconf types:
-    if os.name == 'posix':
-        if os.uname()[0] == 'Darwin':
-            subprocess.call(['autoconf213'])
-        elif os.uname()[0] == 'Linux':
-            subprocess.call(['autoconf2.13'])
-    elif os.name == 'nt':
-        subprocess.call(['sh', 'autoconf-2.13'])
-
+    autoconfRun()
 
     # Create objdirs within the compilePaths.
     os.mkdir('dbg-objdir')

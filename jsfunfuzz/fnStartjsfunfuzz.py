@@ -136,6 +136,16 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     except OSError:
         raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
 
+# Sniff platform and run different autoconf types:
+def autoconfRun():
+    if os.name == 'posix':
+        if os.uname()[0] == 'Darwin':
+            subprocess.call(['autoconf213'])
+        elif os.uname()[0] == 'Linux':
+            subprocess.call(['autoconf2.13'])
+    elif os.name == 'nt':
+        subprocess.call(['sh', 'autoconf-2.13'])
+
 # This function compiles a js binary depending on the parameters.
 def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe):
     configureCmd = 'sh ../configure'
