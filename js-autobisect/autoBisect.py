@@ -44,10 +44,11 @@ from optparse import OptionParser
 
 def main():
     filename = sys.argv[-1:][0]
-    (bugOrWfm, dir, output, resetBool, startRepo, endRepo, archi, \
-     tracingjitBool, methodjitBool, watchExitCode) = parseOpts()
-    print (bugOrWfm, dir, output, resetBool, startRepo, endRepo, archi, \
-     tracingjitBool, methodjitBool, watchExitCode)
+    options = parseOpts()
+    (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, archi, \
+     tracingjitBool, methodjitBool, watchExitCode) = options
+    print options
+    print bugOrWfm
     print filename
 
 # cat into interactive shell if passing as a CLI argument cannot reproduce the issue
@@ -66,12 +67,18 @@ def parseOpts():
                       choices=['bug', 'wfm'],
                       default='bug',
                       help='Bisect to find a bug or WFM issue. ' + \
-                           'Only accept values of "bug" or "wfm". ' + \
-                           'Default value is "bug"')
+                           'Only acceptss of "bug" or "wfm". ' + \
+                           'Defaults is "bug"')
+    parser.add_option('-c', '--compileType',
+                      dest='compileType',
+                      type='choice',
+                      choices=['dbg', 'opt'],
+                      default='dbg',
+                      help='js shell compile type. Defaults to "dbg"')
     parser.add_option('-d', '--dir',
                       dest='dir',
                       default=os.path.expanduser('~/tracemonkey/'),
-                      help='Source code directory. Default value is "~/tracemonkey/"')
+                      help='Source code directory. Defaults to "~/tracemonkey/"')
     parser.add_option('-o', '--output',
                       dest='output',
                       help='Stdout or stderr output to be observed')
@@ -81,7 +88,7 @@ def parseOpts():
                       default=False,
                       help='First reset to default tip overwriting all local changes. ' + \
                            'Equivalent to first executing `hg update -C default`. ' + \
-                           'Default is "False"')
+                           'Defaults to "False"')
 
     # Define the start and end repositories.
     parser.add_option('-s', '--start',
@@ -90,26 +97,26 @@ def parseOpts():
     parser.add_option('-e', '--end',
                       dest='endRepo',
                       default='tip',
-                      help='End repository (later). Default value is "tip"')
+                      help='End repository (later). Defaults to "tip"')
 
     # Define the architecture to be tested.
     parser.add_option('-a', '--architecture',
                       dest='archi',
                       type='choice',
                       choices=['32', '64'],
-                      help='Test architecture. Only accept values of "32" or "64"')
+                      help='Test architecture. Only accepts "32" or "64"')
 
     # Define parameters to be passed to the binary.
     parser.add_option('-j', '--tracingjit',
                       dest='tracingjitBool',
                       action='store_true',
                       default=False,
-                      help='Enable -j, tracing JIT when autoBisecting. Default is "False"')
+                      help='Enable -j, tracing JIT when autoBisecting. Defaults to "False"')
     parser.add_option('-m', '--methodjit',
                       dest='methodjitBool',
                       action='store_true',
                       default=False,
-                      help='Enable -m, method JIT when autoBisecting. Default is "False"')
+                      help='Enable -m, method JIT when autoBisecting. Defaults to "False"')
 
     # Special case in which a specific exit code needs to be observed.
     parser.add_option('-w', '--watchExitCode',
@@ -123,9 +130,9 @@ def parseOpts():
         parser.error('There is a wrong number of arguments.')
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
-    return options.bugOrWfm, options.dir, options.output, options.resetBool, \
-            options.startRepo, options.endRepo, options.archi, options.tracingjitBool, \
-            options.methodjitBool, options.watchExitCode
+    return options.bugOrWfm, options.compileType, options.dir, options.output, \
+            options.resetBool, options.startRepo, options.endRepo, options.archi, \
+            options.tracingjitBool, options.methodjitBool, options.watchExitCode
 
 if __name__ == '__main__':
     main()
