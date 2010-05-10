@@ -43,10 +43,17 @@ sys.path.append('../jsfunfuzz/')
 from fnStartjsfunfuzz import *
 
 def main():
+    # Do not support Windows XP because the ~ folder is in "/Documents and Settings/",
+    # which contains spaces. This breaks MinGW, which is what MozillaBuild uses.
+    # From Windows Vista onwards, the folder is in "/Users/".
+    if os.name == 'nt':
+        if '5.1' in captureStdout('uname'):
+            raise Exception('autoBisect is not supported on Windows XP.')
+    verbose = True
     # Parse options and parameters from the command-line.
     filename = sys.argv[-1:][0]
     options = parseOpts()
-    (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, archi, \
+    (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, archNum, \
      tracingjitBool, methodjitBool, watchExitCode) = options
 
     os.chdir(sourceDir)
@@ -72,13 +79,83 @@ def main():
     # Find out the number of tests to be executed based on the initial hg bisect output.
     numOfTests = checkNumOfTests(stdoutNumOfTests)
 
-    print 'numOfTests is', numOfTests
-    print 'stdoutNumOfTests is ' + stdoutNumOfTests
-    print options
-    print bugOrWfm
-    print filename
+    # For main directory, change into Desktop directory.
+    mainDir = os.path.expanduser('~/Desktop/')
 
+    # Change into main directory.
+    os.chdir(mainDir)
+
+    numOfTests = 1  #DEBUG - delete this when finished testing.
+    for i in xrange(numOfTests):
+        autoBisectPath = 'autoBisect-' + compileType + '-' + archNum + '-s' + \
+                         startRepo + '-e' + endRepo
+        # Create the autoBisect folder.
+        try:
+            os.makedirs(autoBisectPath)
+        except OSError:
+            raise Exception('The autoBisect path at "' + autoBisectPath + '" already exists!')
+
+        # Change into autoBisectPath.
+        os.chdir(autoBisectPath)
+
+        # Copy the js tree to the autoBisect path.
+        # Don't use pymake because older changesets may fail to compile.
+        cpJsTreeOrPymakeDir(os.path.expanduser(sourceDir), 'js')
+        os.makedirs('compilePath')
+        os.chdir('compilePath')  # Change into compilation directory.
+
+        autoconfRun()
+
+        # Create objdirs within the compilePaths.
+        os.mkdir(compileType + '-objdir')
+        os.chdir(compileType + '-objdir')
+
+        # Compile the first binary.
+        branchType = 'autoBisectBranch'
+        if 'jaeger' in sourceDir:
+            branchType = 'jm'
+        valgrindSupport = False  # Let's disable support for valgrind in the js shell
+        threadsafe = False  # Let's disable support for threadsafety in the js shell
+        configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
+
+        if 'jaeger' in sourceDir:
+            branchType = 'autoBisectBranch'  # Reset the branchType
+        # Compile and copy the first binary.
+        jsShellName = compileCopy(archNum, compileType, branchType, False)
+        # Change back into compilePath.
+        os.chdir('../')
+
+        # Test compilePath.
+        if verbose:
+            print 'DEBUG - This should be the compilePath:'
+            print 'DEBUG - %s\n' % os.getcwdu()
+            if 'compilePath' not in os.getcwdu():
+                raise Exception('We are not in compilePath.')
+
+        os.chdir('../../')  # Change into fuzzPath directory.
+
+    # a js shell should be inside.
+    # test using CLI argument.
 # cat into interactive shell if passing as a CLI argument cannot reproduce the issue
+# use stdoutOutput, tracingjitBool, methodjitBool, watchExitCode
+# look out for the First bad
+# remove directory
+# break out
+# if compilation fails, show the startRepo and endRepo names before quitting out of main. Place in except: ?
+
+# remember to delete the manual numOfTests = 1
+
+#for ((a=0; a <= LIMIT ; a++))  # Double parentheses, and "LIMIT" with no "$".
+#do
+#bash ~/Desktop/autoBisect.sh ~/Desktop/2interesting/563210.js dbg bug "ssertion fail" # REPLACEME
+##bash ~/Desktop/autoBisect-jm-no-m-with-j.sh ~/Desktop/2interesting/w35-reduced.js dbg bug "ssertion failure"
+##bash ~/Desktop/autoBisect.sh ~/Desktop/2interesting/563127.js opt bug "" # REPLACEME
+##bash ~/Desktop/autoBisect-notExitCode.sh ~/Desktop/2interesting/543100.js opt bug "" # REPLACEME
+#done
+
+
+    # Reset `hg bisect` after finishing everything.
+    subprocess.call(['hg bisect -r'], shell=True)
 
 def parseOpts():
 
