@@ -342,7 +342,10 @@ def rdfInit(browserDir, additionalArgs = []):
     if alh.fuzzerComplained:
       lev = max(lev, DOM_FUZZER_COMPLAINED)
 
-    if status < 0 and False:
+    # I am working around bug 564632 by not using Breakpad on Linux.  This means I can't distinguish crashes from each other.
+    ignoreAllCrashes = (platform.system() == "Linux")
+
+    if status < 0 and not ignoreAllCrashes:
       # The program was terminated by a signal, which usually indicates a crash.
       # Mac/Linux only!
       signum = -status
@@ -370,7 +373,7 @@ def rdfInit(browserDir, additionalArgs = []):
     
     if options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
       lev = max(lev, DOM_VG_AMISS)
-    elif status > 0 and False:
+    elif status > 0 and not ignoreAllCrashes:
       lev = max(lev, DOM_ABNORMAL_EXIT)
 
     if leakLogFile and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
