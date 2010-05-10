@@ -65,7 +65,7 @@
 #   Linux and Jaegermonkey. No longer supports 10.5.x, 32-bit Linux.
 
 import sys, os, subprocess, shutil, time
-from functionStartjsfunfuzz import *
+from fnStartjsfunfuzz import *
 
 def main():
 
