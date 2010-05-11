@@ -300,9 +300,9 @@ def checkNumOfTests(str):
 
 # Run the testcase on the compiled js binary.
 def testBinary(shell, file, methodjitBool, tracingjitBool):
-    methodJit = '-m' if methodjitBool else ''
-    tracingJit = '-j' if tracingjitBool else ''
-    testBinaryCmd = './' + shell, methodJit, tracingJit, file
+    methodJit = ' -m' if methodjitBool else ''
+    tracingJit = ' -j' if tracingjitBool else ''
+    testBinaryCmd = './' + shell + methodJit + tracingJit + ' ' + file
     print 'The testing command is:', testBinaryCmd
 
     # Capture stdout and stderr into the same string.
