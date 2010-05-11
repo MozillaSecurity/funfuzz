@@ -132,12 +132,77 @@ def main():
             if 'compilePath' not in os.getcwdu():
                 raise Exception('We are not in compilePath.')
 
-        os.chdir('../../')  # Change into fuzzPath directory.
+        os.chdir('../../')  # Change into autoBisectPath directory.
 
-    # a js shell should be inside.
-    # test using CLI argument.
-# cat into interactive shell if passing as a CLI argument cannot reproduce the issue
-# use stdoutOutput, tracingjitBool, methodjitBool, watchExitCode
+        exitCode = testBinary(jsShellName)
+
+        # Switch to hg repository directory.
+        os.chdir(os.path.expanduser(sourceDir))
+
+
+## If exact assertion failure message is found (debug shells only),
+##   return a bad exit code.
+## Exit code 133 is the number for Trace/BFT trap on Mac Leopard
+##   (exit code for Mac assertions)
+## More information on exit codes:
+## http://tldp.org/LDP/abs/html/exitcodes.html
+#if ([ "$compileType" = dbg ] && [ "$exitCode" != 0 ] && [ "$exitCode" = 133 ]); then
+#
+#  # Look for the required assertion message which was piped into a temp file.
+#  if grep -q "$requiredOutput" ~/Desktop/autoBisect-$compileType-tm/tempResult; then
+#    if [ "$bad" = bug ]; then
+#      echo "BAD changeset: hg bisect -b"
+#      hg bisect -b;
+#    fi
+#    if [ "$bad" = wfm ]; then
+#      echo "GOOD changeset: hg bisect -g"
+#      hg bisect -g;
+#    fi
+#    echo -n "You are now currently in hg revision: "
+#    hg identify -n
+#    rm -rf ~/Desktop/autoBisect-$compileType-tm/
+#    exit 0;
+#  fi
+#
+#  echo -n "You are now currently in hg revision: "
+#  hg identify -n
+#  rm -rf ~/Desktop/autoBisect-$compileType-tm/
+#  exit 0;
+#fi
+#
+## Only for bad changesets.
+#if ([ "$exitCode" = 1 ] || [ 129 -le "$exitCode" -a "$exitCode" -le 159 ]); then
+#  if [ "$bad" = bug ]; then
+#    echo "BAD changeset: hg bisect -b"
+#    hg bisect -b;
+#  fi
+#  if [ "$bad" = wfm ]; then
+#    echo "GOOD changeset: hg bisect -g"
+#    hg bisect -g;
+#  fi
+#  echo -n "You are now currently in hg revision: "
+#  hg identify -n
+#  rm -rf ~/Desktop/autoBisect-$compileType-tm/
+#  exit 0;
+#fi
+#
+## If exit code is 0, it is a good changeset.
+#if ([ "$exitCode" = 0 ] || [ 3 -le "$exitCode" -a "$exitCode" -le 6 ]); then
+#  if [ "$bad" = bug ]; then
+#    echo "GOOD changeset: hg bisect -g"
+#    hg bisect -g;
+#  fi
+#  if [ "$bad" = wfm ]; then
+#    echo "BAD changeset: hg bisect -b"
+#    hg bisect -b;
+#  fi
+#  echo -n "You are now currently in hg revision: "
+#  hg identify -n
+#  rm -rf ~/Desktop/autoBisect-$compileType-tm/
+#  exit 0;
+#fi
+
+# use stdoutOutput, tracingjitBool, methodjitBool, watchExitCode, bugOrWfm
 # look out for the First bad
 # remove directory
 # break out
@@ -239,6 +304,9 @@ def parseOpts():
             options.tracingjitBool, options.methodjitBool, options.watchExitCode
 
 def checkNumOfTests(str):
+    # Sample bisect range message:
+    # "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
+    # This function looks for the number just after the "~".
     testNum = 0
     i = 0
     while i < len(str):
@@ -255,6 +323,21 @@ def checkNumOfTests(str):
         raise Exception('The number of tests to be executed should not be 0.')
     return testNum
 
+def testBinary(shell):
+    pass
+# Run the testcase on the compiled js binary.
+#if ./js-$compileType-tm -j $testcaseFile > tempResult 2>&1; then
+#  exitCode=$?
+#  echo -n "The exit code is: "
+#  echo $exitCode
+#else
+#  exitCode=$?
+#  cat tempResult
+#  echo -n "The exit code is: "
+#  echo $exitCode
+#fi
+    # test using CLI argument.
+# cat into interactive shell if passing as a CLI argument cannot reproduce the issue
 
 if __name__ == '__main__':
     main()
