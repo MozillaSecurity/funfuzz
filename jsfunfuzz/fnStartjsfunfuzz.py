@@ -238,5 +238,5 @@ def testDbgOrOpt(jsShellName, compileType):
         print
         raise Exception('The compiled binary is not an optimized shell.')
 
-if '__name__' == '__main__':
+if __name__ == '__main__':
     pass
