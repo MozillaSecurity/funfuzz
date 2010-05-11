@@ -121,7 +121,12 @@ def main():
         if 'jaeger' in sourceDir:
             branchType = 'autoBisectBranch'  # Reset the branchType
         # Compile and copy the first binary.
-        jsShellName = compileCopy(archNum, compileType, branchType, False)
+        try:
+            jsShellName = compileCopy(archNum, compileType, branchType, False)
+        except:
+            print 'The "good" repository that is currently labelled:', startRepo
+            print 'The "bad" repository that is currently labelled:', endRepo
+            raise Exception('Compilation failed.')
         # Change back into compilePath.
         os.chdir('../')
 
@@ -158,67 +163,39 @@ def main():
             # Depending on the exit code as per the different platforms, specify
             # if the current changeset is "good" or "bad".
             if exitCode == codeToBeObserved:
-                if bugOrWfm == 'bug':
-                    print 'BAD changeset: hg bisect -b'
-                    subprocess.call(['hg', 'bisect', '-b'])
-                elif bugOrWfm == 'wfm':
-                    print 'GOOD changeset: hg bisect -g'
-                    subprocess.call(['hg', 'bisect', '-g'])
-
-                print 'autoBisect is now currently in hg revision:',
-                subprocess.call(['hg', 'identify', '-n'])
+                (result, startRepo, endRepo) = bisectLabel(bugOrWfm, 'bad', startRepo, endRepo)
 
                 print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
                 shutil.rmtree(autoBisectFullPath)
+                if 'first bad revision' in result:
+                    break
+
+        # "Bad" changesets.
+        elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode):
+            (result, startRepo, endRepo) = bisectLabel(bugOrWfm, 'bad', startRepo, endRepo)
+
+            print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
+            shutil.rmtree(autoBisectFullPath)
+            if 'first bad revision' in result:
                 break
 
+        # "Good" changesets.
+        elif exitCode != watchExitCode:
+            if (exitCode == 0) or (3 <= exitCode <= 6):
+                (result, startRepo, endRepo) = bisectLabel(bugOrWfm, 'good', startRepo, endRepo)
 
+                print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
+                shutil.rmtree(autoBisectFullPath)
+                if 'first bad revision' in result:
+                    break
 
-
-## Only for bad changesets.
-#if ([ "$exitCode" = 1 ] || [ 129 -le "$exitCode" -a "$exitCode" -le 159 ]); then
-#  if [ "$bad" = bug ]; then
-#    echo "BAD changeset: hg bisect -b"
-#    hg bisect -b;
-#  fi
-#  if [ "$bad" = wfm ]; then
-#    echo "GOOD changeset: hg bisect -g"
-#    hg bisect -g;
-#  fi
-#  echo -n "You are now currently in hg revision: "
-#  hg identify -n
-#  rm -rf ~/Desktop/autoBisect-$compileType-tm/
-#  exit 0;
-#fi
-#
-## If exit code is 0, it is a good changeset.
-#if ([ "$exitCode" = 0 ] || [ 3 -le "$exitCode" -a "$exitCode" -le 6 ]); then
-#  if [ "$bad" = bug ]; then
-#    echo "GOOD changeset: hg bisect -g"
-#    hg bisect -g;
-#  fi
-#  if [ "$bad" = wfm ]; then
-#    echo "BAD changeset: hg bisect -b"
-#    hg bisect -b;
-#  fi
-#  echo -n "You are now currently in hg revision: "
-#  hg identify -n
-#  rm -rf ~/Desktop/autoBisect-$compileType-tm/
-#  exit 0;
-#fi
-
-# use watchExitCode, bugOrWfm
-# look out for the First bad
-# remove directory
-# break out
-# if compilation fails, show the startRepo and endRepo names before quitting out of main. Place in except: ?
-
+        else:
+            raise Exception('Unknown exit code hit:', exitCode)
 
     # Reset `hg bisect` after finishing everything.
     subprocess.call(['hg bisect -r'], shell=True)
 
 def parseOpts():
-
     usage = 'Usage: %prog [options] filename'
     parser = OptionParser(usage)
     # See http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
@@ -319,16 +296,23 @@ def checkNumOfTests(str):
         raise Exception('The number of tests to be executed should not be 0.')
     return testNum
 
+# Run the testcase on the compiled js binary.
 def testBinary(shell, file, methodjitBool, tracingjitBool):
-    # Run the testcase on the compiled js binary.
     methodJit = '-m' if methodjitBool else ''
     tracingJit = '-j' if tracingjitBool else ''
     testBinaryCmd = './' + shell + ' ' + methodJit + ' ' + tracingJit + ' ' \
                     + file
     print 'The testing command is:', testBinaryCmd
-    (output, retCode) = captureStdoutAndStderr(testBinaryCmd)
+
+    # Capture stdout and stderr into the same string.
+    p = subprocess.Popen([testBinaryCmd], stdin=subprocess.STDOUT,
+                          stdout=subprocess.PIPE, shell=True)
+    output = p.communicate()[0]
+    retCode = p.returncode
     print 'The exit code is:', retCode
     print 'The first output is:', output
+
+    # Switch to interactive input mode similar to `cat testcase.js | ./js -j -i`.
     if retCode == 0:
         print 'Switching to interactive input mode in case passing as a CLI ' + \
                 'argument does not reproduce the issue..'
@@ -341,13 +325,39 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
         print 'The second output is:', output2
     return retCode
 
-# This function captures standard output and standard error into a string, and
-# also returns the return code.
-def captureStdoutAndStderr(input):
-    p = subprocess.Popen([input], stdin=subprocess.STDOUT,
-                          stdout=subprocess.PIPE, shell=True)
-    stdout = p.communicate()[0]
-    return stdout, p.returncode
+# This function labels a changeset as "good" or "bad" depending on parameters.
+def bisectLabel(bugOrWfm, gdBad, startRepo, endRepo):
+    bisectLabelTuple = ()
+    if bugOrWfm == 'bug':
+        if gdBad == 'bad':
+            bisectLabelTuple = ('BAD', '-b')
+        elif gdBad == 'good':
+            bisectLabelTuple = ('GOOD', '-g')
+    elif bugOrWfm == 'wfm':
+        if gdBad == 'bad':
+            bisectLabelTuple = ('GOOD', '-g')
+        elif gdBad == 'good':
+            bisectLabelTuple = ('BAD', '-b')
+
+    print bisectLabelTuple[0], 'changeset: hg bisect', bisectLabelTuple[1]
+    outputResult = captureStdout('hg bisect ' + bisectLabelTuple[1])
+    print outputResult
+
+    print 'autoBisect is now currently in hg revision:',
+    currRev = captureStdout(['hg identify -n'])
+
+    # Update the startRepo/endRepo values.
+    if bugOrWfm == 'bug':
+        if gdBad == 'bad':
+            endRepo = currRev
+        elif gdBad == 'good':
+            startRepo = currRev
+    elif bugOrWfm == 'wfm':
+        if gdBad == 'bad':
+            startRepo = currRev
+        elif gdBad == 'good':
+            endRepo = currRev
+    return outputResult, startRepo, endRepo
 
 if __name__ == '__main__':
     main()
