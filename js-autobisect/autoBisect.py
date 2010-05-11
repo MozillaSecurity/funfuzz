@@ -89,6 +89,7 @@ def main():
     for i in xrange(numOfTests):
         autoBisectPath = 'autoBisect-' + compileType + '-' + archNum + '-s' + \
                          startRepo + '-e' + endRepo
+
         # Create the autoBisect folder.
         try:
             os.makedirs(autoBisectPath)
@@ -119,6 +120,7 @@ def main():
 
         if 'jaeger' in sourceDir:
             branchType = 'autoBisectBranch'  # Reset the branchType
+
         # Compile and copy the first binary.
         try:
             jsShellName = compileCopy(archNum, compileType, branchType, False)
@@ -126,6 +128,7 @@ def main():
             print 'The "good" repository that is currently labelled:', startRepo
             print 'The "bad" repository that is currently labelled:', endRepo
             raise Exception('Compilation failed.')
+
         # Change back into compilePath.
         os.chdir('../')
 
@@ -304,7 +307,8 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     print 'The testing command is:', testBinaryCmd
 
     # Capture stdout and stderr into the same string.
-    p = subprocess.Popen([testBinaryCmd], stderr=STDOUT, stdout=PIPE, shell=True)
+    p = subprocess.Popen([testBinaryCmd], stderr=subprocess.STDOUT,
+                            stdout=subprocess.PIPE, shell=True)
     output = p.communicate()[0]
     retCode = p.returncode
     print 'The exit code is:', retCode
@@ -316,7 +320,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
                 'argument does not reproduce the issue..'
         testBinaryCmd2 = subprocess.Popen(['cat', file], stdout=PIPE)
         testBinaryCmd3 = subprocess.Popen(['./' + shell, methodJit, tracingJit, '-i'],
-            stdin=testBinaryCmd2.STDOUT, stdout=PIPE)
+            stdin=testBinaryCmd2.STDOUT, stdout=subprocess.PIPE)
         output2 = testBinaryCmd3.communicate()[0]
         retCode = testBinaryCmd3.returncode
         print 'The exit code is:', retCode
