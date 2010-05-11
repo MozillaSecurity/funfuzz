@@ -302,8 +302,7 @@ def checkNumOfTests(str):
 def testBinary(shell, file, methodjitBool, tracingjitBool):
     methodJit = '-m' if methodjitBool else ''
     tracingJit = '-j' if tracingjitBool else ''
-    testBinaryCmd = './' + shell + ' ' + methodJit + ' ' + tracingJit + ' ' \
-                    + file
+    testBinaryCmd = './' + shell, methodJit, tracingJit, file
     print 'The testing command is:', testBinaryCmd
 
     # Capture stdout and stderr into the same string.
@@ -325,7 +324,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
         retCode = testBinaryCmd3.returncode
         print 'The exit code is:', retCode
         print 'The second output is:', output2
-    return retCode
+    return output, retCode
 
 # This function labels a changeset as "good" or "bad" depending on parameters.
 def bisectLabel(bugOrWfm, gdBad, startRepo, endRepo):
