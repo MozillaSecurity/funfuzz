@@ -101,7 +101,6 @@ def main():
         # Copy the js tree to the autoBisect path.
         # Don't use pymake because older changesets may fail to compile.
         cpJsTreeOrPymakeDir(os.path.expanduser(sourceDir), 'js')
-        os.makedirs('compilePath')
         os.chdir('compilePath')  # Change into compilation directory.
 
         autoconfRun()
@@ -305,8 +304,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     print 'The testing command is:', testBinaryCmd
 
     # Capture stdout and stderr into the same string.
-    p = subprocess.Popen([testBinaryCmd], stdin=subprocess.STDOUT,
-                          stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen([testBinaryCmd], stderr=STDOUT, stdout=PIPE, shell=True)
     output = p.communicate()[0]
     retCode = p.returncode
     print 'The exit code is:', retCode
