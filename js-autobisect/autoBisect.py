@@ -36,7 +36,7 @@
 #
 # * ***** END LICENSE BLOCK	****	/
 
-import os, subprocess, sys
+import os, shutil, subprocess, sys
 from optparse import OptionParser
 
 sys.path.append('../jsfunfuzz/')
@@ -50,11 +50,12 @@ def main():
         if '5.1' in captureStdout('uname'):
             raise Exception('autoBisect is not supported on Windows XP.')
     verbose = True
+
     # Parse options and parameters from the command-line.
     filename = sys.argv[-1:][0]
     options = parseOpts()
-    (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, archNum, \
-     tracingjitBool, methodjitBool, watchExitCode) = options
+    (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, \
+     endRepo, archNum, tracingjitBool, methodjitBool, watchExitCode) = options
 
     os.chdir(sourceDir)
 
@@ -85,7 +86,6 @@ def main():
     # Change into main directory.
     os.chdir(mainDir)
 
-    numOfTests = 1  #DEBUG - delete this when finished testing.
     for i in xrange(numOfTests):
         autoBisectPath = 'autoBisect-' + compileType + '-' + archNum + '-s' + \
                          startRepo + '-e' + endRepo
@@ -133,43 +133,48 @@ def main():
                 raise Exception('We are not in compilePath.')
 
         os.chdir('../../')  # Change into autoBisectPath directory.
+        autoBisectFullPath = os.path.expanduser(os.getcwdu())
 
-        exitCode = testBinary(jsShellName)
+        (stdoutStderr, exitCode) = testBinary(jsShellName, filename,
+                                              methodjitBool, tracingjitBool)
 
         # Switch to hg repository directory.
         os.chdir(os.path.expanduser(sourceDir))
 
+        # Label the changeset bad if the exact assert is found (only in debug shells)
+        # (Assuming "bad" and not "wfm".)
+        # Assertion exit codes: Mac 10.5/10.6 - 133, Linux - 134, WinXP - 3
+        if compileType == 'dbg' and stdoutOutput in stdoutStderr and exitCode != 0:
+            # Set a random arbitrary value that cannot be a genuine exit code.
+            codeToBeObserved = 888888
+            if os.name == 'posix':
+                if os.uname()[0] == 'Darwin':
+                    codeToBeObserved = 133
+                elif os.uname()[0] == 'Linux':
+                    codeToBeObserved = 134
+            elif os.name == 'nt':
+                codeToBeObserved = 3
 
-## If exact assertion failure message is found (debug shells only),
-##   return a bad exit code.
-## Exit code 133 is the number for Trace/BFT trap on Mac Leopard
-##   (exit code for Mac assertions)
-## More information on exit codes:
-## http://tldp.org/LDP/abs/html/exitcodes.html
-#if ([ "$compileType" = dbg ] && [ "$exitCode" != 0 ] && [ "$exitCode" = 133 ]); then
-#
-#  # Look for the required assertion message which was piped into a temp file.
-#  if grep -q "$requiredOutput" ~/Desktop/autoBisect-$compileType-tm/tempResult; then
-#    if [ "$bad" = bug ]; then
-#      echo "BAD changeset: hg bisect -b"
-#      hg bisect -b;
-#    fi
-#    if [ "$bad" = wfm ]; then
-#      echo "GOOD changeset: hg bisect -g"
-#      hg bisect -g;
-#    fi
-#    echo -n "You are now currently in hg revision: "
-#    hg identify -n
-#    rm -rf ~/Desktop/autoBisect-$compileType-tm/
-#    exit 0;
-#  fi
-#
-#  echo -n "You are now currently in hg revision: "
-#  hg identify -n
-#  rm -rf ~/Desktop/autoBisect-$compileType-tm/
-#  exit 0;
-#fi
-#
+            # Depending on the exit code as per the different platforms, specify
+            # if the current changeset is "good" or "bad".
+            if exitCode == codeToBeObserved:
+                if bugOrWfm == 'bug':
+                    print 'BAD changeset: hg bisect -b'
+                    subprocess.call(['hg', 'bisect', '-b'])
+                elif bugOrWfm == 'wfm':
+                    print 'GOOD changeset: hg bisect -g'
+                    subprocess.call(['hg', 'bisect', '-g'])
+
+                print 'autoBisect is now currently in hg revision:',
+                subprocess.call(['hg', 'identify', '-n'])
+
+                print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
+                shutil.rmtree(autoBisectFullPath)
+                break
+
+
+
+
 ## Only for bad changesets.
 #if ([ "$exitCode" = 1 ] || [ 129 -le "$exitCode" -a "$exitCode" -le 159 ]); then
 #  if [ "$bad" = bug ]; then
@@ -202,21 +207,11 @@ def main():
 #  exit 0;
 #fi
 
-# use stdoutOutput, tracingjitBool, methodjitBool, watchExitCode, bugOrWfm
+# use watchExitCode, bugOrWfm
 # look out for the First bad
 # remove directory
 # break out
 # if compilation fails, show the startRepo and endRepo names before quitting out of main. Place in except: ?
-
-# remember to delete the manual numOfTests = 1
-
-#for ((a=0; a <= LIMIT ; a++))  # Double parentheses, and "LIMIT" with no "$".
-#do
-#bash ~/Desktop/autoBisect.sh ~/Desktop/2interesting/563210.js dbg bug "ssertion fail" # REPLACEME
-##bash ~/Desktop/autoBisect-jm-no-m-with-j.sh ~/Desktop/2interesting/w35-reduced.js dbg bug "ssertion failure"
-##bash ~/Desktop/autoBisect.sh ~/Desktop/2interesting/563127.js opt bug "" # REPLACEME
-##bash ~/Desktop/autoBisect-notExitCode.sh ~/Desktop/2interesting/543100.js opt bug "" # REPLACEME
-#done
 
 
     # Reset `hg bisect` after finishing everything.
@@ -250,7 +245,8 @@ def parseOpts():
                       help='Source code directory. Defaults to "~/tracemonkey/"')
     parser.add_option('-o', '--output',
                       dest='output',
-                      help='Stdout or stderr output to be observed')
+                      help='Stdout or stderr output to be observed. ' + \
+                           'For assertions, set to "ssertion fail"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
                       action='store_true',
@@ -323,21 +319,35 @@ def checkNumOfTests(str):
         raise Exception('The number of tests to be executed should not be 0.')
     return testNum
 
-def testBinary(shell):
-    pass
-# Run the testcase on the compiled js binary.
-#if ./js-$compileType-tm -j $testcaseFile > tempResult 2>&1; then
-#  exitCode=$?
-#  echo -n "The exit code is: "
-#  echo $exitCode
-#else
-#  exitCode=$?
-#  cat tempResult
-#  echo -n "The exit code is: "
-#  echo $exitCode
-#fi
-    # test using CLI argument.
-# cat into interactive shell if passing as a CLI argument cannot reproduce the issue
+def testBinary(shell, file, methodjitBool, tracingjitBool):
+    # Run the testcase on the compiled js binary.
+    methodJit = '-m' if methodjitBool else ''
+    tracingJit = '-j' if tracingjitBool else ''
+    testBinaryCmd = './' + shell + ' ' + methodJit + ' ' + tracingJit + ' ' \
+                    + file
+    print 'The testing command is:', testBinaryCmd
+    (output, retCode) = captureStdoutAndStderr(testBinaryCmd)
+    print 'The exit code is:', retCode
+    print 'The first output is:', output
+    if retCode == 0:
+        print 'Switching to interactive input mode in case passing as a CLI ' + \
+                'argument does not reproduce the issue..'
+        testBinaryCmd2 = subprocess.Popen(['cat', file], stdout=PIPE)
+        testBinaryCmd3 = subprocess.Popen(['./' + shell, methodJit, tracingJit, '-i'],
+            stdin=testBinaryCmd2.STDOUT, stdout=PIPE)
+        output2 = testBinaryCmd3.communicate()[0]
+        retCode = testBinaryCmd3.returncode
+        print 'The exit code is:', retCode
+        print 'The second output is:', output2
+    return retCode
+
+# This function captures standard output and standard error into a string, and
+# also returns the return code.
+def captureStdoutAndStderr(input):
+    p = subprocess.Popen([input], stdin=subprocess.STDOUT,
+                          stdout=subprocess.PIPE, shell=True)
+    stdout = p.communicate()[0]
+    return stdout, p.returncode
 
 if __name__ == '__main__':
     main()
