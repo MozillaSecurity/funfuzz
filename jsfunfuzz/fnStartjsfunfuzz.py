@@ -129,7 +129,7 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
         if verbose:
-            print 'DEBUG - Copying the', jsOrBuildText, ', which is located at', repo
+            print 'DEBUG - Copying the', jsOrBuildText + ', which is located at', repo
         shutil.copytree(repo, "compilePath") if jsOrBuild == 'js' else shutil.copytree(repo, "build")
         if verbose:
             print 'DEBUG - Finished copying the', jsOrBuildText
