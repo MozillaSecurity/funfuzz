@@ -44,7 +44,9 @@ def many_timed_runs():
 
         level = jsunhappy.jsfunfuzzLevel(runThis, timeout, knownPath, logPrefix)
 
-        if level > jsunhappy.JS_TIMED_OUT:
+        # In xpcshell, allow abnormal exits (bug 565345)
+        xpcshell = (runThis[0].find("xpcshell") != -1)
+        if level > (jsunhappy.JS_ABNORMAL_EXIT if xpcshell else jsunhappy.JS_TIMED_OUT):
             showtail(logPrefix + "-out")
             showtail(logPrefix + "-err")
             
