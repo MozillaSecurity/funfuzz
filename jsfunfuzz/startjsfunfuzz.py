@@ -110,13 +110,15 @@ def main():
     # Check supported operating systems.
     osCheck()
     if (sys.argv[1] == '32') and (os.name == 'posix'):
-        # 32-bit js shells have only been tested on i686 platforms.
-        if (os.uname()[4] != 'i686'):
-            raise Exception('32-bit compilation is not supported on non-i686 platforms.')
+        # 32-bit js shells have only been tested on Mac (i386) or Linux (i686) platforms.
+        if (os.uname()[0] == 'Linux' and os.uname()[4] != 'i686'):
+            raise Exception('32-bit compilation is not supported on non-i686 Linux platforms.')
+        elif (os.uname()[0] == 'Darwin' and os.uname()[4] != 'i386'):
+            raise Exception('32-bit compilation is not supported on non-i386 Darwin platforms.')
     elif (sys.argv[1] == '64'):
-        # 64-bit js shells have only been tested on x86_64 (AMD64) platforms.
-        if (os.uname()[4] != 'x86_64'):
-            raise Exception('64-bit compilation is not supported on non-x86_64 platforms.')
+        # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
+        if (os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64'):
+            raise Exception('64-bit compilation is not supported on non-x86_64 Linux platforms.')
         if (sys.argv[3] == '191'):
             raise Exception('64-bit compilation is not supported on 1.9.1 branch.')
 
