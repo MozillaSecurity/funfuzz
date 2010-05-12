@@ -58,7 +58,6 @@ var dump;
 var dumpln;
 var printImportant;
 if (jsshell) {
-  dump = print;
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
   if (typeof line2pc == "function") {
@@ -70,6 +69,8 @@ if (jsshell) {
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
     options("anonfunfix");
+  } else if (typeof XPCNativeWrapper == "function") {
+    engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof debug == "function") {
     engine = ENGINE_JAVASCRIPTCORE;
   }
@@ -2759,7 +2760,11 @@ var exprMakers =
   function (d, b) { return "Math." + rndElt(["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "floor", "log", "round", "sin", "sqrt", "tan"]) + "(" + makeExpr(d, b) + ")"; },
 
   // Binary Math functions
-  function (d, b) { return "Math." + rndElt(["atan2", "max", "min", "pow"]) + "(" + makeExpr(d, b) + ", " + makeExpr(d, b) + ")"; }
+  function (d, b) { return "Math." + rndElt(["atan2", "max", "min", "pow"]) + "(" + makeExpr(d, b) + ", " + makeExpr(d, b) + ")"; },
+
+  // Wrappers
+  function(d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
+  function(d, b) { return "new XPCSafeJSObjectWrapper(" + makeExpr(d, b) + ")"; },
 ];
 
 function makePropertyDescriptor(d, b)
@@ -2954,6 +2959,8 @@ var functionMakers = [
   function(d, b) { return "Math.sin" },
   function(d, b) { return "Math.pow" },
   function(d, b) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
+  function(d, b) { return "XPCNativeWrapper" },
+  function(d, b) { return "XPCSafeJSObjectWrapper" },
 ];
 
 
