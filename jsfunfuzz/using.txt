@@ -6,6 +6,7 @@ Long-running without JIT:
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js
 Long-running with JIT:
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js -j
+  LD_LIBRARY_PATH=. python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./xpcshell -j
 Comparing JIT against non-JIT:
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py --comparejit 10 ~/fuzzing/js-known/mozilla-central/ ./js -j
 Valgrind+JIT: (opt build recommended; --enable-valgrind(?) even better)
