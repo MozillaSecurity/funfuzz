@@ -2522,7 +2522,8 @@ var specialProperties = [
   "prop",
   "__iterator__", "__count__",
   "__noSuchMethod__",
-  "__parent__", "__proto__", "constructor", "prototype"
+  "__parent__", "__proto__", "constructor", "prototype",
+  "wrappedJSObject"
 ]
 
 
