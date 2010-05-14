@@ -54,21 +54,14 @@ def main():
     # Parse options and parameters from the command-line.
     filename = sys.argv[-1:][0]
     options = parseOpts()
-    (bugOrWfm, compileType, sourceDir, stdoutOutput, resetBool, startRepo, \
-     endRepo, archNum, tracingjitBool, methodjitBool, watchExitCode) = options
+    (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, \
+     archNum, tracingjitBool, methodjitBool, watchExitCode) = options
 
     os.chdir(sourceDir)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
         subprocess.call(['hg up -C default'], shell=True)
-
-    # Reverse if a bisect range to find a WFM issue is specified.
-    if bugOrWfm == 'wfm':
-        tempVal = ''
-        tempVal = startRepo
-        startRepo = endRepo
-        endRepo = tempVal
 
     # Specify `hg bisect` ranges.
     subprocess.call(['hg bisect -r'], shell=True)
@@ -158,7 +151,6 @@ def main():
         os.chdir(os.path.expanduser(sourceDir))
 
         # Label the changeset bad if the exact assert is found (only in debug shells)
-        # (Assuming "bad" and not "wfm".)
         # Assertion exit codes: Mac 10.5/10.6 - 133, Linux - 134, WinXP - 3
         if compileType == 'dbg' and stdoutOutput in stdoutStderr and exitCode != 0:
             # Set a random arbitrary value that cannot be a genuine exit code.
@@ -174,7 +166,7 @@ def main():
             # Depending on the exit code as per the different platforms, specify
             # if the current changeset is "good" or "bad".
             if exitCode == codeToBeObserved:
-                (result, startRepo, endRepo) = bisectLabel(bugOrWfm, 'bad', startRepo, endRepo)
+                (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
                 print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
                 shutil.rmtree(autoBisectFullPath)
@@ -183,7 +175,7 @@ def main():
 
         # "Bad" changesets.
         elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode):
-            (result, startRepo, endRepo) = bisectLabel(bugOrWfm, 'bad', startRepo, endRepo)
+            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
             shutil.rmtree(autoBisectFullPath)
@@ -193,7 +185,7 @@ def main():
         # "Good" changesets.
         elif exitCode != watchExitCode:
             if (exitCode == 0) or (3 <= exitCode <= 6):
-                (result, startRepo, endRepo) = bisectLabel(bugOrWfm, 'good', startRepo, endRepo)
+                (result, startRepo, endRepo) = bisectLabel('good', startRepo, endRepo)
 
                 print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
                 shutil.rmtree(autoBisectFullPath)
@@ -213,14 +205,6 @@ def parseOpts():
     parser.disable_interspersed_args()
 
     # autoBisect details
-    parser.add_option('-b', '--bugOrWfm',
-                      dest='bugOrWfm',
-                      type='choice',
-                      choices=['bug', 'wfm'],
-                      default='bug',
-                      help='Bisect to find a bug or WFM issue. ' + \
-                           'Only accepts "bug" or "wfm". ' + \
-                           'Defaults to "bug"')
     parser.add_option('-c', '--compileType',
                       dest='compileType',
                       type='choice',
@@ -246,7 +230,9 @@ def parseOpts():
     # Define the start and end repositories.
     parser.add_option('-s', '--start',
                       dest='startRepo',
-                      help='Start repository (earlier)')
+                      help='Start repository (earlier). Set to "tip" here, and ' + \
+                           'id where the symptom first exhibits at -e instead, ' + \
+                           'if the patch that fixed an issue is desired.')
     parser.add_option('-e', '--end',
                       dest='endRepo',
                       default='tip',
@@ -292,7 +278,7 @@ def parseOpts():
     if (options.archi == 64) and (options.startRepo < 37000) and (options.dir == os.path.expanduser('~/tracemonkey/')):
         parser.error('The changeset number for 64-bit default TM must at least be 37000, which corresponds to TM changeset f8250a4e3535.')
 
-    return options.bugOrWfm, options.compileType, options.dir, options.output, \
+    return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
             options.tracingjitBool, options.methodjitBool, options.watchExitCode
 
@@ -354,18 +340,12 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     return output, retCode
 
 # This function labels a changeset as "good" or "bad" depending on parameters.
-def bisectLabel(bugOrWfm, gdBad, startRepo, endRepo):
+def bisectLabel(gdBad, startRepo, endRepo):
     bisectLabelTuple = ()
-    if bugOrWfm == 'bug':
-        if gdBad == 'bad':
-            bisectLabelTuple = ('BAD', '-b')
-        elif gdBad == 'good':
-            bisectLabelTuple = ('GOOD', '-g')
-    elif bugOrWfm == 'wfm':
-        if gdBad == 'bad':
-            bisectLabelTuple = ('GOOD', '-g')
-        elif gdBad == 'good':
-            bisectLabelTuple = ('BAD', '-b')
+    if gdBad == 'bad':
+        bisectLabelTuple = ('BAD', '-b')
+    elif gdBad == 'good':
+        bisectLabelTuple = ('GOOD', '-g')
 
     print bisectLabelTuple[0], 'changeset: hg bisect', bisectLabelTuple[1]
     outputResult = captureStdout('hg bisect ' + bisectLabelTuple[1])
@@ -379,16 +359,10 @@ def bisectLabel(bugOrWfm, gdBad, startRepo, endRepo):
     os.remove('hgIdNum.txt')
 
     # Update the startRepo/endRepo values.
-    if bugOrWfm == 'bug':
-        if gdBad == 'bad':
-            endRepo = currRev
-        elif gdBad == 'good':
-            startRepo = currRev
-    elif bugOrWfm == 'wfm':
-        if gdBad == 'bad':
-            startRepo = currRev
-        elif gdBad == 'good':
-            endRepo = currRev
+    if gdBad == 'bad':
+        endRepo = currRev
+    elif gdBad == 'good':
+        startRepo = currRev
     return outputResult, startRepo, endRepo
 
 if __name__ == '__main__':
