@@ -121,6 +121,7 @@ def main():
         except:
             print 'The "good" repository that is currently labelled:', startRepo
             print 'The "bad" repository that is currently labelled:', endRepo
+            # Consider implementing `hg bisect --skip`.
             raise Exception('Compilation failed.')
 
         # Change back into compilePath.
@@ -170,7 +171,7 @@ def main():
 
                 print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
                 shutil.rmtree(autoBisectFullPath)
-                if 'first bad revision' in result:
+                if 'revision is:' in result:
                     break
 
         # "Bad" changesets.
@@ -179,7 +180,7 @@ def main():
 
             print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
             shutil.rmtree(autoBisectFullPath)
-            if 'first bad revision' in result:
+            if 'revision is:' in result:
                 break
 
         # "Good" changesets.
@@ -189,7 +190,7 @@ def main():
 
                 print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
                 shutil.rmtree(autoBisectFullPath)
-                if 'first bad revision' in result:
+                if 'revision is:' in result:
                     break
 
         else:
