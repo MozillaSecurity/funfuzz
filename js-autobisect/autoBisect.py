@@ -76,6 +76,7 @@ def main():
     subprocess.call(['hg bisect -g ' + startRepo], shell=True)
     # If in "bug" mode, this endRepo changeset exhibits the issue.
     stdoutNumOfTests = captureStdout('hg bisect -b ' + endRepo)
+    print stdoutNumOfTests
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
     numOfTests = checkNumOfTests(stdoutNumOfTests)
@@ -83,10 +84,10 @@ def main():
     # For main directory, change into Desktop directory.
     mainDir = os.path.expanduser('~/Desktop/')
 
-    # Change into main directory.
-    os.chdir(mainDir)
-
     for i in xrange(numOfTests):
+        # Change into main directory.
+        os.chdir(mainDir)
+
         autoBisectPath = 'autoBisect-' + compileType + '-' + archNum + '-s' + \
                          startRepo + '-e' + endRepo
 
@@ -139,8 +140,16 @@ def main():
             if 'compilePath' not in os.getcwdu():
                 raise Exception('We are not in compilePath.')
 
-        os.chdir('../../')  # Change into autoBisectPath directory.
+        os.chdir('../')  # Change into autoBisectPath directory.
         autoBisectFullPath = os.path.expanduser(os.getcwdu())
+
+        # This is only needed if testcase is altered to add the quit() function,
+        # in the interactive shell testing located in the testBinary function.
+        # Even if the problem at the interactive shell testing is fixed, there
+        # apparently is still a bug here... :(
+        #if i == 0:
+        #    shutil.copyfile(filename, 'testcase.js')
+        #    filename = 'testcase.js'
 
         (stdoutStderr, exitCode) = testBinary(jsShellName, filename,
                                               methodjitBool, tracingjitBool)
@@ -323,16 +332,25 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     print 'The first output is:', output
 
     # Switch to interactive input mode similar to `cat testcase.js | ./js -j -i`.
-    if retCode == 0:
-        print 'Switching to interactive input mode in case passing as a CLI ' + \
-                'argument does not reproduce the issue..'
-        testBinaryCmd2 = subprocess.Popen(['cat', file], stdout=PIPE)
-        testBinaryCmd3 = subprocess.Popen(['./' + shell, methodJit, tracingJit, '-i'],
-            stdin=testBinaryCmd2.STDOUT, stdout=subprocess.PIPE)
-        output2 = testBinaryCmd3.communicate()[0]
-        retCode = testBinaryCmd3.returncode
-        print 'The exit code is:', retCode
-        print 'The second output is:', output2
+    # Doesn't work, stdout shows:
+    #can't open : No such file or directory
+    #The exit code is: 4
+    #The second output is: None
+    #if retCode == 0:
+    #    # Append the quit() function to make the testcase quit. # Doesn't work if retCode is something other than 0, that watchExitCode specified.
+    #    testcaseFile = open(file, 'a')
+    #    testcaseFile.write('\nquit()\n')
+    #    testcaseFile.close()
+    #
+    #    # Test interactive input.
+    #    print 'Switching to interactive input mode in case passing as a CLI ' + \
+    #            'argument does not reproduce the issue..'
+    #    testBinaryCmd3 = subprocess.Popen(['./' + shell, methodJit, tracingJit, '-i'],
+    #        stdin=(subprocess.Popen(['cat', file])).stdout)
+    #    output2 = testBinaryCmd3.communicate()[0]
+    #    retCode = testBinaryCmd3.returncode
+    #    print 'The exit code is:', retCode
+    #    print 'The second output is:', output2
     return output, retCode
 
 # This function labels a changeset as "good" or "bad" depending on parameters.
@@ -353,8 +371,12 @@ def bisectLabel(bugOrWfm, gdBad, startRepo, endRepo):
     outputResult = captureStdout('hg bisect ' + bisectLabelTuple[1])
     print outputResult
 
-    print 'autoBisect is now currently in hg revision:',
-    currRev = captureStdout(['hg identify -n'])
+    #currRev = captureStdout('hg identify -n')  # Too slow
+    subprocess.call(['hg identify -n > hgIdNum.txt'], shell=True)
+    hgIdNumFile = open('hgIdNum.txt')
+    currRev = hgIdNumFile.readline()[:-1]
+    print 'autoBisect is now currently in hg revision:', currRev
+    os.remove('hgIdNum.txt')
 
     # Update the startRepo/endRepo values.
     if bugOrWfm == 'bug':
