@@ -270,10 +270,19 @@ def parseOpts():
                       help='Look out for a specific exit code in the range [3,6]')
 
     (options, args) = parser.parse_args()
+
+    # Conditions.
     if len(args) != 1:
         parser.error('There is a wrong number of arguments.')
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
+    # 32-bit js shells have only been tested to compile successfully from number 21500.
+    if (options.archi == 32) and (options.startRepo < 21500) and (options.dir == os.path.expanduser('~/tracemonkey/')):
+        parser.error('The changeset number for 32-bit default TM must at least be 21500, which corresponds to TM changeset 04c360f123e5.')
+    # 64-bit js shells have only been tested to compile successfully from number 37000 on Ubuntu Linux 10.04 LTS.
+    if (options.archi == 64) and (options.startRepo < 37000) and (options.dir == os.path.expanduser('~/tracemonkey/')):
+        parser.error('The changeset number for 64-bit default TM must at least be 37000, which corresponds to TM changeset f8250a4e3535.')
+
     return options.bugOrWfm, options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
             options.tracingjitBool, options.methodjitBool, options.watchExitCode
