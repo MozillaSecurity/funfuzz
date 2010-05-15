@@ -152,7 +152,7 @@ def main():
         os.chdir(os.path.expanduser(sourceDir))
 
         # Label the changeset bad if the exact assert is found (only in debug shells)
-        if compileType == 'dbg' and stdoutOutput in stdoutStderr and exitCode != 0:
+        if (compileType == 'dbg') and (exitCode != 0) and (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
@@ -161,7 +161,7 @@ def main():
                 break
 
         # "Bad" changesets.
-        elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode):
+        elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
@@ -204,7 +204,8 @@ def parseOpts():
                       help='Source code directory. Defaults to "~/tracemonkey/"')
     parser.add_option('-o', '--output',
                       dest='output',
-                      help='Stdout or stderr output to be observed. ' + \
+                      default='',
+                      help='Stdout or stderr output to be observed. Defaults to ""' + \
                            'For assertions, set to "ssertion fail"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
