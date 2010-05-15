@@ -121,7 +121,7 @@ def main():
         except:
             print 'The "good" repository that is currently labelled:', startRepo
             print 'The "bad" repository that is currently labelled:', endRepo
-            # Consider implementing `hg bisect --skip`.
+            # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
             raise Exception('Compilation failed.')
 
         # Change back into compilePath.
@@ -162,7 +162,8 @@ def main():
                 break
 
         # "Bad" changesets.
-        elif (exitCode == 1) or (129 <= exitCode <= 159) or \
+        #elif (exitCode == 1) or (129 <= exitCode <= 159) or \
+        elif (129 <= exitCode <= 159) or \
             (exitCode == watchExitCode) or (exitCode < 0):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
