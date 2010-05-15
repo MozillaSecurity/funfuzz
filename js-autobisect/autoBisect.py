@@ -39,7 +39,9 @@
 import os, shutil, subprocess, sys
 from optparse import OptionParser
 
-sys.path.append('../jsfunfuzz/')
+path0 = os.path.dirname(sys.argv[0])
+path2 = os.path.abspath(os.path.join(path0, "..", "jsfunfuzz"))
+sys.path.append(path2)
 from fnStartjsfunfuzz import *
 
 def main():
