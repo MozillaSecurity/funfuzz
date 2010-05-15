@@ -155,8 +155,8 @@ def main():
         if compileType == 'dbg' and stdoutOutput in stdoutStderr and exitCode != 0:
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
-            print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
-            shutil.rmtree(autoBisectFullPath)
+            rmDirInclSubDirs(autoBisectFullPath)
+            # Break out of for loop if the required revision changeset is found.
             if 'revision is:' in result:
                 break
 
@@ -164,8 +164,8 @@ def main():
         elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
-            print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
-            shutil.rmtree(autoBisectFullPath)
+            rmDirInclSubDirs(autoBisectFullPath)
+            # Break out of for loop if the required revision changeset is found.
             if 'revision is:' in result:
                 break
 
@@ -174,8 +174,8 @@ def main():
             if (exitCode == 0) or (3 <= exitCode <= 6):
                 (result, startRepo, endRepo) = bisectLabel('good', startRepo, endRepo)
 
-                print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
-                shutil.rmtree(autoBisectFullPath)
+                rmDirInclSubDirs(autoBisectFullPath)
+                # Break out of for loop if the required revision changeset is found.
                 if 'revision is:' in result:
                     break
 
@@ -351,6 +351,11 @@ def bisectLabel(gdBad, startRepo, endRepo):
     elif gdBad == 'good':
         startRepo = currRev
     return outputResult, startRepo, endRepo
+
+# This function removes a directory along with its subdirectories.
+def rmDirInclSubDirs(dir):
+    print 'Now removing ' + dir + ', located at: ' + dir
+    shutil.rmtree(dir)
 
 if __name__ == '__main__':
     main()
