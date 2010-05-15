@@ -152,7 +152,8 @@ def main():
         os.chdir(os.path.expanduser(sourceDir))
 
         # Label the changeset bad if the exact assert is found (only in debug shells)
-        if (compileType == 'dbg') and (exitCode != 0) and (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
+        if (compileType == 'dbg') and (exitCode != 0) and \
+            (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
@@ -161,7 +162,8 @@ def main():
                 break
 
         # "Bad" changesets.
-        elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
+        elif (exitCode == 1) or (129 <= exitCode <= 159) or \
+            (exitCode == watchExitCode) or (exitCode < 0):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
@@ -260,11 +262,16 @@ def parseOpts():
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
     # 32-bit js shells have only been tested to compile successfully from number 21500.
-    if (options.archi == 32) and (options.startRepo < 21500) and (options.dir == os.path.expanduser('~/tracemonkey/')):
-        parser.error('The changeset number for 32-bit default TM must at least be 21500, which corresponds to TM changeset 04c360f123e5.')
-    # 64-bit js shells have only been tested to compile successfully from number 21715 on Ubuntu Linux 10.04 LTS.
-    if (options.archi == 64) and (options.startRepo < 1500) and (options.dir == os.path.expanduser('~/tracemonkey/')):
-        parser.error('The changeset number for 64-bit default TM must at least be 1500, which corresponds to TM changeset 28dac0d48126.')
+    if (options.archi == 32) and (options.startRepo < 21500) and \
+        (options.dir == os.path.expanduser('~/tracemonkey/')):
+        parser.error('The changeset number for 32-bit default TM must ' + \
+                     'at least be 21500, which corresponds to TM changeset 04c360f123e5.')
+    # 64-bit js shells have only been tested to compile successfully from
+    # number 21715 on Ubuntu Linux 10.04 LTS.
+    if (options.archi == 64) and (options.startRepo < 1500) and \
+        (options.dir == os.path.expanduser('~/tracemonkey/')):
+        parser.error('The changeset number for 64-bit default TM must ' + \
+                     'at least be 1500, which corresponds to TM changeset 28dac0d48126.')
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
@@ -311,7 +318,8 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     #The exit code is: 4
     #The second output is: None
     #if retCode == 0:
-    #    # Append the quit() function to make the testcase quit. # Doesn't work if retCode is something other than 0, that watchExitCode specified.
+    #    # Append the quit() function to make the testcase quit.
+    #    # Doesn't work if retCode is something other than 0, that watchExitCode specified.
     #    testcaseFile = open(file, 'a')
     #    testcaseFile.write('\nquit()\n')
     #    testcaseFile.close()
