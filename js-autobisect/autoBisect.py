@@ -207,7 +207,7 @@ def parseOpts():
     parser.add_option('-o', '--output',
                       dest='output',
                       default='',
-                      help='Stdout or stderr output to be observed. Defaults to ""' + \
+                      help='Stdout or stderr output to be observed. Defaults to "". ' + \
                            'For assertions, set to "ssertion fail"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
