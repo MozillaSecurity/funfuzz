@@ -152,27 +152,13 @@ def main():
         os.chdir(os.path.expanduser(sourceDir))
 
         # Label the changeset bad if the exact assert is found (only in debug shells)
-        # Assertion exit codes: Mac 10.5/10.6 - 133, Linux - 134, WinXP - 3
         if compileType == 'dbg' and stdoutOutput in stdoutStderr and exitCode != 0:
-            # Set a random arbitrary value that cannot be a genuine exit code.
-            codeToBeObserved = 888888
-            if os.name == 'posix':
-                if os.uname()[0] == 'Darwin':
-                    codeToBeObserved = 133
-                elif os.uname()[0] == 'Linux':
-                    codeToBeObserved = 134
-            elif os.name == 'nt':
-                codeToBeObserved = 3
+            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
-            # Depending on the exit code as per the different platforms, specify
-            # if the current changeset is "good" or "bad".
-            if exitCode == codeToBeObserved:
-                (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
-
-                print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
-                shutil.rmtree(autoBisectFullPath)
-                if 'revision is:' in result:
-                    break
+            print 'Now removing autoBisectFullPath, located at:', autoBisectFullPath
+            shutil.rmtree(autoBisectFullPath)
+            if 'revision is:' in result:
+                break
 
         # "Bad" changesets.
         elif (exitCode == 1) or (129 <= exitCode <= 159) or (exitCode == watchExitCode):
