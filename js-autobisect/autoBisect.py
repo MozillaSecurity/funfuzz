@@ -126,6 +126,10 @@ def main():
             # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
             raise Exception('Compilation failed.')
 
+        # In Windows, executables end in .exe...
+        if os.name == 'nt':
+            jsShellName = jsShellName + '.exe'
+
         # Change back into compilePath.
         os.chdir('../')
 
