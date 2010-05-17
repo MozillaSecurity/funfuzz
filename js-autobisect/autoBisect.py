@@ -260,8 +260,11 @@ def parseOpts():
     (options, args) = parser.parse_args()
 
     # Conditions.
+    osCheck()  # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. WinXP will be disallowed too.
+    # Check for a correct number of arguments.
     if len(args) != 1:
         parser.error('There is a wrong number of arguments.')
+    # A startRepo value must be input.
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
     # 32-bit js shells have only been tested to compile successfully from number 21500.
