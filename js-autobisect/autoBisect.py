@@ -170,6 +170,7 @@ def main():
             # Label a changeset "bad" if required Valgrind output is found.
             if (valgrindSupport == True):
                 (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+                print 'Required Valgrind output was seen.'
 
                 rmDirInclSubDirs(autoBisectFullPath)
                 # Break out of for loop if the required revision changeset is found.
@@ -179,6 +180,7 @@ def main():
             # Label the changeset "bad" if the exact assert is found (only in debug shells)
             if (compileType == 'dbg') and (exitCode != 0):
                 (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+                print 'Required assertion message was seen.'
 
                 rmDirInclSubDirs(autoBisectFullPath)
                 # Break out of for loop if the required revision changeset is found.
