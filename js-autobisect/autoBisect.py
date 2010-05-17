@@ -48,9 +48,11 @@ def main():
     # Do not support Windows XP because the ~ folder is in "/Documents and Settings/",
     # which contains spaces. This breaks MinGW, which is what MozillaBuild uses.
     # From Windows Vista onwards, the folder is in "/Users/".
+    # Edit 2: Don't support Windows till XP is deprecated, and when we create fuzzing
+    # directories in ~-land instead of in /c/. We lack permissions when we move from
+    # /c/ to ~-land in Vista/7.
     if os.name == 'nt':
-        if '5.1' in captureStdout('uname'):
-            raise Exception('autoBisect is not supported on Windows XP.')
+        raise Exception('autoBisect is not supported on Windows.')
     verbose = True
 
     # Parse options and parameters from the command-line.
@@ -267,8 +269,8 @@ def parseOpts():
 
     (options, args) = parser.parse_args()
 
-    # Conditions.
-    # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. WinXP will be disallowed too.
+    # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. This is what
+    # the osCheck() function checks. Though, Windows platforms are already unsupported.
     osCheck()
     # Check for a correct number of arguments.
     if len(args) != 1:
