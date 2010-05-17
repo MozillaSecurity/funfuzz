@@ -84,7 +84,7 @@ def main():
         os.chdir(mainDir)
 
         autoBisectPath = 'autoBisect-' + compileType + '-' + archNum + '-s' + \
-                         startRepo + '-e' + endRepo
+                         str(startRepo) + '-e' + str(endRepo)
 
         # Create the autoBisect folder.
         try:
@@ -121,8 +121,8 @@ def main():
         try:
             jsShellName = compileCopy(archNum, compileType, branchType, False)
         except:
-            print 'The "good" repository that is currently labelled:', startRepo
-            print 'The "bad" repository that is currently labelled:', endRepo
+            print 'The "good" repository that is currently labelled:', str(startRepo)
+            print 'The "bad" repository that is currently labelled:', str(endRepo)
             # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
             raise Exception('Compilation failed.')
 
@@ -278,7 +278,7 @@ def parseOpts():
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
     # Turn some parameters into integers.
-    options.archi = int(options.archi)
+    #options.archi = int(options.archi)  # archNum should remain as a string due to historical reasons.
     options.startRepo = int(options.startRepo)
     if options.endRepo != 'tip':
         options.endRepo = int(options.endRepo)
@@ -286,13 +286,13 @@ def parseOpts():
         options.watchExitCode = int(options.watchExitCode)
 
     # 32-bit js shells have only been tested to compile successfully from number 21500.
-    if (options.archi == 32) and (options.startRepo < 21500) and \
+    if (options.archi == '32') and (options.startRepo < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
         parser.error('The changeset number for 32-bit default TM must ' + \
                      'at least be 21500, which corresponds to TM changeset 04c360f123e5.')
     # 64-bit js shells have only been tested to compile successfully from
     # number 21715 on Ubuntu Linux 10.04 LTS.
-    if (options.archi == 64) and (options.startRepo < 21500) and \
+    if (options.archi == '64') and (options.startRepo < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
         if (options.startRepo < 1500) or \
             ((1500 <= options.startRepo < 21500) and (options.endRepo != 'tip')):
@@ -390,7 +390,7 @@ def bisectLabel(gdBad):
         end = currRev
     elif gdBad == 'good':
         start = currRev
-    return outputResult, start, end
+    return outputResult, int(start), int(end)
 
 # This function removes a directory along with its subdirectories.
 def rmDirInclSubDirs(dir):
