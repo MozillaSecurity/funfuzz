@@ -282,7 +282,8 @@ def parseOpts():
     options.startRepo = int(options.startRepo)
     if options.endRepo != 'tip':
         options.endRepo = int(options.endRepo)
-    options.watchExitCode = int(options.watchExitCode)
+    if options.watchExitCode:
+        options.watchExitCode = int(options.watchExitCode)
 
     # 32-bit js shells have only been tested to compile successfully from number 21500.
     if (options.archi == 32) and (options.startRepo < 21500) and \
