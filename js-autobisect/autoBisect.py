@@ -108,13 +108,13 @@ def main():
 
         # Compile the first binary.
         branchType = 'autoBisectBranch'
-        if 'jaeger' in sourceDir:
+        if 'jaegermonkey' in sourceDir:
             branchType = 'jm'
         valgrindSupport = False  # Let's disable support for valgrind in the js shell
         threadsafe = False  # Let's disable support for threadsafety in the js shell
         configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
 
-        if 'jaeger' in sourceDir:
+        if 'jaegermonkey' in sourceDir:
             branchType = 'autoBisectBranch'  # Reset the branchType
 
         # Compile and copy the first binary.
