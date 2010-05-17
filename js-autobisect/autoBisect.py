@@ -68,9 +68,9 @@ def main():
     # Specify `hg bisect` ranges.
     subprocess.call(['hg bisect -r'], shell=True)
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
-    subprocess.call(['hg bisect -g ' + startRepo], shell=True)
+    subprocess.call(['hg bisect -g ' + str(startRepo)], shell=True)
     # If in "bug" mode, this endRepo changeset exhibits the issue.
-    stdoutNumOfTests = captureStdout('hg bisect -b ' + endRepo)
+    stdoutNumOfTests = captureStdout('hg bisect -b ' + str(endRepo))
     print stdoutNumOfTests
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
@@ -166,7 +166,7 @@ def main():
         # Label the changeset bad if the exact assert is found (only in debug shells)
         if (compileType == 'dbg') and (exitCode != 0) and \
             (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
-            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+            (result, startRepo, endRepo) = bisectLabel('bad')
 
             rmDirInclSubDirs(autoBisectFullPath)
             # Break out of for loop if the required revision changeset is found.
@@ -175,7 +175,7 @@ def main():
 
         # "Bad" changesets.
         elif (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
-            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+            (result, startRepo, endRepo) = bisectLabel('bad')
 
             rmDirInclSubDirs(autoBisectFullPath)
             # Break out of for loop if the required revision changeset is found.
@@ -185,7 +185,7 @@ def main():
         # "Good" changesets.
         elif exitCode != watchExitCode:
             if (exitCode == 0) or (3 <= exitCode <= 6):
-                (result, startRepo, endRepo) = bisectLabel('good', startRepo, endRepo)
+                (result, startRepo, endRepo) = bisectLabel('good')
 
                 rmDirInclSubDirs(autoBisectFullPath)
                 # Break out of for loop if the required revision changeset is found.
@@ -365,7 +365,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     return output, retCode
 
 # This function labels a changeset as "good" or "bad" depending on parameters.
-def bisectLabel(gdBad, startRepo, endRepo):
+def bisectLabel(gdBad):
     bisectLabelTuple = ()
     if gdBad == 'bad':
         bisectLabelTuple = ('BAD', '-b')
@@ -387,10 +387,10 @@ def bisectLabel(gdBad, startRepo, endRepo):
 
     # Update the startRepo/endRepo values.
     if gdBad == 'bad':
-        endRepo = currRev
+        end = currRev
     elif gdBad == 'good':
-        startRepo = currRev
-    return outputResult, startRepo, endRepo
+        start = currRev
+    return outputResult, start, end
 
 # This function removes a directory along with its subdirectories.
 def rmDirInclSubDirs(dir):
