@@ -2523,7 +2523,8 @@ var specialProperties = [
   "__iterator__", "__count__",
   "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype",
-  "wrappedJSObject"
+  "wrappedJSObject",
+  "length"
 ]
 
 
@@ -3380,7 +3381,10 @@ var termMakers = [
     "function ([y]) { }",
     "(function ([y]) { })()",
 
-    "arguments"
+    "arguments",
+    "Math",
+    "this",
+    "length"
     ]);
   },
   function(d, b) { return rndElt([ "0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", (""+Math.PI), "3/0", "-3/0", "0/0"
