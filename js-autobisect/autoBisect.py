@@ -166,7 +166,7 @@ def main():
         # Switch to hg repository directory.
         os.chdir(os.path.expanduser(sourceDir))
 
-        if (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
+        if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
             # Label a changeset "bad" if required Valgrind output is found.
             if (valgrindSupport == True):
                 (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
