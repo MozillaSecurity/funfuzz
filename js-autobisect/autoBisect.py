@@ -59,7 +59,7 @@ def main():
     filename = sys.argv[-1:][0]
     options = parseOpts()
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, \
-     archNum, tracingjitBool, methodjitBool, watchExitCode) = options
+     archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport) = options
 
     os.chdir(sourceDir)
 
@@ -112,7 +112,8 @@ def main():
         branchType = 'autoBisectBranch'
         if 'jaegermonkey' in sourceDir:
             branchType = 'jm'
-        valgrindSupport = False  # Let's disable support for valgrind in the js shell
+
+        # Configure the js binary.
         threadsafe = False  # Let's disable support for threadsafety in the js shell
         configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
 
@@ -159,23 +160,33 @@ def main():
         #    shutil.copyfile(filename, 'testcase.js')
         #    filename = 'testcase.js'
 
-        (stdoutStderr, exitCode) = testBinary(jsShellName, filename,
-                                              methodjitBool, tracingjitBool)
+        (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
+                                              tracingjitBool, valgrindSupport)
 
         # Switch to hg repository directory.
         os.chdir(os.path.expanduser(sourceDir))
 
-        # Label the changeset bad if the exact assert is found (only in debug shells)
-        if (compileType == 'dbg') and (exitCode != 0) and \
-            (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
-            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+        if (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
+            # Label a changeset "bad" if required Valgrind output is found.
+            if (valgrindSupport == True):
+                (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
-            rmDirInclSubDirs(autoBisectFullPath)
-            # Break out of for loop if the required revision changeset is found.
-            if 'revision is:' in result:
-                break
+                rmDirInclSubDirs(autoBisectFullPath)
+                # Break out of for loop if the required revision changeset is found.
+                if 'revision is:' in result:
+                    break
 
-        # "Bad" changesets.
+            # Label the changeset "bad" if the exact assert is found (only in debug shells)
+            if (compileType == 'dbg') and (exitCode != 0):
+                (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+
+                rmDirInclSubDirs(autoBisectFullPath)
+                # Break out of for loop if the required revision changeset is found.
+                if 'revision is:' in result:
+                    break
+
+        # Label the changeset "bad" if the exit code is negative, between 129 to 159
+        # (SIGBUS, SIGSEGV etc.) or if the watched exit code is observed.
         elif (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
@@ -260,6 +271,13 @@ def parseOpts():
                       default=False,
                       help='Enable -m, method JIT when autoBisecting. Defaults to "False"')
 
+    # Enable valgrind support.
+    parser.add_option('-v', '--valgrind',
+                      dest='valgSupport',
+                      action='store_true',
+                      default=False,
+                      help='Enable valgrind support. Defaults to "False"')
+
     # Special case in which a specific exit code needs to be observed.
     parser.add_option('-w', '--watchExitCode',
                       dest='watchExitCode',
@@ -279,6 +297,7 @@ def parseOpts():
     # A startRepo value must be input.
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
+
     # Turn some parameters into integers.
     #options.archi = int(options.archi)  # archNum should remain as a string due to historical reasons.
     options.startRepo = int(options.startRepo)
@@ -286,6 +305,11 @@ def parseOpts():
         options.endRepo = int(options.endRepo)
     if options.watchExitCode:
         options.watchExitCode = int(options.watchExitCode)
+
+    # Only support Valgrind on Linux for the moment, since Valgrind doesn't yet
+    # work on Mac OS X 10.6.x.
+    if (os.uname()[0] != 'Linux') and (valgSupport == True):
+        parser.error('Valgrind is only supported on Linux.')
 
     # 32-bit js shells have only been tested to compile successfully from number 21500.
     if (options.archi == '32') and (options.startRepo < 21500) and \
@@ -306,7 +330,8 @@ def parseOpts():
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
-            options.tracingjitBool, options.methodjitBool, options.watchExitCode
+            options.tracingjitBool, options.methodjitBool, options.watchExitCode, \
+            options.valgSupport
 
 def checkNumOfTests(str):
     # Sample bisect range message:
@@ -329,10 +354,12 @@ def checkNumOfTests(str):
     return testNum
 
 # Run the testcase on the compiled js binary.
-def testBinary(shell, file, methodjitBool, tracingjitBool):
+def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     methodJit = ' -m' if methodjitBool else ''
     tracingJit = ' -j' if tracingjitBool else ''
     testBinaryCmd = './' + shell + methodJit + tracingJit + ' ' + file
+    if valgSupport:
+        testBinaryCmd = 'valgrind ' + testBinaryCmd
     print 'The testing command is:', testBinaryCmd
 
     # Capture stdout and stderr into the same string.
