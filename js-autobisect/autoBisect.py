@@ -271,10 +271,14 @@ def parseOpts():
                      'at least be 21500, which corresponds to TM changeset 04c360f123e5.')
     # 64-bit js shells have only been tested to compile successfully from
     # number 21715 on Ubuntu Linux 10.04 LTS.
-    if (options.archi == 64) and (options.startRepo < 1500) and \
+    if (options.archi == 64) and (options.startRepo < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
-        parser.error('The changeset number for 64-bit default TM must ' + \
-                     'at least be 1500, which corresponds to TM changeset 28dac0d48126.')
+        if (options.startRepo < 1500) or \
+            ((1500 <= options.startRepo < 21500) and (options.endRepo != 'tip')):
+            parser.error('The changeset number for 64-bit default TM must ' + \
+                         'at least be 1500, which corresponds to TM changeset ' + \
+                         '28dac0d48126. (Only applicable to tip as endRepo, ' + \
+                         'else 21500 is the startRepo limit.)')
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
@@ -348,6 +352,8 @@ def bisectLabel(gdBad, startRepo, endRepo):
 
     print bisectLabelTuple[0], 'changeset: hg bisect', bisectLabelTuple[1]
     outputResult = captureStdout('hg bisect ' + bisectLabelTuple[1])
+    if 'revision is:' in outputResult:
+        print '\nautoBisect shows this is probably related to the following changeset:\n'
     print outputResult
 
     #currRev = captureStdout('hg identify -n')  # Too slow
