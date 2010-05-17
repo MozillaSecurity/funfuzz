@@ -265,16 +265,17 @@ def parseOpts():
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
     # 32-bit js shells have only been tested to compile successfully from number 21500.
-    if (options.archi == 32) and (options.startRepo < 21500) and \
+    if (int(options.archi) == 32) and (int(options.startRepo) < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
         parser.error('The changeset number for 32-bit default TM must ' + \
                      'at least be 21500, which corresponds to TM changeset 04c360f123e5.')
     # 64-bit js shells have only been tested to compile successfully from
     # number 21715 on Ubuntu Linux 10.04 LTS.
-    if (options.archi == 64) and (options.startRepo < 21500) and \
+    if (int(options.archi) == 64) and (int(options.startRepo) < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
-        if (options.startRepo < 1500) or \
-            ((1500 <= options.startRepo < 21500) and (options.endRepo != 'tip')):
+        print options.startRepo
+        if (int(options.startRepo) < 1500) or \
+            ((1500 <= int(options.startRepo) < 21500) and (options.endRepo != 'tip')):
             parser.error('The changeset number for 64-bit default TM must ' + \
                          'at least be 1500, which corresponds to TM changeset ' + \
                          '28dac0d48126. (Only applicable to tip as endRepo, ' + \
