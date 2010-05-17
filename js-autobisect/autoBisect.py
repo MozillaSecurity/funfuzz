@@ -166,7 +166,7 @@ def main():
         # Label the changeset bad if the exact assert is found (only in debug shells)
         if (compileType == 'dbg') and (exitCode != 0) and \
             (stdoutOutput in stdoutStderr) and (stdoutOutput != ''):
-            (result, startRepo, endRepo) = bisectLabel('bad')
+            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
             # Break out of for loop if the required revision changeset is found.
@@ -175,7 +175,7 @@ def main():
 
         # "Bad" changesets.
         elif (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
-            (result, startRepo, endRepo) = bisectLabel('bad')
+            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
             # Break out of for loop if the required revision changeset is found.
@@ -185,7 +185,7 @@ def main():
         # "Good" changesets.
         elif exitCode != watchExitCode:
             if (exitCode == 0) or (3 <= exitCode <= 6):
-                (result, startRepo, endRepo) = bisectLabel('good')
+                (result, startRepo, endRepo) = bisectLabel('good', startRepo, endRepo)
 
                 rmDirInclSubDirs(autoBisectFullPath)
                 # Break out of for loop if the required revision changeset is found.
@@ -365,7 +365,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool):
     return output, retCode
 
 # This function labels a changeset as "good" or "bad" depending on parameters.
-def bisectLabel(gdBad):
+def bisectLabel(gdBad, startRepo, endRepo):
     bisectLabelTuple = ()
     if gdBad == 'bad':
         bisectLabelTuple = ('BAD', '-b')
@@ -385,12 +385,14 @@ def bisectLabel(gdBad):
     print 'autoBisect is now currently in hg revision:', currRev
     os.remove('hgIdNum.txt')
 
+    start = startRepo
+    end = endRepo
     # Update the startRepo/endRepo values.
     if gdBad == 'bad':
-        end = currRev
+        end = int(currRev)
     elif gdBad == 'good':
-        start = currRev
-    return outputResult, int(start), int(end)
+        start = int(currRev)
+    return outputResult, start, end
 
 # This function removes a directory along with its subdirectories.
 def rmDirInclSubDirs(dir):
