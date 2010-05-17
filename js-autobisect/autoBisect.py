@@ -130,6 +130,12 @@ def main():
         if os.name == 'nt':
             jsShellName = jsShellName + '.exe'
 
+        # Check that the js shell actually exists.
+        try:
+            os.path.isfile(jsShellName)
+        except:
+            raise Exception(jsShellName + ' doesn\'t exist!')
+
         # Change back into compilePath.
         os.chdir('../')
 
