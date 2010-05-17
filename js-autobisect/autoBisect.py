@@ -273,7 +273,6 @@ def parseOpts():
     # number 21715 on Ubuntu Linux 10.04 LTS.
     if (int(options.archi) == 64) and (int(options.startRepo) < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
-        print options.startRepo
         if (int(options.startRepo) < 1500) or \
             ((1500 <= int(options.startRepo) < 21500) and (options.endRepo != 'tip')):
             parser.error('The changeset number for 64-bit default TM must ' + \
