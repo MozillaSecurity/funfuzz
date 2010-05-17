@@ -174,9 +174,7 @@ def main():
                 break
 
         # "Bad" changesets.
-        #elif (exitCode == 1) or (129 <= exitCode <= 159) or \
-        elif (129 <= exitCode <= 159) or \
-            (exitCode == watchExitCode) or (exitCode < 0):
+        elif (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
             (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
 
             rmDirInclSubDirs(autoBisectFullPath)
@@ -270,28 +268,38 @@ def parseOpts():
     (options, args) = parser.parse_args()
 
     # Conditions.
-    osCheck()  # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. WinXP will be disallowed too.
+    # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. WinXP will be disallowed too.
+    osCheck()
     # Check for a correct number of arguments.
     if len(args) != 1:
         parser.error('There is a wrong number of arguments.')
+
     # A startRepo value must be input.
     if options.startRepo == None:
         parser.error('Please specify an earlier start repository for the bisect range.')
+    # Turn some parameters into integers.
+    options.archi = int(options.archi)
+    options.startRepo = int(options.startRepo)
+    if options.endRepo != 'tip':
+        options.endRepo = int(options.endRepo)
+    options.watchExitCode = int(options.watchExitCode)
+
     # 32-bit js shells have only been tested to compile successfully from number 21500.
-    if (int(options.archi) == 32) and (int(options.startRepo) < 21500) and \
+    if (options.archi == 32) and (options.startRepo < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
         parser.error('The changeset number for 32-bit default TM must ' + \
                      'at least be 21500, which corresponds to TM changeset 04c360f123e5.')
     # 64-bit js shells have only been tested to compile successfully from
     # number 21715 on Ubuntu Linux 10.04 LTS.
-    if (int(options.archi) == 64) and (int(options.startRepo) < 21500) and \
+    if (options.archi == 64) and (options.startRepo < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
-        if (int(options.startRepo) < 1500) or \
-            ((1500 <= int(options.startRepo) < 21500) and (options.endRepo != 'tip')):
+        if (options.startRepo < 1500) or \
+            ((1500 <= options.startRepo < 21500) and (options.endRepo != 'tip')):
             parser.error('The changeset number for 64-bit default TM must ' + \
                          'at least be 1500, which corresponds to TM changeset ' + \
                          '28dac0d48126. (Only applicable to tip as endRepo, ' + \
                          'else 21500 is the startRepo limit.)')
+
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
