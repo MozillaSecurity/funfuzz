@@ -2193,6 +2193,9 @@ var statementMakers = weighted([
   // Spidermonkey's regexp engine is so slow for long strings that we have to bypass whatToTest :(
   //{ w: 1, fun: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
   { w: 1, fun: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
+
+  // E4X "default xml namespace"
+  { w: 1, fun: function(d, b) { return cat(["default ", "xml ", "namespace ", " = ", makeExpr(d, b)]); } },
   
 ]);
 
@@ -2524,7 +2527,10 @@ var specialProperties = [
   "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
-  "length"
+  "length",
+  // E4X
+  "ignoreComments", "ignoreProcessingInstructions", "ignoreWhitespace",
+  "prettyPrinting", "prettyIndent"
 ]
 
 function makeSpecialProperty(d, b)
@@ -2590,7 +2596,16 @@ var objectMethods = [
   "__defineGetter__", "__defineSetter__", "hasOwnProperty", "isPrototypeOf", "__lookupGetter__", "__lookupSetter__", "__noSuchMethod__", "propertyIsEnumerable", "unwatch", "watch",
 
   // Things that are only built-in on Object itself
-  "defineProperty", "defineProperties", "create", "getOwnPropertyDescriptor", "getPrototypeOf"
+  "defineProperty", "defineProperties", "create", "getOwnPropertyDescriptor", "getPrototypeOf",
+
+  // E4X functions on XML objects
+  "addNamespace", "appendChild", "attribute", "attributes", "child", "childIndex", "children", "comments", "contains", "copy", "descendants", "elements", "hasOwnProperty", "hasComplexContent", "hasSimpleContent", "isScopeNamespace", "insertChildAfter", "insertChildBefore", "length", "localName", "name", "namespace", "namespaceDeclarations", "nodeKind", "normalize", "parent", "processingInstructions", "prependChild", "propertyIsEnumerable", "removeNamespace", "replace", "setChildren", "setLocalName", "setName", "setNamespace", "text", "toString", "toXMLString", "valueOf",
+
+  // E4X functions on the XML constructor
+  "settings", "setSettings", "defaultSettings"
+
+  // E4X functions on the global object
+  "isXMLName",
 ];
 
 
@@ -2844,7 +2859,10 @@ var constructors = [
   "Error", "RangeError", "Exception",
   "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean",
   // "Date",  // commented out due to appearing "random, but XXX want to use it sometimes...
-  "Iterator"
+  "Iterator",
+  // E4X
+  "Namespace", "QName", "XML", "XMLList",
+  "AttributeName" // not listed as a constructor in e4x spec, but exists!
 ];
 
 function maybeSharpDecl()
@@ -3200,7 +3218,7 @@ function makeId(d, b)
   case 8: case 9: case 10:
     // some keywords that can be used as identifiers in some contexts (e.g. variables, function names, argument names)
     // but that's annoying, and some of these cause lots of syntax errors.
-    return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each"]);
+    return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each", "xml", "namespace"]);
   case 11:
     return "function::" + makeId(d, b);
   case 12: case 13:
