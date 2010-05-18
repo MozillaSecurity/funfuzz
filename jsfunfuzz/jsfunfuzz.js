@@ -249,6 +249,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && (jsshell || code.indexOf("nogeckoex") == -1)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       && !( code.match( /evalcx.*evalcx/ ))       // avoid bug 566554
+      && !( code.match( /evalcx.*lazy/ ))       // avoid bug 563127
     ,
 
     allowIter: true,
