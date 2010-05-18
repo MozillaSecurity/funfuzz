@@ -192,6 +192,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
+      && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
