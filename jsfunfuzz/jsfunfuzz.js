@@ -2519,13 +2519,30 @@ if (haveE4X)
 
 
 var specialProperties = [
-  "prop",
+  "x", "y",
   "__iterator__", "__count__",
   "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "length"
 ]
+
+function makeSpecialProperty(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  return rndElt(specialProperties);
+}
+
+function makeNamespacePrefix(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+  switch (rnd(7)) {
+    case 0:  return "function::";
+    case 1:  return makeId(d, b) + "::";
+    default: return "";
+  }
+}
 
 
 // An incomplete list of builtin methods for various data types.
@@ -2590,13 +2607,16 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
 
   // Special properties: we love to set them!
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(specialProperties)]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(specialProperties), " = ", makeExpr(d, b)]); },
-  function(d, b) { return cat([makeId(d, b),   ".", rndElt(specialProperties), " = ", makeExpr(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeExpr(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeFunction(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeExpr(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeFunction(d, b)]); },
 
   // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods), "(", makeActualArgList(d, b), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", "valueOf", "(", uneval("number"), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods), "(", makeActualArgList(d, b), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), "valueOf", "(", uneval("number"), ")"]); },
 
   // Binary operators
   function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
@@ -2633,8 +2653,8 @@ var exprMakers =
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
 
   // Dot (property access)
-  function(d, b) { return cat([makeId(d, b),    ".", makeId(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b),  ".", makeId(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),    ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b),  ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
 
   // Index into array
   function(d, b) { return cat([     makeExpr(d, b),      "[", makeExpr(d, b), "]"]); },
@@ -3188,7 +3208,9 @@ function makeId(d, b)
   case 14:
     return "x::" + makeId(d, b);
   case 15: case 16:
-    return rndElt(specialProperties);
+    return makeNamespacePrefix(d - 1, b) + makeSpecialProperty(d - 1, b);
+  case 17: case 18:
+    return makeNamespacePrefix(d - 1, b) + makeId(d - 1, b);
   }
 
   return rndElt(["a", "b", "c", "d", "e", "w", "x", "y", "z",
@@ -3270,7 +3292,7 @@ var lvalueMakers = [
   function(d, b) { return cat([makeExpr(d, b), "[", "'", makeId(d, b), "'", "]"]); },
 
   // Special properties
-  function(d, b) { return cat([makeId(d, b), ".", rndElt(specialProperties)]); },
+  function(d, b) { return cat([makeId(d, b), ".", makeSpecialProperty(d, b)]); },
 
   // Certain functions can act as lvalues!  See JS_HAS_LVALUE_RETURN in js engine source.
   function(d, b) { return cat([makeId(d, b), "(", makeExpr(d, b), ")"]); },
