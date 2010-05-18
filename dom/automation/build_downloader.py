@@ -63,9 +63,9 @@ def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
     if remotefn.endswith(".mac.dmg"):
       print "Downloading application..."
       undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
-    if remotefn.endswith(".tests.tar.bz2") and wantTests:
+    if remotefn.endswith(".tests.zip") and wantTests:
       print "Downloading tests..."
-      untarbz2(downloadURL(remotefn, localfn), testsDir)
+      unzip(downloadURL(remotefn, localfn), testsDir)
     if remotefn.endswith(".crashreporter-symbols.zip") and wantSymbols:
       print "Downloading crash reporter symbols..."
       unzip(downloadURL(remotefn, localfn), symbolsDir)
