@@ -167,25 +167,19 @@ def main():
         os.chdir(os.path.expanduser(sourceDir))
 
         if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
+            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
+
             # Label a changeset "bad" if required Valgrind output is found.
             if (valgrindSupport == True):
-                (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
                 print 'Required Valgrind output was seen.'
-
-                rmDirInclSubDirs(autoBisectFullPath)
-                # Break out of for loop if the required revision changeset is found.
-                if 'revision is:' in result:
-                    break
-
             # Label the changeset "bad" if the exact assert is found (only in debug shells)
             if (compileType == 'dbg') and (exitCode != 0):
-                (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
                 print 'Required assertion message was seen.'
 
-                rmDirInclSubDirs(autoBisectFullPath)
-                # Break out of for loop if the required revision changeset is found.
-                if 'revision is:' in result:
-                    break
+            rmDirInclSubDirs(autoBisectFullPath)
+            # Break out of for loop if the required revision changeset is found.
+            if 'revision is:' in result:
+                break
 
         # Label the changeset "bad" if the exit code is negative, between 129 to 159
         # (SIGBUS, SIGSEGV etc.) or if the watched exit code is observed.
