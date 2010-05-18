@@ -2781,10 +2781,18 @@ var exprMakers =
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
   function(d, b) { return makeExpr(d, b) + ".eval(" + makeExpr(d, b) + ")"; },
-  function(d, b) { return "eval(" + uneval(makeExpr(d, b)) + ")"; },
-  function(d, b) { return "eval(" + uneval(makeExpr(d, b)) + ", " + makeExpr(d, b) + ")"; },
+  function(d, b) { return "eval(" + uneval(makeExpr(d, b))      + ")"; },
+  function(d, b) { return "eval(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ")"; },
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
+
+  // Test evalcx: sandbox creation
+  function(d, b) { return "evalcx('')"; },
+  function(d, b) { return "evalcx('lazy')"; },
+
+  // Test evalcx: sandbox use
+  function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
+  function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
 
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(d, b) { return "(uneval(" + makeExpr(d, b) + "))"; },
