@@ -673,6 +673,7 @@ function tryRunning(f, code)
 
 // Store things now so we can restore sanity later.
 var realEval = eval;
+var realMath = Math;
 var realFunction = Function;
 var realGC = gc;
 var realUneval = uneval;
@@ -707,6 +708,7 @@ function tryEnsureSanity()
       // The only way to get rid of getters/setters is to delete the property.
       if (!jsStrictMode)
         delete this.eval;
+      delete this.Math;
       delete this.Function;
       delete this.gc;
       delete this.uneval;
@@ -714,6 +716,7 @@ function tryEnsureSanity()
       delete this.toString;
     }
 
+    this.Math = realMath;
     this.eval = realEval;
     this.Function = realFunction;
     this.gc = realGC;
@@ -2602,7 +2605,7 @@ var objectMethods = [
   "addNamespace", "appendChild", "attribute", "attributes", "child", "childIndex", "children", "comments", "contains", "copy", "descendants", "elements", "hasOwnProperty", "hasComplexContent", "hasSimpleContent", "isScopeNamespace", "insertChildAfter", "insertChildBefore", "length", "localName", "name", "namespace", "namespaceDeclarations", "nodeKind", "normalize", "parent", "processingInstructions", "prependChild", "propertyIsEnumerable", "removeNamespace", "replace", "setChildren", "setLocalName", "setName", "setNamespace", "text", "toString", "toXMLString", "valueOf",
 
   // E4X functions on the XML constructor
-  "settings", "setSettings", "defaultSettings"
+  "settings", "setSettings", "defaultSettings",
 
   // E4X functions on the global object
   "isXMLName",
