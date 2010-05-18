@@ -252,6 +252,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /evalcx.*evalcx/ ))       // avoid bug 566554
       && !( code.match( /evalcx.*lazy/ ))       // avoid bug 563127
       && !( code.match( /evalcx.*var/ ))       // avoid bug 566549
+      && !( code.match( /evalcx.*let/ ))       // avoid bug 566549
       && !( code.match( /evalcx.*const/ ))       // avoid bug 566549
     ,
 
