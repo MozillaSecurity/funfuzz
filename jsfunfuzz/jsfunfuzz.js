@@ -251,6 +251,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       && !( code.match( /evalcx.*evalcx/ ))       // avoid bug 566554
       && !( code.match( /evalcx.*lazy/ ))       // avoid bug 563127
+      && !( code.match( /evalcx.*var/ ))       // avoid bug 566549
+      && !( code.match( /evalcx.*const/ ))       // avoid bug 566549
     ,
 
     allowIter: true,
@@ -550,7 +552,7 @@ function tryItOut(code)
 
   // regexps can't match across lines, so replace whitespace with spaces.
   var wtt = whatToTest(code.replace(/\s/g, " "));
-  
+
   code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
 
   if (!wtt.allowParse)
@@ -2195,14 +2197,14 @@ var statementMakers = weighted([
   // Function-declaration-statements, along with calls to those functions
   { w: 8, fun: makeNamedFunctionAndUse },
 
-  // Long script -- can confuse Spidermonkey's short vs long jmp or something like that.  
+  // Long script -- can confuse Spidermonkey's short vs long jmp or something like that.
   // Spidermonkey's regexp engine is so slow for long strings that we have to bypass whatToTest :(
   //{ w: 1, fun: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
   { w: 1, fun: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
 
   // E4X "default xml namespace"
   { w: 1, fun: function(d, b) { return cat(["default ", "xml ", "namespace ", " = ", makeExpr(d, b)]); } },
-  
+
 ]);
 
 function makeNamedFunctionAndUse(d, b) {
