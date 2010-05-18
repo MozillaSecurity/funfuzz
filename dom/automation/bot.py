@@ -15,11 +15,11 @@ targetTime = 60 # for build machines, use 20 minutes (20*60)
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
 
-remoteLoginAndMachine = "jruderman@jesse-arm-1"
-remoteBase = "/mnt/jruderman/domfuzzjobs/"
+#remoteLoginAndMachine = "jruderman@jesse-arm-1"
+#remoteBase = "/mnt/jruderman/domfuzzjobs/"
 
-#remoteLoginAndMachine = None
-#remoteBase = "/Users/jruderman/domfuzzjobs/"
+remoteLoginAndMachine = None
+remoteBase = os.path.join(os.path.expanduser("~"), "domfuzzjobs") + "/" # since this is just for testing, assume we're on a system with forward slashes
 
 remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else "" # used as a prefix for remoteBase when using scp
 
