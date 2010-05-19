@@ -2899,39 +2899,43 @@ function makeProxyHandlerFactory(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  var preferred = rndElt(["empty", "forward", "yes", "no", "bind"]);
-  var fallback = rndElt(["empty", "forward"]);
-  var fidelity = 1; // Math.random();
-
-  handlerFactoryText = "(function handlerFactory(x) {";
-  handlerFactoryText += "return {"
-
-  if (rnd(2)) {
-    // handlerFactory has an argument 'x'
-    bp = b.concat(['x']);
-  } else {
-    // handlerFactory has no argument
-    handlerFactoryText = handlerFactoryText.replace(/x/, "");
-    bp = b;
-  }
-
-  for (var p in proxyHandlerProperties) {
-    var funText;
-    if (preferred[p] && Math.random() < fidelity) {
-      funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
+  try { // in case we screwed Object.prototype, breaking proxyHandlerProperties
+    var preferred = rndElt(["empty", "forward", "yes", "no", "bind"]);
+    var fallback = rndElt(["empty", "forward"]);
+    var fidelity = 1; // Math.random();
+  
+    var handlerFactoryText = "(function handlerFactory(x) {";
+    handlerFactoryText += "return {"
+  
+    if (rnd(2)) {
+      // handlerFactory has an argument 'x'
+      bp = b.concat(['x']);
     } else {
-      switch(rnd(7)) {
-      case 0:  funText = makeFunction(d - 3, bp); break;
-      case 1:  funText = "undefined"; break;
-      default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
-      }
+      // handlerFactory has no argument
+      handlerFactoryText = handlerFactoryText.replace(/x/, "");
+      bp = b;
     }
-    handlerFactoryText += p + ": " + funText + ", ";
+  
+    for (var p in proxyHandlerProperties) {
+      var funText;
+      if (preferred[p] && Math.random() < fidelity) {
+        funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
+      } else {
+        switch(rnd(7)) {
+        case 0:  funText = makeFunction(d - 3, bp); break;
+        case 1:  funText = "undefined"; break;
+        default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
+        }
+      }
+      handlerFactoryText += p + ": " + funText + ", ";
+    }
+  
+    handlerFactoryText += "}; })"
+  
+    return handlerFactoryText;
+  } catch(e) {
+    return "({/* :( */})";
   }
-
-  handlerFactoryText += "}; })"
-
-  return handlerFactoryText;
 }
 
 function proxyMunge(funText, p)
