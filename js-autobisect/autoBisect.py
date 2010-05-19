@@ -124,8 +124,8 @@ def main():
         try:
             jsShellName = compileCopy(archNum, compileType, branchType, False)
         except:
-            print 'The "good" repository that is currently labelled:', str(startRepo)
-            print 'The "bad" repository that is currently labelled:', str(endRepo)
+            print 'The current "good" repository that should be double-checked:', str(startRepo)
+            print 'The current "bad" repository that should be double-checked:', str(endRepo)
             # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
             raise Exception('Compilation failed.')
 
