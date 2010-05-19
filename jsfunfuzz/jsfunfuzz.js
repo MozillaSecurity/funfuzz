@@ -2818,13 +2818,139 @@ var exprMakers =
   // Binary Math functions
   function (d, b) { return "Math." + rndElt(["atan2", "max", "min", "pow"]) + "(" + makeExpr(d, b) + ", " + makeExpr(d, b) + ")"; },
 
-  // Wrappers
+  // Gecko wrappers
   function(d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
   function(d, b) { return "new XPCSafeJSObjectWrapper(" + makeExpr(d, b) + ")"; },
+
+  // Harmony proxy creation: object, function without constructTrap, function with constructTrap
+  function(d, b) { return makeId(d, b) + " = " + "Proxy.create(" + makeProxyHandler(d, b) + ", " + makeExpr(d, b) + ")"; },
+  function(d, b) { return makeId(d, b) + " = " + "Proxy.createFunction(" + makeProxyHandler(d, b) + ", " + makeFunction(d, b) + ")"; },
+  function(d, b) { return makeId(d, b) + " = " + "Proxy.createFunction(" + makeProxyHandler(d, b) + ", " + makeFunction(d, b) + ", " + makeFunction(d, b) + ")"; },
+
+  function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 ];
+
+// In addition, can always use "undefined" or makeFunction
+// Forwarding proxy code based on http://wiki.ecmascript.org/doku.php?id=harmony:proxies "Example: a no-op forwarding proxy"
+// The letter 'x' is special.
+var proxyHandlerProperties = {
+  getOwnPropertyDescriptor: {
+    empty:    "function(){}",
+    forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }"
+  },
+  getPropertyDescriptor: {
+    empty:    "function(){}",
+    forward:  "function(name) { var desc = Object.getPropertyDescriptor(x); desc.configurable = true; return desc; }"
+  },
+  defineProperty: {
+    empty:    "function(){}",
+    forward:  "function(name, desc) { Object.defineProperty(x, name, desc); }"
+  },
+  getOwnPropertyNames: {
+    empty:    "function() { return []; }",
+    forward:  "function() { return Object.getOwnPropertyNames(x); }"
+  },
+  delete: {
+    empty:    "function() { return true; }",
+    yes:      "function() { return true; }",
+    no:       "function() { return false; }",
+    forward:  "function(name) { return delete x[name]; }"
+  },
+  fix: {
+    empty:    "function() { return []; }",
+    yes:      "function() { return []; }",
+    no:       "function() { }",
+    forward:  "function() { if (Object.isFrozen(x)) { return Object.getOwnProperties(x); } }"
+  },
+  has: {
+    empty:    "function() { return false; }",
+    yes:      "function() { return true; }",
+    no:       "function() { return false; }",
+    forward:  "function(name) { return name in x; }"
+  },
+  hasOwn: {
+    empty:    "function() { return false; }",
+    yes:      "function() { return true; }",
+    no:       "function() { return false; }",
+    forward:  "function(name) { return Object.prototype.hasOwnProperty.call(x, name); }"
+  },
+  get: {
+    empty:    "function() { return undefined }",
+    forward:  "function(receiver, name) { return x[name]; }",
+    bind:     "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }"
+  },
+  set: {
+    empty:    "function() { return true; }",
+    yes:      "function() { return true; }",
+    no:       "function() { return false; }",
+    forward:  "function(receiver, name, val) { x[name] = val; return true; }"
+  },
+  enumerate: {
+    empty:    "function() { return []; }",
+    forward:  "function() { var result = []; for (name in x) { result.push(name); }; return result; }"
+  },
+  enumerateOwn: {
+    empty:    "function() { return []; }",
+    forward:  "function() { return Object.keys(x); }"
+  }
+}
+
+function makeProxyHandlerFactory(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var preferred = rndElt(["empty", "forward", "yes", "no", "bind"]);
+  var fallback = rndElt(["empty", "forward"]);
+  var fidelity = 1; // Math.random();
+
+  handlerFactoryText = "(function handlerFactory(x) {";
+  handlerFactoryText += "return {"
+
+  if (rnd(2)) {
+    // handlerFactory has an argument 'x'
+    bp = b.concat(['x']);
+  } else {
+    // handlerFactory has no argument
+    handlerFactoryText = handlerFactoryText.replace(/x/, "");
+    bp = b;
+  }
+
+  for (var p in proxyHandlerProperties) {
+    var funText;
+    if (preferred[p] && Math.random() < fidelity) {
+      funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
+    } else {
+      switch(rnd(7)) {
+      case 0:  funText = makeFunction(d - 3, bp); break;
+      case 1:  funText = "undefined"; break;
+      default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
+      }
+    }
+    handlerFactoryText += p + ": " + funText + ", ";
+  }
+
+  handlerFactoryText += "}; })"
+
+  return handlerFactoryText;
+}
+
+function proxyMunge(funText, p)
+{
+  funText = funText.replace(/\{/, "{ var yum = 'PCAL'; dumpln(yum + 'LED: " + p + "');");
+  return funText;
+}
+
+function makeProxyHandler(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 1, b) + ")"
+}
 
 function makePropertyDescriptor(d, b)
 {
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
   var s = "({"
 
   switch(rnd(3)) {
@@ -3007,6 +3133,9 @@ var functionMakers = [
   function(d, b) { return "Object.getOwnPropertyDescriptor" },
   function(d, b) { return "Object.getPrototypeOf" },
   function(d, b) { return "Object.keys" },
+  function(d, b) { return "Object.preventExtensions" },
+  function(d, b) { return "Object.seal" },
+  function(d, b) { return "Object.freeze" },
   function(d, b) { return "decodeURI" },
   function(d, b) { return "decodeURIComponent" },
   function(d, b) { return "encodeURI" },
@@ -3022,6 +3151,11 @@ var functionMakers = [
   function(d, b) { return "XPCSafeJSObjectWrapper" },
   function(d, b) { return "WebGLIntArray" },
   function(d, b) { return "WebGLFloatArray" },
+  function(d, b) { return "Proxy.isTrapping" },
+  function(d, b) { return "Proxy.create" },
+  function(d, b) { return "Proxy.createFunction" },
+  function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
+  function(d, b) { return makeProxyHandlerFactory(d, b); },
 ];
 
 
@@ -3133,7 +3267,7 @@ function makeImmediateRecursiveCall(d, b, cheat1, cheat2)
   }
   var actualArgs = cheat2 == null ? a.args(d, b) : cheat2;
   s = s + "(" + actualArgs + ")";
-  s = s.replace(/@/g, function() { if (rnd(4) == 0) return makeExpr(d-2, b); return ""; });
+  s = s.replace(/@/g, function() { if (rnd(4) == 0) return makeStatement(d-2, b); return ""; });
   if (a.randSub) s = a.randSub(s, varMap, d, b);
   s = "(" + s + ")";
   return s;
