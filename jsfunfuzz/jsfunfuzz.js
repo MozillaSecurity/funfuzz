@@ -2208,6 +2208,8 @@ var statementMakers = weighted([
   // E4X "default xml namespace"
   { w: 1, fun: function(d, b) { return cat(["default ", "xml ", "namespace ", " = ", makeExpr(d, b)]); } },
 
+  { w: 1, fun: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
+
 ]);
 
 function makeNamedFunctionAndUse(d, b) {
@@ -2951,6 +2953,48 @@ function makeProxyHandler(d, b)
   return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 1, b) + ")"
 }
 
+
+function makeShapeyConstructor(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+  var nProps = rnd(5);
+  var argName = uniqueVarName();
+  var t = rnd(4) ? "this" : argName;
+  var funText = "function shapeyConstructor(" + argName + "){";
+  var bp = b.concat([argName]);
+  for (var i = 0; i < nProps; ++i) {
+    var propName = makeNewId(d, bp);
+    if (rnd(5) == 0) {
+      funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
+    }
+    switch(rnd(10)) {
+      case 0:  funText += "delete " + t + "." + propName + ";"; break;
+      case 1:  funText += "Object.defineProperty(" + t + ", " + uneval(propName) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
+      case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
+      case 3:  funText += t + "." + propName + " = " + makeExpr(d, bp)        + ";"; break;
+      case 4:  funText += t + "." + propName + " = " + makeFunction(d, bp)    + ";"; break;
+      default: funText += t + "." + propName + " = " + makeShapeyValue(d, bp) + ";"; break;
+    }
+  }
+  funText += "return " + t + "; }";
+  return funText;
+}
+
+function makeShapeyConstructorLoop(d, b)
+{
+  var a = makeMixedTypeArray(d, b);
+  var v = makeNewId(d, b);
+  var v2 = uniqueVarName(d, b);
+  var bvv = b.concat([v, v2]);
+  return makeShapeyConstructor(d - 1, b) + 
+    "/*tLoopC*/for each (let " + v + " in " + a + ") { " + 
+       "let " + v2 + " = " + "new shapeyConstructor(" + v + "); " +
+       //"print(uneval(" + v2 + "));" +
+       makeStatement(d - 2, bvv) +
+  " }"; 
+}
+
+
 function makePropertyDescriptor(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
@@ -3160,6 +3204,12 @@ var functionMakers = [
   function(d, b) { return "Proxy.createFunction" },
   function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return makeProxyHandlerFactory(d, b); },
+  function(d, b) { return makeShapeyConstructor(d, b); },
+
+  // A simple wrapping pattern
+  function(d, b) { return "/*wrap1*/(function(){ " + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()" },
+  // A wrapping pattern that creates upvars
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
 ];
 
 
@@ -3603,7 +3653,6 @@ function randomUnitStringLiteral()
     s += "0123456789ABCDEF".charAt(rnd(16));
   }
   s += "\""
-  print(s);
   return s;
 }
 
@@ -3734,9 +3783,8 @@ function makeSubE4X(d, b)
   return (rndElt(y))(d, b);
 }
 
-function makeMixedTypeArray(d, b)
+function makeShapeyValue(d, b)
 {
-
   var a = [
     // Numbers and number-like things
     [
@@ -3786,11 +3834,16 @@ function makeMixedTypeArray(d, b)
     [ rndElt(b), rndElt(b) ]
   ];
 
+  return rndElt(rndElt(a));
+}
+
+function makeMixedTypeArray(d, b)
+{
   // Pick two to five of those
   var q = rnd(4) + 2;
   var picks = [];
   for (var j = 0; j < q; ++j)
-    picks.push(rndElt(rndElt(a)));
+    picks.push(makeShapeyValue(d, b));
 
   // Make an array of up to 39 elements, containing those two to five values
   var c = [];
