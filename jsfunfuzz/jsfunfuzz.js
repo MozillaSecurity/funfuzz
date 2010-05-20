@@ -3162,11 +3162,26 @@ var functionMakers = [
   // The identity function
   function(d, b) { return "function(q) { return q; }" },
 
+  // A function that does something
+  function(d, b) { return "function(y) { " + makeStatement(d, b.concat(["y"])) + " }" },
+
+  // A function that computes something
+  function(d, b) { return "function(y) { return " + makeExpr(d, b.concat(["y"])) + " }" },
+
   // A generator that does something
   function(d, b) { return "function(y) { yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" },
 
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
+
+  // A simple wrapping pattern
+  function(d, b) { return "/*wrap1*/(function(){ " + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()" },
+
+  // Wrapping with upvar: escaping, may or may not be modified
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
+
+  // Wrapping with upvar: non-escaping
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
@@ -3205,11 +3220,6 @@ var functionMakers = [
   function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return makeProxyHandlerFactory(d, b); },
   function(d, b) { return makeShapeyConstructor(d, b); },
-
-  // A simple wrapping pattern
-  function(d, b) { return "/*wrap1*/(function(){ " + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()" },
-  // A wrapping pattern that creates upvars
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
 ];
 
 
