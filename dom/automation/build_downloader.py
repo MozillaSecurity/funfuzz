@@ -60,7 +60,7 @@ def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
     if remotefn.endswith(".win32.zip"):
       print "Downloading application..."
       unzip(downloadURL(remotefn, localfn), appDir)
-    if remotefn.endswith(".mac.dmg"):
+    if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
       print "Downloading application..."
       undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
     if remotefn.endswith(".tests.zip") and wantTests:
