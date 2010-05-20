@@ -7,7 +7,7 @@ import build_downloader
 import loopdomfuzz
 devnull = open(os.devnull, "w")
 
-targetTime = 60 # for build machines, use 20 minutes (20*60)
+targetTime = 15*60 # for build machines, use 20 minutes (20*60)
 
 # Uses directory name 'mv' for synchronization.
 
