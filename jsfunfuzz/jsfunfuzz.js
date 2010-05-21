@@ -201,10 +201,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*const/ ))               // avoid bug 352985
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( code.match( /\[.*\].*\=.*\[.*\,/ ))      // avoid bug 355051
-      && !( code.match( /\{.*\}.*\=.*\[.*\,/ ))      // avoid bug 355051 where empty {} becomes []
-      && !( code.match( /\[.*\].*\=.*\[.*\yield/ ))  // avoid bug 498934
-      && !( code.match( /\{.*\}.*\=.*\[.*\yield/ ))  // avoid bug 498934 where empty {} becomes []
       && !( code.match( /\?.*\?/ ))        // avoid bug 475895
       && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
       && !( code.match( /\=.*\:\:/ ))                // avoid bug 504957
@@ -585,7 +581,6 @@ function tryItOut(code)
   if (f && wtt.allowExec) {
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
       if (code.indexOf("Error") == -1) { // avoid bug 525518
-      if (code.indexOf("too_much_recursion") == -1) { // avoid bug 566639
         var cookie1 = "/*F";
         var cookie2 = "CM*/";
         var nCode = code;
@@ -605,7 +600,6 @@ function tryItOut(code)
         if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
           nCode = "(function(){" + nCode + "})()"
         dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
-      }
       }
     }
   }
