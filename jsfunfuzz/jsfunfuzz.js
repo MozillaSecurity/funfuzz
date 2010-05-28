@@ -2867,9 +2867,13 @@ var proxyHandlerProperties = {
     no:       "function() { return false; }",
     forward:  "function(receiver, name, val) { x[name] = val; return true; }"
   },
+  iterate: {
+    empty:    "function() { return (function() { throw StopIteration; }); }",
+    forward:  "function() { return (function() { for (var name in x) { yield name; } })(); }"
+  },
   enumerate: {
     empty:    "function() { return []; }",
-    forward:  "function() { var result = []; for (name in x) { result.push(name); }; return result; }"
+    forward:  "function() { var result = []; for (var name in x) { result.push(name); }; return result; }"
   },
   enumerateOwn: {
     empty:    "function() { return []; }",
