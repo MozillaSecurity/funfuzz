@@ -111,7 +111,7 @@ if __name__ == "__main__":
     lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
     print repr(lithargs)
     subprocess.call(lithargs, stdout=open("lithiumlog", "w"), stderr=subprocess.STDOUT)
-    lithlog = "lithiumlog"
+    lithlog = job + "lithN-out"
 
   else:
     print "Fuzz time!"
@@ -134,7 +134,7 @@ if __name__ == "__main__":
       print "Happy happy! No bugs found!"
 
   if lithlog:
-    # We could be cool and move some of this code into loopdomfuzz.runLithium()
+    # We could be cool and move some of this code into loopdomfuzz.runLithium(), which does nice things like renaming the file to indicate its length.
     for line in open(lithlog):
       if line.startswith("Lithium result: the original testcase is not"):
         # Unfortunately, this single state can mean three things: never reproducible, reproducible with url only, lithium made it nonrepro
@@ -149,7 +149,6 @@ if __name__ == "__main__":
         writeTinyFile(job + "lithium-command.txt", lithiumHint)
         break
     else:
-      os.rename("lithiumlog", job + "sad-lithium-log.txt") # only in this case do we save a lithium log
       statePostfix = "_sad"
     #print "oldjobname: " + oldjobname
     newjobname = oldjobname.split("_")[0] + statePostfix
