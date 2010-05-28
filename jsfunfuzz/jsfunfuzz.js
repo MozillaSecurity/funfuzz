@@ -177,7 +177,6 @@ function whatToTestSpidermonkeyTrunk(code)
 
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
-      && (code.indexOf("#") == -1)                    // avoid bug 367731
       && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
       && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
@@ -247,9 +246,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /function.*::.*=/ )) // avoid ????
       && !( code.match( /evalcx.*evalcx/ ))       // avoid bug 566554
       && !( code.match( /evalcx.*lazy/ ))       // avoid bug 563127
-      && !( code.match( /evalcx.*var/ ))       // avoid bug 566549
-      && !( code.match( /evalcx.*let/ ))       // avoid bug 566549
-      && !( code.match( /evalcx.*const/ ))       // avoid bug 566549
     ,
 
     allowIter: true,
@@ -964,11 +960,6 @@ function testUnevalString(uo)
 
 function checkErrorMessage(err, code)
 {
-  if (code.indexOf("<") != -1 && code.indexOf(">") != -1) {
-    // Ignore E4X issues: bug 465908, bug 380946, etc.
-    return;
-  }
-
   // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
   if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
     checkErrorMessage2(err, "TypeError: ", " is not a function");
@@ -1001,15 +992,11 @@ function checkErrorMessage2(err, prefix, suffix)
         return;
       }
 
-      if (dvg.match(/\#\d\=\</)) {
-        print("Ignoring bug 380946");
-        return;
-      }
 
       if (dvg == "") {
         print("Ignoring E4X uneval bogosity");
         // e.g. the error message from (<x/>.(false))()
-        // bug 465908, bug 380946, etc.
+        // bug 465908, etc.
         return;
       }
 
