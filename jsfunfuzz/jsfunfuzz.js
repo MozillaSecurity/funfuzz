@@ -2213,7 +2213,7 @@ function makeNamedFunctionAndUse(d, b) {
 
 function makePrintStatement(d, b)
 {
-  if (rnd(2))
+  if (rnd(2) && b.length)
     return "print(" + rndElt(b) + ");";
   else
     return "print(" + makeExpr(d, b) + ");";
@@ -3821,7 +3821,7 @@ function makeShapeyValue(d, b)
     [ "function(){}", "{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments" ],
 
     // Actual variables (slightly dangerous)
-    [ rndElt(b), rndElt(b) ]
+    [ b.length ? rndElt(b) : "x" ]
   ];
 
   return rndElt(rndElt(a));
