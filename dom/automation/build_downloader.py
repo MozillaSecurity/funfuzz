@@ -44,6 +44,7 @@ def undmg(fn, dest, mountpoint):
 
 
 def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
+  succeeded = False
   if os.path.exists("build"):
     shutil.rmtree("build")
   os.mkdir("build")
@@ -57,18 +58,22 @@ def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
     if remotefn.endswith(".linux-i686.tar.bz2"):
       print "Downloading application..."
       untarbz2(downloadURL(remotefn, localfn), appDir)
+      succeeded = True
     if remotefn.endswith(".win32.zip"):
       print "Downloading application..."
       unzip(downloadURL(remotefn, localfn), appDir)
+      succeeded = True
     if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
       print "Downloading application..."
       undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
+      succeeded = True
     if remotefn.endswith(".tests.zip") and wantTests:
       print "Downloading tests..."
       unzip(downloadURL(remotefn, localfn), testsDir)
     if remotefn.endswith(".crashreporter-symbols.zip") and wantSymbols:
       print "Downloading crash reporter symbols..."
       unzip(downloadURL(remotefn, localfn), symbolsDir)
+  return succeeded
 
 def findLatestBuild(branchName, osName):
   buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + branchName + "-" + osName + "-debug/"

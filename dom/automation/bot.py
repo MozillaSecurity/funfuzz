@@ -91,6 +91,9 @@ def writeTinyFile(fn, text):
 def timestamp():
   return str(int(time.time()))
 
+def downloadLatestBuild():
+  latestBuild = build_downloader.findLatestBuild("mozilla-central", "macosx")
+  build_downloader.downloadBuild(latestBuild)
 
 if __name__ == "__main__":
   relevantJobsDir = remoteBase + "mozilla-central-macosx-debug/"
@@ -110,7 +113,8 @@ if __name__ == "__main__":
     job = "wtmp1/"
     preferredBuild = readTinyFile(job + "preferred-build.txt")
     if len(preferredBuild) > 7: # shortcut for local running that i should probably remove
-      build_downloader.downloadBuild(preferredBuild)
+      if not build_downloader.downloadBuild(preferredBuild):
+        downloadLatestBuild()
     lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
     print repr(lithargs)
     subprocess.call(lithargs, stdout=open(job + "lithN-out", "w"), stderr=subprocess.STDOUT)
@@ -119,8 +123,7 @@ if __name__ == "__main__":
   else:
     print "Fuzz time!"
     if not os.path.exists("build"): # shortcut for local running that i should probably remove
-      latestBuild = build_downloader.findLatestBuild("mozilla-central", "macosx")
-      build_downloader.downloadBuild(latestBuild)
+      downloadLatestBuild()
     else:
       latestBuild = "haha"
     r = loopdomfuzz.many_timed_runs("build", targetTime, []) # xxx support --valgrind for additionalArgs
