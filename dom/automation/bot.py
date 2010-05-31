@@ -114,6 +114,7 @@ if __name__ == "__main__":
     preferredBuild = readTinyFile(job + "preferred-build.txt")
     if len(preferredBuild) > 7: # shortcut for local running that i should probably remove
       if not build_downloader.downloadBuild(preferredBuild):
+        print "Preferred build for this reduction was missing, grabbing latest build"
         downloadLatestBuild()
     lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
     print repr(lithargs)
