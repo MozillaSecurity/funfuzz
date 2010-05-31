@@ -113,7 +113,7 @@ if __name__ == "__main__":
       build_downloader.downloadBuild(preferredBuild)
     lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
     print repr(lithargs)
-    subprocess.call(lithargs, stdout=open("lithN-out", "w"), stderr=subprocess.STDOUT)
+    subprocess.call(lithargs, stdout=open(job + "lithN-out", "w"), stderr=subprocess.STDOUT)
     lithlog = job + "lithN-out"
 
   else:
