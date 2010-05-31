@@ -97,6 +97,9 @@ if __name__ == "__main__":
   runCommand("mkdir -p " + relevantJobsDir)
   job = grabReductionJob(relevantJobsDir)
   lithlog = None
+  if os.path.exists("wtmp1"):
+    print "wtmp1 shouldn't exist now. killing it."
+    shutil.rmtree("wtmp1")
 
   if job:
     print "Reduction time!"
