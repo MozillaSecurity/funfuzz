@@ -102,6 +102,7 @@ def main():
     branchSuppList.append('mc')
     branchSuppList.append('tm')
     branchSuppList.append('jm')
+    branchSuppList.append('fv')
 
     branchSupp = '['
     branchSupp += '|'.join('%s' % n for n in branchSuppList)
@@ -180,6 +181,7 @@ def main():
         repoDict['mc'] = '~/mozilla-central/'
         repoDict['tm'] = '~/tracemonkey/'
         repoDict['jm'] = '~/jaegermonkey/'
+        repoDict['fv'] = '~/fatval/'
         fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
     elif os.name == 'nt':
         repoDict['fuzzing'] = '/fuzzing/'
@@ -191,6 +193,7 @@ def main():
         repoDict['mc'] = '/mozilla-central/'
         repoDict['tm'] = '/tracemonkey/'
         repoDict['jm'] = '/jaegermonkey/'
+        repoDict['fv'] = '/fatval/'
         fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
 
     if verbose:
@@ -349,6 +352,7 @@ def main():
     # For TM and JM, we use mozilla-central's js-known directories.
     jsknownDict['tm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
     jsknownDict['jm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
+    jsknownDict['fv'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
 
     multiTimedRun = repoDict['fuzzing'] + 'jsfunfuzz/multi_timed_run.py'
 
