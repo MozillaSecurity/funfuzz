@@ -52,9 +52,9 @@ def readIgnoreList(knownPath):
     #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
 
 
-def ignore(assertion):
+def isKnownCrashSignature(line):
     global ignoreList
     for ig in ignoreList:
-        if assertion.find(ig) != -1:
+        if line.find(ig) != -1:
             return True
     return False

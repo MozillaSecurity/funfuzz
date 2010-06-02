@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re, os, shutil, subprocess, time, StringIO
+import re, os, shutil, subprocess, time, StringIO, stat
 devnull = open(os.devnull, "w")
 
 # Use curl rather than urllib because curl can check certificates.
@@ -43,7 +43,7 @@ def undmg(fn, dest, mountpoint):
     subprocess.check_call(["hdiutil", "detach", mountpoint], stdout=devnull)
 
 
-def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
+def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
   succeeded = False
   if os.path.exists("build"):
     shutil.rmtree("build")
@@ -66,6 +66,9 @@ def downloadBuild(httpDir, wantSymbols=False, wantTests=True):
     if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
       print "Downloading application..."
       undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
+      stackwalk = os.path.join("build", "minidump_stackwalk")
+      downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk", stackwalk)
+      os.chmod(stackwalk, stat.S_IRWXU)
       succeeded = True
     if remotefn.endswith(".tests.zip") and wantTests:
       print "Downloading tests..."

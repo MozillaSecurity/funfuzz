@@ -1,8 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -u
 
 """
-Runs the DOM fuzzing harness.
-Based on runreftest.py.  Uses automation.py.
+
+Runs Firefox with DOM fuzzing.  Identifies output that indicates that a bug has been found.
+
+We run runbrowser.py through a (s)ubprocess.  runbrowser.py (i)mports automation.py.  This setup allows us to postprocess all automation.py output, including crash logs.
+
+        i                  i                 s*                i                 s
+bot.py --> loopdomfuzz.py --> rundomfuzz.py --> runbrowser.py --> automation.py+ --> firefox-bin
+                                   ^
+                                   |
+                                   |
+                              you are here
+
 """
 
 
@@ -12,11 +22,17 @@ import shutil
 import os
 import platform
 import signal
-import logging
 import glob
 from optparse import OptionParser
 from tempfile import mkdtemp
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes, detect_leaks
+import subprocess
+
+import runbrowser
+
+import detect_assertions
+import detect_malloc_errors
+import detect_interesting_crashes
+import detect_leaks
 
 # could also use sys._getframe().f_code.co_filename, but this seems cleaner
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -43,26 +59,18 @@ def getFullPath(path):
   "Get an absolute path relative to oldcwd."
   return os.path.normpath(os.path.join(oldcwd, os.path.expanduser(path)))
 
-def createDOMFuzzProfile(options, profileDir, valgrindMode):
+def createDOMFuzzProfile(profileDir, valgrindMode):
   "Sets up a profile for domfuzz."
 
   # Set preferences.
   prefsFile = open(os.path.join(profileDir, "user.js"), "w")
-  #prefsFile.write('user_pref("reftest.timeout", %d);\n' % (options.timeout * 1000)) # XXX an excellent idea
+  # do something like reftest.timeout, as a way to let the dom fuzzer know how long to run?
   prefsFile.write('user_pref("browser.dom.window.dump.enabled", true);\n')
   prefsFile.write('user_pref("ui.caretBlinkTime", -1);\n')
 
-  for v in options.extraPrefs:
-    thispref = v.split("=")
-    if len(thispref) < 2:
-      print "Error: syntax error in --setpref=" + v
-      sys.exit(1)
-    part = 'user_pref("%s", %s);\n' % (thispref[0], thispref[1])
-    prefsFile.write(part)
-
   # no slow script dialogs
-  prefsFile.write('user_pref("dom.max_script_run_time", 0);')
-  prefsFile.write('user_pref("dom.max_chrome_script_run_time", 0);')
+  prefsFile.write('user_pref("dom.max_script_run_time", 0);\n')
+  prefsFile.write('user_pref("dom.max_chrome_script_run_time", 0);\n')
 
   # additional prefs for fuzzing
   prefsFile.write('user_pref("browser.sessionstore.resume_from_crash", false);\n')
@@ -77,7 +85,7 @@ def createDOMFuzzProfile(options, profileDir, valgrindMode):
   prefsFile.write('user_pref("extensions.enabledScopes", 3);\n')
 
   # Turn off various things in firefox that try to update themselves,
-  # to improve performance and sanity and reduce risk of hitting 479373.
+  # to improve performance and sanity and reduce risk of hitting bug 479373.
   # http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
   prefsFile.write('user_pref("browser.safebrowsing.enabled", false);\n')
   prefsFile.write('user_pref("browser.safebrowsing.malware.enabled", false);\n')
@@ -92,7 +100,7 @@ def createDOMFuzzProfile(options, profileDir, valgrindMode):
   if valgrindMode:
     prefsFile.write('user_pref("javascript.options.jit.content", false);\n')
     prefsFile.write('user_pref("javascript.options.jit.chrome", false);\n')
-    # XXX disable plugins
+    # how can i disable all plugins? and all multi-processness?
 
   prefsFile.close()
 
@@ -107,7 +115,8 @@ def createDOMFuzzProfile(options, profileDir, valgrindMode):
   # Give the profile an empty bookmarks file, so there are no live-bookmark requests
   shutil.copyfile(os.path.join(THIS_SCRIPT_DIRECTORY, "empty-bookmarks.html"), os.path.join(profileDir, "bookmarks.html"))
 
-def getFirefoxBranch(appini):
+def getFirefoxBranch(app):
+  appini = os.path.normpath(os.path.join(app, "..", "application.ini"))
   with file(appini) as f:
     for line in f:
       if line.startswith("SourceRepository="):
@@ -117,10 +126,16 @@ def getFirefoxBranch(appini):
         else:
           return line.split("/")[-1]
 
+def getKnownPath(app):
+  firefoxBranch = getFirefoxBranch(app)
+  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
+  if not os.path.exists(knownPath):
+    print "Missing knownPath: " + knownPath
+    sys.exit(1)
+  return knownPath
 
-class AmissLogHandler(logging.Handler):
+class AmissLogHandler:
   def __init__(self, knownPath):
-    logging.Handler.__init__(self)
     self.newAssertionFailure = False
     self.mallocFailure = False
     self.knownPath = knownPath
@@ -130,14 +145,16 @@ class AmissLogHandler(logging.Handler):
     self.expectedToHang = True
     self.nsassertionCount = 0
     self.fuzzerComplained = False
-  def emit(self, record):
-    msg = record.msg
-    msgLF = msg + "\n"
+    self.sawProcessedCrash = False
+    self.crashIsKnown = False
+  def processLine(self, msgLF):
+    msg = msgLF.rstrip("\n")
     if len(self.fullLogHead) < 100000:
       self.fullLogHead.append(msgLF)
-    if self.pid == None and msg.startswith("INFO | automation.py | Application pid:"):
-      self.pid = record.args[0]
-      #print "Got the pid: " + repr(self.pid)
+    pidprefix = "INFO | automation.py | Application pid:"
+    if self.pid == None and msg.startswith(pidprefix):
+      self.pid = int(msg[len(pidprefix):])
+      print "Firefox pid: " + repr(self.pid)
     if msg.find("FRC") != -1:
       self.FRClines.append(msgLF)
     if msg == "Not expected to hang":
@@ -156,6 +173,12 @@ class AmissLogHandler(logging.Handler):
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
       self.fullLogHead.append("@@@ Malloc is unhappy\n")
+    if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
+      print "We have a crash on our hands!"
+      self.sawProcessedCrash = True
+    if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
+      print "Known crash signature: " + msg
+      self.crashIsKnown = True
 
 class FigureOutDirs:
   def __init__(self, browserDir):
@@ -164,6 +187,7 @@ class FigureOutDirs:
     self.reftestScriptDir = None
     self.symbolsDir = None
     self.utilityDir = None
+    self.stackwalk = None
 
     if os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "tests")):
       # browserDir is a downloaded packaged build, perhaps downloaded with build_downloader.py.  Great!
@@ -172,6 +196,10 @@ class FigureOutDirs:
       self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
       self.utilityDir = os.path.join(browserDir, "tests", "bin")
       self.symbolsDir = os.path.join(browserDir, "symbols")
+      if (not os.environ.get('MINIDUMP_STACKWALK', None) and
+          not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
+          os.path.exists(os.path.join(browserDir, "minidump_stackwalk"))):
+        self.stackwalk = os.path.join(browserDir, "minidump_stackwalk")
     elif os.path.exists(os.path.join(browserDir, "..", "layout", "reftests")):
       # browserDir is an objdir whose parent is a srcdir.  That works too (more convenient for local builds)
       #self.appDir = browserDir
@@ -199,143 +227,83 @@ class FigureOutDirs:
 def rdfInit(browserDir, additionalArgs = []):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
   
-  dirs = FigureOutDirs(browserDir)
-
-  # Fun issue: we don't know where automation.py is until we have our first argument,
-  # but we can't parse our arguments until we have automation.py.  So the objdir
-  # gets to be our first argument.
-  print dirs.reftestScriptDir
-  sys.path.append(dirs.reftestScriptDir)
-  try:
-    from automation import Automation
-    import automationutils
-  finally:
-    sys.path.pop()
-
-  automation = Automation()
+  dirs = FigureOutDirs(getFullPath(browserDir))
 
   parser = OptionParser()
-
-  # we want to pass down everything from automation.__all__
-  automationutils.addCommonOptions(parser, defaults=dict(zip(automation.__all__, [getattr(automation, x) for x in automation.__all__])))
-  automation.addCommonOptions(parser)
   parser.add_option("--valgrind",
                     action = "store_true", dest = "valgrind",
                     default = False,
                     help = "use valgrind with a reasonable set of options")
-  parser.add_option("--appname",
-                    action = "store", type = "string", dest = "app",
-                    default = os.path.join(dirs.reftestScriptDir, automation.DEFAULT_APP),
-                    help = "absolute path to application, overriding default")
-  parser.add_option("--timeout",              
-                    action = "store", dest = "timeout", type = "int", 
-                    default = 1 * 60, # 1 minute
-                    help = "Time out in specified number of seconds. [default %default s].")
-  parser.add_option("--utility-path",
-                    action = "store", type = "string", dest = "utilityPath",
-                    default = dirs.utilityDir,
-                    help = "absolute path to directory containing utility "
-                           "programs (xpcshell, ssltunnel, certutil)")
-
   options, args = parser.parse_args(additionalArgs)
-
-  options.app = getFullPath(options.app)
-  print options.app
-  if not os.path.exists(options.app):
-    print "Error: Path %(app)s doesn't exist." % {"app": options.app}
-    sys.exit(1)
-
-  if options.xrePath is None:
-    options.xrePath = os.path.dirname(options.app)
-  else:
-    # allow relative paths
-    options.xrePath = getFullPath(options.xrePath)
-
-  options.utilityPath = getFullPath(options.utilityPath)
-
-  debuggerInfo = automationutils.getDebuggerInfo(oldcwd, options.debugger, options.debuggerArgs,
-     options.debuggerInteractive);
-
-  profileDir = None
-
-  profileDir = mkdtemp()
-  createDOMFuzzProfile(options, profileDir, options.valgrind)
-
-  # browser environment
-  browserEnv = automation.environment(xrePath = options.xrePath)
-  # stack-gathering is slow and semi-broken on Mac, but it's great on Linux
-  browserEnv["XPCOM_DEBUG_BREAK"] = "warn" if platform.system() == "Darwin" else "stack"
-  browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
-  if not options.valgrind:
-    browserEnv["MallocScribble"] = "1"
-    browserEnv["MallocPreScribble"] = "1"
-
-  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Getting Firefox version")
-  firefoxBranch = getFirefoxBranch(os.path.normpath(os.path.join(options.app, "..", "application.ini")))
-  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Firefox version: " + firefoxBranch)
-  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
-  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Ignoring known bugs in: " + knownPath)
-
-  # run once with -silent to let the extension manager do its thing
-  # and then exit the app
-  automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: start.\n")
   
-  # Don't care about this |status|: |runApp()| reporting it should be enough.
-  status = automation.runApp(None, browserEnv, options.app, profileDir,
-                             ["-silent"],
-                             utilityPath = options.utilityPath,
-                             xrePath=options.xrePath,
-                             symbolsPath=options.symbolsPath,
-                             maxTime = options.timeout + 300.0,
-                             timeout = options.timeout + 120.0
-                             )
-  # We don't care to call |automationutils.processLeakLog()| for this step.
-  automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Performing extension manager registration: end.")
+  profileDir = mkdtemp()
+  createDOMFuzzProfile(profileDir, options.valgrind)
 
+  runBrowserOptions = []
+  if dirs.symbolsDir:
+    runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
+  if options.valgrind:
+    runBrowserOptions.append("--valgrind")
+  env = os.environ
+  if dirs.stackwalk:
+    env['MINIDUMP_STACKWALK'] = dirs.stackwalk
+  runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
+  runbrowser = subprocess.Popen(
+                   ["python", "-u", "runbrowser.py"] + runBrowserOptions + runBrowserArgs + ["silent"],
+                   stdin = None,
+                   stdout = subprocess.PIPE,
+                   stderr = subprocess.STDOUT,
+                   env = env,
+                   close_fds = True)
 
+  knownPath = None
+
+  while True:
+    line = runbrowser.stdout.readline()
+    if line != '':
+      print ">> " + line.rstrip("\n")
+      if line.startswith("theapp: "):
+        knownPath = getKnownPath(line[8:].rstrip())
+    else:
+      break
+
+  if not knownPath:
+    raise Exception("Didn't get a knownPath")
+    
+  detect_interesting_crashes.readIgnoreList(knownPath)
+  
   def levelAndLines(url, logPrefix=None):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
+    
+    leakLogFile = logPrefix + "-leaks.txt"
 
-    # This is a little sketchy, changing debugger and debuggerArgs after calling runApp once.
-    # But it saves a lot of time, and by this point we know what knownPath and logPrefix are.
-    if options.valgrind:
-      print "About to use valgrind"
-      assert not debuggerInfo
-      debuggerInfo2 = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
-      debuggerInfo2["args"] = [
-        "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
-        "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
-        "--gen-suppressions=all"
-      ]
-      if automation.IS_MAC:
-        debuggerInfo2["args"].append("--dsymutil=yes")
-    else:
-      debuggerInfo2 = debuggerInfo
-
-    leakLogFile = None
-
-    if automation.IS_DEBUG_BUILD and not options.valgrind:
-        # This breaks if logPrefix is None. Not sure what to do. :(
-        leakLogFile = logPrefix + "-leaks.txt"
-        browserEnv["XPCOM_MEM_LEAK_LOG"] = leakLogFile
-
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage: start.\n")
+    runbrowser = subprocess.Popen(
+                     ["python", "-u", "runbrowser.py", "--leak-log-file=" + leakLogFile] + runBrowserOptions + runBrowserArgs + [url],
+                     stdin = None,
+                     stdout = subprocess.PIPE,
+                     stderr = subprocess.STDOUT,
+                     env = env,
+                     close_fds = True)
+  
     alh = AmissLogHandler(knownPath)
-    automation.log.addHandler(alh)
-    status = automation.runApp(None, browserEnv, options.app, profileDir,
-                               [url],
-                               utilityPath = options.utilityPath,
-                               xrePath=options.xrePath,
-                               debuggerInfo=debuggerInfo2,
-                               symbolsPath=dirs.symbolsDir, # bypassing options, not sure this is a good idea
-                               maxTime = options.timeout + 300.0,
-                               timeout = options.timeout + 120.0
-                               )
-    automation.log.removeHandler(alh)
-    automation.log.info("\nDOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, status " + str(status))
+  
+    statusLinePrefix = "RUNBROWSER INFO | runbrowser.py | runApp: exited with status "
+    status = -9000
+
+    # NB: not using 'for line in runbrowser.stdout' because that uses a hidden buffer
+    # see http://docs.python.org/library/stdtypes.html#file.next
+    while True:
+      line = runbrowser.stdout.readline()
+      if line != '':
+        print "> " + line.rstrip("\n")
+        alh.processLine(line)
+        if line.startswith(statusLinePrefix):
+          status = int(line[len(statusLinePrefix):])
+      else:
+        break
     
     lev = DOM_FINE
-  
+
     if alh.newAssertionFailure:
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     if alh.mallocFailure:
@@ -343,41 +311,43 @@ def rdfInit(browserDir, additionalArgs = []):
     if alh.fuzzerComplained:
       lev = max(lev, DOM_FUZZER_COMPLAINED)
 
-    # I am working around bug 564632 by not using Breakpad on Linux.  This means I can't distinguish crashes from each other.
-    ignoreAllCrashes = (platform.system() == "Linux")
+    if alh.sawProcessedCrash:
+      if not alh.crashIsKnown:
+        print("DOMFUZZ INFO | rundomfuzz.py | New crash (from minidump_stackwalk)")
+        lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
 
-    if status < 0 and not ignoreAllCrashes:
+    if status < 0:
       # The program was terminated by a signal, which usually indicates a crash.
-      # Mac/Linux only!
+      # Mac/Linux only!  And maybe Mac only!
       signum = -status
       signame = getSignalName(signum, "unknown signal")
-      automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
+      print("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
       if signum == signal.SIGKILL:
         if alh.expectedToHang or options.valgrind:
           print "Expected hang"
         else:
           print "Unexpected hang"
           lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
-      else:
-        crashlog = None
-        if signum != signal.SIGKILL and dirs.symbolsDir == None:
-            crashlog = grabCrashLog(os.path.basename(options.app), alh.pid, None, signum)
+      elif signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
+        # well, maybe the OS crash reporter picked it up.
+        appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
+        crashlog = grabCrashLog(appName, alh.pid, None, signum)
         if crashlog:
           print open(crashlog).read()
           if detect_interesting_crashes.amiss(knownPath, crashlog, False, signame):
-            automation.log.info("DOMFUZZ INFO | rundomfuzz.py | New crash")
+            print("DOMFUZZ INFO | rundomfuzz.py | New crash (from mac crash reporter)")
             if logPrefix:
               shutil.copyfile(crashlog, logPrefix + "-crash.txt")
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
           else:
-            automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Known crash")
+            print("DOMFUZZ INFO | rundomfuzz.py | Known crash (from mac crash reporter)")
     
     if options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
       lev = max(lev, DOM_VG_AMISS)
-    elif status > 0 and not ignoreAllCrashes:
+    elif status > 0 and not alh.sawProcessedCrash:
       lev = max(lev, DOM_ABNORMAL_EXIT)
 
-    if leakLogFile and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
+    if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
       lev = max(lev, DOM_NEW_LEAK)
     elif leakLogFile:
       # Remove the main leak log file, plus any plugin-process leak log files
@@ -389,17 +359,16 @@ def rdfInit(browserDir, additionalArgs = []):
       outlog.writelines(alh.fullLogHead)
       outlog.close()
   
-    automation.log.info("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
+    print("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
   
     FRClines = alh.FRClines
-    alh.close()
   
     return (lev, FRClines)
     
   return levelAndLines, options # return a closure along with the set of options
 
 
-# XXX try to squeeze this into automation.py or automationutils.py
+# should eventually try to squeeze this into automation.py or automationutils.py
 def grabCrashLog(progname, crashedPID, logPrefix, signum):
     import os, platform, time
     useLogFiles = isinstance(logPrefix, str)
