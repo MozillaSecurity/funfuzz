@@ -147,7 +147,8 @@ def autoconfRun():
         subprocess.call(['sh', 'autoconf-2.13'])
 
 # This function compiles a js binary depending on the parameters.
-def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe):
+def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
+                      valgrindSupport, threadsafe):
     configureCmd = 'sh ../configure'
     if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
@@ -161,7 +162,11 @@ def configureJsBinary(archNum, compileType, branchType, valgrindSupport, threads
     elif compileType == 'opt':
         configureCmd += ' --enable-optimize --disable-debug'
 
-    if branchType == 'jm':
+    # Trace JIT is on by default.
+    if not traceJit:
+        configureCmd += ' --disable-tracejit'
+    # Method JIT is off by default.
+    if methodJit:
         configureCmd += ' --enable-methodjit'
     if valgrindSupport:
         configureCmd += ' --enable-valgrind'
