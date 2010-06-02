@@ -72,11 +72,16 @@ def main():
     # Variables
     verbose = True  # Turning this on also enables tests.
     multiTimedRunTimeout = '10'
+    traceJit = True  # Activate support for tracing JIT in configure.
     jsJitSwitch = True  # Activate JIT fuzzing here.
+    methodJit = False  # Method JIT is off by default unless fuzzing JM branch.
     # Pymake is activated on Windows platforms by default, for tip only.
     usePymake = True if os.name == 'nt' else False
 
     jsCompareJITSwitch = True
+    # Disable compareJIT if traceJit support is disabled in configure.
+    if not traceJit:
+        jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
     if sys.argv[3] == '191' or sys.argv[3] == '192':
         jsCompareJITSwitch = False
@@ -276,7 +281,8 @@ def main():
     os.chdir(compileType + '-objdir')
 
     # Compile the first binary.
-    configureJsBinary(archNum, compileType, branchType, valgrindSupport, threadsafe)
+    configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
+                      valgrindSupport, threadsafe)
     if usePymake and os.name == 'nt':
         subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
@@ -295,11 +301,13 @@ def main():
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
         os.chdir('opt-objdir')
-        configureJsBinary(archNum, 'opt', branchType, valgrindSupport, threadsafe)
+        configureJsBinary(archNum, 'opt', branchType, traceJit, methodJit,
+                          valgrindSupport, threadsafe)
         compileCopy(archNum, 'opt', branchType, usePymake)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
-        configureJsBinary(archNum, 'dbg', branchType, valgrindSupport, threadsafe)
+        configureJsBinary(archNum, 'dbg', branchType, traceJit, methodJit,
+                          valgrindSupport, threadsafe)
         compileCopy(archNum, 'dbg', branchType, usePymake)
 
 
