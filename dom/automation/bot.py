@@ -117,7 +117,7 @@ if __name__ == "__main__":
         print "Preferred build for this reduction was missing, grabbing latest build"
         downloadLatestBuild()
     lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
-    print repr(lithargs)
+    print " ".join(lithargs)
     subprocess.call(lithargs, stdout=open(job + "lithN-out", "w"), stderr=subprocess.STDOUT)
     lithlog = job + "lithN-out"
 

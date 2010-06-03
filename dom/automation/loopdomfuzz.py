@@ -128,7 +128,7 @@ def runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime):
     else:
       lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     print "loopdomfuzz.py is running Lithium..."
-    print repr(lithiumpy + lithArgs)
+    print " ".join(lithiumpy + lithArgs)
     if targetTime:
       lithlogfn = logPrefix.split(os.sep)[0] + os.sep + "lith1-out"
     else:
@@ -265,7 +265,6 @@ def standalone():
         raise Exception("Use bot.py, or invoke using: loopdomfuzz.py browserDir") # [options for automation.py] after browserDir??
     browserDir = os.path.abspath(args[0])
     print browserDir
-    print repr(args[1:])
     many_timed_runs(browserDir, None, args[1:])
 
 if __name__ == "__main__":
