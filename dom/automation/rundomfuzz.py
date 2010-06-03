@@ -154,7 +154,7 @@ class AmissLogHandler:
     pidprefix = "INFO | automation.py | Application pid:"
     if self.pid == None and msg.startswith(pidprefix):
       self.pid = int(msg[len(pidprefix):])
-      print "Firefox pid: " + repr(self.pid)
+      print "Firefox pid: " + str(self.pid)
     if msg.find("FRC") != -1:
       self.FRClines.append(msgLF)
     if msg == "Not expected to hang":
