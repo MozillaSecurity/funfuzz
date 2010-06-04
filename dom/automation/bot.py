@@ -94,6 +94,7 @@ def timestamp():
 def downloadLatestBuild():
   latestBuild = build_downloader.findLatestBuild("mozilla-central", "macosx")
   build_downloader.downloadBuild(latestBuild)
+  return latestBuild
 
 if __name__ == "__main__":
   relevantJobsDir = remoteBase + "mozilla-central-macosx-debug/"
@@ -112,7 +113,7 @@ if __name__ == "__main__":
     os.rename(job, "wtmp1") # so lithium gets the same filename as before
     job = "wtmp1/"
     preferredBuild = readTinyFile(job + "preferred-build.txt")
-    if len(preferredBuild) > 7: # shortcut for local running that i should probably remove
+    if len(preferredBuild) > 7: # hack shortcut for local running and for 'haha' (see below)
       if not build_downloader.downloadBuild(preferredBuild):
         print "Preferred build for this reduction was missing, grabbing latest build"
         downloadLatestBuild()
@@ -124,13 +125,13 @@ if __name__ == "__main__":
   else:
     print "Fuzz time!"
     if not os.path.exists("build"): # shortcut for local running that i should probably remove
-      downloadLatestBuild()
+      buildUsed = downloadLatestBuild()
     else:
-      latestBuild = "haha"
+      buildUsed = "haha" # hack, see preferredBuild stuff above
     r = loopdomfuzz.many_timed_runs("build", targetTime, []) # xxx support --valgrind for additionalArgs
     if r:
       job = "wtmp1/"
-      writeTinyFile(job + "preferred-build.txt", latestBuild)
+      writeTinyFile(job + "preferred-build.txt", buildUsed)
       # not really "oldjobname", but this is how i get newjobname to be what i want below
       # avoid putting underscores in this part, because those get split on
       oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
