@@ -248,8 +248,9 @@ def rdfInit(browserDir, additionalArgs = []):
   if dirs.stackwalk:
     env['MINIDUMP_STACKWALK'] = dirs.stackwalk
   runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
+  runbrowserpy = ["python", "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
   runbrowser = subprocess.Popen(
-                   ["python", "-u", "runbrowser.py"] + runBrowserOptions + runBrowserArgs + ["silent"],
+                   runbrowserpy + runBrowserOptions + runBrowserArgs + ["silent"],
                    stdin = None,
                    stdout = subprocess.PIPE,
                    stderr = subprocess.STDOUT,
@@ -278,7 +279,7 @@ def rdfInit(browserDir, additionalArgs = []):
     leakLogFile = logPrefix + "-leaks.txt"
 
     runbrowser = subprocess.Popen(
-                     ["python", "-u", "runbrowser.py", "--leak-log-file=" + leakLogFile] + runBrowserOptions + runBrowserArgs + [url],
+                     runbrowserpy + ["--leak-log-file=" + leakLogFile] + runBrowserOptions + runBrowserArgs + [url],
                      stdin = None,
                      stdout = subprocess.PIPE,
                      stderr = subprocess.STDOUT,
