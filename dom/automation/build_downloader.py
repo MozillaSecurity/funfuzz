@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re, os, shutil, subprocess, time, StringIO, stat
+import platform
 devnull = open(os.devnull, "w")
 
 # Use curl rather than urllib because curl can check certificates.
@@ -50,14 +51,18 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
   os.mkdir("build")
   downloadDir = os.path.join("build", "download")
   os.mkdir(downloadDir)
-  appDir = os.path.join("build", "dist") + os.sep # calling this "dist" makes os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
+  appDir = os.path.join("build", "dist") + os.sep # hack #1 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work is calling this directory "dist"
   testsDir = os.path.join("build", "tests") + os.sep
   symbolsDir = os.path.join("build", "symbols") + os.sep
   for remotefn in httpDirList(httpDir):
     localfn = os.path.join(downloadDir, remotefn.split("/")[-1])
-    if remotefn.endswith(".linux-i686.tar.bz2"):
+    if remotefn.endswith(".linux-i686.tar.bz2") or remotefn.endswith(".linux-x86_64.tar.bz2"):
       print "Downloading application..."
       untarbz2(downloadURL(remotefn, localfn), appDir)
+      os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
+      stackwalk = os.path.join("build", "minidump_stackwalk")
+      downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk", stackwalk)
+      os.chmod(stackwalk, stat.S_IRWXU)
       succeeded = True
     if remotefn.endswith(".win32.zip"):
       print "Downloading application..."
@@ -78,11 +83,27 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
       unzip(downloadURL(remotefn, localfn), symbolsDir)
   return succeeded
 
-def findLatestBuild(branchName, osName):
-  buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + branchName + "-" + osName + "-debug/"
+def findLatestBuild(buildType):
+  """buildType can be e.g. mozilla-central-macosx-debug"""
+  buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + buildType + "/"
   latestBuild = httpDirList(buildsDir)[-1]
   return latestBuild
 
+def mozPlatform():
+  s = platform.system()
+  m = platform.machine()
+  if s == "Darwin":
+    return "macosx"
+  if s == "Linux":
+    if m == "x86_64":
+      return "linux64"
+    else:
+      return "linux"
+  if s == "Windows":
+    return "win32"
+  raise Exception("Unknown platform")
+
 if __name__ == "__main__":
-  latestBuild = findLatestBuild("mozilla-central", "macosx")
+  latestBuild = findLatestBuild("mozilla-central-" + mozPlatform() + "-debug")
   downloadBuild(latestBuild)
+

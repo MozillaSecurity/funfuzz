@@ -92,12 +92,15 @@ def timestamp():
   return str(int(time.time()))
 
 def downloadLatestBuild():
-  latestBuild = build_downloader.findLatestBuild("mozilla-central", "macosx")
+  latestBuild = build_downloader.findLatestBuild(buildType())
   build_downloader.downloadBuild(latestBuild)
   return latestBuild
 
+def buildType():
+  return "mozilla-central-" + build_downloader.mozPlatform() + "-debug"
+
 if __name__ == "__main__":
-  relevantJobsDir = remoteBase + "mozilla-central-macosx-debug/"
+  relevantJobsDir = remoteBase + buildType() + "/"
   runCommand("mkdir -p " + relevantJobsDir)
   job = grabReductionJob(relevantJobsDir)
   lithlog = None
