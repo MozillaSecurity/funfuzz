@@ -51,7 +51,7 @@ def runBrowser():
   print "theapp: " + theapp
 
   if aOptions.xrePath is None:
-    aOptions.xrePath = theapp
+    aOptions.xrePath = os.path.dirname(theapp)
 
   debuggerInfo = automationutils.getDebuggerInfo(oldcwd, aOptions.debugger, aOptions.debuggerArgs,
      aOptions.debuggerInteractive);
