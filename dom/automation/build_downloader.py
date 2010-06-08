@@ -83,10 +83,16 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
       unzip(downloadURL(remotefn, localfn), symbolsDir)
   return succeeded
 
+def isNumericDir(n):
+  return re.match(r"^\d+$", n.split("/")[-2])
+
 def findLatestBuild(buildType):
   """buildType can be e.g. mozilla-central-macosx-debug"""
   buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + buildType + "/"
-  latestBuild = httpDirList(buildsDir)[-1]
+  builds = filter(isNumericDir, httpDirList(buildsDir))
+  if len(builds) == 0:
+    raise Exception("No builds in " + buildsDir + "!")
+  latestBuild = builds[-1]
   return latestBuild
 
 def mozPlatform():

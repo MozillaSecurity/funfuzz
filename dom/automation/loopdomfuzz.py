@@ -34,7 +34,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
             print "Out of time!"
             if len(os.listdir(tempDir)) == 0:
                 os.rmdir(tempDir)
-            return False
+            return (None, HAPPY, None)
 
         url = urls[iteration]
 
@@ -47,26 +47,29 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
             print "loopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
-            lithSuccess = runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime)
-            if not lithSuccess:
-                print "%%% Failed to reduce using Lithium"
+            lithArgs = [rundomfuzzpy] + extraRDFArgs + [str(level), browserDir, rFN]
+            (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
+            if lithresult == LITH_NO_REPRO:
+                os.remove(rFN)
+                print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
                 level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry")
                 if level2 > rundomfuzz.DOM_FINE:
-                    print "%%% Yet it is reproducible"
+                    print "%%% Lithium can't reproduce, but I can!"
                     reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                     reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
                     reproOnlyFile.write("./rundomfuzz.py " + browserDir + " " + url + "\n")
                     reproOnlyFile.close()
+                    lithresult = NO_REPRO_EXCEPT_BY_URL
                 else:
-                    print "%%% Not reproducible at all"
+                    print "%%% Lithium can't reproduce, and neither can I."
                     sorryFile = open(logPrefix + "-sorry.txt", "w")
                     sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
                     sorryFile.write("./rundomfuzz.py " + browserDir + " " + url + "\n")
                     sorryFile.close()
-
+                    lithresult = NO_REPRO_AT_ALL
             print ""
             if targetTime:
-                return True
+                return (lithlog, lithresult, lithdetails)
 
 # Stuffs "lines" into a fresh file, which Lithium should be able to reduce.
 # Returns the name of the repro file.
@@ -116,28 +119,30 @@ def createReproFile(lines, logPrefix):
     
     return rFN
 
-# Returns True if Lithium was able to reproduce.
-def runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime):
-    # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
-    lithtmp = logPrefix + "-lith1-tmp"
-    os.mkdir(lithtmp)
-    # We need the --testcase because of the terrible hack of --valgrind going at the end as extraRDFArgs.
-    lithArgs = ["--testcase=" + rFN, rundomfuzzpy, str(level), browserDir, rFN] + extraRDFArgs
+# status returns for runLithium and many_timed_runs
+(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO, LITH_FINISHED, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(7)
+
+
+def runLithium(lithArgs, logPrefix, targetTime, fileTag):
+    """
+      Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
+      Returns a tuple of (lithlogfn, LITH_*, details).
+    """
     if targetTime:
-      lithArgs = ["--maxruntime=" + str(targetTime//2)] + lithArgs
+      # loopdomfuzz.py is being used by bot.py
+      lithArgs = ["--maxruntime=" + str(targetTime)] + lithArgs
+      lithlogfn = logPrefix.split(os.sep)[0] + os.sep + "lith" + fileTag + "-out"
+      # should probably use mkdtemp for the tempdir in this case
     else:
+      # loopdomfuzz.py is being run standalone
+      lithtmp = logPrefix + "-lith" + fileTag + "-tmp"
+      os.mkdir(lithtmp)
       lithArgs = ["--tempdir=" + lithtmp] + lithArgs
-    print "loopdomfuzz.py is running Lithium..."
+      lithlogfn = logPrefix + "-lith" + fileTag + "-out"
+    print "Preparing to run Lithium, log file " + lithlogfn
     print " ".join(lithiumpy + lithArgs)
-    if targetTime:
-      lithlogfn = logPrefix.split(os.sep)[0] + os.sep + "lith1-out"
-    else:
-      lithlogfn = logPrefix + "-lith1-out"
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
-
-    
-    rFN2 = None
     with file(lithlogfn) as f:
       inLithSummary = False
       for line in f:
@@ -145,15 +150,19 @@ def runLithium(browserDir, extraRDFArgs, level, rFN, logPrefix, targetTime):
           print line.rstrip()
         if line.startswith("Lithium result: succeeded, reduced to: "):
           # Hooray! Reduced in one shot!!! Rename the "-reduced" file to indicate how large it is.
-          extension = rFN.split(".")[-1]
-          rFN2 = logPrefix + "-splice-reduced-" + line[len("Lithium result: succeeded, reduced to: "):].rstrip().replace(" ", "-") + "." + extension
+          rFN = lithArgs[-1]
+          (name, extension) = rFN.rsplit(".", 1)
+          reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
+          rFN2 = name + "-" + reducedTo.replace(" ", "-") + "." + extension
           os.rename(rFN, rFN2)
-          return True
+          return (lithlogfn, LITH_FINISHED, rFN2)
         elif line.startswith("Lithium result: the original testcase is not"):
-          os.remove(rFN)
-          return False
+          return (lithlogfn, LITH_NO_REPRO, None)
+        elif line.startswith("Lithium result: please continue using: "):
+          lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
+          return (lithlogfn, LITH_PLEASE_CONTINUE, lithiumHint)
       else:
-        return True
+        return (lithlogfn, LITH_BUSTED, None)
 
 
 def getURLs(reftestFilesDir):

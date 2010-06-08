@@ -102,7 +102,8 @@ def buildType():
 if __name__ == "__main__":
   relevantJobsDir = remoteBase + buildType() + "/"
   runCommand("mkdir -p " + relevantJobsDir)
-  job = grabReductionJob(relevantJobsDir)
+  jobAsTaken = grabReductionJob(relevantJobsDir)
+  job = jobAsTaken
   lithlog = None
   if os.path.exists("wtmp1"):
     print "wtmp1 shouldn't exist now. killing it."
@@ -110,7 +111,6 @@ if __name__ == "__main__":
 
   if job:
     print "Reduction time!"
-    # We could be cool and call loopdomfuzz.runLithium()
     job = copyFiles(remotePrefix + job, ".")
     oldjobname = job[2:] # cut off the "./"
     os.rename(job, "wtmp1") # so lithium gets the same filename as before
@@ -120,10 +120,8 @@ if __name__ == "__main__":
       if not build_downloader.downloadBuild(preferredBuild):
         print "Preferred build for this reduction was missing, grabbing latest build"
         downloadLatestBuild()
-    lithargs = loopdomfuzz.lithiumpy + ["--maxruntime=" + str(targetTime)] + readTinyFile(job + "lithium-command.txt").strip().split(" ")
-    print " ".join(lithargs)
-    subprocess.call(lithargs, stdout=open(job + "lithN-out", "w"), stderr=subprocess.STDOUT)
-    lithlog = job + "lithN-out"
+    lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
+    (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
 
   else:
     print "Fuzz time!"
@@ -131,8 +129,10 @@ if __name__ == "__main__":
       buildUsed = downloadLatestBuild()
     else:
       buildUsed = "haha" # hack, see preferredBuild stuff above
-    r = loopdomfuzz.many_timed_runs("build", targetTime, []) # xxx support --valgrind for additionalArgs
-    if r:
+    (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs("build", targetTime, []) # xxx support --valgrind for additionalArgs
+    if ldfResult == loopdomfuzz.HAPPY:
+      print "Happy happy! No bugs found!"
+    else:
       job = "wtmp1/"
       writeTinyFile(job + "preferred-build.txt", buildUsed)
       # not really "oldjobname", but this is how i get newjobname to be what i want below
@@ -141,29 +141,27 @@ if __name__ == "__main__":
       os.rename("wtmp1", oldjobname)
       job = oldjobname + "/"
       lithlog = job + "lith1-out"
-    else:
-      print "Happy happy! No bugs found!"
 
   if lithlog:
-    # We could be cool and move some of this code into loopdomfuzz.runLithium(), which does nice things like renaming the file to indicate its length.
-    for line in open(lithlog):
-      if line.startswith("Lithium result: the original testcase is not"):
-        # Unfortunately, this single state can mean three things: never reproducible, reproducible with url only, lithium made it nonrepro
-        statePostfix = "_nolongerreproducible"
-        break
-      if line.startswith("Lithium result: succeeded"):
-        statePostfix = "_reduced"
-        break
-      if line.startswith("Lithium result: please continue using: "):
-        statePostfix = "_needsreduction"
-        lithiumHint = line[len("Lithium result: please continue using: "):]
-        writeTinyFile(job + "lithium-command.txt", lithiumHint)
-        break
-    else:
-      statePostfix = "_sad"
+    statePostfix = ({
+      loopdomfuzz.NO_REPRO_AT_ALL: "_no_repro",
+      loopdomfuzz.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
+      loopdomfuzz.LITH_NO_REPRO: "_no_longer_reproducible",
+      loopdomfuzz.LITH_FINISHED: "_reduced",
+      loopdomfuzz.LITH_PLEASE_CONTINUE: "_needsreduction",
+      loopdomfuzz.LITH_BUSTED: "_sad"
+    })[ldfResult]
+
+    if ldfResult == loopdomfuzz.LITH_PLEASE_CONTINUE:
+      writeTinyFile(job + "lithium-command.txt", lithDetails)
+
     #print "oldjobname: " + oldjobname
     newjobname = oldjobname.split("_")[0] + statePostfix
     print "Uploading as: " + newjobname
     os.rename(job, newjobname)
     copyFiles(newjobname, remotePrefix + relevantJobsDir)
     shutil.rmtree(newjobname)
+
+    # Remove the old _taken thing from the server
+    if jobAsTaken:
+      runCommand("rm -rf " + jobAsTaken)
