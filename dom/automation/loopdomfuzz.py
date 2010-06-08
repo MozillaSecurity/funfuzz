@@ -48,7 +48,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
             rFN = createReproFile(lines, logPrefix)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
             lithArgs = [rundomfuzzpy] + extraRDFArgs + [str(level), browserDir, rFN]
-            (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime//2, "1")
+            (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
             if lithresult == LITH_NO_REPRO:
                 os.remove(rFN)
                 print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
