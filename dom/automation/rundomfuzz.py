@@ -161,7 +161,7 @@ class AmissLogHandler:
       self.expectedToHang = False
     if msg.startswith("FAILURE:"):
       self.fuzzerComplained = True
-      self.fullLogHead.append("@@@ " + msgLF)
+      self.printAndLog("@@@ " + msg)
     if msg.find("###!!! ASSERTION") != -1:
       self.nsassertionCount += 1
       if self.nsassertionCount == 100:
@@ -169,16 +169,19 @@ class AmissLogHandler:
         self.expectedToHang = True
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
-      self.fullLogHead.append("@@@ New assertion: " + msgLF)
+      self.printAndLog("@@@ " + msg)
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
-      self.fullLogHead.append("@@@ Malloc is unhappy\n")
+      self.printAndLog("@@@ Malloc is unhappy")
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       print "Known crash signature: " + msg
       self.crashIsKnown = True
+  def printAndLog(self, msg):
+    print "$ " + msg
+    self.fullLogHead.append(msg + "\n")
 
 class FigureOutDirs:
   def __init__(self, browserDir):
@@ -313,8 +316,10 @@ def rdfInit(browserDir, additionalArgs = []):
       lev = max(lev, DOM_FUZZER_COMPLAINED)
 
     if alh.sawProcessedCrash:
-      if not alh.crashIsKnown:
-        print("DOMFUZZ INFO | rundomfuzz.py | New crash (from minidump_stackwalk)")
+      if alh.crashIsKnown:
+        alh.printAndLog("%%% Known crash (from minidump_stackwalk)")
+      else:
+        alh.printAndLog("@@@ New crash (from minidump_stackwalk)")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
 
     if status < 0:
@@ -325,9 +330,9 @@ def rdfInit(browserDir, additionalArgs = []):
       print("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
       if signum == signal.SIGKILL:
         if alh.expectedToHang or options.valgrind:
-          print "Expected hang"
+          alh.printAndLog("%%% An expected hang")
         else:
-          print "Unexpected hang"
+          alh.printAndLog("@@@ Unexpected hang")
           lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
       elif signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
         # well, maybe the OS crash reporter picked it up.
@@ -336,19 +341,22 @@ def rdfInit(browserDir, additionalArgs = []):
         if crashlog:
           print open(crashlog).read()
           if detect_interesting_crashes.amiss(knownPath, crashlog, False, signame):
-            print("DOMFUZZ INFO | rundomfuzz.py | New crash (from mac crash reporter)")
+            alh.printAndLog("@@@ New crash (from mac crash reporter)")
             if logPrefix:
               shutil.copyfile(crashlog, logPrefix + "-crash.txt")
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
           else:
-            print("DOMFUZZ INFO | rundomfuzz.py | Known crash (from mac crash reporter)")
+            alh.printAndLog("%%% Known crash (from mac crash reporter)")
     
     if options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
+      alh.printAndLog("@@@ Valgrind complained")
       lev = max(lev, DOM_VG_AMISS)
     elif status > 0 and not alh.sawProcessedCrash:
+      alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
       lev = max(lev, DOM_ABNORMAL_EXIT)
 
     if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
+      alh.printAndLog("@@@ Unexpected leak or leak pattern")
       lev = max(lev, DOM_NEW_LEAK)
     elif leakLogFile:
       # Remove the main leak log file, plus any plugin-process leak log files

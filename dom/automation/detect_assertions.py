@@ -19,7 +19,6 @@ def scanLine(knownPath, line):
     line = line.strip("\x07").rstrip("\n")
 
     if assertiony(line) and not ignore(line):
-        print "@@@ " + line
         return True
 
     return False
