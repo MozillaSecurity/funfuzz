@@ -59,7 +59,7 @@ def runBrowser():
   # browser environment
   browserEnv = automation.environment(xrePath = aOptions.xrePath)
   # stack-gathering is slow and semi-broken on Mac, but it's great on Linux
-  browserEnv["XPCOM_DEBUG_BREAK"] = "warn" if platform.system() == "Darwin" else "stack"
+  browserEnv["XPCOM_DEBUG_BREAK"] = "stack"
   browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
   if not options.valgrind:
     browserEnv["MallocScribble"] = "1"
