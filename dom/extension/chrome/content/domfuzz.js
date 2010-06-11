@@ -52,6 +52,7 @@ function domFuzzInit(event)
   window.addEventListener("please-quit", pleaseQuitCalled, true, true);
   window.addEventListener("please-gc", pleaseGCCalled, true, true);
   window.addEventListener("please-run-soon", pleaseRunSoonCalled, true, true);
+  window.addEventListener("please-enable-accessibility", enableAccessibility, true, true);
   
 }
 
@@ -159,6 +160,17 @@ function pleaseGCCalled()
   window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
         .getInterface(Components.interfaces.nsIDOMWindowUtils)
         .garbageCollect(); 
+}
+
+function enableAccessibility(event)
+{
+  try {
+    Components.classes["@mozilla.org/accessibilityService;1"]
+      .getService(Components.interfaces.nsIAccessibleRetrieval);
+    dumpln("Enabled accessibility!\n");
+  } catch(e) {
+    dumpln("Couldn't enable accessibility: " + e);
+  }
 }
 
 // Stick an event on the thread's queue.
