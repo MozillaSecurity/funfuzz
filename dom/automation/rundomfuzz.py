@@ -268,7 +268,7 @@ def rdfInit(browserDir, additionalArgs = []):
   while True:
     line = runbrowser.stdout.readline()
     if line != '':
-      print ">> " + line.rstrip("\n")
+      #print ">> " + line.rstrip("\n")
       if line.startswith("theapp: "):
         knownPath = getKnownPath(line[8:].rstrip())
     else:
@@ -302,7 +302,7 @@ def rdfInit(browserDir, additionalArgs = []):
     while True:
       line = runbrowser.stdout.readline()
       if line != '':
-        print "> " + line.rstrip("\n")
+        print line.rstrip("\n")
         alh.processLine(line)
         if line.startswith(statusLinePrefix):
           status = int(line[len(statusLinePrefix):])
