@@ -173,6 +173,9 @@ class AmissLogHandler:
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
       self.printAndLog("@@@ Malloc is unhappy")
+    if msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
+       msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer"):
+      self.crashIsKnown = True
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
