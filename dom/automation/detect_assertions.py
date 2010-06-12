@@ -53,9 +53,9 @@ def scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions):
 
 def assertiony(line):
     return (line.startswith("###!!!") or # NS_ASSERTION and also aborts
-             line.startswith("Assertion failure:") or # spidermonkey, nss
+             line.startswith("Assertion failure:") or # spidermonkey; nss; new nanojit
              line.find("Mozilla has caught an Obj-C exception") != -1 or
-             line.find("Assertion failed:") != -1 or # nanojit; assert.h e.g. as used by harfbuzz
+             line.find("Assertion failed:") != -1 or # old nanojit; assert.h e.g. as used by harfbuzz
              line.find("failed assertion") != -1 # nanojit
             )
 
