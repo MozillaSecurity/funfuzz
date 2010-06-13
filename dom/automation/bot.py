@@ -129,7 +129,7 @@ if __name__ == "__main__":
       buildUsed = downloadLatestBuild()
     else:
       buildUsed = "haha" # hack, see preferredBuild stuff above
-    (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs("build", targetTime, []) # xxx support --valgrind for additionalArgs
+    (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
     if ldfResult == loopdomfuzz.HAPPY:
       print "Happy happy! No bugs found!"
     else:

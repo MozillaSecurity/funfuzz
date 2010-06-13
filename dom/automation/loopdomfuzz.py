@@ -20,14 +20,15 @@ maxIterations = 300000
 # If targetTime is None, this loops forever.
 # If targetTime is a number, tries not to run for more than targetTime seconds.
 #   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
-def many_timed_runs(browserDir, targetTime, additionalArgs):
+def many_timed_runs(targetTime, args):
     createTempDir()
     startTime = time.time()
 
+    levelAndLines, options = rundomfuzz.rdfInit(args)
+    browserDir = os.path.abspath(options.browserDir)
+
     reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
     urls = getURLs(os.path.abspath(reftestFilesDir))
-
-    levelAndLines, options = rundomfuzz.rdfInit(browserDir, additionalArgs)
 
     for iteration in range(0, maxIterations):
         if targetTime and time.time() > startTime + targetTime:
@@ -47,7 +48,7 @@ def many_timed_runs(browserDir, targetTime, additionalArgs):
             print "loopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
-            lithArgs = [rundomfuzzpy] + extraRDFArgs + [str(level), browserDir, rFN]
+            lithArgs = [rundomfuzzpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
             (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
             if lithresult == LITH_NO_REPRO:
                 os.remove(rFN)
@@ -267,14 +268,6 @@ def afterColon(s):
     (head, sep, tail) = s.partition(": ")
     return tail.strip()
 
-
-def standalone():
-    args = sys.argv[1:]
-    if len(args) < 1:
-        raise Exception("Use bot.py, or invoke using: loopdomfuzz.py browserDir") # [options for automation.py] after browserDir??
-    browserDir = os.path.abspath(args[0])
-    print browserDir
-    many_timed_runs(browserDir, None, args[1:])
-
 if __name__ == "__main__":
-    standalone()
+    many_timed_runs(None, sys.argv[1:])
+

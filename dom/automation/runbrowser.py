@@ -14,7 +14,11 @@ def runBrowser():
   parser.add_option("--valgrind",
                     action = "store_true", dest = "valgrind",
                     default = False,
-                    help = "use valgrind with a reasonable set of options")
+                    help = "use valgrind with the options given in --vgargs")
+  parser.add_option("--vgargs",
+                    action = "store", dest = "vgargs",
+                    default = None,
+                    help = "space-separated arguments to give to valgrind")
   parser.add_option("--symbols-dir",
                     action = "store", dest = "symbolsDir",
                     default = None)
@@ -29,6 +33,7 @@ def runBrowser():
   url = args[4]
   if url == "silent":
     url = "-silent"
+    options.valgrind = False
 
   sys.path.append(reftestScriptDir)
   try:
@@ -53,8 +58,16 @@ def runBrowser():
   if aOptions.xrePath is None:
     aOptions.xrePath = os.path.dirname(theapp)
 
-  debuggerInfo = automationutils.getDebuggerInfo(oldcwd, aOptions.debugger, aOptions.debuggerArgs,
-     aOptions.debuggerInteractive);
+  if options.valgrind:
+    print "About to use valgrind"
+    debuggerInfoVG = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
+    debuggerInfoVG["args"] = options.vgargs.split(" ")
+    if automation.IS_MAC:
+      debuggerInfoVG["args"].append("--dsymutil=yes")
+    slowness = 3.0
+  else:
+    debuggerInfoVG = None
+    slowness = 1.0
 
   # browser environment
   browserEnv = automation.environment(xrePath = aOptions.xrePath)
@@ -67,34 +80,18 @@ def runBrowser():
   if automation.IS_DEBUG_BUILD and not options.valgrind and options.leakLogFile:
       browserEnv["XPCOM_MEM_LEAK_LOG"] = options.leakLogFile
 
-  # run once with -silent to let the extension manager do its thing
-  # and then exit the app
   print("RUNBROWSER INFO | runbrowser.py | runApp: start.")
   status = automation.runApp(None, browserEnv, theapp, profileDir,
                              [url],
                              utilityPath = utilityDir,
                              xrePath=aOptions.xrePath,
                              symbolsPath=options.symbolsDir,
-                             maxTime = 300.0,
-                             timeout = 120.0
+                             debuggerInfo=debuggerInfoVG,
+                             maxTime = 300.0 * slowness,
+                             timeout = 120.0 * slowness
                              )
   print("RUNBROWSER INFO | runbrowser.py | runApp: exited with status " + str(status))
 
 if __name__ == "__main__":
   runBrowser()
 
-
-def XXXstrandedCode():
-  if options.valgrind:
-    print "About to use valgrind"
-    assert not debuggerInfo
-    debuggerInfo2 = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False);
-    debuggerInfo2["args"] = [
-      "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
-      "--suppressions=" + os.path.join(knownPath, "valgrind.txt"), # xxx knownPath, some of this needs to be in rundomfuzz i guess
-      "--gen-suppressions=all"
-    ]
-    if automation.IS_MAC:
-      debuggerInfo2["args"].append("--dsymutil=yes")
-  else:
-    debuggerInfo2 = debuggerInfo

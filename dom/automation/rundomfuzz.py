@@ -232,31 +232,40 @@ class FigureOutDirs:
     if self.symbolsDir:
       self.symbolsDir = getFullPath(self.symbolsDir)
 
-def rdfInit(browserDir, additionalArgs = []):
+def rdfInit(args):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
   
-  dirs = FigureOutDirs(getFullPath(browserDir))
-
   parser = OptionParser()
   parser.add_option("--valgrind",
                     action = "store_true", dest = "valgrind",
                     default = False,
                     help = "use valgrind with a reasonable set of options")
-  options, args = parser.parse_args(additionalArgs)
-  
+  parser.add_option("-m", "--minlevel",
+                    type = "int", dest = "minimumInterestingLevel",
+                    default = DOM_FINE + 1,
+                    help = "minimum domfuzz level for lithium to consider the testcase interesting")
+  options, args = parser.parse_args(args)
+
+  browserDir = args[0]
+  dirs = FigureOutDirs(getFullPath(browserDir))
+
+  options.argURL = args[1] if len(args) > 1 else "" # used by standalone (optional) and lithium but not loopdomfuzz
+  options.browserDir = browserDir # used by loopdomfuzz
+
   profileDir = mkdtemp()
   createDOMFuzzProfile(profileDir, options.valgrind)
 
   runBrowserOptions = []
   if dirs.symbolsDir:
     runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
-  if options.valgrind:
-    runBrowserOptions.append("--valgrind")
+
   env = os.environ
   if dirs.stackwalk:
     env['MINIDUMP_STACKWALK'] = dirs.stackwalk
   runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
   runbrowserpy = ["python", "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
+
+  # run once with -silent to let the extension manager do its thing, and to get knownPath
   runbrowser = subprocess.Popen(
                    runbrowserpy + runBrowserOptions + runBrowserArgs + ["silent"],
                    stdin = None,
@@ -280,6 +289,14 @@ def rdfInit(browserDir, additionalArgs = []):
     raise Exception("Didn't get a knownPath")
     
   detect_interesting_crashes.readIgnoreList(knownPath)
+
+  if options.valgrind:
+    runBrowserOptions.append("--valgrind")
+    runBrowserOptions.append("--vgargs="
+      "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
+      "--suppressions=" + os.path.join(knownPath, "valgrind.txt") + " " +  # don't have a knownPath yet :(
+      "--gen-suppressions=all"
+    )
   
   def levelAndLines(url, logPrefix=None):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
@@ -448,10 +465,9 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
 # For use by Lithium
 def init(args):
   global levelAndLinesForLithium, minimumInterestingLevel, lithiumURL
-  minimumInterestingLevel = int(args[0])
-  browserDir = args[1]
-  lithiumURL = args[2]
-  levelAndLinesForLithium, options = rdfInit(browserDir, additionalArgs = args[3:])
+  levelAndLinesForLithium, options = rdfInit(args)
+  minimumInterestingLevel = options.minimumInterestingLevel
+  lithiumURL = options.argURL
 def interesting(args, tempPrefix):
   actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix)
   return actualLevel >= minimumInterestingLevel
@@ -462,9 +478,8 @@ if __name__ == "__main__":
   import tempfile
   logPrefix = tempfile.mkdtemp() + "t"
   print logPrefix
-  browserDir = sys.argv[1]
-  url = sys.argv[2]
-  level, lines = rdfInit(browserDir, additionalArgs = sys.argv[3:])[0](url, logPrefix)
+  levelAndLines, options = rdfInit(sys.argv[1:])
+  level, lines = levelAndLines(options.argURL or "http://www.google.com/", logPrefix)
   print level
   #deleteProfile()
 
