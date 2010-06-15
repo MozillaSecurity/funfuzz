@@ -1,4 +1,4 @@
-ping -c 60 -o 192.168.1.2 && hg -R ~/fuzzing pull -u && rm -rf ~/fuzzing/dom/automation/build/
+sleep 10 && ping -c 1 -o www.mozilla.org && hg -R ~/fuzzing pull -u && rm -rf ~/fuzzing/dom/automation/build/
 cd ~/fuzzing/dom/automation && python bot.py && echo bot.py exited successfully
 echo REBOOT COMING
 sleep 15
