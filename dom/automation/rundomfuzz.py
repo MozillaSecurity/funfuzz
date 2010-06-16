@@ -265,6 +265,7 @@ def rdfInit(args):
   runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
   runbrowserpy = ["python", "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
+  close_fds = sys.platform != 'win32'
   # run once with -silent to let the extension manager do its thing, and to get knownPath
   runbrowser = subprocess.Popen(
                    runbrowserpy + runBrowserOptions + runBrowserArgs + ["silent"],
@@ -272,7 +273,7 @@ def rdfInit(args):
                    stdout = subprocess.PIPE,
                    stderr = subprocess.STDOUT,
                    env = env,
-                   close_fds = True)
+                   close_fds = close_fds)
 
   knownPath = None
 
@@ -309,7 +310,7 @@ def rdfInit(args):
                      stdout = subprocess.PIPE,
                      stderr = subprocess.STDOUT,
                      env = env,
-                     close_fds = True)
+                     close_fds = close_fds)
   
     alh = AmissLogHandler(knownPath)
   
