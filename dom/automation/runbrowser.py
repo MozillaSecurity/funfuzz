@@ -77,6 +77,8 @@ def runBrowser():
   if not options.valgrind:
     browserEnv["MallocScribble"] = "1"
     browserEnv["MallocPreScribble"] = "1"
+  if options.valgrind and automation.IS_LINUX:
+    browserEnv["G_SLICE"] = "always-malloc"
   if automation.IS_DEBUG_BUILD and not options.valgrind and options.leakLogFile:
       browserEnv["XPCOM_MEM_LEAK_LOG"] = options.leakLogFile
 
