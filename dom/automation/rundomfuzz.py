@@ -204,10 +204,12 @@ class FigureOutDirs:
       self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
       self.utilityDir = os.path.join(browserDir, "tests", "bin")
       self.symbolsDir = os.path.join(browserDir, "symbols")
+      possible_stackwalk_fn = "minidump_stackwalk.exe" if platform.system() == "Microsoft" else "minidump_stackwalk"
+      possible_stackwalk = os.path.join(browserDir, possible_stackwalk_fn)
       if (not os.environ.get('MINIDUMP_STACKWALK', None) and
           not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
-          os.path.exists(os.path.join(browserDir, "minidump_stackwalk"))):
-        self.stackwalk = os.path.join(browserDir, "minidump_stackwalk")
+          os.path.exists(possible_stackwalk)):
+        self.stackwalk = possible_stackwalk
     elif os.path.exists(os.path.join(browserDir, "..", "layout", "reftests")):
       # browserDir is an objdir whose parent is a srcdir.  That works too (more convenient for local builds)
       #self.appDir = browserDir
