@@ -85,7 +85,7 @@ def ignore(assertion):
         if assertion.find(ig) != -1:
             return True
     for (part1, part2) in twoPartIgnoreList:
-        if assertion.find(part1) != -1 and assertion.find(part2) != -1:
+        if assertion.find(part1) != -1 and assertion.replace('\\', '/').find(part2) != -1:
             return True
     return False
 
