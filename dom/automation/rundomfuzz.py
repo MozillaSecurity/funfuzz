@@ -351,13 +351,13 @@ def rdfInit(args):
       signum = -status
       signame = getSignalName(signum, "unknown signal")
       print("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
-      if signum == signal.SIGKILL:
+      if hasattr(signal, "SIGKILL") and signum == signal.SIGKILL:
         if alh.expectedToHang or options.valgrind:
           alh.printAndLog("%%% An expected hang")
         else:
           alh.printAndLog("@@@ Unexpected hang")
           lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
-      elif signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
+      elif signum != signal.SIGTERM and not alh.sawProcessedCrash:
         # well, maybe the OS crash reporter picked it up.
         appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
         crashlog = grabCrashLog(appName, alh.pid, None, signum)
