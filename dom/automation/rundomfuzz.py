@@ -147,6 +147,7 @@ class AmissLogHandler:
     self.fuzzerComplained = False
     self.sawProcessedCrash = False
     self.crashIsKnown = False
+    self.timedOut = False
   def processLine(self, msgLF):
     msg = msgLF.rstrip("\n")
     if len(self.fullLogHead) < 100000:
@@ -175,6 +176,7 @@ class AmissLogHandler:
       self.printAndLog("@@@ Malloc is unhappy")
     if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
        msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
+      self.timedOut = True
       self.crashIsKnown = True
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
@@ -340,26 +342,31 @@ def rdfInit(args):
     if alh.fuzzerComplained:
       lev = max(lev, DOM_FUZZER_COMPLAINED)
 
-    if alh.sawProcessedCrash:
+    if alh.timedOut:
+      if alh.expectedToHang or options.valgrind:
+        alh.printAndLog("%%% An expected hang")
+      else:
+        alh.printAndLog("@@@ Unexpected hang")
+        lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
+    elif alh.sawProcessedCrash:
       if alh.crashIsKnown:
         alh.printAndLog("%%% Known crash (from minidump_stackwalk)")
       else:
         alh.printAndLog("@@@ New crash (from minidump_stackwalk)")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-
-    if status < 0:
+    elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
+      alh.printAndLog("@@@ Valgrind complained")
+      lev = max(lev, DOM_VG_AMISS)
+    elif status > 0:
+      alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
+      lev = max(lev, DOM_ABNORMAL_EXIT)
+    elif status < 0:
       # The program was terminated by a signal, which usually indicates a crash.
       # Mac/Linux only!  And maybe Mac only!
       signum = -status
       signame = getSignalName(signum, "unknown signal")
       print("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
-      if hasattr(signal, "SIGKILL") and signum == signal.SIGKILL:
-        if alh.expectedToHang or options.valgrind:
-          alh.printAndLog("%%% An expected hang")
-        else:
-          alh.printAndLog("@@@ Unexpected hang")
-          lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
-      elif signum != signal.SIGTERM and not alh.sawProcessedCrash:
+      if platform.system() == "Darwin" and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
         # well, maybe the OS crash reporter picked it up.
         appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
         crashlog = grabCrashLog(appName, alh.pid, None, signum)
@@ -372,13 +379,6 @@ def rdfInit(args):
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
-    
-    if options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
-      alh.printAndLog("@@@ Valgrind complained")
-      lev = max(lev, DOM_VG_AMISS)
-    elif status > 0 and not alh.sawProcessedCrash:
-      alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
-      lev = max(lev, DOM_ABNORMAL_EXIT)
 
     if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
       alh.printAndLog("@@@ Unexpected leak or leak pattern")
