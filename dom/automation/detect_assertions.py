@@ -73,7 +73,7 @@ def readIgnoreList(knownPath):
             if (mpi == -1):
                 simpleIgnoreList.append(line)
             else:
-                twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:].replace("/", os.sep)))
+                twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:]))
     ignoreFile.close()
     ready = True
     #print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
