@@ -4,13 +4,21 @@ import re, os, shutil, subprocess, time, StringIO, stat
 import platform
 devnull = open(os.devnull, "w")
 
-# Use curl rather than urllib because curl can check certificates.
+# Use curl/wget rather than urllib because urllib can't check certs.
+# Want to move toward wget since it's in mozillabuild and on the build machines.  But wget on Mac has cert issues...
+preferCurl = platform.system() == "Darwin"
 def readFromURL(url):
-  p = subprocess.Popen(["curl", "--silent", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  if preferCurl:
+    p = subprocess.Popen(["curl", "--silent", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  else:
+    p = subprocess.Popen(["wget", "-q", "-O", "-", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (out, err) = p.communicate()
   return StringIO.StringIO(out)
 def downloadURL(url, dest):
-  subprocess.check_call(["curl", "--output", dest, url])
+  if preferCurl:
+    subprocess.check_call(["curl", "--output", dest, url])
+  else:
+    subprocess.check_call(["wget", "-O", dest, url])
   return dest
 
 def httpDirList(dir):
@@ -67,6 +75,8 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
     if remotefn.endswith(".win32.zip"):
       print "Downloading application..."
       unzip(downloadURL(remotefn, localfn), appDir)
+      stackwalk = os.path.join("build", "minidump_stackwalk.exe")
+      downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/minidump_stackwalk.exe", stackwalk)
       succeeded = True
     if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
       print "Downloading application..."
@@ -105,7 +115,7 @@ def mozPlatform():
       return "linux64"
     else:
       return "linux"
-  if s == "Windows":
+  if s == "Microsoft":
     return "win32"
   raise Exception("Unknown platform")
 
