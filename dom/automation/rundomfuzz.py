@@ -95,6 +95,7 @@ def createDOMFuzzProfile(profileDir, valgrindMode):
   prefsFile.write('user_pref("extensions.blocklist.enabled", false);\n')
   prefsFile.write('user_pref("lightweightThemes.update.enabled", false);\n')
   prefsFile.write('user_pref("browser.microsummary.enabled", false);\n')
+  prefsFile.write('user_pref("extensions.testpilot.runStudies", false);\n')
   
   # Extra prefs for Valgrind
   if valgrindMode:
