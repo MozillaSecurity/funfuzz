@@ -185,6 +185,12 @@ class AmissLogHandler:
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       print "Known crash signature: " + msg
       self.crashIsKnown = True
+    if msg == "** Unknown exception behavior":
+      # Bug 550306 is a xul crash that causes a stack overflow.
+      # Bug 507876 is a breakpad issue that means stack overflows don't give me stack traces on Mac.
+      # The combination means we lose.
+      print "%%% This is probably a too-much-recursion crash. It will be treated as a known crash."
+      self.crashIsKnown = True
   def printAndLog(self, msg):
     print "$ " + msg
     self.fullLogHead.append(msg + "\n")
