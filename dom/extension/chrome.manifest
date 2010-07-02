@@ -1,3 +1,6 @@
 content domfuzz chrome/content/
 overlay chrome://browser/content/browser.xul chrome://domfuzz/content/domfuzz-overlay.xul
 
+component {59a52458-13e0-4d90-9d85-a637344f29a1} components/domfuzzhelper.js
+contract @squarefree.com/dom-fuzz-helper;1 {59a52458-13e0-4d90-9d85-a637344f29a1}
+category profile-after-change DOMFuzzHelper service,@squarefree.com/dom-fuzz-helper;1
