@@ -2521,6 +2521,8 @@ var specialProperties = [
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "length",
+  // Typed arraays
+  "buffer", "byteLength", "byteOffset",
   // E4X
   "ignoreComments", "ignoreProcessingInstructions", "ignoreWhitespace",
   "prettyPrinting", "prettyIndent"
@@ -2677,6 +2679,7 @@ var exprMakers =
 
   // Functions: called immediately/not
   function(d, b) { return makeFunction(d, b); },
+  function(d, b) { return makeFunction(d, b) + ".prototype"; },
   function(d, b) { return cat(["(", makeFunction(d, b), ")", "(", makeActualArgList(d, b), ")"]); },
 
   // Try to call things that may or may not be functions.
@@ -3198,6 +3201,16 @@ var functionMakers = [
   function(d, b) { return "XPCSafeJSObjectWrapper" },
   function(d, b) { return "WebGLIntArray" },
   function(d, b) { return "WebGLFloatArray" },
+  function(d, b) { return "Int8Array" },
+  function(d, b) { return "Uint8Array" },
+  function(d, b) { return "Int16Array" },
+  function(d, b) { return "Uint16Array" },
+  function(d, b) { return "Int32Array" },
+  function(d, b) { return "Uint32Array" },
+  function(d, b) { return "Float32Array" },
+  function(d, b) { return "Float64Array" },
+  function(d, b) { return "Uint8ClampedArray" },
+  function(d, b) { return "ArrayBuffer" },
   function(d, b) { return "Proxy.isTrapping" },
   function(d, b) { return "Proxy.create" },
   function(d, b) { return "Proxy.createFunction" },
