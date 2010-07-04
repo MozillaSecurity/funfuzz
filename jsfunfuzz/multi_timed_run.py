@@ -25,7 +25,6 @@ if args[0] == "--comparejit":
 timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
 runThis = args[2:] + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzjs]
-jsfunfuzzPath = runThis[-1]
 
 def showtail(filename):
     cmd = "tail -n 20 %s" % filename
@@ -52,7 +51,7 @@ def many_timed_runs():
             
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
-            [before, after] = fuzzSplice(open(jsfunfuzzPath))
+            [before, after] = fuzzSplice(open(jsfunfuzzjs))
             newfileLines = before + linesWith(open(logPrefix + "-out"), "FRC") + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
