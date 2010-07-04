@@ -25,8 +25,6 @@ parser.add_option("--fuzzjs",
                   default = os.path.join(p0, "jsfunfuzz.js"),
                   help = "Which fuzzer to run (e.g. jsfunfuzz.js or regexpfuzz.js)")
 options, args = parser.parse_args(sys.argv[1:])
-print repr(options)
-print repr(args)
 
 timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
