@@ -12,8 +12,6 @@ jsunhappypy = os.path.join(p0, "jsunhappy.py")
 import jsunhappy
 import compareJIT
 
-jsfunfuzzjs = os.path.join(p0, "jsfunfuzz.js")
-
 parser = OptionParser()
 parser.disable_interspersed_args()
 parser.add_option("--comparejit",
@@ -47,9 +45,15 @@ def many_timed_runs():
 
         level = jsunhappy.jsfunfuzzLevel(runThis, timeout, knownPath, logPrefix)
 
-        # In xpcshell, allow abnormal exits (bug 565345)
-        xpcshell = (runThis[0].find("xpcshell") != -1)
-        if level > (jsunhappy.JS_ABNORMAL_EXIT if xpcshell else jsunhappy.JS_TIMED_OUT):
+        oklevel = jsunhappy.JS_KNOWN_CRASH
+        # With jsfunfuzz, allow hangs.  With regexpfuzz, allow hangs temporarily (bug 576811)
+        if options.fuzzjs.find("jsfunfuzz") != -1 or options.fuzzjs.find("regexpfuzz") != -1:
+          oklevel = jsunhappy.JS_TIMED_OUT
+          # In xpcshell, allow abnormal exits (bug 565345)
+          if runThis[0].find("xpcshell") != -1:
+            oklevel = jsunhappy.JS_ABNORMAL_EXIT
+
+        if level > oklevel:
             showtail(logPrefix + "-out")
             showtail(logPrefix + "-err")
             
