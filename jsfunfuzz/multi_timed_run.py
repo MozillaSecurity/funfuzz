@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, subprocess
+from optparse import OptionParser
 
 p0=os.path.dirname(sys.argv[0])
 p2=os.path.abspath(os.path.join(p0, "..", "lithium"))
@@ -13,18 +14,23 @@ import compareJIT
 
 jsfunfuzzjs = os.path.join(p0, "jsfunfuzz.js")
 
-# Can't use optparse because it barfs when there's a "-j" in the positional arguments.
-# XXX actually, optparse with disable_interspersed_args is what i want.
-# Don't want to use getopt because it's ugly.
-useCompareJIT = False
-args = sys.argv[1:]
-if args[0] == "--comparejit":
-    useCompareJIT = True
-    args = args[1:]
+parser = OptionParser()
+parser.disable_interspersed_args()
+parser.add_option("--comparejit",
+                  action = "store_true", dest = "useCompareJIT",
+                  default = False,
+                  help = "After running the fuzzer, run the FCM lines against the engine in two configurations and compare the output.")
+parser.add_option("--fuzzjs",
+                  action = "store", dest = "fuzzjs",
+                  default = os.path.join(p0, "jsfunfuzz.js"),
+                  help = "Which fuzzer to run (e.g. jsfunfuzz.js or regexpfuzz.js)")
+options, args = parser.parse_args(sys.argv[1:])
+print repr(options)
+print repr(args)
 
 timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
-runThis = args[2:] + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzjs]
+runThis = args[2:] + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", options.fuzzjs]
 
 def showtail(filename):
     cmd = "tail -n 20 %s" % filename
@@ -51,7 +57,7 @@ def many_timed_runs():
             
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
-            [before, after] = fuzzSplice(open(jsfunfuzzjs))
+            [before, after] = fuzzSplice(open(options.fuzzjs))
             newfileLines = before + linesWith(open(logPrefix + "-out"), "FRC") + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
@@ -70,7 +76,7 @@ def many_timed_runs():
             print "Done running Lithium"
 
         else:
-            if useCompareJIT and level == jsunhappy.JS_FINE:
+            if options.useCompareJIT and level == jsunhappy.JS_FINE:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
