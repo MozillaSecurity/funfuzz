@@ -45,15 +45,6 @@ function domFuzzInit(event)
 
   var appcontent = document.getElementById("appcontent");
   appcontent.addEventListener("load", onPageLoad, true);
-  
-  
-  // http://developer.mozilla.org/en/docs/Code_snippets:Interaction_between_privileged_and_non-privileged_pages
-  // Setting the last argument to |true| means we're allowing untrusted events to trigger this chrome event handler.
-  window.addEventListener("please-quit", pleaseQuitCalled, true, true);
-  window.addEventListener("please-gc", pleaseGCCalled, true, true);
-  window.addEventListener("please-run-soon", pleaseRunSoonCalled, true, true);
-  window.addEventListener("please-enable-accessibility", enableAccessibility, true, true);
-  
 }
 
 function onPageLoad(event)
@@ -79,9 +70,6 @@ function onPageLoad(event)
     return;
   }
 
-  // I hope having this event listener doesn't have side effects!
-  doc.addEventListener("pagehide", quitPageHide, false);
-  
   var d = Components.classes["@mozilla.org/file/directory_service;1"]
                     .getService(Components.interfaces.nsIProperties)
                     .get("ProfD", Components.interfaces.nsIFile);
@@ -126,81 +114,11 @@ function indir(dir, filename)
   return d;
 }
 
-/*
-function quitTimeout()
-{
-  dump("Quitting due to timeout.\n");
-  goQuitApplication();
-}
-*/
 
-function quitPageHide()
-{
-  dumpln("Quitting due to pagehide.\n");
-  goQuitApplication();
-}
 
-function pleaseQuitCalled()
-{
-  dump("Quitting because I got a please-quit event from the web page.\n");
-  goQuitApplication();
-}
-
-function pleaseGCCalled()
-{ 
-  dump("GC!\n");
-  Components.utils.forceGC();
-
-  window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-        .getInterface(Components.interfaces.nsIDOMWindowUtils)
-        .garbageCollect(); 
-  window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-        .getInterface(Components.interfaces.nsIDOMWindowUtils)
-        .garbageCollect(); 
-  window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-        .getInterface(Components.interfaces.nsIDOMWindowUtils)
-        .garbageCollect(); 
-}
-
-function enableAccessibility(event)
-{
-  try {
-    Components.classes["@mozilla.org/accessibilityService;1"]
-      .getService(Components.interfaces.nsIAccessibleRetrieval);
-    dumpln("Enabled accessibility!\n");
-  } catch(e) {
-    dumpln("Couldn't enable accessibility: " + e);
-  }
-}
-
-// Stick an event on the thread's queue.
-// Useful for precise interactions with interruptible reflow (much more precise than setTimeout);
-// also potentially faster than setTimeout (which always takes at least 10ms).
-// Based on "executeSoon" in
-// http://mxr.mozilla.org/mozilla-central/source/testing/mochitest/tests/SimpleTest/SimpleTest.js
-function pleaseRunSoonCalled(event)
-{
-  var target = event.originalTarget;
-  var detail = event.detail; // an opaque string that is returned to the page
-  var tm = Components.classes["@mozilla.org/thread-manager;1"]
-             .getService(Components.interfaces.nsIThreadManager);
-
-  tm.mainThread.dispatch({
-    run: function() {
-      dispatchBackToPage(target, detail);
-    }
-  }, Components.interfaces.nsIThread.DISPATCH_NORMAL);
-}
-
-function dispatchBackToPage(target, detail)
-{
-  //dumpln("Dispatching back to page: " + target + " " + detail);
-  var evt = document.createEvent("Events");
-  evt.detail = detail;
-  evt.initEvent("run-now", true, false);
-  target.dispatchEvent(evt);
-}
-
+/********
+ * QUIT *
+ ********/
 
 // From quit.js, which Bob Clary extracted from mozilla/toolkit/content
 
@@ -234,17 +152,7 @@ function canQuitApplication()
 
 function goQuitApplication()
 {
-  var privs = 'UniversalPreferencesRead UniversalPreferencesWrite ' +
-    'UniversalXPConnect';
-
-  try
-  {
-    netscape.security.PrivilegeManager.enablePrivilege(privs);
-  }
-  catch(ex)
-  {
-    throw('goQuitApplication: privilege failure ' + ex);
-  }
+  dumpln("goQuitApplication (overlay)");
 
   if (!canQuitApplication())
   {
@@ -305,5 +213,7 @@ function goQuitApplication()
 }
 
 
-})();
+
+
+})();//end scoping
 
