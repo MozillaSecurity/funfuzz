@@ -89,8 +89,8 @@ def runBrowser():
                              xrePath=aOptions.xrePath,
                              symbolsPath=options.symbolsDir,
                              debuggerInfo=debuggerInfoVG,
-                             maxTime = 300.0 * slowness,
-                             timeout = 120.0 * slowness
+                             maxTime = 400.0 * slowness,
+                             timeout = 200.0 * slowness
                              )
   print("RUNBROWSER INFO | runbrowser.py | runApp: exited with status " + str(status))
 
