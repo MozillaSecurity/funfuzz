@@ -114,7 +114,7 @@ def main():
         raise Exception('Too little command-line parameters.')
 
     # Check supported operating systems.
-    osCheck()
+    macVer = osCheck()
     if (sys.argv[1] == '32') and (os.name == 'posix'):
         # 32-bit js shells have only been tested on Linux (i686 or armv7l) or Mac (i386) platforms.
         if (os.uname()[0] == 'Linux'):
@@ -255,8 +255,8 @@ def main():
         if verbose:
             print 'DEBUG - Patching the gc() function now.'
         jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
-        if jsCompareJITCode == 1:
-            raise Exception('Required js patch for --comparejit failed to patch.')
+        #if jsCompareJITCode == 1:
+        #    raise Exception('Required js patch for --comparejit failed to patch.')
         if verbose:
             print 'DEBUG - Finished incorporating the gc() patch that is needed for compareJIT.'
 
@@ -286,7 +286,7 @@ def main():
 
     # Compile the first binary.
     configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
-                      valgrindSupport, threadsafe)
+                      valgrindSupport, threadsafe, macVer)
     if usePymake and os.name == 'nt':
         subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
@@ -306,12 +306,12 @@ def main():
     if compileType == 'dbg':
         os.chdir('opt-objdir')
         configureJsBinary(archNum, 'opt', branchType, traceJit, methodJit,
-                          valgrindSupport, threadsafe)
+                          valgrindSupport, threadsafe, macVer)
         compileCopy(archNum, 'opt', branchType, usePymake)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
         configureJsBinary(archNum, 'dbg', branchType, traceJit, methodJit,
-                          valgrindSupport, threadsafe)
+                          valgrindSupport, threadsafe, macVer)
         compileCopy(archNum, 'dbg', branchType, usePymake)
 
 

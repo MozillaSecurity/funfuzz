@@ -57,10 +57,10 @@ def osCheck():
         if os.uname()[0] == 'Darwin':
             macVer, _, _ = platform.mac_ver()
             macVer = float('.'.join(macVer.split('.')[:2]))
-            if ('10.6' in str(macVer)):
-                return macVer
+            if ('10.5' or '10.6' in str(macVer)):
+                return str(macVer)
             else:
-                exceptionBadOs()  # Only 10.6.x is supported.
+                exceptionBadOs()  # Only 10.5.x and 10.6.x is supported.
         elif os.uname()[0] == 'Linux':
             pass
     elif os.name == 'nt':
@@ -148,18 +148,22 @@ def autoconfRun():
 
 # This function compiles a js binary depending on the parameters.
 def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
-                      valgrindSupport, threadsafe):
+                      valgrindSupport, threadsafe, macver):
     configureCmd = 'sh ../configure'
     if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
-            configureCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
-                         'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
-                         'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
-                         'STRIP="strip -x -S" CROSS_COMPILE=1' + \
-                         'sh ../configure --target=i386-apple-darwin8.0.0'
+            if macver == '10.6':
+                configureCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
+                             'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
+                             'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
+                             'STRIP="strip -x -S" CROSS_COMPILE=1' + \
+                             'sh ../configure --target=i386-apple-darwin8.0.0'
         elif os.uname()[4] == 'armv7l':
             configureCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
                          'sh ../configure'
+    if (archNum == '64') and (macver == '10.5'):
+        configureCmd = 'AR=ar CC="gcc -m64" CXX="g++ -m64" ' + \
+                     'sh ../configure --target=x86_64-apple-darwin10.0.0'
 
     if compileType == 'dbg':
         configureCmd += ' --disable-optimize --enable-debug'
