@@ -863,6 +863,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
 
+  if (e.indexOf("illegal character") != -1) {
+    dumpln("Ignoring bug 566661.");
+    return;
+  }
+
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("missing ; after for-loop condition") != -1) {
     dumpln("Looks like bug 460504 (branch).");
     return;
