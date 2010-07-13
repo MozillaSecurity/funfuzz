@@ -63,6 +63,9 @@
 # February 2010:
 #   Massive rewrite, reducing code by ~8%. Support Valgrind on Linux, 64-bit
 #   Linux and Jaegermonkey. No longer supports 10.5.x, 32-bit Linux.
+# July 2010:
+#   Disable tests, support 10.5 and 32-bit Linux again.
+#   Support 2.0 instead of 1.9.3.
 
 import os, platform, shutil, subprocess, sys, time
 from fnStartjsfunfuzz import *
