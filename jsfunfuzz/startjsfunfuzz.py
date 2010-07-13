@@ -190,7 +190,7 @@ def main():
     repoDict['jm'] = '~/jaegermonkey/'
     repoDict['fv'] = '~/fatval/'
     fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
-    if platform.platform() == 'Windows-XP-5.1.2600':
+    if platform.platform() == 'Windows-XP-5.1.2600-SP3':
         for repo in repoDict.keys():
             # It is assumed that on WinXP, the corresponding directories are in the root folder.
             # e.g. Instead of `~/tracemonkey/`, TM would be in `/tracemonkey/`.
@@ -202,14 +202,14 @@ def main():
             verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
 
     fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + '/'
-    if not platform.platform() == 'Windows-XP-5.1.2600':
+    if not platform.platform() == 'Windows-XP-5.1.2600-SP3':
         fuzzPath = os.path.expanduser(fuzzPath)  # Expand the ~ folder except on WinXP.
 
     # Save the current directory as a variable.
     currDir = os.getcwd()
 
     # Note and attach the numbers and hashes of the current changeset in the fuzzPath.
-    if not platform.platform() == 'Windows-XP-5.1.2600':
+    if not platform.platform() == 'Windows-XP-5.1.2600-SP3':
         try:
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
@@ -252,7 +252,7 @@ def main():
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
-        if not platform.platform() == 'Windows-XP-5.1.2600':
+        if not platform.platform() == 'Windows-XP-5.1.2600-SP3':
             jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.expanduser(repoDict['fuzzing']) + 'jsfunfuzz/patchGC.diff'])
         else:
             jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'])
@@ -336,7 +336,7 @@ def main():
     jsfunfuzzFilePath = repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js'
     analysisFilePath = repoDict['fuzzing'] + 'jsfunfuzz/analysis.py'
     findInterestingFilesFilePath = repoDict['fuzzing'] + 'jsfunfuzz/findInterestingFiles.py'
-    if not platform.platform() == 'Windows-XP-5.1.2600':
+    if not platform.platform() == 'Windows-XP-5.1.2600-SP3':
         jsfunfuzzFilePath = os.path.expanduser(jsfunfuzzFilePath)
         analysisFilePath = os.path.expanduser(analysisFilePath)
         findInterestingFilesFilePath = os.path.expanduser(findInterestingFilesFilePath)
@@ -379,7 +379,7 @@ def main():
 
 
     # Define fuzzing command with the required parameters.
-    if not platform.platform() == 'Windows-XP-5.1.2600':
+    if not platform.platform() == 'Windows-XP-5.1.2600-SP3':
         multiTimedRun = os.path.expanduser(multiTimedRun)
         jsknownDict[branchType] = os.path.expanduser(jsknownDict[branchType])
     fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT + multiTimedRunTimeout + ' '
