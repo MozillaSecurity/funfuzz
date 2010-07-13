@@ -158,14 +158,20 @@ def main():
 
     valgrindSupport = False
     if (os.name == 'posix'):
-        if (os.uname()[0] == 'Linux' and
-            (len(sys.argv) == 5 and sys.argv[4] == 'valgrind') or
-            (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or
-            (len(sys.argv) == 9 and sys.argv[8] == 'valgrind')):
-            valgrindSupport = True
-            # compareJIT is too slow..
-            jsCompareJITSwitch = False  # Turn off compareJIT when in Valgrind.
-            multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
+        if (len(sys.argv) == 5 and sys.argv[4] == 'valgrind') or \
+            (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or \
+            (len(sys.argv) == 9 and sys.argv[8] == 'valgrind'):
+            if os.uname()[0] == 'Linux':
+                valgrindSupport = True
+                # compareJIT is too slow..
+                jsCompareJITSwitch = False  # Turn off compareJIT when in Valgrind.
+                multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
+            elif os.uname()[0] == 'Darwin':
+                # Technically we could enable Valgrind for Leopard only, but disable for SL.
+                # A better solution would be to wait till Valgrind on MacPorts supports both.
+                raise Exception('Valgrind on MacPorts for Snow Leopard isn\'t really ready..')
+            else:
+                exceptionBadOs()
 
 
     repoDict = {}
