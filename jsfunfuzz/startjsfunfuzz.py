@@ -386,7 +386,7 @@ def main():
 
     # 32-bit or 64-bit verification test.
     if (os.name == 'posix'):
-        if os.uname()[0] == 'Darwin':
+        if (os.uname()[0] == 'Linux') or (os.uname()[0] == 'Darwin'):
             test32or64bit(jsShellName, archNum)
 
     # Debug or optimized binary verification test.
