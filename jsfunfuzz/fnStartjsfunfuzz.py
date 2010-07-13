@@ -87,7 +87,7 @@ def error(branchSupp):
     print '%s [patch <directory to patch>] [patch <directory to patch>]' % branchSupp,
     print '[valgrind]\n'
     print
-    print 'System requirements: Python 2.6.x, Mozilla build prerequisites and repositories at "/" (WinXP) or "~/" (anything else).'
+    print 'Requirements: Python 2.6.x, Mozilla build prerequisites and repositories at "/" (WinXP) or "~/" (other platforms).'
     print
     print 'Windows platforms only compile in 32-bit.'
     print 'Valgrind only works for Linux platforms.\n'
