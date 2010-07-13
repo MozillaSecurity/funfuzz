@@ -252,7 +252,7 @@ def main():
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
-        jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'])
+        jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'])
         #if jsCompareJITCode == 1:
         #    raise Exception('Required js patch for --comparejit failed to patch.')
         verboseDump('Finished incorporating the gc() patch that is needed for compareJIT.')
