@@ -130,7 +130,8 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
         if verbose:
             print 'DEBUG - Copying the', jsOrBuildText + ', which is located at', repo
-        shutil.copytree(repo, "compilePath") if jsOrBuild == 'js' else shutil.copytree(repo, "build")
+        shutil.copytree(repo, "compilePath", ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect')) \
+            if jsOrBuild == 'js' else shutil.copytree(repo, "build")
         if verbose:
             print 'DEBUG - Finished copying the', jsOrBuildText
     except OSError:
@@ -166,9 +167,9 @@ def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
                      'sh ../configure --target=x86_64-apple-darwin10.0.0'
 
     if compileType == 'dbg':
-        configureCmd += ' --disable-optimize --enable-debug'
+        configureCmd += ' --disable-tests --disable-optimize --enable-debug'
     elif compileType == 'opt':
-        configureCmd += ' --enable-optimize --disable-debug'
+        configureCmd += ' --disable-tests --enable-optimize --disable-debug'
 
     # Trace JIT is on by default.
     if not traceJit:
