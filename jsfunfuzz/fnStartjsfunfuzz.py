@@ -105,11 +105,12 @@ def hgHashAddToFuzzPath(fuzzPath):
     This function finds the mercurial revision and appends it to the directory name.
     It also prompts if the user wants to continue, should the repository not be on tip.
     '''
+    print
     verboseDump('About to start running `hg identify` commands...')
     tipOrNot = captureStdout('hg identify')[:-1]
     hgIdentifynMinus1 = captureStdout('hg identify -n')[:-1]
     # -5 is to remove the " tip\n" portion of `hg identify` output if on tip.
-    hgIdentifyMinus5 = captureStdout('hg identify')[:-5]
+    hgIdentifyMinus5 = tipOrNot[:-4]
     onTip = True
     if tipOrNot.endswith('tip'):
         fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
@@ -129,6 +130,7 @@ def hgHashAddToFuzzPath(fuzzPath):
             else:
                 raise Exception('Not on tip.')
     fuzzPath += '/'
+    print
     verboseDump('Finished running `hg identify` commands.')
     return fuzzPath, onTip
 
