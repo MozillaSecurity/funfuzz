@@ -105,8 +105,7 @@ def hgHashAddToFuzzPath(fuzzPath):
     This function finds the mercurial revision and appends it to the directory name.
     It also prompts if the user wants to continue, should the repository not be on tip.
     '''
-    if verbose:
-        print '\nDEBUG - About to start running `hg identify` commands...'
+    verboseDump('About to start running `hg identify` commands...')
     tipOrNot = captureStdout('hg identify')[:-1]
     hgIdentifynMinus1 = captureStdout('hg identify -n')[:-1]
     # -5 is to remove the " tip\n" portion of `hg identify` output if on tip.
@@ -130,8 +129,7 @@ def hgHashAddToFuzzPath(fuzzPath):
             else:
                 raise Exception('Not on tip.')
     fuzzPath += '/'
-    if verbose:
-        print '\nDEBUG - Finished running `hg identify` commands.'
+    verboseDump('Finished running `hg identify` commands.')
     return fuzzPath, onTip
 
 def cpJsTreeOrPymakeDir(repo, jsOrBuild):
@@ -143,12 +141,10 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
         repo = os.path.expanduser(repo)
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
-        if verbose:
-            print 'DEBUG - Copying the', jsOrBuildText + ', which is located at', repo
+        verboseDump('Copying the ' + jsOrBuildText + ', which is located at ' + repo)
         shutil.copytree(repo, "compilePath", ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect')) \
             if jsOrBuild == 'js' else shutil.copytree(repo, "build")
-        if verbose:
-            print 'DEBUG - Finished copying the', jsOrBuildText
+        verboseDump('Finished copying the' + jsOrBuildText)
     except OSError:
         raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
 
@@ -204,9 +200,8 @@ def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
     if threadsafe:
         configureCmd += ' --enable-threadsafe --with-system-nspr'
 
-    if verbose:
-        print 'DEBUG - This is the configure command:'
-        print 'DEBUG - %s\n' % configureCmd
+    verboseDump('This is the configure command:')
+    verboseDump('%s\n' % configureCmd)
 
     subprocess.call([configureCmd], shell=True)
 
@@ -236,14 +231,14 @@ def test32or64bit(jsShellName, archNum):
         if verbose:
             if '386' in test32or64bitStr:
                 print 'test32or64bitStr is:', test32or64bitStr
-                print 'DEBUG - Compiled binary is 32-bit.'
+                verboseDump('Compiled binary is 32-bit.')
         if '386' not in test32or64bitStr:
             raise Exception('Compiled binary is not 32-bit.')
     elif archNum == '64':
         if verbose:
             if '64-bit' in test32or64bitStr:
                 print 'test32or64bitStr is:', test32or64bitStr
-                print 'DEBUG - Compiled binary is 64-bit.'
+                verboseDump('Compiled binary is 64-bit.')
         if '64-bit' not in test32or64bitStr:
             raise Exception('Compiled binary is not 64-bit.')
 
@@ -259,10 +254,9 @@ def testDbgOrOpt(jsShellName, compileType):
         testFileErrNum = subprocess.call([jsShellName, 'compileTypeTest'], shell=True)
     os.remove('compileTypeTest')  # Remove testfile after grabbing the error code.
 
-    if verbose:
-        print 'DEBUG - The error code for debug shells should be 0.'
-        print 'DEBUG - The error code for opt shells should be 3.'
-        print 'DEBUG - The actual error code for', jsShellName, 'now, is:', str(testFileErrNum)
+    verboseDump('The error code for debug shells should be 0.')
+    verboseDump('The error code for opt shells should be 3.')
+    verboseDump('The actual error code for ' + jsShellName + ' now, is: ' + str(testFileErrNum))
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if compileType == 'dbg' and testFileErrNum != 0:
