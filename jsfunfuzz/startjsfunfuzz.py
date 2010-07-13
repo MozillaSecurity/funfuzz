@@ -279,7 +279,7 @@ def main():
     os.chdir(compileType + '-objdir')
 
     # Compile the first binary.
-    configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
+    cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macVer)
     if usePymake and os.name == 'nt':
         subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
@@ -299,12 +299,12 @@ def main():
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
         os.chdir('opt-objdir')
-        configureJsBinary(archNum, 'opt', branchType, traceJit, methodJit,
+        cfgJsBin(archNum, 'opt', branchType, traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer)
         compileCopy(archNum, 'opt', branchType, usePymake)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
-        configureJsBinary(archNum, 'dbg', branchType, traceJit, methodJit,
+        cfgJsBin(archNum, 'dbg', branchType, traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer)
         compileCopy(archNum, 'dbg', branchType, usePymake)
 

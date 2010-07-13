@@ -162,50 +162,50 @@ def autoconfRun():
     elif os.name == 'nt':
         subprocess.call(['sh', 'autoconf-2.13'])
 
-def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
+def cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macver):
     '''
     This function configures a js binary depending on the parameters.
     '''
-    configureCmd = 'sh ../configure'
+    cfgCmd = 'sh ../configure'
     if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
             if macver == '10.6':
-                configureCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
+                cfgCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
                              'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
                              'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
                              'STRIP="strip -x -S" CROSS_COMPILE=1' + \
                              'sh ../configure --target=i386-apple-darwin8.0.0'
         elif os.uname()[0] == "Linux":
             # Apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            configureCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ../configure --target=i686-pc-linux'
+            cfgCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ../configure --target=i686-pc-linux'
         elif os.uname()[4] == 'armv7l':
-            configureCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
+            cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
                          'sh ../configure'
     if (archNum == '64') and (macver == '10.5'):
-        configureCmd = 'CC="gcc -m64" CXX="g++ -m64" AR=ar ' + \
+        cfgCmd = 'CC="gcc -m64" CXX="g++ -m64" AR=ar ' + \
                      'sh ../configure --target=x86_64-apple-darwin10.0.0'
 
     if compileType == 'dbg':
-        configureCmd += ' --disable-tests --disable-optimize --enable-debug'
+        cfgCmd += ' --disable-tests --disable-optimize --enable-debug'
     elif compileType == 'opt':
-        configureCmd += ' --disable-tests --enable-optimize --disable-debug'
+        cfgCmd += ' --disable-tests --enable-optimize --disable-debug'
 
     # Trace JIT is on by default.
     if not traceJit:
-        configureCmd += ' --disable-tracejit'
+        cfgCmd += ' --disable-tracejit'
     # Method JIT is off by default.
     if methodJit:
-        configureCmd += ' --enable-methodjit'
+        cfgCmd += ' --enable-methodjit'
     if valgrindSupport:
-        configureCmd += ' --enable-valgrind'
+        cfgCmd += ' --enable-valgrind'
     if threadsafe:
-        configureCmd += ' --enable-threadsafe --with-system-nspr'
+        cfgCmd += ' --enable-threadsafe --with-system-nspr'
 
     verboseDump('This is the configure command:')
-    verboseDump('%s\n' % configureCmd)
+    verboseDump('%s\n' % cfgCmd)
 
-    subprocess.call([configureCmd], shell=True)
+    subprocess.call([cfgCmd], shell=True)
 
 def compileCopy(archNum, compileType, branchType, usePymake):
     '''
