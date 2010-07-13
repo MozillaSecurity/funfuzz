@@ -96,9 +96,10 @@ def main():
     # Add supported branches here.
     branchSuppList.append('191')
     branchSuppList.append('192')
-    #branchSuppList.append('193')  # Uncomment this for immediate 1.9.3 support
-    #194support
-    #branchSuppList.append('194')
+    # Uncomment this and add 2.0's js-known dir, then get immediate 2.0 support
+    #branchSuppList.append('20')
+    #201support
+    #branchSuppList.append('201')
     branchSuppList.append('mc')
     branchSuppList.append('tm')
     branchSuppList.append('jm')
@@ -173,9 +174,9 @@ def main():
         repoDict['fuzzing'] = '~/fuzzing/'
         repoDict['191'] = '~/mozilla-1.9.1/'
         repoDict['192'] = '~/mozilla-1.9.2/'
-        repoDict['193'] = '~/mozilla-1.9.3/'
-        #194support
-        #repoDict['194'] = '~/mozilla-1.9.4/'
+        repoDict['20'] = '~/mozilla-2.0/'
+        #201support
+        #repoDict['201'] = '~/mozilla-2.0.1/'
         repoDict['mc'] = '~/mozilla-central/'
         repoDict['tm'] = '~/tracemonkey/'
         repoDict['jm'] = '~/jaegermonkey/'
@@ -185,9 +186,9 @@ def main():
         repoDict['fuzzing'] = '/fuzzing/'
         repoDict['191'] = '/mozilla-1.9.1/'
         repoDict['192'] = '/mozilla-1.9.2/'
-        repoDict['193'] = '/mozilla-1.9.3/'
-        #194support
-        #repoDict['194'] = '/mozilla-1.9.4/'
+        repoDict['20'] = '/mozilla-2.0/'
+        #201support
+        #repoDict['201'] = '/mozilla-2.0.1/'
         repoDict['mc'] = '/mozilla-central/'
         repoDict['tm'] = '/tracemonkey/'
         repoDict['jm'] = '/jaegermonkey/'
@@ -343,9 +344,9 @@ def main():
     # Define the corresponding js-known directories.
     jsknownDict['191'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.1/'
     jsknownDict['192'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.2/'
-    jsknownDict['193'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.3/'
-    #194support
-    #jsknownDict['194'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.4/'
+    jsknownDict['20'] = repoDict['fuzzing'] + 'js-known/mozilla-2.0/'
+    #201support
+    #jsknownDict['201'] = repoDict['fuzzing'] + 'js-known/mozilla-2.0.1/'
     jsknownDict['mc'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
     # For TM and JM, we use mozilla-central's js-known directories.
     jsknownDict['tm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
