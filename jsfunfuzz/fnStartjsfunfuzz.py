@@ -80,12 +80,10 @@ def error(branchSupp):
     print '%s [patch <directory to patch>] [patch <directory to patch>]' % branchSupp,
     print '[valgrind]\n'
     print
-    print 'System requirements: Python 2.6.x, Mozilla build prerequisites and repositories at "~/" (POSIX) or "/" (NT).'
+    print 'System requirements: Python 2.6.x, Mozilla build prerequisites and repositories at "/" (WinXP) or "~/" (anything else).'
     print
     print 'Windows platforms only compile in 32-bit.'
-    print 'Linux platforms only compile in 64-bit.'
-    print 'Valgrind only works for Linux platforms.'
-    print 'Choice of a 32-bit or 64-bit binary is only applicable to Mac OS X 10.6.x.\n'
+    print 'Valgrind only works for Linux platforms.\n'
 
 # This function captures standard output into a python string.
 def captureStdout(input):
@@ -198,7 +196,8 @@ def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
 # This function compiles and copies a binary.
 def compileCopy(archNum, compileType, branchType, usePymake):
     # Run make using 2 cores, not sure if pymake allows parallel compilation yet.
-    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2']) if usePymake else subprocess.call(['make', '-j2'])
+    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2']) if usePymake \
+        else subprocess.call(['make', '-j2'])
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
         shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.uname()[0].lower()
