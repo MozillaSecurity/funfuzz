@@ -252,7 +252,7 @@ def main():
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
-        jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
+        jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'])
         #if jsCompareJITCode == 1:
         #    raise Exception('Required js patch for --comparejit failed to patch.')
         verboseDump('Finished incorporating the gc() patch that is needed for compareJIT.')
@@ -261,12 +261,12 @@ def main():
     patchReturnCode = 0
     patchReturnCode2 = 0
     if len(sys.argv) < 8 and len(sys.argv) >= 6 and sys.argv[4] == 'patch':
-        patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
+        patchReturnCode = subprocess.call(['patch', '-p3', '-i', sys.argv[5]])
         verboseDump('Finished incorporating the first patch.')
     elif len(sys.argv) >= 8 and sys.argv[6] == 'patch':
-        patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
+        patchReturnCode = subprocess.call(['patch', '-p3', '-i', sys.argv[5]])
         verboseDump('Finished incorporating the first patch.')
-        patchReturnCode2 = subprocess.call(['patch -p3 < ' + sys.argv[7]], shell=True)
+        patchReturnCode2 = subprocess.call(['patch', '-p3', '-i', sys.argv[7]])
         verboseDump('Finished incorporating the second patch.')
     if patchReturnCode == 1 or patchReturnCode2 == 1:
         raise Exception('Patching failed.')
@@ -282,7 +282,7 @@ def main():
     cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macVer)
     if usePymake and os.name == 'nt':
-        subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
+        subprocess.call(['export', 'SHELL'])  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType, usePymake)
     # Change into compilePath for the second binary.

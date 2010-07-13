@@ -124,7 +124,7 @@ def hgHashAddToFuzzPath(fuzzPath):
         else:
             switchToTipApproval = str(raw_input('Do you want to switch to the default tip? (y/n): '))
             if switchToTipApproval == ('y' or 'yes'):
-                subprocess.call(['hg up default'], shell=True)
+                subprocess.call(['hg', 'up', 'default'])
                 fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
                 fuzzPath = fuzzPath2 + '-' + hgIdentifyMinus5
             else:
@@ -146,7 +146,7 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
         verboseDump('Copying the ' + jsOrBuildText + ', which is located at ' + repo)
         shutil.copytree(repo, "compilePath", ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect')) \
             if jsOrBuild == 'js' else shutil.copytree(repo, "build")
-        verboseDump('Finished copying the' + jsOrBuildText)
+        verboseDump('Finished copying the ' + jsOrBuildText)
     except OSError:
         raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
 
