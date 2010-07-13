@@ -252,9 +252,18 @@ def main():
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
-        jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'])
-        #if jsCompareJITCode == 1:
-        #    raise Exception('Required js patch for --comparejit failed to patch.')
+        if not platform.platform() == 'Windows-XP-5.1.2600':
+            jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.expanduser(repoDict['fuzzing']) + 'jsfunfuzz/patchGC.diff'])
+        else:
+            jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'])
+        if jsCompareJITCode == 1:
+            jsCompareJITCodeBool1 = str(raw_input('Was a previously applied patch detected? (y/n): '))
+            if jsCompareJITCodeBool1 == ('y' or 'yes'):
+                jsCompareJITCodeBool2 = str(raw_input('Did you assume -R? (y/n): '))
+                if jsCompareJITCodeBool2 != ('n' or 'no'):
+                    raise Exception('The patch for --comparejit should be patched.')
+            else:
+                raise Exception('Required js patch for --comparejit failed to patch.')
         verboseDump('Finished incorporating the gc() patch that is needed for compareJIT.')
 
     # Patch the codebase if specified, accept up to 2 patches.
