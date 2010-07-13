@@ -116,11 +116,8 @@ def main():
     # Check supported operating systems.
     macVer = osCheck()
     if (sys.argv[1] == '32') and (os.name == 'posix'):
-        # 32-bit js shells have only been tested on Linux (i686, x86_64 or armv7l) or Mac (i386) platforms.
-        if (os.uname()[0] == 'Linux'):
-            if (os.uname()[4] != 'i686') and (os.uname()[4] != 'x86_64') and (os.uname()[4] != 'armv7l'):
-                raise Exception('32-bit compilation is not supported on non-i686, non-x86_64 or non-ARMv7l Linux platforms.')
-        elif (os.uname()[0] == 'Darwin' and os.uname()[4] != 'i386'):
+        # For the Mac, 32-bit js shells have only been tested on i386.
+        if (os.uname()[0] == 'Darwin' and os.uname()[4] != 'i386'):
             raise Exception('32-bit compilation is not supported on non-i386 Darwin platforms.')
     elif (sys.argv[1] == '64'):
         # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
