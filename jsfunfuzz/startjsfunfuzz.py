@@ -255,8 +255,10 @@ def main():
         if not platform.platform() == 'Windows-XP-5.1.2600-SP3':
             jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.expanduser(repoDict['fuzzing']) + 'jsfunfuzz/patchGC.diff'])
         else:
-            jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'])
-        if jsCompareJITCode == 1:
+            # We have to use `<` and `shell=True` here because of the drive letter of the path to patchGC.diff.
+            # Python piping might be possible though slightly more complicated.
+            jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'], shell=True)
+        if (jsCompareJITCode == 1) or (jsCompareJITCode == 2):
             jsCompareJITCodeBool1 = str(raw_input('Was a previously applied patch detected? (y/n): '))
             if jsCompareJITCodeBool1 == ('y' or 'yes'):
                 jsCompareJITCodeBool2 = str(raw_input('Did you assume -R? (y/n): '))
@@ -277,7 +279,7 @@ def main():
         verboseDump('Finished incorporating the first patch.')
         patchReturnCode2 = subprocess.call(['patch', '-p3', '-i', sys.argv[7]])
         verboseDump('Finished incorporating the second patch.')
-    if patchReturnCode == 1 or patchReturnCode2 == 1:
+    if (patchReturnCode == 1 or patchReturnCode2 == 1) or (patchReturnCode == 2 or patchReturnCode2 == 2):
         raise Exception('Patching failed.')
 
     autoconfRun()
@@ -291,7 +293,8 @@ def main():
     cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macVer)
     if usePymake and os.name == 'nt':
-        subprocess.call(['export', 'SHELL'])  # See https://developer.mozilla.org/en/pymake
+        # This has to use `shell=True`.
+        subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType, usePymake)
     # Change into compilePath for the second binary.
