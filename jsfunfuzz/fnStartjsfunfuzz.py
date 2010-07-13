@@ -183,7 +183,7 @@ def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
             configureCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
                          'sh ../configure'
     if (archNum == '64') and (macver == '10.5'):
-        configureCmd = 'AR=ar CC="gcc -m64" CXX="g++ -m64" ' + \
+        configureCmd = 'CC="gcc -m64" CXX="g++ -m64" AR=ar ' + \
                      'sh ../configure --target=x86_64-apple-darwin10.0.0'
 
     if compileType == 'dbg':
