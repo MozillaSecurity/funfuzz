@@ -36,7 +36,7 @@
 
 # This file contains functions for startjsfunfuzz.py.
 
-import os, shutil, subprocess, platform
+import os, platform, shutil, subprocess
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 
@@ -126,7 +126,7 @@ def hgHashAddToFuzzPath(fuzzPath):
 # This function copies the js tree or the pymake build directory.
 def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     repo += 'js/src/' if jsOrBuild == 'js' else 'build/'
-    if os.name == 'posix':
+    if not platform.platform() == 'Windows-XP-5.1.2600':
         repo = os.path.expanduser(repo)
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'

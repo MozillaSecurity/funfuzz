@@ -202,21 +202,21 @@ def main():
             verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
 
     fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + '/'
-    if os.name == 'posix':
-        fuzzPath = os.path.expanduser(fuzzPath)  # Expand the ~ folder on Linux/Mac.
+    if not platform.platform() == 'Windows-XP-5.1.2600':
+        fuzzPath = os.path.expanduser(fuzzPath)  # Expand the ~ folder except on WinXP.
 
     # Save the current directory as a variable.
     currDir = os.getcwd()
 
     # Note and attach the numbers and hashes of the current changeset in the fuzzPath.
-    if os.name == 'posix':
+    if not platform.platform() == 'Windows-XP-5.1.2600':
         try:
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
         (fuzzPath, onTip) = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(os.path.expanduser(currDir))
-    elif os.name == 'nt':
+    else:
         try:
             os.chdir(repoDict[branchType])
         except OSError:
@@ -327,7 +327,7 @@ def main():
     jsfunfuzzFilePath = repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js'
     analysisFilePath = repoDict['fuzzing'] + 'jsfunfuzz/analysis.py'
     findInterestingFilesFilePath = repoDict['fuzzing'] + 'jsfunfuzz/findInterestingFiles.py'
-    if os.name == 'posix':
+    if not platform.platform() == 'Windows-XP-5.1.2600':
         jsfunfuzzFilePath = os.path.expanduser(jsfunfuzzFilePath)
         analysisFilePath = os.path.expanduser(analysisFilePath)
         findInterestingFilesFilePath = os.path.expanduser(findInterestingFilesFilePath)
@@ -370,7 +370,7 @@ def main():
 
 
     # Define fuzzing command with the required parameters.
-    if os.name == 'posix':
+    if not platform.platform() == 'Windows-XP-5.1.2600':
         multiTimedRun = os.path.expanduser(multiTimedRun)
         jsknownDict[branchType] = os.path.expanduser(jsknownDict[branchType])
     fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT + multiTimedRunTimeout + ' '
