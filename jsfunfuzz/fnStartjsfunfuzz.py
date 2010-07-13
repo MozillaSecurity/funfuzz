@@ -49,6 +49,10 @@ def exceptionBadBranchType():
 def exceptionBadOs():
     raise Exception("Unknown OS - Platform is unsupported.")
 
+# This function appends the word 'DEBUG' to any verbose output.
+def verboseDump(input):
+    if verbose:
+        print 'DEBUG -', input
 
 # This function checks for supported operating systems.
 # It returns macVer in the case of 10.6.x.

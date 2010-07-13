@@ -73,7 +73,7 @@ from fnStartjsfunfuzz import *
 def main():
 
     # Variables
-    verbose = True  # Turning this on also enables tests.
+    selfTests = True
     multiTimedRunTimeout = '10'
     traceJit = True  # Activate support for tracing JIT in configure.
     jsJitSwitch = True  # Activate JIT fuzzing here.
@@ -199,7 +199,7 @@ def main():
 
     if verbose:
         for repo in repoDict.keys():
-            print 'DEBUG - The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"'
+            verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
 
     fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + '/'
     if os.name == 'posix':
@@ -233,8 +233,7 @@ def main():
         # Rename directory if patches are applied, accept up to 2 patches.
         if len(sys.argv) >= 6 and (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
             fuzzPath += 'patched/'
-            if verbose:
-                print 'DEBUG - Patched fuzzPath is:', fuzzPath
+            verboseDump('Patched fuzzPath is: ' + fuzzPath)
         os.makedirs(fuzzPath)
     except OSError:
         raise Exception('The fuzzing path at \'' + fuzzPath + '\' already exists!')
@@ -252,28 +251,23 @@ def main():
     if jsCompareJITSwitch:
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
-        if verbose:
-            print 'DEBUG - Patching the gc() function now.'
+        verboseDump('Patching the gc() function now.')
         jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + '/jsfunfuzz/patchGC.diff'], shell=True)
         #if jsCompareJITCode == 1:
         #    raise Exception('Required js patch for --comparejit failed to patch.')
-        if verbose:
-            print 'DEBUG - Finished incorporating the gc() patch that is needed for compareJIT.'
+        verboseDump('Finished incorporating the gc() patch that is needed for compareJIT.')
 
     # Patch the codebase if specified, accept up to 2 patches.
     patchReturnCode = 0
     patchReturnCode2 = 0
     if len(sys.argv) < 8 and len(sys.argv) >= 6 and sys.argv[4] == 'patch':
         patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
-        if verbose:
-            print 'DEBUG - Finished incorporating the first patch.'
+        verboseDump('Finished incorporating the first patch.')
     elif len(sys.argv) >= 8 and sys.argv[6] == 'patch':
         patchReturnCode = subprocess.call(['patch -p3 < ' + sys.argv[5]], shell=True)
-        if verbose:
-            print 'DEBUG - Finished incorporating the first patch.'
+        verboseDump('Finished incorporating the first patch.')
         patchReturnCode2 = subprocess.call(['patch -p3 < ' + sys.argv[7]], shell=True)
-        if verbose:
-            print 'DEBUG - Finished incorporating the second patch.'
+        verboseDump('Finished incorporating the second patch.')
     if patchReturnCode == 1 or patchReturnCode2 == 1:
         raise Exception('Patching failed.')
 
@@ -295,9 +289,9 @@ def main():
     os.chdir('../')
 
     # Test compilePath.
-    if verbose:
-        print 'DEBUG - This should be the compilePath:'
-        print 'DEBUG - %s\n' % os.getcwdu()
+    verboseDump('This should be the compilePath:')
+    verboseDump('%s\n' % os.getcwdu())
+    if selfTests:
         if 'compilePath' not in os.getcwdu():
             raise Exception('We are not in compilePath.')
 
@@ -318,10 +312,10 @@ def main():
     os.chdir('../../')  # Change into fuzzPath directory.
 
     # Test fuzzPath.
-    if verbose:
-        print 'DEBUG - os.getcwdu() should be the fuzzPath:'
-        print 'DEBUG - %s/' % os.getcwdu()
-        print 'DEBUG - fuzzPath is: %s\n' % fuzzPath
+    verboseDump('os.getcwdu() should be the fuzzPath:')
+    verboseDump('%s/' % os.getcwdu())
+    verboseDump('fuzzPath is: %s\n' % fuzzPath)
+    if selfTests:
         if os.name == 'posix':
             if fuzzPath != (os.getcwdu() + '/'):
                 raise Exception('We are not in fuzzPath.')
@@ -385,11 +379,9 @@ def main():
         fuzzCmd2 = ' valgrind' + fuzzCmd2
     fuzzCmd = fuzzCmd1 + jsknownDict[branchType] + fuzzCmd2
 
-    if verbose:
-        print 'DEBUG - jsShellName is: ' + jsShellName
-        print 'DEBUG - fuzzPath + jsShellName is: ' + fuzzPath + jsShellName
-        print 'DEBUG - fuzzCmd is: ' + fuzzCmd
-        print
+    verboseDump('jsShellName is: ' + jsShellName)
+    verboseDump('fuzzPath + jsShellName is: ' + fuzzPath + jsShellName)
+    verboseDump('fuzzCmd is: ' + fuzzCmd + '\n')
 
 
     # 32-bit or 64-bit verification test.
