@@ -159,6 +159,9 @@ def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
                              'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
                              'STRIP="strip -x -S" CROSS_COMPILE=1' + \
                              'sh ../configure --target=i386-apple-darwin8.0.0'
+        elif os.uname()[0] == "Linux":
+            # Apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
+            configureCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ../configure --target=i686-pc-linux'
         elif os.uname()[4] == 'armv7l':
             configureCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
                          'sh ../configure'
