@@ -249,12 +249,14 @@ def testDbgOrOpt(jsShellName, compileType):
     This function tests if a binary is a debug or optimized shell.
     '''
     # Create a testfile with the gczeal() function.
-    subprocess.call(['echo \'gczeal()\' > compileTypeTest'], shell=True)
+    compileTypeTest = open('compileTypeTest.js', 'w')
+    compileTypeTest.writelines('gczeal()')
+    compileTypeTest.close()
     if os.name == 'posix':
-        testFileErrNum = subprocess.call(['./' + jsShellName, 'compileTypeTest'])
+        testFileErrNum = subprocess.call(['./' + jsShellName, 'compileTypeTest.js'])
     elif os.name == 'nt':
-        testFileErrNum = subprocess.call([jsShellName, 'compileTypeTest'], shell=True)
-    os.remove('compileTypeTest')  # Remove testfile after grabbing the error code.
+        testFileErrNum = subprocess.call([jsShellName, 'compileTypeTest.js'], shell=True)
+    os.remove('compileTypeTest.js')  # Remove testfile after grabbing the error code.
 
     verboseDump('The error code for debug shells should be 0.')
     verboseDump('The error code for opt shells should be 3.')
