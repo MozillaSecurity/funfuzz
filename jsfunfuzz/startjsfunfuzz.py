@@ -64,7 +64,7 @@
 #   Massive rewrite, reducing code by ~8%. Support Valgrind on Linux, 64-bit
 #   Linux and Jaegermonkey. No longer supports 10.5.x, 32-bit Linux.
 
-import sys, os, subprocess, shutil, time
+import os, platform, shutil, subprocess, sys, time
 from fnStartjsfunfuzz import *
 
 def main():
@@ -170,29 +170,22 @@ def main():
 
     repoDict = {}
     # Definitions of the different repository and fuzzing locations.
-    if os.name == 'posix':
-        repoDict['fuzzing'] = '~/fuzzing/'
-        repoDict['191'] = '~/mozilla-1.9.1/'
-        repoDict['192'] = '~/mozilla-1.9.2/'
-        repoDict['20'] = '~/mozilla-2.0/'
-        #201support
-        #repoDict['201'] = '~/mozilla-2.0.1/'
-        repoDict['mc'] = '~/mozilla-central/'
-        repoDict['tm'] = '~/tracemonkey/'
-        repoDict['jm'] = '~/jaegermonkey/'
-        repoDict['fv'] = '~/fatval/'
-        fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
-    elif os.name == 'nt':
-        repoDict['fuzzing'] = '/fuzzing/'
-        repoDict['191'] = '/mozilla-1.9.1/'
-        repoDict['192'] = '/mozilla-1.9.2/'
-        repoDict['20'] = '/mozilla-2.0/'
-        #201support
-        #repoDict['201'] = '/mozilla-2.0.1/'
-        repoDict['mc'] = '/mozilla-central/'
-        repoDict['tm'] = '/tracemonkey/'
-        repoDict['jm'] = '/jaegermonkey/'
-        repoDict['fv'] = '/fatval/'
+    repoDict['fuzzing'] = '~/fuzzing/'
+    repoDict['191'] = '~/mozilla-1.9.1/'
+    repoDict['192'] = '~/mozilla-1.9.2/'
+    repoDict['20'] = '~/mozilla-2.0/'
+    #201support
+    #repoDict['201'] = '~/mozilla-2.0.1/'
+    repoDict['mc'] = '~/mozilla-central/'
+    repoDict['tm'] = '~/tracemonkey/'
+    repoDict['jm'] = '~/jaegermonkey/'
+    repoDict['fv'] = '~/fatval/'
+    fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
+    if platform.platform() == 'Windows-XP-5.1.2600':
+        for repo in repoDict.keys():
+            # It is assumed that on WinXP, the corresponding directories are in the root folder.
+            # e.g. Instead of `~/tracemonkey/`, TM would be in `/tracemonkey/`.
+            repoDict[repo] = repoDict[repo][1:]
         fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
 
     if verbose:
