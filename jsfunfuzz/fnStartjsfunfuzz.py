@@ -213,18 +213,17 @@ def test32or64bit(jsShellName, archNum):
     test32or64bitStr = captureStdout(test32or64bitCmd)[:-1]
     if archNum == '32':
         if verbose:
-            # Searching the last 10 characters will be sufficient.
-            if 'i386' in test32or64bitStr[-10:]:
+            if '386' in test32or64bitStr:
                 print 'test32or64bitStr is:', test32or64bitStr
                 print 'DEBUG - Compiled binary is 32-bit.'
-        if 'i386' not in test32or64bitStr[-10:]:
+        if '386' not in test32or64bitStr:
             raise Exception('Compiled binary is not 32-bit.')
     elif archNum == '64':
         if verbose:
-            if 'x86_64' in test32or64bitStr[-10:]:
+            if '64-bit' in test32or64bitStr:
                 print 'test32or64bitStr is:', test32or64bitStr
                 print 'DEBUG - Compiled binary is 64-bit.'
-        if 'x86_64' not in test32or64bitStr[-10:]:
+        if '64-bit' not in test32or64bitStr:
             raise Exception('Compiled binary is not 64-bit.')
 
 # This function tests if a binary is a debug or optimized shell.
