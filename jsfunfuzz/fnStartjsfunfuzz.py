@@ -34,14 +34,15 @@
 # the provisions above, a recipient may use your version of this file under
 # the terms of any one of the MPL, the GPL or the LGPL.
 
-# This file contains functions for startjsfunfuzz.py.
+'''
+This file contains functions for startjsfunfuzz.py.
+'''
 
 import os, platform, shutil, subprocess
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 
 
-# These functions throw various custom exceptions.
 def exceptionBadCompileType():
     raise Exception('Unknown compileType')
 def exceptionBadBranchType():
@@ -49,14 +50,18 @@ def exceptionBadBranchType():
 def exceptionBadOs():
     raise Exception("Unknown OS - Platform is unsupported.")
 
-# This function appends the word 'DEBUG' to any verbose output.
 def verboseDump(input):
+    '''
+    This function appends the word 'DEBUG' to any verbose output.
+    '''
     if verbose:
         print 'DEBUG -', input
 
-# This function checks for supported operating systems.
-# It returns macVer in the case of 10.6.x.
 def osCheck():
+    '''
+    This function checks for supported operating systems.
+    It returns macVer in the case of 10.5.x or 10.6.x.
+    '''
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
             macVer, _, _ = platform.mac_ver()
@@ -73,8 +78,10 @@ def osCheck():
         print '\nOnly Windows XP/Vista/7, Linux or Mac OS X 10.6.x are supported.\n'
         raise Exception('Unknown OS - Platform is unsupported.')
 
-# This function prints the corresponding CLI requirements that should be input.
 def error(branchSupp):
+    '''
+    This function prints the corresponding CLI requirements that should be input.
+    '''
     print '\n==========\n| Error! |\n=========='
     print 'General usage: python startjsfunfuzz.py [32|64] [dbg|opt]',
     print '%s [patch <directory to patch>] [patch <directory to patch>]' % branchSupp,
@@ -85,15 +92,19 @@ def error(branchSupp):
     print 'Windows platforms only compile in 32-bit.'
     print 'Valgrind only works for Linux platforms.\n'
 
-# This function captures standard output into a python string.
 def captureStdout(input):
+    '''
+    This function captures standard output into a python string.
+    '''
     p = subprocess.Popen([input], stdin=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
     (stdout, stderr) = p.communicate()
     return stdout
 
-# This function finds the mercurial revision and appends it to the directory name.
-# It also prompts if the user wants to continue, should the repository not be on tip.
 def hgHashAddToFuzzPath(fuzzPath):
+    '''
+    This function finds the mercurial revision and appends it to the directory name.
+    It also prompts if the user wants to continue, should the repository not be on tip.
+    '''
     if verbose:
         print '\nDEBUG - About to start running `hg identify` commands...'
     tipOrNot = captureStdout('hg identify')[:-1]
@@ -123,8 +134,10 @@ def hgHashAddToFuzzPath(fuzzPath):
         print '\nDEBUG - Finished running `hg identify` commands.'
     return fuzzPath, onTip
 
-# This function copies the js tree or the pymake build directory.
 def cpJsTreeOrPymakeDir(repo, jsOrBuild):
+    '''
+    This function copies the js tree or the pymake build directory.
+    '''
     repo += 'js/src/' if jsOrBuild == 'js' else 'build/'
     if not platform.platform() == 'Windows-XP-5.1.2600':
         repo = os.path.expanduser(repo)
@@ -139,8 +152,10 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     except OSError:
         raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
 
-# Sniff platform and run different autoconf types:
 def autoconfRun():
+    '''
+    Sniff platform and run different autoconf types:
+    '''
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
             subprocess.call(['autoconf213'])
@@ -149,9 +164,11 @@ def autoconfRun():
     elif os.name == 'nt':
         subprocess.call(['sh', 'autoconf-2.13'])
 
-# This function compiles a js binary depending on the parameters.
 def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macver):
+    '''
+    This function configures a js binary depending on the parameters.
+    '''
     configureCmd = 'sh ../configure'
     if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
@@ -193,8 +210,10 @@ def configureJsBinary(archNum, compileType, branchType, traceJit, methodJit,
 
     subprocess.call([configureCmd], shell=True)
 
-# This function compiles and copies a binary.
 def compileCopy(archNum, compileType, branchType, usePymake):
+    '''
+    This function compiles and copies a binary.
+    '''
     # Run make using 2 cores, not sure if pymake allows parallel compilation yet.
     subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2']) if usePymake \
         else subprocess.call(['make', '-j2'])
@@ -207,8 +226,10 @@ def compileCopy(archNum, compileType, branchType, usePymake):
         shutil.copy2('js.exe', '../../' + shellName + '.exe')
     return shellName
 
-# This function tests if a binary is 32-bit or 64-bit.
 def test32or64bit(jsShellName, archNum):
+    '''
+    This function tests if a binary is 32-bit or 64-bit.
+    '''
     test32or64bitCmd = 'file ' + jsShellName
     test32or64bitStr = captureStdout(test32or64bitCmd)[:-1]
     if archNum == '32':
@@ -226,8 +247,10 @@ def test32or64bit(jsShellName, archNum):
         if '64-bit' not in test32or64bitStr:
             raise Exception('Compiled binary is not 64-bit.')
 
-# This function tests if a binary is a debug or optimized shell.
 def testDbgOrOpt(jsShellName, compileType):
+    '''
+    This function tests if a binary is a debug or optimized shell.
+    '''
     # Create a testfile with the gczeal() function.
     subprocess.call(['echo \'gczeal()\' > compileTypeTest'], shell=True)
     if os.name == 'posix':
