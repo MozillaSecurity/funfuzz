@@ -115,8 +115,10 @@ def main():
 
         # Configure the js binary.
         threadsafe = False  # Let's disable support for threadsafety in the js shell
-        configureJsBinary(archNum, compileType, branchType,
-                          tracingjitBool, methodjitBool, valgrindSupport, threadsafe)
+        macver = osCheck()
+        cfgJsBin(archNum, compileType, branchType,
+                          tracingjitBool, methodjitBool, valgrindSupport,
+                          threadsafe, macver)
 
         if 'jaegermonkey' in sourceDir:
             branchType = 'autoBisectBranch'  # Reset the branchType
