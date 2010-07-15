@@ -15,13 +15,8 @@ targetTime = 15*60 # for build machines, use 20 minutes (20*60)
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
 
-#remoteLoginAndMachine = "jruderman@jesse-arm-1"
-#remoteBase = "/mnt/jruderman/domfuzzjobs/"
-
+# global which is set in __main__, used to operate over ssh
 remoteLoginAndMachine = None
-remoteBase = os.path.join(os.path.expanduser("~"), "domfuzzjobs") + "/" # since this is just for testing, assume we're on a system with forward slashes
-
-remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else "" # used as a prefix for remoteBase when using scp
 
 def ensureTrailingSlash(d):
   if d[-1] != "/":
@@ -100,6 +95,25 @@ def buildType():
   return "mozilla-central-" + build_downloader.mozPlatform() + "-debug"
 
 if __name__ == "__main__":
+  from optparse import OptionParser
+  parser = OptionParser()
+  parser.set_defaults(
+      remote_host=None,
+      basedir=os.path.join(os.path.expanduser("~"), "domfuzzjobs") + "/",
+  )
+  parser.add_option("--remote-host", dest="remote_host",
+      help="Use remote host to store fuzzing data; format: user@host")
+  parser.add_option("--basedir", dest="basedir",
+      help="Base directory on remote machine to store fuzzing data")
+
+  options, args = parser.parse_args()
+
+  remoteLoginAndMachine = options.remote_host
+  remoteBase = options.basedir
+
+  # used as a prefix for remoteBase when using scp
+  remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else ""
+
   relevantJobsDir = remoteBase + buildType() + "/"
   runCommand("mkdir -p " + relevantJobsDir)
   jobAsTaken = grabReductionJob(relevantJobsDir)
