@@ -73,7 +73,8 @@ def osCheck():
         elif os.uname()[0] == 'Linux':
             pass
     elif os.name == 'nt':
-        pass
+        if float(sys.version[:3]) < 2.6:
+            raise Exception('A minimum Python version of 2.6 is required.')
     else:
         print '\nOnly Windows XP/Vista/7, Linux or Mac OS X 10.6.x are supported.\n'
         raise Exception('Unknown OS - Platform is unsupported.')
