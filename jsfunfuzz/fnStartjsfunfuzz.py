@@ -177,7 +177,7 @@ def cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
                              'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
                              'STRIP="strip -x -S" CROSS_COMPILE=1' + \
                              'sh ../configure --target=i386-apple-darwin8.0.0'
-        elif os.uname()[0] == "Linux":
+        elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # Apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ../configure --target=i686-pc-linux'
         elif os.uname()[4] == 'armv7l':
