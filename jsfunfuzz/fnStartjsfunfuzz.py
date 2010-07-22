@@ -232,10 +232,10 @@ def test32or64bit(jsShellName, archNum):
     test32or64bitStr = captureStdout(test32or64bitCmd)[:-1]
     if archNum == '32':
         if verbose:
-            if '386' in test32or64bitStr:
+            if ('386' in test32or64bitStr) or ('32-bit' in test32or64bitStr):
                 print 'test32or64bitStr is:', test32or64bitStr
                 verboseDump('Compiled binary is 32-bit.')
-        if '386' not in test32or64bitStr:
+        if ('386' not in test32or64bitStr) and ('32-bit' not in test32or64bitStr):
             raise Exception('Compiled binary is not 32-bit.')
     elif archNum == '64':
         if verbose:
