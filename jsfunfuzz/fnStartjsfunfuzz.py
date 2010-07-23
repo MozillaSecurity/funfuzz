@@ -38,7 +38,7 @@
 This file contains functions for startjsfunfuzz.py.
 '''
 
-import os, platform, shutil, subprocess, sys
+import os, platform, shutil, subprocess
 
 verbose = True  # Turn this to True to enable verbose output for debugging.
 
@@ -140,7 +140,7 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     This function copies the js tree or the pymake build directory.
     '''
     repo += 'js/src/' if jsOrBuild == 'js' else 'build/'
-    if os.name == 'nt' and 'Windows-XP' not in platform.platform():
+    if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
