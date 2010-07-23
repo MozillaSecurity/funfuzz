@@ -140,8 +140,7 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     This function copies the js tree or the pymake build directory.
     '''
     repo += 'js/src/' if jsOrBuild == 'js' else 'build/'
-    if ((platform.platform() != 'Windows-XP-5.1.2600') and (float(sys.version[:3]) == 2.6)) or \
-        ((platform.platform() != 'Windows-XP-5.1.2600-SP3') and (float(sys.version[:3]) == 2.7)):
+    if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
