@@ -85,7 +85,7 @@ def createDOMFuzzProfile(profileDir, valgrindMode):
   prefsFile.write('user_pref("extensions.enabledScopes", 3);\n')
 
   # Turn off various things in firefox that try to update themselves,
-  # to improve performance and sanity and reduce risk of hitting bug 479373.
+  # to improve performance and sanity.
   # http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
   prefsFile.write('user_pref("browser.safebrowsing.enabled", false);\n')
   prefsFile.write('user_pref("browser.safebrowsing.malware.enabled", false);\n')
