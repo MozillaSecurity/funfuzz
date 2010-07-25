@@ -213,7 +213,7 @@ def compileCopy(archNum, compileType, branchType, usePymake):
     This function compiles and copies a binary.
     '''
     # Run make using 2 cores, not sure if pymake allows parallel compilation yet.
-    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2', '-s']) if usePymake \
+    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2']) if usePymake \
         else subprocess.call(['make', '-j2', '-s'])
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
