@@ -139,14 +139,14 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     '''
     This function copies the js tree or the pymake build directory.
     '''
-    repo += 'js/src/' if jsOrBuild == 'js' else 'build/'
+    repo += 'js/src/' if jsOrBuild == 'js' else 'build/pymake'
     if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
         verboseDump('Copying the ' + jsOrBuildText + ', which is located at ' + repo)
         shutil.copytree(repo, "compilePath", ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect')) \
-            if jsOrBuild == 'js' else shutil.copytree(repo, "build")
+            if jsOrBuild == 'js' else shutil.copytree(repo, "build/pymake")
         verboseDump('Finished copying the ' + jsOrBuildText)
     except OSError:
         raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
