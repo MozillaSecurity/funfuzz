@@ -578,6 +578,7 @@ function tryItOut(code)
       if (code.indexOf("Error") == -1               // avoid bug 525518
        && code.indexOf("with") == -1                // avoid bug 584587
        && code.indexOf("too_much_recursion") == -1  // avoid bug 584594
+       && code.indexOf("function") == -1            // avoid bug 584603
        && code.indexOf(">>") == -1                  // avoid bug 584605
       ) {
         // FCM cookie
