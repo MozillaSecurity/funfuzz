@@ -580,6 +580,7 @@ function tryItOut(code)
        && code.indexOf("too_much_recursion") == -1  // avoid bug 584594
        && code.indexOf("function") == -1            // avoid bug 584603
        && code.indexOf(">>") == -1                  // avoid bug 584605
+       && code.indexOf("NaN") == -1                 // avoid bug 584647
       ) {
         // FCM cookie
         var cookie1 = "/*F";
