@@ -575,7 +575,12 @@ function tryItOut(code)
 
   if (f && wtt.allowExec) {
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      if (code.indexOf("Error") == -1) { // avoid bug 525518
+      if (code.indexOf("Error") == -1               // avoid bug 525518
+       && code.indexOf("with") == -1                // avoid bug 584587
+       && code.indexOf("too_much_recursion") == -1  // avoid bug 584594
+       && code.indexOf(">>") == -1                  // avoid bug 584605
+      ) {
+        // FCM cookie
         var cookie1 = "/*F";
         var cookie2 = "CM*/";
         var nCode = code;
