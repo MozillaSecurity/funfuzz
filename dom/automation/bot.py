@@ -56,9 +56,9 @@ def runCommand(cmd):
   return out
 
 
-def grabReductionJob(relevantJobsDir):
+def grabJob(relevantJobsDir, desiredJobType):
   while True:
-    jobs = filter( (lambda s: s.endswith("_needsreduction")), runCommand("ls -1 " + relevantJobsDir).split("\n") )
+    jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand("ls -1 " + relevantJobsDir).split("\n") )
     if len(jobs) > 0:
       shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
       takenName = relevantJobsDir + jobs[0].split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
@@ -105,18 +105,18 @@ if __name__ == "__main__":
       help="Use remote host to store fuzzing data; format: user@host")
   parser.add_option("--basedir", dest="basedir",
       help="Base directory on remote machine to store fuzzing data")
-
+  parser.add_option("--retest-all", dest="retestAll",
+      help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
   options, args = parser.parse_args()
 
   remoteLoginAndMachine = options.remote_host
   remoteBase = options.basedir
-
-  # used as a prefix for remoteBase when using scp
+  # remotePrefix is used as a prefix for remoteBase when using scp
   remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else ""
-
   relevantJobsDir = remoteBase + buildType() + "/"
   runCommand("mkdir -p " + relevantJobsDir)
-  jobAsTaken = grabReductionJob(relevantJobsDir)
+
+  jobAsTaken = grabJob(relevantJobsDir, "_needsreduction")
   job = jobAsTaken
   lithlog = None
   if os.path.exists("wtmp1"):
