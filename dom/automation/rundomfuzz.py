@@ -63,46 +63,51 @@ def createDOMFuzzProfile(profileDir, valgrindMode):
   "Sets up a profile for domfuzz."
 
   # Set preferences.
-  prefsFile = open(os.path.join(profileDir, "user.js"), "w")
-  # do something like reftest.timeout, as a way to let the dom fuzzer know how long to run?
-  prefsFile.write('user_pref("browser.dom.window.dump.enabled", true);\n')
-  prefsFile.write('user_pref("ui.caretBlinkTime", -1);\n')
-
-  # no slow script dialogs
-  prefsFile.write('user_pref("dom.max_script_run_time", 0);\n')
-  prefsFile.write('user_pref("dom.max_chrome_script_run_time", 0);\n')
-
-  # additional prefs for fuzzing
-  prefsFile.write('user_pref("browser.sessionstore.resume_from_crash", false);\n')
-  prefsFile.write('user_pref("layout.debug.enable_data_xbl", true);\n')
-  prefsFile.write('user_pref("dom.disable_window_status_change", false);\n')
-  prefsFile.write('user_pref("dom.disable_window_move_resize", true);\n')
-  prefsFile.write('user_pref("browser.tabs.warnOnClose", false);\n')
-  prefsFile.write('user_pref("browser.shell.checkDefaultBrowser", false);\n')
-  prefsFile.write('user_pref("browser.EULA.override", true);\n')
-  prefsFile.write('user_pref("security.warn_submit_insecure", false);\n')
-  prefsFile.write('user_pref("security.warn_viewing_mixed", false);\n')
-  prefsFile.write('user_pref("extensions.enabledScopes", 3);\n')
-
-  # Turn off various things in firefox that try to update themselves,
-  # to improve performance and sanity.
-  # http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
-  prefsFile.write('user_pref("browser.safebrowsing.enabled", false);\n')
-  prefsFile.write('user_pref("browser.safebrowsing.malware.enabled", false);\n')
-  prefsFile.write('user_pref("browser.search.update", false);\n')
-  prefsFile.write('user_pref("app.update.enabled", false);\n')
-  prefsFile.write('user_pref("extensions.update.enabled", false);\n')
-  prefsFile.write('user_pref("extensions.blocklist.enabled", false);\n')
-  prefsFile.write('user_pref("lightweightThemes.update.enabled", false);\n')
-  prefsFile.write('user_pref("browser.microsummary.enabled", false);\n')
-  prefsFile.write('user_pref("extensions.testpilot.runStudies", false);\n')
   
-  # Extra prefs for Valgrind
-  if valgrindMode:
-    prefsFile.write('user_pref("javascript.options.jit.content", false);\n')
-    prefsFile.write('user_pref("javascript.options.jit.chrome", false);\n')
-    # how can i disable all plugins? and all multi-processness?
+  prefsText = """
+// Disable slow script dialogs.
+user_pref("dom.max_script_run_time", 0);
+user_pref("dom.max_chrome_script_run_time", 0);
 
+// Set additional prefs for fuzzing.
+user_pref("browser.dom.window.dump.enabled", true);
+user_pref("ui.caretBlinkTime", -1);
+user_pref("browser.sessionstore.resume_from_crash", false);
+user_pref("layout.debug.enable_data_xbl", true);
+user_pref("dom.disable_window_status_change", false);
+user_pref("dom.disable_window_move_resize", true);
+user_pref("extensions.enabledScopes", 3);
+
+// Disable first-run annoyances.
+user_pref("browser.tabs.warnOnClose", false);
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("browser.EULA.override", true);
+user_pref("security.warn_submit_insecure", false);
+user_pref("security.warn_viewing_mixed", false);
+
+// Turn off various things in firefox that try to update themselves,
+// to improve performance and sanity.
+// http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
+user_pref("browser.safebrowsing.enabled", false);
+user_pref("browser.safebrowsing.malware.enabled", false);
+user_pref("browser.search.update", false);
+user_pref("app.update.enabled", false);
+user_pref("extensions.update.enabled", false);
+user_pref("extensions.blocklist.enabled", false);
+user_pref("extensions.showMismatchUI", false);
+user_pref("extensions.testpilot.runStudies", false);
+user_pref("lightweightThemes.update.enabled", false);
+user_pref("browser.microsummary.enabled", false);
+"""
+
+  if valgrindMode:
+    prefsText = prefsText + """
+user_pref("javascript.options.jit.content", false);
+user_pref("javascript.options.jit.chrome", false);
+"""
+  
+  prefsFile = open(os.path.join(profileDir, "user.js"), "w")
+  prefsFile.write(prefsText)
   prefsFile.close()
 
   # Install a domfuzz extension 'pointer file' into the profile.
