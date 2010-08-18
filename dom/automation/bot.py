@@ -60,16 +60,21 @@ def grabJob(relevantJobsDir, desiredJobType):
   while True:
     jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand("ls -1 " + relevantJobsDir).split("\n") )
     if len(jobs) > 0:
+      oldNameOnServer = jobs[0]
       shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
-      takenName = relevantJobsDir + jobs[0].split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
-      if tryCommand("mv " + relevantJobsDir + jobs[0] + " " + takenName + ""):
-        print "Grabbed " + jobs[0] + " by renaming it to " + takenName
-        return takenName
+      takenNameOnServer = relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
+      if tryCommand("mv " + relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
+        print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
+        job = copyFiles(remotePrefix + takenNameOnServer, ".")
+        oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part that will be redundant
+        os.rename(job, "wtmp1") # so lithium gets the same filename as before
+        print repr(("wtmp1/", oldjobname, takenNameOnServer))
+        return ("wtmp1/", oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
       else:
-        print "Raced to grab " + relevantJobsDir + jobs[0] + ", trying again"
+        print "Raced to grab " + relevantJobsDir + oldNameOnServer + ", trying again"
         continue
     else:
-      return None
+      return (None, None, None)
 
 
 def readTinyFile(fn):
@@ -105,7 +110,7 @@ if __name__ == "__main__":
       help="Use remote host to store fuzzing data; format: user@host")
   parser.add_option("--basedir", dest="basedir",
       help="Base directory on remote machine to store fuzzing data")
-  parser.add_option("--retest-all", dest="retestAll",
+  parser.add_option("--retest-all", dest="retestAll", action="store_true",
       help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
   options, args = parser.parse_args()
 
@@ -116,66 +121,84 @@ if __name__ == "__main__":
   relevantJobsDir = remoteBase + buildType() + "/"
   runCommand("mkdir -p " + relevantJobsDir)
 
-  jobAsTaken = grabJob(relevantJobsDir, "_needsreduction")
-  job = jobAsTaken
-  lithlog = None
-  if os.path.exists("wtmp1"):
-    print "wtmp1 shouldn't exist now. killing it."
-    shutil.rmtree("wtmp1")
+  shouldLoop = True
+  while shouldLoop:
+    job = None
+    oldjobname = None
+    takenNameOnServer = None
+    lithlog = None
 
-  if job:
-    print "Reduction time!"
-    job = copyFiles(remotePrefix + job, ".")
-    oldjobname = job[2:] # cut off the "./"
-    os.rename(job, "wtmp1") # so lithium gets the same filename as before
-    job = "wtmp1/"
-    preferredBuild = readTinyFile(job + "preferred-build.txt")
-    if len(preferredBuild) > 7: # hack shortcut for local running and for 'haha' (see below)
-      if not build_downloader.downloadBuild(preferredBuild):
-        print "Preferred build for this reduction was missing, grabbing latest build"
-        downloadLatestBuild()
-    lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-    (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
+    if os.path.exists("wtmp1"):
+      print "wtmp1 shouldn't exist now. killing it."
+      shutil.rmtree("wtmp1")
 
-  else:
-    print "Fuzz time!"
-    if not os.path.exists("build"): # shortcut for local running that i should probably remove
-      buildUsed = downloadLatestBuild()
+    if options.retestAll:
+      print "Retesting time!"
+      (job, oldjobname, takenNameOnServer) = grabJob(relevantJobsDir, "_reduced")
+      if job:
+        reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
+        print "reduced filename: " + reducedFn
+        lithArgs = ["--strategy=check-only", "rundomfuzz.py", "build", reducedFn]
+        (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "T")
+      else:
+        shouldLoop = False
     else:
-      buildUsed = "haha" # hack, see preferredBuild stuff above
-    (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
-    if ldfResult == loopdomfuzz.HAPPY:
-      print "Happy happy! No bugs found!"
-    else:
-      job = "wtmp1/"
-      writeTinyFile(job + "preferred-build.txt", buildUsed)
-      # not really "oldjobname", but this is how i get newjobname to be what i want below
-      # avoid putting underscores in this part, because those get split on
-      oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
-      os.rename("wtmp1", oldjobname)
-      job = oldjobname + "/"
-      lithlog = job + "lith1-out"
-
-  if lithlog:
-    statePostfix = ({
-      loopdomfuzz.NO_REPRO_AT_ALL: "_no_repro",
-      loopdomfuzz.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
-      loopdomfuzz.LITH_NO_REPRO: "_no_longer_reproducible",
-      loopdomfuzz.LITH_FINISHED: "_reduced",
-      loopdomfuzz.LITH_PLEASE_CONTINUE: "_needsreduction",
-      loopdomfuzz.LITH_BUSTED: "_sad"
-    })[ldfResult]
-
-    if ldfResult == loopdomfuzz.LITH_PLEASE_CONTINUE:
-      writeTinyFile(job + "lithium-command.txt", lithDetails)
-
-    #print "oldjobname: " + oldjobname
-    newjobname = oldjobname.split("_")[0] + statePostfix
-    print "Uploading as: " + newjobname
-    os.rename(job, newjobname)
-    copyFiles(newjobname, remotePrefix + relevantJobsDir)
-    shutil.rmtree(newjobname)
-
-    # Remove the old _taken thing from the server
-    if jobAsTaken:
-      runCommand("rm -rf " + jobAsTaken)
+      shouldLoop = False
+      (job, oldjobname, takenNameOnServer) = grabJob(relevantJobsDir, "_needsreduction")
+      if job:
+        print "Reduction time!"
+        preferredBuild = readTinyFile(job + "preferred-build.txt")
+        if len(preferredBuild) > 7: # hack shortcut for local running and for 'haha' (see below)
+          if not build_downloader.downloadBuild(preferredBuild):
+            print "Preferred build for this reduction was missing, grabbing latest build"
+            downloadLatestBuild()
+        lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
+        (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
+    
+      else:
+        print "Fuzz time!"
+        if not os.path.exists("build"): # shortcut for local running that i should probably remove
+          buildUsed = downloadLatestBuild()
+        else:
+          buildUsed = "haha" # hack, see preferredBuild stuff above
+        (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
+        if ldfResult == loopdomfuzz.HAPPY:
+          print "Happy happy! No bugs found!"
+        else:
+          job = "wtmp1/"
+          writeTinyFile(job + "preferred-build.txt", buildUsed)
+          # not really "oldjobname", but this is how i get newjobname to be what i want below
+          # avoid putting underscores in this part, because those get split on
+          oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
+          os.rename("wtmp1", oldjobname)
+          job = oldjobname + "/"
+          lithlog = job + "lith1-out"
+  
+    if lithlog:
+      statePostfix = ({
+        loopdomfuzz.NO_REPRO_AT_ALL: "_no_repro",
+        loopdomfuzz.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
+        loopdomfuzz.LITH_NO_REPRO: "_no_longer_reproducible",
+        loopdomfuzz.LITH_FINISHED: "_reduced",
+        loopdomfuzz.LITH_RETESTED_STILL_INTERESTING: "_retested",
+        loopdomfuzz.LITH_PLEASE_CONTINUE: "_needsreduction",
+        loopdomfuzz.LITH_BUSTED: "_sad"
+      })[ldfResult]
+  
+      if ldfResult == loopdomfuzz.LITH_PLEASE_CONTINUE:
+        writeTinyFile(job + "lithium-command.txt", lithDetails)
+        
+      if ldfResult == loopdomfuzz.LITH_FINISHED:
+        # lithDetails should be a string like "11 lines"
+        statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
+  
+      #print "oldjobname: " + oldjobname
+      newjobname = oldjobname + statePostfix
+      print "Uploading as: " + newjobname
+      os.rename(job, newjobname)
+      copyFiles(newjobname, remotePrefix + relevantJobsDir)
+      shutil.rmtree(newjobname)
+  
+      # Remove the old *_taken directory from the server
+      if takenNameOnServer:
+        runCommand("rm -rf " + takenNameOnServer)

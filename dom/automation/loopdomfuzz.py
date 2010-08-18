@@ -121,7 +121,7 @@ def createReproFile(lines, logPrefix):
     return rFN
 
 # status returns for runLithium and many_timed_runs
-(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO, LITH_FINISHED, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(7)
+(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO, LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
 
 
 def runLithium(lithArgs, logPrefix, targetTime, fileTag):
@@ -145,19 +145,15 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
     with file(lithlogfn) as f:
-      inLithSummary = False
       for line in f:
         if line.startswith("Lithium result"):
           print line.rstrip()
-        if line.startswith("Lithium result: succeeded, reduced to: "):
-          # Hooray! Reduced in one shot!!! Rename the "-reduced" file to indicate how large it is.
-          rFN = lithArgs[-1]
-          (name, extension) = rFN.rsplit(".", 1)
+        if line.startswith("Lithium result: interesting"):
+          return (lithlogfn, LITH_RETESTED_STILL_INTERESTING, None)
+        elif line.startswith("Lithium result: succeeded, reduced to: "):
           reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
-          rFN2 = name + "-" + reducedTo.replace(" ", "-") + "." + extension
-          os.rename(rFN, rFN2)
-          return (lithlogfn, LITH_FINISHED, rFN2)
-        elif line.startswith("Lithium result: the original testcase is not"):
+          return (lithlogfn, LITH_FINISHED, reducedTo)
+        elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
           return (lithlogfn, LITH_NO_REPRO, None)
         elif line.startswith("Lithium result: please continue using: "):
           lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
