@@ -3800,6 +3800,11 @@ function makeSubE4X(d, b)
 
 function makeShapeyValue(d, b)
 {
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  if (rnd(10) == 0)
+    return makeExpr(d, b);
+
   var a = [
     // Numbers and number-like things
     [
