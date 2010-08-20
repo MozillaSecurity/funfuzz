@@ -83,6 +83,7 @@ def runBrowser():
       browserEnv["XPCOM_MEM_LEAK_LOG"] = options.leakLogFile
 
   print("RUNBROWSER INFO | runbrowser.py | runApp: start.")
+  print("RUNBROWSER INFO | runbrowser.py | " + url)
   status = automation.runApp(None, browserEnv, theapp, profileDir,
                              [url],
                              utilityPath = utilityDir,
