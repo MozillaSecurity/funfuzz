@@ -224,6 +224,14 @@ def compileCopy(archNum, compileType, branchType, usePymake):
         shutil.copy2('js.exe', '../../' + shellName + '.exe')
     return shellName
 
+def cpUsefulFiles(filePath):
+    '''
+    This function copies over useful files that are updated in hg fuzzing branch.
+    '''
+    if 'Windows-XP' not in platform.platform():
+        filePath = os.path.expanduser(filePath)
+    shutil.copy2(filePath, '.')
+
 def test32or64bit(jsShellName, archNum):
     '''
     This function tests if a binary is 32-bit or 64-bit.

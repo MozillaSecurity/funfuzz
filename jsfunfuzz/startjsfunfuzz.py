@@ -334,16 +334,10 @@ def main():
                 raise Exception('We are not in fuzzPath.')
 
     # Copy over useful files that are updated in hg fuzzing branch.
-    jsfunfuzzFilePath = repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js'
-    analysisFilePath = repoDict['fuzzing'] + 'jsfunfuzz/analysis.py'
-    findInterestingFilesFilePath = repoDict['fuzzing'] + 'jsfunfuzz/findInterestingFiles.py'
-    if 'Windows-XP' not in platform.platform():
-        jsfunfuzzFilePath = os.path.expanduser(jsfunfuzzFilePath)
-        analysisFilePath = os.path.expanduser(analysisFilePath)
-        findInterestingFilesFilePath = os.path.expanduser(findInterestingFilesFilePath)
-    shutil.copy2(jsfunfuzzFilePath, '.')
-    shutil.copy2(analysisFilePath, '.')
-    shutil.copy2(findInterestingFilesFilePath, '.')
+    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js')
+    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/analysis.py')
+    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/findInterestingFiles.py')
+    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/runFindInterestingFiles.sh')
 
 
     jsknownDict = {}
