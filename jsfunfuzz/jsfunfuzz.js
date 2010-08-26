@@ -505,6 +505,10 @@ function testOne()
   var grepforme = "/*F";
   grepforme += "RC*/"
 
+  // Sometimes it makes sense to start with simpler functions:
+  //var depth = (~~(count / 1000)) & 16;
+  var depth = 10;
+
   if (dumpEachSeed) {
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
     var MTA = uneval(rnd.fuzzMT.export_mta());
@@ -513,10 +517,10 @@ function testOne()
       dumpln(grepforme + "rnd.fuzzMT.import_mta(" + MTA + ");");
       rnd.lastDumpedMTA = MTA;
     }
-    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(8));");
+    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(" + depth + "), ['x']);");
   }
 
-  var code = makeStatement(10, ["x"]);
+  var code = makeStatement(depth, ["x"]);
 
 //  if (rnd(10) == 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
