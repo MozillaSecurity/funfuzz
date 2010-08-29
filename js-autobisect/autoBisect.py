@@ -65,14 +65,14 @@ def main():
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
-        subprocess.call(['hg up -C default'], shell=True)
+        subprocess.call(['hg', 'up', '-C', 'default'])
 
     # Specify `hg bisect` ranges.
-    subprocess.call(['hg bisect -r'], shell=True)
+    subprocess.call(['hg', 'bisect', '-r'])
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
-    subprocess.call(['hg bisect -g ' + str(startRepo)], shell=True)
+    subprocess.call(['hg', 'bisect', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
-    stdoutNumOfTests = captureStdout('hg bisect -b ' + str(endRepo))
+    stdoutNumOfTests = captureStdout(['hg', 'bisect', '-b', str(endRepo)])
     print stdoutNumOfTests
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
@@ -208,7 +208,7 @@ def main():
             raise Exception('Unknown exit code hit:', exitCode)
 
     # Reset `hg bisect` after finishing everything.
-    subprocess.call(['hg bisect -r'], shell=True)
+    subprocess.call(['hg', 'bisect', '-r'])
 
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
@@ -354,20 +354,22 @@ def checkNumOfTests(str):
 
 # Run the testcase on the compiled js binary.
 def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
-    methodJit = ' -m' if methodjitBool else ''
-    tracingJit = ' -j' if tracingjitBool else ''
-    testBinaryCmd = './' + shell + methodJit + tracingJit + ' ' + file
+    methodJit = ['-m'] if methodjitBool else []
+    tracingJit = ['-j'] if tracingjitBool else []
+    testBinaryCmd = ['./' + shell] + methodJit + tracingJit + [file]
     if valgSupport:
-        testBinaryCmd = 'valgrind ' + testBinaryCmd
-    print 'The testing command is:', testBinaryCmd
+        testBinaryCmd = ['valgrind'] + testBinaryCmd
+    print 'The testing command is:', ' '.join(testBinaryCmd)
 
     # Capture stdout and stderr into the same string.
-    p = subprocess.Popen([testBinaryCmd], stderr=subprocess.STDOUT,
-                            stdout=subprocess.PIPE, shell=True)
-    output = p.communicate()[0]
+    p = subprocess.Popen(testBinaryCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
     retCode = p.returncode
     print 'The exit code is:', retCode
-    print 'The first output is:', output
+    if len(out) > 0:
+        print 'stdout shows:', out
+    if len(err) > 0:
+        print 'stderr shows:', err
 
     # Switch to interactive input mode similar to `cat testcase.js | ./js -j -i`.
     # Doesn't work, stdout shows:
@@ -390,7 +392,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     #    retCode = testBinaryCmd3.returncode
     #    print 'The exit code is:', retCode
     #    print 'The second output is:', output2
-    return output, retCode
+    return out + "\n" + err, retCode
 
 # This function labels a changeset as "good" or "bad" depending on parameters.
 def bisectLabel(gdBad, startRepo, endRepo):
@@ -401,17 +403,13 @@ def bisectLabel(gdBad, startRepo, endRepo):
         bisectLabelTuple = ('GOOD', '-g')
 
     print bisectLabelTuple[0], 'changeset: hg bisect', bisectLabelTuple[1]
-    outputResult = captureStdout('hg bisect ' + bisectLabelTuple[1])
+    outputResult = captureStdout(['hg', 'bisect', bisectLabelTuple[1]])
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
     print outputResult
 
-    #currRev = captureStdout('hg identify -n')  # Too slow
-    subprocess.call(['hg identify -n > hgIdNum.txt'], shell=True)
-    hgIdNumFile = open('hgIdNum.txt')
-    currRev = hgIdNumFile.readline()[:-1]
+    currRev = captureStdout(['hg', 'identify', '-n'])
     print 'autoBisect is now currently in hg revision:', currRev
-    os.remove('hgIdNum.txt')
 
     start = startRepo
     end = endRepo

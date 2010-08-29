@@ -93,13 +93,17 @@ def error(branchSupp):
     print 'Windows platforms only compile in 32-bit.'
     print 'Valgrind only works for Linux platforms.\n'
 
-def captureStdout(input):
+def captureStdout(cmd):
     '''
     This function captures standard output into a python string.
     '''
-    p = subprocess.Popen([input], stdin=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
-    return stdout
+    if len(stderr) > 0:
+        print 'Unexpected output on stderr from ' + repr(cmd)
+        print stderr
+        raise Exception('Unexpected output on stderr')
+    return stdout.rstrip()
 
 def hgHashAddToFuzzPath(fuzzPath):
     '''
@@ -108,8 +112,8 @@ def hgHashAddToFuzzPath(fuzzPath):
     '''
     print
     verboseDump('About to start running `hg identify` commands...')
-    tipOrNot = captureStdout('hg identify')[:-1]
-    hgIdentifynMinus1 = captureStdout('hg identify -n')[:-1]
+    tipOrNot = captureStdout(['hg', 'identify'])
+    hgIdentifynMinus1 = captureStdout(['hg', 'identify', '-n'])
     # -5 is to remove the " tip\n" portion of `hg identify` output if on tip.
     hgIdentifyMinus5 = tipOrNot[:-4]
     onTip = True
@@ -236,8 +240,7 @@ def test32or64bit(jsShellName, archNum):
     '''
     This function tests if a binary is 32-bit or 64-bit.
     '''
-    test32or64bitCmd = 'file ' + jsShellName
-    test32or64bitStr = captureStdout(test32or64bitCmd)[:-1]
+    test32or64bitStr = captureStdout(['file', jsShellName])
     if archNum == '32':
         if verbose:
             if ('386' in test32or64bitStr) or ('32-bit' in test32or64bitStr):
