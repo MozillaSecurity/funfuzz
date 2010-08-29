@@ -83,6 +83,8 @@ def main():
     mainDir = os.path.expanduser('~/Desktop/')
 
     while True:
+        result = None
+
         # Change into main directory.
         os.chdir(mainDir)
 
@@ -167,35 +169,28 @@ def main():
         os.chdir(os.path.expanduser(sourceDir))
 
         if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
-            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
-
-            rmDirInclSubDirs(autoBisectFullPath)
-            # Break out of for loop if the required revision changeset is found.
-            if 'revision is:' in result:
-                break
-
-        # Label the changeset "bad" if the exit code is negative, between 129 to 159
-        # (SIGBUS, SIGSEGV etc.) or if the watched exit code is observed.
-        elif (129 <= exitCode <= 159) or (exitCode == watchExitCode) or (exitCode < 0):
-            (result, startRepo, endRepo) = bisectLabel('bad', startRepo, endRepo)
-
-            rmDirInclSubDirs(autoBisectFullPath)
-            # Break out of for loop if the required revision changeset is found.
-            if 'revision is:' in result:
-                break
-
-        # "Good" changesets.
-        elif exitCode != watchExitCode:
-            if (exitCode == 0) or (3 <= exitCode <= 6):
-                (result, startRepo, endRepo) = bisectLabel('good', startRepo, endRepo)
-
-                rmDirInclSubDirs(autoBisectFullPath)
-                # Break out of for loop if the required revision changeset is found.
-                if 'revision is:' in result:
-                    break
-
+            label = ('bad', 'Specified-bad output')
+        elif exitCode == watchExitCode:
+            label = ('bad', 'Specified-bad exit code ' + str(exitCode))
+        elif 129 <= exitCode <= 159:
+            label = ('bad', 'High exit code ' + str(exitCode))
+        elif exitCode < 0:
+            label = ('bad', 'Negative exit code ' + str(exitCode))
+        elif exitCode == 0:
+            label = ('good', 'Exit code 0')
+        elif 3 <= exitCode <= 6:
+            label = ('good', 'Acceptable exit code ' + str(exitCode))
         else:
-            raise Exception('Unknown exit code hit:', exitCode)
+            label = ('skip', 'Unknown exit code ' + str(exitCode))
+
+        print label[0] + " (" + label[1] + ")"
+
+        (result, startRepo, endRepo) = bisectLabel(label[0], startRepo, endRepo)
+        rmDirInclSubDirs(autoBisectFullPath)
+
+        # Break out of for loop if the required revision changeset is found.
+        if 'revision is:' in result:
+            break
 
     # Reset `hg bisect` after finishing everything.
     subprocess.call(['hg', 'bisect', '-r'])
