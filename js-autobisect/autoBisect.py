@@ -44,6 +44,8 @@ path2 = os.path.abspath(os.path.join(path0, "..", "jsfunfuzz"))
 sys.path.append(path2)
 from fnStartjsfunfuzz import *
 
+verbose = False
+
 def main():
     # Do not support Windows XP because the ~ folder is in "/Documents and Settings/",
     # which contains spaces. This breaks MinGW, which is what MozillaBuild uses.
@@ -71,7 +73,7 @@ def main():
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
     subprocess.call(['hg', 'bisect', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
-    stdoutNumOfTests = captureStdout(['hg', 'bisect', '-b', str(endRepo)])
+    stdoutNumOfTests = firstLine(captureStdout(['hg', 'bisect', '-b', str(endRepo)]))
     print stdoutNumOfTests
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
@@ -351,17 +353,19 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     testBinaryCmd = ['./' + shell] + methodJit + tracingJit + [file]
     if valgSupport:
         testBinaryCmd = ['valgrind'] + testBinaryCmd
-    print 'The testing command is:', ' '.join(testBinaryCmd)
+    if verbose:
+        print 'The testing command is:', ' '.join(testBinaryCmd)
 
     # Capture stdout and stderr into the same string.
     p = subprocess.Popen(testBinaryCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     retCode = p.returncode
-    print 'The exit code is:', retCode
-    if len(out) > 0:
-        print 'stdout shows:', out
-    if len(err) > 0:
-        print 'stderr shows:', err
+    if verbose:
+        print 'The exit code is:', retCode
+        if len(out) > 0:
+            print 'stdout shows:', out
+        if len(err) > 0:
+            print 'stderr shows:', err
 
     # Switch to interactive input mode similar to `cat testcase.js | ./js -j -i`.
     # Doesn't work, stdout shows:
@@ -398,10 +402,12 @@ def bisectLabel(gdBad, startRepo, endRepo):
     outputResult = captureStdout(['hg', 'bisect', bisectLabelTuple[1]])
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
-    print outputResult
+        print outputResult
+    else:
+        # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
+        print firstLine(outputResult)
 
     currRev = captureStdout(['hg', 'identify', '-n'])
-    print 'autoBisect is now currently in hg revision:', currRev
 
     start = startRepo
     end = endRepo
@@ -411,6 +417,9 @@ def bisectLabel(gdBad, startRepo, endRepo):
     elif gdBad == 'good':
         start = int(currRev)
     return outputResult, start, end
+
+def firstLine(s):
+    return s.split('\n')[0]
 
 # This function removes a directory along with its subdirectories.
 def rmDirInclSubDirs(dir):
