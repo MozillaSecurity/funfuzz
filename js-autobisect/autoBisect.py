@@ -215,22 +215,11 @@ def parseOpts():
     # See http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
 
-    # autoBisect details
-    parser.add_option('-c', '--compileType',
-                      dest='compileType',
-                      type='choice',
-                      choices=['dbg', 'opt'],
-                      default='dbg',
-                      help='js shell compile type. Defaults to "dbg"')
+    # Define the repository (working directory) in which to bisect.
     parser.add_option('-d', '--dir',
                       dest='dir',
                       default=os.path.expanduser('~/tracemonkey/'),
                       help='Source code directory. Defaults to "~/tracemonkey/"')
-    parser.add_option('-o', '--output',
-                      dest='output',
-                      default='',
-                      help='Stdout or stderr output to be observed. Defaults to "". ' + \
-                           'For assertions, set to "ssertion fail"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
                       action='store_true',
@@ -239,7 +228,7 @@ def parseOpts():
                            'Equivalent to first executing `hg update -C default`. ' + \
                            'Defaults to "False"')
 
-    # Define the start and end repositories.
+    # Define the revisions between which to bisect.
     parser.add_option('-s', '--start',
                       dest='startRepo',
                       help='Start repository (earlier). Set to "tip" here, and ' + \
@@ -250,12 +239,31 @@ def parseOpts():
                       default='tip',
                       help='End repository (later). Defaults to "tip"')
 
-    # Define the architecture to be tested.
+
+    # Define the type of build to test.
     parser.add_option('-a', '--architecture',
                       dest='archi',
                       type='choice',
                       choices=['32', '64'],
                       help='Test architecture. Only accepts "32" or "64"')
+    parser.add_option('-c', '--compileType',
+                      dest='compileType',
+                      type='choice',
+                      choices=['dbg', 'opt'],
+                      default='dbg',
+                      help='js shell compile type. Defaults to "dbg"')
+
+    # Define specific type of failure to look for (optional).
+    parser.add_option('-o', '--output',
+                      dest='output',
+                      default='',
+                      help='Stdout or stderr output to be observed. Defaults to "". ' + \
+                           'For assertions, set to "ssertion fail"')
+    parser.add_option('-w', '--watchExitCode',
+                      dest='watchExitCode',
+                      type='choice',
+                      choices=['3', '4', '5', '6'],
+                      help='Look out for a specific exit code in the range [3,6]')
 
     # Define parameters to be passed to the binary.
     parser.add_option('-j', '--tracingjit',
@@ -275,13 +283,6 @@ def parseOpts():
                       action='store_true',
                       default=False,
                       help='Enable valgrind support. Defaults to "False"')
-
-    # Special case in which a specific exit code needs to be observed.
-    parser.add_option('-w', '--watchExitCode',
-                      dest='watchExitCode',
-                      type='choice',
-                      choices=['3', '4', '5', '6'],
-                      help='Look out for a specific exit code in the range [3,6]')
 
     (options, args) = parser.parse_args()
 
