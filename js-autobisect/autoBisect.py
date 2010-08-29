@@ -302,11 +302,6 @@ def parseOpts():
     if options.watchExitCode:
         options.watchExitCode = int(options.watchExitCode)
 
-    # Only support Valgrind on Linux for the moment, since Valgrind doesn't yet
-    # work on Mac OS X 10.6.x.
-    if (os.uname()[0] != 'Linux') and (options.valgSupport == True):
-        parser.error('Valgrind is only supported on Linux.')
-
     # 32-bit js shells have only been tested to compile successfully from number 21500.
     if (options.archi == '32') and (options.startRepo < 21500) and \
         (options.dir == os.path.expanduser('~/tracemonkey/')):
