@@ -414,7 +414,7 @@ def bisectLabel(gdBad, startRepo, endRepo):
 
 # This function removes a directory along with its subdirectories.
 def rmDirInclSubDirs(dir):
-    print 'Now removing ' + dir + ', located at: ' + dir
+    #print 'Removing ' + dir
     shutil.rmtree(dir)
 
 if __name__ == '__main__':
