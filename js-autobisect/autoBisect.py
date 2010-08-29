@@ -145,8 +145,6 @@ def main():
 
         # Change back into compilePath.
         os.chdir('../')
-
-        # Test compilePath.
         if 'compilePath' not in os.getcwdu():
             print "We are in " + os.getcwdu()
             raise Exception('We are not in compilePath!')
