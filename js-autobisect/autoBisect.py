@@ -75,12 +75,12 @@ def main():
     print stdoutNumOfTests
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
-    numOfTests = checkNumOfTests(stdoutNumOfTests)
+    initialTestCountEstimate = checkNumOfTests(stdoutNumOfTests)
 
     # For main directory, change into Desktop directory.
     mainDir = os.path.expanduser('~/Desktop/')
 
-    for i in xrange(numOfTests):
+    while True:
         # Change into main directory.
         os.chdir(mainDir)
 
