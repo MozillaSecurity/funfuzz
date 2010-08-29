@@ -40,7 +40,7 @@ This file contains functions for startjsfunfuzz.py.
 
 import os, platform, shutil, subprocess, sys
 
-verbose = True  # Turn this to True to enable verbose output for debugging.
+verbose = False  # Turn this to True to enable verbose output for debugging.
 
 
 def exceptionBadCompileType():

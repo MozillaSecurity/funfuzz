@@ -53,7 +53,6 @@ def main():
     # /c/ to ~-land in Vista/7.
     if os.name == 'nt':
         raise Exception('autoBisect is not supported on Windows.')
-    verbose = True
 
     # Parse options and parameters from the command-line.
     filename = sys.argv[-1:][0]
@@ -146,11 +145,9 @@ def main():
         os.chdir('../')
 
         # Test compilePath.
-        if verbose:
-            print 'DEBUG - This should be the compilePath:'
-            print 'DEBUG - %s\n' % os.getcwdu()
-            if 'compilePath' not in os.getcwdu():
-                raise Exception('We are not in compilePath.')
+        if 'compilePath' not in os.getcwdu():
+            print "We are in " + os.getcwdu()
+            raise Exception('We are not in compilePath!')
 
         os.chdir('../')  # Change into autoBisectPath directory.
         autoBisectFullPath = os.path.expanduser(os.getcwdu())
