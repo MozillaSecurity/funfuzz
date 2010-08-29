@@ -93,13 +93,13 @@ def error(branchSupp):
     print 'Windows platforms only compile in 32-bit.'
     print 'Valgrind only works for Linux platforms.\n'
 
-def captureStdout(cmd):
+def captureStdout(cmd, ignoreStderr=False):
     '''
     This function captures standard output into a python string.
     '''
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
-    if len(stderr) > 0:
+    if not ignoreStderr and len(stderr) > 0:
         print 'Unexpected output on stderr from ' + repr(cmd)
         print stderr
         raise Exception('Unexpected output on stderr')
@@ -210,15 +210,18 @@ def cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
     verboseDump('This is the configure command:')
     verboseDump('%s\n' % cfgCmd)
 
-    subprocess.call([cfgCmd], shell=True)
+    subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT)
 
 def compileCopy(archNum, compileType, branchType, usePymake):
     '''
     This function compiles and copies a binary.
     '''
     # Run make using 2 cores, not sure if pymake allows parallel compilation yet.
-    subprocess.call(['python', '-O', '../../build/pymake/make.py', '-j2']) if usePymake \
-        else subprocess.call(['make', '-j2', '-s'])
+    if usePymake:
+        captureStdout(['python', '-O', '../../build/pymake/make.py', '-j2'], ignoreStderr=True)
+    else:
+        captureStdout(['make', '-j12', '-s'], ignoreStderr=True)
+
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
         shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.uname()[0].lower()
