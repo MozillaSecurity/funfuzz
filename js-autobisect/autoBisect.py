@@ -47,6 +47,8 @@ from fnStartjsfunfuzz import *
 verbose = False
 
 def main():
+    global hgPrefix
+
     # Do not support Windows XP because the ~ folder is in "/Documents and Settings/",
     # which contains spaces. This breaks MinGW, which is what MozillaBuild uses.
     # From Windows Vista onwards, the folder is in "/Users/".
@@ -62,18 +64,18 @@ def main():
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, \
      archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport) = options
 
-    os.chdir(sourceDir)
+    hgPrefix = ['hg', '-R', sourceDir]
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
-        subprocess.call(['hg', 'up', '-C', 'default'])
+        subprocess.call(hgPrefix + ['up', '-C', 'default'])
 
     # Specify `hg bisect` ranges.
-    subprocess.call(['hg', 'bisect', '-r'])
+    subprocess.call(hgPrefix + ['bisect', '-r'])
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
-    subprocess.call(['hg', 'bisect', '-g', str(startRepo)])
+    subprocess.call(hgPrefix + ['bisect', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
-    stdoutNumOfTests = firstLine(captureStdout(['hg', 'bisect', '-b', str(endRepo)]))
+    stdoutNumOfTests = firstLine(captureStdout(hgPrefix + ['bisect', '-b', str(endRepo)]))
     print stdoutNumOfTests
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
@@ -166,7 +168,6 @@ def main():
                                               tracingjitBool, valgrindSupport)
 
         # Switch to hg repository directory.
-        os.chdir(os.path.expanduser(sourceDir))
 
         if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
             label = ('bad', 'Specified-bad output')
@@ -193,7 +194,7 @@ def main():
             break
 
     # Reset `hg bisect` after finishing everything.
-    subprocess.call(['hg', 'bisect', '-r'])
+    subprocess.call(hgPrefix + ['bisect', '-r'])
 
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
@@ -377,16 +378,10 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     #    print 'The second output is:', output2
     return out + "\n" + err, retCode
 
-# This function labels a changeset as "good" or "bad" depending on parameters.
-def bisectLabel(gdBad, startRepo, endRepo):
-    bisectLabelTuple = ()
-    if gdBad == 'bad':
-        bisectLabelTuple = ('BAD', '-b')
-    elif gdBad == 'good':
-        bisectLabelTuple = ('GOOD', '-g')
+def bisectLabel(hgLabel, startRepo, endRepo):
+    '''Tell hg what we learned about the revision. hgLabel must be "good", "bad", or "skip".'''
 
-    print bisectLabelTuple[0], 'changeset: hg bisect', bisectLabelTuple[1]
-    outputResult = captureStdout(['hg', 'bisect', bisectLabelTuple[1]])
+    outputResult = captureStdout(hgPrefix + ['bisect', '--' + hgLabel])
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
         print outputResult
@@ -394,15 +389,17 @@ def bisectLabel(gdBad, startRepo, endRepo):
         # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
         print firstLine(outputResult)
 
-    currRev = captureStdout(['hg', 'identify', '-n'])
-
+    # Update the startRepo/endRepo values.
     start = startRepo
     end = endRepo
-    # Update the startRepo/endRepo values.
-    if gdBad == 'bad':
+    currRev = captureStdout(hgPrefix + ['identify', '-n'])
+    if hgLabel == 'bad':
         end = int(currRev)
-    elif gdBad == 'good':
+    elif hgLabel == 'good':
         start = int(currRev)
+    elif hgLabel == 'skip':
+        pass
+
     return outputResult, start, end
 
 def firstLine(s):
