@@ -129,14 +129,6 @@ def main():
             # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
             raise
 
-        # This is only needed if testcase is altered to add the quit() function,
-        # in the interactive shell testing located in the testBinary function.
-        # Even if the problem at the interactive shell testing is fixed, there
-        # apparently is still a bug here... :(
-        #if i == 0:
-        #    shutil.copyfile(filename, 'testcase.js')
-        #    filename = 'testcase.js'
-
         print "Testing...",
         (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
                                               tracingjitBool, valgrindSupport)
