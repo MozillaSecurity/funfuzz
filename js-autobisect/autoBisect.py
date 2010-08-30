@@ -36,7 +36,7 @@
 #
 # * ***** END LICENSE BLOCK	****	/
 
-import os, shutil, subprocess, sys
+import os, shutil, subprocess, sys, re
 from optparse import OptionParser
 
 path0 = os.path.dirname(sys.argv[0])
@@ -75,17 +75,20 @@ def main():
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
     subprocess.call(hgPrefix + ['bisect', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
-    stdoutNumOfTests = firstLine(captureStdout(hgPrefix + ['bisect', '-b', str(endRepo)]))
-    print stdoutNumOfTests
+    bisectMessage = firstLine(captureStdout(hgPrefix + ['bisect', '-b', str(endRepo)]))
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
-    initialTestCountEstimate = checkNumOfTests(stdoutNumOfTests)
+    initialTestCountEstimate = checkNumOfTests(bisectMessage)
+    currRev = extractChangesetFromBisectMessage(bisectMessage)
 
     # For main directory, change into Desktop directory.
     mainDir = os.path.expanduser('~/Desktop/')
 
     while True:
         result = None
+
+        print "Revision " + str(currRev),
+        print "Compiling...",
 
         # Change into main directory.
         os.chdir(mainDir)
@@ -156,6 +159,7 @@ def main():
         #    shutil.copyfile(filename, 'testcase.js')
         #    filename = 'testcase.js'
 
+        print "Testing...",
         (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
                                               tracingjitBool, valgrindSupport)
 
@@ -178,7 +182,7 @@ def main():
 
         print label[0] + " (" + label[1] + ")"
 
-        (result, startRepo, endRepo) = bisectLabel(label[0], startRepo, endRepo)
+        (result, currRev, startRepo, endRepo) = bisectLabel(label[0], startRepo, endRepo)
         rmDirInclSubDirs(autoBisectFullPath)
 
         # Break out of for loop if the required revision changeset is found.
@@ -326,6 +330,12 @@ def checkNumOfTests(str):
         raise Exception('The number of tests to be executed should not be 0.')
     return testNum
 
+def extractChangesetFromBisectMessage(str):
+    # "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
+    r = re.compile(r"Testing changeset (\d+):(\w{12}) .*")
+    m = r.match(str)
+    return int(m.group(1))
+
 # Run the testcase on the compiled js binary.
 def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     methodJit = ['-m'] if methodjitBool else []
@@ -377,14 +387,17 @@ def bisectLabel(hgLabel, startRepo, endRepo):
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
         print outputResult
-    else:
+        return outputResult, None, startRepo, endRepo
+
+    if verbose:
         # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
         print firstLine(outputResult)
+
+    currRev = extractChangesetFromBisectMessage(firstLine(outputResult))
 
     # Update the startRepo/endRepo values.
     start = startRepo
     end = endRepo
-    currRev = captureStdout(hgPrefix + ['identify', '-n'])
     if hgLabel == 'bad':
         end = int(currRev)
     elif hgLabel == 'good':
@@ -392,7 +405,7 @@ def bisectLabel(hgLabel, startRepo, endRepo):
     elif hgLabel == 'skip':
         pass
 
-    return outputResult, start, end
+    return outputResult, currRev, start, end
 
 def firstLine(s):
     return s.split('\n')[0]
