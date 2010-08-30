@@ -282,7 +282,7 @@ def testDbgOrOpt(jsShellName, compileType):
         raise Exception(compileTypeTestName, 'does not exist.')
 
     if os.name == 'posix':
-        testFileErrNum = subprocess.call(['./' + jsShellName, compileTypeTestName])
+        testFileErrNum = subprocess.call([jsShellName, compileTypeTestName])
     elif os.name == 'nt':
         testFileErrNum = subprocess.call([jsShellName, compileTypeTestName], shell=True)
     os.remove(compileTypeTestName)  # Remove testfile after grabbing the error code.
