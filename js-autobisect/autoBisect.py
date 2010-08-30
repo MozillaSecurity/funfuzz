@@ -64,6 +64,7 @@ def main():
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, \
      archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport) = options
 
+    sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
@@ -87,34 +88,13 @@ def main():
         print "Updating to " + str(currRev) + "...",
         captureStdout(hgPrefix + ['update', '-r', str(currRev)], ignoreStderr=True)
 
-        print "Compiling...",
-
         autoBisectPath = tempfile.mkdtemp()
         if verbose:
             print autoBisectPath
 
-        # Copy the js tree to the autoBisect path.
-        # Don't use pymake because older changesets may fail to compile.
-        compilePath = os.path.join(autoBisectPath, 'compilePath')
-        cpJsTreeOrPymakeDir(os.path.expanduser(sourceDir), 'js', compilePath)
-
-        # Run autoconf.
-        autoconfRun(compilePath)
-
-        # Create objdir within the compilePath.
-        objdir = os.path.join(compilePath, compileType + '-objdir')
-        os.mkdir(objdir)
- 
-        # Run configure.
-        threadsafe = False  # Let's disable support for threadsafety in the js shell
-        macver = osCheck()
-        cfgJsBin(archNum, compileType,
-                          tracingjitBool, methodjitBool, valgrindSupport,
-                          threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
-
-        # Compile and copy the first binary.
         try:
-            jsShellName = compileCopy(archNum, compileType, str(currRev), False, autoBisectPath, objdir)
+            print "Compiling...",
+            jsShellName = makeShell(autoBisectPath, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev)
         except:
             print 'Compilation failed.'
             print 'The current "good" repository that should be double-checked:', str(startRepo)
@@ -123,27 +103,12 @@ def main():
             raise
 
         print "Testing...",
-        (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
-                                              tracingjitBool, valgrindSupport)
+        label = testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode)
+        print label[0] + " (" + label[1] + ") ",
 
-        if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
-            label = ('bad', 'Specified-bad output')
-        elif exitCode == watchExitCode:
-            label = ('bad', 'Specified-bad exit code ' + str(exitCode))
-        elif 129 <= exitCode <= 159:
-            label = ('bad', 'High exit code ' + str(exitCode))
-        elif exitCode < 0:
-            label = ('bad', 'Negative exit code ' + str(exitCode))
-        elif exitCode == 0:
-            label = ('good', 'Exit code 0')
-        elif 3 <= exitCode <= 6:
-            label = ('good', 'Acceptable exit code ' + str(exitCode))
-        else:
-            label = ('skip', 'Unknown exit code ' + str(exitCode))
-
-        print label[0] + " (" + label[1] + ")"
-
+        print "Bisecting..."
         (result, currRev, startRepo, endRepo) = bisectLabel(label[0], startRepo, endRepo)
+
         rmDirInclSubDirs(autoBisectPath)
 
         # Break out of for loop if the required revision changeset is found.
@@ -153,6 +118,25 @@ def main():
     # Reset `hg bisect` after finishing everything.
     subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
+
+def testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
+    (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
+                                          tracingjitBool, valgrindSupport)
+
+    if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
+        return ('bad', 'Specified-bad output')
+    elif exitCode == watchExitCode:
+        return ('bad', 'Specified-bad exit code ' + str(exitCode))
+    elif 129 <= exitCode <= 159:
+        return ('bad', 'High exit code ' + str(exitCode))
+    elif exitCode < 0:
+        return ('bad', 'Negative exit code ' + str(exitCode))
+    elif exitCode == 0:
+        return ('good', 'Exit code 0')
+    elif 3 <= exitCode <= 6:
+        return ('good', 'Acceptable exit code ' + str(exitCode))
+    else:
+        return ('skip', 'Unknown exit code ' + str(exitCode))
 
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
@@ -297,6 +281,30 @@ def extractChangesetFromBisectMessage(str):
     r = re.compile(r"Testing changeset (\d+):(\w{12}) .*")
     m = r.match(str)
     return int(m.group(1))
+
+def makeShell(autoBisectPath, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
+    # Copy the js tree to the autoBisect path.
+    # Don't use pymake because older changesets may fail to compile.
+    compilePath = os.path.join(autoBisectPath, 'compilePath')
+    cpJsTreeOrPymakeDir(sourceDir, 'js', compilePath)
+
+    # Run autoconf.
+    autoconfRun(compilePath)
+
+    # Create objdir within the compilePath.
+    objdir = os.path.join(compilePath, compileType + '-objdir')
+    os.mkdir(objdir)
+
+    # Run configure.
+    threadsafe = False  # Let's disable support for threadsafety in the js shell
+    macver = osCheck()
+    cfgJsBin(archNum, compileType,
+                      tracingjitBool, methodjitBool, valgrindSupport,
+                      threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
+
+    # Compile and copy the first binary.
+    return compileCopy(archNum, compileType, str(currRev), False, autoBisectPath, objdir)
+
 
 # Run the testcase on the compiled js binary.
 def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
