@@ -90,11 +90,9 @@ def main():
         print "Revision " + str(currRev),
         print "Compiling...",
 
-        # Change into main directory.
-        os.chdir(mainDir)
-
-        autoBisectPath = 'autoBisect-' + compileType + '-' + archNum + '-s' + \
-                         str(startRepo) + '-e' + str(endRepo)
+        autoBisectPath = os.path.join(mainDir,
+                                      'autoBisect-' + compileType + '-' + archNum +
+                                      '-s' + str(startRepo) + '-e' + str(endRepo))
 
         # Create the autoBisect folder.
         try:
@@ -102,54 +100,34 @@ def main():
         except OSError:
             raise Exception('The autoBisect path at "' + autoBisectPath + '" already exists!')
 
-        # Change into autoBisectPath.
-        os.chdir(autoBisectPath)
-
         # Copy the js tree to the autoBisect path.
         # Don't use pymake because older changesets may fail to compile.
-        cpJsTreeOrPymakeDir(os.path.expanduser(sourceDir), 'js')
-        os.chdir('compilePath')  # Change into compilation directory.
+        compilePath = os.path.join(autoBisectPath, 'compilePath')
+        cpJsTreeOrPymakeDir(os.path.expanduser(sourceDir), 'js', compilePath)
 
-        autoconfRun()
+        # Run autoconf.
+        autoconfRun(compilePath)
 
-        # Create objdirs within the compilePaths.
-        os.mkdir(compileType + '-objdir')
-        os.chdir(compileType + '-objdir')
-
-        # Configure the js binary.
+        # Create objdir within the compilePath.
+        objdir = os.path.join(compilePath, compileType + '-objdir')
+        os.mkdir(objdir)
+ 
+        # Run configure.
         threadsafe = False  # Let's disable support for threadsafety in the js shell
         macver = osCheck()
         cfgJsBin(archNum, compileType,
                           tracingjitBool, methodjitBool, valgrindSupport,
-                          threadsafe, macver)
+                          threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
 
         # Compile and copy the first binary.
         try:
-            jsShellName = compileCopy(archNum, compileType, 'autoBisectBranch', False)
+            jsShellName = compileCopy(archNum, compileType, str(currRev), False, autoBisectPath, objdir)
         except:
+            print 'Compilation failed.'
             print 'The current "good" repository that should be double-checked:', str(startRepo)
             print 'The current "bad" repository that should be double-checked:', str(endRepo)
             # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
-            raise Exception('Compilation failed.')
-
-        # In Windows, executables end in .exe...
-        if os.name == 'nt':
-            jsShellName = jsShellName + '.exe'
-
-        # Check that the js shell actually exists.
-        try:
-            os.path.isfile(jsShellName)
-        except:
-            raise Exception(jsShellName + ' doesn\'t exist!')
-
-        # Change back into compilePath.
-        os.chdir('../')
-        if 'compilePath' not in os.getcwdu():
-            print "We are in " + os.getcwdu()
-            raise Exception('We are not in compilePath!')
-
-        os.chdir('../')  # Change into autoBisectPath directory.
-        autoBisectFullPath = os.path.expanduser(os.getcwdu())
+            raise
 
         # This is only needed if testcase is altered to add the quit() function,
         # in the interactive shell testing located in the testBinary function.
@@ -183,7 +161,7 @@ def main():
         print label[0] + " (" + label[1] + ")"
 
         (result, currRev, startRepo, endRepo) = bisectLabel(label[0], startRepo, endRepo)
-        rmDirInclSubDirs(autoBisectFullPath)
+        rmDirInclSubDirs(autoBisectPath)
 
         # Break out of for loop if the required revision changeset is found.
         if 'revision is:' in result:
@@ -340,7 +318,7 @@ def extractChangesetFromBisectMessage(str):
 def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     methodJit = ['-m'] if methodjitBool else []
     tracingJit = ['-j'] if tracingjitBool else []
-    testBinaryCmd = ['./' + shell] + methodJit + tracingJit + [file]
+    testBinaryCmd = [shell] + methodJit + tracingJit + [file]
     if valgSupport:
         testBinaryCmd = ['valgrind'] + testBinaryCmd
     if verbose:
@@ -372,7 +350,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     #    # Test interactive input.
     #    print 'Switching to interactive input mode in case passing as a CLI ' + \
     #            'argument does not reproduce the issue..'
-    #    testBinaryCmd3 = subprocess.Popen(['./' + shell, methodJit, tracingJit, '-i'],
+    #    testBinaryCmd3 = subprocess.Popen([shell, methodJit, tracingJit, '-i'],
     #        stdin=(subprocess.Popen(['cat', file])).stdout)
     #    output2 = testBinaryCmd3.communicate()[0]
     #    retCode = testBinaryCmd3.returncode

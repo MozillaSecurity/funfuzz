@@ -41,7 +41,7 @@ This file contains functions for startjsfunfuzz.py.
 import os, platform, shutil, subprocess, sys
 
 verbose = False  # Turn this to True to enable verbose output for debugging.
-
+showCapturedCommands = False
 
 def exceptionBadCompileType():
     raise Exception('Unknown compileType')
@@ -97,12 +97,16 @@ def captureStdout(cmd, ignoreStderr=False):
     '''
     This function captures standard output into a python string.
     '''
+    if showCapturedCommands:
+        print ' '.join(cmd)
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
     if not ignoreStderr and len(stderr) > 0:
         print 'Unexpected output on stderr from ' + repr(cmd)
-        print stderr
+        print stdout, stderr
         raise Exception('Unexpected output on stderr')
+    if showCapturedCommands:
+        print stdout, stderr
     return stdout.rstrip()
 
 def hgHashAddToFuzzPath(fuzzPath):
@@ -139,7 +143,7 @@ def hgHashAddToFuzzPath(fuzzPath):
     verboseDump('Finished running `hg identify` commands.')
     return fuzzPath, onTip
 
-def cpJsTreeOrPymakeDir(repo, jsOrBuild):
+def cpJsTreeOrPymakeDir(repo, jsOrBuild, dest):
     '''
     This function copies the js tree or the pymake build directory.
     '''
@@ -149,30 +153,33 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild):
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
         verboseDump('Copying the ' + jsOrBuildText + ', which is located at ' + repo)
-        shutil.copytree(repo, "compilePath", ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect')) \
-            if jsOrBuild == 'js' else shutil.copytree(repo, "build/pymake")
+        if jsOrBuild == 'js':
+            shutil.copytree(repo, dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+        else:
+            shutil.copytree(repo, "build/pymake")
         verboseDump('Finished copying the ' + jsOrBuildText)
     except OSError:
-        raise Exception("The', jsOrBuildText, 'directory located at '" + repo + "' doesn't exist!")
+        print ("The '" + jsOrBuildText + "' directory located at '" + repo + "' doesn't exist!")
+        raise
 
-def autoconfRun():
+def autoconfRun(cwd):
     '''
     Sniff platform and run different autoconf types:
     '''
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
-            subprocess.call(['autoconf213'])
+            subprocess.call(['autoconf213'], cwd=cwd)
         elif os.uname()[0] == 'Linux':
-            subprocess.call(['autoconf2.13'])
+            subprocess.call(['autoconf2.13'], cwd=cwd)
     elif os.name == 'nt':
-        subprocess.call(['sh', 'autoconf-2.13'])
+        subprocess.call(['sh', 'autoconf-2.13'], cwd=cwd)
 
 def cfgJsBin(archNum, compileType, traceJit, methodJit,
-                      valgrindSupport, threadsafe, macver):
+                      valgrindSupport, threadsafe, macver, configure, objdir):
     '''
     This function configures a js binary depending on the parameters.
     '''
-    cfgCmd = 'sh ../configure'
+    cfgCmd = 'sh ' + configure
     if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
             if macver == '10.6':
@@ -180,16 +187,16 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
                              'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
                              'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
                              'STRIP="strip -x -S" CROSS_COMPILE=1' + \
-                             'sh ../configure --target=i386-apple-darwin8.0.0'
+                             'sh ' + configure + ' --target=i386-apple-darwin8.0.0'
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # Apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            cfgCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ../configure --target=i686-pc-linux'
+            cfgCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ' + configure + ' --target=i686-pc-linux'
         elif os.uname()[4] == 'armv7l':
             cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
-                         'sh ../configure'
+                         'sh ' + configure
     if (archNum == '64') and (macver == '10.5'):
         cfgCmd = 'CC="gcc -m64" CXX="g++ -m64" AR=ar ' + \
-                     'sh ../configure --target=x86_64-apple-darwin10.0.0'
+                     'sh ' + configure + ' --target=x86_64-apple-darwin10.0.0'
 
     if compileType == 'dbg':
         cfgCmd += ' --disable-tests --disable-optimize --enable-debug'
@@ -210,9 +217,9 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     verboseDump('This is the configure command:')
     verboseDump('%s\n' % cfgCmd)
 
-    subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT)
+    subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
 
-def compileCopy(archNum, compileType, branchType, usePymake):
+def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     '''
     This function compiles and copies a binary.
     '''
@@ -220,15 +227,17 @@ def compileCopy(archNum, compileType, branchType, usePymake):
     if usePymake:
         captureStdout(['python', '-O', '../../build/pymake/make.py', '-j2'], ignoreStderr=True)
     else:
-        captureStdout(['make', '-j12', '-s'], ignoreStderr=True)
+        captureStdout(['make', '-C', objdir, '-j12', '-s'], ignoreStderr=True)
 
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
-        shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.uname()[0].lower()
-        shutil.copy2('js', '../../' + shellName)
+        osname = os.uname()[0].lower()
+        binaryPostfix = ''
     elif os.name == 'nt':
-        shellName = 'js-' + compileType + '-' + archNum + '-' + branchType + '-' + os.name.lower()
-        shutil.copy2('js.exe', '../../' + shellName + '.exe')
+        osname = os.name.lower()
+        binaryPostfix = '.exe'
+    shellName = os.path.join(destDir, 'js-' + compileType + '-' + archNum + '-' + extraID + '-' + osname + binaryPostfix)
+    shutil.copy2(os.path.join(objdir, 'js' + binaryPostfix), shellName)
     return shellName
 
 def cpUsefulFiles(filePath):
