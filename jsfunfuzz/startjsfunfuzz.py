@@ -67,8 +67,13 @@
 #   Disable tests, support 10.5 and 32-bit Linux again.
 #   Support 2.0 instead of 1.9.3.
 
-import os, platform, shutil, subprocess, sys, time
+import os, platform, shutil, subprocess, sys, time, pdb
 from fnStartjsfunfuzz import *
+
+path0 = os.path.dirname(sys.argv[0])
+path2 = os.path.abspath(os.path.join(path0, "..", "js-autobisect"))
+sys.path.append(path2)
+import autoBisect
 
 def main():
 
@@ -232,18 +237,18 @@ def main():
         if len(sys.argv) >= 6 and (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
             fuzzPath += 'patched/'
             verboseDump('Patched fuzzPath is: ' + fuzzPath)
-        os.makedirs(fuzzPath)
+        #os.makedirs(fuzzPath)
     except OSError:
         raise Exception('The fuzzing path at \'' + fuzzPath + '\' already exists!')
 
 
-    os.chdir(fuzzPath)  # Change to the fuzzing directory.
     # Copy the js tree to the fuzzPath.
-    cpJsTreeOrPymakeDir(repoDict[branchType], 'js')
+    compilePath = os.path.join(fuzzPath, 'compilePath')
+    cpJsTreeOrPymakeDir(repoDict[branchType], 'js', compilePath)
     # Copy the pymake build directory to the fuzzPath, if enabled.
     if usePymake:
-        cpJsTreeOrPymakeDir(repoDict[branchType], 'build')
-    os.chdir('compilePath')  # Change into compilation directory.
+        cpJsTreeOrPymakeDir(repoDict[branchType], 'build', compilePath)
+    os.chdir(compilePath)  # Change into compilation directory.
 
 
     if jsCompareJITSwitch:
@@ -280,21 +285,23 @@ def main():
     if (patchReturnCode == 1 or patchReturnCode2 == 1) or (patchReturnCode == 2 or patchReturnCode2 == 2):
         raise Exception('Patching failed.')
 
-    autoconfRun()
+    autoconfRun(compilePath)
 
     # Create objdirs within the compilePaths.
-    os.mkdir('dbg-objdir')
-    os.mkdir('opt-objdir')
-    os.chdir(compileType + '-objdir')
+    objdir = os.path.join(compilePath, compileType + '-objdir')
+    os.mkdir(objdir)
+    os.mkdir(os.path.join(compilePath, 'opt-objdir'))  # To compile the opt shell
+    os.chdir(objdir)
 
     # Compile the first binary.
-    cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
-                      valgrindSupport, threadsafe, macVer)
+    cfgJsBin(archNum, compileType, traceJit, methodJit,
+                      valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
     if usePymake and os.name == 'nt':
         # This has to use `shell=True`.
         subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
+
     # Compile and copy the first binary.
-    jsShellName = compileCopy(archNum, compileType, branchType, usePymake)
+    jsShellName = compileCopy(archNum, compileType, 'fooExtraID', usePymake, fuzzPath, objdir)
     # Change into compilePath for the second binary.
     os.chdir('../')
 
@@ -309,14 +316,14 @@ def main():
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
         os.chdir('opt-objdir')
-        cfgJsBin(archNum, 'opt', branchType, traceJit, methodJit,
-                          valgrindSupport, threadsafe, macVer)
-        compileCopy(archNum, 'opt', branchType, usePymake)
+        cfgJsBin(archNum, compileType, traceJit, methodJit,
+                          valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
+        compileCopy(archNum, 'opt', 'fooExtraID', usePymake, fuzzPath, objdir)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
-        cfgJsBin(archNum, 'dbg', branchType, traceJit, methodJit,
-                          valgrindSupport, threadsafe, macVer)
-        compileCopy(archNum, 'dbg', branchType, usePymake)
+        cfgJsBin(archNum, compileType, traceJit, methodJit,
+                          valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
+        compileCopy(archNum, 'dbg', 'fooExtraID', usePymake, fuzzPath, objdir)
 
 
     os.chdir('../../')  # Change into fuzzPath directory.
@@ -393,6 +400,7 @@ def main():
             test32or64bit(jsShellName, archNum)
 
     # Debug or optimized binary verification test.
+    pdb.set_trace()
     testDbgOrOpt(jsShellName, compileType)
 
 
