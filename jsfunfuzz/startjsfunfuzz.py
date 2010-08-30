@@ -301,7 +301,7 @@ def main():
         subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
 
     # Compile and copy the first binary.
-    jsShellName = compileCopy(archNum, compileType, 'fooExtraID', usePymake, fuzzPath, objdir)
+    jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir)
     # Change into compilePath for the second binary.
     os.chdir('../')
 
@@ -318,12 +318,12 @@ def main():
         os.chdir('opt-objdir')
         cfgJsBin(archNum, compileType, traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
-        compileCopy(archNum, 'opt', 'fooExtraID', usePymake, fuzzPath, objdir)
+        compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
         cfgJsBin(archNum, compileType, traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
-        compileCopy(archNum, 'dbg', 'fooExtraID', usePymake, fuzzPath, objdir)
+        compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir)
 
 
     os.chdir('../../')  # Change into fuzzPath directory.
