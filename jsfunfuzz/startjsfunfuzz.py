@@ -67,7 +67,7 @@
 #   Disable tests, support 10.5 and 32-bit Linux again.
 #   Support 2.0 instead of 1.9.3.
 
-import os, platform, shutil, subprocess, sys, time, pdb
+import os, platform, shutil, subprocess, sys, time
 from fnStartjsfunfuzz import *
 
 path0 = os.path.dirname(sys.argv[0])
@@ -384,13 +384,13 @@ def main():
         multiTimedRun = os.path.expanduser(multiTimedRun)
         jsknownDict[branchType] = os.path.expanduser(jsknownDict[branchType])
     fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT + multiTimedRunTimeout + ' '
-    fuzzCmd2 = ' ' + fuzzPath + jsShellName + jsJit + jsMethodJit
+    fuzzCmd2 = ' ' + jsShellName + jsJit + jsMethodJit
     if valgrindSupport:
         fuzzCmd2 = ' valgrind' + fuzzCmd2
     fuzzCmd = fuzzCmd1 + jsknownDict[branchType] + fuzzCmd2
 
     verboseDump('jsShellName is: ' + jsShellName)
-    verboseDump('fuzzPath + jsShellName is: ' + fuzzPath + jsShellName)
+    verboseDump('fuzzPath + jsShellName is: ' + jsShellName)
     verboseDump('fuzzCmd is: ' + fuzzCmd + '\n')
 
 
@@ -400,7 +400,6 @@ def main():
             test32or64bit(jsShellName, archNum)
 
     # Debug or optimized binary verification test.
-    pdb.set_trace()
     testDbgOrOpt(jsShellName, compileType)
 
 
