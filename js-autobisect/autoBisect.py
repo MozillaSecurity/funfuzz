@@ -36,7 +36,7 @@
 #
 # * ***** END LICENSE BLOCK	****	/
 
-import os, shutil, subprocess, sys, re
+import os, shutil, subprocess, sys, re, tempfile
 from optparse import OptionParser
 
 path0 = os.path.dirname(sys.argv[0])
@@ -71,34 +71,27 @@ def main():
         subprocess.call(hgPrefix + ['up', '-C', 'default'])
 
     # Specify `hg bisect` ranges.
-    subprocess.call(hgPrefix + ['bisect', '-r'])
+    subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
-    subprocess.call(hgPrefix + ['bisect', '-g', str(startRepo)])
+    subprocess.call(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
-    bisectMessage = firstLine(captureStdout(hgPrefix + ['bisect', '-b', str(endRepo)]))
+    bisectMessage = firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)]))
 
     # Find out the number of tests to be executed based on the initial hg bisect output.
     initialTestCountEstimate = checkNumOfTests(bisectMessage)
     currRev = extractChangesetFromBisectMessage(bisectMessage)
 
-    # For main directory, change into Desktop directory.
-    mainDir = os.path.expanduser('~/Desktop/')
-
     while True:
         result = None
 
-        print "Revision " + str(currRev),
+        print "Updating to " + str(currRev) + "...",
+        captureStdout(hgPrefix + ['update', '-r', str(currRev)], ignoreStderr=True)
+
         print "Compiling...",
 
-        autoBisectPath = os.path.join(mainDir,
-                                      'autoBisect-' + compileType + '-' + archNum +
-                                      '-s' + str(startRepo) + '-e' + str(endRepo))
-
-        # Create the autoBisect folder.
-        try:
-            os.makedirs(autoBisectPath)
-        except OSError:
-            raise Exception('The autoBisect path at "' + autoBisectPath + '" already exists!')
+        autoBisectPath = tempfile.mkdtemp()
+        if verbose:
+            print autoBisectPath
 
         # Copy the js tree to the autoBisect path.
         # Don't use pymake because older changesets may fail to compile.
@@ -158,7 +151,8 @@ def main():
             break
 
     # Reset `hg bisect` after finishing everything.
-    subprocess.call(hgPrefix + ['bisect', '-r'])
+    subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
+    captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
@@ -351,7 +345,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
 def bisectLabel(hgLabel, startRepo, endRepo):
     '''Tell hg what we learned about the revision. hgLabel must be "good", "bad", or "skip".'''
 
-    outputResult = captureStdout(hgPrefix + ['bisect', '--' + hgLabel])
+    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel])
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
         print outputResult
