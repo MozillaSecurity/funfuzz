@@ -113,24 +113,16 @@ def main():
         os.mkdir(compileType + '-objdir')
         os.chdir(compileType + '-objdir')
 
-        # Compile the first binary.
-        branchType = 'autoBisectBranch'
-        if 'jaegermonkey' in sourceDir:
-            branchType = 'jm'
-
         # Configure the js binary.
         threadsafe = False  # Let's disable support for threadsafety in the js shell
         macver = osCheck()
-        cfgJsBin(archNum, compileType, branchType,
+        cfgJsBin(archNum, compileType,
                           tracingjitBool, methodjitBool, valgrindSupport,
                           threadsafe, macver)
 
-        if 'jaegermonkey' in sourceDir:
-            branchType = 'autoBisectBranch'  # Reset the branchType
-
         # Compile and copy the first binary.
         try:
-            jsShellName = compileCopy(archNum, compileType, branchType, False)
+            jsShellName = compileCopy(archNum, compileType, 'autoBisectBranch', False)
         except:
             print 'The current "good" repository that should be double-checked:', str(startRepo)
             print 'The current "bad" repository that should be double-checked:', str(endRepo)

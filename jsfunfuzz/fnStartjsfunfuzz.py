@@ -167,7 +167,7 @@ def autoconfRun():
     elif os.name == 'nt':
         subprocess.call(['sh', 'autoconf-2.13'])
 
-def cfgJsBin(archNum, compileType, branchType, traceJit, methodJit,
+def cfgJsBin(archNum, compileType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macver):
     '''
     This function configures a js binary depending on the parameters.
