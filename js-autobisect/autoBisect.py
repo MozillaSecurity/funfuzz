@@ -141,8 +141,6 @@ def main():
         (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
                                               tracingjitBool, valgrindSupport)
 
-        # Switch to hg repository directory.
-
         if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
             label = ('bad', 'Specified-bad output')
         elif exitCode == watchExitCode:
