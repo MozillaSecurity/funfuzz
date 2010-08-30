@@ -177,7 +177,7 @@ class AmissLogHandler:
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
-    if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
+    if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF) and "Bug 592118" == "UNFIXED":
       self.mallocFailure = True
       self.printAndLog("@@@ Malloc is unhappy")
     if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
