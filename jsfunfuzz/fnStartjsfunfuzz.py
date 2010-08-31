@@ -231,9 +231,9 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     if cpu_count() == 2:
         cpuThreads = 2
     if usePymake:
-        captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + cpuThreads], ignoreStderr=True)
+        captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + str(cpuThreads)], ignoreStderr=True)
     else:
-        captureStdout(['make', '-C', objdir, '-j' + cpuThreads, '-s'], ignoreStderr=True)
+        captureStdout(['make', '-C', objdir, '-j' + str(cpuThreads), '-s'], ignoreStderr=True)
 
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
