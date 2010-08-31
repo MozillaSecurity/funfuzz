@@ -292,9 +292,10 @@ def main():
     os.mkdir(objdir)
     # Compile the other shell.
     if compileType == 'dbg':
-        objdir2 = os.mkdir(os.path.join(compilePath, 'opt-objdir'))
+        objdir2 = os.path.join(compilePath, 'opt-objdir')
     elif compileType == 'opt':
-        objdir2 = os.mkdir(os.path.join(compilePath, 'dbg-objdir'))
+        objdir2 = os.path.join(compilePath, 'dbg-objdir')
+    os.mkdir(objdir2)
     os.chdir(objdir)
 
     # Compile the first binary.

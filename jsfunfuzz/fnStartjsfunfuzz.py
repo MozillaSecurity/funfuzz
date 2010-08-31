@@ -229,7 +229,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     # 12 threads will overload a dual core mac mini too much, such that it slows everything down.
     cpuThreads = 12
     if cpu_count() == 2:
-        cpuThreads = 2
+        cpuThreads = 4
     if usePymake:
         captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + str(cpuThreads)], ignoreStderr=True)
     else:
