@@ -292,9 +292,9 @@ def main():
     os.mkdir(objdir)
     # Compile the other shell.
     if compileType == 'dbg':
-        os.mkdir(os.path.join(compilePath, 'opt-objdir'))
+        objdir2 = os.mkdir(os.path.join(compilePath, 'opt-objdir'))
     elif compileType == 'opt':
-        os.mkdir(os.path.join(compilePath, 'dbg-objdir'))
+        objdir2 = os.mkdir(os.path.join(compilePath, 'dbg-objdir'))
     os.chdir(objdir)
 
     # Compile the first binary.
@@ -321,13 +321,15 @@ def main():
     if compileType == 'dbg':
         os.chdir('opt-objdir')
         cfgJsBin(archNum, 'opt', traceJit, methodJit,
-                          valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
-        compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir)
+                          valgrindSupport, threadsafe, macVer,
+                          os.path.join(compilePath, 'configure'), objdir2)
+        compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir2)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
         cfgJsBin(archNum, 'dbg', traceJit, methodJit,
-                          valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
-        compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir)
+                          valgrindSupport, threadsafe, macVer,
+                          os.path.join(compilePath, 'configure'), objdir2)
+        compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2)
 
 
     os.chdir('../../')  # Change into fuzzPath directory.
