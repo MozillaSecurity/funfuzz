@@ -290,7 +290,11 @@ def main():
     # Create objdirs within the compilePaths.
     objdir = os.path.join(compilePath, compileType + '-objdir')
     os.mkdir(objdir)
-    os.mkdir(os.path.join(compilePath, 'opt-objdir'))  # To compile the opt shell
+    # Compile the other shell.
+    if compileType == 'dbg':
+        os.mkdir(os.path.join(compilePath, 'opt-objdir'))
+    elif compileType == 'opt':
+        os.mkdir(os.path.join(compilePath, 'dbg-objdir'))
     os.chdir(objdir)
 
     # Compile the first binary.
