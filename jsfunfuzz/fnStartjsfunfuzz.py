@@ -40,6 +40,8 @@ This file contains functions for startjsfunfuzz.py.
 
 import os, platform, shutil, subprocess, sys
 
+from multiprocessing import cpu_count
+
 verbose = False  # Turn this to True to enable verbose output for debugging.
 showCapturedCommands = False
 
@@ -223,11 +225,15 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     '''
     This function compiles and copies a binary.
     '''
-    # Run make using 2 cores, not sure if pymake allows parallel compilation yet.
+    # Run make using 12 threads, unless a dual core processor is detected.
+    # 12 threads will overload a dual core mac mini too much, such that it slows everything down.
+    cpuThreads = 12
+    if multiprocessing.cpu_count() == 2:
+        cpuThreads = 2
     if usePymake:
-        captureStdout(['python', '-O', '../../build/pymake/make.py', '-j2'], ignoreStderr=True)
+        captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + cpuThreads], ignoreStderr=True)
     else:
-        captureStdout(['make', '-C', objdir, '-j12', '-s'], ignoreStderr=True)
+        captureStdout(['make', '-C', objdir, '-j' + cpuThreads, '-s'], ignoreStderr=True)
 
     # Sniff platform and rename executable accordingly:
     if os.name == 'posix':
