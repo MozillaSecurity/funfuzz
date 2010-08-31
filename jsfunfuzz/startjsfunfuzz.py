@@ -316,12 +316,12 @@ def main():
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
         os.chdir('opt-objdir')
-        cfgJsBin(archNum, compileType, traceJit, methodJit,
+        cfgJsBin(archNum, 'opt', traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
         compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
-        cfgJsBin(archNum, compileType, traceJit, methodJit,
+        cfgJsBin(archNum, 'dbg', traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
         compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir)
 
