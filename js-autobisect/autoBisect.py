@@ -61,7 +61,7 @@ def main():
     # Parse options and parameters from the command-line.
     filename = sys.argv[-1:][0]
     options = parseOpts()
-    (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, \
+    (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, paranoidBool, \
      archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport) = options
 
     sourceDir = os.path.expanduser(sourceDir)
@@ -86,14 +86,12 @@ def main():
 
     # Specify `hg bisect` ranges.
     captureStdout(hgPrefix + ['bisect', '-r'])
-    # If in "bug" mode, this startRepo changeset does not exhibit the issue.
-    captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
-    # If in "bug" mode, this endRepo changeset exhibits the issue.
-    bisectMessage = firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)]))
-
-    # Find out the number of tests to be executed based on the initial hg bisect output.
-    initialTestCountEstimate = checkNumOfTests(bisectMessage)
-    currRev = extractChangesetFromBisectMessage(bisectMessage)
+    
+    if paranoidBool:
+        currRev = startRepo
+    else:
+        captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
+        currRev = extractChangesetFromBisectMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
 
     while currRev is not None:
         result = None
@@ -123,7 +121,12 @@ def main():
         print label[0] + " (" + label[1] + ") ",
 
         print "Bisecting..."
-        (currRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo)
+        (currRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo, paranoidBool)
+        
+        if paranoidBool:
+            paranoidBool = False
+            assert currRev is None
+            currRev = endRepo
 
     if verbose:
         print "Resetting bisect"
@@ -172,14 +175,20 @@ def parseOpts():
                            'Defaults to "False"')
 
     # Define the revisions between which to bisect.
-    # Simply reverse these two options if you want to find out when a problem went away.
+    # If you want to find out when a problem *went away*, give -s the later revision and -e an earlier revision,
+    # or use -p (in which case the order doesn't matter).
     parser.add_option('-s', '--start',
                       dest='startRepo',
-                      help='Earlist revision to consider. Defaults to a guess.')
+                      help='Initial good revision (usually the earliest). Defaults to the earliest revision known to work at all.')
     parser.add_option('-e', '--end',
                       dest='endRepo',
                       default='default',
-                      help='Latest revision to consider. Defaults to "default"')
+                      help='Initial bad revision (usually the latest). Defaults to "default"')
+    parser.add_option('-p', '--paranoid',
+                      dest='paranoidBool',
+                      action='store_true',
+                      default=False,
+                      help='Test the -s and -e revisions (rather than automatically treating them as -g and -b).')
 
     # Define the type of build to test.
     parser.add_option('-a', '--architecture',
@@ -238,7 +247,7 @@ def parseOpts():
         options.watchExitCode = int(options.watchExitCode)
 
     return options.compileType, options.dir, options.output, \
-            options.resetBool, options.startRepo, options.endRepo, options.archi, \
+            options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
             options.tracingjitBool, options.methodjitBool, options.watchExitCode, \
             options.valgSupport
 
@@ -256,26 +265,6 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
         return "547af2626088" # ~52268, first rev that can run jsfunfuzz-n.js with -m
     else:
         return "8c52a9486c8f" # ~21110, switch from Makefile.ref to autoconf
-
-def checkNumOfTests(str):
-    # Sample bisect range message:
-    # "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
-    # This function looks for the number just after the "~".
-    testNum = 0
-    i = 0
-    while i < len(str):
-        if (str[i] == '~'):
-            # This works no matter it is a one-digit or two-digit number.
-            testNum = int(str[i+1] + str[i+2])
-            # Sometimes estimation is not entirely accurate, one more test
-            # round may be needed.
-            # It will be checked to stop when the First bad changeset is found.
-            testNum = testNum + 1;
-            break
-        i = i + 1
-    if testNum == 0:
-        raise Exception('The number of tests to be executed should not be 0.')
-    return testNum
 
 def extractChangesetFromBisectMessage(str):
     # "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
@@ -357,7 +346,7 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     #    print 'The second output is:', output2
     return out + "\n" + err, retCode
 
-def bisectLabel(hgLabel, currRev, startRepo, endRepo):
+def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
 
@@ -365,6 +354,9 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo):
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
         print outputResult
+        return None, startRepo, endRepo
+
+    if ignoreResult:
         return None, startRepo, endRepo
 
     if verbose:
