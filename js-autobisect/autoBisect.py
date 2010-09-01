@@ -102,7 +102,7 @@ def main():
         print "Rev " + str(currRev) + ":",
         if os.path.exists(cachedShell):
             jsShellName = cachedShell
-            print "Found cached shell...",
+            print "Found cached shell...   ",
         else:
             print "Updating...",
             captureStdout(hgPrefix + ['update', '-r', str(currRev)], ignoreStderr=True)
