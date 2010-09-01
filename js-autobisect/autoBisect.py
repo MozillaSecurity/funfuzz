@@ -66,13 +66,26 @@ def main():
 
     sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
+    if startRepo is None:
+        startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum)
+
+    # Resolve names such as "tip", "default", or "9f2641871ce8" to numeric hg ids such as "52707".
+    startRepo = hgId(startRepo)
+    endRepo = hgId(endRepo)
+
+    if verbose:
+        print "Bisecting in the range " + str(startRepo) + ":" + str(endRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
         subprocess.call(hgPrefix + ['up', '-C', 'default'])
 
+    shellCacheDir = os.path.join(os.path.expanduser("~"), "Desktop", "autobisect-cache")
+    if not os.path.exists(shellCacheDir):
+        os.mkdir(shellCacheDir)
+
     # Specify `hg bisect` ranges.
-    subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
+    subprocess.call(hgPrefix + ['bisect', '-r'])
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
     subprocess.call(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
@@ -82,41 +95,42 @@ def main():
     initialTestCountEstimate = checkNumOfTests(bisectMessage)
     currRev = extractChangesetFromBisectMessage(bisectMessage)
 
-    while True:
+    while currRev is not None:
         result = None
+        cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, str(currRev)))
+        jsShellName = None
+        label = None
+        
+        print "Rev " + str(currRev) + ":",
+        if os.path.exists(cachedShell):
+            jsShellName = cachedShell
+            print "Found cached shell...",
+        else:
+            print "Updating...",
+            captureStdout(hgPrefix + ['update', '-r', str(currRev)], ignoreStderr=True)
+            try:
+                print "Compiling...",
+                jsShellName = makeShell(shellCacheDir, sourceDir, 
+                                        archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, 
+                                        currRev)
+            except Exception as e:
+                label = ('skip', 'compilation failed (' + str(e) + ')')
 
-        print "Updating to " + str(currRev) + "...",
-        captureStdout(hgPrefix + ['update', '-r', str(currRev)], ignoreStderr=True)
+        if jsShellName:
+            print "Testing...",
+            label = testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode)
 
-        autoBisectPath = tempfile.mkdtemp()
-        if verbose:
-            print autoBisectPath
-
-        try:
-            print "Compiling...",
-            jsShellName = makeShell(autoBisectPath, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev)
-        except:
-            print 'Compilation failed.'
-            print 'The current "good" repository that should be double-checked:', str(startRepo)
-            print 'The current "bad" repository that should be double-checked:', str(endRepo)
-            # Consider implementing `hg bisect --skip`. Exit code 1 should also be skipped.
-            raise
-
-        print "Testing...",
-        label = testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode)
         print label[0] + " (" + label[1] + ") ",
 
         print "Bisecting..."
-        (result, currRev, startRepo, endRepo) = bisectLabel(label[0], startRepo, endRepo)
+        (currRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo)
 
-        rmDirInclSubDirs(autoBisectPath)
-
-        # Break out of for loop if the required revision changeset is found.
-        if 'revision is:' in result:
-            break
-
-    # Reset `hg bisect` after finishing everything.
+    if verbose:
+        print "Resetting bisect"
     subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
+
+    if verbose:
+        print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
 def testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
@@ -136,7 +150,7 @@ def testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindS
     elif 3 <= exitCode <= 6:
         return ('good', 'Acceptable exit code ' + str(exitCode))
     else:
-        return ('skip', 'Unknown exit code ' + str(exitCode))
+        return ('bad', 'Unknown exit code ' + str(exitCode))
 
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
@@ -158,16 +172,14 @@ def parseOpts():
                            'Defaults to "False"')
 
     # Define the revisions between which to bisect.
+    # Simply reverse these two options if you want to find out when a problem went away.
     parser.add_option('-s', '--start',
                       dest='startRepo',
-                      help='Start repository (earlier). Set to "tip" here, and ' + \
-                           'id where the symptom first exhibits at -e instead, ' + \
-                           'if the patch that fixed an issue is desired.')
+                      help='Earlist revision to consider. Defaults to a guess.')
     parser.add_option('-e', '--end',
                       dest='endRepo',
-                      default='tip',
-                      help='End repository (later). Defaults to "tip"')
-
+                      default='default',
+                      help='Latest revision to consider. Defaults to "default"')
 
     # Define the type of build to test.
     parser.add_option('-a', '--architecture',
@@ -222,39 +234,26 @@ def parseOpts():
     if len(args) != 1:
         parser.error('There is a wrong number of arguments.')
 
-    # A startRepo value must be input.
-    if options.startRepo == None:
-        parser.error('Please specify an earlier start repository for the bisect range.')
-
-    # Turn some parameters into integers.
-    #options.archi = int(options.archi)  # archNum should remain as a string due to historical reasons.
-    options.startRepo = int(options.startRepo)
-    if options.endRepo != 'tip':
-        options.endRepo = int(options.endRepo)
     if options.watchExitCode:
         options.watchExitCode = int(options.watchExitCode)
-
-    # 32-bit js shells have only been tested to compile successfully from number 21500.
-    if (options.archi == '32') and (options.startRepo < 21500) and \
-        (options.dir == os.path.expanduser('~/tracemonkey/')):
-        parser.error('The changeset number for 32-bit default TM must ' + \
-                     'at least be 21500, which corresponds to TM changeset 04c360f123e5.')
-    # 64-bit js shells have only been tested to compile successfully from
-    # number 21715 on Ubuntu Linux 10.04 LTS.
-    if (options.archi == '64') and (options.startRepo < 21500) and \
-        (options.dir == os.path.expanduser('~/tracemonkey/')):
-        if (options.startRepo < 1500) or \
-            ((1500 <= options.startRepo < 21500) and (options.endRepo != 'tip')):
-            parser.error('The changeset number for 64-bit default TM must ' + \
-                         'at least be 1500, which corresponds to TM changeset ' + \
-                         '28dac0d48126. (Only applicable to tip as endRepo, ' + \
-                         'else 21500 is the startRepo limit.)')
-
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.archi, \
             options.tracingjitBool, options.methodjitBool, options.watchExitCode, \
             options.valgSupport
+
+def hgId(rev):
+    return captureStdout(hgPrefix + ["id", "-n", "-r", rev])
+
+def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
+    """Returns the oldest version of the shell that can run jsfunfuzz."""
+    # Unfortunately, there are also interspersed runs of brokenness, such as 0c8d4f846be8:bfb330182145 (~28226:28450).
+    # We don't deal with those at all, and --skip does not get out of such messes quickly.
+
+    if methodjitBool:
+        return "547af2626088" # ~52268, first rev that can run jsfunfuzz-n.js with -m
+    else:
+        return "8c52a9486c8f" # ~21110, switch from Makefile.ref to autoconf
 
 def checkNumOfTests(str):
     # Sample bisect range message:
@@ -282,10 +281,14 @@ def extractChangesetFromBisectMessage(str):
     m = r.match(str)
     return int(m.group(1))
 
-def makeShell(autoBisectPath, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
-    # Copy the js tree to the autoBisect path.
-    # Don't use pymake because older changesets may fail to compile.
-    compilePath = os.path.join(autoBisectPath, 'compilePath')
+def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
+    tempDir = tempfile.mkdtemp(prefix="abc")
+    compilePath = os.path.join(tempDir, "compilePath")
+
+    if verbose:
+        print "Compiling in " + tempDir
+
+    # Copy the js tree.
     cpJsTreeOrPymakeDir(sourceDir, 'js', compilePath)
 
     # Run autoconf.
@@ -303,8 +306,10 @@ def makeShell(autoBisectPath, sourceDir, archNum, compileType, tracingjitBool, m
                       threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
 
     # Compile and copy the first binary.
-    return compileCopy(archNum, compileType, str(currRev), False, autoBisectPath, objdir)
-
+    # Don't use pymake because older changesets may fail to compile.
+    shell = compileCopy(archNum, compileType, str(currRev), False, shellCacheDir, objdir)
+    rmDirInclSubDirs(tempDir)
+    return shell
 
 # Run the testcase on the compiled js binary.
 def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
@@ -350,20 +355,21 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     #    print 'The second output is:', output2
     return out + "\n" + err, retCode
 
-def bisectLabel(hgLabel, startRepo, endRepo):
+def bisectLabel(hgLabel, currRev, startRepo, endRepo):
     '''Tell hg what we learned about the revision. hgLabel must be "good", "bad", or "skip".'''
 
-    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel])
+    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, str(currRev)])
     if 'revision is:' in outputResult:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
         print outputResult
-        return outputResult, None, startRepo, endRepo
+        return None, startRepo, endRepo
 
     if verbose:
         # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
         print firstLine(outputResult)
 
     currRev = extractChangesetFromBisectMessage(firstLine(outputResult))
+    assert currRev is not None
 
     # Update the startRepo/endRepo values.
     start = startRepo
@@ -375,7 +381,7 @@ def bisectLabel(hgLabel, startRepo, endRepo):
     elif hgLabel == 'skip':
         pass
 
-    return outputResult, currRev, start, end
+    return currRev, start, end
 
 def firstLine(s):
     return s.split('\n')[0]

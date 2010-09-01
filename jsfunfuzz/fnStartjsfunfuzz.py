@@ -95,15 +95,18 @@ def error(branchSupp):
     print 'Windows platforms only compile in 32-bit.'
     print 'Valgrind only works for Linux platforms.\n'
 
-def captureStdout(cmd, ignoreStderr=False):
+def captureStdout(cmd, ignoreStderr=False, combineStderr=False):
     '''
     This function captures standard output into a python string.
     '''
     if showCapturedCommands:
         print ' '.join(cmd)
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd,
+        stdin = subprocess.PIPE,
+        stdout = subprocess.PIPE,
+        stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE)
     (stdout, stderr) = p.communicate()
-    if not ignoreStderr and len(stderr) > 0:
+    if not combineStderr and not ignoreStderr and len(stderr) > 0:
         print 'Unexpected output on stderr from ' + repr(cmd)
         print stdout, stderr
         raise Exception('Unexpected output on stderr')
@@ -160,8 +163,10 @@ def cpJsTreeOrPymakeDir(repo, jsOrBuild, dest):
         else:
             shutil.copytree(repo, "build/pymake")
         verboseDump('Finished copying the ' + jsOrBuildText)
-    except OSError:
-        print ("The '" + jsOrBuildText + "' directory located at '" + repo + "' doesn't exist!")
+    except OSError as e:
+        if verbose:
+            print repr(e)
+        print ("The '" + jsOrBuildText + "' directory located at '" + repo + "' doesn't exist?")
         raise
 
 def autoconfRun(cwd):
@@ -221,26 +226,38 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
 
     subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
 
+def binaryPostfix():
+    if os.name == 'posix':
+        return ''
+    elif os.name == 'nt':
+        return '.exe'
+
+def shellName(archNum, compileType, extraID):
+    if os.name == 'posix':
+        osname = os.uname()[0].lower()
+    elif os.name == 'nt':
+        osname = os.name.lower()
+    return 'js-' + compileType + '-' + archNum + '-' + extraID + '-' + osname + binaryPostfix()
+
 def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     '''
     This function compiles and copies a binary.
     '''
     jobs = (cpu_count() * 3) // 2
     if usePymake:
-        captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + str(jobs)], ignoreStderr=True)
+        out = captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + str(jobs)], combineStderr=True)
     else:
-        captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], ignoreStderr=True)
+        out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True)
 
-    # Sniff platform and rename executable accordingly:
-    if os.name == 'posix':
-        osname = os.uname()[0].lower()
-        binaryPostfix = ''
-    elif os.name == 'nt':
-        osname = os.name.lower()
-        binaryPostfix = '.exe'
-    shellName = os.path.join(destDir, 'js-' + compileType + '-' + archNum + '-' + extraID + '-' + osname + binaryPostfix)
-    shutil.copy2(os.path.join(objdir, 'js' + binaryPostfix), shellName)
-    return shellName
+    compiledName = os.path.join(objdir, 'js' + binaryPostfix())
+    if not os.path.exists(compiledName):
+        if verbose:
+            print out
+        raise Exception("Running 'make' did not result in a js shell")
+
+    newName = os.path.join(destDir, shellName(archNum, compileType, extraID))
+    shutil.copy2(compiledName, newName)
+    return newName
 
 def cpUsefulFiles(filePath):
     '''
