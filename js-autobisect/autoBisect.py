@@ -356,7 +356,8 @@ def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
     return out + "\n" + err, retCode
 
 def bisectLabel(hgLabel, currRev, startRepo, endRepo):
-    '''Tell hg what we learned about the revision. hgLabel must be "good", "bad", or "skip".'''
+    '''Tell hg what we learned about the revision.'''
+    assert hgLabel in ("good", "bad", "skip")
 
     outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, str(currRev)])
     if 'revision is:' in outputResult:
