@@ -111,7 +111,9 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False):
         print stdout, stderr
         raise Exception('Unexpected output on stderr')
     if showCapturedCommands:
-        print stdout, stderr
+        print stdout
+        if stderr is not None:
+            print stderr
     return stdout.rstrip()
 
 def hgHashAddToFuzzPath(fuzzPath):

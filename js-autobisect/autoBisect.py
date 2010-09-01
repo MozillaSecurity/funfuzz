@@ -85,9 +85,9 @@ def main():
         os.mkdir(shellCacheDir)
 
     # Specify `hg bisect` ranges.
-    subprocess.call(hgPrefix + ['bisect', '-r'])
+    captureStdout(hgPrefix + ['bisect', '-r'])
     # If in "bug" mode, this startRepo changeset does not exhibit the issue.
-    subprocess.call(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
+    captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
     # If in "bug" mode, this endRepo changeset exhibits the issue.
     bisectMessage = firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)]))
 
@@ -247,7 +247,9 @@ def hgId(rev):
 
 def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
-    # Unfortunately, there are also interspersed runs of brokenness, such as 0c8d4f846be8:bfb330182145 (~28226:28450).
+    # Unfortunately, there are also interspersed runs of brokenness, such as:
+    # * 0c8d4f846be8:bfb330182145 (~28226:28450).
+    # * dd0b2f4d5299:??? (perhaps 64-bit only)
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
     if methodjitBool:
