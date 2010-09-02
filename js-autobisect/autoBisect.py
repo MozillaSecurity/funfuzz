@@ -258,7 +258,8 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
     # Unfortunately, there are also interspersed runs of brokenness, such as:
     # * 0c8d4f846be8:bfb330182145 (~28226:28450).
-    # * dd0b2f4d5299:??? (perhaps 64-bit only)
+    # * 1558cef8a8a0:e81fa1f189dc (~51206:51210 plus merges) (see bug 590519) ('rdtsc' was not declared in this scope)
+    # * dd0b2f4d5299:???????????? (perhaps 64-bit only)
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
     if methodjitBool:
