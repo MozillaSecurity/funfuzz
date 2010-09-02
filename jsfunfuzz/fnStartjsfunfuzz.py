@@ -95,7 +95,7 @@ def error(branchSupp):
     print 'Windows platforms only compile in 32-bit.'
     print 'Valgrind only works for Linux platforms.\n'
 
-def captureStdout(cmd, ignoreStderr=False, combineStderr=False):
+def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False):
     '''
     This function captures standard output into a python string.
     '''
@@ -106,6 +106,12 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False):
         stdout = subprocess.PIPE,
         stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    if not ignoreExitCode and p.returncode != 0:
+        print 'Nonzero exit code from ' + repr(cmd)
+        print stdout
+        if stderr is not None:
+            print stderr
+        raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
         print 'Unexpected output on stderr from ' + repr(cmd)
         print stdout, stderr
@@ -249,7 +255,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     if usePymake:
         out = captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + str(jobs)], combineStderr=True)
     else:
-        out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True)
+        out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True)
 
     compiledName = os.path.join(objdir, 'js' + binaryPostfix())
     if not os.path.exists(compiledName):
