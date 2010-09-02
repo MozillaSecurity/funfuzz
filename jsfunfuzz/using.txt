@@ -27,7 +27,7 @@ Bugs in JavaScriptCore found with this fuzzer are tracked by http://bugs.webkit.
 
 
 Recommended command line:
-  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/jscore/ ./jscore
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/jscore/ ./jscore
 
 Hints for building testkjs:
   http://webkit.org/building/checkout.html
@@ -42,7 +42,7 @@ Bugs in V8 found with this fuzzer are tracked by <not yet set up>.
 
 
 Recommended command line:
-  python -u ~/z/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/v8/ ./shell_g
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/v8/ ./shell_g
   
 Hints for building v8:
   http://code.google.com/apis/v8/build.html
