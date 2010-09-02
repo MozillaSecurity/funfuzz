@@ -40,6 +40,9 @@ import os, shutil, subprocess, sys, re, tempfile
 from optparse import OptionParser
 
 path0 = os.path.dirname(sys.argv[0])
+path1 = os.path.abspath(os.path.join(path0, "..", "lithium"))
+sys.path.append(path1)
+import ximport
 path2 = os.path.abspath(os.path.join(path0, "..", "jsfunfuzz"))
 sys.path.append(path2)
 from fnStartjsfunfuzz import *
@@ -59,10 +62,9 @@ def main():
         raise Exception('autoBisect is not supported on Windows.')
 
     # Parse options and parameters from the command-line.
-    filename = sys.argv[-1:][0]
     options = parseOpts()
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, paranoidBool, \
-     archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport) = options
+     archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport, testAndLabel) = options
 
     sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
@@ -116,7 +118,7 @@ def main():
 
         if jsShellName:
             print "Testing...",
-            label = testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode)
+            label = testAndLabel(jsShellName, currRev)
 
         print label[0] + " (" + label[1] + ") ",
 
@@ -136,24 +138,46 @@ def main():
         print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
-def testAndLabel(jsShellName, filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
-    (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
-                                          tracingjitBool, valgrindSupport)
+def internalTestAndLabel(filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
+    def inner(jsShellName, rev):
+        (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
+                                              tracingjitBool, valgrindSupport)
 
-    if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
-        return ('bad', 'Specified-bad output')
-    elif exitCode == watchExitCode:
-        return ('bad', 'Specified-bad exit code ' + str(exitCode))
-    elif 129 <= exitCode <= 159:
-        return ('bad', 'High exit code ' + str(exitCode))
-    elif exitCode < 0:
-        return ('bad', 'Negative exit code ' + str(exitCode))
-    elif exitCode == 0:
-        return ('good', 'Exit code 0')
-    elif 3 <= exitCode <= 6:
-        return ('good', 'Acceptable exit code ' + str(exitCode))
-    else:
-        return ('bad', 'Unknown exit code ' + str(exitCode))
+        if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
+            return ('bad', 'Specified-bad output')
+        elif exitCode == watchExitCode:
+            return ('bad', 'Specified-bad exit code ' + str(exitCode))
+        elif 129 <= exitCode <= 159:
+            return ('bad', 'High exit code ' + str(exitCode))
+        elif exitCode < 0:
+            return ('bad', 'Negative exit code ' + str(exitCode))
+        elif exitCode == 0:
+            return ('good', 'Exit code 0')
+        elif 3 <= exitCode <= 6:
+            return ('good', 'Acceptable exit code ' + str(exitCode))
+        else:
+            return ('bad', 'Unknown exit code ' + str(exitCode))
+    return inner
+
+def externalTestAndLabel(filename, methodjitBool, tracingjitBool, interestingness):
+    engineFlags = []
+    if tracingjitBool:
+        engineFlags = engineFlags + ["-j"]
+    if methodjitBool:
+        engineFlags = engineFlags + ["-m"]
+
+    conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
+    conditionArgPrefix = interestingness[1:]
+
+    tempPrefix = os.path.join(tempfile.mkdtemp(), "x")
+
+    def inner(jsShellName, rev):
+        conditionArgs = conditionArgPrefix + [jsShellName] + engineFlags + [filename]
+        if conditionScript.interesting(conditionArgs, tempPrefix + str(rev)):
+            return ('bad', 'interesting')
+        else:
+            return ('good', 'not interesting')
+    return inner
 
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
@@ -214,6 +238,11 @@ def parseOpts():
                       type='choice',
                       choices=['3', '4', '5', '6'],
                       help='Look out for a specific exit code in the range [3,6]')
+    parser.add_option('-i', '--interestingness',
+                      dest='interestingnessBool',
+                      default=False,
+                      action="store_true",
+                      help="Interpret the final arguments as an interestingness test")
 
     # Define parameters to be passed to the binary.
     parser.add_option('-j', '--tracingjit',
@@ -239,17 +268,29 @@ def parseOpts():
     # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. This is what
     # the osCheck() function checks. Though, Windows platforms are already unsupported.
     osCheck()
-    # Check for a correct number of arguments.
-    if len(args) != 1:
-        parser.error('There is a wrong number of arguments.')
 
     if options.watchExitCode:
         options.watchExitCode = int(options.watchExitCode)
 
+    if len(args) < 1:
+        parser.error('Not enough arguments')
+    filename = args[0]
+
+    if options.interestingnessBool:
+        if len(args) < 2:
+            parser.error('Not enough arguments.')
+        assert not options.valgSupport # not yet supported here
+        testAndLabel = externalTestAndLabel(filename, options.methodjitBool, options.tracingjitBool, args[1:])
+    else:
+        if len(args) >= 2:
+            parser.error('Too many arguments.')
+        testAndLabel = internalTestAndLabel(filename, options.methodjitBool, options.tracingjitBool, options.valgSupport, options.output, options.watchExitCode)
+
+
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
             options.tracingjitBool, options.methodjitBool, options.watchExitCode, \
-            options.valgSupport
+            options.valgSupport, testAndLabel
 
 def hgId(rev):
     return captureStdout(hgPrefix + ["id", "-n", "-r", rev])
