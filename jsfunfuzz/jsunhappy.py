@@ -75,7 +75,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
     return (lev, issues, runinfo)
 
 
-def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix):
+def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix, quiet=False):
     (lev, issues, runinfo) = baseLevel(runthis, timeout, knownPath, logPrefix)
 
     if lev == JS_FINE:
@@ -94,7 +94,8 @@ def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix):
             lev = JS_DID_NOT_FINISH
         logfile.close()
 
-    print logPrefix + ": " + summaryString(issues, runinfo)
+    if not quiet:
+        print logPrefix + ": " + summaryString(issues, runinfo)
     return lev
 
 def summaryString(issues, runinfo):
@@ -106,7 +107,7 @@ def interesting(args, tempPrefix):
     minimumInterestingLevel = int(args[0])
     timeout = int(args[1])
     knownPath = args[2]
-    actualLevel = jsfunfuzzLevel(args[3:], timeout, knownPath, tempPrefix)
+    actualLevel = jsfunfuzzLevel(args[3:], timeout, knownPath, tempPrefix, quiet=True)
     truncateFile(tempPrefix + "-out", 1000000)
     truncateFile(tempPrefix + "-err", 1000000)
     return actualLevel >= minimumInterestingLevel
