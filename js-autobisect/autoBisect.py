@@ -270,7 +270,8 @@ def extractChangesetFromBisectMessage(str):
     # "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
     r = re.compile(r"Testing changeset (\d+):(\w{12}) .*")
     m = r.match(str)
-    return int(m.group(1))
+    if m:
+        return int(m.group(1))
 
 def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
     tempDir = tempfile.mkdtemp(prefix="abc")
@@ -364,7 +365,8 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
         print firstLine(outputResult)
 
     currRev = extractChangesetFromBisectMessage(firstLine(outputResult))
-    assert currRev is not None
+    if currRev is None:
+        raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
     start = startRepo
