@@ -583,6 +583,7 @@ function tryItOut(code)
        && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
        && code.indexOf("--") == -1                  // avoid bug 584603
        && code.indexOf("++") == -1                  // avoid bug 584603
+       && code.indexOf("gc") == -1                  // gc is noisy
       ) {
         // FCM cookie
         var cookie1 = "/*F";
@@ -1438,7 +1439,7 @@ function simpleDVGTest(code)
   try {
     eval(fullCode);
   } catch(e) {
-    if (e.message != "this.nnn is undefined") {
+    if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
       printAndStop("Wrong error message: " + e);
     }
   }
@@ -3182,6 +3183,11 @@ var functionMakers = [
   // Wrapping with upvar: non-escaping
   function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
+  // Bind
+  function(d, b) { return "Function.prototype.bind" },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").bind" },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")" },
+
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
   function(d, b) { return "(let (e=eval) e)" },
@@ -3193,6 +3199,7 @@ var functionMakers = [
   function(d, b) { return "Object.defineProperties" },
   function(d, b) { return "Object.create" },
   function(d, b) { return "Object.getOwnPropertyDescriptor" },
+  function(d, b) { return "Object.getOwnPropertyNames" },
   function(d, b) { return "Object.getPrototypeOf" },
   function(d, b) { return "Object.keys" },
   function(d, b) { return "Object.preventExtensions" },
