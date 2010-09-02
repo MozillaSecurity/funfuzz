@@ -274,7 +274,7 @@ def extractChangesetFromBisectMessage(str):
         return int(m.group(1))
 
 def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
-    tempDir = tempfile.mkdtemp(prefix="abc")
+    tempDir = tempfile.mkdtemp(prefix="abc-" + str(currRev) + "-")
     compilePath = os.path.join(tempDir, "compilePath")
 
     if verbose:
