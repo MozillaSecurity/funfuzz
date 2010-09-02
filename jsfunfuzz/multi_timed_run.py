@@ -3,13 +3,11 @@
 import os, sys, subprocess
 from optparse import OptionParser
 
-p0=os.path.dirname(sys.argv[0])
-p2=os.path.abspath(os.path.join(p0, "..", "lithium"))
-sys.path.append(p2)
-lithiumpy = os.path.join(p2, "lithium.py")
+p0=os.path.dirname(__file__)
 jsunhappypy = os.path.join(p0, "jsunhappy.py")
 
 import jsunhappy
+import pinpoint
 import compareJIT
 
 parser = OptionParser()
@@ -26,7 +24,9 @@ options, args = parser.parse_args(sys.argv[1:])
 
 timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
-runThis = args[2:] + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", options.fuzzjs]
+engine = args[2]
+engineFlags = args[3:]
+runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", options.fuzzjs]
 
 def showtail(filename):
     cmd = "tail -n 20 %s" % filename
@@ -50,7 +50,7 @@ def many_timed_runs():
         if options.fuzzjs.find("jsfunfuzz") != -1 or options.fuzzjs.find("regexpfuzz") != -1:
           oklevel = jsunhappy.JS_TIMED_OUT
           # In xpcshell, allow abnormal exits (bug 565345)
-          if runThis[0].find("xpcshell") != -1:
+          if engine.find("xpcshell") != -1:
             oklevel = jsunhappy.JS_ABNORMAL_EXIT
 
         if level > oklevel:
@@ -64,25 +64,17 @@ def many_timed_runs():
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
             
-            # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
-            lith1tmp = logPrefix + "-lith1-tmp"
-            os.mkdir(lith1tmp)
-            lithArgs = [jsunhappypy, str(level), str(timeout), knownPath] + runThis[:-1] + [filenameToReduce]
-            print "multi_timed_run is running Lithium..."
-            print ' '.join([lithiumpy] + lithArgs)
-            subprocess.call(["python", lithiumpy, "--tempdir=" + lith1tmp] + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
-            if level > jsunhappy.JS_DID_NOT_FINISH:
-                lith2tmp = logPrefix + "-lith2-tmp"
-                os.mkdir(lith2tmp)
-                subprocess.call(["python", lithiumpy, "--tempdir=" + lith2tmp, "-c"] + lithArgs, stdout=open(logPrefix + "-lith2-out", "w"))
-            print "Done running Lithium"
+            # Run Lithium and autobisect (make a reduced testcase and find a regression window)
+            itest = [jsunhappypy, str(level), str(timeout), knownPath]
+            alsoRunChar = (level > jsunhappy.JS_DID_NOT_FINISH)
+            pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, alsoRunChar=alsoRunChar)
 
         else:
             if options.useCompareJIT and level == jsunhappy.JS_FINE:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(runThis[0], jitcomparefilename, logPrefix + "-cj", knownPath, timeout, deleteBoring=True)
+                compareJIT.compareJIT(engine, jitcomparefilename, logPrefix + "-cj", knownPath, timeout, deleteBoring=True)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
