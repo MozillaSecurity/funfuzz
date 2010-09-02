@@ -269,25 +269,17 @@ def cpUsefulFiles(filePath):
         filePath = os.path.expanduser(filePath)
     shutil.copy2(filePath, '.')
 
-def test32or64bit(jsShellName, archNum):
+def archOfBinary(b):
     '''
     This function tests if a binary is 32-bit or 64-bit.
     '''
-    test32or64bitStr = captureStdout(['file', jsShellName])
-    if archNum == '32':
-        if verbose:
-            if ('386' in test32or64bitStr) or ('32-bit' in test32or64bitStr):
-                print 'test32or64bitStr is:', test32or64bitStr
-                verboseDump('Compiled binary is 32-bit.')
-        if ('386' not in test32or64bitStr) and ('32-bit' not in test32or64bitStr):
-            raise Exception('Compiled binary is not 32-bit.')
-    elif archNum == '64':
-        if verbose:
-            if '64-bit' in test32or64bitStr:
-                print 'test32or64bitStr is:', test32or64bitStr
-                verboseDump('Compiled binary is 64-bit.')
-        if '64-bit' not in test32or64bitStr:
-            raise Exception('Compiled binary is not 64-bit.')
+    filetype = captureStdout(['file', b])
+    if 'universal binary' in filetype:
+        raise Exception("I don't know how to deal with multiple-architecture binaries")
+    if '386' in filetype or '32-bit' in filetype:
+        return '32'
+    if '64-bit' in filetype:
+        return '64'
 
 def testDbgOrOpt(jsShellName, compileType):
     '''
