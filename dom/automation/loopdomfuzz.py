@@ -8,7 +8,7 @@ p0 = os.path.dirname(__file__)
 emptiesDir = os.path.abspath(os.path.join(p0, "..", "empties"))
 fuzzersDir = os.path.abspath(os.path.join(p0, "..", "fuzzers"))
 lithiumpy = ["python", "-u", os.path.join(p0, "..", "..", "lithium", "lithium.py")]
-rundomfuzzpy = os.path.join(p0, "rundomfuzz.py")
+rundomfuzzpy = os.path.join("fuzzing", "dom", "automation", "rundomfuzz.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
