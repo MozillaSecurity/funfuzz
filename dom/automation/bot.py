@@ -207,5 +207,7 @@ if __name__ == "__main__":
       # Remove the old *_taken directory from the server
       if takenNameOnServer:
         runCommand("rm -rf " + takenNameOnServer)
-      if os.path.exists("build"):
+
+      # Remove build directory
+      if not options.reuse_build and os.path.exists("build"):
         shutil.rmtree("build")
