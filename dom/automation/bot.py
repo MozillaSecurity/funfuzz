@@ -106,6 +106,8 @@ if __name__ == "__main__":
       remote_host=None,
       basedir=os.path.join(os.path.expanduser("~"), "domfuzzjobs") + "/",
   )
+  parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
+      help="Use the existing 'build' directory.")
   parser.add_option("--remote-host", dest="remote_host",
       help="Use remote host to store fuzzing data; format: user@host")
   parser.add_option("--basedir", dest="basedir",
@@ -147,8 +149,8 @@ if __name__ == "__main__":
       (job, oldjobname, takenNameOnServer) = grabJob(relevantJobsDir, "_needsreduction")
       if job:
         print "Reduction time!"
-        preferredBuild = readTinyFile(job + "preferred-build.txt")
-        if len(preferredBuild) > 7: # hack shortcut for local running and for 'haha' (see below)
+        if not options.reuse_build:
+          preferredBuild = readTinyFile(job + "preferred-build.txt")
           if not build_downloader.downloadBuild(preferredBuild):
             print "Preferred build for this reduction was missing, grabbing latest build"
             downloadLatestBuild()
@@ -157,10 +159,13 @@ if __name__ == "__main__":
     
       else:
         print "Fuzz time!"
-        if not os.path.exists("build"): # shortcut for local running that i should probably remove
-          buildUsed = downloadLatestBuild()
+        if options.reuse_build and os.path.exists("build"):
+          buildUsed = "reused"
         else:
-          buildUsed = "haha" # hack, see preferredBuild stuff above
+          if os.path.exists("build"):
+            print "Deleting old build"
+            shutil.rmtree("build")
+          buildUsed = downloadLatestBuild()
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
         if ldfResult == loopdomfuzz.HAPPY:
           print "Happy happy! No bugs found!"
@@ -202,3 +207,5 @@ if __name__ == "__main__":
       # Remove the old *_taken directory from the server
       if takenNameOnServer:
         runCommand("rm -rf " + takenNameOnServer)
+      if os.path.exists("build"):
+        shutil.rmtree("build")
