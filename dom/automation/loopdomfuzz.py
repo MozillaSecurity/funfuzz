@@ -25,7 +25,7 @@ def many_timed_runs(targetTime, args):
     startTime = time.time()
 
     levelAndLines, options = rundomfuzz.rdfInit(args)
-    browserDir = os.path.abspath(options.browserDir)
+    browserDir = options.browserDir
 
     reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
     urls = getURLs(os.path.abspath(reftestFilesDir))
