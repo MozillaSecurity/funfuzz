@@ -111,10 +111,14 @@ def findLatestBuild(buildType):
 
 def mozPlatform():
   s = platform.system()
-  m = platform.machine()
   if s == "Darwin":
-    return "macosx"
+    a = platform.architecture()[0] # machine() depends on python version?
+    if a == "64bit":
+      return "macosx64"
+    else:
+      return "macosx"
   if s == "Linux":
+    m = platform.machine()
     if m == "x86_64":
       return "linux64"
     else:
