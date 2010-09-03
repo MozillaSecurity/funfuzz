@@ -48,6 +48,7 @@ sys.path.append(path2)
 from fnStartjsfunfuzz import *
 
 verbose = False
+COMPILATION_FAILED_LABEL = 'skip'
 
 def main():
     global hgPrefix
@@ -98,6 +99,7 @@ def main():
     while currRev is not None:
         result = None
         cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, str(currRev)))
+        cachedNoShell = cachedShell + ".busted"
         jsShellName = None
         label = None
         
@@ -105,6 +107,8 @@ def main():
         if os.path.exists(cachedShell):
             jsShellName = cachedShell
             print "Found cached shell...   ",
+        elif os.path.exists(cachedNoShell):
+            label = (COMPILATION_FAILED_LABEL, 'compilation failed (cached)')
         else:
             print "Updating...",
             captureStdout(hgPrefix + ['update', '-r', str(currRev)], ignoreStderr=True)
@@ -114,7 +118,8 @@ def main():
                                         archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, 
                                         currRev)
             except Exception as e:
-                label = ('skip', 'compilation failed (' + str(e) + ')')
+                open(cachedNoShell, 'w').close()
+                label = (COMPILATION_FAILED_LABEL, 'compilation failed (' + str(e) + ')')
 
         if jsShellName:
             print "Testing...",
