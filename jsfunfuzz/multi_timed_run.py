@@ -48,9 +48,7 @@ def many_timed_runs():
         oklevel = jsunhappy.JS_KNOWN_CRASH
         # With jsfunfuzz, allow hangs.  With regexpfuzz, allow hangs temporarily (bug 576811)
         if options.fuzzjs.find("jsfunfuzz") != -1 or options.fuzzjs.find("regexpfuzz") != -1:
-          oklevel = jsunhappy.JS_TIMED_OUT
-          # In xpcshell, allow abnormal exits (bug 565345)
-          if engine.find("xpcshell") != -1:
+            # Allow abnormal exits in xpcshell (bug 565345) and js shell (OOM)
             oklevel = jsunhappy.JS_ABNORMAL_EXIT
 
         if level > oklevel:
