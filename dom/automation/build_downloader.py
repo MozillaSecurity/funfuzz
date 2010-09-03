@@ -69,7 +69,10 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
       untarbz2(downloadURL(remotefn, localfn), appDir)
       os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
       stackwalk = os.path.join("build", "minidump_stackwalk")
-      downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk", stackwalk)
+      if remotefn.endswith(".linux-i686.tar.bz2"):
+        downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk", stackwalk)
+      else:
+        downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk", stackwalk)
       os.chmod(stackwalk, stat.S_IRWXU)
       succeeded = True
     if remotefn.endswith(".win32.zip"):
