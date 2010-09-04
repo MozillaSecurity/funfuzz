@@ -275,7 +275,7 @@ def rdfInit(args):
   options.argURL = args[1] if len(args) > 1 else "" # used by standalone (optional) and lithium but not loopdomfuzz
   options.browserDir = browserDir # used by loopdomfuzz
 
-  profileDir = mkdtemp()
+  profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
   createDOMFuzzProfile(profileDir, options.valgrind)
 
   runBrowserOptions = []
@@ -322,6 +322,11 @@ def rdfInit(args):
       "--gen-suppressions=all"
     )
   
+  def deleteProfile():
+    if profileDir:
+      print "Deleting Firefox profile in " + profileDir
+      shutil.rmtree(profileDir)
+
   def levelAndLines(url, logPrefix=None):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
     
@@ -421,7 +426,7 @@ def rdfInit(args):
   
     return (lev, FRClines)
     
-  return levelAndLines, options # return a closure along with the set of options
+  return levelAndLines, deleteProfile, options # return a closure along with the set of options
 
 
 # should eventually try to squeeze this into automation.py or automationutils.py
@@ -489,24 +494,23 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
 
 # For use by Lithium
 def init(args):
-  global levelAndLinesForLithium, minimumInterestingLevel, lithiumURL
-  levelAndLinesForLithium, options = rdfInit(args)
+  global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL
+  levelAndLinesForLithium, deleteProfileForLithium, options = rdfInit(args)
   minimumInterestingLevel = options.minimumInterestingLevel
   lithiumURL = options.argURL
 def interesting(args, tempPrefix):
   actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix)
   return actualLevel >= minimumInterestingLevel
-# no appropriate callback from lithium for deleteProfile -- especially since we don't get to try..finally for Ctrl+C
-# could this be fixed by using a generator with yield??
+def cleanup(args):
+  # we don't get to try..finally for Ctrl+C.
+  # could this be fixed by using a generator with yield?
+  deleteProfileForLithium()
+
 
 if __name__ == "__main__":
-  logPrefix = os.path.join(mkdtemp(), "t")
+  logPrefix = os.path.join(mkdtemp(prefix-"domfuzz-rdf-main"), "t")
   print logPrefix
-  levelAndLines, options = rdfInit(sys.argv[1:])
+  levelAndLines, deleteProfileForMain, options = rdfInit(sys.argv[1:])
   level, lines = levelAndLines(options.argURL or "http://www.google.com/", logPrefix)
   print level
-  #deleteProfile()
-
-#def deleteProfile():
-#  if profileDir:
-#    shutil.rmtree(profileDir)
+  #deleteProfileForMain()
