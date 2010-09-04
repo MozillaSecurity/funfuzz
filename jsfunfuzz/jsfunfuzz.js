@@ -585,6 +585,7 @@ function tryItOut(code)
        && code.indexOf("++") == -1                  // avoid bug 584603
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
+       && code.indexOf(">>") == -1                  // avoid bug 593554
       ) {
         // FCM cookie
         var cookie1 = "/*F";
