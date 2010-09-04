@@ -500,8 +500,7 @@ def interesting(args, tempPrefix):
 # could this be fixed by using a generator with yield??
 
 if __name__ == "__main__":
-  import tempfile
-  logPrefix = tempfile.mkdtemp() + "t"
+  logPrefix = os.path.join(mkdtemp(), "t")
   print logPrefix
   levelAndLines, options = rdfInit(sys.argv[1:])
   level, lines = levelAndLines(options.argURL or "http://www.google.com/", logPrefix)
