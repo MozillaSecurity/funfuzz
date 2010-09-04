@@ -148,6 +148,7 @@ class AmissLogHandler:
     self.FRClines = []
     self.pid = None
     self.fullLogHead = []
+    self.summaryLog = []
     self.expectedToHang = True
     self.nsassertionCount = 0
     self.fuzzerComplained = False
@@ -155,6 +156,7 @@ class AmissLogHandler:
     self.crashIsKnown = False
     self.timedOut = False
   def processLine(self, msgLF):
+    msgLF = stripBeeps(msgLF)
     msg = msgLF.rstrip("\n")
     if len(self.fullLogHead) < 100000:
       self.fullLogHead.append(msgLF)
@@ -199,6 +201,11 @@ class AmissLogHandler:
   def printAndLog(self, msg):
     print "$ " + msg
     self.fullLogHead.append(msg + "\n")
+    self.summaryLog.append(msg + "\n")
+
+def stripBeeps(s):
+  """Strip BEL characters, in order to make copy-paste happier and avoid triggering text/plain binary-sniffing in web browsers."""
+  return s.replace("\x07", "")
 
 class FigureOutDirs:
   def __init__(self, browserDir):
@@ -404,6 +411,9 @@ def rdfInit(args):
       outlog = open(logPrefix + "-output.txt", "w")
       outlog.writelines(alh.fullLogHead)
       outlog.close()
+      summaryLogFile = open(logPrefix + "-summary.txt", "w")
+      summaryLogFile.writelines(alh.summaryLog)
+      summaryLogFile.close()
   
     print("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
   
