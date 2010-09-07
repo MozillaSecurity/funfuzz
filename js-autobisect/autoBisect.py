@@ -94,7 +94,7 @@ def main():
         currRev = startRepo
     else:
         captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
-        currRev = extractChangesetFromBisectMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
+        currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
 
     while currRev is not None:
         label = testRev(currRev, shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
@@ -314,12 +314,15 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
     else:
         return "8c52a9486c8f" # ~21110, switch from Makefile.ref to autoconf
 
-def extractChangesetFromBisectMessage(str):
-    # "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
-    r = re.compile(r"Testing changeset (\d+):(\w{12}) .*")
+def extractChangesetFromMessage(str):
+    # For example, a bisect message like "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
+    r = re.compile(r"(^|.* )(\d+):(\w{12}).*")
     m = r.match(str)
     if m:
-        return int(m.group(1))
+        return int(m.group(2))
+
+assert extractChangesetFromMessage("x 12345:abababababab") == 12345
+assert extractChangesetFromMessage("12345:abababababab y") == 12345
 
 def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
     tempDir = tempfile.mkdtemp(prefix="abc-" + str(currRev) + "-")
@@ -412,7 +415,7 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
         # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
         print firstLine(outputResult)
 
-    currRev = extractChangesetFromBisectMessage(firstLine(outputResult))
+    currRev = extractChangesetFromMessage(firstLine(outputResult))
     if currRev is None:
         raise Exception("hg did not suggest a changeset to test!")
 
