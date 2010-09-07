@@ -97,7 +97,6 @@ def main():
         currRev = extractChangesetFromBisectMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
 
     while currRev is not None:
-        result = None
         cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, str(currRev)))
         cachedNoShell = cachedShell + ".busted"
         jsShellName = None
