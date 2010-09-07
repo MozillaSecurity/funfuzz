@@ -439,4 +439,6 @@ def rmDirInclSubDirs(dir):
     shutil.rmtree(dir)
 
 if __name__ == '__main__':
+    # Reopen stdout, unbuffered.
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
     main()
