@@ -87,26 +87,48 @@ def main():
     if not os.path.exists(shellCacheDir):
         os.mkdir(shellCacheDir)
 
+    labels = {}
+
     # Specify `hg bisect` ranges.
     captureStdout(hgPrefix + ['bisect', '-r'])
     
     if paranoidBool:
         currRev = startRepo
     else:
+        labels[startRepo] = ('good', 'assumed start rev is good')
+        labels[endRepo] = ('bad', 'assumed end rev is bad')
         captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
         currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
 
     while currRev is not None:
         label = testRev(currRev, shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
+        labels[currRev] = label
         print label[0] + " (" + label[1] + ") ",
 
         print "Bisecting..."
-        (currRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo, paranoidBool)
+        (currRev, blamedGoodOrBad, blamedRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo, paranoidBool)
         
         if paranoidBool:
             paranoidBool = False
             assert currRev is None
             currRev = endRepo
+
+    if blamedRev is not None:
+        # Ensure we actually tested the parents of the blamed revision.
+        parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", str(blamedRev)]).split(",")[:-1]
+        for p in parents:
+            p = int(p)
+            if labels.get(p) is None:
+                print "Oops! We didn't test rev %d, a parent of the blamed revision! Let's do that now." % p
+                labels[p] = testRev(p, shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
+                print label[0] + " (" + label[1] + ") "
+            if labels[p][0] == "skip":
+                print "Parent rev %d was marked as 'skip', so the regression window includes it."
+            elif labels[p][0] == blamedGoodOrBad:
+                print "Bisect lied to us! Parent rev %d was also %s!" % (p, blamedGoodOrBad)
+            else:
+                # Good, the parent's label is the opposite of the blamed rev's label.
+                assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
 
     if verbose:
         print "Resetting bisect"
@@ -403,19 +425,24 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     assert hgLabel in ("good", "bad", "skip")
 
     outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, str(currRev)])
-    if 'revision is:' in outputResult:
+    outputLines = outputResult.split("\n")
+    r = re.compile("The first (good|bad) revision is:")
+    m = r.match(outputLines[0])
+    if m:
         print '\nautoBisect shows this is probably related to the following changeset:\n'
         print outputResult
-        return None, startRepo, endRepo
+        blamedGoodOrBad = m.group(1)
+        blamedRev = extractChangesetFromMessage(outputLines[1])
+        return None, blamedGoodOrBad, blamedRev, startRepo, endRepo
 
     if ignoreResult:
-        return None, startRepo, endRepo
+        return None, None, None, startRepo, endRepo
 
     if verbose:
         # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
-        print firstLine(outputResult)
+        print outputLines[0]
 
-    currRev = extractChangesetFromMessage(firstLine(outputResult))
+    currRev = extractChangesetFromMessage(outputLines[0])
     if currRev is None:
         raise Exception("hg did not suggest a changeset to test!")
 
@@ -429,7 +456,7 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     elif hgLabel == 'skip':
         pass
 
-    return currRev, start, end
+    return currRev, None, None, start, end
 
 def firstLine(s):
     return s.split('\n')[0]
