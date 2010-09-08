@@ -456,6 +456,11 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
 
     outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])
     outputLines = outputResult.split("\n")
+
+    if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
+        print outputResult
+        return None, None, None, startRepo, endRepo
+
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
