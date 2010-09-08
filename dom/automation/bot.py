@@ -115,6 +115,9 @@ if __name__ == "__main__":
   parser.add_option("--retest-all", dest="retestAll", action="store_true",
       help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
   options, args = parser.parse_args()
+  
+  if options.retestAll:
+    options.reuse_build = True
 
   remoteLoginAndMachine = options.remote_host
   remoteBase = options.basedir
@@ -140,7 +143,7 @@ if __name__ == "__main__":
       if job:
         reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
         print "reduced filename: " + reducedFn
-        lithArgs = ["--strategy=check-only", "rundomfuzz.py", "build", reducedFn]
+        lithArgs = ["--strategy=check-only", loopdomfuzz.rundomfuzzpy, "build", reducedFn]
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "T")
       else:
         shouldLoop = False
