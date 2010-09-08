@@ -77,7 +77,7 @@ def main():
     endRepo = hgId(endRepo)
 
     if verbose:
-        print "Bisecting in the range " + str(startRepo) + ":" + str(endRepo)
+        print "Bisecting in the range " + startRepo + ":" + endRepo
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
@@ -97,8 +97,8 @@ def main():
     else:
         labels[startRepo] = ('good', 'assumed start rev is good')
         labels[endRepo] = ('bad', 'assumed end rev is bad')
-        captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
-        currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
+        captureStdout(hgPrefix + ['bisect', '-U', '-g', startRepo])
+        currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', endRepo])))
 
     testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
 
@@ -117,21 +117,20 @@ def main():
 
     if blamedRev is not None:
         # Ensure we actually tested the parents of the blamed revision.
-        parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", str(blamedRev)]).split(",")[:-1]
+        parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", blamedRev]).split(",")[:-1]
         for p in parents:
-            p = int(p)
             testedLastMinute = False
             if labels.get(p) is None:
                 print ""
-                print "Oops! We didn't test rev %d, a parent of the blamed revision! Let's do that now." % p
+                print "Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p
                 label = testRev(p)
                 labels[p] = label
                 print label[0] + " (" + label[1] + ") "
                 testedLastMinute = True
             if labels[p][0] == "skip":
-                print "Parent rev %d was marked as 'skip', so the regression window includes it."
+                print "Parent rev %s was marked as 'skip', so the regression window includes it."
             elif labels[p][0] == blamedGoodOrBad:
-                print "Bisect lied to us! Parent rev %d was also %s!" % (p, blamedGoodOrBad)
+                print "Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad)
             else:
                 if verbose or testedLastMinute:
                     print "As expected, the parent's label is the opposite of the blamed rev's label."
@@ -147,10 +146,10 @@ def main():
 
 def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
     def testRev(rev):
-        cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, str(rev)))
+        cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, rev))
         cachedNoShell = cachedShell + ".busted"
 
-        print "Rev " + str(rev) + ":",
+        print "Rev " + rev + ":",
         if os.path.exists(cachedShell):
             jsShellName = cachedShell
             print "Found cached shell...   ",
@@ -158,7 +157,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, 
             return (COMPILATION_FAILED_LABEL, 'compilation failed (cached)')
         else:
             print "Updating...",
-            captureStdout(hgPrefix + ['update', '-r', str(rev)], ignoreStderr=True)
+            captureStdout(hgPrefix + ['update', '-r', rev], ignoreStderr=True)
             try:
                 print "Compiling...",
                 jsShellName = makeShell(shellCacheDir, sourceDir,
@@ -207,7 +206,7 @@ def externalTestAndLabel(filename, methodjitBool, tracingjitBool, interestingnes
 
     def inner(jsShellName, rev):
         conditionArgs = conditionArgPrefix + [jsShellName] + engineFlags + [filename]
-        if conditionScript.interesting(conditionArgs, tempPrefix + str(rev)):
+        if conditionScript.interesting(conditionArgs, tempPrefix + rev):
             return ('bad', 'interesting')
         else:
             return ('good', 'not interesting')
@@ -350,13 +349,13 @@ def extractChangesetFromMessage(str):
     r = re.compile(r"(^|.* )(\d+):(\w{12}).*")
     m = r.match(str)
     if m:
-        return int(m.group(2))
+        return m.group(2)
 
-assert extractChangesetFromMessage("x 12345:abababababab") == 12345
-assert extractChangesetFromMessage("12345:abababababab y") == 12345
+assert extractChangesetFromMessage("x 12345:abababababab") == "12345"
+assert extractChangesetFromMessage("12345:abababababab y") == "12345"
 
 def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
-    tempDir = tempfile.mkdtemp(prefix="abc-" + str(currRev) + "-")
+    tempDir = tempfile.mkdtemp(prefix="abc-" + currRev + "-")
     compilePath = os.path.join(tempDir, "compilePath")
 
     if verbose:
@@ -381,7 +380,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
 
     # Compile and copy the first binary.
     # Don't use pymake because older changesets may fail to compile.
-    shell = compileCopy(archNum, compileType, str(currRev), False, shellCacheDir, objdir)
+    shell = compileCopy(archNum, compileType, currRev, False, shellCacheDir, objdir)
     rmDirInclSubDirs(tempDir)
     return shell
 
@@ -433,7 +432,7 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
 
-    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, str(currRev)])
+    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])
     outputLines = outputResult.split("\n")
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
@@ -459,9 +458,9 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     start = startRepo
     end = endRepo
     if hgLabel == 'bad':
-        end = int(currRev)
+        end = currRev
     elif hgLabel == 'good':
-        start = int(currRev)
+        start = currRev
     elif hgLabel == 'skip':
         pass
 
