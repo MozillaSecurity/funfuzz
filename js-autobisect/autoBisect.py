@@ -100,8 +100,10 @@ def main():
         captureStdout(hgPrefix + ['bisect', '-U', '-g', str(startRepo)])
         currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', str(endRepo)])))
 
+    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
+
     while currRev is not None:
-        label = testRev(currRev, shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
+        label = testRev(currRev)
         labels[currRev] = label
         print label[0] + " (" + label[1] + ") ",
 
@@ -122,7 +124,7 @@ def main():
             if labels.get(p) is None:
                 print ""
                 print "Oops! We didn't test rev %d, a parent of the blamed revision! Let's do that now." % p
-                label = testRev(p, shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
+                label = testRev(p)
                 labels[p] = label
                 print label[0] + " (" + label[1] + ") "
                 testedLastMinute = True
@@ -143,30 +145,32 @@ def main():
         print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
-def testRev(rev, shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
-    cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, str(rev)))
-    cachedNoShell = cachedShell + ".busted"
+def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
+    def testRev(rev):
+        cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, str(rev)))
+        cachedNoShell = cachedShell + ".busted"
 
-    print "Rev " + str(rev) + ":",
-    if os.path.exists(cachedShell):
-        jsShellName = cachedShell
-        print "Found cached shell...   ",
-    elif os.path.exists(cachedNoShell):
-        return (COMPILATION_FAILED_LABEL, 'compilation failed (cached)')
-    else:
-        print "Updating...",
-        captureStdout(hgPrefix + ['update', '-r', str(rev)], ignoreStderr=True)
-        try:
-            print "Compiling...",
-            jsShellName = makeShell(shellCacheDir, sourceDir,
-                                    archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport,
-                                    rev)
-        except Exception as e:
-            open(cachedNoShell, 'w').close()
-            return (COMPILATION_FAILED_LABEL, 'compilation failed (' + str(e) + ')')
+        print "Rev " + str(rev) + ":",
+        if os.path.exists(cachedShell):
+            jsShellName = cachedShell
+            print "Found cached shell...   ",
+        elif os.path.exists(cachedNoShell):
+            return (COMPILATION_FAILED_LABEL, 'compilation failed (cached)')
+        else:
+            print "Updating...",
+            captureStdout(hgPrefix + ['update', '-r', str(rev)], ignoreStderr=True)
+            try:
+                print "Compiling...",
+                jsShellName = makeShell(shellCacheDir, sourceDir,
+                                        archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport,
+                                        rev)
+            except Exception as e:
+                open(cachedNoShell, 'w').close()
+                return (COMPILATION_FAILED_LABEL, 'compilation failed (' + str(e) + ')')
 
-    print "Testing...",
-    return testAndLabel(jsShellName, rev)
+        print "Testing...",
+        return testAndLabel(jsShellName, rev)
+    return testRev
 
 def internalTestAndLabel(filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
     def inner(jsShellName, rev):
