@@ -116,25 +116,7 @@ def main():
             currRev = endRepo
 
     if blamedRev is not None:
-        # Ensure we actually tested the parents of the blamed revision.
-        parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", blamedRev]).split(",")[:-1]
-        for p in parents:
-            testedLastMinute = False
-            if labels.get(p) is None:
-                print ""
-                print "Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p
-                label = testRev(p)
-                labels[p] = label
-                print label[0] + " (" + label[1] + ") "
-                testedLastMinute = True
-            if labels[p][0] == "skip":
-                print "Parent rev %s was marked as 'skip', so the regression window includes it."
-            elif labels[p][0] == blamedGoodOrBad:
-                print "Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad)
-            else:
-                if verbose or testedLastMinute:
-                    print "As expected, the parent's label is the opposite of the blamed rev's label."
-                assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
+        checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev)
 
     if verbose:
         print "Resetting bisect"
@@ -143,6 +125,27 @@ def main():
     if verbose:
         print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
+
+def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev):
+    """Ensure we actually tested the parents of the blamed revision."""
+    parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", blamedRev]).split(",")[:-1]
+    for p in parents:
+        testedLastMinute = False
+        if labels.get(p) is None:
+            print ""
+            print "Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p
+            label = testRev(p)
+            labels[p] = label
+            print label[0] + " (" + label[1] + ") "
+            testedLastMinute = True
+        if labels[p][0] == "skip":
+            print "Parent rev %s was marked as 'skip', so the regression window includes it."
+        elif labels[p][0] == blamedGoodOrBad:
+            print "Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad)
+        else:
+            if verbose or testedLastMinute:
+                print "As expected, the parent's label is the opposite of the blamed rev's label."
+            assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
 
 def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
     def testRev(rev):
