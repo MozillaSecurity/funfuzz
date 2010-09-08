@@ -74,8 +74,8 @@ def main():
         startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum)
 
     # Resolve names such as "tip", "default", or "9f2641871ce8" to numeric hg ids such as "52707".
-    startRepo = hgId(startRepo)
-    endRepo = hgId(endRepo)
+    realStartRepo = startRepo = hgId(startRepo)
+    realEndRepo = endRepo = hgId(endRepo)
 
     if verbose:
         print "Bisecting in the range " + startRepo + ":" + endRepo
@@ -117,7 +117,7 @@ def main():
             currRev = endRepo
 
     if blamedRev is not None:
-        checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev)
+        checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo, realEndRepo)
 
     if verbose:
         print "Resetting bisect"
@@ -127,14 +127,24 @@ def main():
         print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
-def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev):
+def findCommonAncestor(a, b):
+    # Requires hg 1.6 for the revset feature
+    return captureStdout(hgPrefix + ["log", "--template={rev}", "-r", "ancestor("+a+","+b+")"])
+
+def isAncestor(a, b):
+    return findCommonAncestor(a, b) == a
+
+def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """Ensure we actually tested the parents of the blamed revision."""
     parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", blamedRev]).split(",")[:-1]
+    bisectLied = False
     for p in parents:
         testedLastMinute = False
         if labels.get(p) is None:
             print ""
             print "Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p
+            if not isAncestor(startRepo, p) and not isAncestor(endRepo, p):
+                print "We did not test rev %s because it is not a descendant of either %s or %s." % (p, startRepo, endRepo)
             label = testRev(p)
             labels[p] = label
             print label[0] + " (" + label[1] + ") "
@@ -143,10 +153,18 @@ def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev):
             print "Parent rev %s was marked as 'skip', so the regression window includes it."
         elif labels[p][0] == blamedGoodOrBad:
             print "Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad)
+            bisectLied = True
         else:
             if verbose or testedLastMinute:
                 print "As expected, the parent's label is the opposite of the blamed rev's label."
             assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
+    if len(parents) == 2 and bisectLied:
+        print ""
+        print "Perhaps we should expand the search to include the common ancestor of the blamed changeset's parents."
+        ca = findCommonAncestor(parents[0], parents[1])
+        print "The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca)
+        label = testRev(ca)
+        print label[0] + " (" + label[1] + ") "
 
 def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
     def testRev(rev):
