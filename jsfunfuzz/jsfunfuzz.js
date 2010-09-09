@@ -554,6 +554,11 @@ function tryItOut(code)
   if (!wtt.allowParse)
     return;
 
+  try {
+    Reflect.parse(code);
+  } catch(e) {
+  }
+
   if (count % 20 == 1) {
     if (wtt.allowExec) {
       try {
