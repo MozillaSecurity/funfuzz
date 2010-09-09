@@ -586,6 +586,7 @@ function tryItOut(code)
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
       if (code.indexOf("Error") == -1               // avoid bug 525518
        && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
        && code.indexOf("--") == -1                  // avoid bug 584603
        && code.indexOf("++") == -1                  // avoid bug 584603
        && code.indexOf("gc") == -1                  // gc is noisy
