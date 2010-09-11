@@ -44,10 +44,9 @@ def untarbz2(fn, dest):
 def undmg(fn, dest, mountpoint):
   subprocess.check_call(["hdiutil", "attach", "-quiet", "-mountpoint", mountpoint, fn], stdout=devnull)
   try:
-    #while not os.path.exists(mountpoint + "/MinefieldDebug.app"):
-    #  print "waiting for disk image"
-    #  time.sleep(1)
-    shutil.copytree(mountpoint + "/MinefieldDebug.app", dest + "/MinefieldDebug.app")
+    apps = filter(lambda s: s.endswith(".app"), os.listdir(mountpoint))
+    assert len(apps) == 1
+    shutil.copytree(mountpoint + "/" + apps[0], dest + "/" + apps[0])
   finally:
     subprocess.check_call(["hdiutil", "detach", mountpoint], stdout=devnull)
 
