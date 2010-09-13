@@ -397,7 +397,8 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
     threadsafe = False  # Let's disable support for threadsafety in the js shell
     macver = osCheck()
     cfgJsBin(archNum, compileType,
-                      tracingjitBool, methodjitBool, valgrindSupport,
+                      True, True, # always *build* with both JITs enabled
+                      valgrindSupport,
                       threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
 
     # Compile and copy the first binary.
