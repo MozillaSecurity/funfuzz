@@ -91,9 +91,19 @@ def main():
 
     labels = {}
 
-    # Specify `hg bisect` ranges.
+    # Reset `hg bisect`
     captureStdout(hgPrefix + ['bisect', '-r'])
-    
+
+    # Skip some busted revisions.
+    # It might make sense to avoid (or note) these in checkBlameParents.
+    # 1. descendants(eae8350841be) - descendants(f3e58c264932) [partial]
+    captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
+    captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
+    captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
+    captureStdout(hgPrefix + ['bisect', '--skip', '0d5d2ceb9436'])
+    captureStdout(hgPrefix + ['bisect', '--skip', 'e6496cd735a6'])
+
+    # Specify `hg bisect` ranges.
     if paranoidBool:
         currRev = startRepo
     else:
