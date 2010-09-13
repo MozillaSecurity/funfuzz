@@ -83,6 +83,7 @@ def main():
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
         subprocess.call(hgPrefix + ['up', '-C', 'default'])
+        # XXX should also "hg purge" here, but "purge" is an extension.
 
     shellCacheDir = os.path.join(os.path.expanduser("~"), "Desktop", "autobisect-cache")
     if not os.path.exists(shellCacheDir):
