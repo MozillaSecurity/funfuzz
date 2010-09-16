@@ -42,6 +42,8 @@ def untarbz2(fn, dest):
   subprocess.check_call(["tar", "-C", dest, "-xjf", os.path.abspath(fn)], stdout=devnull)
 
 def undmg(fn, dest, mountpoint):
+  if os.path.exists(mountpoint):
+    subprocess.check_call(["hdiutil", "detach", mountpoint, "-force"], stdout=devnull)
   subprocess.check_call(["hdiutil", "attach", "-quiet", "-mountpoint", mountpoint, fn], stdout=devnull)
   try:
     apps = filter(lambda s: s.endswith(".app"), os.listdir(mountpoint))
