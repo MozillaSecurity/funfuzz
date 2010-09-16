@@ -414,6 +414,7 @@ function unlikelyToHang(code)
     && !( code.match( /for.*const/ )) // can be an infinite loop: for each(x in ...); const x;
     && !( code.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
     && !( code.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
+    && !( code.match( /for.*for.*gc/ ))
     ;
 }
 
