@@ -232,7 +232,10 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     verboseDump('This is the configure command:')
     verboseDump('%s\n' % cfgCmd)
 
-    subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
+    if os.name == 'posix':
+        subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
+    elif os.name == 'nt':
+        subprocess.call([cfgCmd], shell=True, stdout=open('nul', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
 
 def binaryPostfix():
     if os.name == 'posix':
