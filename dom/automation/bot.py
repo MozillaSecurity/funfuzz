@@ -203,9 +203,11 @@ if __name__ == "__main__":
       #print "oldjobname: " + oldjobname
       newjobname = oldjobname + statePostfix
       print "Uploading as: " + newjobname
-      os.rename(job, newjobname)
-      copyFiles(newjobname, remotePrefix + relevantJobsDir)
-      shutil.rmtree(newjobname)
+      newjobnameTmp = newjobname + ".uploading"
+      os.rename(job, newjobnameTmp)
+      copyFiles(newjobnameTmp, remotePrefix + relevantJobsDir)
+      runCommand("mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
+      shutil.rmtree(newjobnameTmp)
   
       # Remove the old *_taken directory from the server
       if takenNameOnServer:
