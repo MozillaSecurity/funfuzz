@@ -152,6 +152,11 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
     print "Done running Lithium"
     if deletableLithTemp:
       shutil.rmtree(deletableLithTemp)
+    r = readLithiumResult(lithlogfn)
+    subprocess.call(["gzip", "-f", lithlogfn])
+    return r
+
+def readLithiumResult(lithlogfn):
     with file(lithlogfn) as f:
       for line in f:
         if line.startswith("Lithium result"):
