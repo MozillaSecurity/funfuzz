@@ -2965,22 +2965,30 @@ function makeProxyHandler(d, b)
 function makeShapeyConstructor(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  var nProps = rnd(5);
   var argName = uniqueVarName();
   var t = rnd(4) ? "this" : argName;
   var funText = "function shapeyConstructor(" + argName + "){";
   var bp = b.concat([argName]);
-  for (var i = 0; i < nProps; ++i) {
-    var propName = makeNewId(d, bp);
+
+  var nPropNames = rnd(6) + 1;
+  var propNames = [];
+  for (var i = 0; i < nPropNames; ++i) {
+    propNames[i] = makeNewId(d, b);
+  }
+
+  var nStatements = rnd(11);
+  for (var i = 0; i < nStatements; ++i) {
+    var propName = rndElt(propNames);
     if (rnd(5) == 0) {
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
     }
-    switch(rnd(10)) {
+    switch(rnd(7)) {
       case 0:  funText += "delete " + t + "." + propName + ";"; break;
       case 1:  funText += "Object.defineProperty(" + t + ", " + uneval(propName) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
       case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
       case 3:  funText += t + "." + propName + " = " + makeExpr(d, bp)        + ";"; break;
       case 4:  funText += t + "." + propName + " = " + makeFunction(d, bp)    + ";"; break;
+      case 5:  funText += "for (var ytq" + uniqueVarName() + " in " + t + ") { }"; break;
       default: funText += t + "." + propName + " = " + makeShapeyValue(d, bp) + ";"; break;
     }
   }
@@ -2995,10 +3003,12 @@ function makeShapeyConstructorLoop(d, b)
   var v2 = uniqueVarName(d, b);
   var bvv = b.concat([v, v2]);
   return makeShapeyConstructor(d - 1, b) + 
-    "/*tLoopC*/for each (let " + v + " in " + a + ") { " + 
-       "let " + v2 + " = " + "new shapeyConstructor(" + v + "); " +
+    "/*tLoopC*/for each (let " + v + " in " + a + ") { " +
+     "try{" +
+       "let " + v2 + " = " + rndElt(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
        //"print(uneval(" + v2 + "));" +
        makeStatement(d - 2, bvv) +
+     "}catch(e){print('TTEE ' + e); }" +
   " }"; 
 }
 
@@ -3013,7 +3023,7 @@ function makePropertyDescriptor(d, b)
   case 0:
     // Data descriptor. Can have 'value' and 'writable'.
     if (rnd(2)) s += "value: " + makeExpr(d, b) + ", ";
-    if (rnd(2)) s += "writable: " + makeExpr(d, b) + ", ";
+    if (rnd(2)) s += "writable: " + makeBoolean(d, b) + ", ";
     break;
   case 1:
     // Accessor descriptor. Can have 'get' and 'set'.
@@ -3023,8 +3033,8 @@ function makePropertyDescriptor(d, b)
   default:
   }
 
-  if (rnd(2)) s += "configurable: " + makeExpr(d, b) + ", ";
-  if (rnd(2)) s += "enumerable: " + makeExpr(d, b) + ", ";
+  if (rnd(2)) s += "configurable: " + makeBoolean(d, b) + ", ";
+  if (rnd(2)) s += "enumerable: " + makeBoolean(d, b) + ", ";
 
   // remove trailing comma
   if (s.length > 2)
@@ -3032,6 +3042,13 @@ function makePropertyDescriptor(d, b)
 
   s += "})";
   return s;
+}
+
+function makeBoolean(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+  if (rnd(10) == 0) return makeExpr(d - 2, b);
+  return rndElt(["true", "false"]);
 }
 
 function makeZealLevel()
@@ -3867,7 +3884,8 @@ function makeShapeyValue(d, b)
     [ "new String('')", "new String('q')" ],
 
     // Fun stuff
-    [ "function(){}", "{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments" ],
+    [ "function(){}"],
+    ["{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments" ],
 
     // Actual variables (slightly dangerous)
     [ b.length ? rndElt(b) : "x" ]
