@@ -84,7 +84,8 @@ def main():
     jsJitSwitch = True  # Activate JIT fuzzing here.
     methodJit = False  # Method JIT is off by default unless fuzzing JM branch.
     # Pymake is activated on Windows platforms by default, for tip only.
-    usePymake = True if os.name == 'nt' else False
+    # Pymake is broken for the moment.
+    usePymake = False if os.name == 'nt' else False
 
     jsCompareJITSwitch = True
     # Disable compareJIT if traceJit support is disabled in configure.
@@ -344,8 +345,9 @@ def main():
             if fuzzPath != (os.getcwdu() + '/'):
                 raise Exception('We are not in fuzzPath.')
         elif os.name == 'nt':
-            if fuzzPath[1:] != (os.getcwdu() + '/')[3:]:  # Ignore drive letter.
-                raise Exception('We are not in fuzzPath.')
+            pass  # temporarily disable this since this doesn't yet work with the new os.path.join stuff
+            #if fuzzPath[1:] != (os.getcwdu() + '/')[3:]:  # Ignore drive letter.
+                #raise Exception('We are not in fuzzPath.')
 
     # Copy over useful files that are updated in hg fuzzing branch.
     cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js')
