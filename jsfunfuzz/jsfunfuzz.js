@@ -244,7 +244,6 @@ function whatToTestSpidermonkeyTrunk(code)
     allowExec: unlikelyToHang(code)
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
-      && !( code.match( /function.*::.*=/ )) // avoid ????
     ,
 
     allowIter: true,
