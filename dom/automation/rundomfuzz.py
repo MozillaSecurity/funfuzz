@@ -416,6 +416,7 @@ def rdfInit(args):
       outlog = open(logPrefix + "-output.txt", "w")
       outlog.writelines(alh.fullLogHead)
       outlog.close()
+      subprocess.call(["gzip", logPrefix + "-output.txt"])
       summaryLogFile = open(logPrefix + "-summary.txt", "w")
       summaryLogFile.writelines(alh.summaryLog)
       summaryLogFile.close()
