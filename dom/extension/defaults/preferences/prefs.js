@@ -7,3 +7,4 @@ pref("dom.disable_window_status_change", false);
 pref("dom.disable_window_move_resize", true);
 pref("browser.tabs.warnOnClose", false);
 pref("browser.shell.checkDefaultBrowser", false);
+pref("general.warnOnAboutConfig", false);
