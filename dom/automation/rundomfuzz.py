@@ -76,6 +76,7 @@ user_pref("browser.sessionstore.resume_from_crash", false);
 user_pref("layout.debug.enable_data_xbl", true);
 user_pref("dom.disable_window_status_change", false);
 user_pref("dom.disable_window_move_resize", true);
+user_pref("dom.disable_open_during_load", false);
 user_pref("extensions.enabledScopes", 3);
 
 // Disable first-run annoyances.
