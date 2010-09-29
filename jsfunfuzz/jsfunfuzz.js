@@ -2211,7 +2211,16 @@ var statementMakers = weighted([
 
   { w: 1, fun: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
 
+  // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
+  { w: 1, fun: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
 ]);
+
+function linkedList(x, n)
+{
+  for (var i = 0; i < n; ++i)
+    x = {a: x};
+  return x;
+}
 
 function makeNamedFunctionAndUse(d, b) {
   // Use a unique function name to make it less likely that we'll accidentally make a recursive call
