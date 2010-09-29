@@ -2207,7 +2207,7 @@ var statementMakers = weighted([
   { w: 1, fun: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
 
   // E4X "default xml namespace"
-  { w: 1, fun: function(d, b) { return cat(["default ", "xml ", "namespace ", " = ", makeExpr(d, b)]); } },
+  { w: 1, fun: function(d, b) { return cat(["default ", "xml ", "namespace ", " = ", makeExpr(d, b), ";"]); } },
 
   { w: 1, fun: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
 
