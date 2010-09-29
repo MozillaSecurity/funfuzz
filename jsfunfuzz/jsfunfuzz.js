@@ -2022,7 +2022,7 @@ function stripSemicolon(c)
  *************************/
 
 
-var TOTALLY_RANDOM = 100;
+var TOTALLY_RANDOM = 500;
 
 function makeStatement(d, b)
 {
@@ -2099,8 +2099,8 @@ function weighted(wa)
 var statementMakers = weighted([
 
   // Any two statements in sequence
-  { w: 4, fun: function(d, b) { return cat([makeStatement(d, b), makeStatement(d, b)]); } },
-  { w: 4, fun: function(d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); } },
+  { w: 15, fun: function(d, b) { return cat([makeStatement(d - 1, b),       makeStatement(d - 1, b)      ]); } },
+  { w: 15, fun: function(d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); } },
 
   // Stripping semilcolons.  What happens if semicolons are missing?  Especially with line breaks used in place of semicolons (semicolon insertion).
   { w: 1, fun: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n", makeStatement(d, b)]); } },
@@ -2111,8 +2111,8 @@ var statementMakers = weighted([
   { w: 4, fun: function(d, b) { var v = makeNewId(d, b); return cat([rndElt(varBinder), v, " = ", makeExpr(d, b), ";", makeStatement(d - 1, b.concat([v]))]); } },
   { w: 4, fun: function(d, b) { var v = makeNewId(d, b); return cat([makeStatement(d - 1, b.concat([v])), rndElt(varBinder), v, " = ", makeExpr(d, b), ";"]); } },
 
-  // Complex variable declarations, e.g. "const [a,b] = [3,4];"
-  { w: 1, fun: function(d, b) { return cat([rndElt(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); } },
+  // Complex variable declarations, e.g. "const [a,b] = [3,4];" or "var a,b,c,d=4,e;"
+  { w: 10, fun: function(d, b) { return cat([rndElt(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); } },
 
   // Blocks
   { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d, b), " }"]); } },
@@ -2198,7 +2198,10 @@ var statementMakers = weighted([
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
   { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
 
-  // Function-declaration-statements, along with calls to those functions
+  // Function-declaration-statements with shared names
+  { w: 10, fun: function(d, b) { return cat([makeStatement(d-2, b), "function ", makeId(d, b), "(", makeFormalArgList(d, b), ")", "{", "/*jjj*/", "}", makeStatement(d-2, b)]); } },
+
+  // Function-declaration-statements with unique names, along with calls to those functions
   { w: 8, fun: makeNamedFunctionAndUse },
 
   // Long script -- can confuse Spidermonkey's short vs long jmp or something like that.
@@ -2225,7 +2228,9 @@ function linkedList(x, n)
 function makeNamedFunctionAndUse(d, b) {
   // Use a unique function name to make it less likely that we'll accidentally make a recursive call
   var funcName = uniqueVarName();
-  var declStatement = cat(["/*hhh*/function ", funcName, "(", makeFormalArgList(d, b), ")", "{", makeStatement(d - 2, b), "}"]);
+  var formalArgList = makeFormalArgList(d, b);
+  var bv = formalArgList.length == 1 ? b.concat(formalArgList) : b;
+  var declStatement = cat(["/*hhh*/function ", funcName, "(", formalArgList, ")", "{", makeStatement(d - 1, bv), "}"]);
   var useStatement;
   if (rnd(2)) {
     // Direct call
@@ -3391,10 +3396,16 @@ function makeLetHead(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(2) == 1)
-    return makeLetHeadItem(d, b);
-  else
-    return makeLetHeadItem(d, b) + ", " + makeLetHeadItem(d - 1, b);
+  var items = (d > 0 || rnd(2) == 0) ? rnd(10) + 1 : 1;
+  var result = "";
+
+  for (var i = 0; i < items; ++i) {
+    if (i > 0)
+      result += ", ";
+    result += makeLetHeadItem(d - i, b);
+  }
+
+  return result;
 }
 
 function makeLetHeadItem(d, b)
@@ -3403,13 +3414,12 @@ function makeLetHeadItem(d, b)
 
   d = d - 1;
 
-  // 0 or more things being declared
-  var lhs = (rnd(3) == 1) ? makeDestructuringLValue(d, b) : makeId(d, b);
-
-  // initial value
-  var rhs = (rnd(2) == 1) ? (" = " + makeExpr(d, b)) : "";
-
-  return lhs + rhs;
+  if (d < 0 || rnd(2) == 0)
+    return rnd(2) ? uniqueVarName() : makeId(d, b);
+  else if (rnd(5) == 0)
+    return makeDestructuringLValue(d, b) + " = " + makeExpr(d, b);
+  else
+    return makeId(d, b) + " = " + makeExpr(d, b);
 }
 
 
@@ -3469,7 +3479,7 @@ function makeId(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(2) == 1 && b.length)
+  if (rnd(3) == 1 && b.length)
     return rndElt(b);
 
   switch(rnd(200))
@@ -3496,13 +3506,16 @@ function makeId(d, b)
     return makeNamespacePrefix(d - 1, b) + makeSpecialProperty(d - 1, b);
   case 17: case 18:
     return makeNamespacePrefix(d - 1, b) + makeId(d - 1, b);
+  case 19:
+    return " "; // [k, v] becomes [, v] -- test how holes are handled in unexpected destructuring
+  case 20:
+    return "this";
   }
 
   return rndElt(["a", "b", "c", "d", "e", "w", "x", "y", "z",
-                 "window", "this", "eval", "\u3056", "NaN",
+                 "window", "eval", "\u3056", "NaN",
 //                 "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
                  "functional", // perhaps decompiler code looks for "function"?
-                 " " // [k, v] becomes [, v] -- test how holes are handled in unexpected destructuring
                   ]);
 
   // window is a const (in the browser), so some attempts to redeclare it will cause errors
