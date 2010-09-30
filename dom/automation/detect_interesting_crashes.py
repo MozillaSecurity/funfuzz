@@ -44,7 +44,7 @@ def readIgnoreList(knownPath):
     ignoreList = []
     ignoreFile = file(os.path.join(knownPath, "crashes.txt"), "r")
     for line in ignoreFile:
-        line = line.strip()
+        line = line.rstrip()
         if ((len(line) > 0) and not line.startswith("#")):
             ignoreList.append(line)
     ignoreFile.close()

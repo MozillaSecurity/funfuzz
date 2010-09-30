@@ -65,7 +65,7 @@ def readIgnoreList(knownPath):
     global ready
     ignoreFile = file(os.path.join(knownPath, "assertions.txt"), "r")
     for line in ignoreFile:
-        line = line.strip()
+        line = line.rstrip()
         if ((len(line) > 0) and not line.startswith("#")):
             mpi = line.find(", file ")  # NS_ASSERTION and friends use this format
             if (mpi == -1):
