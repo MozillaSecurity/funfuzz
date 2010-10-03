@@ -34,7 +34,7 @@ DOMFuzzHelper.prototype = {
       if (w) {
         w.goQuitApplication = goQuitApplication;
         w.fuzzPrivRunSoon = runSoon;
-        w.fuzzPrivEnableAccessibility = enableAccessibility;
+        //w.fuzzPrivEnableAccessibility = enableAccessibility; // bug 571613, bug 404077, bug 571530
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
         w.fuzzPrivMP = sendMemoryPressureNotification;
         w.fuzzPrivCC = cycleCollect(aSubject);
