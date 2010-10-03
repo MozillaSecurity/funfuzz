@@ -1,7 +1,6 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 // Based on:
-// https://bugzilla.mozilla.org/show_bug.cgi?id=549539
 // https://bug549539.bugzilla.mozilla.org/attachment.cgi?id=429661
 // https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_1.9.3
 // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/console/hudservice/HUDService.jsm#3240
