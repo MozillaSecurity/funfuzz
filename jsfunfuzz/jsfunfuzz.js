@@ -2058,7 +2058,7 @@ var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
 
 function makeOpaqueIdiomaticLoop(d, b)
 {
-  var reps = 1 + rnd(7);
+  var reps = 1 + rnd(12);
   var vHidden = uniqueVarName();
   return ("/*oLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x) ").replace(/x/g, vHidden) +
       makeStatement(d - 2, b);
@@ -2066,7 +2066,7 @@ function makeOpaqueIdiomaticLoop(d, b)
 
 function makeTransparentIdiomaticLoop(d, b)
 {
-  var reps = 1 + rnd(7);
+  var reps = 1 + rnd(12);
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
   return ("/*vLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x)").replace(/x/g, vHidden) +
