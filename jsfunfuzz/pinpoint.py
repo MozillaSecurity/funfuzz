@@ -33,8 +33,8 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, alsoRunChar=Tr
 
     print "Done running Lithium"
 
-    autobisectCmd = ["python", autobisectpy, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
-    print ' '.join(autobisectCmd)
-    subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
-
-    print "Done running autobisect"
+    if os.path.basename(jsEngine) in ["js", "js.exe"]:
+        autobisectCmd = ["python", autobisectpy, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
+        print ' '.join(autobisectCmd)
+        subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
+        print "Done running autobisect"
