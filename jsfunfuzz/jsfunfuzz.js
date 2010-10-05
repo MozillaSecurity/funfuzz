@@ -554,6 +554,17 @@ function tryItOut(code)
   if (!wtt.allowParse)
     return;
 
+  if (primarySandbox) {
+    if (wtt.allowExec) {
+      try {
+        Components.utils.evalInSandbox(code, primarySandbox);
+      } catch(e) {
+        // It might not be safe to operate on |e|.
+      }
+    }
+    return;
+  }
+
   try {
     Reflect.parse(code);
   } catch(e) {
@@ -568,17 +579,6 @@ function tryItOut(code)
         print(errorToString(e));
       }
       tryEnsureSanity();
-    }
-    return;
-  }
-
-  if (primarySandbox) {
-    if (wtt.allowExec) {
-      try {
-        Components.utils.evalInSandbox(code, primarySandbox);
-      } catch(e) {
-        // It might not be safe to operate on |e|.
-      }
     }
     return;
   }
