@@ -160,8 +160,6 @@ function errorToString(e)
   }
 }
 
-var jitEnabled = (engine == ENGINE_SPIDERMONKEY_TRUNK) && jsshell && options().indexOf("jit") != -1;
-
 
 /***********************
  * AVOIDING KNOWN BUGS *
