@@ -70,6 +70,7 @@ if (jsshell) {
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
     options("anonfunfix");
   } else if (typeof XPCNativeWrapper == "function") {
+    // e.g. xpcshell
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof debug == "function") {
     engine = ENGINE_JAVASCRIPTCORE;
@@ -568,6 +569,17 @@ function tryItOut(code)
         print(errorToString(e));
       }
       tryEnsureSanity();
+    }
+    return;
+  }
+
+  if (primarySandbox) {
+    if (wtt.allowExec) {
+      try {
+        Components.utils.evalInSandbox(code, primarySandbox);
+      } catch(e) {
+        // It might not be safe to operate on |e|.
+      }
     }
     return;
   }
@@ -2814,14 +2826,6 @@ var exprMakers =
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ")"; },
   function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
 
-  // Test evalcx: sandbox creation
-  function(d, b) { return "evalcx('')"; },
-  function(d, b) { return "evalcx('lazy')"; },
-
-  // Test evalcx: sandbox use
-  function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
-  function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
-
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(d, b) { return "(uneval(" + makeExpr(d, b) + "))"; },
 
@@ -2849,6 +2853,48 @@ var exprMakers =
 
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 ];
+
+// spidermonkey shell (but not xpcshell) has an "evalcx" function.
+if ("evalcx" in this) {
+  exprMakers = exprMakers.concat([
+    // Test evalcx: sandbox creation
+    function(d, b) { return "evalcx('')"; },
+    function(d, b) { return "evalcx('lazy')"; },
+
+    // Test evalcx: sandbox use
+    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
+    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
+  ]);
+}
+
+// When in xpcshell,
+// * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
+// * Test interaction between sandboxes with same or different principals.
+if ("Components" in this) {
+  function newSandbox(n)
+  {
+    var t = (typeof n == "number") ? n : 1;
+    var s = Components.utils.Sandbox("http://x" + t + ".example.com/");
+
+    // Allow the sandbox to do a few things
+    s.newSandbox = newSandbox;
+    s.evalInSandbox = function(str, sbx) { return Components.utils.evalInSandbox(str, sbx); };
+    s.print = function(str) { print(str); };
+
+    return s;
+  }
+
+  exprMakers = exprMakers.concat([
+    function(d, b) { var n = rnd(4); return "newSandbox(" + n + ")"; },
+    function(d, b) { var n = rnd(4); return "s" + n + " = newSandbox(" + n + ")"; },
+    function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", newSandbox(" + n + "))"; },
+    function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", s" + n + ")"; },
+    function(d, b) { return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
+    function(d, b) { return "(Components.classes ? quit() : gc()); }"; },
+  ]);
+
+  var primarySandbox = newSandbox(0);
+}
 
 // In addition, can always use "undefined" or makeFunction
 // Forwarding proxy code based on http://wiki.ecmascript.org/doku.php?id=harmony:proxies "Example: a no-op forwarding proxy"
