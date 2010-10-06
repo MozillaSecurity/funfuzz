@@ -2790,7 +2790,7 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", uneval(makeId(d, b)), ")"]); },
 
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
-  function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", simpleSource(makeId(d, b)), ", ", makePropertyDescriptor(d, b), ")"]); },
+  function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", makePropertyName(d, b), ", ", makePropertyDescriptor(d, b), ")"]); },
 
   // Old getter/setter syntax, imperative
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineGetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
@@ -3043,7 +3043,7 @@ function makeShapeyConstructor(d, b)
     }
     switch(rnd(7)) {
       case 0:  funText += "delete " + t + "." + propName + ";"; break;
-      case 1:  funText += "Object.defineProperty(" + t + ", " + uneval(propName) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
+      case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? simpleSource(propName) : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
       case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
       case 3:  funText += t + "." + propName + " = " + makeExpr(d, bp)        + ";"; break;
       case 4:  funText += t + "." + propName + " = " + makeFunction(d, bp)    + ";"; break;
@@ -3053,6 +3053,13 @@ function makeShapeyConstructor(d, b)
   }
   funText += "return " + t + "; }";
   return funText;
+}
+
+function makePropertyName(d, b)
+{
+  if (rnd(10) == 0)
+    return "new AttributeName()";
+  return simpleSource(makeId(d, b));
 }
 
 function makeShapeyConstructorLoop(d, b)
