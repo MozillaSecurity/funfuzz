@@ -372,8 +372,14 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
     # in "descendants(x) - descendants(y)".
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
+    snowLeopardOrHigher = (platform.system() == 'Darwin') and (platform.mac_ver()[0].split('.') >= ['10', '6'])
+
     if methodjitBool:
         return "547af2626088" # ~52268, first rev that can run jsfunfuzz-n.js with -m
+    elif snowLeopardOrHigher and archNum == "64":
+        return "1a44373ccaf6" # ~32547, config.guess change for snow leopard
+    elif snowLeopardOrHigher and archNum == "32":
+        return "db4d22859940" # ~24564, imacros compilation change
     else:
         return "8c52a9486c8f" # ~21110, switch from Makefile.ref to autoconf
 
