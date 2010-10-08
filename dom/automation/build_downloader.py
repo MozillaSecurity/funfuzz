@@ -124,9 +124,9 @@ def mozPlatform():
       return "linux64"
     else:
       return "linux"
-  if s == "Microsoft":
+  if s in ("Microsoft", "Windows"):
     return "win32"
-  raise Exception("Unknown platform")
+  raise Exception("Unknown platform.system(): " + s)
 
 if __name__ == "__main__":
   latestBuild = findLatestBuild("mozilla-central-" + mozPlatform() + "-debug")
