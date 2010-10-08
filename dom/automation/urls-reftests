@@ -4340,7 +4340,7 @@ layout/reftests/bugs/564991-1.html
 layout/reftests/bugs/564991-1-ref.html
 layout/reftests/bugs/565819-1.html
 layout/reftests/bugs/565819-ref.html
-t: layout/reftests/bugs/565819-2.html
+layout/reftests/bugs/565819-2.html
 layout/reftests/bugs/569006-1.html
 layout/reftests/bugs/569006-1-ref.html
 layout/reftests/bugs/571281-1a.html
