@@ -226,7 +226,7 @@ class FigureOutDirs:
       self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
       self.utilityDir = os.path.join(browserDir, "tests", "bin")
       self.symbolsDir = os.path.join(browserDir, "symbols")
-      possible_stackwalk_fn = "minidump_stackwalk.exe" if platform.system() == "Microsoft" else "minidump_stackwalk"
+      possible_stackwalk_fn = "minidump_stackwalk.exe" if (platform.system() in ("Microsoft", "Windows")) else "minidump_stackwalk"
       possible_stackwalk = os.path.join(browserDir, possible_stackwalk_fn)
       if (not os.environ.get('MINIDUMP_STACKWALK', None) and
           not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
