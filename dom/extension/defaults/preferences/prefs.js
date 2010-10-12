@@ -1,10 +1,4 @@
 pref("browser.dom.window.dump.enabled", true);
-pref("browser.sessionstore.resume_from_crash", false);
 pref("layout.debug.enable_data_xbl", true);
-pref("dom.max_chrome_script_run_time", 0);
-pref("dom.max_script_run_time", 0);
 pref("dom.disable_window_status_change", false);
-pref("dom.disable_window_move_resize", true);
-pref("browser.tabs.warnOnClose", false);
-pref("browser.shell.checkDefaultBrowser", false);
 pref("general.warnOnAboutConfig", false);
