@@ -68,7 +68,6 @@ if (jsshell) {
       engine = ENGINE_SPIDERMONKEY_MOZ_1_9_0
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
-    options("anonfunfix");
   } else if (typeof XPCNativeWrapper == "function") {
     // e.g. xpcshell
     engine = ENGINE_SPIDERMONKEY_TRUNK;
