@@ -178,6 +178,8 @@ class AmissLogHandler:
       if self.nsassertionCount == 100:
         print "rundomfuzz.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
         self.expectedToHang = True
+    if platform.system() == "Linux" and (msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1):
+      self.crashIsKnown = True
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
