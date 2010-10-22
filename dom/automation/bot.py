@@ -208,6 +208,10 @@ if __name__ == "__main__":
       copyFiles(newjobnameTmp, remotePrefix + relevantJobsDir)
       runCommand("mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
       shutil.rmtree(newjobnameTmp)
+
+      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and platform.system() == "Darwin":
+        # XXX email jesse a link to (relevantJobsDir + newjobname)
+        pass
   
       # Remove the old *_taken directory from the server
       if takenNameOnServer:
