@@ -168,8 +168,7 @@ function whatToTestSpidermonkeyTrunk(code)
 {
   return {
 
-    allowParse: true
-      && !( code.match(/let/)), // avoid bug 601395
+    allowParse: true,
 
     // Exclude things here if decompiling the function causes a crash.
     allowDecompile: true,
