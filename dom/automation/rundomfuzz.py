@@ -179,7 +179,7 @@ class AmissLogHandler:
         print "rundomfuzz.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
         self.expectedToHang = True
     if platform.system() == "Linux" and (msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1):
-      self.crashIsKnown = True
+      self.crashIsKnown = True # Bug 606389??
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
@@ -193,6 +193,8 @@ class AmissLogHandler:
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
+      if platform.system() == "Linux":
+        self.crashIsKnown = True # Bug 606389
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       print "Known crash signature: " + msg
       self.crashIsKnown = True
