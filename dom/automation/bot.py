@@ -2,7 +2,7 @@
 
 # bot.py runs domfuzz or lithium as needed, for a limited amount of time, storing jobs using ssh.
 
-import sys, os, subprocess, time, socket, random, shutil
+import sys, os, platform, subprocess, time, socket, random, shutil
 import build_downloader
 import loopdomfuzz
 devnull = open(os.devnull, "w")
