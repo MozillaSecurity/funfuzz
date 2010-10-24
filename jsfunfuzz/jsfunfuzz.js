@@ -1181,16 +1181,6 @@ function checkRoundTripDisassembly(f, code, wtt)
     return;
   }
 
-  if (code.indexOf("&&") != code.lastIndexOf("&&")) {
-    dumpln("checkRoundTripDisassembly: ignoring && associativity issues (bug 475863)");
-    return;
-  }
-
-  if (code.indexOf("||") != code.lastIndexOf("||")) {
-    dumpln("checkRoundTripDisassembly: ignoring || associativity issues (bug 475863)");
-    return;
-  }
-
   if (code.match(/for.*\(.*in.*\).*if/)) {
     print("checkRoundTripDisassembly: ignoring array comprehension with 'if' (bug 475882)");
     return;
