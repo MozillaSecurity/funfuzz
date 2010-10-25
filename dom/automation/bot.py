@@ -99,6 +99,24 @@ def downloadLatestBuild():
 def buildType():
   return "mozilla-central-" + build_downloader.mozPlatform() + "-debug"
 
+
+def sendEmail(subject, body):
+  import smtplib
+  from email.mime.text import MIMEText
+
+  fromAddr = 'jruderman+fuzzbot@mozilla.com'
+  toAddr = 'jruderman@gmail.com'
+
+  msg = MIMEText(body)
+  msg['Subject'] = subject
+  msg['From'] = fromAddr
+  msg['To'] = toAddr
+
+  server = smtplib.SMTP('localhost')
+  server.sendmail(fromAddr, [toAddr], msg.as_string())
+  server.quit()
+
+
 if __name__ == "__main__":
   from optparse import OptionParser
   parser = OptionParser()
@@ -209,10 +227,6 @@ if __name__ == "__main__":
       runCommand("mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
       shutil.rmtree(newjobnameTmp)
 
-      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and platform.system() == "Darwin":
-        # XXX email jesse a link to (relevantJobsDir + newjobname)
-        pass
-  
       # Remove the old *_taken directory from the server
       if takenNameOnServer:
         runCommand("rm -rf " + takenNameOnServer)
@@ -220,3 +234,8 @@ if __name__ == "__main__":
       # Remove build directory
       if not options.reuse_build and os.path.exists("build"):
         shutil.rmtree("build")
+
+      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and (platform.system() not in ("Microsoft", "Windows")):
+        print "Sending email..."
+        sendEmail("Reduced fuzz testcase", "https://ftp.mozilla.org/pvt-builds/fuzzing/" + buildType() + "/" + newjobname + "/")
+        print "Email sent!"
