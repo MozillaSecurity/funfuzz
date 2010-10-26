@@ -515,7 +515,7 @@ function testOne()
       dumpln(grepforme + "rnd.fuzzMT.import_mta(" + MTA + ");");
       rnd.lastDumpedMTA = MTA;
     }
-    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(" + depth + "), ['x']);");
+    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(" + depth + ", ['x']));");
   }
 
   var code = makeStatement(depth, ["x"]);
