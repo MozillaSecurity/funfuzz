@@ -195,6 +195,8 @@ class AmissLogHandler:
       self.sawProcessedCrash = True
       if platform.system() == "Linux":
         self.crashIsKnown = True # Bug 606389
+      if platform.system() in ("Windows", "Microsoft"):
+	    self.crashIsKnown = True # Bug 575519
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       print "Known crash signature: " + msg
       self.crashIsKnown = True
