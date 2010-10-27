@@ -2847,6 +2847,7 @@ if ("evalcx" in this) {
     // Test evalcx: sandbox creation
     function(d, b) { return "evalcx('')"; },
     function(d, b) { return "evalcx('lazy')"; },
+    function(d, b) { return "evalcx('split')"; },
 
     // Test evalcx: sandbox use
     function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
