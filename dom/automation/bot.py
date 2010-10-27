@@ -8,6 +8,7 @@ import loopdomfuzz
 devnull = open(os.devnull, "w")
 
 targetTime = 15*60 # for build machines, use 20 minutes (20*60)
+localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
 # Uses directory name 'mv' for synchronization.
 
@@ -18,22 +19,21 @@ targetTime = 15*60 # for build machines, use 20 minutes (20*60)
 # global which is set in __main__, used to operate over ssh
 remoteLoginAndMachine = None
 
-def ensureTrailingSlash(d):
-  if d[-1] != "/":
-    return d + "/"
-  return d
+def assertTrailingSlash(d):
+  assert d[-1] in ("/", "\\")
 
 # Copies a directory (the directory itself, not just its contents)
 # whose full name is |srcDir|, creating a subdirectory of |destParent| with the same short name.
 def copyFiles(srcDir, destParent):
-  srcDir = ensureTrailingSlash(srcDir)
-  destParent = ensureTrailingSlash(destParent)
+  assertTrailingSlash(srcDir)
+  assertTrailingSlash(destParent)
   if remoteLoginAndMachine == None:
     subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
   else:
     subprocess.check_call(["scp", "-r", srcDir, destParent], stdout=devnull)
     # XXX synchronize at destination, especially if destParent is the remote one, perhaps by using mktemp remotely
-  return destParent + srcDir.split("/")[-2] + "/"
+  srcDirLeaf = srcDir.split("/" if "/" in srcDir else "\\")[-2]
+  return destParent + srcDirLeaf + destParent[-1]
 
 def tryCommand(cmd):
   if remoteLoginAndMachine == None:
@@ -65,7 +65,7 @@ def grabJob(relevantJobsDir, desiredJobType):
       takenNameOnServer = relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
       if tryCommand("mv " + relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
         print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
-        job = copyFiles(remotePrefix + takenNameOnServer, ".")
+        job = copyFiles(remotePrefix + takenNameOnServer + remoteSep, "." + localSep)
         oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part that will be redundant
         os.rename(job, "wtmp1") # so lithium gets the same filename as before
         print repr(("wtmp1/", oldjobname, takenNameOnServer))
@@ -122,7 +122,7 @@ if __name__ == "__main__":
   parser = OptionParser()
   parser.set_defaults(
       remote_host=None,
-      basedir=os.path.join(os.path.expanduser("~"), "domfuzzjobs") + "/",
+      basedir=os.path.expanduser("~") + localSep + "domfuzzjobs" + localSep,
   )
   parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
       help="Use the existing 'build' directory.")
@@ -141,7 +141,8 @@ if __name__ == "__main__":
   remoteBase = options.basedir
   # remotePrefix is used as a prefix for remoteBase when using scp
   remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else ""
-  relevantJobsDir = remoteBase + buildType() + "/"
+  remoteSep = "/" if remoteLoginAndMachine else localSep
+  relevantJobsDir = remoteBase + buildType() + remoteSep
   runCommand("mkdir -p " + relevantJobsDir)
 
   shouldLoop = True
@@ -191,13 +192,13 @@ if __name__ == "__main__":
         if ldfResult == loopdomfuzz.HAPPY:
           print "Happy happy! No bugs found!"
         else:
-          job = "wtmp1/"
+          job = "wtmp1" + localSep
           writeTinyFile(job + "preferred-build.txt", buildUsed)
           # not really "oldjobname", but this is how i get newjobname to be what i want below
           # avoid putting underscores in this part, because those get split on
           oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
           os.rename("wtmp1", oldjobname)
-          job = oldjobname + "/"
+          job = oldjobname + localSep
           lithlog = job + "lith1-out"
   
     if lithlog:
@@ -223,7 +224,7 @@ if __name__ == "__main__":
       print "Uploading as: " + newjobname
       newjobnameTmp = newjobname + ".uploading"
       os.rename(job, newjobnameTmp)
-      copyFiles(newjobnameTmp, remotePrefix + relevantJobsDir)
+      copyFiles(newjobnameTmp + localSep, remotePrefix + relevantJobsDir + remoteSep)
       runCommand("mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
       shutil.rmtree(newjobnameTmp)
 
