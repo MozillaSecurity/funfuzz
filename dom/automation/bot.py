@@ -31,7 +31,6 @@ def copyFiles(srcDir, destParent):
     subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
   else:
     subprocess.check_call(["scp", "-r", srcDir, destParent], stdout=devnull)
-    # XXX synchronize at destination, especially if destParent is the remote one, perhaps by using mktemp remotely
   srcDirLeaf = srcDir.split("/" if "/" in srcDir else "\\")[-2]
   return destParent + srcDirLeaf + destParent[-1]
 
