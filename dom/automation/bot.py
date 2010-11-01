@@ -7,7 +7,7 @@ import build_downloader
 import loopdomfuzz
 devnull = open(os.devnull, "w")
 
-targetTime = 20 # for build machines, use 20 minutes (20*60)
+targetTime = 20*60 # for build machines, use 20 minutes (20*60)
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
 # Uses directory name 'mv' for synchronization.
