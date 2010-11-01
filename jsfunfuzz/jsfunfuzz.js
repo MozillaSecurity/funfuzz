@@ -2866,7 +2866,7 @@ if ("Components" in this) {
 
     // Allow the sandbox to do a few things
     s.newSandbox = newSandbox;
-    s.evalInSandbox = function(str, sbx) { if (sbx === undefined || sbx === null) return null;/*avoid bug 601829*/ return Components.utils.evalInSandbox(str, sbx); };
+    s.evalInSandbox = function(str, sbx) { return Components.utils.evalInSandbox(str, sbx); };
     s.print = function(str) { print(str); };
 
     return s;
