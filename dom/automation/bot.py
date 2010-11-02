@@ -237,5 +237,5 @@ if __name__ == "__main__":
 
       if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and (platform.system() not in ("Microsoft", "Windows")):
         print "Sending email..."
-        sendEmail("Reduced fuzz testcase", "https://ftp.mozilla.org/pvt-builds/fuzzing/" + buildType() + "/" + newjobname + "/")
+        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType() + "/" + newjobname + "/")
         print "Email sent!"
