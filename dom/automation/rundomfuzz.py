@@ -412,8 +412,7 @@ def rdfInit(args):
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
 
-    # Ignore all leaks until bug 605271 is fixed
-    if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True) and False:
+    if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
       alh.printAndLog("@@@ Unexpected leak or leak pattern in " + os.path.basename(leakLogFile))
       lev = max(lev, DOM_NEW_LEAK)
     elif leakLogFile:
