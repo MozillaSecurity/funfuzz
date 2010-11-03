@@ -152,6 +152,7 @@ class AmissLogHandler:
     self.fullLogHead = []
     self.summaryLog = []
     self.expectedToHang = True
+    self.expectedToLeak = True
     self.nsassertionCount = 0
     self.fuzzerComplained = False
     self.sawProcessedCrash = False
@@ -170,6 +171,8 @@ class AmissLogHandler:
       self.FRClines.append(msgLF)
     if msg == "Not expected to hang":
       self.expectedToHang = False
+    if msg == "Not expected to leak":
+      self.expectedToLeak = False
     if msg.startswith("FAILURE:"):
       self.fuzzerComplained = True
       self.printAndLog("@@@ " + msg)
@@ -412,7 +415,7 @@ def rdfInit(args):
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
 
-    if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True):
+    if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True) and not alh.expectedToLeak:
       alh.printAndLog("@@@ Unexpected leak or leak pattern in " + os.path.basename(leakLogFile))
       lev = max(lev, DOM_NEW_LEAK)
     elif leakLogFile:
