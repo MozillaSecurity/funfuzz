@@ -38,7 +38,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivMP = sendMemoryPressureNotification;
         w.fuzzPrivCC = cycleCollect(aSubject);
         w.fuzzPrivZoom = setZoomLevel(aSubject);
-        //w.fuzzPrivPrintToFile = printToFile(aSubject);
+        w.fuzzPrivPrintToFile = printToFile(aSubject);
       } else {
         // I don't understand why this happens.  Some chrome windows sneak in here?
       }
@@ -127,33 +127,56 @@ function setZoomLevel(window)
 
 function printToFile(window)
 {
-  // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pav and bho
+  // Linux: tested, works for PDF and PS, oddly asynchronous.
+  // Mac: tested, printToFile is ignored and it goes to a printer!
+  // Windows: untested.
+  var xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
+                             .getService(Components.interfaces.nsIXULRuntime);
+  if (xulRuntime.OS != "Linux") return function() { };
 
-  return function printToFileInner(showHeaders, showBGColor, showBGImages) {
-    var webBrowserPrint = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-    .getInterface(Components.interfaces.nsIWebBrowserPrint);
+  var fired = false;
 
-    var PSSVC = Components.classes["@mozilla.org/gfx/printsettings-service;1"]
-    .getService(Components.interfaces.nsIPrintSettingsService);
+  return function printToFileInner(showHeaders, showBGColor, showBGImages, ps) {
+    runSoon(function() {
+        // Don't print more than once, it gets messy fast.
+        if (fired) { return false; }
+        fired = true;
 
-    var printSettings = PSSVC.newPrintSettings;
+        // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pav and bho
 
-    printSettings.printToFile = true;
-    printSettings.toFileName  = "/Users/jruderman/a.pdf";
-    printSettings.printSilent = true;
-    printSettings.outputFormat = Components.interfaces.nsIPrintSettings.kOutputFormatPDF; // XXX also PS
-    printSettings.printBGColors   = !!showBGColor;
-    printSettings.printBGImages   = !!showBGImages;
-    if (!showHeaders) {
-        printSettings.footerStrCenter = '';
-        printSettings.footerStrLeft   = '';
-        printSettings.footerStrRight  = '';
-        printSettings.headerStrCenter = '';
-        printSettings.headerStrLeft   = '';
-        printSettings.headerStrRight  = '';
-    }
+        var webBrowserPrint = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+        .getInterface(Components.interfaces.nsIWebBrowserPrint);
 
-    webBrowserPrint.print(printSettings, null);
+        var nsIPrintSettings = Components.interfaces.nsIPrintSettings;
+
+        var PSSVC = Components.classes["@mozilla.org/gfx/printsettings-service;1"]
+        .getService(Components.interfaces.nsIPrintSettingsService);
+
+        var printSettings = PSSVC.newPrintSettings;
+
+        var file = Components.classes["@mozilla.org/file/directory_service;1"].
+                              getService(Components.interfaces.nsIProperties).
+                              get("ProfD", Components.interfaces.nsIFile);
+        file.append(ps ? "a.ps" : "a.pdf");
+        dumpln("Printing to: " + file.path);
+
+        printSettings.printToFile = true;
+        printSettings.toFileName  = file.path;
+        printSettings.printSilent = true;
+        printSettings.outputFormat = ps ? nsIPrintSettings.kOutputFormatPS : nsIPrintSettings.kOutputFormatPDF;
+        printSettings.printBGColors   = !!showBGColor;
+        printSettings.printBGImages   = !!showBGImages;
+        if (!showHeaders) {
+            printSettings.footerStrCenter = '';
+            printSettings.footerStrLeft   = '';
+            printSettings.footerStrRight  = '';
+            printSettings.headerStrCenter = '';
+            printSettings.headerStrLeft   = '';
+            printSettings.headerStrRight  = '';
+        }
+
+        webBrowserPrint.print(printSettings, null);
+    });
   }
 }
 
