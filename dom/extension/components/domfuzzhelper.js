@@ -38,6 +38,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivMP = sendMemoryPressureNotification;
         w.fuzzPrivCC = cycleCollect(aSubject);
         w.fuzzPrivZoom = setZoomLevel(aSubject);
+        //w.fuzzPrivPrintToFile = printToFile(aSubject);
       } else {
         // I don't understand why this happens.  Some chrome windows sneak in here?
       }
@@ -121,6 +122,38 @@ function setZoomLevel(window)
       viewer.textZoom = +factor;
     else if (textOrFull == "full")
       viewer.fullZoom = +factor;
+  }
+}
+
+function printToFile(window)
+{
+  // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pav and bho
+
+  return function printToFileInner(showHeaders, showBGColor, showBGImages) {
+    var webBrowserPrint = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+    .getInterface(Components.interfaces.nsIWebBrowserPrint);
+
+    var PSSVC = Components.classes["@mozilla.org/gfx/printsettings-service;1"]
+    .getService(Components.interfaces.nsIPrintSettingsService);
+
+    var printSettings = PSSVC.newPrintSettings;
+
+    printSettings.printToFile = true;
+    printSettings.toFileName  = "/Users/jruderman/a.pdf";
+    printSettings.printSilent = true;
+    printSettings.outputFormat = Components.interfaces.nsIPrintSettings.kOutputFormatPDF; // XXX also PS
+    printSettings.printBGColors   = !!showBGColor;
+    printSettings.printBGImages   = !!showBGImages;
+    if (!showHeaders) {
+        printSettings.footerStrCenter = '';
+        printSettings.footerStrLeft   = '';
+        printSettings.footerStrRight  = '';
+        printSettings.headerStrCenter = '';
+        printSettings.headerStrLeft   = '';
+        printSettings.headerStrRight  = '';
+    }
+
+    webBrowserPrint.print(printSettings, null);
   }
 }
 
