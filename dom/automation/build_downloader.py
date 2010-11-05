@@ -80,8 +80,13 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
       print "Downloading application..."
       unzip(downloadURL(remotefn, localfn), appDir)
       os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
-      stackwalk = os.path.join("build", "minidump_stackwalk.exe")
-      downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/minidump_stackwalk.exe", stackwalk)
+      for filename in ['minidump_stackwalk.exe',
+                       'cyggcc_s-1.dll',
+                       'cygstdc++-6.dll',
+                       'cygwin1.dll']:
+          remoteURL = "http://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s" % filename
+          localfile = os.path.join("build", filename)
+          downloadURL(remoteURL, localfile)
       succeeded = True
     if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
       print "Downloading application..."
