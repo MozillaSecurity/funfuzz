@@ -10,6 +10,7 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
 function dumpln(s) { dump(s + "\n"); }
 
@@ -39,6 +40,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivCC = cycleCollect(aSubject);
         w.fuzzPrivZoom = setZoomLevel(aSubject);
         w.fuzzPrivPrintToFile = printToFile(aSubject);
+        //w.fuzzPrivQuitC = quitWithLeakCheck;
       } else {
         // I don't understand why this happens.  Some chrome windows sneak in here?
       }
@@ -177,6 +179,86 @@ function printToFile(window)
 
         webBrowserPrint.print(printSettings, null);
     });
+  }
+}
+
+
+/************************
+ * QUIT WITH LEAK CHECK *
+ ************************/
+
+function quitWithLeakCheck()
+{
+  runSoon(a);
+  function a() { closeAllWindows(); runSoon(b); }
+  function b() { mpUntilDone(); runSoon(c); }
+  function c() { bloatStats(d); }
+  function d(objectCounts) { var wins = objectCounts["nsGlobalWindow"]; dumpln("Wins: " + wins); runSoon(e); }
+  function e() { goQuitApplication(); }
+}
+
+function closeAllWindows()
+{
+  var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
+                     .getService(Ci.nsIWindowWatcher);
+  var enumerator = ww.getWindowEnumerator();
+
+  dumpln("0");
+
+  while (enumerator.hasMoreElements()) {
+    var win = enumerator.getNext().QueryInterface(Ci.nsIDOMWindow);
+    win.close();
+  }
+
+  dumpln("1");
+}
+
+function mpUntilDone()
+{
+    for (var j = 0; j < 10; ++j) {
+      dumpln("MP " + j);
+      sendMemoryPressureNotification();
+    }
+}
+
+
+/*
+     |<----------------Class--------------->|<-----Bytes------>|<----------------Objects---------------->|<--------------References-------------->|
+                                              Per-Inst   Leaked    Total      Rem      Mean       StdDev     Total      Rem      Mean       StdDev
+
+*/
+// Grab the class name and the number of remaining objects.
+var bloatRex = /\s*\d+\s+(\S+)\s+\d+\s+\d+\s+\d+\s+(\d+)\s+.*/;
+
+function bloatStats(callback)
+{
+  var objectCounts = {};
+
+  try {
+    //d.d.d;
+    NetUtil.asyncFetch("about:bloat", fetched);
+  } catch(e) {
+    dumpln("Can't open about:bloat -- maybe you forgot to use XPCOM_MEM_LEAK_LOG");
+    callback(objectCounts);
+  }
+
+  function fetched(aInputStream, aResult)
+  {
+    var r = NetUtil.readInputStreamToString(aInputStream, aInputStream.available());
+    var lines = r.split("\n");
+    for (var i = 0; i < lines.length; ++i)
+    {
+      var a = bloatRex.exec(lines[i]);
+      if (a) {
+        objectCounts[a[1]] = a[2];
+      }
+    }
+    runSoon(callCallback);
+  }
+
+  function callCallback()
+  {
+    callback(objectCounts)
   }
 }
 
