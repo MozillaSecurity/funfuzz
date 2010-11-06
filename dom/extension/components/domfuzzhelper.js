@@ -40,7 +40,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivCC = cycleCollect(aSubject);
         w.fuzzPrivZoom = setZoomLevel(aSubject);
         w.fuzzPrivPrintToFile = printToFile(aSubject);
-        //w.fuzzPrivQuitC = quitWithLeakCheck;
+        w.fuzzPrivQuitWithLeakCheck = quitWithLeakCheck;
       } else {
         // I don't understand why this happens.  Some chrome windows sneak in here?
       }
@@ -190,11 +190,26 @@ function printToFile(window)
 function quitWithLeakCheck()
 {
   runSoon(a);
-  function a() { closeAllWindows(); runSoon(b); }
-  function b() { mpUntilDone(); runSoon(c); }
-  function c() { bloatStats(d); }
-  function d(objectCounts) { var wins = objectCounts["nsGlobalWindow"]; dumpln("Wins: " + wins); runSoon(e); }
-  function e() { goQuitApplication(); }
+  function a() { dumpln("QA"); closeAllWindows(); runOnTimer(b); dumpln("QAA"); }
+  function b() { dumpln("QB"); mpUntilDone(); runSoon(c); }
+  function c() { dumpln("QC"); bloatStats(d); }
+  function d(objectCounts) {
+    dumpln("QD");
+
+    dumpln("Windows: " + objectCounts["nsGlobalWindow"]);
+    dumpln("Documents: " + objectCounts["nsDocument"]);
+
+    //if (objectCounts["nsGlobalWindow"] > 4) { dumpln("OMGLEAK"); }
+    //if (objectCounts["nsDocument"] > 4) { dumpln("OMGLEAK"); }
+    runSoon(e);
+  }
+  function e() { dumpln("QE"); goQuitApplication(); }
+}
+
+function runOnTimer(f)
+{
+    var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+    timer.initWithCallback({notify: function(){f();}}, 2000, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
 }
 
 function closeAllWindows()
@@ -203,11 +218,17 @@ function closeAllWindows()
                      .getService(Ci.nsIWindowWatcher);
   var enumerator = ww.getWindowEnumerator();
 
-  dumpln("0");
+  var windowsToClose = [];
 
   while (enumerator.hasMoreElements()) {
-    var win = enumerator.getNext().QueryInterface(Ci.nsIDOMWindow);
-    win.close();
+    windowsToClose.push(enumerator.getNext().QueryInterface(Ci.nsIDOMWindow));
+  }
+
+  // if not mac...
+  ww.openWindow(null, "about:blank", null, "width=200,height=200", null);
+
+  for (var i = 0; i < windowsToClose.length; ++i) {
+    windowsToClose[i].close();
   }
 
   dumpln("1");
@@ -229,6 +250,8 @@ function mpUntilDone()
 */
 // Grab the class name and the number of remaining objects.
 var bloatRex = /\s*\d+\s+(\S+)\s+\d+\s+\d+\s+\d+\s+(\d+)\s+.*/;
+const SET_QUOTA = false;
+const USE_QUOTA = false;
 
 function bloatStats(callback)
 {
@@ -250,6 +273,12 @@ function bloatStats(callback)
     {
       var a = bloatRex.exec(lines[i]);
       if (a) {
+        if (SET_QUOTA) {
+          dumpln("'" + a[1] + "': " + a[2] + ",");
+        } else if (USE_QUOTA) {
+          quotaA = QUOTA[a[1]] || 0;
+          if (a[2] > quotaA) { dumpln("Leak? Too many " + a[1] + " (" + a[2] + " > " + quotaA + ")"); }
+        }
         objectCounts[a[1]] = a[2];
       }
     }
@@ -358,3 +387,4 @@ function goQuitApplication()
 
   return true;
 }
+

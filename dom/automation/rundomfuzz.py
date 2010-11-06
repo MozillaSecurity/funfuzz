@@ -78,6 +78,7 @@ user_pref("dom.disable_window_status_change", false);
 user_pref("dom.disable_window_move_resize", true);
 user_pref("dom.disable_open_during_load", false);
 user_pref("extensions.enabledScopes", 3);
+user_pref("nglayout.debug.disable_xul_cache", true);
 
 // Disable first-run annoyances.
 user_pref("browser.tabs.warnOnClose", false);
@@ -153,6 +154,7 @@ class AmissLogHandler:
     self.summaryLog = []
     self.expectedToHang = True
     self.expectedToLeak = True
+    self.sawOMGLEAK = False
     self.nsassertionCount = 0
     self.fuzzerComplained = False
     self.sawProcessedCrash = False
@@ -173,6 +175,8 @@ class AmissLogHandler:
       self.expectedToHang = False
     if msg == "Not expected to leak":
       self.expectedToLeak = False
+    if msg == "OMGLEAK":
+      self.sawOMGLEAK = True
     if msg.startswith("FAILURE:"):
       self.fuzzerComplained = True
       self.printAndLog("@@@ " + msg)
@@ -418,10 +422,15 @@ def rdfInit(args):
     if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True) and not alh.expectedToLeak:
       alh.printAndLog("@@@ Unexpected leak or leak pattern in " + os.path.basename(leakLogFile))
       lev = max(lev, DOM_NEW_LEAK)
-    elif leakLogFile:
-      # Remove the main leak log file, plus any plugin-process leak log files
-      for f in glob.glob(leakLogFile + "*"):
-        os.remove(f)
+    else:
+      if alh.sawOMGLEAK and not alh.expectedToLeak:
+        alh.printAndLog("@@@ Detected a leak-until-shutdown")
+        lev = max(lev, DOM_NEW_LEAK)
+      if leakLogFile:
+        # Remove the main leak log file, plus any plugin-process leak log files
+        for f in glob.glob(leakLogFile + "*"):
+          os.remove(f)
+
 
     if (lev > DOM_FINE) and logPrefix:
       outlog = open(logPrefix + "-output.txt", "w")
