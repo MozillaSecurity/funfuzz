@@ -200,6 +200,8 @@ class AmissLogHandler:
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
+      if platform.system() == "Linux":
+        self.crashIsKnown = True # Bug 606389
       if platform.system() in ("Windows", "Microsoft"):
         self.crashIsKnown = True # Bug 610292
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
