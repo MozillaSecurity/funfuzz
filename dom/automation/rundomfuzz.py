@@ -186,7 +186,7 @@ class AmissLogHandler:
         print "rundomfuzz.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
         self.expectedToHang = True
     if platform.system() == "Linux" and (msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1):
-      self.crashIsKnown = True # Bug 606389??
+      self.crashIsKnown = True # Bug 610311? Or maybe aborts don't get caught by breakpad?
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
@@ -201,7 +201,7 @@ class AmissLogHandler:
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
       if platform.system() == "Linux":
-        self.crashIsKnown = True # Bug 606389
+        self.crashIsKnown = True # Bug 610311
       if platform.system() in ("Windows", "Microsoft"):
         self.crashIsKnown = True # Bug 610292
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
