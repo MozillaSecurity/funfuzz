@@ -187,8 +187,14 @@ function printToFile(window)
  * QUIT WITH LEAK CHECK *
  ************************/
 
+var quitting = false;
+
 function quitWithLeakCheck()
 {
+  if (quitting)
+    return;
+  quitting = true;
+
   runSoon(a);
   function a() { dumpln("QA"); closeAllWindows(); runOnTimer(b); dumpln("QAA"); }
   function b() { dumpln("QB"); mpUntilDone(); runSoon(c); }
