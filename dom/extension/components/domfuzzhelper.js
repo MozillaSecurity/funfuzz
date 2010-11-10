@@ -197,7 +197,7 @@ function quitWithLeakCheck()
 
   runSoon(a);
   function a() { dumpln("QA"); closeAllWindows(); runOnTimer(b); dumpln("QAA"); }
-  function b() { dumpln("QB"); mpUntilDone(); runSoon(c); }
+  function b() { dumpln("QB"); mpUntilDone(c); }
   function c() { dumpln("QC"); bloatStats(d); }
   function d(objectCounts) {
     dumpln("QD");
@@ -241,12 +241,22 @@ function closeAllWindows()
   dumpln("1");
 }
 
-function mpUntilDone()
+function mpUntilDone(callback)
 {
-    for (var j = 0; j < 10; ++j) {
-      dumpln("MP " + j);
-      sendMemoryPressureNotification();
-    }
+  function mpUntilDoneInner()
+  {
+    dumpln("MP " + j);
+    sendMemoryPressureNotification();
+
+    ++j;
+    if (j > 9)
+      runSoon(callback);
+    else
+      runSoon(mpUntilDoneInner);
+  }
+
+  var j = 0;
+  mpUntilDoneInner();
 }
 
 
