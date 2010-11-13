@@ -597,8 +597,6 @@ function tryItOut(code)
        && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
        && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
-       && code.indexOf("--") == -1                  // avoid bug 584603
-       && code.indexOf("++") == -1                  // avoid bug 584603
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
       ) {
