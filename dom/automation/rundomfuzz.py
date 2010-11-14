@@ -396,12 +396,8 @@ def rdfInit(args):
     elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
       alh.printAndLog("@@@ Valgrind complained")
       lev = max(lev, DOM_VG_AMISS)
-    elif status > 0:
-      alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
-      lev = max(lev, DOM_ABNORMAL_EXIT)
-    elif status < 0:
+    elif status < 0 and (platform.system() not in ("Microsoft", "Windows")):
       # The program was terminated by a signal, which usually indicates a crash.
-      # Mac/Linux only!  And maybe Mac only!
       signum = -status
       signame = getSignalName(signum, "unknown signal")
       print("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
@@ -418,6 +414,12 @@ def rdfInit(args):
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
+    elif status != 0:
+      if (platform.system() in ("Microsoft", "Windows")):
+        print "Ignoring abnormal exit (status %d) due to bug 612093" % status
+      else:
+        alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
+        lev = max(lev, DOM_ABNORMAL_EXIT)
 
     if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True) and not alh.expectedToLeak:
       alh.printAndLog("@@@ Unexpected leak or leak pattern in " + os.path.basename(leakLogFile))
