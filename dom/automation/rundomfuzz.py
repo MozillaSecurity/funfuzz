@@ -408,7 +408,9 @@ def rdfInit(args):
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
     elif status != 0:
       if (platform.system() in ("Microsoft", "Windows")):
-        print "Ignoring abnormal exit (status %d) due to bug 612093" % status
+        # Until I see an nspr merge in Google Reader that picks up my PR_assert fix
+        # (see bug 612093)
+        print "Ignoring abnormal exit on Windows (status %d)" % status
       else:
         alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
         lev = max(lev, DOM_ABNORMAL_EXIT)
