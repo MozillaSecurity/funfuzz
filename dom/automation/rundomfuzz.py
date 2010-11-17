@@ -526,6 +526,6 @@ if __name__ == "__main__":
   logPrefix = os.path.join(mkdtemp(prefix="domfuzz-rdf-main"), "t")
   print logPrefix
   levelAndLines, deleteProfileForMain, options = rdfInit(sys.argv[1:])
-  level, lines = levelAndLines(options.argURL or "http://www.google.com/", logPrefix)
+  level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix)
   print level
   #deleteProfileForMain()
