@@ -200,8 +200,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             if macver == '10.6':
                 cfgCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
                              'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
-                             'RANLIB=ranlib AR=ar AS=$CC LD=ld' + \
-                             'STRIP="strip -x -S" CROSS_COMPILE=1' + \
+                             'RANLIB=ranlib AR=ar AS=$CC LD=ld ' + \
+                             'STRIP="strip -x -S" CROSS_COMPILE=1 ' + \
                              'sh ' + configure + ' --target=i386-apple-darwin8.0.0'
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # Apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
