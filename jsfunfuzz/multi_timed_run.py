@@ -47,7 +47,7 @@ def many_timed_runs():
 
         oklevel = jsunhappy.JS_KNOWN_CRASH
         if options.fuzzjs.find("jsfunfuzz") != -1:
-            # Allow abnormal exits in js shell (OOM) and xpcshell (might not be necessary)
+            # Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142)
             oklevel = jsunhappy.JS_ABNORMAL_EXIT
 
         if level > oklevel:
