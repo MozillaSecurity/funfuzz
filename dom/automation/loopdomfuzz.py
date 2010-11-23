@@ -113,7 +113,7 @@ def createReproFile(lines, logPrefix):
     fuzzlines = linesWith(lines, "FRCA")
     quittage = [
       "// DDEND\n",
-      "fuzzCommands.push({origCount: 9999, rest: true});\n",
+      "fuzzCommands.push({origCount: 9999, rest: true, timeout: 500});\n",
       "fuzzCommands.push({origCount: 9999, fun: goQuitApplication});\n"
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + fuzzjs + fuzzstartjs + wafter
