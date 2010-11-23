@@ -202,6 +202,13 @@ class AmissLogHandler:
       self.sawProcessedCrash = True
       if platform.system() == "Linux":
         self.crashIsKnown = True # Bug 610311
+    if msg == "** Unknown exception behavior" and platform.system() == "Darwin":
+      # Bug 614172 is a crash that causes a stack overflow.
+      # Bug 507876 is a breakpad issue that means stack overflows don't give me stack traces on Mac
+      # (and Linux, but differently).
+      # The combination means we lose.
+      print "%%% This is probably a too-much-recursion crash. It will be treated as a known crash."
+      self.crashIsKnown = True
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       print "Known crash signature: " + msg
       self.crashIsKnown = True
