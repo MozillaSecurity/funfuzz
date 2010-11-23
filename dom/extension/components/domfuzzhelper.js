@@ -34,7 +34,7 @@ DOMFuzzHelper.prototype = {
       if (w) {
         w.goQuitApplication = function() { runSoon(goQuitApplication); }; // using runSoon avoids leaks (bug 593541)
         w.fuzzPrivRunSoon = runSoon;
-        //w.fuzzPrivEnableAccessibility = enableAccessibility; // bug 571613, bug 404077, bug 571530
+        w.fuzzPrivEnableAccessibility = enableAccessibility;
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
         w.fuzzPrivMP = sendMemoryPressureNotification;
         w.fuzzPrivCC = cycleCollect(aSubject);
