@@ -38,7 +38,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
         w.fuzzPrivMP = sendMemoryPressureNotification;
         w.fuzzPrivCC = cycleCollect(aSubject);
-        // w.fuzzPrivZoom = setZoomLevel(aSubject);
+        // w.fuzzPrivZoom = setZoomLevel(aSubject); // bug 576927
         w.fuzzPrivPrintToFile = printToFile(aSubject);
         w.fuzzPrivQuitWithLeakCheck = quitWithLeakCheck;
       } else {
