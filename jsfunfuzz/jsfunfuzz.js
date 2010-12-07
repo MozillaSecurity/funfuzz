@@ -545,7 +545,8 @@ function tryItOut(code)
   }
 
   // regexps can't match across lines, so replace whitespace with spaces.
-  var wtt = whatToTest(code.replace(/\s/g, " "));
+  var codeWithoutLineBreaks = code.replace(/\s/g, " ");
+  var wtt = whatToTest(codeWithoutLineBreaks);
 
   code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
 
@@ -599,6 +600,7 @@ function tryItOut(code)
        && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
+       && !(codeWithoutLineBreaks.match(/for.*let.*=.*in/)) // bug 617288
       ) {
         // FCM cookie
         var cookie1 = "/*F";
