@@ -3320,6 +3320,7 @@ var functionMakers = [
   function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return makeProxyHandlerFactory(d, b); },
   function(d, b) { return makeShapeyConstructor(d, b); },
+  function(d, b) { return rndElt(constructors); },
 ];
 
 
