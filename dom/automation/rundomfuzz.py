@@ -414,13 +414,8 @@ def rdfInit(args):
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
     elif status != 0:
-      if (platform.system() in ("Microsoft", "Windows")):
-        # Until I see an nspr merge in Google Reader that picks up my PR_assert fix
-        # (see bug 612093)
-        print "Ignoring abnormal exit on Windows (status %d)" % status
-      else:
-        alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
-        lev = max(lev, DOM_ABNORMAL_EXIT)
+      alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
+      lev = max(lev, DOM_ABNORMAL_EXIT)
 
     if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True) and not alh.expectedToLeak:
       alh.printAndLog("@@@ Unexpected leak or leak pattern in " + os.path.basename(leakLogFile))
