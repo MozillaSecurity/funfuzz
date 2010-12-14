@@ -45,6 +45,9 @@ from multiprocessing import cpu_count
 verbose = False  # Turn this to True to enable verbose output for debugging.
 showCapturedCommands = False
 
+# This is used for propagating the global repository directory across functions in this file.
+globalRepo = ''
+
 def exceptionBadCompileType():
     raise Exception('Unknown compileType')
 def exceptionBadBranchType():
@@ -127,49 +130,50 @@ def hgHashAddToFuzzPath(fuzzPath):
     This function finds the mercurial revision and appends it to the directory name.
     It also prompts if the user wants to continue, should the repository not be on tip.
     '''
-    print
-    verboseDump('About to start running `hg identify` commands...')
-    tipOrNot = captureStdout(['hg', 'identify'])
-    hgIdentifynMinus1 = captureStdout(['hg', 'identify', '-n'])
-    # -5 is to remove the " tip\n" portion of `hg identify` output if on tip.
-    hgIdentifyMinus5 = tipOrNot[:-4]
-    onTip = True
-    if tipOrNot.endswith('tip'):
-        fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
-        fuzzPath = fuzzPath2 + '-' + hgIdentifyMinus5
-    else:
-        print '`hg identify` shows the repository is on this changeset -', hgIdentifynMinus1 + ':' + tipOrNot
-        notOnTipApproval = str(raw_input('Not on tip! Are you sure you want to continue? (y/n): '))
-        if notOnTipApproval == ('y' or 'yes'):
-            onTip = False
-            fuzzPath = fuzzPath[:-1] + '-' + hgIdentifynMinus1 + '-' + tipOrNot
+    verboseDump('About to start running `hg identify -i -n -b` ...')
+    hgIdFull = captureStdout(['hg', 'identify', '-i', '-n', '-b'])
+    hgIdChangesetHash = hgIdFull.split(' ')[0]
+    hgIdLocalNum = hgIdFull.split(' ')[1]
+    hgIdBranch = hgIdFull.split(' ')[2]  # If on tip, value should be 'default'.
+    onDefaultTip = True
+    if hgIdBranch != 'default':
+        print 'The repository is at this changeset -', hgIdLocalNum + ':' + hgIdChangesetHash
+        notOnDefaultTipApproval = str(raw_input('Not on default tip! Are you sure you want to continue? (y/n): '))
+        if notOnDefaultTipApproval == ('y' or 'yes'):
+            onDefaultTip = False
         else:
-            switchToTipApproval = str(raw_input('Do you want to switch to the default tip? (y/n): '))
-            if switchToTipApproval == ('y' or 'yes'):
+            switchToDefaultTipApproval = str(raw_input('Do you want to switch to the default tip? (y/n): '))
+            if switchToDefaultTipApproval == ('y' or 'yes'):
                 subprocess.call(['hg', 'up', 'default'])
-                fuzzPath2 = fuzzPath[:-1] + '-' + hgIdentifynMinus1
-                fuzzPath = fuzzPath2 + '-' + hgIdentifyMinus5
             else:
-                raise Exception('Not on tip.')
-    fuzzPath += '/'
+                raise Exception('Not on default tip.')
+    fuzzPath = fuzzPath[:-1] + '-' + hgIdLocalNum + '-' + hgIdChangesetHash + os.sep
     print
-    verboseDump('Finished running `hg identify` commands.')
-    return fuzzPath, onTip
+    verboseDump('Finished running `hg identify -i -n -b`.')
+    return os.path.normpath(fuzzPath), onDefaultTip
 
 def cpJsTreeOrPymakeDir(repo, jsOrBuild, dest):
     '''
     This function copies the js tree or the pymake build directory.
     '''
-    repo += 'js/src/' if jsOrBuild == 'js' else 'build/pymake'
+    # This globalRepo variable is only needed to propagate the repository to compileCopy function, it can be
+    # removed if compileCopy accepts a repo directory as one of its parameters.
+    # Note as of Dec 2010: pymake directory no longer needs to be copied, so it shouldn't be used in this function.
+    global globalRepo
+    globalRepo = repo
+    if jsOrBuild == 'js':
+        repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
+    else:
+        repo = os.path.normpath(os.path.join(repo, 'build', 'pymake'))
     if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
     try:
         jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
         verboseDump('Copying the ' + jsOrBuildText + ', which is located at ' + repo)
         if jsOrBuild == 'js':
-            shutil.copytree(repo, dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+            shutil.copytree(os.path.normpath(repo), dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
         else:
-            shutil.copytree(repo, "build/pymake")
+            shutil.copytree(os.path.normpath(repo), os.path.abspath(os.path.join(dest, '..', 'build', 'pymake')))
         verboseDump('Finished copying the ' + jsOrBuildText)
     except OSError as e:
         if verbose:
@@ -194,7 +198,7 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     '''
     This function configures a js binary depending on the parameters.
     '''
-    cfgCmd = 'sh ' + configure
+    cfgCmd = 'sh ' + os.path.normpath(configure)
     if (archNum == '32') and (os.name == 'posix'):
         if os.uname()[0] == "Darwin":
             if macver == '10.6':
@@ -230,9 +234,15 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     if threadsafe:
         cfgCmd += ' --enable-threadsafe --with-system-nspr'
 
+    if os.name == 'nt':
+        # This is done instead of os.path because of shell=True
+        # Argh. Only works for pymake.
+        cfgCmd = cfgCmd.replace(os.sep, os.altsep)
+
     verboseDump('This is the configure command:')
     verboseDump('%s\n' % cfgCmd)
-
+    
+    # If on Windows, be sure to first install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
     if os.name == 'posix':
         subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
     elif os.name == 'nt':
@@ -257,8 +267,9 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     '''
     jobs = (cpu_count() * 3) // 2
     if usePymake:
-        out = captureStdout(['python', '-O', '../../build/pymake/make.py', '-j' + str(jobs)], combineStderr=True)
+        out = captureStdout(['python', '-O', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True)
     else:
+    
         out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True)
 
     compiledName = os.path.join(objdir, 'js' + binaryPostfix())

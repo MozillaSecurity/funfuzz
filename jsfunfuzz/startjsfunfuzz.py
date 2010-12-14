@@ -66,6 +66,10 @@
 # July 2010:
 #   Disable tests, support 10.5 and 32-bit Linux again.
 #   Support 2.0 instead of 1.9.3.
+# December 2010:
+#   Support Windows again, but not Windows XP, which has its own little quirks
+#   by porting remaining stuff to os.path.join. Also reduce number of
+#   calls to `hg identify`.
 
 import os, platform, shutil, subprocess, sys, time
 from fnStartjsfunfuzz import *
@@ -83,9 +87,8 @@ def main():
     traceJit = True  # Activate support for tracing JIT in configure.
     jsJitSwitch = True  # Activate JIT fuzzing here.
     methodJit = False  # Method JIT is off by default unless fuzzing JM branch.
-    # Pymake is activated on Windows platforms by default, for tip only.
-    # Pymake is broken for the moment.
-    usePymake = False if os.name == 'nt' else False
+    # Pymake is activated on Windows platforms by default, for default tip only.
+    usePymake = True if os.name == 'nt' else False
 
     jsCompareJITSwitch = True
     # Disable compareJIT if traceJit support is disabled in configure.
@@ -177,35 +180,39 @@ def main():
             elif os.uname()[0] == 'Darwin':
                 # Technically we could enable Valgrind for Leopard only, but disable for SL.
                 # A better solution would be to wait till Valgrind on MacPorts supports both.
-                raise Exception('Valgrind on MacPorts for Snow Leopard isn\'t really ready..')
+                raise Exception("Valgrind on MacPorts for Snow Leopard isn't really ready..")
             else:
                 exceptionBadOs()
 
 
     repoDict = {}
+    pathSeparator = os.sep
     # Definitions of the different repository and fuzzing locations.
-    repoDict['fuzzing'] = '~/fuzzing/'
-    repoDict['191'] = '~/mozilla-1.9.1/'
-    repoDict['192'] = '~/mozilla-1.9.2/'
-    repoDict['20'] = '~/mozilla-2.0/'
+    # Remember to normalize paths to counter forward/backward slash issues on Windows.
+    repoDict['fuzzing'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'fuzzing'))) + pathSeparator
+    repoDict['191'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-1.9.1'))) + pathSeparator
+    repoDict['192'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-1.9.2'))) + pathSeparator
+    repoDict['20'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-2.0'))) + pathSeparator
     #201support
-    #repoDict['201'] = '~/mozilla-2.0.1/'
-    repoDict['mc'] = '~/mozilla-central/'
-    repoDict['tm'] = '~/tracemonkey/'
-    repoDict['jm'] = '~/jaegermonkey/'
-    fuzzPathStart = '~/Desktop/jsfunfuzz-'  # Start of fuzzing directory
+    #repoDict['201'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-2.0.1'))) + pathSeparator
+    repoDict['mc'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-central'))) + pathSeparator
+    repoDict['tm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'tracemonkey'))) + pathSeparator
+    repoDict['jm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'jaegermonkey'))) + pathSeparator
+    # Start of fuzzing directory, does not need pathSeparator at the end.
+    fuzzPathStart = os.path.normpath(os.path.expanduser(os.path.join('~', 'Desktop', 'jsfunfuzz-')))
     if os.name == 'nt' and 'Windows-XP' in platform.platform():
-        for repo in repoDict.keys():
-            # It is assumed that on WinXP, the corresponding directories are in the root folder.
-            # e.g. Instead of `~/tracemonkey/`, TM would be in `/tracemonkey/`.
-            repoDict[repo] = repoDict[repo][1:]
-        fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
+        raise Exception('Not supported on Windows XP.')
+        # for repo in repoDict.keys():
+            ## It is assumed that on WinXP, the corresponding directories are in the root folder.
+            ## e.g. Instead of `~/tracemonkey/`, TM would be in `/tracemonkey/`.
+            # repoDict[repo] = repoDict[repo][1:]
+        # fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
 
     if verbose:
         for repo in repoDict.keys():
             verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
 
-    fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + '/'
+    fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + pathSeparator
     if 'Windows-XP' not in platform.platform():
         fuzzPath = os.path.expanduser(fuzzPath)  # Expand the ~ folder except on WinXP.
 
@@ -218,37 +225,41 @@ def main():
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
-        (fuzzPath, onTip) = hgHashAddToFuzzPath(fuzzPath)
+        (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(os.path.expanduser(currDir))
     else:
         try:
             os.chdir(repoDict[branchType])
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
-        (fuzzPath, onTip) = hgHashAddToFuzzPath(fuzzPath)
+        (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath)
         os.chdir(currDir)
 
-    # Turn off pymake if not on tip.
-    if usePymake and not onTip:
+    # Turn off pymake if not on default tip.
+    if usePymake and not onDefaultTip:
         usePymake = False
+    
+    # Fail if not on default tip on Windows.
+    if os.name == 'nt' and not onDefaultTip:
+        raise Exception('Only default tip is supported on Windows platforms for the moment.')
 
     # Create the fuzzing folder.
     try:
         # Rename directory if patches are applied, accept up to 2 patches.
         if len(sys.argv) >= 6 and (sys.argv[4] == 'patch' or sys.argv[6] == 'patch'):
-            fuzzPath += 'patched/'
+            fuzzPath = os.path.join(fuzzPath, 'patched')
             verboseDump('Patched fuzzPath is: ' + fuzzPath)
         #os.makedirs(fuzzPath)
     except OSError:
-        raise Exception('The fuzzing path at \'' + fuzzPath + '\' already exists!')
+        raise Exception("The fuzzing path at '" + fuzzPath + "' already exists!")
 
 
     # Copy the js tree to the fuzzPath.
     compilePath = os.path.join(fuzzPath, 'compilePath')
     cpJsTreeOrPymakeDir(repoDict[branchType], 'js', compilePath)
-    # Copy the pymake build directory to the fuzzPath, if enabled.
-    if usePymake:
-        cpJsTreeOrPymakeDir(repoDict[branchType], 'build', compilePath)
+    # Copy the pymake build directory to the fuzzPath, if enabled. (No longer needed?)
+    #if usePymake:
+        #cpJsTreeOrPymakeDir(repoDict[branchType], 'build', compilePath)
     os.chdir(compilePath)  # Change into compilation directory.
 
 
@@ -257,11 +268,11 @@ def main():
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
         if 'Windows-XP' not in platform.platform():
-            jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.expanduser(repoDict['fuzzing']) + 'jsfunfuzz/patchGC.diff'])
+            jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.normpath(repoDict['fuzzing']) + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff')])
         else:
             # We have to use `<` and `shell=True` here because of the drive letter of the path to patchGC.diff.
             # Python piping might be possible though slightly more complicated.
-            jsCompareJITCode = subprocess.call(['patch -p3 < ' + repoDict['fuzzing'] + 'jsfunfuzz/patchGC.diff'], shell=True)
+            jsCompareJITCode = subprocess.call(['patch -p3 < ' + os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff'))], shell=True)
         if (jsCompareJITCode == 1) or (jsCompareJITCode == 2):
             jsCompareJITCodeBool1 = str(raw_input('Was a previously applied patch detected? (y/n): '))
             if jsCompareJITCodeBool1 == ('y' or 'yes'):
@@ -302,9 +313,10 @@ def main():
     # Compile the first binary.
     cfgJsBin(archNum, compileType, traceJit, methodJit,
                       valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
-    if usePymake and os.name == 'nt':
-        # This has to use `shell=True`.
-        subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
+    # No longer need `export SHELL` with latest MozillaBuild.
+    #if usePymake and os.name == 'nt':
+        ## This has to use `shell=True`.
+        #subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
 
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir)
@@ -338,11 +350,11 @@ def main():
 
     # Test fuzzPath.
     verboseDump('os.getcwdu() should be the fuzzPath:')
-    verboseDump('%s/' % os.getcwdu())
+    verboseDump(os.getcwdu() + str(pathSeparator))
     verboseDump('fuzzPath is: %s\n' % fuzzPath)
     if selfTests:
         if os.name == 'posix':
-            if fuzzPath != (os.getcwdu() + '/'):
+            if fuzzPath != (os.getcwdu() + pathSeparator):
                 raise Exception('We are not in fuzzPath.')
         elif os.name == 'nt':
             pass  # temporarily disable this since this doesn't yet work with the new os.path.join stuff
@@ -350,25 +362,25 @@ def main():
                 #raise Exception('We are not in fuzzPath.')
 
     # Copy over useful files that are updated in hg fuzzing branch.
-    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/jsfunfuzz.js')
-    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/analysis.py')
-    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/findInterestingFiles.py')
-    cpUsefulFiles(repoDict['fuzzing'] + 'jsfunfuzz/runFindInterestingFiles.sh')
+    cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'jsfunfuzz.js')))
+    cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'analysis.py')))
+    cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'findInterestingFiles.py')))
+    cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'runFindInterestingFiles.sh')))
 
 
     jsknownDict = {}
     # Define the corresponding js-known directories.
-    jsknownDict['191'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.1/'
-    jsknownDict['192'] = repoDict['fuzzing'] + 'js-known/mozilla-1.9.2/'
-    jsknownDict['20'] = repoDict['fuzzing'] + 'js-known/mozilla-2.0/'
+    jsknownDict['191'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-1.9.1')) + pathSeparator
+    jsknownDict['192'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-1.9.2')) + pathSeparator
+    jsknownDict['20'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-2.0')) + pathSeparator
     #201support
-    #jsknownDict['201'] = repoDict['fuzzing'] + 'js-known/mozilla-2.0.1/'
-    jsknownDict['mc'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
+    #jsknownDict['201'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-2.0.1')) + pathSeparator
+    jsknownDict['mc'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
     # For TM and JM, we use mozilla-central's js-known directories.
-    jsknownDict['tm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
-    jsknownDict['jm'] = repoDict['fuzzing'] + 'js-known/mozilla-central/'
+    jsknownDict['tm'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
+    jsknownDict['jm'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
 
-    multiTimedRun = repoDict['fuzzing'] + 'jsfunfuzz/multi_timed_run.py'
+    multiTimedRun = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'multi_timed_run.py'))
 
     if jsJitSwitch:
         jsJit = ' -j '
