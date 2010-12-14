@@ -239,7 +239,7 @@ def main():
     if usePymake and not onDefaultTip:
         usePymake = False
     
-    # Fail if not on default tip on Windows.
+    # Raise an exception if not on default tip on Windows.
     if os.name == 'nt' and not onDefaultTip:
         raise Exception('Only default tip is supported on Windows platforms for the moment.')
 
