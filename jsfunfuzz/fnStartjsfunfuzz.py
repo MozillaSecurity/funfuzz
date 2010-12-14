@@ -216,7 +216,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     if compileType == 'dbg':
         cfgCmd += ' --disable-tests --disable-optimize --enable-debug'
     elif compileType == 'opt':
-        cfgCmd += ' --disable-tests --enable-optimize --disable-debug'
+        # --enable-profiling is needed to obtain backtraces on optimized shells.
+        cfgCmd += ' --disable-tests --enable-optimize --disable-debug --enable-profiling'
 
     # Trace JIT is on by default.
     if not traceJit:
