@@ -33,8 +33,9 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, alsoRunChar=Tr
 
     print "Done running Lithium. To reproduce, run:"
     print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs) 
-    if os.path.basename(jsEngine) in ["js", "js.exe"]:
-    
+
+    jsEngineName = os.path.basename(jsEngine)
+    if jsEngineName.startswith("js") and not jsEngineName.startswith("jsc"):
         autobisectCmd = ["python", autobisectpy, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
