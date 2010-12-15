@@ -51,8 +51,13 @@ from fnStartjsfunfuzz import *
 verbose = False
 COMPILATION_FAILED_LABEL = 'skip'
 
+shellCacheDir = os.path.join(os.path.expanduser("~"), "Desktop", "autobisect-cache")
+if not os.path.exists(shellCacheDir):
+    os.mkdir(shellCacheDir)
+
 def main():
     global hgPrefix
+    global shellCacheDir
 
     # Do not support Windows XP because the ~ folder is in "/Documents and Settings/",
     # which contains spaces. This breaks MinGW, which is what MozillaBuild uses.
@@ -84,10 +89,6 @@ def main():
     if resetBool:
         subprocess.call(hgPrefix + ['up', '-C', 'default'])
         # XXX should also "hg purge" here, but "purge" is an extension.
-
-    shellCacheDir = os.path.join(os.path.expanduser("~"), "Desktop", "autobisect-cache")
-    if not os.path.exists(shellCacheDir):
-        os.mkdir(shellCacheDir)
 
     labels = {}
 
@@ -519,7 +520,20 @@ def rmDirInclSubDirs(dir):
     #print 'Removing ' + dir
     shutil.rmtree(dir)
 
+def lockedMain():
+  """Prevent running two instances of autobisect at once, because we don't want to confuse hg."""
+  lockDir = os.path.join(shellCacheDir, "autobisect-lock")
+  try:
+    os.mkdir(lockDir)
+  except OSError, e:
+    print "Autobisect is already running"
+    return
+  try:
+    main()
+  finally:
+    os.rmdir(lockDir)
+
 if __name__ == '__main__':
     # Reopen stdout, unbuffered.
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-    main()
+    lockedMain()
