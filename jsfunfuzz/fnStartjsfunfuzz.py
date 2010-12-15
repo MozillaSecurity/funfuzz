@@ -148,7 +148,6 @@ def hgHashAddToFuzzPath(fuzzPath):
             else:
                 raise Exception('Not on default tip.')
     fuzzPath = fuzzPath[:-1] + '-' + hgIdLocalNum + '-' + hgIdChangesetHash + os.sep
-    print
     verboseDump('Finished running `hg identify -i -n -b`.')
     return os.path.normpath(fuzzPath), onDefaultTip
 
@@ -242,12 +241,14 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     verboseDump('This is the configure command:')
     verboseDump('%s\n' % cfgCmd)
     
+    if os.name == 'nt':
+        nullLocation = open('nul', 'w')
+    else:
+        nullLocation = open('/dev/null', 'w')
+    
     # If on Windows, be sure to first install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
-    if os.name == 'posix':
-        subprocess.call([cfgCmd], shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
-    elif os.name == 'nt':
-        subprocess.call([cfgCmd], shell=True, stdout=open('nul', 'w'), stderr=subprocess.STDOUT, cwd=objdir)
-
+    subprocess.call([cfgCmd], shell=True, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir)
+        
 def binaryPostfix():
     if os.name == 'posix':
         return ''
