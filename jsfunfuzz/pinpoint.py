@@ -27,13 +27,14 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, alsoRunChar=Tr
     if alsoRunChar:
         lith2tmp = logPrefix + "-lith2-tmp"
         os.mkdir(lith2tmp)
-        lithArgs = ["--char"] + lithArgs
-        print ' '.join([lithiumpy] + lithArgs)
-        subprocess.call(["python", lithiumpy, "--tempdir=" + lith2tmp] + lithArgs, stdout=open(logPrefix + "-lith2-out", "w"))
+        lith2Args = ["--char"] + lithArgs
+        print ' '.join([lithiumpy] + lith2Args)
+        subprocess.call(["python", lithiumpy, "--tempdir=" + lith2tmp] + lith2Args, stdout=open(logPrefix + "-lith2-out", "w"))
 
-    print "Done running Lithium"
-
+    print "Done running Lithium. To reproduce, run:"
+    print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs) 
     if os.path.basename(jsEngine) in ["js", "js.exe"]:
+    
         autobisectCmd = ["python", autobisectpy, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
