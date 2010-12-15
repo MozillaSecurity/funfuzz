@@ -402,7 +402,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
         print "Compiling in " + tempDir
 
     # Copy the js tree.
-    cpJsTreeOrPymakeDir(sourceDir, 'js', compilePath)
+    cpJsTreeDir(sourceDir, compilePath)
 
     # Run autoconf.
     autoconfRun(compilePath)

@@ -151,34 +151,25 @@ def hgHashAddToFuzzPath(fuzzPath):
     verboseDump('Finished running `hg identify -i -n -b`.')
     return os.path.normpath(fuzzPath), onDefaultTip
 
-def cpJsTreeOrPymakeDir(repo, jsOrBuild, dest):
+def cpJsTreeDir(repo, dest):
     '''
     This function copies the js tree or the pymake build directory.
     '''
     # This globalRepo variable is only needed to propagate the repository to compileCopy function, it can be
     # removed if compileCopy accepts a repo directory as one of its parameters.
-    # Note as of Dec 2010: pymake directory no longer needs to be copied, so it shouldn't be used in this function.
     global globalRepo
     globalRepo = repo
-    if jsOrBuild == 'js':
-        repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
-    else:
-        repo = os.path.normpath(os.path.join(repo, 'build', 'pymake'))
+    repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
     if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
     try:
-        jsOrBuildText = 'js tree' if jsOrBuild == 'js' else 'pymake build dir'
-        verboseDump('Copying the ' + jsOrBuildText + ', which is located at ' + repo)
-        if jsOrBuild == 'js':
-            shutil.copytree(os.path.normpath(repo), dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
-        else:
-            shutil.copytree(os.path.normpath(repo), os.path.abspath(os.path.join(dest, '..', 'build', 'pymake')))
-        verboseDump('Finished copying the ' + jsOrBuildText)
+        verboseDump('Copying the js tree, which is located at ' + repo)
+        shutil.copytree(os.path.normpath(repo), dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+        verboseDump('Finished copying the js tree')
     except OSError as e:
         if verbose:
             print repr(e)
-        print ("The '" + jsOrBuildText + "' directory located at '" + repo + "' doesn't exist?")
-        raise
+        raise Exception("The js tree directory located at '" + repo + "' doesn't exist?")
 
 def autoconfRun(cwd):
     '''

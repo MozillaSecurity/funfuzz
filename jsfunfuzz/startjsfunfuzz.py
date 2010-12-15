@@ -256,10 +256,7 @@ def main():
 
     # Copy the js tree to the fuzzPath.
     compilePath = os.path.join(fuzzPath, 'compilePath')
-    cpJsTreeOrPymakeDir(repoDict[branchType], 'js', compilePath)
-    # Copy the pymake build directory to the fuzzPath, if enabled. (No longer needed?)
-    #if usePymake:
-        #cpJsTreeOrPymakeDir(repoDict[branchType], 'build', compilePath)
+    cpJsTreeDir(repoDict[branchType], compilePath)
     os.chdir(compilePath)  # Change into compilation directory.
 
 
