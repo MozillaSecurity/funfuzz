@@ -169,7 +169,7 @@ def cpJsTreeDir(repo, dest):
     except OSError as e:
         if verbose:
             print repr(e)
-        raise Exception("The js tree directory located at '" + repo + "' doesn't exist?")
+        raise Exception("Either the js tree directory located at '" + repo + "' doesn't exist, or the destination already exists.")
 
 def autoconfRun(cwd):
     '''
