@@ -156,6 +156,7 @@ class AmissLogHandler:
     self.expectedToLeak = True
     self.sawOMGLEAK = False
     self.nsassertionCount = 0
+    self.sawFatalAssertion = False
     self.fuzzerComplained = False
     self.sawProcessedCrash = False
     self.crashIsKnown = False
@@ -185,8 +186,10 @@ class AmissLogHandler:
       if self.nsassertionCount == 100:
         print "rundomfuzz.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
         self.expectedToHang = True
-    if platform.system() == "Linux" and (msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1):
-      self.crashIsKnown = True # Bug 610311? Or maybe aborts don't get caught by breakpad?
+    if msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1:
+      self.sawFatalAssertion = True
+      if platform.system() == "Linux":
+        self.crashIsKnown = True # Bug 610311? Or maybe aborts don't get caught by breakpad?
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
@@ -413,7 +416,7 @@ def rdfInit(args):
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
-    elif status != 0:
+    elif status != 0 and not ((platform.system() in ("Microsoft", "Windows")) and alh.sawFatalAssertion):
       alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
       lev = max(lev, DOM_ABNORMAL_EXIT)
 
