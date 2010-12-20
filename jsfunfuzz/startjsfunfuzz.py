@@ -349,14 +349,16 @@ def main():
     verboseDump('os.getcwdu() should be the fuzzPath:')
     verboseDump(os.getcwdu() + str(pathSeparator))
     verboseDump('fuzzPath is: %s\n' % fuzzPath)
-    if selfTests:
-        if os.name == 'posix':
-            if fuzzPath != (os.getcwdu() + pathSeparator):
-                raise Exception('We are not in fuzzPath.')
-        elif os.name == 'nt':
-            pass  # temporarily disable this since this doesn't yet work with the new os.path.join stuff
-            #if fuzzPath[1:] != (os.getcwdu() + '/')[3:]:  # Ignore drive letter.
-                #raise Exception('We are not in fuzzPath.')
+    print os.getcwdu()
+    print 'fuzzPath is: ' + fuzzPath
+    #if selfTests:
+    #    if os.name == 'posix': # temporarily disable this since this doesn't yet work with the new os.path.join stuff
+    #        if fuzzPath != (os.getcwdu() + str(pathSeparator)):
+    #            raise Exception('We are not in fuzzPath.')
+    #    elif os.name == 'nt':
+    #        pass  # temporarily disable this since this doesn't yet work with the new os.path.join stuff
+    #        #if fuzzPath[1:] != (os.getcwdu() + '/')[3:]:  # Ignore drive letter.
+    #            #raise Exception('We are not in fuzzPath.')
 
     # Copy over useful files that are updated in hg fuzzing branch.
     cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'jsfunfuzz.js')))
