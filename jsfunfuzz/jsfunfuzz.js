@@ -515,10 +515,10 @@ function testOne()
       dumpln(grepforme + "rnd.fuzzMT.import_mta(" + MTA + ");");
       rnd.lastDumpedMTA = MTA;
     }
-    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeStatement(" + depth + ", ['x']));");
+    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
   }
 
-  var code = makeStatement(depth, ["x"]);
+  var code = makeOv(depth);
 
 //  if (rnd(10) == 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
@@ -528,6 +528,11 @@ function testOne()
   dumpln(grepforme + "count=" + count + "; tryItOut(" + uneval(code) + ");");
 
   tryItOut(code);
+}
+
+function makeOv(d, ignoredB)
+{
+  return maybeStrict() + makeStatement(d, ["x"]);
 }
 
 function tryItOut(code)
@@ -2215,6 +2220,9 @@ var statementMakers = weighted([
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
   { w: 1, fun: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
+
+  // Use strict
+  { w: 1, fun: function(d, b) { return '"use strict"; ' + makeStatement(d - 1, b); } },
 ]);
 
 function linkedList(x, n)
@@ -2559,7 +2567,9 @@ var specialProperties = [
   "buffer", "byteLength", "byteOffset",
   // E4X
   "ignoreComments", "ignoreProcessingInstructions", "ignoreWhitespace",
-  "prettyPrinting", "prettyIndent"
+  "prettyPrinting", "prettyIndent",
+  // arguments object
+  "arguments", "caller", "callee"
 ]
 
 function makeSpecialProperty(d, b)
@@ -3015,7 +3025,7 @@ function makeShapeyConstructor(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   var argName = uniqueVarName();
   var t = rnd(4) ? "this" : argName;
-  var funText = "function shapeyConstructor(" + argName + "){";
+  var funText = "function shapeyConstructor(" + argName + "){" + maybeStrict();
   var bp = b.concat([argName]);
 
   var nPropNames = rnd(6) + 1;
@@ -3216,14 +3226,21 @@ function maybeName(d, b)
     return "";
 }
 
+function maybeStrict()
+{
+  if (rnd(3) == 0)
+    return '"use strict"; ';
+  return "";
+}
+
 function makeFunctionBody(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch(rnd(4)) {
-    case 0:  return cat([" { ", makeStatement(d - 1, b),   " } "]);
-    case 1:  return cat([" { ", "return ", makeExpr(d, b), " } "]);
-    case 2:  return cat([" { ", "yield ",  makeExpr(d, b), " } "]);
+    case 0:  return cat([" { ", maybeStrict(), makeStatement(d - 1, b),   " } "]);
+    case 1:  return cat([" { ", maybeStrict(), "return ", makeExpr(d, b), " } "]);
+    case 2:  return cat([" { ", maybeStrict(), "yield ",  makeExpr(d, b), " } "]);
     default: return makeExpr(d, b); // make an "expression closure"
   }
 }
@@ -3925,7 +3942,7 @@ function makeShapeyValue(d, b)
     [ "(1/0)", "(-1/0)", "(0/0)" ],
 
     // String literals
-    [" \"\" ", " '' ", " 'A' ", " '\\0' "],
+    [" \"\" ", " '' ", " 'A' ", " '\\0' ", ' "use strict" '],
 
     // Regular expression literals
     [ " /x/ ", " /x/g "],
@@ -3953,7 +3970,7 @@ function makeShapeyValue(d, b)
 
     // Fun stuff
     [ "function(){}"],
-    ["{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments" ],
+    ["{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments", "arguments.caller", "arguments.callee" ],
 
     // Actual variables (slightly dangerous)
     [ b.length ? rndElt(b) : "x" ]
