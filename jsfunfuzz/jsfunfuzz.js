@@ -191,6 +191,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
       && !( code.match( /\#.*=/ ))                 // avoid bug 568734
+      && !( code.match( /strict.*eval/ ))          // avoid bug 620750
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
@@ -605,7 +606,13 @@ function tryItOut(code)
        && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
+       && code.indexOf("ArrayBuffer") == -1         // bug 620643
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*in/)) // bug 617288
+       && !(codeWithoutLineBreaks.match(/function.*var/))   // bug 618007?
+       && !(codeWithoutLineBreaks.match(/function.*function/))   // bug 618007?
+       && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 620761
+       && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 620761
+       && !(codeWithoutLineBreaks.match(/Function.*prototype/))  // bug 620902
       ) {
         // FCM cookie
         var cookie1 = "/*F";
@@ -880,6 +887,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
 {
   if (e.indexOf("missing variable name") != -1) {
     dumpln("Bug 355667 sure is annoying!");
+    return;
+  }
+
+  if (e.indexOf("octal literals and octal escape sequences are deprecated") != -1) {
+    dumpln("Ignoring bug 621119.");
     return;
   }
 
