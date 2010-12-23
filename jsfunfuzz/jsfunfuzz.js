@@ -2235,6 +2235,9 @@ var statementMakers = weighted([
 
   // Use strict
   { w: 1, fun: function(d, b) { return '"use strict"; ' + makeStatement(d - 1, b); } },
+
+  // Blocks of statements related to typed arrays
+  { w: 8, fun: makeTypedArrayStatements },
 ]);
 
 function linkedList(x, n)
@@ -3331,18 +3334,8 @@ var functionMakers = [
   function(d, b) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
   function(d, b) { return "XPCNativeWrapper" },
   function(d, b) { return "XPCSafeJSObjectWrapper" },
-  function(d, b) { return "WebGLIntArray" },
-  function(d, b) { return "WebGLFloatArray" },
-  function(d, b) { return "Int8Array" },
-  function(d, b) { return "Uint8Array" },
-  function(d, b) { return "Int16Array" },
-  function(d, b) { return "Uint16Array" },
-  function(d, b) { return "Int32Array" },
-  function(d, b) { return "Uint32Array" },
-  function(d, b) { return "Float32Array" },
-  function(d, b) { return "Float64Array" },
-  function(d, b) { return "Uint8ClampedArray" },
   function(d, b) { return "ArrayBuffer" },
+  function(d, b) { return rndElt(typedArrayConstructors); },
   function(d, b) { return "Proxy.isTrapping" },
   function(d, b) { return "Proxy.create" },
   function(d, b) { return "Proxy.createFunction" },
@@ -3352,8 +3345,65 @@ var functionMakers = [
   function(d, b) { return rndElt(constructors); },
 ];
 
+var typedArrayConstructors = [
+  "WebGLIntArray",
+  "WebGLFloatArray",
+  "Int8Array",
+  "Uint8Array",
+  "Int16Array",
+  "Uint16Array",
+  "Int32Array",
+  "Uint32Array",
+  "Float32Array",
+  "Float64Array",
+  "Uint8ClampedArray"
+];
 
+function makeTypedArrayStatements(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
+  if (d < 0) return "";
+
+  var numViews = rnd(d) + 1;
+  var numExtraStatements = rnd(d) + 1;
+  var buffer = uniqueVarName();
+  var bufferSize = (1 + rnd(2)) * (1 + rnd(2)) * (1 + rnd(2)) * rnd(5);
+  var statements = "var " + buffer + " = new ArrayBuffer(" + bufferSize + "); ";
+  var bv = b.concat([buffer]);
+  for (var j = 0; j < numViews; ++j) {
+    var view = buffer + "_" + j;
+    var type = rndElt(typedArrayConstructors);
+    statements += "var " + view + " = new " + type + "(" + buffer + "); ";
+    bv.push(view);
+    var view_0 = view + "[0]";
+    bv.push(view_0);
+    if (rnd(3) == 0)
+      statements += "print(" + view_0 + "); ";
+    if (rnd(3))
+      statements += view_0 + " = " + makeNumber(d - 2, b) + "; ";
+    bv.push(view + "[" + rnd(11) + "]");
+  }
+  for (var j = 0; j < numExtraStatements; ++j) {
+    statements += makeStatement(d - numExtraStatements, bv);
+  }
+  return statements;
+}
+
+function makeNumber(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var signStr = rnd(2) ? "-" : "";
+
+  switch(rnd(9)) {
+    case 0:  return makeExpr(d - 2, b);
+    case 1:  return "0";
+    case 2:  return signStr + Math.random();
+    case 3:  return signStr + (Math.random() * 0xffffffff);
+    default: return signStr + Math.pow(2, rnd(66)) + (rnd(3) - 1);
+  }
+}
 
 /*
 David Anderson suggested creating the following recursive structures:
