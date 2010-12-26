@@ -2062,20 +2062,45 @@ var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
 // The reason there are several types of loops here is to create different
 // types of scripts without introducing infinite loops.
 
+function forLoopHead(d, b, v, reps)
+{
+  var sInit = rndElt(varBinderFor) + v + " = 0";
+  var sCond = v + " < " + reps;
+  var sNext = "++" + v;
+
+  while (rnd(10) == 0)
+    sInit += ", " + makeLetHeadItem(d - 2, b);
+  while (rnd(10) == 0)
+    sInit += ", " + makeExpr(d - 2, b); // NB: only makes sense if our varBinder is ""
+
+  while (rnd(20) == 0)
+    sCond = sCond + " && " + makeExpr(d - 2, b);
+  while (rnd(20) == 0)
+    sCond = makeExpr(d - 2, b) + " && " + sCond;
+
+  while (rnd(20) == 0)
+    sNext = sNext + ", " + makeExpr(d - 2, b);
+  while (rnd(20) == 0)
+    sNext = makeExpr(d - 2, b) + ", " + sNext;
+
+  return "for (" + sInit + "; " + sCond + "; " + sNext + ")";
+}
+
 function makeOpaqueIdiomaticLoop(d, b)
 {
-  var reps = 1 + rnd(12);
+  var reps = rnd(13);
   var vHidden = uniqueVarName();
-  return ("/*oLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x) ").replace(/x/g, vHidden) +
-      makeStatement(d - 2, b);
+  return "/*oLoop*/" + forLoopHead(d, b, vHidden, reps) + " { " +
+      makeStatement(d - 2, b) +
+      " } "
 }
 
 function makeTransparentIdiomaticLoop(d, b)
 {
-  var reps = 1 + rnd(12);
+  var reps = rnd(13);
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
-  return ("/*vLoop*/for (" + rndElt(varBinderFor) + "x = 0; x < " + reps + "; ++x)").replace(/x/g, vHidden) +
+  return "/*vLoop*/" + forLoopHead(d, b, vHidden, reps) +
     " { " +
       rndElt(varBinder) + vVisible + " = " + vHidden + "; " +
       makeStatement(d - 2, b.concat([vVisible])) +
@@ -2084,12 +2109,11 @@ function makeTransparentIdiomaticLoop(d, b)
 
 function makeBranchUnstableLoop(d, b)
 {
-  var reps = 1 + rnd(24);
+  var reps = rnd(25);
   var v = uniqueVarName();
-  var mod = rnd(5) + 2;
+  var mod = rnd(10) + 2;
   var target = rnd(mod);
-  var loopHead = ("/*bLoop*/for (var x = 0; x < " + reps + "; ++x)").replace(/x/g, v);
-  return loopHead + " { " +
+  return "/*bLoop*/" + forLoopHead(d, b, v, reps) + " { " +
     "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
     "else { " + makeStatement(d - 2, b) + " } " +
     " } "
