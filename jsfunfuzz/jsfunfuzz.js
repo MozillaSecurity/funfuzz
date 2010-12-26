@@ -3870,6 +3870,7 @@ var termMakers = [
     // these are commented out due to bug 379294
     // "0x2D413CCC", "0x5a827999", "0xB504F332", "(0x50505050 >> 1)"
   ]); },
+  makeNumber,
   function(d, b) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(d, b) { return rndElt([ "this", "window" ]); },
   function(d, b) { return rndElt([" \"\" ", " '' "]) },
