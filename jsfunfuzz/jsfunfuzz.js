@@ -608,8 +608,8 @@ function tryItOut(code)
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
        && code.indexOf("ArrayBuffer") == -1         // bug 620643
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*in/)) // bug 617288
-       && !(codeWithoutLineBreaks.match(/function.*var/))   // bug 618007?
-       && !(codeWithoutLineBreaks.match(/function.*function/))   // bug 618007?
+       && !(codeWithoutLineBreaks.match(/function.*var/))   // bug 618007? bug 621377
+       && !(codeWithoutLineBreaks.match(/function.*function/))   // bug 618007? bug 621377
        && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 620761
        && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 620761
        && !(codeWithoutLineBreaks.match(/Function.*prototype/))  // bug 620902
