@@ -607,6 +607,7 @@ function tryItOut(code)
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
        && code.indexOf("ArrayBuffer") == -1         // bug 620643
+       && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*in/)) // bug 617288
        && !(codeWithoutLineBreaks.match(/function.*var/))   // bug 618007? bug 621377
        && !(codeWithoutLineBreaks.match(/function.*function/))   // bug 618007? bug 621377
@@ -2233,8 +2234,11 @@ var statementMakers = weighted([
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
   { w: 1, fun: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
 
-  // Use strict
+  // ES5 strict mode
   { w: 1, fun: function(d, b) { return '"use strict"; ' + makeStatement(d - 1, b); } },
+
+  // Spidermonkey strict warnings
+  { w: 1, fun: function(d, b) { return "options('strict');" } },
 
   // Blocks of statements related to typed arrays
   { w: 8, fun: makeTypedArrayStatements },
@@ -2584,7 +2588,9 @@ var specialProperties = [
   "ignoreComments", "ignoreProcessingInstructions", "ignoreWhitespace",
   "prettyPrinting", "prettyIndent",
   // arguments object
-  "arguments", "caller", "callee"
+  "arguments", "caller", "callee",
+  // Math object
+  "E", "PI"
 ]
 
 function makeSpecialProperty(d, b)
@@ -2844,6 +2850,7 @@ var exprMakers =
   // Constructors.  No cat() because I don't want to screw with the constructors themselves, just call them.
   function(d, b) { return "new " + rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
   function(d, b) { return          rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
+  function(d, b) { return "new Array(" + makeNumber(d, b) + ")"; },
 
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ")"; },
@@ -3300,6 +3307,9 @@ var functionMakers = [
   function(d, b) { return "Function.prototype.bind" },
   function(d, b) { return "(" + makeFunction(d-1, b) + ").bind" },
   function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")" },
+
+  // Methods with known names
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods)]); },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
