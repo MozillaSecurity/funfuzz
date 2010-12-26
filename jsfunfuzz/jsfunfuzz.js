@@ -3435,6 +3435,7 @@ function makeNumber(d, b)
     case 1:  return "0";
     case 2:  return signStr + (Math.random());
     case 3:  return signStr + (Math.random() * 0xffffffff);
+    case 4:  return signStr + Math.floor(Math.random() * 0xffffffff);
     default: return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
   }
 }
