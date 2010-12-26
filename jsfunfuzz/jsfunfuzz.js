@@ -3433,9 +3433,9 @@ function makeNumber(d, b)
   switch(rnd(9)) {
     case 0:  return makeExpr(d - 2, b);
     case 1:  return "0";
-    case 2:  return signStr + Math.random();
+    case 2:  return signStr + (Math.random());
     case 3:  return signStr + (Math.random() * 0xffffffff);
-    default: return signStr + Math.pow(2, rnd(66)) + (rnd(3) - 1);
+    default: return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
   }
 }
 
