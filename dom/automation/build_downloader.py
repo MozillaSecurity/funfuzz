@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re, os, shutil, subprocess, time, StringIO, stat
+import re, os, sys, shutil, subprocess, time, StringIO, stat
 import platform
 devnull = open(os.devnull, "w")
 
@@ -134,6 +134,8 @@ def mozPlatform():
   raise Exception("Unknown platform.system(): " + s)
 
 if __name__ == "__main__":
-  latestBuild = findLatestBuild("mozilla-central-" + mozPlatform() + "-debug")
-  downloadBuild(latestBuild)
-
+  if len(sys.argv) > 1:
+    build = sys.argv[1]
+  else:
+    build = findLatestBuild("mozilla-central-" + mozPlatform() + "-debug")
+  downloadBuild(build)
