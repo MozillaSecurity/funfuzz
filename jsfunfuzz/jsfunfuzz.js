@@ -506,7 +506,7 @@ function testOne()
 
   // Sometimes it makes sense to start with simpler functions:
   //var depth = (~~(count / 1000)) & 16;
-  var depth = 10;
+  var depth = 12;
 
   if (dumpEachSeed) {
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
@@ -2880,10 +2880,14 @@ var exprMakers =
   function(d, b) { return "gczeal(" + makeZealLevel() + ")"; },
 
   // Unary Math functions
-  function (d, b) { return "Math." + rndElt(["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "floor", "log", "round", "sin", "sqrt", "tan"]) + "(" + makeExpr(d, b) + ")"; },
+  function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
+  function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeNumber(d, b) + ")"; },
 
   // Binary Math functions
-  function (d, b) { return "Math." + rndElt(["atan2", "max", "min", "pow"]) + "(" + makeExpr(d, b) + ", " + makeExpr(d, b) + ")"; },
+  function (d, b) { return "Math." + rndElt(binaryMathFunctions) + "(" + makeExpr(d, b)   + ", " + makeExpr(d, b)   + ")"; },
+  function (d, b) { return "Math." + rndElt(binaryMathFunctions) + "(" + makeExpr(d, b)   + ", " + makeNumber(d, b) + ")"; },
+  function (d, b) { return "Math." + rndElt(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeExpr(d, b)   + ")"; },
+  function (d, b) { return "Math." + rndElt(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeNumber(d, b) + ")"; },
 
   // Gecko wrappers
   function(d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
@@ -2896,6 +2900,10 @@ var exprMakers =
 
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 ];
+
+var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
+var binaryMathFunctions = ["atan2", "max", "min", "pow"]; // min and max are technically N-ary, but the generic makeFunction mechanism should give that some testing
+
 
 // spidermonkey shell (but not xpcshell) has an "evalcx" function.
 if ("evalcx" in this) {
@@ -3363,8 +3371,8 @@ var functionMakers = [
   function(d, b) { return "Array.isArray" },
   function(d, b) { return "JSON.parse" },
   function(d, b) { return "JSON.stringify" }, // has interesting arguments...
-  function(d, b) { return "Math.sin" },
-  function(d, b) { return "Math.pow" },
+  function(d, b) { return "Math." + rndElt(unaryMathFunctions) },
+  function(d, b) { return "Math." + rndElt(binaryMathFunctions) },
   function(d, b) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
   function(d, b) { return "XPCNativeWrapper" },
   function(d, b) { return "XPCSafeJSObjectWrapper" },
