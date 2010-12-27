@@ -3440,10 +3440,11 @@ function makeNumber(d, b)
 
   switch(rnd(9)) {
     case 0:  return makeExpr(d - 2, b);
-    case 1:  return "0";
+    case 1:  return signStr + "0";
     case 2:  return signStr + (Math.random());
     case 3:  return signStr + (Math.random() * 0xffffffff);
     case 4:  return signStr + Math.floor(Math.random() * 0xffffffff);
+    case 5:  return rndElt(["0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", "3.141592653589793", "3/0", "-3/0", "0/0", "0x2D413CCC", "0x5a827999", "0xB504F332", "(0x50505050 >> 1)", "0x80000000"]);
     default: return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
   }
 }
@@ -3875,10 +3876,6 @@ var termMakers = [
     "length"
     ]);
   },
-  function(d, b) { return rndElt([ "0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", (""+Math.PI), "3/0", "-3/0", "0/0"
-    // these are commented out due to bug 379294
-    // "0x2D413CCC", "0x5a827999", "0xB504F332", "(0x50505050 >> 1)"
-  ]); },
   makeNumber,
   function(d, b) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(d, b) { return rndElt([ "this", "window" ]); },
