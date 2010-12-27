@@ -3742,7 +3742,7 @@ function makeLValue(d, b)
   if (d <= 0 || (rnd(2) == 1))
     return makeId(d - 1, b);
 
-  d = rnd(d);
+  d = rnd(d); // !
 
   return (rndElt(lvalueMakers))(d, b);
 }
