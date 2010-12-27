@@ -606,7 +606,6 @@ function tryItOut(code)
        && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
-       && code.indexOf("ArrayBuffer") == -1         // bug 620643
        && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
        && code.indexOf("Math.min") == -1            // bug 620532
        && code.indexOf("Math.max") == -1            // bug 620532
