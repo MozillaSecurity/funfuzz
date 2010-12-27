@@ -2266,6 +2266,9 @@ var statementMakers = weighted([
 
   // Blocks of statements related to typed arrays
   { w: 8, fun: makeTypedArrayStatements },
+
+  // Print statements
+  { w: 8, fun: makePrintStatement },
 ]);
 
 function linkedList(x, n)
