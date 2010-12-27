@@ -614,7 +614,7 @@ function tryItOut(code)
        && !(codeWithoutLineBreaks.match(/function.*function/))   // bug 618007? bug 621377
        && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 620761
        && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 620761
-       && !(codeWithoutLineBreaks.match(/Function.*prototype/))  // bug 620902
+       && !(codeWithoutLineBreaks.match(/Function.*prototype/))  // bug 621376
       ) {
         // FCM cookie
         var cookie1 = "/*F";
