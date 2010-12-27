@@ -506,7 +506,7 @@ function testOne()
 
   // Sometimes it makes sense to start with simpler functions:
   //var depth = (~~(count / 1000)) & 16;
-  var depth = 12;
+  var depth = 10;
 
   if (dumpEachSeed) {
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
