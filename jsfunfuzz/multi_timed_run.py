@@ -20,6 +20,10 @@ parser.add_option("--fuzzjs",
                   action = "store", dest = "fuzzjs",
                   default = os.path.join(p0, "jsfunfuzz.js"),
                   help = "Which fuzzer to run (e.g. jsfunfuzz.js or regexpfuzz.js)")
+parser.add_option("--repo",
+                  action = "store", dest = "repo",
+                  default = os.path.expanduser("~/tracemonkey/"),
+                  help = "The hg repository (e.g. ~/tracemonkey/), for bisection")
 options, args = parser.parse_args(sys.argv[1:])
 
 timeout = int(args[0])
@@ -64,14 +68,14 @@ def many_timed_runs():
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
             itest = [jsunhappypy, str(level), str(timeout), knownPath]
             alsoRunChar = (level > jsunhappy.JS_DID_NOT_FINISH)
-            pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, alsoRunChar=alsoRunChar)
+            pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar)
 
         else:
             if options.useCompareJIT and level == jsunhappy.JS_FINE:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(engine, jitcomparefilename, logPrefix + "-cj", knownPath, timeout, deleteBoring=True)
+                compareJIT.compareJIT(engine, jitcomparefilename, logPrefix + "-cj", knownPath, repo, timeout, deleteBoring=False)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):

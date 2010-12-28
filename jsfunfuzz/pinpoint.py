@@ -9,7 +9,7 @@ p0=os.path.dirname(__file__)
 lithiumpy = os.path.abspath(os.path.join(p0, "..", "lithium", "lithium.py"))
 autobisectpy = os.path.abspath(os.path.join(p0, "..", "js-autobisect", "autoBisect.py"))
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, alsoRunChar=True):
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, alsoRunChar=True):
     """
        Run Lithium and autobisect.
 
@@ -35,8 +35,8 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, alsoRunChar=Tr
     print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs) 
 
     jsEngineName = os.path.basename(jsEngine)
-    if jsEngineName.startswith("js") and not jsEngineName.startswith("jsc"):
-        autobisectCmd = ["python", autobisectpy, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
+    if bisectRepo is not "none":
+        autobisectCmd = ["python", autobisectpy, "-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
         print "Done running autobisect"
