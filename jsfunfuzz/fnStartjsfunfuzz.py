@@ -224,6 +224,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     if threadsafe:
         cfgCmd += ' --enable-threadsafe --with-system-nspr'
 
+    cfgCmd += ' --enable-type-inference'
+
     if os.name == 'nt':
         # This is done instead of os.path because of shell=True
         # Argh. Only works for pymake.
