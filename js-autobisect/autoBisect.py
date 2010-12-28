@@ -78,7 +78,8 @@ def main():
     if startRepo is None:
         startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum)
 
-    # Resolve names such as "tip", "default", or "9f2641871ce8" to numeric hg ids such as "52707".
+    # Resolve names such as "tip", "default", or "52707" to stable hg hash ids
+    # such as "9f2641871ce8".
     realStartRepo = startRepo = hgId(startRepo)
     realEndRepo = endRepo = hgId(endRepo)
 
@@ -141,14 +142,14 @@ def main():
 
 def findCommonAncestor(a, b):
     # Requires hg 1.6 for the revset feature
-    return captureStdout(hgPrefix + ["log", "--template={rev}", "-r", "ancestor("+a+","+b+")"])
+    return captureStdout(hgPrefix + ["log", "--template={node|short}", "-r", "ancestor("+a+","+b+")"])
 
 def isAncestor(a, b):
     return findCommonAncestor(a, b) == a
 
 def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """Ensure we actually tested the parents of the blamed revision."""
-    parents = captureStdout(hgPrefix + ["parent", '--template={rev},', "-r", blamedRev]).split(",")[:-1]
+    parents = captureStdout(hgPrefix + ["parent", '--template={node|short},', "-r", blamedRev]).split(",")[:-1]
     bisectLied = False
     for p in parents:
         testedLastMinute = False
@@ -360,7 +361,7 @@ def parseOpts():
             options.valgSupport, testAndLabel
 
 def hgId(rev):
-    return captureStdout(hgPrefix + ["id", "-n", "-r", rev])
+    return captureStdout(hgPrefix + ["id", "-i", "-r", rev])
 
 def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
@@ -389,10 +390,11 @@ def extractChangesetFromMessage(str):
     r = re.compile(r"(^|.* )(\d+):(\w{12}).*")
     m = r.match(str)
     if m:
-        return m.group(2)
+        return m.group(3)
 
-assert extractChangesetFromMessage("x 12345:abababababab") == "12345"
-assert extractChangesetFromMessage("12345:abababababab y") == "12345"
+assert extractChangesetFromMessage("x 12345:abababababab") == "abababababab"
+assert extractChangesetFromMessage("x 12345:123412341234") == "123412341234"
+assert extractChangesetFromMessage("12345:abababababab y") == "abababababab"
 
 def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
     tempDir = tempfile.mkdtemp(prefix="abc-" + currRev + "-")
