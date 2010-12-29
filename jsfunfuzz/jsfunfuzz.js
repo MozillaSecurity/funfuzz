@@ -609,12 +609,12 @@ function tryItOut(code)
        && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
        && code.indexOf("Math.min") == -1            // bug 620532
        && code.indexOf("Math.max") == -1            // bug 620532
+       && code.indexOf("instanceof") == -1          // bug 617949
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*\sin\s/)) // bug 617288
-       && !(codeWithoutLineBreaks.match(/function.*var/))   // bug 618007? bug 621377
-       && !(codeWithoutLineBreaks.match(/function.*function/))   // bug 618007? bug 621377
        && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 620761
        && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 620761
        && !(codeWithoutLineBreaks.match(/Function.*prototype/))  // bug 621376
+       && !(codeWithoutLineBreaks.match(/\S=/))                  // bug 620746
       ) {
         // FCM cookie
         var cookie1 = "/*F";
@@ -909,6 +909,11 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
 
   if (e.indexOf("illegal character") != -1) {
     dumpln("Ignoring bug 566661.");
+    return;
+  }
+
+  if (e.indexOf("invalid property id") != -1) {
+    dumpln("Ignoring bug 621814.");
     return;
   }
 
