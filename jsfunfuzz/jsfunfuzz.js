@@ -2275,6 +2275,10 @@ var statementMakers = weighted([
 
   // Print statements
   { w: 8, fun: makePrintStatement },
+
+  // Add properties
+  //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
+  //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
 function linkedList(x, n)
@@ -2631,6 +2635,19 @@ function makeSpecialProperty(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return rndElt(specialProperties);
+}
+
+// This makes it easier for fuzz-generated code to mess with the fuzzer. Will I regret it?
+function addPropertyName(p)
+{
+  p = "" + p;
+  if (
+      p != "floor" &&
+      p != "random" &&
+      true) {
+    print("Adding: " + p);
+    specialProperties.push(p);
+  }
 }
 
 function makeNamespacePrefix(d, b)
