@@ -185,7 +185,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /var.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480
       && !( code.match( /let/ ))   // avoid bug 462309 :( :( :(
-      && !( code.match( /function.*\:.*arguments/ ))   // avoid bug 496985
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
@@ -210,7 +209,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
       && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
       && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
-      // avoid bug 352085: keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
            (
@@ -613,7 +611,6 @@ function tryItOut(code)
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*\sin\s/)) // bug 617288
        && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 620761
        && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 620761
-       && !(codeWithoutLineBreaks.match(/Function.*prototype/))  // bug 621376
        && !(codeWithoutLineBreaks.match(/\S=/))                  // bug 620746
       ) {
         // FCM cookie
@@ -904,16 +901,6 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
 
   if (e.indexOf("illegal XML character") != -1) {
     dumpln("Ignoring bug 355674.");
-    return;
-  }
-
-  if (e.indexOf("illegal character") != -1) {
-    dumpln("Ignoring bug 566661.");
-    return;
-  }
-
-  if (e.indexOf("invalid property id") != -1) {
-    dumpln("Ignoring bug 621814.");
     return;
   }
 
