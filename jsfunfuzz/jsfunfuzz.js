@@ -190,7 +190,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
       && !( code.match( /\#.*=/ ))                 // avoid bug 568734
-      && !( code.match( /strict.*eval/ ))          // avoid bug 620750
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
@@ -609,8 +608,8 @@ function tryItOut(code)
        && code.indexOf("Math.max") == -1            // bug 620532
        && code.indexOf("instanceof") == -1          // bug 617949
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*\sin\s/)) // bug 617288
-       && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 620761
-       && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 620761
+       && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 617171
+       && !(codeWithoutLineBreaks.match(/eval.*Infinity/))       // bug 617171
        && !(codeWithoutLineBreaks.match(/\S=/))                  // bug 620746
       ) {
         // FCM cookie
