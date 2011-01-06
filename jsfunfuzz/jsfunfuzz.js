@@ -2765,9 +2765,10 @@ var exprMakers =
   function(d, b) { return cat([makeId(d, b),    ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b),  ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
 
-  // Index into array
+  // Property access / index into array
   function(d, b) { return cat([     makeExpr(d, b),      "[", makeExpr(d, b), "]"]); },
   function(d, b) { return cat(["(", makeExpr(d, b), ")", "[", makeExpr(d, b), "]"]); },
+  function(d, b) { return cat([     makeExpr(d, b),      "[", "'_'", " + ", "(", makeExpr(d, b), ")", "]"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
   function(d, b) { return cat([maybeSharpDecl(), "[", makeExpr(d, b), "]"]); },
