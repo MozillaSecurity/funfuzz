@@ -604,6 +604,9 @@ function tryItOut(code)
        && code.indexOf("gc") == -1                  // gc is noisy
        && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
        && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
+       && code.indexOf("use strict") == -1          // bug 622271
+       && code.indexOf("++") == -1                  // bug 622265
+       && code.indexOf("--") == -1                  // bug 622265
        && code.indexOf("instanceof") == -1          // bug 617949
        && !(codeWithoutLineBreaks.match(/for.*let.*=.*\sin\s/)) // bug 617288
        && !(codeWithoutLineBreaks.match(/eval.*NaN/))            // bug 618007
