@@ -105,6 +105,7 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', '0d5d2ceb9436'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e6496cd735a6'])
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(8de0a7fef2c0)-descendants(d43e89d8a20b))'], ignoreStderr=True, ignoreExitCode=True) # early jaeger
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
 
     # Specify `hg bisect` ranges.
     if paranoidBool:
