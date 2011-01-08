@@ -104,6 +104,7 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
     captureStdout(hgPrefix + ['bisect', '--skip', '0d5d2ceb9436'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e6496cd735a6'])
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(8de0a7fef2c0)-descendants(d43e89d8a20b))'], ignoreStderr=True, ignoreExitCode=True) # early jaeger
 
     # Specify `hg bisect` ranges.
     if paranoidBool:
