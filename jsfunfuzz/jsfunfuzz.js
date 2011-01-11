@@ -892,7 +892,7 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
 
-  if (e.indexOf("eval is deprecated") != -1) {
+  if (fs && fs.indexOf("use strict") != -1) {
     dumpln("Ignoring bug 624199.");
     return;
   }
