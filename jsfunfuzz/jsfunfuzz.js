@@ -608,7 +608,6 @@ function tryItOut(code)
        && code.indexOf("++") == -1                  // bug 622265
        && code.indexOf("--") == -1                  // bug 622265
        && code.indexOf("instanceof") == -1          // bug 617949
-       && !(codeWithoutLineBreaks.match(/for.*let.*=.*\sin\s/)) // bug 617288
        && !(codeWithoutLineBreaks.match(/\S=/))                  // bug 620746
       ) {
         // FCM cookie
