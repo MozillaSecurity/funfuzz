@@ -3028,7 +3028,7 @@ var proxyHandlerProperties = {
     empty:    "function() { return []; }",
     forward:  "function() { var result = []; for (var name in x) { result.push(name); }; return result; }"
   },
-  enumerateOwn: {
+  keys: {
     empty:    "function() { return []; }",
     forward:  "function() { return Object.keys(x); }"
   }
