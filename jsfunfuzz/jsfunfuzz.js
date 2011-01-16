@@ -891,11 +891,6 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
 
-  if (fs && fs.indexOf("use strict") != -1) {
-    dumpln("Ignoring bug 624199.");
-    return;
-  }
-
   if (engine == ENGINE_SPIDERMONKEY_MOZ_1_9_0 && e.indexOf("invalid object initializer") != -1) {
     dumpln("Ignoring bug 452561 (branch).");
     return;
