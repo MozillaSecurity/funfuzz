@@ -3230,14 +3230,14 @@ function makeObjLiteralPart(d, b)
   switch(rnd(8))
   {
     // Old-style literal getter/setter
-    case 0: return cat([makeId(d, b), " getter: ", makeFunction(d, b)]);
-    case 1: return cat([makeId(d, b), " setter: ", makeFunction(d, b)]);
+    //case 0: return cat([makeObjLiteralName(d, b), " getter: ", makeFunction(d, b)]);
+    //case 1: return cat([makeObjLiteralName(d, b), " setter: ", makeFunction(d, b)]);
 
     // New-style literal getter/setter
-    case 2: return cat([" get ", makeId(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
-    case 3: return cat([" set ", makeId(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
-
-
+    // Surprisingly, string literals, integer literals, and float literals are also good!
+    // (See https://bugzilla.mozilla.org/show_bug.cgi?id=520696.)
+    case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
+    case 3: return cat([" set ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
 
 /*
     case 3: return cat(["toString: ", makeFunction(d, b), "}", ")"]);
@@ -3247,12 +3247,22 @@ function makeObjLiteralPart(d, b)
     case 7: return cat(["valueOf: function() { return " + makeExpr(d, b) + "; } }", ")"]); },
 */
 
-    // Note that string literals, integer literals, and float literals are also good!
-    // (See https://bugzilla.mozilla.org/show_bug.cgi?id=520696.)
-    default: return cat([makeId(d, b), ": ", makeExpr(d, b)]);
+    default: return cat([makeObjLiteralName(d, b), ": ", makeExpr(d, b)]);
   }
 }
 
+function makeObjLiteralName(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  switch(rnd(6))
+  {
+    case 0:  return simpleSource(makeNumber(d, b)); // a quoted number
+    case 1:  return makeNumber(d, b);
+    case 2:  return makeSpecialProperty(d, b);
+    default: return makeId(d, b);
+  }
+}
 
 
 
