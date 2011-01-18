@@ -2066,9 +2066,9 @@ function forLoopHead(d, b, v, reps)
     sInit += ", " + makeExpr(d - 2, b); // NB: only makes sense if our varBinder is ""
 
   while (rnd(20) == 0)
-    sCond = sCond + " && " + makeExpr(d - 2, b);
+    sCond = sCond + " && (" + makeExpr(d - 2, b) + ")";
   while (rnd(20) == 0)
-    sCond = makeExpr(d - 2, b) + " && " + sCond;
+    sCond = "(" + makeExpr(d - 2, b) + ") && " + sCond;
 
   while (rnd(20) == 0)
     sNext = sNext + ", " + makeExpr(d - 2, b);
