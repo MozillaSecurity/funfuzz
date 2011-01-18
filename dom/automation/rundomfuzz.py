@@ -23,6 +23,7 @@ import os
 import platform
 import signal
 import glob
+import re
 from optparse import OptionParser
 from tempfile import mkdtemp
 import subprocess
@@ -143,6 +144,8 @@ def getKnownPath(app):
     sys.exit(1)
   return knownPath
 
+valgrindComplaintRegexp = re.compile("^==\d+== ")
+
 class AmissLogHandler:
   def __init__(self, knownPath):
     self.newAssertionFailure = False
@@ -161,6 +164,7 @@ class AmissLogHandler:
     self.sawProcessedCrash = False
     self.crashIsKnown = False
     self.timedOut = False
+    self.sawValgrindComplaint = False
   def processLine(self, msgLF):
     msgLF = stripBeeps(msgLF)
     msg = msgLF.rstrip("\n")
@@ -196,6 +200,9 @@ class AmissLogHandler:
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
       self.printAndLog("@@@ Malloc is unhappy")
+    if self.valgrind and not self.sawValgrindComplaint and valgrindComplaintRegexp.match(msg):
+      self.sawValgrindComplaint = True
+      self.printAndLog("@@@ First Valgrind complaint")
     if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
        msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
       self.timedOut = True
@@ -335,8 +342,9 @@ def rdfInit(args):
     runBrowserOptions.append("--valgrind")
     runBrowserOptions.append("--vgargs="
       "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
-      "--suppressions=" + os.path.join(knownPath, "valgrind.txt") + " " +  # don't have a knownPath yet :(
-      "--gen-suppressions=all"
+      "--suppressions=" + os.path.join(knownPath, "valgrind.txt") + " " +
+      "--gen-suppressions=all" + " " +
+      "--quiet"
     )
   
   def deleteProfile():
@@ -358,6 +366,7 @@ def rdfInit(args):
                      close_fds = close_fds)
   
     alh = AmissLogHandler(knownPath)
+    alh.valgrind = options.valgrind
   
     statusLinePrefix = "RUNBROWSER INFO | runbrowser.py | runApp: exited with status "
     status = -9000
@@ -382,6 +391,8 @@ def rdfInit(args):
       lev = max(lev, DOM_MALLOC_ERROR)
     if alh.fuzzerComplained:
       lev = max(lev, DOM_FUZZER_COMPLAINED)
+    if alh.sawValgrindComplaint:
+      lev = max(lev, DOM_VG_AMISS)
 
     if alh.timedOut:
       if alh.expectedToHang or options.valgrind:
@@ -396,7 +407,7 @@ def rdfInit(args):
         alh.printAndLog("@@@ New crash (from minidump_stackwalk)")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
-      alh.printAndLog("@@@ Valgrind complained")
+      alh.printAndLog("@@@ Valgrind complained via exit code")
       lev = max(lev, DOM_VG_AMISS)
     elif status < 0 and (platform.system() not in ("Microsoft", "Windows")):
       # The program was terminated by a signal, which usually indicates a crash.
