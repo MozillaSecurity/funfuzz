@@ -106,8 +106,8 @@ user_pref("browser.microsummary.enabled", false);
 
   if valgrindMode:
     prefsText = prefsText + """
-user_pref("javascript.options.jit.content", false);
-user_pref("javascript.options.jit.chrome", false);
+user_pref("javascript.options.methodjit.content", false);
+user_pref("javascript.options.methodjit.chrome", false);
 """
   
   prefsFile = open(os.path.join(profileDir, "user.js"), "w")
