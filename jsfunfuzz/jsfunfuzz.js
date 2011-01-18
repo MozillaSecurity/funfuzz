@@ -435,6 +435,7 @@ function init()
       allMakers.push(this[f]);
 }
 
+/*
 function testEachMaker()
 {
   for each (var f in allMakers) {
@@ -455,6 +456,7 @@ function testEachMaker()
     dumpln("");
   }
 }
+*/
 
 function start()
 {
