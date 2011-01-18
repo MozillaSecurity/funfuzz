@@ -2630,6 +2630,7 @@ function addPropertyName(p)
   if (
       p != "floor" &&
       p != "random" &&
+      p != "parent" && // unsafe spidermonkey shell function, see bug 619064
       true) {
     print("Adding: " + p);
     specialProperties.push(p);
