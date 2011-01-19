@@ -85,7 +85,7 @@ def main():
     selfTests = True
     multiTimedRunTimeout = '10'
 
-    if os.uname()[4] == 'armv7l':
+    if os.name != 'nt' and os.uname()[4] == 'armv7l':
         if os.uname()[1] == 'tegra-ubuntu':
             multiTimedRunTimeout = '180'
         else:
