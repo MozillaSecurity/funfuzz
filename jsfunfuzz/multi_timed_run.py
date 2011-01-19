@@ -53,9 +53,6 @@ def many_timed_runs():
         if options.fuzzjs.find("jsfunfuzz") != -1:
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
             oklevel = jsunhappy.JS_ABNORMAL_EXIT
-        elif options.fuzzjs.find("regexpfuzz") != -1:
-            # Allow hangs (bug 606882, from a dup)
-            oklevel = jsunhappy.JS_TIMED_OUT
 
         if level > oklevel:
             showtail(logPrefix + "-out")
