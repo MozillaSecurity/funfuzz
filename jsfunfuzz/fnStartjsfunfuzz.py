@@ -198,11 +198,22 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
                              'STRIP="strip -x -S" CROSS_COMPILE=1 ' + \
                              'sh ' + configure + ' --target=i386-apple-darwin8.0.0'
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
-            # Apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
+            # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ' + configure + ' --target=i686-pc-linux'
         elif os.uname()[4] == 'armv7l':
-            cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
-                         'sh ' + configure
+            if os.uname()[1] == 'tegra-ubuntu':
+                # No special commands needed, but be sure to install Linux prerequisites,
+                # do not worry if build-dep does not work, also be sure to apt-get zip as well.
+                pass
+                #cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
+                             #'sh ' + configure
+                # The binary below is an x86 binary rather than an ARM one.
+                #cfgCmd = 'CC=/opt/3rdparty/arm-2009q1/bin/arm-none-linux-gnueabi-gcc ' + \
+                             #'CXX=/opt/3rdparty/arm-2009q1/bin/arm-none-linux-gnueabi-g++ ' + \
+                             #'sh ' + configure
+            else:
+                cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
+                             'sh ' + configure
     if (archNum == '64') and (macver == '10.5'):
         cfgCmd = 'CC="gcc -m64" CXX="g++ -m64" AR=ar ' + \
                      'sh ' + configure + ' --target=x86_64-apple-darwin10.0.0'

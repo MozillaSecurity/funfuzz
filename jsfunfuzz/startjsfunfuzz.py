@@ -84,6 +84,13 @@ def main():
     # Variables
     selfTests = True
     multiTimedRunTimeout = '10'
+
+    if os.uname()[4] == 'armv7l':
+        if os.uname()[1] == 'tegra-ubuntu':
+            multiTimedRunTimeout = '180'
+        else:
+            multiTimedRunTimeout = '600'
+
     traceJit = True  # Activate support for tracing JIT in configure.
     jsJitSwitch = True  # Activate JIT fuzzing here.
     methodJit = False  # Method JIT is off by default unless fuzzing JM branch.
