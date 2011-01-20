@@ -200,9 +200,12 @@ class AmissLogHandler:
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
       self.printAndLog("@@@ Malloc is unhappy")
-    if self.valgrind and not self.sawValgrindComplaint and valgrindComplaintRegexp.match(msg):
-      self.sawValgrindComplaint = True
-      self.printAndLog("@@@ First Valgrind complaint")
+    if self.valgrind and valgrindComplaintRegexp.match(msg):
+      if not self.sawValgrindComplaint:
+        self.sawValgrindComplaint = True
+        self.printAndLog("@@@ First Valgrind complaint")
+      if len(self.summaryLog) < 100:
+        self.summaryLog.append(msgLF)
     if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
        msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
       self.timedOut = True
