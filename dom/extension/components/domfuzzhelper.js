@@ -32,7 +32,7 @@ DOMFuzzHelper.prototype = {
       var w = aSubject.wrappedJSObject;
 
       if (w) {
-        w.goQuitApplication = function() { runSoon(goQuitApplication); }; // using runSoon avoids leaks (bug 593541)
+        w.goQuitApplication = function() { dumpln("Got goQuitApplication from page"); goQuitApplication(); };
         w.fuzzPrivRunSoon = runSoon;
         w.fuzzPrivEnableAccessibility = enableAccessibility;
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
