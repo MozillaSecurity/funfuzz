@@ -2968,11 +2968,13 @@ if ("Components" in this) {
 var proxyHandlerProperties = {
   getOwnPropertyDescriptor: {
     empty:    "function(){}",
-    forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }"
+    forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
+    throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }",
   },
   getPropertyDescriptor: {
     empty:    "function(){}",
-    forward:  "function(name) { var desc = Object.getPropertyDescriptor(x); desc.configurable = true; return desc; }"
+    forward:  "function(name) { var desc = Object.getPropertyDescriptor(x); desc.configurable = true; return desc; }",
+    throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }",
   },
   defineProperty: {
     empty:    "function(){}",
@@ -3036,9 +3038,9 @@ function makeProxyHandlerFactory(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   try { // in case we screwed Object.prototype, breaking proxyHandlerProperties
-    var preferred = rndElt(["empty", "forward", "yes", "no", "bind"]);
+    var preferred = rndElt(["empty", "forward", "yes", "no", "bind", "throwing"]);
     var fallback = rndElt(["empty", "forward"]);
-    var fidelity = 1; // Math.random();
+    var fidelity = rnd(10);
   
     var handlerFactoryText = "(function handlerFactory(x) {";
     handlerFactoryText += "return {"
@@ -3054,12 +3056,13 @@ function makeProxyHandlerFactory(d, b)
   
     for (var p in proxyHandlerProperties) {
       var funText;
-      if (preferred[p] && Math.random() < fidelity) {
+      if (proxyHandlerProperties[p][preferred] && rnd(10) <= fidelity) {
         funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
       } else {
         switch(rnd(7)) {
         case 0:  funText = makeFunction(d - 3, bp); break;
         case 1:  funText = "undefined"; break;
+        case 2:  funText = "function() { throw 3; }"; break;
         default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
         }
       }
