@@ -34,7 +34,8 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
             "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
             "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
             "--gen-suppressions=all",
-            "--smc-check=all" # needed for -j if i don't use --enable-valgrind to build js
+            "--leak-check=full"
+            # "--smc-check=all" # needed for method jit (-m)
           ] +
             (["--dsymutil=yes"] if sys.platform=='darwin' else []) + # only need this on mac
          runthis[1:])
