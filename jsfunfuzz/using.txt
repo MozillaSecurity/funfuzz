@@ -9,8 +9,8 @@ Long-running with JIT:
   LD_LIBRARY_PATH=. python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 50 ~/fuzzing/js-known/mozilla-central/ ./xpcshell -j -m
 Comparing JIT against non-JIT:
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py --comparejit 10 ~/fuzzing/js-known/mozilla-central/ ./js -j -m
-Valgrind+JIT: (opt build recommended; --enable-valgrind(?) even better)
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ valgrind ./js -j
+Valgrind+JIT: (must build with --enable-valgrind. opt build recommended.)
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 60 ~/fuzzing/js-known/mozilla-central/ valgrind ./js -j
 
 For maximum coverage, test spidermonkey in all 6 modes: http://blog.mozilla.com/nnethercote/2009/11/18/nanojit-test-coverage/
 
