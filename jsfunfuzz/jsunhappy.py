@@ -35,10 +35,11 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
             "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
             "--gen-suppressions=all",
             "--leak-check=full"
-            # "--smc-check=all" # needed for method jit (-m)
           ] +
-            (["--dsymutil=yes"] if sys.platform=='darwin' else []) + # only need this on mac
-         runthis[1:])
+            (["--dsymutil=yes"] if sys.platform=='darwin' else []) +
+            (["--smc-check=all"] if "-m" in runthis else []) +
+          runthis[1:])
+        #print " ".join(runthis)
 
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)
     sta = runinfo.sta
