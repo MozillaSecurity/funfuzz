@@ -61,14 +61,14 @@ def many_timed_runs(targetTime, args):
                         print "%%% Lithium can't reproduce, but I can!"
                         reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                         reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
-                        reproOnlyFile.write("./rundomfuzz.py " + browserDir + " " + url + "\n")
+                        reproOnlyFile.write(rundomfuzzpy  + " " + browserDir + " " + url + "\n")
                         reproOnlyFile.close()
                         lithresult = NO_REPRO_EXCEPT_BY_URL
                     else:
                         print "%%% Lithium can't reproduce, and neither can I."
                         sorryFile = open(logPrefix + "-sorry.txt", "w")
                         sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
-                        sorryFile.write("./rundomfuzz.py " + browserDir + " " + url + "\n")
+                        sorryFile.write(rundomfuzzpy  + " " + browserDir + " " + url + "\n")
                         sorryFile.close()
                         lithresult = NO_REPRO_AT_ALL
                 print ""
