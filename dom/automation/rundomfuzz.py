@@ -222,8 +222,10 @@ class AmissLogHandler:
       # The combination means we lose.
       print "%%% This is probably a too-much-recursion crash. It will be treated as a known crash."
       self.crashIsKnown = True
+    if self.sawProcessedCrash and len(self.summaryLog) < 300:
+      self.summaryLog.append(msgLF)
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
-      print "Known crash signature: " + msg
+      self.printAndLog("%%% Known crash signature: " + msg)
       self.crashIsKnown = True
   def printAndLog(self, msg):
     print "$ " + msg
