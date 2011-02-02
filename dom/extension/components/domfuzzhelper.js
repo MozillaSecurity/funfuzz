@@ -16,6 +16,9 @@ function dumpln(s) { dump(s + "\n"); }
 
 function DOMFuzzHelper() {}
 
+function quitFromContent() { dumpln("Got goQuitApplication from page"); goQuitApplication(); }
+quitFromContent.__exposedProps__ = {"toString": "r"};
+
 DOMFuzzHelper.prototype = {
   classDescription: "DOM fuzz helper",
   classID:          Components.ID("{59a52458-13e0-4d90-9d85-a637344f29a1}"),
@@ -32,7 +35,7 @@ DOMFuzzHelper.prototype = {
       var w = aSubject.wrappedJSObject;
 
       if (w) {
-        w.goQuitApplication = function() { dumpln("Got goQuitApplication from page"); goQuitApplication(); };
+        w.goQuitApplication = quitFromContent;
         w.fuzzPrivRunSoon = runSoon;
         w.fuzzPrivEnableAccessibility = enableAccessibility;
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
