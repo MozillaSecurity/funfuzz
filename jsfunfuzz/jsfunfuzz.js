@@ -3103,7 +3103,7 @@ function makeShapeyConstructor(d, b)
   var nPropNames = rnd(6) + 1;
   var propNames = [];
   for (var i = 0; i < nPropNames; ++i) {
-    propNames[i] = makeNewId(d, b);
+    propNames[i] = rnd(5) ? makeId(d, b) : makeSpecialProperty(d, b);
   }
 
   var nStatements = rnd(11);
