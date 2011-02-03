@@ -179,7 +179,7 @@ class AmissLogHandler:
     if msg == "Not expected to hang":
       self.expectedToHang = False
     if msg == "Not expected to leak":
-      self.expectedToLeak = True # Bug 628599?
+      self.expectedToLeak = False
     if msg == "OMGLEAK":
       self.sawOMGLEAK = True
     if msg.startswith("FAILURE:"):
