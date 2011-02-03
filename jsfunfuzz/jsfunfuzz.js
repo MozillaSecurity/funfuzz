@@ -2696,7 +2696,8 @@ var objectMethods = [
   "defineProperty", "defineProperties", "create", "getOwnPropertyDescriptor", "getPrototypeOf",
 
   // E4X functions on XML objects
-  "addNamespace", "appendChild", "attribute", "attributes", "child", "childIndex", "children", "comments", "contains", "copy", "descendants", "elements", "hasOwnProperty", "hasComplexContent", "hasSimpleContent", "isScopeNamespace", "insertChildAfter", "insertChildBefore", "length", "localName", "name", "namespace", "namespaceDeclarations", "nodeKind", "normalize", "parent", "processingInstructions", "prependChild", "propertyIsEnumerable", "removeNamespace", "replace", "setChildren", "setLocalName", "setName", "setNamespace", "text", "toString", "toXMLString", "valueOf",
+  // "parent" is commented out because of a similarly-named debugging function in the js shell (see bug 619064)
+  "addNamespace", "appendChild", "attribute", "attributes", "child", "childIndex", "children", "comments", "contains", "copy", "descendants", "elements", "hasOwnProperty", "hasComplexContent", "hasSimpleContent", "isScopeNamespace", "insertChildAfter", "insertChildBefore", "length", "localName", "name", "namespace", "namespaceDeclarations", "nodeKind", "normalize", /*"parent",*/ "processingInstructions", "prependChild", "propertyIsEnumerable", "removeNamespace", "replace", "setChildren", "setLocalName", "setName", "setNamespace", "text", "toString", "toXMLString", "valueOf",
 
   // E4X functions on the XML constructor
   "settings", "setSettings", "defaultSettings",
