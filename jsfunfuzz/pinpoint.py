@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-from fnStartjsfunfuzz import archOfBinary
+from fnStartjsfunfuzz import archOfBinary, testDbgOrOpt
 
 p0=os.path.dirname(__file__)
 lithiumpy = os.path.abspath(os.path.join(p0, "..", "lithium", "lithium.py"))
@@ -36,7 +36,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
 
     jsEngineName = os.path.basename(jsEngine)
     if bisectRepo is not "none":
-        autobisectCmd = ["python", autobisectpy, "-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine)] + engineFlags + [infilename] + itest
+        autobisectCmd = ["python", autobisectpy, "-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
         print "Done running autobisect"
