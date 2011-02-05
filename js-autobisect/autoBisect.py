@@ -66,7 +66,8 @@ def main():
     # directories in ~-land instead of in /c/. We lack permissions when we move from
     # /c/ to ~-land in Vista/7.
     if os.name == 'nt':
-        raise Exception('autoBisect is not supported on Windows.')
+        if platform.uname()[3] != '6.1.7600':
+            raise Exception('autoBisect is not supported on Windows versions lower than Windows 7.')
 
     # Parse options and parameters from the command-line.
     options = parseOpts()
@@ -379,13 +380,18 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
     snowLeopardOrHigher = (platform.system() == 'Darwin') and (platform.mac_ver()[0].split('.') >= ['10', '6'])
 
     if methodjitBool:
-        return "547af2626088" # ~52268, first rev that can run jsfunfuzz-n.js with -m
+        if os.name == 'nt':
+            return '9f2641871ce8' # ~52707 on TM, first rev that can run with pymake and -m
+        else:
+            return '547af2626088' # ~52268 on TM, first rev that can run jsfunfuzz-n.js with -m
+    elif os.name == 'nt':
+        return 'ea59b927d99f' # ~46545 on TM, first rev that can run pymake on Windows with most recent set of instructions
     elif snowLeopardOrHigher and archNum == "64":
-        return "1a44373ccaf6" # ~32547, config.guess change for snow leopard
+        return "1a44373ccaf6" # ~32547 on TM, config.guess change for snow leopard
     elif snowLeopardOrHigher and archNum == "32":
-        return "db4d22859940" # ~24564, imacros compilation change
+        return "db4d22859940" # ~24564 on TM, imacros compilation change
     else:
-        return "8c52a9486c8f" # ~21110, switch from Makefile.ref to autoconf
+        return "8c52a9486c8f" # ~21110 on TM, switch from Makefile.ref to autoconf
 
 def extractChangesetFromMessage(str):
     # For example, a bisect message like "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
@@ -418,14 +424,18 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
     # Run configure.
     threadsafe = False  # Let's disable support for threadsafety in the js shell
     macver = osCheck()
+    currDir = os.getcwdu()
+    os.chdir(objdir)
     cfgJsBin(archNum, compileType,
                       True, True, # always *build* with both JITs enabled
                       valgrindSupport,
                       threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
 
     # Compile and copy the first binary.
-    # Don't use pymake because older changesets may fail to compile.
-    shell = compileCopy(archNum, compileType, currRev, False, shellCacheDir, objdir)
+    # Only pymake was tested on Windows.
+    usePymake = True if os.name == 'nt' else False
+    shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir)
+    os.chdir(currDir)  # Change back to the prior directory.
     rmDirInclSubDirs(tempDir)
     return shell
 
@@ -525,12 +535,12 @@ def rmDirInclSubDirs(dir):
     shutil.rmtree(dir)
 
 def lockedMain():
-  """Prevent running two instances of autobisect at once, because we don't want to confuse hg."""
+  """Prevent running two instances of autoBisect at once, because we don't want to confuse hg."""
   lockDir = os.path.join(shellCacheDir, "autobisect-lock")
   try:
     os.mkdir(lockDir)
   except OSError, e:
-    print "Autobisect is already running"
+    print "autoBisect is already running"
     return
   try:
     main()

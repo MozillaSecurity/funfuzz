@@ -38,7 +38,7 @@
 This file contains functions for startjsfunfuzz.py.
 '''
 
-import os, platform, shutil, subprocess, sys
+import os, platform, shutil, subprocess, sys, shlex
 
 from multiprocessing import cpu_count
 
@@ -110,11 +110,19 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE)
     (stdout, stderr) = p.communicate()
     if not ignoreExitCode and p.returncode != 0:
-        print 'Nonzero exit code from ' + repr(cmd)
-        print stdout
+        # Potential problem area: Note that having a non-zero exit code does not mean that the operation
+        # did not succeed, for example when compiling a shell. A non-zero exit code can appear even
+        # though a shell compiled successfully. This issue has been bypassed in the makeShell
+        # function in autoBisect.
+        # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
+        if 'no such option: -s' not in stdout:
+            print 'Nonzero exit code from ' + repr(cmd)
+            print stdout
         if stderr is not None:
             print stderr
-        raise Exception('Nonzero exit code')
+        # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
+        if 'no such option: -s' not in stdout:
+            raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
         print 'Unexpected output on stderr from ' + repr(cmd)
         print stdout, stderr
@@ -238,9 +246,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     cfgCmd += ' --enable-type-inference'
 
     if os.name == 'nt':
-        # This is done instead of os.path because of shell=True
-        # Argh. Only works for pymake.
-        cfgCmd = cfgCmd.replace(os.sep, os.altsep)
+        # Only tested to work for pymake.
+        cfgCmd = cfgCmd.replace(os.sep, '\\\\')
 
     verboseDump('This is the configure command:')
     verboseDump('%s\n' % cfgCmd)
@@ -250,8 +257,12 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     else:
         nullLocation = open('/dev/null', 'w')
     
+    args = shlex.split(cfgCmd)
+    verboseDump(args)
+    
     # If on Windows, be sure to first install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
-    subprocess.call([cfgCmd], shell=True, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir)
+    # Note that on Windows, redirecting stdout to subprocess.STDOUT does not work on Python 2.6.5.
+    subprocess.call(args, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir)
         
 def binaryPostfix():
     if os.name == 'posix':
@@ -271,17 +282,24 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
     This function compiles and copies a binary.
     '''
     jobs = (cpu_count() * 3) // 2
-    if usePymake:
-        out = captureStdout(['python', '-O', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True)
-    else:
-    
-        out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True)
-
     compiledName = os.path.join(objdir, 'js' + binaryPostfix())
-    if not os.path.exists(compiledName):
-        if verbose:
-            print out
-        raise Exception("Running 'make' did not result in a js shell")
+    try:
+        if usePymake:
+            out = captureStdout(['python', '-O', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True)
+            # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
+            if 'no such option: -s' in out:
+                out = captureStdout(['python', '-O', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs)], combineStderr=True)
+        else:
+            out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True)
+    except:
+        # Sometimes a non-zero error can be returned during the make process, but eventually a
+        # shell still gets compiled.
+        if os.path.exists(compiledName):
+            print 'A shell was compiled even though there was a non-zero exit code returned. Continuing...'
+        else:
+            if verbose:
+                print out
+            raise Exception("Running 'make' did not result in a js shell")
 
     newName = os.path.join(destDir, shellName(archNum, compileType, extraID))
     shutil.copy2(compiledName, newName)
