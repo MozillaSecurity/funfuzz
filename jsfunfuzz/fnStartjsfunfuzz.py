@@ -360,9 +360,9 @@ def createTestFiles(name, contentsLineList):
     for line in contentsLineList:
         testFile.writelines(line)
     testFile.close()
-    # Test that testFile is indeed created.
-    if not os.path.isfile(testFile):
-        raise Exception(testFile, 'does not exist.')
+    
+    if not os.path.isfile(name):
+        raise Exception(name, 'does not exist.')
 
 def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
     '''
