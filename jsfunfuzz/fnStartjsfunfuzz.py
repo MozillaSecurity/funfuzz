@@ -339,6 +339,10 @@ def cpUsefulFiles(filePath):
         filePath = os.path.expanduser(filePath)
     shutil.copy2(filePath, '.')
 
+####################
+#  Test Functions  #
+####################
+
 def archOfBinary(b):
     '''
     This function tests if a binary is 32-bit or 64-bit.
@@ -351,32 +355,56 @@ def archOfBinary(b):
     if '64-bit' in filetype:
         return '64'
 
-def grabExitCodeAfterTestingDbgOrOpt(jsShell):
+def createTestFiles(name, contentsLineList):
+    testFile = open(name, 'w')
+    for line in contentsLineList:
+        testFile.writelines(line)
+    testFile.close()
+    # Test that testFile is indeed created.
+    if not os.path.isfile(testFile):
+        raise Exception(testFile, 'does not exist.')
+
+def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
     '''
-    This function grabs the error code after testing the shell, whether it is debug or opt.
+    This function returns the exit code after testing the shell.
     '''
-    # Create a testfile with the gczeal() function.
-    compileTypeTestName = 'compileTypeTest.js'
-    compileTypeTestFile = open(compileTypeTestName, 'w')
-    compileTypeTestFile.writelines('gczeal()')
-    compileTypeTestFile.close()
-    # Test that compileTypeTestFile is indeed created.
-    if not os.path.isfile(compileTypeTestName):
-        raise Exception(compileTypeTestName, 'does not exist.')
+    contents = []
+    if dbgOptOrJsShellXpcshell == 'dbgOpt':
+        testFilename = 'dbgOptTest.js'
+        contents.append('gczeal()')
+    elif dbgOptOrJsShellXpcshell == 'jsShellXpcshell':
+        testFilename = 'jsShellXpcshellTest.js'
+        contents.append('Components')
+    createTestFiles(testFilename, contents)
 
     if os.name == 'posix':
-        testFileErrNum = subprocess.call([jsShell, compileTypeTestName])
+        testFileExitCode = subprocess.call([shell, testFilename])
     elif os.name == 'nt':
-        testFileErrNum = subprocess.call([jsShell, compileTypeTestName], shell=True)
-    os.remove(compileTypeTestName)  # Remove testfile after grabbing the error code.
+        testFileExitCode = subprocess.call([shell, testFilename], shell=True)
+    os.remove(testFilename)  # Remove testfile after grabbing the error code.
 
-    return testFileErrNum
+    return testFileExitCode
+
+def testJsShellOrXpcshell(shellName):
+    '''
+    This function tests if a binary is a js shell or xpcshell.
+    '''
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(shellName, 'jsShellXpcshell')
+
+    # The error code for xpcshells when passing in the Components function should be 0.
+    if exitCode == 0:
+        return 'xpcshell'
+    # js shells don't have Components compiled in by default.
+    elif exitCode == 3:
+        return 'jsShell'
+    else:
+        raise Exception('Unknown exit code after testing if js shell or xpcshell: ' + exitCode)
 
 def testDbgOrOpt(jsShellName):
     '''
     This function tests if a binary is a debug or optimized shell.
     '''
-    exitCode = grabExitCodeAfterTestingDbgOrOpt(jsShellName)
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if exitCode == 0:
@@ -391,7 +419,7 @@ def testDbgOrOptGivenACompileType(jsShellName, compileType):
     '''
     This function tests if a binary is a debug or optimized shell given a compileType.
     '''
-    exitCode = grabExitCodeAfterTestingDbgOrOpt(jsShellName)
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
 
     verboseDump('The error code for debug shells should be 0.')
     verboseDump('The error code for opt shells should be 3.')
