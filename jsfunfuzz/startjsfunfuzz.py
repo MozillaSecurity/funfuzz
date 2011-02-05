@@ -426,7 +426,7 @@ def main():
             assert archOfBinary(jsShellName) == archNum
 
     # Debug or optimized binary verification test.
-    testDbgOrOpt(jsShellName, compileType)
+    testDbgOrOptGivenACompileType(jsShellName, compileType)
 
 
     print '''

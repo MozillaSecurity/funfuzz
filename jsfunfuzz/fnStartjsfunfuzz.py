@@ -325,9 +325,9 @@ def archOfBinary(b):
     if '64-bit' in filetype:
         return '64'
 
-def testDbgOrOpt(jsShellName, compileType):
+def grabExitCodeAfterTestingDbgOrOpt(jsShell):
     '''
-    This function tests if a binary is a debug or optimized shell.
+    This function grabs the error code after testing the shell, whether it is debug or opt.
     '''
     # Create a testfile with the gczeal() function.
     compileTypeTestName = 'compileTypeTest.js'
@@ -339,28 +339,50 @@ def testDbgOrOpt(jsShellName, compileType):
         raise Exception(compileTypeTestName, 'does not exist.')
 
     if os.name == 'posix':
-        testFileErrNum = subprocess.call([jsShellName, compileTypeTestName])
+        testFileErrNum = subprocess.call([jsShell, compileTypeTestName])
     elif os.name == 'nt':
-        testFileErrNum = subprocess.call([jsShellName, compileTypeTestName], shell=True)
+        testFileErrNum = subprocess.call([jsShell, compileTypeTestName], shell=True)
     os.remove(compileTypeTestName)  # Remove testfile after grabbing the error code.
+    
+    return testFileErrNum
+
+def testDbgOrOpt(jsShellName):
+    '''
+    This function tests if a binary is a debug or optimized shell.
+    '''
+    exitCode = grabExitCodeAfterTestingDbgOrOpt(jsShellName)
+    
+    # The error code for debug shells when passing in the gczeal() function should be 0.
+    if exitCode == 0:
+        return 'dbg'
+    # Optimized shells don't have gczeal() compiled in by default.
+    elif exitCode == 3:
+        return 'opt'
+    else:
+        raise Exception('Unknown exit code after testing if debug or opt: ' + exitCode)
+
+def testDbgOrOptGivenACompileType(jsShellName, compileType):
+    '''
+    This function tests if a binary is a debug or optimized shell given a compileType.
+    '''
+    exitCode = grabExitCodeAfterTestingDbgOrOpt(jsShellName)
 
     verboseDump('The error code for debug shells should be 0.')
     verboseDump('The error code for opt shells should be 3.')
-    verboseDump('The actual error code for ' + jsShellName + ' now, is: ' + str(testFileErrNum))
+    verboseDump('The actual error code for ' + jsShellName + ' now, is: ' + str(exitCode))
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
-    if compileType == 'dbg' and testFileErrNum != 0:
+    if compileType == 'dbg' and exitCode != 0:
         print 'ERROR: A debug shell when tested with the gczeal() should return "0" as the error code.'
         print 'compileType is: ' + compileType
-        print 'testFileErrNum is: ' + str(testFileErrNum)
+        print 'exitCode is: ' + str(exitCode)
         print
         raise Exception('The compiled binary is not a debug shell.')
-    # The error code for debug shells when passing in the gczeal() function
-    # should be 3, because they don't have the function compiled in.
-    elif compileType == 'opt' and testFileErrNum != 3:
+    # Optimized shells don't have gczeal() compiled in by default.
+    elif compileType == 'opt' and exitCode != 3:
         print 'ERROR: An optimized shell when tested with the gczeal() should return "3" as the error code.'
         print 'compileType is: ' + compileType
-        print 'testFileErrNum is: ' + str(testFileErrNum)
+        print 'exitCode is: ' + str(exitCode)
         print
         raise Exception('The compiled binary is not an optimized shell.')
 
