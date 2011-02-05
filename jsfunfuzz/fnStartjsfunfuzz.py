@@ -196,74 +196,100 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     '''
     This function configures a js binary depending on the parameters.
     '''
-    cfgCmd = 'sh ' + os.path.normpath(configure)
+    cfgCmdList = []
+    cfgEnvList = os.environ
     if (archNum == '32') and (os.name == 'posix'):
-        if os.uname()[0] == "Darwin":
+        # 32-bit shell on Mac OS X
+        if os.uname()[0] == 'Darwin':
             if macver == '10.6':
-                cfgCmd = 'CC="gcc-4.2 -arch i386" CXX="g++-4.2 -arch i386" ' + \
-                             'HOST_CC="gcc-4.2" HOST_CXX="g++-4.2" ' + \
-                             'RANLIB=ranlib AR=ar AS=$CC LD=ld ' + \
-                             'STRIP="strip -x -S" CROSS_COMPILE=1 ' + \
-                             'sh ' + configure + ' --target=i386-apple-darwin8.0.0'
+                cfgEnvList['CC'] = 'gcc-4.2 -arch i386'
+                cfgEnvList['CXX'] = 'g++-4.2 -arch i386'
+                cfgEnvList['HOST_CC'] = 'gcc-4.2'
+                cfgEnvList['HOST_CXX'] = 'g++-4.2'
+                cfgEnvList['RANLIB'] = 'ranlib'
+                cfgEnvList['AR'] = 'ar'
+                cfgEnvList['AS'] = '$CC'
+                cfgEnvList['LD'] = 'ld'
+                cfgEnvList['STRIP'] = 'strip -x -S'
+                cfgEnvList['CROSS_COMPILE'] = '1'
+                cfgCmdList.append('sh')
+                cfgCmdList.append(os.path.normpath(configure))
+                cfgCmdList.append('--target=i386-apple-darwin8.0.0')
+        # 32-bit shell on 32/64-bit x86 Linux
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            cfgCmd = 'CC="gcc -m32" CXX="g++ -m32" AR=ar sh ' + configure + ' --target=i686-pc-linux'
+            cfgEnvList['CC'] = 'gcc -m32'
+            cfgEnvList['CXX'] = 'g++ -m32'
+            cfgEnvList['AR'] = 'ar'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+            cfgCmdList.append('--target=i686-pc-linux')
+        # 32-bit shell on ARM
         elif os.uname()[4] == 'armv7l':
-            if os.uname()[1] == 'tegra-ubuntu':
-                # No special commands needed, but be sure to install Linux prerequisites,
-                # do not worry if build-dep does not work, also be sure to apt-get zip as well.
-                pass
-                #cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
-                             #'sh ' + configure
-                # The binary below is an x86 binary rather than an ARM one.
-                #cfgCmd = 'CC=/opt/3rdparty/arm-2009q1/bin/arm-none-linux-gnueabi-gcc ' + \
-                             #'CXX=/opt/3rdparty/arm-2009q1/bin/arm-none-linux-gnueabi-g++ ' + \
-                             #'sh ' + configure
-            else:
-                cfgCmd = 'CC=/opt/cs2007q3/bin/gcc CXX=/opt/cs2007q3/bin/g++ ' + \
-                             'sh ' + configure
-    if (archNum == '64') and (macver == '10.5'):
-        cfgCmd = 'CC="gcc -m64" CXX="g++ -m64" AR=ar ' + \
-                     'sh ' + configure + ' --target=x86_64-apple-darwin10.0.0'
+            # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
+            # do not worry if build-dep does not work, also be sure to apt-get zip as well.
+            if os.uname()[1] != 'tegra-ubuntu':
+                cfgEnvList['CC'] = '/opt/cs2007q3/bin/gcc'
+                cfgEnvList['CXX'] = '/opt/cs2007q3/bin/g++'
+                cfgCmdList.append('sh')
+                cfgCmdList.append(os.path.normpath(configure))
+    # 64-bit shell on Mac OS X 10.5 Leopard
+    elif (archNum == '64') and (macver == '10.5'):
+        cfgEnvList['CC'] = 'gcc -m64'
+        cfgEnvList['CXX'] = 'g++ -m64'
+        cfgEnvList['AR'] = 'ar'
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
+        cfgCmdList.append('--target=x86_64-apple-darwin10.0.0')
+    else:
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
 
     if compileType == 'dbg':
-        cfgCmd += ' --disable-tests --disable-optimize --enable-debug'
+        cfgCmdList.append('--disable-optimize')
+        cfgCmdList.append('--enable-debug')
     elif compileType == 'opt':
+        cfgCmdList.append('--enable-optimize')
+        cfgCmdList.append('--disable-debug')
         # --enable-profiling is needed to obtain backtraces on optimized shells.
-        cfgCmd += ' --disable-tests --enable-optimize --disable-debug --enable-profiling'
+        cfgCmdList.append('--enable-profiling')
 
     # Trace JIT is on by default.
     if not traceJit:
-        cfgCmd += ' --disable-tracejit'
+        cfgCmdList.append('--disable-tracejit')
     # Method JIT is off by default.
     if methodJit:
-        cfgCmd += ' --enable-methodjit'
+        cfgCmdList.append('--enable-methodjit')
     if valgrindSupport:
-        cfgCmd += ' --enable-valgrind'
+        cfgCmdList.append('--enable-valgrind')
     if threadsafe:
-        cfgCmd += ' --enable-threadsafe --with-system-nspr'
+        cfgCmdList.append('--enable-threadsafe')
+        cfgCmdList.append('--with-system-nspr')
 
-    cfgCmd += ' --enable-type-inference'
+    # Miscellaneous flags
+    cfgCmdList.append('--disable-tests')
+    cfgCmdList.append('--enable-type-inference')
 
     if os.name == 'nt':
         # Only tested to work for pymake.
-        cfgCmd = cfgCmd.replace(os.sep, '\\\\')
+        counter = 0
+        for entry in cfgCmdList:
+            if os.sep in entry:
+                cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
+            counter = counter + 1
 
-    verboseDump('This is the configure command:')
-    verboseDump('%s\n' % cfgCmd)
-    
+    verboseDump('This is the configure command (environment variables not included):')
+    verboseDump('%s\n' % ' '.join(cfgCmdList))
+
     if os.name == 'nt':
         nullLocation = open('nul', 'w')
     else:
         nullLocation = open('/dev/null', 'w')
-    
-    args = shlex.split(cfgCmd)
-    verboseDump(args)
-    
+
     # If on Windows, be sure to first install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
     # Note that on Windows, redirecting stdout to subprocess.STDOUT does not work on Python 2.6.5.
-    subprocess.call(args, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir)
-        
+    subprocess.call(cfgCmdList, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
+
 def binaryPostfix():
     if os.name == 'posix':
         return ''
@@ -343,7 +369,7 @@ def grabExitCodeAfterTestingDbgOrOpt(jsShell):
     elif os.name == 'nt':
         testFileErrNum = subprocess.call([jsShell, compileTypeTestName], shell=True)
     os.remove(compileTypeTestName)  # Remove testfile after grabbing the error code.
-    
+
     return testFileErrNum
 
 def testDbgOrOpt(jsShellName):
@@ -351,7 +377,7 @@ def testDbgOrOpt(jsShellName):
     This function tests if a binary is a debug or optimized shell.
     '''
     exitCode = grabExitCodeAfterTestingDbgOrOpt(jsShellName)
-    
+
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if exitCode == 0:
         return 'dbg'
