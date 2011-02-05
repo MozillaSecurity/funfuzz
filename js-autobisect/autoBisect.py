@@ -65,6 +65,7 @@ def main():
     # Edit 2: Don't support Windows till XP is deprecated, and when we create fuzzing
     # directories in ~-land instead of in /c/. We lack permissions when we move from
     # /c/ to ~-land in Vista/7.
+    # Edit 3: Windows 7 is now supported if directories are in ~-land.
     if os.name == 'nt':
         if platform.uname()[3] != '6.1.7600':
             raise Exception('autoBisect is not supported on Windows versions lower than Windows 7.')
@@ -126,7 +127,7 @@ def main():
 
         print "Bisecting..."
         (currRev, blamedGoodOrBad, blamedRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo, paranoidBool)
-        
+
         if paranoidBool:
             paranoidBool = False
             assert currRev is None
