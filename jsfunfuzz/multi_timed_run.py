@@ -33,10 +33,14 @@ engineFlags = args[3:]
 runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", options.fuzzjs]
 
 def showtail(filename):
-    cmd = "tail -n 20 %s" % filename
-    print cmd
+    cmd = []
+    cmd.append('tail')
+    cmd.append('-n')
+    cmd.append('20')
+    cmd.append(filename)
+    print ' '.join(cmd)
     print ""
-    os.system(cmd)
+    subprocess.call(cmd)
     print ""
     print ""
 
@@ -60,14 +64,14 @@ def many_timed_runs():
         if level > oklevel:
             showtail(logPrefix + "-out")
             showtail(logPrefix + "-err")
-            
+
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
             [before, after] = fuzzSplice(open(options.fuzzjs))
             newfileLines = before + linesWith(open(logPrefix + "-out"), "FRC") + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
-            
+
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
             itest = [jsunhappypy, str(level), str(timeout), knownPath]
             alsoRunChar = (level > jsunhappy.JS_DID_NOT_FINISH)
