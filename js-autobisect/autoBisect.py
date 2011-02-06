@@ -425,8 +425,6 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
     # Run configure.
     threadsafe = False  # Let's disable support for threadsafety in the js shell
     macver = osCheck()
-    currDir = os.getcwdu()
-    os.chdir(objdir)
     cfgJsBin(archNum, compileType,
                       True, True, # always *build* with both JITs enabled
                       valgrindSupport,
@@ -436,7 +434,6 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
     # Only pymake was tested on Windows.
     usePymake = True if os.name == 'nt' else False
     shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir)
-    os.chdir(currDir)  # Change back to the prior directory.
     rmDirInclSubDirs(tempDir)
     return shell
 
