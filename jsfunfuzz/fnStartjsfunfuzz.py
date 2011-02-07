@@ -379,12 +379,22 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
         contents.append('Components')
     createTestFiles(testFilename, contents)
 
-    if os.name == 'posix':
-        testFileExitCode = subprocess.call([shell, testFilename])
-    elif os.name == 'nt':
-        testFileExitCode = subprocess.call([shell, testFilename], shell=True)
-    os.remove(testFilename)  # Remove testfile after grabbing the error code.
-
+    while True:
+        try:
+            if os.name == 'posix':
+                testFileExitCode = subprocess.call([shell, testFilename])
+            elif os.name == 'nt':
+                testFileExitCode = subprocess.call([shell, testFilename], shell=True)
+        except:
+            # xpcshells need another argument after run-mozilla.sh
+            if os.name == 'posix':
+                testFileExitCode = subprocess.call([shell, './xpcshell', testFilename])
+            elif os.name == 'nt':
+                testFileExitCode = subprocess.call([shell, './xpcshell', testFilename], shell=True)
+        finally:
+            os.remove(testFilename)  # Remove testfile after grabbing the error code.
+            break
+        
     return testFileExitCode
 
 def testJsShellOrXpcshell(shellName):
