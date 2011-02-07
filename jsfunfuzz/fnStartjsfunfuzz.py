@@ -400,7 +400,7 @@ def testJsShellOrXpcshell(shellName):
     elif exitCode == 3:
         return 'jsShell'
     else:
-        raise Exception('Unknown exit code after testing if js shell or xpcshell: ' + exitCode)
+        raise Exception('Unknown exit code after testing if js shell or xpcshell: ' + str(exitCode))
 
 def testDbgOrOpt(jsShellName):
     '''
