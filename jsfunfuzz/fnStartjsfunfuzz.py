@@ -235,7 +235,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
                 cfgCmdList.append('sh')
                 cfgCmdList.append(os.path.normpath(configure))
     # 64-bit shell on Mac OS X 10.5 Leopard
-    elif (archNum == '64') and (macver == '10.5'):
+    # This cannot be elif because tegra-ubuntu has to reach the else block below.
+    if (archNum == '64') and (macver == '10.5'):
         cfgEnvList['CC'] = 'gcc -m64'
         cfgEnvList['CXX'] = 'g++ -m64'
         cfgEnvList['AR'] = 'ar'
