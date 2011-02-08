@@ -134,13 +134,13 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
             print stderr
     return stdout.rstrip()
 
-def hgHashAddToFuzzPath(fuzzPath):
+def hgHashAddToFuzzPath(fuzzPath, currWorkingDir=os.getcwdu()):
     '''
     This function finds the mercurial revision and appends it to the directory name.
     It also prompts if the user wants to continue, should the repository not be on tip.
     '''
     verboseDump('About to start running `hg identify -i -n -b` ...')
-    hgIdFull = captureStdout(['hg', 'identify', '-i', '-n', '-b'])
+    hgIdFull = captureStdout(['hg', 'identify', '-i', '-n', '-b'], currWorkingDir=os.getcwdu())
     hgIdChangesetHash = hgIdFull.split(' ')[0]
     hgIdLocalNum = hgIdFull.split(' ')[1]
     hgIdBranch = hgIdFull.split(' ')[2]  # If on tip, value should be 'default'.

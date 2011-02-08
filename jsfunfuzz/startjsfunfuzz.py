@@ -232,14 +232,14 @@ def main():
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
-        (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath)
+        (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath, currWorkingDir=os.path.expanduser(repoDict[branchType]))
         os.chdir(os.path.expanduser(currDir))
     else:
         try:
             os.chdir(repoDict[branchType])
         except OSError:
             raise Exception('The directory for "' + branchType + '" is not found.')
-        (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath)
+        (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath, currWorkingDir=repoDict[branchType])
         os.chdir(currDir)
 
     # Turn off pymake if not on default tip.
