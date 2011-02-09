@@ -199,7 +199,9 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     '''
     cfgCmdList = []
     cfgEnvList = os.environ
-    if (archNum == '32') and (os.name == 'posix'):
+    # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
+    # do not worry if build-dep does not work, also be sure to apt-get zip as well.
+    if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
         # 32-bit shell on Mac OS X
         if os.uname()[0] == 'Darwin':
             if macver == '10.6':
@@ -225,18 +227,14 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i686-pc-linux')
-        # 32-bit shell on ARM
+        # 32-bit shell on ARM (non-tegra ubuntu)
         elif os.uname()[4] == 'armv7l':
-            # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
-            # do not worry if build-dep does not work, also be sure to apt-get zip as well.
-            if os.uname()[1] != 'tegra-ubuntu':
-                cfgEnvList['CC'] = '/opt/cs2007q3/bin/gcc'
-                cfgEnvList['CXX'] = '/opt/cs2007q3/bin/g++'
-                cfgCmdList.append('sh')
-                cfgCmdList.append(os.path.normpath(configure))
+            cfgEnvList['CC'] = '/opt/cs2007q3/bin/gcc'
+            cfgEnvList['CXX'] = '/opt/cs2007q3/bin/g++'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
     # 64-bit shell on Mac OS X 10.5 Leopard
-    # This cannot be elif because tegra-ubuntu has to reach the else block below.
-    if (archNum == '64') and (macver == '10.5'):
+    elif (archNum == '64') and (macver == '10.5'):
         cfgEnvList['CC'] = 'gcc -m64'
         cfgEnvList['CXX'] = 'g++ -m64'
         cfgEnvList['AR'] = 'ar'
@@ -362,7 +360,7 @@ def createTestFiles(name, contentsLineList):
     for line in contentsLineList:
         testFile.writelines(line)
     testFile.close()
-    
+
     if not os.path.isfile(name):
         raise Exception(name, 'does not exist.')
 
@@ -394,7 +392,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
         finally:
             os.remove(testFilename)  # Remove testfile after grabbing the error code.
             break
-        
+
     return testFileExitCode
 
 def testJsShellOrXpcshell(shellName):
