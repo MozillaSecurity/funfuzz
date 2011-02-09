@@ -89,8 +89,8 @@ def many_timed_runs():
                 os.remove(logPrefix + "-crash")
             if (os.path.exists(logPrefix + "-vg.xml")):
                 os.remove(logPrefix + "-vg.xml")
-            if (os.path.exists(logPrefix + "-core")):
-                os.remove(logPrefix + "-core")
+            if (os.path.exists(logPrefix + "-core.gz")):
+                os.remove(logPrefix + "-core.gz")
 
 
 def fuzzSplice(file):
