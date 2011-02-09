@@ -18,9 +18,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
        (If it's not prepared to accept engineFlags, engineFlags must be empty.)
     """
 
-    if testJsShellOrXpcshell(jsEngine) == 'xpcshell':
-        raise Exception('Lithium and autoBisect cannot yet work [together] on xpcshell.')
-
     lith1tmp = logPrefix + "-lith1-tmp"
     os.mkdir(lith1tmp)
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
@@ -38,7 +35,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
     print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs)
 
     jsEngineName = os.path.basename(jsEngine)
-    if bisectRepo is not "none":
+    if bisectRepo is not "none" and testJsShellOrXpcshell(jsEngine) != "xpcshell":
         autobisectCmd = ["python", autobisectpy, "-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
