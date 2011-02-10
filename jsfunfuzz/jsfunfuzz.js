@@ -106,6 +106,8 @@ var haveE4X = (typeof XML == "function");
 if (haveE4X)
   XML.ignoreComments = false; // to make uneval saner -- see bug 465908
 
+var HOTLOOP = "tracemonkey" in this ? tracemonkey.HOTLOOP : 8;
+
 function simpleSource(s)
 {
   function hexify(c)
@@ -2080,7 +2082,7 @@ function forLoopHead(d, b, v, reps)
 
 function makeOpaqueIdiomaticLoop(d, b)
 {
-  var reps = rnd(13);
+  var reps = rnd(rnd(HOTLOOP * 3));
   var vHidden = uniqueVarName();
   return "/*oLoop*/" + forLoopHead(d, b, vHidden, reps) + " { " +
       makeStatement(d - 2, b) +
@@ -2089,7 +2091,7 @@ function makeOpaqueIdiomaticLoop(d, b)
 
 function makeTransparentIdiomaticLoop(d, b)
 {
-  var reps = rnd(13);
+  var reps = rnd(rnd(HOTLOOP * 3));
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
   return "/*vLoop*/" + forLoopHead(d, b, vHidden, reps) +
@@ -2101,7 +2103,7 @@ function makeTransparentIdiomaticLoop(d, b)
 
 function makeBranchUnstableLoop(d, b)
 {
-  var reps = rnd(25);
+  var reps = rnd(rnd(HOTLOOP + 10));
   var v = uniqueVarName();
   var mod = rnd(10) + 2;
   var target = rnd(mod);
@@ -4120,7 +4122,7 @@ function makeMixedTypeArray(d, b)
 
   // Make an array of up to 39 elements, containing those two to five values
   var c = [];
-  var count = rnd(40);
+  var count = rnd(rnd(HOTLOOP + 32));
   for (var j = 0; j < count; ++j)
     c.push(rndElt(picks));
 
