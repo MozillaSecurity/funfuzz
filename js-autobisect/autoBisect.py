@@ -101,6 +101,15 @@ def main():
     # Skip some busted revisions.
     # It might make sense to avoid (or note) these in checkBlameParents.
     # 1. descendants(eae8350841be) - descendants(f3e58c264932) [partial]
+    # Note: The following instructions are untested.
+    # To add to the list of descendant revsets:
+    # - Temporarily set COMPILATION_FAILED_LABEL in autoBisect.py to 'bad' instead of 'skip'
+    # - Then take one of the revs that fails, say fd756976e52c
+    # - 404.js does not need to exist, but assuming tip / default works,
+    # - (1) will tell you when the brokenness started
+    # - (1) autoBisect.py -p -a32 -s fd756976e52c 404.js
+    # - (2) will tell you when the brokenness ended
+    # - (2) autoBisect.py -p -a32 -e fd756976e52c 404.js
     captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
