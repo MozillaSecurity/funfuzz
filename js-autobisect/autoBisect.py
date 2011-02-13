@@ -110,6 +110,7 @@ def main():
     # - (1) autoBisect.py -p -a32 -s fd756976e52c 404.js
     # - (2) will tell you when the brokenness ended
     # - (2) autoBisect.py -p -a32 -e fd756976e52c 404.js
+    # Alternative: (descendants(last good changeset)-descendants(first working changeset))
     captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
@@ -117,6 +118,7 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', 'e6496cd735a6'])
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(8de0a7fef2c0)-descendants(d43e89d8a20b))'], ignoreStderr=True, ignoreExitCode=True) # early jaeger
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c to tm merge that broke compilation
 
     # Specify `hg bisect` ranges.
     if paranoidBool:
