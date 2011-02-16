@@ -165,6 +165,7 @@ class AmissLogHandler:
     self.crashIsKnown = False
     self.timedOut = False
     self.sawValgrindComplaint = False
+    detect_interesting_crashes.resetCounts()
   def processLine(self, msgLF):
     msgLF = stripBeeps(msgLF)
     msg = msgLF.rstrip("\n")
