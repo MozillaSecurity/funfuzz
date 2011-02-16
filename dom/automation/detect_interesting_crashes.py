@@ -4,8 +4,6 @@ import os, sys, platform, signal
 ready = False
 
 def amiss(knownPath, crashLogFilename, verbose, msg):
-    global ignoreList
-    
     if not ready:
         readIgnoreList(knownPath)
 
@@ -14,9 +12,8 @@ def amiss(knownPath, crashLogFilename, verbose, msg):
     if os.path.exists(crashLogFilename):
         currentFile = file(crashLogFilename, "r")
         for line in currentFile:
-            for ig in ignoreList:
-                if line.find(ig) != -1:
-                    igmatch.append(ig)
+            if isKnownCrashSignature(line):
+                igmatch.append(ig)
         currentFile.close()
         
         if len(igmatch) == 0:
