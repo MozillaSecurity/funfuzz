@@ -110,6 +110,13 @@ def main():
     #   https://developer.mozilla.org/en/NSPR_build_instructions
     threadsafe = False
 
+    if os.uname()[0] == "Linux":
+        # Enable creation of coredumps.
+        verboseDump('Setting ulimit -c to unlimited..')
+        subprocess.call(['ulimit -c unlimited'], shell=True)
+        # Only allow one process to create a coredump at a time.
+        subprocess.call(['echo 1 | sudo tee /proc/sys/kernel/core_uses_pid'], shell=True)
+
 
     branchSuppList = []
     # Add supported branches here.
@@ -245,7 +252,7 @@ def main():
     # Turn off pymake if not on default tip.
     if usePymake and not onDefaultTip:
         usePymake = False
-    
+
     # Raise an exception if not on default tip on Windows.
     if os.name == 'nt' and not onDefaultTip:
         raise Exception('Only default tip is supported on Windows platforms for the moment.')
