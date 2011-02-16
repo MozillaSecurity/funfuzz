@@ -391,7 +391,9 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
 
     snowLeopardOrHigher = (platform.system() == 'Darwin') and (platform.mac_ver()[0].split('.') >= ['10', '6'])
 
-    if methodjitBool:
+    if False and profilejitBool:
+        return '339457364540' # ~55724 on TM, first rev that has the -p option
+    elif methodjitBool:
         if os.name == 'nt':
             return '9f2641871ce8' # ~52707 on TM, first rev that can run with pymake and -m
         else:
