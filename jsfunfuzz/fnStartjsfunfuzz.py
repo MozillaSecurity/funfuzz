@@ -203,21 +203,20 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
         # 32-bit shell on Mac OS X
-        if os.uname()[0] == 'Darwin':
-            if macver == '10.6':
-                cfgEnvList['CC'] = 'gcc-4.2 -arch i386'
-                cfgEnvList['CXX'] = 'g++-4.2 -arch i386'
-                cfgEnvList['HOST_CC'] = 'gcc-4.2'
-                cfgEnvList['HOST_CXX'] = 'g++-4.2'
-                cfgEnvList['RANLIB'] = 'ranlib'
-                cfgEnvList['AR'] = 'ar'
-                cfgEnvList['AS'] = '$CC'
-                cfgEnvList['LD'] = 'ld'
-                cfgEnvList['STRIP'] = 'strip -x -S'
-                cfgEnvList['CROSS_COMPILE'] = '1'
-                cfgCmdList.append('sh')
-                cfgCmdList.append(os.path.normpath(configure))
-                cfgCmdList.append('--target=i386-apple-darwin8.0.0')
+        if os.uname()[0] == 'Darwin' and macver == '10.6':
+            cfgEnvList['CC'] = 'gcc-4.2 -arch i386'
+            cfgEnvList['CXX'] = 'g++-4.2 -arch i386'
+            cfgEnvList['HOST_CC'] = 'gcc-4.2'
+            cfgEnvList['HOST_CXX'] = 'g++-4.2'
+            cfgEnvList['RANLIB'] = 'ranlib'
+            cfgEnvList['AR'] = 'ar'
+            cfgEnvList['AS'] = '$CC'
+            cfgEnvList['LD'] = 'ld'
+            cfgEnvList['STRIP'] = 'strip -x -S'
+            cfgEnvList['CROSS_COMPILE'] = '1'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+            cfgCmdList.append('--target=i386-apple-darwin8.0.0')
         # 32-bit shell on 32/64-bit x86 Linux
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
@@ -231,6 +230,9 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
         elif os.uname()[4] == 'armv7l':
             cfgEnvList['CC'] = '/opt/cs2007q3/bin/gcc'
             cfgEnvList['CXX'] = '/opt/cs2007q3/bin/g++'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+        else:
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
     # 64-bit shell on Mac OS X 10.5 Leopard
