@@ -16,7 +16,8 @@ function dumpln(s) { dump(s + "\n"); }
 
 function DOMFuzzHelper() {}
 
-function quitFromContent() { dumpln("Got goQuitApplication from page"); goQuitApplication(); }
+// Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
+function quitFromContent() { dumpln("Got goQuitApplication from page"); runSoon(goQuitApplication); }
 quitFromContent.__exposedProps__ = {"toString": "r"};
 
 DOMFuzzHelper.prototype = {
