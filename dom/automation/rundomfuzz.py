@@ -193,8 +193,10 @@ class AmissLogHandler:
         self.expectedToHang = True
     if msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1:
       self.sawFatalAssertion = True
-      if platform.system() == "Linux":
-        self.crashIsKnown = True # Bug 610311? Or maybe aborts don't get caught by breakpad?
+      if platform.system() == "Linux" or platform.system() in ("Microsoft", "Windows"):
+        # Linux: Bug 610311? Or maybe aborts don't get caught by breakpad?
+        # Windows: We might not have symbols for the file that contains abort(). Or something.
+        self.crashIsKnown = True 
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
