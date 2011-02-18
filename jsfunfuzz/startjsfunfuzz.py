@@ -110,12 +110,13 @@ def main():
     #   https://developer.mozilla.org/en/NSPR_build_instructions
     threadsafe = False
 
-    if os.uname()[0] == "Linux":
+    if (os.uname()[0] == "Linux") or (os.uname()[0] == "Darwin"):
         # Enable creation of coredumps.
         verboseDump('Setting ulimit -c to unlimited..')
         subprocess.call(['ulimit -c unlimited'], shell=True)
-        # Only allow one process to create a coredump at a time.
-        subprocess.call(['echo 1 | sudo tee /proc/sys/kernel/core_uses_pid'], shell=True)
+        if os.uname()[0] == "Linux":
+            # Only allow one process to create a coredump at a time.
+            subprocess.call(['echo 1 | sudo tee /proc/sys/kernel/core_uses_pid'], shell=True)
 
 
     branchSuppList = []
