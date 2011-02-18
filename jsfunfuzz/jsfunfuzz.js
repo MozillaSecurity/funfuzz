@@ -2730,6 +2730,8 @@ var exprMakers =
 
   // Methods
   function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods)]); },
+  function(d, b) { var id = makeId(d, b); return cat(["/*UUV1*/", "(", id, ".", rndElt(objectMethods), " = ", makeFunction(d, b), ")"]); },
+  function(d, b) { var id = makeId(d, b); return cat(["/*UUV2*/", "(", id, ".", rndElt(objectMethods), " = ", id, ".", rndElt(objectMethods), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods), "(", makeActualArgList(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), "valueOf", "(", uneval("number"), ")"]); },
 
