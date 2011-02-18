@@ -15,7 +15,7 @@ def amiss(knownPath, crashLogFilename, verbose, msg):
         currentFile = file(crashLogFilename, "r")
         for line in currentFile:
             if isKnownCrashSignature(line):
-                igmatch.append(ig)
+                igmatch.append(line.rstrip())
         currentFile.close()
         
         if len(igmatch) == 0:
