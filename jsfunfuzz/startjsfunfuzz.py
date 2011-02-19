@@ -110,7 +110,7 @@ def main():
     #   https://developer.mozilla.org/en/NSPR_build_instructions
     threadsafe = False
 
-    if (os.uname()[0] == "Linux") or (os.uname()[0] == "Darwin"):
+    if os.name != 'nt' and (os.uname()[0] == "Linux" or os.uname()[0] == "Darwin"):
         # Enable creation of coredumps.
         verboseDump('Setting ulimit -c to unlimited..')
         subprocess.call(['ulimit -c unlimited'], shell=True)
