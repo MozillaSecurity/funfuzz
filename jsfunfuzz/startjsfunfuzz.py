@@ -71,7 +71,9 @@
 #   by porting remaining stuff to os.path.join. Also reduce number of
 #   calls to `hg identify`.
 
-import os, platform, shutil, subprocess, sys, time
+import os, shutil, subprocess, sys, time
+
+from platform import platform
 from fnStartjsfunfuzz import *
 
 path0 = os.path.dirname(sys.argv[0])
@@ -82,6 +84,7 @@ import autoBisect
 def main():
 
     # Variables
+    verbose = False
     selfTests = True
     multiTimedRunTimeout = '10'
 
@@ -215,7 +218,7 @@ def main():
     repoDict['jm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'jaegermonkey'))) + pathSeparator
     # Start of fuzzing directory, does not need pathSeparator at the end.
     fuzzPathStart = os.path.normpath(os.path.expanduser(os.path.join('~', 'Desktop', 'jsfunfuzz-')))
-    if os.name == 'nt' and 'Windows-XP' in platform.platform():
+    if os.name == 'nt' and 'Windows-XP' in platform():
         raise Exception('Not supported on Windows XP.')
         # for repo in repoDict.keys():
             ## It is assumed that on WinXP, the corresponding directories are in the root folder.
@@ -228,14 +231,14 @@ def main():
             verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
 
     fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + pathSeparator
-    if 'Windows-XP' not in platform.platform():
+    if 'Windows-XP' not in platform():
         fuzzPath = os.path.expanduser(fuzzPath)  # Expand the ~ folder except on WinXP.
 
     # Save the current directory as a variable.
     currDir = os.getcwd()
 
     # Note and attach the numbers and hashes of the current changeset in the fuzzPath.
-    if 'Windows-XP' not in platform.platform():
+    if 'Windows-XP' not in platform():
         try:
             os.chdir(os.path.expanduser(repoDict[branchType]))
         except OSError:
@@ -279,7 +282,7 @@ def main():
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
-        if 'Windows-XP' not in platform.platform():
+        if 'Windows-XP' not in platform():
             jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.normpath(repoDict['fuzzing']) + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff')])
         else:
             # We have to use `<` and `shell=True` here because of the drive letter of the path to patchGC.diff.
@@ -414,7 +417,7 @@ def main():
 
 
     # Define fuzzing command with the required parameters.
-    if 'Windows-XP' not in platform.platform():
+    if 'Windows-XP' not in platform():
         multiTimedRun = os.path.expanduser(multiTimedRun)
         jsknownDict[branchType] = os.path.expanduser(jsknownDict[branchType])
     fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT + multiTimedRunTimeout + ' '

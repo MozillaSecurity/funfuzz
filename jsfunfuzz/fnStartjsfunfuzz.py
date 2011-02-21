@@ -38,8 +38,9 @@
 This file contains functions for startjsfunfuzz.py.
 '''
 
-import os, platform, shutil, subprocess, sys, shlex
+import os, shutil, subprocess, sys
 
+from platform import mac_ver, platform
 from multiprocessing import cpu_count
 
 verbose = False  # Turn this to True to enable verbose output for debugging.
@@ -69,7 +70,7 @@ def osCheck():
     '''
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
-            macVer, _, _ = platform.mac_ver()
+            macVer, _, _ = mac_ver()
             macVer = float('.'.join(macVer.split('.')[:2]))
             if ('10.5' or '10.6' in str(macVer)):
                 return str(macVer)
@@ -169,7 +170,7 @@ def cpJsTreeDir(repo, dest):
     global globalRepo
     globalRepo = repo
     repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
-    if 'Windows-XP' not in platform.platform():
+    if 'Windows-XP' not in platform():
         repo = os.path.expanduser(repo)
     try:
         verboseDump('Copying the js tree, which is located at ' + repo)
@@ -337,7 +338,7 @@ def cpUsefulFiles(filePath):
     '''
     This function copies over useful files that are updated in hg fuzzing branch.
     '''
-    if 'Windows-XP' not in platform.platform():
+    if 'Windows-XP' not in platform():
         filePath = os.path.expanduser(filePath)
     shutil.copy2(filePath, '.')
 
