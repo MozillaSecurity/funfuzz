@@ -82,6 +82,7 @@ import autoBisect
 def main():
 
     # Variables
+    verbose = False
     selfTests = True
     multiTimedRunTimeout = '10'
 
