@@ -104,6 +104,12 @@ def summaryString(issues, runinfo):
     amissStr = ("") if (len(issues) == 0) else ("*" + repr(issues) + " ")
     return "%s%s (%.1f seconds)" % (amissStr, runinfo.msg, runinfo.elapsedtime)
 
+def truncateFile(fn, maxSize):
+    if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
+        with open(fn, "r+") as f:
+            f.truncate(maxSize)
+
+
 # For use by Lithium
 def interesting(args, tempPrefix):
     minimumInterestingLevel = int(args[0])
@@ -113,11 +119,6 @@ def interesting(args, tempPrefix):
     truncateFile(tempPrefix + "-out", 1000000)
     truncateFile(tempPrefix + "-err", 1000000)
     return actualLevel >= minimumInterestingLevel
-
-def truncateFile(fn, maxSize):
-    if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
-        with open(fn, "r+") as f:
-            f.truncate(maxSize)
 
 if __name__ == "__main__":
     timeout = 120
