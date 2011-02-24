@@ -298,14 +298,15 @@ def binaryPostfix():
     elif os.name == 'nt':
         return '.exe'
 
-def shellName(archNum, compileType, extraID):
+def shellName(archNum, compileType, extraID, valgrindSupport):
     if os.name == 'posix':
         osname = os.uname()[0].lower()
     elif os.name == 'nt':
         osname = os.name.lower()
-    return 'js-' + compileType + '-' + archNum + '-' + extraID + '-' + osname + binaryPostfix()
+    vgmark = "-vg" if valgrindSupport else ""
+    return 'js-' + compileType + '-' + archNum + vgmark + '-' + extraID + '-' + osname + binaryPostfix()
 
-def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
+def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir, valgrindSupport):
     '''
     This function compiles and copies a binary.
     '''
@@ -329,7 +330,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir):
                 print out
             raise Exception("Running 'make' did not result in a js shell")
 
-    newName = os.path.join(destDir, shellName(archNum, compileType, extraID))
+    newName = os.path.join(destDir, shellName(archNum, compileType, extraID, valgrindSupport))
     shutil.copy2(compiledName, newName)
     return newName
 

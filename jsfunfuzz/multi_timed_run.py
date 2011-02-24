@@ -24,7 +24,14 @@ parser.add_option("--repo",
                   action = "store", dest = "repo",
                   default = os.path.expanduser("~/tracemonkey/"),
                   help = "The hg repository (e.g. ~/tracemonkey/), for bisection")
+parser.add_option("--valgrind",
+                  action = "store_true", dest = "valgrind",
+                  default = False,
+                  help = "use valgrind with a reasonable set of options")
 options, args = parser.parse_args(sys.argv[1:])
+
+if options.valgrind and options.useCompareJIT:
+    print "Note: When running comparejit, the --valgrind option will be ignored"
 
 timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
@@ -47,11 +54,19 @@ def showtail(filename):
 
 def many_timed_runs():
     iteration = 0
+
+    jsunhappyArgs = ["--timeout=" + str(timeout)]
+    if options.valgrind:
+        jsunhappyArgs.append("--valgrind")
+    jsunhappyArgs.append(knownPath)
+    jsunhappyArgs = jsunhappyArgs + runThis
+    jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
+
     while True:
         iteration += 1
         logPrefix = tempDir + os.sep + "w" + str(iteration)
 
-        level = jsunhappy.jsfunfuzzLevel(runThis, timeout, knownPath, logPrefix)
+        level = jsunhappy.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
         oklevel = jsunhappy.JS_KNOWN_CRASH
         if options.fuzzjs.find("jsfunfuzz") != -1:
@@ -73,7 +88,12 @@ def many_timed_runs():
             writeLinesToFile(newfileLines, filenameToReduce)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
-            itest = [jsunhappypy, str(level), str(timeout), knownPath]
+            itest = [jsunhappypy]
+            if options.valgrind:
+                itest.append("--valgrind")
+            itest.append("--minlevel=" + str(level))
+            itest.append("--timeout=" + str(timeout))
+            itest.append(knownPath)
             alsoRunChar = (level > jsunhappy.JS_DID_NOT_FINISH)
             pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar)
 
