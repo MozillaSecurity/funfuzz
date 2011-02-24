@@ -19,7 +19,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
     """
 
     valgrindSupport = "--valgrind" in itest
-    valgrindX = ["--valgrind"] if valgrindSupport else False
+    valgrindX = ["--valgrind"] if valgrindSupport else []
 
     lith1tmp = logPrefix + "-lith1-tmp"
     os.mkdir(lith1tmp)
