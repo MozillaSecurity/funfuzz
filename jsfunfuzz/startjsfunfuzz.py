@@ -94,7 +94,12 @@ def main():
 
     traceJit = True  # Activate support for tracing JIT in configure.
     jsJitSwitch = True  # Activate JIT fuzzing here.
-    methodJit = False  # Method JIT is off by default unless fuzzing JM branch.
+    methodJit = True  # Activate support for method JIT in configure.
+    methodJitSwitch = True  # Activate JIT fuzzing here.
+    methodJitAllSwitch = True  # turn on -a
+    profileJitSwitch = True  # turn on -p
+    debugJitSwitch = True  # turn on -d
+    deepFreezeGlobalObjPrototypeSwitch = True  # turn on -P
     # Pymake is activated on Windows platforms by default, for default tip only.
     usePymake = True if os.name == 'nt' else False
 
@@ -404,10 +409,21 @@ def main():
         jsCompareJIT = ' --comparejit '
     else:
         jsCompareJIT = ' '
-    if branchType == 'jm':
+
+    if methodJitSwitch:
         jsMethodJit = ' -m '
+        if methodJitAllSwitch:
+            jsMethodJit = ' -m -a '
     else:
         jsMethodJit = ' '
+
+    # FIXME: This can be done in a better way instead of appending to jsMethodJit
+    if profileJitSwitch:
+        jsMethodJit += '-p '
+    if debugJitSwitch:
+        jsMethodJit += '-d '
+    if deepFreezeGlobalObjPrototypeSwitch:
+        jsMethodJit += '-P '
 
 
     # Commands to simulate bash's `tee`.
