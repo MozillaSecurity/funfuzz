@@ -18,6 +18,9 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
        (If it's not prepared to accept engineFlags, engineFlags must be empty.)
     """
 
+    valgrindSupport = "--valgrind" in itest
+    valgrindX = ["--valgrind"] if valgrindSupport else []
+
     lith1tmp = logPrefix + "-lith1-tmp"
     os.mkdir(lith1tmp)
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
@@ -36,7 +39,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
 
     jsEngineName = os.path.basename(jsEngine)
     if bisectRepo is not "none" and testJsShellOrXpcshell(jsEngine) != "xpcshell":
-        autobisectCmd = ["python", autobisectpy, "-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)] + engineFlags + [infilename] + itest
+        autobisectCmd = ["python", autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
         print "Done running autobisect"

@@ -337,7 +337,7 @@ def main():
         #subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
 
     # Compile and copy the first binary.
-    jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir)
+    jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir, valgrindSupport)
     # Change into compilePath for the second binary.
     os.chdir('../')
 
@@ -355,13 +355,13 @@ def main():
         cfgJsBin(archNum, 'opt', traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer,
                           os.path.join(compilePath, 'configure'), objdir2)
-        compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir2)
+        compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
         cfgJsBin(archNum, 'dbg', traceJit, methodJit,
                           valgrindSupport, threadsafe, macVer,
                           os.path.join(compilePath, 'configure'), objdir2)
-        compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2)
+        compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
 
 
     os.chdir('../../')  # Change into fuzzPath directory.
@@ -434,11 +434,10 @@ def main():
     if 'Windows-XP' not in platform.platform():
         multiTimedRun = os.path.expanduser(multiTimedRun)
         jsknownDict[branchType] = os.path.expanduser(jsknownDict[branchType])
-    fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT + multiTimedRunTimeout + ' '
-    fuzzCmd2 = ' ' + jsShellName + jsJit + jsMethodJit
+    fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT
     if valgrindSupport:
-        fuzzCmd2 = ' valgrind' + fuzzCmd2
-    fuzzCmd = fuzzCmd1 + jsknownDict[branchType] + fuzzCmd2
+        fuzzCmd1 = fuzzCmd1 + ' --valgrind'
+    fuzzCmd = fuzzCmd1 + ' ' + multiTimedRunTimeout + ' ' + jsknownDict[branchType] + ' ' + jsShellName + jsJit + jsMethodJit
 
     verboseDump('jsShellName is: ' + jsShellName)
     verboseDump('fuzzPath + jsShellName is: ' + jsShellName)

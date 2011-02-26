@@ -78,7 +78,7 @@ def main():
     sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
     if startRepo is None:
-        startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum)
+        startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupport)
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids
     # such as "9f2641871ce8".
@@ -196,7 +196,7 @@ def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, en
 
 def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
     def testRev(rev):
-        cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, rev))
+        cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, rev, valgrindSupport))
         cachedNoShell = cachedShell + ".busted"
 
         print "Rev " + rev + ":",
@@ -256,6 +256,7 @@ def externalTestAndLabel(filename, methodjitBool, tracingjitBool, interestingnes
 
     def inner(jsShellName, rev):
         conditionArgs = conditionArgPrefix + [jsShellName] + engineFlags + [filename]
+        conditionScript.init(conditionArgs) # !!!
         if conditionScript.interesting(conditionArgs, tempPrefix + rev):
             return ('bad', 'interesting')
         else:
@@ -362,7 +363,6 @@ def parseOpts():
     if options.interestingnessBool:
         if len(args) < 2:
             parser.error('Not enough arguments.')
-        assert not options.valgSupport # not yet supported here
         testAndLabel = externalTestAndLabel(filename, options.methodjitBool, options.tracingjitBool, args[1:])
     else:
         if len(args) >= 2:
@@ -378,7 +378,7 @@ def parseOpts():
 def hgId(rev):
     return captureStdout(hgPrefix + ["id", "-i", "-r", rev])
 
-def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
+def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
     # Unfortunately, there are also interspersed runs of brokenness, such as:
     # * 0c8d4f846be8::bfb330182145 (~28226::28450).
@@ -404,6 +404,8 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum):
         return "1a44373ccaf6" # ~32547 on TM, config.guess change for snow leopard
     elif snowLeopardOrHigher and archNum == "32":
         return "db4d22859940" # ~24564 on TM, imacros compilation change
+    elif valgrindSupport:
+        return "582a62c8f910" # ~21412 on TM, fixed a regexp valgrind warning that is triggered by an empty jsfunfuzz testcase
     else:
         return "8c52a9486c8f" # ~21110 on TM, switch from Makefile.ref to autoconf
 
@@ -446,7 +448,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
     # Compile and copy the first binary.
     # Only pymake was tested on Windows.
     usePymake = True if os.name == 'nt' else False
-    shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir)
+    shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir, valgrindSupport)
     rmDirInclSubDirs(tempDir)
     return shell
 

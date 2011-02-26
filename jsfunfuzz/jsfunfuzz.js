@@ -143,11 +143,11 @@ else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
 
-function printAndStop(s)
+function printAndStop(s, happy)
 {
-  printImportant(s)
+  printImportant(s);
   if (jsshell) {
-    print("jsfunfuzz stopping due to above error!"); // Magic string that jsunhappy.py looks for
+    print(happy ? "It's looking good!" : "jsfunfuzz stopping due to above error!"); // Magic strings that jsunhappy.py look for
     quit();
   }
 }
@@ -760,16 +760,14 @@ function tryEnsureSanity()
     this.toSource = realToSource;
     this.toString = realToString;
   } catch(e) {
-    printImportant("tryEnsureSanity failed: " + e);
+    printAndStop("tryEnsureSanity failed: " + e, true);
   }
 
   // These can fail if the page creates a getter for "eval", for example.
-  if (!this.eval)
-    printImportant("WTF did my |eval| go?");
   if (this.eval != realEval)
-    printImportant("WTF did my |eval| get replaced by?")
+    printAndStop("Fuzz script replaced |eval|, stopping.", true);
   if (Function != realFunction)
-    printImportant("WTF did my |Function| get replaced by?")
+    printAndStop("Fuzz script replaced |Function|, stopping.", true);
 }
 
 function tryIteration(rv)

@@ -2,6 +2,7 @@
 from __future__ import with_statement
 
 import os, sys
+from optparse import OptionParser
 
 p0=os.path.dirname(sys.argv[0])
 p1=os.path.abspath(os.path.join(p0, "..", "lithium"))
@@ -27,8 +28,8 @@ import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
 VALGRIND_ERROR_EXIT_CODE = 77
 
-def baseLevel(runthis, timeout, knownPath, logPrefix):
-    if runthis[0] == "valgrind":
+def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
+    if valgrind:
         runthis = ([
             "valgrind",
             "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
@@ -38,7 +39,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
           ] +
             (["--dsymutil=yes"] if sys.platform=='darwin' else []) +
             (["--smc-check=all"] if "-m" in runthis else []) +
-          runthis[1:])
+          runthis)
         #print " ".join(runthis)
 
     runinfo = ntr.timed_run(runthis, timeout, logPrefix)
@@ -70,15 +71,15 @@ def baseLevel(runthis, timeout, knownPath, logPrefix):
     if sta == ntr.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, JS_TIMED_OUT)
-    if runthis[0] == "valgrind" and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
+    if valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
         issues.append("valgrind reported an error")
         lev = max(lev, JS_VG_AMISS)
 
     return (lev, issues, runinfo)
 
 
-def jsfunfuzzLevel(runthis, timeout, knownPath, logPrefix, quiet=False):
-    (lev, issues, runinfo) = baseLevel(runthis, timeout, knownPath, logPrefix)
+def jsfunfuzzLevel(options, logPrefix, quiet=False):
+    (lev, issues, runinfo) = baseLevel(options.jsengineWithArgs, options.timeout, options.knownPath, logPrefix, valgrind=options.valgrind)
 
     if lev == JS_FINE:
         # Read in binary mode, because otherwise Python on Windows will
@@ -104,22 +105,49 @@ def summaryString(issues, runinfo):
     amissStr = ("") if (len(issues) == 0) else ("*" + repr(issues) + " ")
     return "%s%s (%.1f seconds)" % (amissStr, runinfo.msg, runinfo.elapsedtime)
 
-# For use by Lithium
-def interesting(args, tempPrefix):
-    minimumInterestingLevel = int(args[0])
-    timeout = int(args[1])
-    knownPath = args[2]
-    actualLevel = jsfunfuzzLevel(args[3:], timeout, knownPath, tempPrefix, quiet=True)
-    truncateFile(tempPrefix + "-out", 1000000)
-    truncateFile(tempPrefix + "-err", 1000000)
-    return actualLevel >= minimumInterestingLevel
-
 def truncateFile(fn, maxSize):
     if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
         with open(fn, "r+") as f:
             f.truncate(maxSize)
 
+def parseOptions(args):
+    parser = OptionParser()
+    parser.disable_interspersed_args()
+    parser.add_option("--valgrind",
+                      action = "store_true", dest = "valgrind",
+                      default = False,
+                      help = "use valgrind with a reasonable set of options")
+    parser.add_option("--minlevel",
+                      type = "int", dest = "minimumInterestingLevel",
+                      default = JS_FINE + 1,
+                      help = "minimum jsunhappy level for lithium to consider the testcase interesting")
+    parser.add_option("--timeout",
+                      type = "int", dest = "timeout",
+                      default = 120,
+                      help = "timeout in seconds")
+    options, args = parser.parse_args(args)
+    if len(args) < 2:
+        raise Exception("Not enough positional arguments")
+    options.knownPath = args[0]
+    options.jsengineWithArgs = args[1:]
+    if not os.path.exists(options.jsengineWithArgs[0]):
+        raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
+    return options
+
+
+# multi_timed_run uses parseOptions and jsfunfuzzLevel
+# compareJIT.py uses baseLevel
+
+# For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
+def init(args):
+    global gOptions
+    gOptions = parseOptions(args)
+def interesting(args, tempPrefix):
+    actualLevel = jsfunfuzzLevel(gOptions, tempPrefix, quiet=True)
+    truncateFile(tempPrefix + "-out", 1000000)
+    truncateFile(tempPrefix + "-err", 1000000)
+    return actualLevel >= gOptions.minimumInterestingLevel
+
 if __name__ == "__main__":
-    timeout = 120
-    knownPath = sys.argv[1]
-    print jsfunfuzzLevel(sys.argv[2:], timeout, knownPath, "m")
+    options = parseOptions(sys.argv[1:])
+    print jsfunfuzzLevel(options, knownPath, "m")
