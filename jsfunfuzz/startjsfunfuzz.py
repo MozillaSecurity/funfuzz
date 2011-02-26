@@ -99,7 +99,9 @@ def main():
     methodJitAllSwitch = True  # turn on -a
     profileJitSwitch = True  # turn on -p
     debugJitSwitch = True  # turn on -d
-    deepFreezeGlobalObjPrototypeSwitch = True  # turn on -P
+
+    # This produces "can't change object's extensibility" messages in a lot of jsfunfuzz testcases.
+    deepFreezeGlobalObjPrototypeSwitch = False  # turn on -P
     # Pymake is activated on Windows platforms by default, for default tip only.
     usePymake = True if os.name == 'nt' else False
 
