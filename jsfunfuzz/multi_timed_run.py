@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, subprocess
+import os, shutil, sys, subprocess
 from optparse import OptionParser
 
 p0=os.path.dirname(__file__)
@@ -62,8 +62,20 @@ def many_timed_runs():
     jsunhappyArgs = jsunhappyArgs + runThis
     jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
 
+    shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
     while True:
         iteration += 1
+
+        # Keep regenerating new objects together with jsfunfuzz.js
+        shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
+        # Run 4test.py and output to current directory.
+        subprocess.call(['python', '-u', tempDir + os.sep + '..' + os.sep + '4test.py', engine, '.'])
+
+        # Splice jsfunfuzz.js with current.js from 4test.py
+        [before2, after2] = fuzzSpliceHacky(open('jsfunfuzz.js'))
+        newfileLines2 = before2 + linesWith(open('current.js'), "") + after2
+        writeLinesToFile(newfileLines2, 'jsfunfuzz.js')
+
         logPrefix = tempDir + os.sep + "w" + str(iteration)
 
         level = jsunhappy.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
@@ -123,6 +135,23 @@ def fuzzSplice(file):
             break
     for line in file:
         if line.find("SPLICE") != -1:
+            after.append(line)
+            break
+    for line in file:
+        after.append(line)
+    file.close()
+    return [before, after]
+
+def fuzzSpliceHacky(file):
+    '''Returns the lines of a file, minus the ones between the two lines specified below'''
+    before = []
+    after = []
+    for line in file:
+        before.append(line)
+        if line.find("// 1. grep tryIt LOGFILE") != -1:
+            break
+    for line in file:
+        if line.find("// 2. Paste the result between ") != -1:
             after.append(line)
             break
     for line in file:
