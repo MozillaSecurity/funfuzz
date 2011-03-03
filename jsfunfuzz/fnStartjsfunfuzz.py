@@ -290,7 +290,10 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
 
     # If on Windows, be sure to first install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
     # Note that on Windows, redirecting stdout to subprocess.STDOUT does not work on Python 2.6.5.
-    subprocess.call(cfgCmdList, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
+    if verbose:
+        subprocess.call(cfgCmdList, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
+    else:
+        subprocess.call(cfgCmdList, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
 
 def binaryPostfix():
     if os.name == 'posix':
