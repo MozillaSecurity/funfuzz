@@ -270,7 +270,7 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
 
     # Miscellaneous flags
     cfgCmdList.append('--disable-tests')
-    cfgCmdList.append('--with-cache')
+    cfgCmdList.append('--with-ccache=ccache')
     cfgCmdList.append('--enable-type-inference')
 
     if os.name == 'nt':
