@@ -37,7 +37,11 @@ timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
 engine = args[2]
 engineFlags = args[3:]
-runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", options.fuzzjs]
+# This is the original jsfunfuzz file from the jsfunfuzz directory, with full paths.
+#jsfunfuzzToBeUsed = options.fuzzjs
+# This is the local jsfunfuzz file to be used.
+jsfunfuzzToBeUsed = 'jsfunfuzz.js'
+runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
 
 def showtail(filename):
     cmd = []
@@ -81,10 +85,10 @@ def many_timed_runs():
         level = jsunhappy.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
         oklevel = jsunhappy.JS_KNOWN_CRASH
-        if options.fuzzjs.find("jsfunfuzz") != -1:
+        if jsfunfuzzToBeUsed.find("jsfunfuzz") != -1:
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
             oklevel = jsunhappy.JS_ABNORMAL_EXIT
-        elif options.fuzzjs.find("regexpfuzz") != -1:
+        elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
             oklevel = jsunhappy.JS_TIMED_OUT
 
@@ -94,7 +98,7 @@ def many_timed_runs():
 
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
-            [before, after] = fuzzSplice(open(options.fuzzjs))
+            [before, after] = fuzzSplice(open(jsfunfuzzToBeUsed))
             newfileLines = before + linesWith(open(logPrefix + "-out"), "FRC") + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
