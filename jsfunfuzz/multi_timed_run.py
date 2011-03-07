@@ -70,6 +70,7 @@ def many_timed_runs():
     while True:
         iteration += 1
 
+        # Integration of jandem's method fuzzer with jsfunfuzz
         # Keep regenerating new objects together with jsfunfuzz.js
         shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
         # Run 4test.py and output to current directory.
@@ -87,7 +88,8 @@ def many_timed_runs():
         oklevel = jsunhappy.JS_KNOWN_CRASH
         if jsfunfuzzToBeUsed.find("jsfunfuzz") != -1:
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
-            oklevel = jsunhappy.JS_ABNORMAL_EXIT
+            # Switch to allowing jsfunfuzz not finishing and deciding to exit, after Fx 4 and integration of jandem's method fuzzer
+            oklevel = jsunhappy.JS_DECIDED_TO_EXIT
         elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
             oklevel = jsunhappy.JS_TIMED_OUT
