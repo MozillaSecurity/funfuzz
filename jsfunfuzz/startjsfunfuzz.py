@@ -404,7 +404,9 @@ def main():
 
     multiTimedRun = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'multi_timed_run.py'))
 
-    if jsJitSwitch:
+    # FIXME: JM type inference doesn't yet support -j tracing.
+    # There is a consistent "[infer failure] Missing type in object jitstats:prototype:new HOTLOOP: int" message at the moment.
+    if jsJitSwitch and branchType != 'jm':
         jsJit = ' -j '
     else:
         jsJit = ' '
