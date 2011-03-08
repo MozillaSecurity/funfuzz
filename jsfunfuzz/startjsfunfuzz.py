@@ -427,6 +427,8 @@ def main():
         jsMethodJit += '-d '
     if deepFreezeGlobalObjPrototypeSwitch:
         jsMethodJit += '-P '
+    if branchType == 'jm':
+        jsMethodJit += '-n '  # For type inference
 
 
     # Commands to simulate bash's `tee`.
