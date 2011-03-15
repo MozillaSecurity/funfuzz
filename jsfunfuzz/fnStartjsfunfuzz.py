@@ -356,7 +356,7 @@ def archOfBinary(b):
     This function tests if a binary is 32-bit or 64-bit.
     '''
     unsplitFiletype = captureStdout(['file', b])
-    filetype = unsplitFiletype.split([':', 1])[1]
+    filetype = unsplitFiletype.split(':', 1)[1]
     if 'universal binary' in filetype:
         raise Exception("I don't know how to deal with multiple-architecture binaries")
     if '386' in filetype or '32-bit' in filetype:
