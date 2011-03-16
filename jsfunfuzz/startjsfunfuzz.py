@@ -149,7 +149,7 @@ def main():
         raise Exception('Too little command-line parameters.')
 
     # Check supported operating systems.
-    macVer = osCheck()
+    osCheck()
     if (sys.argv[1] == '32') and (os.name == 'posix'):
         # For the Mac, 32-bit js shells have only been tested on i386.
         if (os.uname()[0] == 'Darwin' and os.uname()[4] != 'i386'):
@@ -332,7 +332,7 @@ def main():
 
     # Compile the first binary.
     cfgJsBin(archNum, compileType, traceJit, methodJit,
-                      valgrindSupport, threadsafe, macVer, os.path.join(compilePath, 'configure'), objdir)
+                      valgrindSupport, threadsafe, os.path.join(compilePath, 'configure'), objdir)
     # No longer need `export SHELL` with latest MozillaBuild.
     #if usePymake and os.name == 'nt':
         ## This has to use `shell=True`.
@@ -355,13 +355,13 @@ def main():
     if compileType == 'dbg':
         os.chdir('opt-objdir')
         cfgJsBin(archNum, 'opt', traceJit, methodJit,
-                          valgrindSupport, threadsafe, macVer,
+                          valgrindSupport, threadsafe,
                           os.path.join(compilePath, 'configure'), objdir2)
         compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
         cfgJsBin(archNum, 'dbg', traceJit, methodJit,
-                          valgrindSupport, threadsafe, macVer,
+                          valgrindSupport, threadsafe,
                           os.path.join(compilePath, 'configure'), objdir2)
         compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
 

@@ -439,11 +439,11 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
 
     # Run configure.
     threadsafe = False  # Let's disable support for threadsafety in the js shell
-    macver = osCheck()
+    osCheck()
     cfgJsBin(archNum, compileType,
                       True, True, # always *build* with both JITs enabled
                       valgrindSupport,
-                      threadsafe, macver, os.path.join(compilePath, 'configure'), objdir)
+                      threadsafe, os.path.join(compilePath, 'configure'), objdir)
 
     # Compile and copy the first binary.
     # Only pymake was tested on Windows.

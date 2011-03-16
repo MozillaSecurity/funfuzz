@@ -48,6 +48,9 @@ showCapturedCommands = False
 # This is used for propagating the global repository directory across functions in this file.
 globalRepo = ''
 
+isMac = os.name == 'posix' and os.uname()[0] == 'Darwin'
+isSnowLeopardOrHigher = isMac and platform.mac_ver()[0].split('.') >= ['10', '6']
+
 def exceptionBadCompileType():
     raise Exception('Unknown compileType')
 def exceptionBadBranchType():
@@ -64,24 +67,18 @@ def verboseDump(input):
 
 def osCheck():
     '''
-    This function checks for supported operating systems.
-    It returns macVer in the case of 10.5.x or 10.6.x.
+    This function raises an exception if running on an unsupported operating system.
     '''
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
-            macVer, _, _ = platform.mac_ver()
-            macVer = float('.'.join(macVer.split('.')[:2]))
-            if ('10.5' or '10.6' in str(macVer)):
-                return str(macVer)
-            else:
-                exceptionBadOs()  # Only 10.5.x and 10.6.x is supported.
+            pass
         elif os.uname()[0] == 'Linux':
             pass
     elif os.name == 'nt':
         if float(sys.version[:3]) < 2.6:
             raise Exception('A minimum Python version of 2.6 is required.')
     else:
-        print '\nOnly Windows XP/Vista/7, Linux or Mac OS X 10.6.x are supported.\n'
+        print '\nOnly Windows XP/Vista/7, Linux and Mac OS X 10.5+ are supported.\n'
         raise Exception('Unknown OS - Platform is unsupported.')
 
 def error(branchSupp):
@@ -193,7 +190,7 @@ def autoconfRun(cwd):
         subprocess.call(['sh', 'autoconf-2.13'], cwd=cwd)
 
 def cfgJsBin(archNum, compileType, traceJit, methodJit,
-                      valgrindSupport, threadsafe, macver, configure, objdir):
+                      valgrindSupport, threadsafe, configure, objdir):
     '''
     This function configures a js binary depending on the parameters.
     '''
@@ -202,8 +199,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
-        # 32-bit shell on Mac OS X
-        if os.uname()[0] == 'Darwin' and macver == '10.6':
+        # 32-bit shell on Mac OS X 10.6+
+        if isMac and isSnowLeopardOrHigher:
             cfgEnvList['CC'] = 'gcc-4.2 -arch i386'
             cfgEnvList['CXX'] = 'g++-4.2 -arch i386'
             cfgEnvList['HOST_CC'] = 'gcc-4.2'
@@ -236,7 +233,7 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
     # 64-bit shell on Mac OS X 10.5 Leopard
-    elif (archNum == '64') and (macver == '10.5'):
+    elif (archNum == '64') and (isMac and not isSnowLeopardOrHigher):
         cfgEnvList['CC'] = 'gcc -m64'
         cfgEnvList['CXX'] = 'g++ -m64'
         cfgEnvList['AR'] = 'ar'
