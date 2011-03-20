@@ -73,12 +73,12 @@ def main():
     # Parse options and parameters from the command-line.
     options = parseOpts()
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, paranoidBool, \
-     archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport, testAndLabel) = options
+     archNum, tracingjitBool, methodjitBool, methodjitAllBool, watchExitCode, valgrindSupport, testAndLabel) = options
 
     sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
     if startRepo is None:
-        startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupport)
+        startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, methodjitAllBool, archNum, valgrindSupport)
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids
     # such as "9f2641871ce8".
@@ -223,6 +223,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, 
 
 def internalTestAndLabel(filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
     def inner(jsShellName, rev):
+        # FIXME: Need to add methodjitAllBool
         (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
                                               tracingjitBool, valgrindSupport)
 
@@ -242,12 +243,15 @@ def internalTestAndLabel(filename, methodjitBool, tracingjitBool, valgrindSuppor
             return ('bad', 'Unknown exit code ' + str(exitCode))
     return inner
 
-def externalTestAndLabel(filename, methodjitBool, tracingjitBool, interestingness):
+def externalTestAndLabel(filename, methodjitBool, methodjitAllBool, tracingjitBool, interestingness):
     engineFlags = []
     if tracingjitBool:
         engineFlags = engineFlags + ["-j"]
     if methodjitBool:
         engineFlags = engineFlags + ["-m"]
+    # Quick hack to autoBisect bug 636879 when I'm running out of time these few days.
+    if methodjitAllBool:
+        engineFlags = engineFlags + ["-a"]
 
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
     conditionArgPrefix = interestingness[1:]
@@ -339,6 +343,11 @@ def parseOpts():
                       action='store_true',
                       default=False,
                       help='Enable -m, method JIT when autoBisecting. Defaults to "False"')
+    parser.add_option('--methodjitAll',
+                      dest='methodjitAllBool',
+                      action='store_true',
+                      default=False,
+                      help='Enable -a, method JIT\'ing everything when autoBisecting. FIXME: Current implementation only works WHEN PART OF INTERESTINGNESS TEST. Defaults to "False"')
 
     # Enable valgrind support.
     parser.add_option('-v', '--valgrind',
@@ -363,7 +372,7 @@ def parseOpts():
     if options.interestingnessBool:
         if len(args) < 2:
             parser.error('Not enough arguments.')
-        testAndLabel = externalTestAndLabel(filename, options.methodjitBool, options.tracingjitBool, args[1:])
+        testAndLabel = externalTestAndLabel(filename, options.methodjitBool, options.methodjitAllBool, options.tracingjitBool, args[1:])
     else:
         if len(args) >= 2:
             parser.error('Too many arguments.')
@@ -372,13 +381,13 @@ def parseOpts():
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
-            options.tracingjitBool, options.methodjitBool, options.watchExitCode, \
+            options.tracingjitBool, options.methodjitBool, options.methodjitAllBool, options.watchExitCode, \
             options.valgSupport, testAndLabel
 
 def hgId(rev):
     return captureStdout(hgPrefix + ["id", "-i", "-r", rev])
 
-def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupport):
+def earliestKnownWorkingRev(tracingjitBool, methodjitBool, methodjitAllBool, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
     # Unfortunately, there are also interspersed runs of brokenness, such as:
     # * 0c8d4f846be8::bfb330182145 (~28226::28450).
@@ -393,6 +402,9 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupp
 
     if False and profilejitBool:
         return '339457364540' # ~55724 on TM, first rev that has the -p option
+    # This supercedes methodjitBool, -a only works with -m
+    elif methodjitAllBool:
+        return 'f569d49576bb' # ~62161 on TM, first rev that has the -a option
     elif methodjitBool:
         if os.name == 'nt':
             return '9f2641871ce8' # ~52707 on TM, first rev that can run with pymake and -m
