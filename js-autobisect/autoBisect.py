@@ -66,8 +66,9 @@ def main():
     # directories in ~-land instead of in /c/. We lack permissions when we move from
     # /c/ to ~-land in Vista/7.
     # Edit 3: Windows 7 is now supported if directories are in ~-land.
+    # Edit 4: Windows 7 SP1 is also supported.
     if os.name == 'nt':
-        if platform.uname()[3] != '6.1.7600':
+        if platform.uname()[3] != '6.1.7600' and platform.uname()[3] != '6.1.7601':
             raise Exception('autoBisect is not supported on Windows versions lower than Windows 7.')
 
     # Parse options and parameters from the command-line.
