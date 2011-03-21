@@ -49,7 +49,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         # This will output a file with the '-beautified' suffix.
         subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, infilename])
         
-        print 'Operating on the beautified testcase for the n-th time where n = ',
+        print 'Operating on the beautified testcase for the n-th time where n =',
         # iterNum starts from 3 because lith1 and lith2 are already used above.
         iterNum = 3
         # Run Lithium on the testcase 7 more times, but run it using char only for the last half of the total iteration.
@@ -80,7 +80,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             
                 # Run it using char only for the last half of the total iteration.
                 if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNum) // 2):
-                    print ' (operating on chars..)',
+                    print '(operating on chars..)',
                     iterNum += 1
                     lithBeautifiedTmpCharDir = logPrefix + '-lith' + str(iterNum) + '-tmp'
                     os.mkdir(lithBeautifiedTmpCharDir)
@@ -93,7 +93,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                 print 'Beautified testcase is no longer interesting!'
                 break
             iterNum += 1
-            print ' ',
             if iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS:
                 # This will output a file with the '-beautified' suffix.
                 subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, infilename])
