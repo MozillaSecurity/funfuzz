@@ -97,7 +97,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             if iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS:
                 # This will output a file with the '-beautified' suffix.
                 # Rotate between reducing using the toString and uneval decompile method
-                if iterNum % 2 == 0:
+                if iterNum % 2 == 1:
                     subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
                 else:
                     subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
