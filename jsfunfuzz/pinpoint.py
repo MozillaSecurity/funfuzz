@@ -81,7 +81,9 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             
                 # Run it using char only for the last half of the total iteration.
                 if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNum) // 2):
+                    print iterNum - 2,
                     print '(operating on chars..)',
+                    iterNum += 1
                     lithBeautifiedTmpCharDir = logPrefix + '-lith' + str(iterNum) + '-tmp'
                     os.mkdir(lithBeautifiedTmpCharDir)
                     lith2Args = ["--char"] + lithArgs
