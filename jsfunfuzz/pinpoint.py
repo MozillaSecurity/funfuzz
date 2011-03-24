@@ -82,7 +82,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                 # Run it using char only for the last half of the total iteration.
                 if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNum) // 2):
                     print '(operating on chars..)',
-                    iterNum += 1
                     lithBeautifiedTmpCharDir = logPrefix + '-lith' + str(iterNum) + '-tmp'
                     os.mkdir(lithBeautifiedTmpCharDir)
                     lith2Args = ["--char"] + lithArgs
@@ -97,10 +96,10 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             if iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS:
                 # This will output a file with the '-beautified' suffix.
                 # Rotate between reducing using the toString and uneval decompile method
-                if iterNum % 2 == 1:
-                    subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
-                else:
+                if iterNum % 2 == 0:
                     subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
+                else:
+                    subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
             else:
                 print
         
