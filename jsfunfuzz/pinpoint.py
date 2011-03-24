@@ -41,7 +41,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
     print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs)
     print
 
-    unbeautifiedOutput = captureStdout([lithiumpy, "--strategy=check-only"] + lithArgs)
+    unbeautifiedOutput = captureStdout(["python", lithiumpy, "--strategy=check-only"] + lithArgs)
     # Check that the testcase is interesting.
     if 'not interesting' not in unbeautifiedOutput:
         assert 'interesting' in unbeautifiedOutput
@@ -65,7 +65,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             # We must still be operating on the beautified version.
             assert beautifiedFilename in lithArgs
             # Check that the testcase is still interesting.
-            beautifiedOutput = captureStdout([lithiumpy, "--strategy=check-only"] + lithArgs)
+            beautifiedOutput = captureStdout(["python", lithiumpy, "--strategy=check-only"] + lithArgs)
             if 'not interesting' not in beautifiedOutput:
                 assert 'interesting' in beautifiedOutput
                 # Overwrite the original -reduced file with the beautified version since it is interesting.
@@ -109,7 +109,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         lithArgs = lithArgs + [infilename]
         assert beautifiedFilename not in lithArgs
         # Check that the testcase is still interesting after the extra beautified lithium reductions.
-        finalBeautifiedOutput = captureStdout([lithiumpy, "--strategy=check-only"] + lithArgs)
+        finalBeautifiedOutput = captureStdout(["python", lithiumpy, "--strategy=check-only"] + lithArgs)
         if 'not interesting' not in finalBeautifiedOutput:
             assert 'interesting' in finalBeautifiedOutput
 
