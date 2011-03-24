@@ -448,7 +448,10 @@ def main():
 
     verboseDump('jsShellName is: ' + jsShellName)
     verboseDump('fuzzPath + jsShellName is: ' + jsShellName)
-    print('fuzzCmd is: ' + fuzzCmd + '\n')
+    if os.name == 'nt':
+        print('fuzzCmd is: ' + fuzzCmd.replace('\\', '\\\\') + '\n')
+    else:
+        print('fuzzCmd is: ' + fuzzCmd + '\n')
 
 
     # 32-bit or 64-bit verification test.
