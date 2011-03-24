@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import os
-import shutil
-import subprocess
+import os, shutil, subprocess, sys
 
 from fnStartjsfunfuzz import archOfBinary, captureStdout, testDbgOrOpt, testJsShellOrXpcshell
 
@@ -27,21 +25,21 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
     os.mkdir(lith1tmp)
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
     print ' '.join([lithiumpy] + lithArgs)
-    subprocess.call(["python", lithiumpy, "--tempdir=" + lith1tmp] + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
+    subprocess.call([sys.executable, lithiumpy, "--tempdir=" + lith1tmp] + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
 
     if alsoRunChar:
         lith2tmp = logPrefix + "-lith2-tmp"
         os.mkdir(lith2tmp)
         lith2Args = ["--char"] + lithArgs
         print ' '.join([lithiumpy] + lith2Args)
-        subprocess.call(["python", lithiumpy, "--tempdir=" + lith2tmp] + lith2Args, stdout=open(logPrefix + "-lith2-out", "w"))
+        subprocess.call([sys.executable, lithiumpy, "--tempdir=" + lith2tmp] + lith2Args, stdout=open(logPrefix + "-lith2-out", "w"))
 
     print
     print "Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
     print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs)
     print
 
-    unbeautifiedOutput = captureStdout(["python", lithiumpy, "--strategy=check-only"] + lithArgs)
+    unbeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only"] + lithArgs)
     # Check that the testcase is interesting.
     if 'not interesting' not in unbeautifiedOutput:
         assert 'interesting' in unbeautifiedOutput
@@ -65,7 +63,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             # We must still be operating on the beautified version.
             assert beautifiedFilename in lithArgs
             # Check that the testcase is still interesting.
-            beautifiedOutput = captureStdout(["python", lithiumpy, "--strategy=check-only"] + lithArgs)
+            beautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only"] + lithArgs)
             if 'not interesting' not in beautifiedOutput:
                 assert 'interesting' in beautifiedOutput
                 # Overwrite the original -reduced file with the beautified version since it is interesting.
@@ -77,7 +75,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                 lithArgs = lithArgs + [infilename]
                 assert beautifiedFilename not in lithArgs
                 #print ' '.join([lithiumpy] + lithArgs)
-                subprocess.call(["python", lithiumpy, "--tempdir=" + lithBeautifiedTmpDir] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
+                subprocess.call([sys.executable, lithiumpy, "--tempdir=" + lithBeautifiedTmpDir] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
             
                 # Run it using char only for the last half of the total iteration.
                 if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNum) // 2):
@@ -89,7 +87,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                     lith2Args = ["--char"] + lithArgs
                     assert beautifiedFilename not in lith2Args
                     #print ' '.join([lithiumpy] + lith2Args)
-                    subprocess.call(["python", lithiumpy, "--tempdir=" + lithBeautifiedTmpCharDir] + lith2Args, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
+                    subprocess.call([sys.executable, lithiumpy, "--tempdir=" + lithBeautifiedTmpCharDir] + lith2Args, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
             else:
                 # Beautified testcase is no longer interesting.
                 print 'Beautified testcase is no longer interesting!'
@@ -110,13 +108,13 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         lithArgs = lithArgs + [infilename]
         assert beautifiedFilename not in lithArgs
         # Check that the testcase is still interesting after the extra beautified lithium reductions.
-        finalBeautifiedOutput = captureStdout(["python", lithiumpy, "--strategy=check-only"] + lithArgs)
+        finalBeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only"] + lithArgs)
         if 'not interesting' not in finalBeautifiedOutput:
             assert 'interesting' in finalBeautifiedOutput
 
     jsEngineName = os.path.basename(jsEngine)
     if bisectRepo is not "none" and testJsShellOrXpcshell(jsEngine) != "xpcshell":
-        autobisectCmd = ["python", autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)] + engineFlags + [infilename] + itest
+        autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)] + engineFlags + [infilename] + itest
         print ' '.join(autobisectCmd)
         subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
         print "Done running autobisect"
