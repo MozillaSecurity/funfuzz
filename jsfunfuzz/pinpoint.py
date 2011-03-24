@@ -48,7 +48,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         # Beautify the output. This will remove DDBEGIN and DDEND as they are comments.
         # This will output a file with the '-beautified' suffix.
         # Reduce once using toString decompile method.
-        subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType='uneval'", infilename])
+        subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
         
         print 'Operating on the beautified testcase for the n-th time where n =',
         # iterNum starts from 3 because lith1 and lith2 are already used above.
@@ -98,9 +98,9 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                 # This will output a file with the '-beautified' suffix.
                 # Rotate between reducing using the toString and uneval decompile method
                 if iterNum % 2 == 0:
-                    subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType='uneval'", infilename])
+                    subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
                 else:
-                    subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType='toString'", infilename])
+                    subprocess.call(['python', beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
             else:
                 print
         
