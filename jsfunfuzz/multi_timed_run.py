@@ -66,8 +66,11 @@ def many_timed_runs():
 
     shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
     while True:
-        # Test random combinations of engine flags.
-        rndEngineFlags = random.sample(engineFlags, random.randrange(1, len(engineFlags) + 1))
+        # Test random combinations of engine flags occasionally.
+        if random.randint(0, 1) == 0:
+            rndEngineFlags = random.sample(engineFlags, random.randrange(1, len(engineFlags) + 1))
+        else:
+            rndEngineFlags = engineFlags
         runThis = [engine] + rndEngineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
         jsunhappyArgs = jsunhappyArgsWithoutRunThis + runThis
         jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
