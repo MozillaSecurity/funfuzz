@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, shutil, subprocess, sys
+#import os, shutil, subprocess, sys, tarfile
 
 from fnStartjsfunfuzz import archOfBinary, captureStdout, testDbgOrOpt, testJsShellOrXpcshell
 
@@ -129,6 +130,12 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         finalBeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only"] + lithArgs)
         if 'not interesting' not in finalBeautifiedOutput:
             assert 'interesting' in finalBeautifiedOutput
+        
+        # Archive all wXX-lith*-tmp directories in a tarball.
+        #lithTmpDirTarball = tarfile.open('tempName.tar.bz2', 'w:bz2')
+        #for loop from 1 to iterNum
+            #lithTmpDirTarball.add(logPrefix + '-lith' + str(iterNum) + '-tmp')
+        #lithTmpDirTarball.close()
 
     jsEngineName = os.path.basename(jsEngine)
     if bisectRepo is not "none" and testJsShellOrXpcshell(jsEngine) != "xpcshell":
