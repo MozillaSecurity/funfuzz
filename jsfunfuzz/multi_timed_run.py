@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, shutil, sys, subprocess
+import os, random, shutil, sys, subprocess
 from optparse import OptionParser
 
 p0=os.path.dirname(__file__)
@@ -59,15 +59,19 @@ def showtail(filename):
 def many_timed_runs():
     iteration = 0
 
-    jsunhappyArgs = ["--timeout=" + str(timeout)]
+    jsunhappyArgsWithoutRunThis = ["--timeout=" + str(timeout)]
     if options.valgrind:
-        jsunhappyArgs.append("--valgrind")
-    jsunhappyArgs.append(knownPath)
-    jsunhappyArgs = jsunhappyArgs + runThis
-    jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
+        jsunhappyArgsWithoutRunThis.append("--valgrind")
+    jsunhappyArgsWithoutRunThis.append(knownPath)
 
     shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
     while True:
+        # Test random combinations of engine flags.
+        rndEngineFlags = random.sample(engineFlags, random.randrange(1, len(engineFlags) + 1))
+        runThis = [engine] + rndEngineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
+        jsunhappyArgs = jsunhappyArgsWithoutRunThis + runThis
+        jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
+
         iteration += 1
 
         # Integration of jandem's method fuzzer with jsfunfuzz
