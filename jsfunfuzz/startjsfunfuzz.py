@@ -283,7 +283,8 @@ def main():
     os.chdir(compilePath)  # Change into compilation directory.
 
 
-    if jsCompareJITSwitch:
+    # Only patch the gc() function if on default tip.
+    if jsCompareJITSwitch and onDefaultTip:
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
