@@ -132,18 +132,26 @@ def main():
 
     testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
 
+    iterNum = 1
+    if paranoidBool:
+        iterNum -= 2
     while currRev is not None:
         label = testRev(currRev)
         labels[currRev] = label
         print label[0] + " (" + label[1] + ") ",
 
-        print "Bisecting..."
+        if iterNum <= 0:
+            print "Paranoid test finished..."
+        else:
+            print "Bisecting for the n-th round where n is", iterNum, "and 2^n is", str(2**iterNum), "..."
         (currRev, blamedGoodOrBad, blamedRev, startRepo, endRepo) = bisectLabel(label[0], currRev, startRepo, endRepo, paranoidBool)
 
         if paranoidBool:
             paranoidBool = False
             assert currRev is None
             currRev = endRepo
+
+        iterNum += 1
 
     if blamedRev is not None:
         checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo, realEndRepo)
