@@ -197,4 +197,8 @@ def createTempDir():
 
 
 createTempDir()
-many_timed_runs()
+try:
+    many_timed_runs()
+except KeyboardInterrupt:
+    # If the user presses Ctrl-C to stop multi_timed_run, overwrite jsfunfuzz.js with the original.
+    shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
