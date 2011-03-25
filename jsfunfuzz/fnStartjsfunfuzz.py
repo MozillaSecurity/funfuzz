@@ -328,13 +328,16 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir, valgr
         if os.path.exists(compiledName):
             print 'A shell was compiled even though there was a non-zero exit code returned. Continuing...'
         else:
-            if verbose:
-                print out
+            print out
             raise Exception("Running 'make' did not result in a js shell")
 
-    newName = os.path.join(destDir, shellName(archNum, compileType, extraID, valgrindSupport))
-    shutil.copy2(compiledName, newName)
-    return newName
+    if not os.path.exists(compiledName):
+        print out
+        raise Exception("Running 'make' did not result in a js shell")
+    else:
+        newName = os.path.join(destDir, shellName(archNum, compileType, extraID, valgrindSupport))
+        shutil.copy2(compiledName, newName)
+        return newName
 
 def cpUsefulFiles(filePath):
     '''
