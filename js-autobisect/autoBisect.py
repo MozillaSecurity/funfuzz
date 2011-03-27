@@ -39,6 +39,7 @@
 
 import os, shutil, subprocess, sys, re, tempfile
 from optparse import OptionParser
+from types import *
 
 path0 = os.path.dirname(sys.argv[0])
 path1 = os.path.abspath(os.path.join(path0, "..", "lithium"))
@@ -74,12 +75,12 @@ def main():
     # Parse options and parameters from the command-line.
     options = parseOpts()
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, paranoidBool, \
-     archNum, tracingjitBool, methodjitBool, watchExitCode, valgrindSupport, testAndLabel) = options
+     archNum, flagsRequired, watchExitCode, valgrindSupport, testAndLabel) = options
 
     sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
     if startRepo is None:
-        startRepo = earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupport)
+        startRepo = earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport)
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids
     # such as "9f2641871ce8".
@@ -130,7 +131,7 @@ def main():
         captureStdout(hgPrefix + ['bisect', '-U', '-g', startRepo])
         currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', endRepo])))
 
-    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel)
+    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, testAndLabel)
 
     iterNum = 1
     if paranoidBool:
@@ -203,7 +204,7 @@ def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, en
         label = testRev(ca)
         print label[0] + " (" + label[1] + ") "
 
-def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, testAndLabel):
+def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, testAndLabel):
     def testRev(rev):
         cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, rev, valgrindSupport))
         cachedNoShell = cachedShell + ".busted"
@@ -220,7 +221,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, 
             try:
                 print "Compiling...",
                 jsShellName = makeShell(shellCacheDir, sourceDir,
-                                        archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport,
+                                        archNum, compileType, flagsRequired, valgrindSupport,
                                         rev)
             except Exception as e:
                 open(cachedNoShell, 'w').close()
@@ -230,10 +231,9 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, 
         return testAndLabel(jsShellName, rev)
     return testRev
 
-def internalTestAndLabel(filename, methodjitBool, tracingjitBool, valgrindSupport, stdoutOutput, watchExitCode):
+def internalTestAndLabel(filename, flagsRequired, valgrindSupport, stdoutOutput, watchExitCode):
     def inner(jsShellName, rev):
-        (stdoutStderr, exitCode) = testBinary(jsShellName, filename, methodjitBool,
-                                              tracingjitBool, valgrindSupport)
+        (stdoutStderr, exitCode) = testBinary(jsShellName, filename, flagsRequired, valgrindSupport)
 
         if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
             return ('bad', 'Specified-bad output')
@@ -251,20 +251,14 @@ def internalTestAndLabel(filename, methodjitBool, tracingjitBool, valgrindSuppor
             return ('bad', 'Unknown exit code ' + str(exitCode))
     return inner
 
-def externalTestAndLabel(filename, methodjitBool, tracingjitBool, interestingness):
-    engineFlags = []
-    if tracingjitBool:
-        engineFlags = engineFlags + ["-j"]
-    if methodjitBool:
-        engineFlags = engineFlags + ["-m"]
-
+def externalTestAndLabel(filename, flagsRequired, interestingness):
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
     conditionArgPrefix = interestingness[1:]
 
     tempPrefix = os.path.join(tempfile.mkdtemp(), "x")
 
     def inner(jsShellName, rev):
-        conditionArgs = conditionArgPrefix + [jsShellName] + engineFlags + [filename]
+        conditionArgs = conditionArgPrefix + [jsShellName] + flagsRequired + [filename]
         conditionScript.init(conditionArgs) # !!!
         if conditionScript.interesting(conditionArgs, tempPrefix + rev):
             return ('bad', 'interesting')
@@ -338,16 +332,10 @@ def parseOpts():
                       help="Interpret the final arguments as an interestingness test")
 
     # Define parameters to be passed to the binary.
-    parser.add_option('-j', '--tracingjit',
-                      dest='tracingjitBool',
-                      action='store_true',
-                      default=False,
-                      help='Enable -j, tracing JIT when autoBisecting. Defaults to "False"')
-    parser.add_option('-m', '--methodjit',
-                      dest='methodjitBool',
-                      action='store_true',
-                      default=False,
-                      help='Enable -m, method JIT when autoBisecting. Defaults to "False"')
+    parser.add_option('--flags',
+                      dest='flagsRequired',
+                      default=[],
+                      help='Define the flags to reproduce the bug, e.g. "-m,-j". Defaults to ""')
 
     # Enable valgrind support.
     parser.add_option('-v', '--valgrind',
@@ -362,6 +350,12 @@ def parseOpts():
     # the osCheck() function checks. Though, Windows platforms are already unsupported.
     osCheck()
 
+    if type(options.flagsRequired) is StringType:
+        options.flagsRequired = ',' + options.flagsRequired
+        options.flagsRequired = options.flagsRequired.split(',')
+
+    assert type(options.flagsRequired) is ListType, "--flags is not a list: %s" % `options.flagsRequired`
+
     if options.watchExitCode:
         options.watchExitCode = int(options.watchExitCode)
 
@@ -372,22 +366,22 @@ def parseOpts():
     if options.interestingnessBool:
         if len(args) < 2:
             parser.error('Not enough arguments.')
-        testAndLabel = externalTestAndLabel(filename, options.methodjitBool, options.tracingjitBool, args[1:])
+        testAndLabel = externalTestAndLabel(filename, options.flagsRequired, args[1:])
     else:
         if len(args) >= 2:
             parser.error('Too many arguments.')
-        testAndLabel = internalTestAndLabel(filename, options.methodjitBool, options.tracingjitBool, options.valgSupport, options.output, options.watchExitCode)
+        testAndLabel = internalTestAndLabel(filename, options.flagsRequired, options.valgSupport, options.output, options.watchExitCode)
 
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
-            options.tracingjitBool, options.methodjitBool, options.watchExitCode, \
+            options.flagsRequired, options.watchExitCode, \
             options.valgSupport, testAndLabel
 
 def hgId(rev):
     return captureStdout(hgPrefix + ["id", "-i", "-r", rev])
 
-def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupport):
+def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
     # Unfortunately, there are also interspersed runs of brokenness, such as:
     # * 0c8d4f846be8::bfb330182145 (~28226::28450).
@@ -400,7 +394,17 @@ def earliestKnownWorkingRev(tracingjitBool, methodjitBool, archNum, valgrindSupp
 
     snowLeopardOrHigher = (platform.system() == 'Darwin') and (platform.mac_ver()[0].split('.') >= ['10', '6'])
 
-    if False and profilejitBool:
+    profilejitBool = True if '-p' in flagsRequired else False
+    methodjitBool = True if '-m' in flagsRequired else False
+    methodjitAllBool = True if '-a' in flagsRequired else False
+    typeInferBool = True if '-n' in flagsRequired else False
+
+    if False and typeInferBool:
+        return 'default' # wait for JM -> TM landing.
+    elif methodjitAllBool:
+        # This supercedes methodjitBool, -a only works with -m
+        return 'f569d49576bb' # ~62161 on TM, first rev that has the -a option
+    elif profilejitBool:
         return '339457364540' # ~55724 on TM, first rev that has the -p option
     elif methodjitBool:
         if os.name == 'nt':
@@ -429,7 +433,7 @@ assert extractChangesetFromMessage("x 12345:abababababab") == "abababababab"
 assert extractChangesetFromMessage("x 12345:123412341234") == "123412341234"
 assert extractChangesetFromMessage("12345:abababababab y") == "abababababab"
 
-def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, methodjitBool, valgrindSupport, currRev):
+def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, currRev):
     tempDir = tempfile.mkdtemp(prefix="abc-" + currRev + "-")
     compilePath = os.path.join(tempDir, "compilePath")
 
@@ -462,10 +466,8 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, tracingjitBool, me
     return shell
 
 # Run the testcase on the compiled js binary.
-def testBinary(shell, file, methodjitBool, tracingjitBool, valgSupport):
-    methodJit = ['-m'] if methodjitBool else []
-    tracingJit = ['-j'] if tracingjitBool else []
-    testBinaryCmd = [shell] + methodJit + tracingJit + [file]
+def testBinary(shell, file, flagsRequired, valgSupport):
+    testBinaryCmd = [shell] + flagsRequired + [file]
     if valgSupport:
         testBinaryCmd = ['valgrind'] + testBinaryCmd
     if verbose:
