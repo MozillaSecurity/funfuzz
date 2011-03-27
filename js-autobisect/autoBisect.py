@@ -350,11 +350,16 @@ def parseOpts():
     # the osCheck() function checks. Though, Windows platforms are already unsupported.
     osCheck()
 
-    if type(options.flagsRequired) is StringType:
-        options.flagsRequired = ',' + options.flagsRequired
-        options.flagsRequired = options.flagsRequired.split(',')
+    flagsReq = options.flagsRequired
 
-    assert type(options.flagsRequired) is ListType, "--flags is not a list: %s" % `options.flagsRequired`
+    if type(flagsReq) is StringType:
+        flagsReq = ',' + flagsReq
+        flagsReq = flagsReq.split(',')
+
+    assert type(flagsReq) is ListType, "--flags is not a list: %s" % flagsReq
+
+    flagsReq = filter(None, flagsReq)  # Remove empty list entries
+    assert '' not in flagsReq
 
     if options.watchExitCode:
         options.watchExitCode = int(options.watchExitCode)
@@ -366,17 +371,16 @@ def parseOpts():
     if options.interestingnessBool:
         if len(args) < 2:
             parser.error('Not enough arguments.')
-        testAndLabel = externalTestAndLabel(filename, options.flagsRequired, args[1:])
+        testAndLabel = externalTestAndLabel(filename, flagsReq, args[1:])
     else:
         if len(args) >= 2:
             parser.error('Too many arguments.')
-        testAndLabel = internalTestAndLabel(filename, options.flagsRequired, options.valgSupport, options.output, options.watchExitCode)
+        testAndLabel = internalTestAndLabel(filename, flagsReq, options.valgSupport, options.output, options.watchExitCode)
 
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
-            options.flagsRequired, options.watchExitCode, \
-            options.valgSupport, testAndLabel
+            flagsReq, options.watchExitCode, options.valgSupport, testAndLabel
 
 def hgId(rev):
     return captureStdout(hgPrefix + ["id", "-i", "-r", rev])
