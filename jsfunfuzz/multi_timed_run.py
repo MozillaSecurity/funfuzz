@@ -96,6 +96,7 @@ def many_timed_runs():
         if jsfunfuzzToBeUsed.find("jsfunfuzz") != -1:
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
             # Switch to allowing jsfunfuzz not finishing and deciding to exit, after Fx 4 and integration of jandem's method fuzzer
+            # FIXME: jandem's method fuzzer cannot work with JS_DECIDED_TO_EXIT, currently if the latter is allowed, only pure jsfunfuzz.js should be used.
             oklevel = jsunhappy.JS_DECIDED_TO_EXIT
         elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
