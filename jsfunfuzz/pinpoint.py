@@ -51,10 +51,11 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
 
         print 'Operating on the beautified testcase for the n-th time where n =',
         # iterNum starts from 3 because lith1 and lith2 are already used above.
-        iterNum = 3
+        iterNumStart = 3 if alsoRunChar is True else 2
+        iterNum = iterNumStart
         # Run Lithium on the testcase 10 more times, but run it using char only for 3 tries of toString and uneval reduction each.
         # Generally, lines don't get significantly reduced after the 3rd try of line reduction.
-        MAX_BEAUTIFIED_LITHIUM_RUNS = iterNum + 10
+        MAX_BEAUTIFIED_LITHIUM_RUNS = iterNumStart + 10
         while(iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS):
             print iterNum - 2,
             # Operate on the beautified version first.
@@ -79,10 +80,10 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                 subprocess.call([sys.executable, lithiumpy, "--tempdir=" + lithBeautifiedTmpDir] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
 
                 # Run it using char only after 3 tries of toString and uneval reduction each.
-                if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNum) // 2):
+                if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNumStart) // 2):
+                    iterNum += 1
                     print iterNum - 2,
                     print '(operating on chars..)',
-                    iterNum += 1
                     assert iterNum in (9, 11, 13)  # Refer to reduction method below
                     lithBeautifiedTmpCharDir = logPrefix + '-lith' + str(iterNum) + '-tmp'
                     os.mkdir(lithBeautifiedTmpCharDir)
@@ -110,15 +111,27 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             if iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS:
                 # This will output a file with the '-beautified' suffix.
                 # Rotate between reducing using the toString and uneval decompile method
-                if iterNum % 2 == 0 and iterNum != 10:
-                    # toString
-                    assert iterNum in (4, 6, 8, 12)
-                    subprocess.call([sys.executable, beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
+                if alsoRunChar:
+                    if iterNum % 2 == 0 and iterNum != 10:
+                        # toString
+                        assert iterNum in (4, 6, 8, 12)
+                        subprocess.call([sys.executable, beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
+                    else:
+                        # uneval
+                        # iterNum 3 has already occurred prior to the increment of iterNum above.
+                        assert iterNum in (5, 7, 10)
+                        subprocess.call([sys.executable, beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
                 else:
-                    # uneval
-                    # iterNum 3 has already occurred prior to the increment of iterNum above.
-                    assert iterNum in (5, 7, 10)
-                    subprocess.call([sys.executable, beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
+                    # If alsoRunChar is false, which occurs when jsunhappy is operating at JS_DID_NOT_FINISH and below. iterNumStart also starts from 2.
+                    if iterNum % 2 != 0:
+                        # toString
+                        assert iterNum in (3, 5, 7, 9, 11, 13)
+                        subprocess.call([sys.executable, beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
+                    else:
+                        # uneval
+                        # iterNum 3 has already occurred prior to the increment of iterNum above.
+                        assert iterNum in (4, 6, 8, 10, 12)
+                        subprocess.call([sys.executable, beautifyUsingJsShellpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
             else:
                 print
 
@@ -130,7 +143,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         finalBeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only"] + lithArgs)
         if 'not interesting' not in finalBeautifiedOutput:
             assert 'interesting' in finalBeautifiedOutput
-        
+
         # Archive all wXX-lith*-tmp directories in a tarball.
         #lithTmpDirTarball = tarfile.open('tempName.tar.bz2', 'w:bz2')
         #for loop from 1 to iterNum
