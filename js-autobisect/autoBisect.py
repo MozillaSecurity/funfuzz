@@ -261,7 +261,9 @@ def externalTestAndLabel(filename, flagsRequired, interestingness):
 
     def inner(jsShellName, rev):
         conditionArgs = conditionArgPrefix + [jsShellName] + flagsRequired + [filename]
-        conditionScript.init(conditionArgs) # !!!
+        if hasattr(conditionScript, "init"):
+            # Since we're changing the js shell name, call init() again!
+            conditionScript.init(conditionArgs)
         if conditionScript.interesting(conditionArgs, tempPrefix + rev):
             return ('bad', 'interesting')
         else:
