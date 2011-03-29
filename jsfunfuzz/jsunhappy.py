@@ -12,6 +12,11 @@ p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
 sys.path.append(p1)
 import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
+# JITFLAGS from http://hg.mozilla.org/tracemonkey/file/default/js/src/Makefile.in
+# or actually http://hg.mozilla.org/projects/jaegermonkey/file/default/js/src/Makefile.in
+flagCombos = ",m,j,mj,mjp,am,amj,amjp,amd,n,mn,jn,mjn,mjpn,amn,amjn,amjpn,amdn"
+flagCombos = flagCombos.split(",")
+flagCombos = [["-"+c for c in s] for s in flagCombos]  # [[], ['-m'], ['-j'], ['-m', '-j'], ...]
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".

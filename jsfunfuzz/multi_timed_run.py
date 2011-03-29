@@ -16,6 +16,10 @@ parser.add_option("--comparejit",
                   action = "store_true", dest = "useCompareJIT",
                   default = False,
                   help = "After running the fuzzer, run the FCM lines against the engine in two configurations and compare the output.")
+parser.add_option("--random-flags",
+                  action = "store_true", dest = "randomFlags",
+                  default = False,
+                  help = "Pass a random set of flags (-m, -j, etc) to the js engine")
 parser.add_option("--fuzzjs",
                   action = "store", dest = "fuzzjs",
                   default = os.path.join(p0, "jsfunfuzz.js"),
@@ -57,6 +61,7 @@ def showtail(filename):
 
 
 def many_timed_runs():
+    global engineFlags
     iteration = 0
 
     jsunhappyArgsWithoutRunThis = ["--timeout=" + str(timeout)]
@@ -66,12 +71,15 @@ def many_timed_runs():
 
     shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
     while True:
-        # Test random combinations of engine flags occasionally.
-        if random.randint(0, 1) == 0:
-            rndEngineFlags = random.sample(engineFlags, random.randrange(1, len(engineFlags) + 1))
-        else:
-            rndEngineFlags = engineFlags
-        runThis = [engine] + rndEngineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
+
+        if options.randomFlags:
+            # Grab a flag set from flagCombos
+            engineFlags = random.choice(jsunhappy.flagCombos)
+            if random.randint(0, 5) == 0:
+                # Test a subset of the flags, in random order
+                engineFlags = random.sample(engineFlags, random.randint(0, len(engineFlags)))
+
+        runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
         jsunhappyArgs = jsunhappyArgsWithoutRunThis + runThis
         jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
 
