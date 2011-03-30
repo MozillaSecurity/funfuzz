@@ -469,8 +469,12 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, val
     # Compile and copy the first binary.
     # Only pymake was tested on Windows.
     usePymake = True if os.name == 'nt' else False
-    shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir, valgrindSupport)
-    rmDirInclSubDirs(tempDir)
+    try:
+        shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir, valgrindSupport)
+    finally:
+        assert os.path.isdir(tempDir) is True
+        rmDirInclSubDirs(tempDir)
+        assert os.path.isdir(tempDir) is False
     return shell
 
 # Run the testcase on the compiled js binary.
