@@ -411,10 +411,11 @@ def main():
         jsJit = ' -j '
     else:
         jsJit = ' '
+    # FIXME: --random-flags can be done in a better way instead of appending here
     if jsCompareJITSwitch:
-        jsCompareJIT = ' --comparejit '
+        jsCompareJIT = ' --comparejit --random-flags '
     else:
-        jsCompareJIT = ' '
+        jsCompareJIT = ' --random-flags '
 
     if methodJitSwitch:
         jsMethodJit = ' -m '
