@@ -128,8 +128,9 @@ def many_timed_runs():
             itest.append("--minlevel=" + str(level))
             itest.append("--timeout=" + str(timeout))
             itest.append(knownPath)
-            alsoRunChar = (level > jsunhappy.JS_DID_NOT_FINISH)
-            pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar)
+            alsoRunChar = (level > jsunhappy.JS_DECIDED_TO_EXIT)
+            alsoReduceEntireFile = (level > jsunhappy.JS_OVERALL_MISMATCH)
+            pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
 
         else:
             if options.useCompareJIT and level == jsunhappy.JS_FINE:

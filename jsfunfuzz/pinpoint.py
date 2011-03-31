@@ -14,7 +14,7 @@ def tempdir(path):
     os.mkdir(path)
     return "--tempdir=" + path
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, alsoRunChar=True):
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, alsoRunChar=True, alsoReduceEntireFile=False):
     """
        Run Lithium and autobisect.
 
@@ -42,7 +42,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
 
     unbeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only", tempdir(logPrefix + "-lith-b-tmp")] + lithArgs)
     # Check that the testcase is interesting.
-    if 'not interesting' not in unbeautifiedOutput:
+    if alsoReduceEntireFile and 'not interesting' not in unbeautifiedOutput:
         assert 'interesting' in unbeautifiedOutput
         # Beautify the output. This will remove DDBEGIN and DDEND as they are comments.
         # This will output a file with the '-beautified' suffix.
