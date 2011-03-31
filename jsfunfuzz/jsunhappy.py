@@ -155,4 +155,4 @@ def interesting(args, tempPrefix):
 
 if __name__ == "__main__":
     options = parseOptions(sys.argv[1:])
-    print jsfunfuzzLevel(options, knownPath, "m")
+    print jsfunfuzzLevel(options, "m")
