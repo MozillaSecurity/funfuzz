@@ -68,3 +68,19 @@ http://developer.mozilla.org/en/docs/New_in_JavaScript_1.6
 http://developer.mozilla.org/en/docs/New_in_JavaScript_1.7
 http://developer.mozilla.org/en/docs/New_in_JavaScript_1.8
 http://www.ecmascript.org/
+
+
+USING STARTJSFUNFUZZ
+
+Make use of startjsfunfuzz.py to start fuzzing.
+
+(Assumes ~/tracemonkey/ to be present, for TM.)
+
+Recommended command line:
+  date && time python startjsfunfuzz.py 32 dbg tm
+
+Tips:
+  On Linux, make sure /proc/sys/fs/file-max has a minimum value of around 150k - 200k. ARM Tegras tend to lock up with a value of 90k.
+  Edit /etc/sysctl.conf with your favourite editor and add/change to contain the line `fs.file-max=200000`.
+  Run `sysctl -p` to apply changes.
+  Also, edit /etc/security/limits.conf and uncomment and set the soft limit of users dumping core files to the maximum system hard limit.
