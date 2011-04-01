@@ -100,8 +100,6 @@ if (jsshell) {
 if (typeof gc == "undefined")
   gc = function(){};
 
-var haveUsefulDis = engine == ENGINE_SPIDERMONKEY_TRUNK && typeof dis == "function" && typeof dis(function(){}) == "string";
-
 var haveE4X = (typeof XML == "function");
 if (haveE4X)
   XML.ignoreComments = false; // to make uneval saner -- see bug 465908
@@ -195,16 +193,21 @@ function whatToTestSpidermonkeyTrunk(code)
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: false // bug 539819
+    checkForMismatch: false // currently experimental, and breaks when newFun is enabled
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
       && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( code.match( /\?.*\?/ ))        // avoid bug 475895
-      && !( code.match( /if.*function/ ))              // avoid bug 355980 *changes*
+      && !( code.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
+      && !( code.match( /\?.*\?/ ))                  // avoid bug 475895
+      && !( code.match( /if.*function/ ))            // avoid bug 355980 *changes*
       && !( code.match( /\=.*\:\:/ ))                // avoid bug 504957
-      && (code.indexOf("-0") == -1)        // constant folding isn't perfect
-      && (code.indexOf("-1") == -1)        // constant folding isn't perfect
+      && !( code.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
+      && !( code.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
+      && !( code.match( /\[.*\+/ ))        // constant folding bug 646599
+      && (code.indexOf("*") == -1)         // constant folding bug 539819
+      && (code.indexOf("/") == -1)         // constant folding bug 539819
+      && (code.indexOf("#") == -1)         // avoid bug 646600
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
@@ -595,7 +598,7 @@ function tryItOut(code)
 
   if (f && wtt.allowDecompile) {
     tryRoundTripStuff(f, code, wtt);
-    if (haveUsefulDis && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
+    if (typeof disassemble == "function" && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
       checkRoundTripDisassembly(f, code, wtt);
   }
 
@@ -660,24 +663,26 @@ function tryItOut(code)
   dumpln("");
 }
 
+// Hack to make line numbers be consistent, to make spidermonkey
+// disassemble() comparison testing easier (e.g. for round-trip testing)
+function directEvalC(s) { var c; /* evil closureizer */ return eval(s); } function newFun(s) { return new Function(s); }
+
 function tryCompiling(code, allowExec)
 {
-  var c; // harmless local variable for closure fun
-
   try {
 
     // Try two methods of creating functions, just in case there are differences.
     if (count % 2 == 0 && allowExec) {
       if (verbose)
         dumpln("About to compile, using eval hack.")
-      return eval("(function(){" + code + "});"); // Disadvantage: "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
+      return directEvalC("(function(){" + code + "});"); // Disadvantage: "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
     }
     else {
       if (verbose)
         dumpln("About to compile, using new Function.")
       if (jsStrictMode)
         code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
-      return new Function(code);
+      return newFun(code);
     }
   } catch(compileError) {
     dumpln("Compiling threw: " + errorToString(compileError));
@@ -1174,15 +1179,10 @@ function checkRoundTripDisassembly(f, code, wtt)
     return;
   }
 
-  if (code.indexOf("=") != -1 && code.indexOf("const") != -1) {
-    dumpln("checkRoundTripDisassembly: ignoring function with const and assignment, because that's boring.");
-    return;
-  }
-
   var uf = uneval(f);
 
   if (uf.indexOf("switch") != -1) {
-    // Bug 355509 :(
+    dumpln("checkRoundTripDisassembly: ignoring bug 355509");
     return;
   }
 
@@ -1196,9 +1196,7 @@ function checkRoundTripDisassembly(f, code, wtt)
     return;
   }
 
-  try { var g = eval(uf); } catch(e) { return; /* separate uneval test will catch this */ }
-
-  var df = dis(f);
+  var df = disassemble(f);
 
   if (df.indexOf("newline") != -1)
     return;
@@ -1209,7 +1207,14 @@ function checkRoundTripDisassembly(f, code, wtt)
     return;
   }
 
-  var dg = dis(g);
+  try {
+    var g = directEvalC(uf);
+  } catch(e) {
+    print("checkRoundTripDisassembly: ignoring stuff that should be caught by the uneval test");
+    return;
+  }
+
+  var dg = disassemble(g);
 
   if (df == dg) {
     // Happy!
@@ -1274,6 +1279,7 @@ function checkRoundTripDisassembly(f, code, wtt)
       print("First line that does not match:");
       print(dfl[i]);
       print(dgl[i]);
+      print("");
       break;
     }
   }
@@ -1295,7 +1301,7 @@ function checkRoundTripDisassembly(f, code, wtt)
 
 function getBytecodeOffsets(f)
 {
-  var disassembly = dis(f);
+  var disassembly = disassemble(f);
   var lines = disassembly.split("\n");
   var i;
 
@@ -1420,7 +1426,7 @@ function spiderMonkeyTrapTest(f, code, wtt)
     trapOffset = offsets[count % offsets.length].offset;
     print("trapOffset: " + trapOffset);
     if (!(trapOffset > -1)) {
-      print(dis(f));
+      print(disassemble(f));
       print(count);
       print(uneval(offsets));
       print(offsets.length);
@@ -1480,7 +1486,7 @@ function optionalTests(f, code, wtt)
     return;
   }
 
-  if (0 && f && haveUsefulDis) {
+  if (0 && f && typeof disassemble == "function") {
     spiderMonkeyTrapTest(f, code, wtt);
   }
 
