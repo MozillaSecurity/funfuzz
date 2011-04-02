@@ -193,7 +193,7 @@ function whatToTestSpidermonkeyTrunk(code)
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: false // currently experimental, and breaks when newFun is enabled
+    checkForMismatch: true
       && !( code.match( /const.*if/ ))               // avoid bug 352985
       && !( code.match( /if.*const/ ))               // avoid bug 352985
       && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
@@ -592,13 +592,33 @@ function tryItOut(code)
     return;
   }
 
-  var f = tryCompiling(code, wtt.allowExec);
+  var f;
+  var compileMode;
+  try {
+    // Try two methods of creating functions, just in case there are differences.
+    if (count % 2 == 0 && wtt.allowExec) {
+      compileMode = "directEvalC";
+      if (verbose)
+        dumpln("About to compile, using eval hack.")
+      f = directEvalC("(function(){" + code + "});"); // Disadvantage: "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
+    }
+    else {
+      compileMode = "newFun"
+      if (verbose)
+        dumpln("About to compile, using new Function.")
+      if (jsStrictMode)
+        code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
+      f = newFun(code);
+    }
+  } catch(compileError) {
+    dumpln("Compiling threw: " + errorToString(compileError));
+  }
 
   optionalTests(f, code, wtt);
 
   if (f && wtt.allowDecompile) {
     tryRoundTripStuff(f, code, wtt);
-    if (typeof disassemble == "function" && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
+    if (typeof disassemble == "function" && compileMode == "directEvalC" && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
       checkRoundTripDisassembly(f, code, wtt);
   }
 
@@ -666,29 +686,6 @@ function tryItOut(code)
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
 function directEvalC(s) { var c; /* evil closureizer */ return eval(s); } function newFun(s) { return new Function(s); }
-
-function tryCompiling(code, allowExec)
-{
-  try {
-
-    // Try two methods of creating functions, just in case there are differences.
-    if (count % 2 == 0 && allowExec) {
-      if (verbose)
-        dumpln("About to compile, using eval hack.")
-      return directEvalC("(function(){" + code + "});"); // Disadvantage: "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
-    }
-    else {
-      if (verbose)
-        dumpln("About to compile, using new Function.")
-      if (jsStrictMode)
-        code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
-      return newFun(code);
-    }
-  } catch(compileError) {
-    dumpln("Compiling threw: " + errorToString(compileError));
-    return null;
-  }
-}
 
 function tryRunning(f, code)
 {
