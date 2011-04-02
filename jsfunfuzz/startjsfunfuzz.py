@@ -417,6 +417,9 @@ def main():
     else:
         jsCompareJIT = ' --random-flags '
 
+    if branchType == 'jm':
+        jsCompareJIT += '--repo=' + repoDict['jm'] + ' '
+
     if methodJitSwitch:
         jsMethodJit = ' -m '
         if methodJitAllSwitch:
