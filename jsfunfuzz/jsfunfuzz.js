@@ -1218,7 +1218,7 @@ function checkRoundTripDisassembly(f, code, wtt)
 
   if (df == dg) {
     // Happy!
-    if (wtt.allowExec)
+    if (wtt.allowExec && false) // bug 647412
       trapCorrectnessTest(f);
     return;
   }
