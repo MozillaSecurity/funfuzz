@@ -240,6 +240,11 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))
         cfgCmdList.append('--target=x86_64-apple-darwin10.0.0')
+    elif (archNum == '64') and (os.name == 'nt'):
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
+        cfgCmdList.append('--host=x86_64-pc-mingw32')
+        cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))

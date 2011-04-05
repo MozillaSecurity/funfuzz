@@ -156,7 +156,7 @@ def main():
             raise Exception('32-bit compilation is not supported on non-i386 Darwin platforms.')
     elif (sys.argv[1] == '64'):
         # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
-        if (os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64'):
+        if os.name != 'nt' and os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64':
             raise Exception('64-bit compilation is not supported on non-x86_64 Linux platforms.')
         if (sys.argv[3] == '191'):
             raise Exception('64-bit compilation is not supported on 1.9.1 branch.')
