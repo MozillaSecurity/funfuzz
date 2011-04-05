@@ -217,6 +217,7 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
         # 32-bit shell on 32/64-bit x86 Linux
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
+            cfgEnvList['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvList['CC'] = 'gcc -m32'
             cfgEnvList['CXX'] = 'g++ -m32'
             cfgEnvList['AR'] = 'ar'
