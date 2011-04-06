@@ -278,9 +278,11 @@ def main():
 
 
     # Copy the js tree to the fuzzPath.
-    compilePath = os.path.join(fuzzPath, 'compilePath')
-    cpJsTreeDir(repoDict[branchType], compilePath)
-    os.chdir(compilePath)  # Change into compilation directory.
+    compilePath = os.path.join(fuzzPath, 'compilePath', 'js', 'src')
+    cpJsTreeDir(repoDict[branchType], os.path.join(compilePath), 'jsSrcDir')
+    if os.path.isdir(os.path.normpath(os.path.join(repoDict[branchType], 'mfbt'))):
+        cpJsTreeDir(repoDict[branchType], os.path.join(compilePath, '..', '..', 'mfbt'), 'mfbtDir')
+    os.chdir(os.path.join(compilePath))  # Change into compilation directory.
 
 
     # Only patch the gc() function if on default tip.
@@ -318,6 +320,8 @@ def main():
     if (patchReturnCode == 1 or patchReturnCode2 == 1) or (patchReturnCode == 2 or patchReturnCode2 == 2):
         raise Exception('Patching failed.')
 
+    # FIXME we should make startjsfunfuzz.py not rely on os.getcwdu(), instead run subprocess calls
+    # with the required directory set. In short, stop jumping around directories.
     autoconfRun(compilePath)
 
     # Create objdirs within the compilePaths.
@@ -341,15 +345,18 @@ def main():
 
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir, valgrindSupport)
-    # Change into compilePath for the second binary.
+    # Change into compilePath/js/src/ for the second binary.
     os.chdir('../')
 
     # Test compilePath.
-    verboseDump('This should be the compilePath:')
+    verboseDump('This should be the compilePath/js/src:')
     verboseDump('%s\n' % os.getcwdu())
     if selfTests:
-        if 'compilePath' not in os.getcwdu():
-            raise Exception('We are not in compilePath.')
+        if 'src' not in os.getcwdu():
+            raise Exception('We are not in src.')
+
+    # Re-run autoconf again.
+    autoconfRun(compilePath)
 
     # Compile the other binary.
     # No need to assign jsShellName here, because we are not fuzzing this one.
@@ -367,7 +374,7 @@ def main():
         compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
 
 
-    os.chdir('../../')  # Change into fuzzPath directory.
+    os.chdir('../../../../')  # Change into fuzzPath directory.
 
     # Test fuzzPath.
     verboseDump('os.getcwdu() should be the fuzzPath:')

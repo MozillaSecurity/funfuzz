@@ -157,7 +157,7 @@ def hgHashAddToFuzzPath(fuzzPath, currWorkingDir=os.getcwdu()):
     verboseDump('Finished running `hg identify -i -n -b`.')
     return os.path.normpath(fuzzPath), onDefaultTip
 
-def cpJsTreeDir(repo, dest):
+def cpJsTreeDir(repo, dest, sourceDir):
     '''
     This function copies the js tree or the pymake build directory.
     '''
@@ -165,7 +165,13 @@ def cpJsTreeDir(repo, dest):
     # removed if compileCopy accepts a repo directory as one of its parameters.
     global globalRepo
     globalRepo = repo
-    repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
+    if sourceDir == 'jsSrcDir':
+        repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
+    # Changeset 91a8d742c509 introduced a mfbt directory on the same level as the js directory.
+    elif sourceDir == 'mfbtDir':
+        repo = os.path.normpath(os.path.join(repo, 'mfbt'))
+    else:
+        raise Exception('Unknown sourceDir:', sourceDir)
     if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
     try:
@@ -183,11 +189,14 @@ def autoconfRun(cwd):
     '''
     if os.name == 'posix':
         if os.uname()[0] == 'Darwin':
-            subprocess.call(['autoconf213'], cwd=cwd)
+            retCode = subprocess.call(['autoconf213'], cwd=cwd)
         elif os.uname()[0] == 'Linux':
-            subprocess.call(['autoconf2.13'], cwd=cwd)
+            retCode = subprocess.call(['autoconf2.13'], cwd=cwd)
     elif os.name == 'nt':
-        subprocess.call(['sh', 'autoconf-2.13'], cwd=cwd)
+        retCode = subprocess.call(['sh', 'autoconf-2.13'], cwd=cwd)
+
+    if retCode is not 0:
+        raise Exception('autoconf did not return code 0.')
 
 def cfgJsBin(archNum, compileType, traceJit, methodJit,
                       valgrindSupport, threadsafe, configure, objdir):
@@ -273,6 +282,9 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
 
     # Miscellaneous flags
     cfgCmdList.append('--disable-tests')
+    # Works-around "../editline/libeditline.a: No such file or directory" build errors by using
+    # readline instead of editline.
+    #cfgCmdList.append('--enable-readline')
     if os.name != 'nt':
         cfgCmdList.append('--with-ccache')
     cfgCmdList.append('--enable-type-inference')
