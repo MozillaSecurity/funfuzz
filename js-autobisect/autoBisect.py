@@ -449,7 +449,9 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, val
         print "Compiling in " + tempDir
 
     # Copy the js tree.
-    cpJsTreeDir(sourceDir, compilePath)
+    cpJsTreeDir(sourceDir, compilePath, 'jsSrcDir')
+    if os.path.isdir(os.path.normpath(os.path.join(sourceDir, 'mfbt'))):
+        cpJsTreeDir(sourceDir, os.path.join(compilePath, '..', '..', 'mfbt'), 'mfbtDir')
 
     # Run autoconf.
     autoconfRun(compilePath)
