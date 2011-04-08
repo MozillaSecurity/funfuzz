@@ -279,10 +279,10 @@ def main():
 
     # Copy the js tree to the fuzzPath.
     compilePath = os.path.join(fuzzPath, 'compilePath', 'js', 'src')
-    cpJsTreeDir(repoDict[branchType], os.path.join(compilePath), 'jsSrcDir')
+    cpJsTreeDir(repoDict[branchType], compilePath, 'jsSrcDir')
     if os.path.isdir(os.path.normpath(os.path.join(repoDict[branchType], 'mfbt'))):
         cpJsTreeDir(repoDict[branchType], os.path.join(compilePath, '..', '..', 'mfbt'), 'mfbtDir')
-    os.chdir(os.path.join(compilePath))  # Change into compilation directory.
+    os.chdir(compilePath)  # Change into compilation directory.
 
 
     # Only patch the gc() function if on default tip.
