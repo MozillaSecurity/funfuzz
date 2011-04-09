@@ -443,7 +443,7 @@ assert extractChangesetFromMessage("12345:abababababab y") == "abababababab"
 
 def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, currRev):
     tempDir = tempfile.mkdtemp(prefix="abc-" + currRev + "-")
-    compilePath = os.path.join(tempDir, "compilePath")
+    compilePath = os.path.join(tempDir, 'compilePath', 'js', 'src')
 
     if verbose:
         print "Compiling in " + tempDir
