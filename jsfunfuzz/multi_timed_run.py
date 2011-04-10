@@ -146,6 +146,8 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core.gz")):
                 os.remove(logPrefix + "-core.gz")
+            if (os.path.exists(logPrefix + "-cj-initial-r5-core.gz")):
+                os.remove(logPrefix + "-cj-initial-r5-core.gz")
 
 
 def fuzzSplice(file):
