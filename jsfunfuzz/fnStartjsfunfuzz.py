@@ -174,6 +174,7 @@ def cpJsTreeDir(repo, dest, sourceDir):
         raise Exception('Unknown sourceDir:', sourceDir)
     if 'Windows-XP' not in platform.platform():
         repo = os.path.expanduser(repo)
+    assert os.path.isdir(repo)
     try:
         verboseDump('Copying the js tree, which is located at ' + repo)
         shutil.copytree(os.path.normpath(repo), dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
@@ -182,6 +183,8 @@ def cpJsTreeDir(repo, dest, sourceDir):
         if verbose:
             print repr(e)
         raise Exception("Either the js tree directory located at '" + repo + "' doesn't exist, or the destination already exists.")
+    except:
+        raise Exception("Problem copying files related to the js tree.")
 
 def autoconfRun(cwd):
     '''
