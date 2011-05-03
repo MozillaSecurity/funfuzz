@@ -19,8 +19,6 @@ def parse(filename, add_result_callback):
         if len(parts) == 0:
             # line is empty or just a comment, skip
             pass
-        elif parts[0] == 'include':
-            parse(os.path.normpath(os.path.join(reldir, parts[1])), add_result_callback)
         elif parts[0] == 'url-prefix':
             pass
         else:
@@ -33,6 +31,10 @@ def parse(filename, add_result_callback):
                     #print "Skipping: " + part
                     pos += 1
                     pass
+                elif part == 'include':
+                    pos += 1
+                    parse(os.path.normpath(os.path.join(reldir, parts[pos])), add_result_callback)
+                    break
                 elif part == "needs-focus":
                     pos += 1
                     pass
