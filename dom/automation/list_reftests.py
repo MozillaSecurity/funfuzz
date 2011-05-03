@@ -50,7 +50,7 @@ def parse(filename, add_result_callback):
                 elif part == "script":
                     break
                 else:
-                    print 'warning: unrecognized manifest line element "%s"' % parts[pos]
+                    print 'warning: in %s unrecognized manifest line element "%s"' % (filename, parts[pos])
                     pos += 1
 
 testfiles = set()
