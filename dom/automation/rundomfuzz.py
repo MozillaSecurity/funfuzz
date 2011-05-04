@@ -105,6 +105,7 @@ user_pref("browser.microsummary.enabled", false);
 """
 
   if valgrindMode:
+    # Bug 598263
     prefsText = prefsText + """
 user_pref("javascript.options.methodjit.content", false);
 user_pref("javascript.options.methodjit.chrome", false);
