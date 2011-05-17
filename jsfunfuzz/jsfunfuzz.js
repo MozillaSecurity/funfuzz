@@ -1184,12 +1184,17 @@ function checkRoundTripDisassembly(f, code, wtt)
       break;
     }
   }
-  print("Function from original code:");
+  print("Original code:");
   print(code);
+  print("");
+  print("Original function:");
+  print(uf);
   print(df);
+  print("");
   print("Function from recompiling:");
   print(uf);
   print(dg);
+  print("");
   printAndStop("Disassembly was not stable through decompilation");
 }
 
