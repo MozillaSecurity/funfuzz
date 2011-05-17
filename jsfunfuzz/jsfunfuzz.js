@@ -433,6 +433,16 @@ function makeOv(d, ignoredB)
   return maybeStrict() + makeStatement(d, ["x"]);
 }
 
+function failsToCompileInTry(code) {
+  // Why would this happen? One way is "let x, x"
+  try {
+    new Function(" try { " + code + " } catch(e) { }");
+    return false;
+  } catch(e) {
+    return true;
+  }
+}
+
 function tryItOut(code)
 {
   var c; // a harmless variable for closure fun
@@ -538,15 +548,6 @@ function tryItOut(code)
         // But leave some things out of function(){} because some bugs are only detectable at top-level, and
         // pure jsfunfuzz doesn't test top-level at all.
         // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
-        function failsToCompileInTry(code) {
-          // Why would this happen? One way is "let x, x"
-          try {
-            new Function(" try { " + code + " } catch(e) { }");
-            return false;
-          } catch(e) {
-            return true;
-          }
-        }
         if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
           nCode = "(function(){" + nCode + "})()"
         dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
@@ -2832,20 +2833,20 @@ if (typeof evalcx == "function") {
 // When in xpcshell,
 // * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
 // * Test interaction between sandboxes with same or different principals.
+function newSandbox(n)
+{
+  var t = (typeof n == "number") ? n : 1;
+  var s = Components.utils.Sandbox("http://x" + t + ".example.com/");
+
+  // Allow the sandbox to do a few things
+  s.newSandbox = newSandbox;
+  s.evalInSandbox = function(str, sbx) { return Components.utils.evalInSandbox(str, sbx); };
+  s.print = function(str) { print(str); };
+
+  return s;
+}
+
 if ("Components" in this) {
-  function newSandbox(n)
-  {
-    var t = (typeof n == "number") ? n : 1;
-    var s = Components.utils.Sandbox("http://x" + t + ".example.com/");
-
-    // Allow the sandbox to do a few things
-    s.newSandbox = newSandbox;
-    s.evalInSandbox = function(str, sbx) { return Components.utils.evalInSandbox(str, sbx); };
-    s.print = function(str) { print(str); };
-
-    return s;
-  }
-
   exprMakers = exprMakers.concat([
     function(d, b) { var n = rnd(4); return "newSandbox(" + n + ")"; },
     function(d, b) { var n = rnd(4); return "s" + n + " = newSandbox(" + n + ")"; },
