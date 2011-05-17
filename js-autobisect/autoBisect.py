@@ -406,19 +406,23 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     methodjitBool = True if '-m' in flagsRequired else False
     methodjitAllBool = True if '-a' in flagsRequired else False
     typeInferBool = True if '-n' in flagsRequired else False
+    debugModeBool = True if '-d' in flagsRequired else False
 
-    if False and typeInferBool:
-        return 'default' # wait for JM -> TM landing.
+    if typeInferBool:
+        # Or maybe we want 7e3f5b742abe ???
+        return '386e9cffdcd7' # ?????? on TM, first rev that has the -n option
     elif methodjitAllBool:
         # This supercedes methodjitBool, -a only works with -m
         return 'f569d49576bb' # ~62161 on TM, first rev that has the -a option
     elif profilejitBool:
         return '339457364540' # ~55724 on TM, first rev that has the -p option
+    elif debugModeBool:
+        # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
+        return 'ea0669bacf12' # ~54291 on TM, first rev that has the -d option
+    elif methodjitBool and os.name == 'nt':
+        return '9f2641871ce8' # ~52707 on TM, first rev that can run with pymake and -m
     elif methodjitBool:
-        if os.name == 'nt':
-            return '9f2641871ce8' # ~52707 on TM, first rev that can run with pymake and -m
-        else:
-            return '547af2626088' # ~52268 on TM, first rev that can run jsfunfuzz-n.js with -m
+        return '547af2626088' # ~52268 on TM, first rev that can run jsfunfuzz-n.js with -m
     elif os.name == 'nt':
         return 'ea59b927d99f' # ~46545 on TM, first rev that can run pymake on Windows with most recent set of instructions
     elif snowLeopardOrHigher and archNum == "64":
