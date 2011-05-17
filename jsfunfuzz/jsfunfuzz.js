@@ -56,13 +56,20 @@ var jsshell = (typeof window == "undefined");
 var dump;
 var dumpln;
 var printImportant;
+var spidermonkeyTrapEnabled = false;
 if (jsshell) {
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
   if (typeof line2pc == "function") {
 
-    if (typeof snarf == "function")
+    if (typeof snarf == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
+      try {
+        // trap() is enabled iff shell was invoked with -d
+        trap(function(){}, 0, '');
+        spidermonkeyTrapEnabled = true;
+      } catch(e) { }
+    }
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
   } else if (typeof XPCNativeWrapper == "function") {
@@ -1119,8 +1126,8 @@ function checkRoundTripDisassembly(f, code, wtt)
 
   if (df == dg) {
     // Happy!
-    if (wtt.allowExec && false) // bug 647412
-      trapCorrectnessTest(f);
+    if (wtt.allowExec && wtt.expectConsistentOutput && spidermonkeyTrapEnabled)
+      trapCorrectnessTest(code);
     return;
   }
 
@@ -1204,14 +1211,17 @@ function checkRoundTripDisassembly(f, code, wtt)
  * SPIDERMONKEY TRAP TESTING *
  *****************************/
 
-
+// The shell trap() function is insane. It will happily overwrite
+// parts of a function that aren't opcodes, or write beyond the bounds
+// of a function if given a too-large offset.  getBytecodeOffsets
+// returns the offsets that are sane to trap.
 function getBytecodeOffsets(f)
 {
   var disassembly = disassemble(f);
   var lines = disassembly.split("\n");
   var i;
 
-  offsets = [];
+  var offsets = [];
 
   for (i = 0; i < lines.length; ++i) {
     if (lines[i] == "main:")
@@ -1233,7 +1243,20 @@ function getBytecodeOffsets(f)
 
     var op = lines[i].substr(8).split(" ")[0]; // used only for avoiding known bugs
     var offset = parseInt(lines[i], 10);
-    offsets.push({ offset: offset, op: op });
+    if (   op != "lineno"
+        && op != "eval"                 // bug 656490
+        && op != "blockchain"           // bug 656381 (comment 2)
+        && op != "nullblockchain"       // bug 656381 (comment 0)
+        && op != "pop"                  // bug 656555
+        && op != "popv"                 // bug 656555
+        && op != "tableswitchx"         // bug 619830
+        && op != "tableswitch"          // bug 619830
+        && op != "lookupswitchx"        // bug 619830
+        && op != "lookupswitch"         // bug 619830
+        && op != "newarray"             // bug 656847
+       ) {
+      offsets.push({ offset: offset, op: op });
+    }
     if (op == "getter" || op == "setter") {
       ++i; // skip the next opcode per bug 476073 comment 4
     }
@@ -1242,21 +1265,32 @@ function getBytecodeOffsets(f)
   return offsets;
 }
 
-function trapCorrectnessTest(f)
+// This tests that null traps don't change program behavior.
+function trapCorrectnessTest(code)
 {
-  var uf = uneval(f);
+  // Bytecode can differ between 'new Function' and 'function(){}'
+  // (see bug 656538) or for other mysterious reasons. Do disassembly
+  // in sandbox to reduce likelihood of trapping the right offsets.
 
   print("trapCorrectnessTest...");
-  var offsets = getBytecodeOffsets(f);
-  var prefix = "var fff = " + f + "; ";
-  var r1 = sandboxResult(prefix + "fff();");
+  var printStealer = "var printed = ''; function print(s) { printed += s }";
+  var prefix = getBytecodeOffsets + printStealer + "function fff() { " + code + " }; ";
+  function printAccumulator() { }
+
+  var r0 = sandboxResult(prefix + "(uneval(getBytecodeOffsets(fff)));");
+  dumpln("offsets: " + r0);
+  var offsets = eval(r0);
+
+  var r1 = sandboxResult(prefix + "fff(); printed;");
+  dumpln("Printed: " + r1);
+
   for (var i = 0; i < offsets.length; ++i) {
     var offset = offsets[i].offset;
     var op = offsets[i].op;
     // print(offset + " " + op);
 
     var trapStr = "trap(fff, " + offset + ", ''); ";
-    var r2 = sandboxResult(prefix + trapStr + " fff();");
+    var r2 = sandboxResult(prefix + trapStr + " fff(); printed;");
 
     if (r1 != r2) {
       if (r1.indexOf("TypeError") != -1 && r2.indexOf("TypeError") != -1) {
@@ -1267,7 +1301,7 @@ function trapCorrectnessTest(f)
       }
 
       print("Adding a trap changed the result!");
-      print(f);
+      print(code);
       print(r1);
       print(trapStr);
       print(r2);
@@ -1280,30 +1314,36 @@ function trapCorrectnessTest(f)
 function sandboxResult(code)
 {
   // Use sandbox to isolate side-effects.
-  // This might be wrong in cases where the sandbox manages to return objects with getters and stuff!
   var result;
+  var resultStr = "";
   try {
-    // result = evalcx(code, {trap:trap, print:print}); // WRONG
-    var sandbox = evalcx("");
-    sandbox.trap = trap;
-    sandbox.print = print;
-    sandbox.dis = dis;
+    // Using newGlobal("new-compartment"), rather than evalcx(''), to get
+    // shell functions such as "trap". (see bug 647412 comment 2)
+    var sandbox = newGlobal("new-compartment");
+
     result = evalcx(code, sandbox);
+    if (typeof result != "object") {
+      // Avoid cross-compartment excitement if it has a toString
+      resultStr = "" + result;
+    }
   } catch(e) {
     result = "Error: " + errorToString(e);
   }
-  return "" + result;
+  print("resultStr: " + resultStr);
+  return resultStr;
 }
 
-// This tests two aspects of trap:
-// 1) put a trap in a random place; does decompilation get horked?
-// 2) traps that do things
-// These should probably be split into different tests.
-function spiderMonkeyTrapTest(f, code, wtt)
+// This puts a single trap in a function at random, and tests that:
+// 1) decompilation does not change
+// 2) no crash calling a function with a trap
+// 3) no crash calling a function with a trap that does something [disabled]
+// These should probably be split into "trapDecompile" and "trapStability"
+
+function trapSanityTests(f, code, wtt)
 {
   var offsets = getBytecodeOffsets(f);
 
-  if ("trap" in this) {
+  if (typeof trap == "function") {
 
     // Save for trap
     //if (wtt.allowExec && count % 2 == 0) {
@@ -1314,12 +1354,14 @@ function spiderMonkeyTrapTest(f, code, wtt)
     // Use trap
 
     if (verbose)
-      dumpln("About to try the trap test.");
+      dumpln("About to try the trap sanity test.");
 
     var ode;
     if (wtt.allowDecompile)
       ode = "" + f;
 
+    var trapCode;
+    var nextTrapCode;
     //if (nextTrapCode) {
     //  trapCode = nextTrapCode;
     //  nextTrapCode = null;
@@ -1328,9 +1370,9 @@ function spiderMonkeyTrapTest(f, code, wtt)
       trapCode = "print('Trap hit!')";
     //}
 
-
-    trapOffset = offsets[count % offsets.length].offset;
-    print("trapOffset: " + trapOffset);
+    var trapOp = offsets[count % offsets.length];
+    var trapOffset = trapOp.offset;
+    print("trapOffset: " + trapOffset + " (" + trapOp.op + ")");
     if (!(trapOffset > -1)) {
       print(disassemble(f));
       print(count);
@@ -1342,7 +1384,7 @@ function spiderMonkeyTrapTest(f, code, wtt)
     trap(f, trapOffset, trapCode);
 
     if (wtt.allowDecompile) {
-      nde = "" + f;
+      var nde = "" + f;
 
       if (ode != nde) {
         print(ode);
@@ -1392,8 +1434,8 @@ function optionalTests(f, code, wtt)
     return;
   }
 
-  if (0 && f && typeof disassemble == "function") {
-    spiderMonkeyTrapTest(f, code, wtt);
+  if (0 && f && spidermonkeyTrapEnabled && typeof disassemble == "function") { // Disabled due to bug 657524
+    trapSanityTests(f, code, wtt);
   }
 
   if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
