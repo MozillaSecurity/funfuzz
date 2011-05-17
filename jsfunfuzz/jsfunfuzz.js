@@ -2830,6 +2830,15 @@ if (typeof evalcx == "function") {
   ]);
 }
 
+// spidermonkey shell (but not xpcshell) has a "newGlobal" function.
+if (typeof newGlobal == "function") {
+  exprMakers = exprMakers.concat([
+    // Test multiple globals and multiple compartments.
+    function(d, b) { return "newGlobal('same-compartment')"; },
+    function(d, b) { return "newGlobal('new-compartment')"; }
+  ]);
+}
+
 // When in xpcshell,
 // * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
 // * Test interaction between sandboxes with same or different principals.
