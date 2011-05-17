@@ -326,11 +326,11 @@ function totallyRandom(d, b) {
   return (rndElt(allMakers))(d, b);
 }
 
-function init()
+function init(glob)
 {
-  for (var f in this)
-    if (f.indexOf("make") == 0 && typeof this[f] == "function")
-      allMakers.push(this[f]);
+  for (var f in glob)
+    if (f.indexOf("make") == 0 && typeof glob[f] == "function")
+      allMakers.push(glob[f]);
 }
 
 /*
@@ -356,15 +356,15 @@ function testEachMaker()
 }
 */
 
-function start()
+function start(glob)
 {
-  init();
+  init(glob);
 
   count = 0;
 
   if (jsshell) {
     // If another script specified a "maxRunTime" argument, use it; otherwise, run forever
-    var MAX_TOTAL_TIME = (this.maxRunTime) || (Infinity);
+    var MAX_TOTAL_TIME = (glob.maxRunTime) || (Infinity);
     var startTime = new Date();
 
     do {
@@ -438,7 +438,7 @@ function tryItOut(code)
   var c; // a harmless variable for closure fun
 
   // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
-  if ("gczeal" in this)
+  if (typeof gczeal == "function")
     gczeal(0);
 
   // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
@@ -616,12 +616,19 @@ function tryEnsureSanity()
 {
   try {
     // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
-    if ("gczeal" in this)
+    if (typeof gczeal == "function")
       gczeal(0);
+  } catch(e) { }
 
-    // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
-    try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
+  // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
+  try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
 
+  if (!this) {
+    // Strict mode. Great.
+    return;
+  }
+
+  try {
     // Try to get rid of any fake 'unwatch' functions.
     delete this.unwatch;
 
@@ -1356,7 +1363,7 @@ function optionalTests(f, code, wtt)
   }
 
   if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    if (wtt.allowExec && ('sandbox' in this)) {
+    if (wtt.allowExec && (typeof sandbox == "function")) {
       f = null;
       if (trySandboxEval(code, false)) {
         dumpln("Trying it again to see if it's a 'real leak' (???)")
@@ -2809,7 +2816,7 @@ var binaryMathFunctions = ["atan2", "max", "min", "pow"]; // min and max are tec
 
 
 // spidermonkey shell (but not xpcshell) has an "evalcx" function.
-if ("evalcx" in this) {
+if (typeof evalcx == "function") {
   exprMakers = exprMakers.concat([
     // Test evalcx: sandbox creation
     function(d, b) { return "evalcx('')"; },
@@ -4068,7 +4075,7 @@ throw 1;
 // 2. Paste the result between "ddbegin" and "ddend", replacing "start();"
 // 3. Run Lithium to remove unnecessary lines between "ddbegin" and "ddend".
 // SPLICE DDBEGIN
-start();
+start(this);
 // SPLICE DDEND
 
 if (jsshell)
