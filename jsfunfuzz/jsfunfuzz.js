@@ -246,6 +246,26 @@ function whatToTestSpidermonkeyTrunk(code)
       // appear to contain, e.g. with "return x;"
       && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
       && (code.indexOf("<>") == -1)                            // avoid bug 334628
+    ,
+
+    expectConsistentOutput: true
+       && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
+       && code.indexOf("Date") == -1                // time marches on
+    ,
+
+    expectConsistentOutputAcrossJITs: true
+       && code.indexOf("Error") == -1               // avoid bug 525518
+       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
+       && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
+       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
+       && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
+       && code.indexOf("use strict") == -1          // bug 622271
+       && code.indexOf("++") == -1                  // bug 622265
+       && code.indexOf("--") == -1                  // bug 622265
+       && code.indexOf("instanceof") == -1          // bug 617949
+       && !(code.match(/\S=/))                      // bug 620746 (+= etc)
+
   };
 }
 
@@ -271,7 +291,10 @@ function whatToTestJavaScriptCore(code)
 
     allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
 
-    checkUneval: false // JavaScriptCore does not support |uneval|
+    checkUneval: false, // JavaScriptCore does not support |uneval|
+
+    expectConsistentOutput: false,
+    expectConsistentOutputAcrossJITs: false
 
   };
 }
@@ -285,8 +308,10 @@ function whatToTestGeneric(code)
     checkForMismatch: true,
     checkForExtraParens: false, // most js engines don't try to guarantee lack of extra parens
     allowExec: unlikelyToHang(code),
-    allowIter: ("Iterator" in this),
-    checkUneval: haveRealUneval
+    allowIter: (typeof Iterator == "function"),
+    checkUneval: haveRealUneval,
+    expectConsistentOutput: false,
+    expectConsistentOutputAcrossJITs: false
   };
 }
 
@@ -525,21 +550,9 @@ function tryItOut(code)
       checkRoundTripDisassembly(f, code, wtt);
   }
 
-  if (f && wtt.allowExec) {
+  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      if (code.indexOf("Error") == -1               // avoid bug 525518
-       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
-       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
-       && code.indexOf("gc") == -1                  // gc is noisy
-       && code.indexOf(".(") == -1                  // this e4x operator can get itself into infinite-recursion, and recursion limits are nondeterministic
-       && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
-       && code.indexOf("use strict") == -1          // bug 622271
-       && code.indexOf("++") == -1                  // bug 622265
-       && code.indexOf("--") == -1                  // bug 622265
-       && code.indexOf("instanceof") == -1          // bug 617949
-       && !(codeWithoutLineBreaks.match(/\S=/))                  // bug 620746
-      ) {
+      if (true) {
         // FCM cookie
         var cookie1 = "/*F";
         var cookie2 = "CM*/";
@@ -3122,7 +3135,7 @@ if (haveE4X) {
 var constructors = [
   "Error", "RangeError", "Exception",
   "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean", "WeakMap",
-  // "Date",  // commented out due to appearing "random, but XXX want to use it sometimes...
+  "Date",
   "Iterator",
   // E4X
   "Namespace", "QName", "XML", "XMLList",
