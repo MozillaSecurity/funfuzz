@@ -2568,6 +2568,9 @@ var objectMethods = [
   // Array extras in JavaScript 1.8
   "reduce", "reduceRight",
 
+  // Weak Maps
+  "get", "set", "delete", "has",
+
   // Functions
   "call", "apply",
 
@@ -3118,7 +3121,7 @@ if (haveE4X) {
 
 var constructors = [
   "Error", "RangeError", "Exception",
-  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean",
+  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean", "WeakMap",
   // "Date",  // commented out due to appearing "random, but XXX want to use it sometimes...
   "Iterator",
   // E4X
