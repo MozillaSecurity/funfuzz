@@ -1290,6 +1290,7 @@ function trapCorrectnessTest(code)
     // print(offset + " " + op);
 
     var trapStr = "trap(fff, " + offset + ", ''); ";
+    print(trapStr);
     var r2 = sandboxResult(prefix + trapStr + " fff(); printed;");
 
     if (r1 != r2) {
