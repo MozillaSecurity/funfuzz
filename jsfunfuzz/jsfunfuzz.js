@@ -1245,10 +1245,6 @@ function getBytecodeOffsets(f)
     var offset = parseInt(lines[i], 10);
     if (   op != "lineno"
         && op != "eval"                 // bug 656490
-        && op != "blockchain"           // bug 656381 (comment 2)
-        && op != "nullblockchain"       // bug 656381 (comment 0)
-        && op != "pop"                  // bug 656555
-        && op != "popv"                 // bug 656555
         && op != "tableswitchx"         // bug 619830
         && op != "tableswitch"          // bug 619830
         && op != "lookupswitchx"        // bug 619830
