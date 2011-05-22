@@ -316,6 +316,8 @@ def rdfInit(args):
       "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
       "--suppressions=" + os.path.join(knownPath, "valgrind.txt") + " " +
       "--gen-suppressions=all" + " " +
+      "--child-silent-after-fork=yes" + " " + # First part of the workaround for bug 658840
+      "--leak-check=full" + " " +
       "--quiet"
     )
   
@@ -378,7 +380,8 @@ def rdfInit(args):
       else:
         alh.printAndLog("@@@ New crash (from minidump_stackwalk)")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
+    elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE and False:
+      # Disabled due to leaks in the glxtest process that Firefox forks on Linux. (Second part of the workaruond for bug 658840.)
       alh.printAndLog("@@@ Valgrind complained via exit code")
       lev = max(lev, DOM_VG_AMISS)
     elif status < 0 and (platform.system() not in ("Microsoft", "Windows")):
