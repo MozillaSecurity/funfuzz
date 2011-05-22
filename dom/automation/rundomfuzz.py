@@ -126,25 +126,6 @@ user_pref("javascript.options.methodjit.chrome", false);
   # Give the profile an empty bookmarks file, so there are no live-bookmark requests
   shutil.copyfile(os.path.join(THIS_SCRIPT_DIRECTORY, "empty-bookmarks.html"), os.path.join(profileDir, "bookmarks.html"))
 
-def getFirefoxBranch(app):
-  appini = os.path.normpath(os.path.join(app, "..", "application.ini"))
-  with file(appini) as f:
-    for line in f:
-      if line.startswith("SourceRepository="):
-        line = line.rstrip()
-        if line.endswith("/"):
-          return line.split("/")[-2]
-        else:
-          return line.split("/")[-1]
-
-def getKnownPath(app):
-  firefoxBranch = getFirefoxBranch(app)
-  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", firefoxBranch)
-  if not os.path.exists(knownPath):
-    print "Missing knownPath: " + knownPath
-    sys.exit(1)
-  return knownPath
-
 valgrindComplaintRegexp = re.compile("^==\d+== ")
 
 class AmissLogHandler:
@@ -325,29 +306,8 @@ def rdfInit(args):
   runbrowserpy = ["python", "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
   close_fds = sys.platform != 'win32'
-  # run once with -silent to let the extension manager do its thing, and to get knownPath
-  runbrowser = subprocess.Popen(
-                   runbrowserpy + runBrowserOptions + runBrowserArgs + ["silent"],
-                   stdin = None,
-                   stdout = subprocess.PIPE,
-                   stderr = subprocess.STDOUT,
-                   env = env,
-                   close_fds = close_fds)
 
-  knownPath = None
-
-  while True:
-    line = runbrowser.stdout.readline()
-    if line != '':
-      #print ">> " + line.rstrip("\n")
-      if line.startswith("theapp: "):
-        knownPath = getKnownPath(line[8:].rstrip())
-    else:
-      break
-
-  if not knownPath:
-    raise Exception("Didn't get a knownPath")
-    
+  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", "mozilla-central")
   detect_interesting_crashes.readIgnoreList(knownPath)
 
   if options.valgrind:
