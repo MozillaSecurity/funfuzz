@@ -1211,10 +1211,10 @@ function checkRoundTripDisassembly(f, code, wtt)
  * SPIDERMONKEY TRAP TESTING *
  *****************************/
 
-// The shell trap() function is insane. It will happily overwrite
-// parts of a function that aren't opcodes, or write beyond the bounds
-// of a function if given a too-large offset.  getBytecodeOffsets
-// returns the offsets that are sane to trap.
+// The shell trap() function is insane: it will happily overwrite
+// parts of a function that aren't opcodes (bug 429239).
+// As a workaround, getBytecodeOffsets returns the offsets that
+// are sane to trap.
 function getBytecodeOffsets(f)
 {
   var disassembly = disassemble(f);
