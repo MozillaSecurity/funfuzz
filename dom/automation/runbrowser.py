@@ -31,9 +31,6 @@ def runBrowser():
   utilityDir = args[2]
   profileDir = args[3]
   url = args[4]
-  if url == "silent":
-    url = "-silent"
-    options.valgrind = False
 
   sys.path.append(reftestScriptDir)
   try:
