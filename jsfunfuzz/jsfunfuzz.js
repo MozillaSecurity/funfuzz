@@ -1431,7 +1431,7 @@ function optionalTests(f, code, wtt)
     return;
   }
 
-  if (0 && f && spidermonkeyTrapEnabled && typeof disassemble == "function") { // Disabled due to bug 657524
+  if (f && spidermonkeyTrapEnabled && typeof disassemble == "function") { // Disabled due to bug 657524
     trapSanityTests(f, code, wtt);
   }
 
@@ -3007,10 +3007,10 @@ function makeProxyHandlerFactory(d, b)
     var preferred = rndElt(["empty", "forward", "yes", "no", "bind", "throwing"]);
     var fallback = rndElt(["empty", "forward"]);
     var fidelity = rnd(10);
-  
+
     var handlerFactoryText = "(function handlerFactory(x) {";
     handlerFactoryText += "return {"
-  
+
     if (rnd(2)) {
       // handlerFactory has an argument 'x'
       bp = b.concat(['x']);
@@ -3019,7 +3019,7 @@ function makeProxyHandlerFactory(d, b)
       handlerFactoryText = handlerFactoryText.replace(/x/, "");
       bp = b;
     }
-  
+
     for (var p in proxyHandlerProperties) {
       var funText;
       if (proxyHandlerProperties[p][preferred] && rnd(10) <= fidelity) {
@@ -3034,9 +3034,9 @@ function makeProxyHandlerFactory(d, b)
       }
       handlerFactoryText += p + ": " + funText + ", ";
     }
-  
+
     handlerFactoryText += "}; })"
-  
+
     return handlerFactoryText;
   } catch(e) {
     return "({/* :( */})";
@@ -3105,14 +3105,14 @@ function makeShapeyConstructorLoop(d, b)
   var v = makeNewId(d, b);
   var v2 = uniqueVarName(d, b);
   var bvv = b.concat([v, v2]);
-  return makeShapeyConstructor(d - 1, b) + 
+  return makeShapeyConstructor(d - 1, b) +
     "/*tLoopC*/for each (let " + v + " in " + a + ") { " +
      "try{" +
        "let " + v2 + " = " + rndElt(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
        //"print(uneval(" + v2 + "));" +
        makeStatement(d - 2, bvv) +
      "}catch(e){print('TTEE ' + e); }" +
-  " }"; 
+  " }";
 }
 
 
