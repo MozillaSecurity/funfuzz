@@ -2,11 +2,16 @@
 
 import os
 import sys
+import shutil
 import platform
 from optparse import OptionParser
 
 oldcwd = os.getcwd()
 #os.chdir(SCRIPT_DIRECTORY)
+
+def removeDirIfExists(d):
+  if os.path.exists(d):
+    shutil.rmtree(d, ignore_errors=True)
 
 def runBrowser():
   parser = OptionParser()
@@ -78,6 +83,10 @@ def runBrowser():
     browserEnv["G_SLICE"] = "always-malloc"
   if automation.IS_DEBUG_BUILD and not options.valgrind and options.leakLogFile:
       browserEnv["XPCOM_MEM_LEAK_LOG"] = options.leakLogFile
+
+  # Defeat Lion's misguided attempt to stop Firefox from crashing repeatedly. (I suspect "restorecount.txt" is the most important file to remove.)
+  removeDirIfExists(os.path.expanduser("~/Library/Saved Application State/org.mozilla.nightly.savedState"))
+  removeDirIfExists(os.path.expanduser("~/Library/Saved Application State/org.mozilla.nightlydebug.savedState"))
 
   print("RUNBROWSER INFO | runbrowser.py | runApp: start.")
   print("RUNBROWSER INFO | runbrowser.py | " + url)
