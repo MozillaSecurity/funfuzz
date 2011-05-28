@@ -1244,7 +1244,6 @@ function getBytecodeOffsets(f)
     var op = lines[i].substr(8).split(" ")[0]; // used only for avoiding known bugs
     var offset = parseInt(lines[i], 10);
     if (   op != "lineno"
-        && op != "eval"                 // bug 656490
         && op != "tableswitchx"         // bug 619830
         && op != "tableswitch"          // bug 619830
         && op != "lookupswitchx"        // bug 619830
