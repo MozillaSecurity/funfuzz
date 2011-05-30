@@ -288,7 +288,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # Works-around "../editline/libeditline.a: No such file or directory" build errors by using
     # readline instead of editline.
     #cfgCmdList.append('--enable-readline')
-    if os.name != 'nt':
+    # ccache is not applicable for Windows and non-Tegra Ubuntu ARM builds.
+    if os.name != 'nt' and (os.uname()[4] != 'armv7l'):
         cfgCmdList.append('--with-ccache')
     cfgCmdList.append('--enable-type-inference')
 
