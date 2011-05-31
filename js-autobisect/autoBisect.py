@@ -409,8 +409,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     debugModeBool = True if '-d' in flagsRequired else False
 
     if typeInferBool:
-        # Or maybe we want 7e3f5b742abe ???
-        return '386e9cffdcd7' # ?????? on TM, first rev that has the -n option
+        return '228e319574f9' # ?????? on TM, first rev that has the -n option
     elif methodjitAllBool:
         # This supercedes methodjitBool, -a only works with -m
         return 'f569d49576bb' # ~62161 on TM, first rev that has the -a option
