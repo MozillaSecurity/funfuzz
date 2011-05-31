@@ -289,8 +289,9 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # readline instead of editline.
     #cfgCmdList.append('--enable-readline')
     # ccache is not applicable for Windows and non-Tegra Ubuntu ARM builds.
-    if os.name != 'nt' or (os.uname()[1] != 'tegra-ubuntu'):
-        cfgCmdList.append('--with-ccache')
+    if os.name != 'nt':  # Don't combine with the line below because Windows does not recognize os.uname()
+        if os.uname()[1] != 'tegra-ubuntu':
+            cfgCmdList.append('--with-ccache')
     cfgCmdList.append('--enable-type-inference')
 
     if os.name == 'nt':
