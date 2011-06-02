@@ -2335,9 +2335,6 @@ var littleStatementMakers =
   function(d, b) { return cat(["{", "}"]); }, // e.g. empty "if" block
   function(d, b) { return cat([""]); },
 
-  // Force garbage collection
-  function(d, b) { return "gc()"; },
-
   // Throw stuff.
   function(d, b) { return cat(["throw ", makeExpr(d, b), ";"]); },
 
@@ -2369,9 +2366,6 @@ var littleStatementMakers =
   function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
   function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
   function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); },
-
-  // Turn on gczeal in the middle of something
-  function(d, b) { return "gczeal(" + makeZealLevel() + ")" + ";"; }
 ];
 
 
@@ -2846,8 +2840,15 @@ var exprMakers =
   function(d, b) { return          rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
   function(d, b) { return "new Array(" + makeNumber(d, b) + ")"; },
 
+  // Force garbage collection (global or specific compartment)
+  function(d, b) { return "gc()"; },
+  function(d, b) { return "gc(" + makeExpr(d, b) + ")"; },
+
+  // Force garbage collection "soon"
+  function(d, b) { return "schedulegc(" + rnd(100) + ", " + makeBoolean(d, b) + ")"; },
+
   // Turn on gczeal in the middle of something
-  function(d, b) { return "gczeal(" + makeZealLevel() + ")"; },
+  function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ", " + makeBoolean(d, b) + ")"; },
 
   // Unary Math functions
   function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
