@@ -245,6 +245,7 @@ function closeAllWindows()
   dumpln("1");
 }
 
+// Would be nice to use precise GC (bug 661927)
 function mpUntilDone(callback)
 {
   function mpUntilDoneInner()
