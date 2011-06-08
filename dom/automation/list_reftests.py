@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Based on js/src/tests/manifest.py
 
 import os, re, sys
@@ -38,6 +40,9 @@ def parse(filename, add_result_callback):
                 elif part == "needs-focus":
                     pos += 1
                     pass
+                elif part.startswith("require-or("):
+                    pos += 1
+                    pass
                 elif part.startswith("HTTP"):
                     pos += 1
                     pass
@@ -62,9 +67,9 @@ def add_result(r):
         if r not in testfiles:
             assert r.startswith(sourcetree)
             assert os.path.exists(r.split("?")[0])
-            testfiles.add(r)
+            testfiles.add(r.split("?")[0])
 
-sourcetree = os.path.expanduser("~/mozilla-central") # XXX assumption alert!
+sourcetree = os.path.expanduser("~/trees/mozilla-central/") # XXX assumption alert!
 
 parse(os.path.join(sourcetree, "layout/reftests/reftest.list"), add_result)
 parse(os.path.join(sourcetree, "testing/crashtest/crashtests.list"), add_result)
