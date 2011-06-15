@@ -245,15 +245,15 @@ class FigureOutDirs:
           not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
           os.path.exists(possible_stackwalk)):
         self.stackwalk = possible_stackwalk
-    elif os.path.exists(os.path.join(browserDir, "..", "layout", "reftests")):
-      # browserDir is an objdir whose parent is a srcdir.  That works too (more convenient for local builds)
+    elif os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "_tests")):
+      # browserDir is an objdir (more convenient for local builds)
       #self.appDir = browserDir
+      self.reftestFilesDir = findSrcDir(browserDir)
       self.reftestScriptDir = os.path.join(browserDir, "_tests", "reftest")
-      self.reftestFilesDir = os.path.join(browserDir, "..")
       self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
       self.symbolsDir = os.path.join(browserDir, "dist", "crashreporter-symbols")
     else:
-      raise Exception("browserDir should be an objdir-in-srcdir or a Tinderbox build downloaded with build_downloader.py")
+      raise Exception("browserDir should be an objdir for a local build, or a Tinderbox build downloaded with build_downloader.py")
 
     #if not os.path.exists(self.appDir):
     #  raise Exception("Oops! appDir does not exist!")
@@ -268,6 +268,13 @@ class FigureOutDirs:
       self.symbolsDir = None
     if self.symbolsDir:
       self.symbolsDir = getFullPath(self.symbolsDir)
+
+def findSrcDir(objDir):
+  with file(os.path.join(objDir, "Makefile")) as f:
+    for line in f:
+      if line.startswith("topsrcdir	= "):
+        return line[12:].strip()
+  raise Exception("Didn't find a topsrcdir line in the Makefile")
 
 def rdfInit(args):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
