@@ -64,7 +64,7 @@ def createDOMFuzzProfile(profileDir, valgrindMode):
   "Sets up a profile for domfuzz."
 
   # Set preferences.
-  
+
   prefsText = """
 // Disable slow script dialogs.
 user_pref("dom.max_script_run_time", 0);
@@ -110,7 +110,7 @@ user_pref("browser.microsummary.enabled", false);
 user_pref("javascript.options.methodjit.content", false);
 user_pref("javascript.options.methodjit.chrome", false);
 """
-  
+
   prefsFile = open(os.path.join(profileDir, "user.js"), "w")
   prefsFile.write(prefsText)
   prefsFile.close()
@@ -122,7 +122,7 @@ user_pref("javascript.options.methodjit.chrome", false);
   extFile = open(os.path.join(profileExtensionsPath, "domfuzz@squarefree.com"), "w")
   extFile.write(domfuzzExtensionPath)
   extFile.close()
-  
+
   # Give the profile an empty bookmarks file, so there are no live-bookmark requests
   shutil.copyfile(os.path.join(THIS_SCRIPT_DIRECTORY, "empty-bookmarks.html"), os.path.join(profileDir, "bookmarks.html"))
 
@@ -178,7 +178,7 @@ class AmissLogHandler:
       if platform.system() == "Linux" or platform.system() in ("Microsoft", "Windows"):
         # Linux: Bug 610311? Or maybe aborts don't get caught by breakpad?
         # Windows: We might not have symbols for the file that contains abort(). Or something.
-        self.crashIsKnown = True 
+        self.crashIsKnown = True
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
@@ -278,7 +278,7 @@ def findSrcDir(objDir):
 
 def rdfInit(args):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
-  
+
   parser = OptionParser()
   parser.add_option("--valgrind",
                     action = "store_true", dest = "valgrind",
@@ -324,7 +324,7 @@ def rdfInit(args):
       "--leak-check=full" + " " +
       "--quiet"
     )
-  
+
   def deleteProfile():
     if profileDir:
       print "Deleting Firefox profile in " + profileDir
@@ -332,7 +332,7 @@ def rdfInit(args):
 
   def levelAndLines(url, logPrefix=None):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
-    
+
     leakLogFile = logPrefix + "-leaks.txt"
 
     runbrowser = subprocess.Popen(
@@ -342,10 +342,10 @@ def rdfInit(args):
                      stderr = subprocess.STDOUT,
                      env = env,
                      close_fds = close_fds)
-  
+
     alh = AmissLogHandler(knownPath)
     alh.valgrind = options.valgrind
-  
+
     statusLinePrefix = "RUNBROWSER INFO | runbrowser.py | runApp: exited with status "
     status = -9000
 
@@ -360,7 +360,7 @@ def rdfInit(args):
           status = int(line[len(statusLinePrefix):])
       else:
         break
-    
+
     lev = DOM_FINE
 
     if alh.newAssertionFailure:
@@ -431,13 +431,13 @@ def rdfInit(args):
       summaryLogFile = open(logPrefix + "-summary.txt", "w")
       summaryLogFile.writelines(alh.summaryLog)
       summaryLogFile.close()
-  
+
     print("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
-  
+
     FRClines = alh.FRClines
-  
+
     return (lev, FRClines)
-    
+
   return levelAndLines, deleteProfile, options # return a closure along with the set of options
 
 
