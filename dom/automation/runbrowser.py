@@ -31,7 +31,7 @@ def runBrowser():
                     action = "store", dest = "leakLogFile",
                     default = None)
   options, args = parser.parse_args(sys.argv)
-  
+
   reftestScriptDir = args[1]
   utilityDir = args[2]
   profileDir = args[3]
