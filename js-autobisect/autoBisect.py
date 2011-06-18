@@ -426,12 +426,14 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return 'ea59b927d99f' # ~46545 on TM, first rev that can run pymake on Windows with most recent set of instructions
     elif snowLeopardOrHigher and archNum == "64":
         return "1a44373ccaf6" # ~32547 on TM, config.guess change for snow leopard
-    elif snowLeopardOrHigher and archNum == "32":
+    elif (os.uname()[0] == 'Linux') or (snowLeopardOrHigher and archNum == "32"):
         return "db4d22859940" # ~24564 on TM, imacros compilation change
     elif valgrindSupport:
+        assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
         return "582a62c8f910" # ~21412 on TM, fixed a regexp valgrind warning that is triggered by an empty jsfunfuzz testcase
     else:
-        return "ee3599d555ea" # ~21119 on TM, switch from Makefile.ref to autoconf
+        assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
+        return "8c52a9486c8f" # ~21110 on TM, switch from Makefile.ref to autoconf
 
 def extractChangesetFromMessage(str):
     # For example, a bisect message like "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
