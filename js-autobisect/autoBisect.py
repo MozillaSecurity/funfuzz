@@ -431,7 +431,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     elif valgrindSupport:
         return "582a62c8f910" # ~21412 on TM, fixed a regexp valgrind warning that is triggered by an empty jsfunfuzz testcase
     else:
-        return "8c52a9486c8f" # ~21110 on TM, switch from Makefile.ref to autoconf
+        return "ee3599d555ea" # ~21119 on TM, switch from Makefile.ref to autoconf
 
 def extractChangesetFromMessage(str):
     # For example, a bisect message like "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
