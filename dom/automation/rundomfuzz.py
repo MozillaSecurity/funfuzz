@@ -81,6 +81,9 @@ user_pref("dom.disable_open_during_load", false);
 user_pref("extensions.enabledScopes", 3);
 user_pref("nglayout.debug.disable_xul_cache", true);
 
+// Reset things (on each startup) that might be set by fuzzing
+user_pref("javascript.options.gczeal", 0);
+
 // Disable first-run annoyances.
 user_pref("browser.tabs.warnOnClose", false);
 user_pref("browser.shell.checkDefaultBrowser", false);
