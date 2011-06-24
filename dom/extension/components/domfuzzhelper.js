@@ -1,4 +1,5 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
 
 // Based on:
 // https://bug549539.bugzilla.mozilla.org/attachment.cgi?id=429661
@@ -37,6 +38,7 @@ DOMFuzzHelper.prototype = {
 
       if (w) {
         w.goQuitApplication = quitFromContent;
+        w.fuzzPrivSetGCZeal = setGCZeal;
         w.fuzzPrivRunSoon = runSoon;
         w.fuzzPrivEnableAccessibility = enableAccessibility;
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
@@ -186,6 +188,14 @@ function printToFile(window)
   }
 }
 
+function setGCZeal(zeal)
+{
+  if (typeof(zeal) == "number") {
+    Services.prefs.setIntPref("javascript.options.gczeal", zeal)
+  }
+}
+
+
 
 /************************
  * QUIT WITH LEAK CHECK *
@@ -324,24 +334,24 @@ function canQuitApplication()
 {
   var os = Components.classes["@mozilla.org/observer-service;1"]
     .getService(Components.interfaces.nsIObserverService);
-  if (!os) 
+  if (!os)
   {
     return true;
   }
 
-  try 
+  try
  {
     var cancelQuit = Components.classes["@mozilla.org/supports-PRBool;1"]
       .createInstance(Components.interfaces.nsISupportsPRBool);
     os.notifyObservers(cancelQuit, "quit-application-requested", null);
-  
-    // Something aborted the quit process. 
+
+    // Something aborted the quit process.
     if (cancelQuit.data)
     {
       return false;
     }
   }
-  catch (ex) 
+  catch (ex)
   {
   }
   os.notifyObservers(null, "quit-application-granted", null);
