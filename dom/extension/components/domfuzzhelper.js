@@ -44,6 +44,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivGC = function() { Components.utils.forceGC(); };
         w.fuzzPrivMP = sendMemoryPressureNotification;
         w.fuzzPrivCC = cycleCollect(aSubject);
+        w.fuzzPrivFontList = fontList;
         // w.fuzzPrivZoom = setZoomLevel(aSubject); // bug 576927
         w.fuzzPrivPrintToFile = printToFile(aSubject);
         w.fuzzPrivQuitWithLeakCheck = quitWithLeakCheck;
@@ -76,6 +77,14 @@ const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelper]);
 /*****************************
  * MISC PRIVILEGED FUNCTIONS *
  *****************************/
+
+function fontList()
+{
+  return Components.classes["@mozilla.org/gfx/fontenumerator;1"]
+          .createInstance(Components.interfaces.nsIFontEnumerator)
+          .EnumerateAllFonts({})
+          .join("\n");
+}
 
 function runSoon(f)
 {
