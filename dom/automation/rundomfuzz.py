@@ -90,6 +90,7 @@ user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.EULA.override", true);
 user_pref("security.warn_submit_insecure", false);
 user_pref("security.warn_viewing_mixed", false);
+user_pref("toolkit.telemetry.prompted", true);
 
 // Turn off various things in firefox that try to update themselves,
 // to improve performance and sanity.
