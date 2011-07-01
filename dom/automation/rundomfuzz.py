@@ -262,11 +262,11 @@ class FigureOutDirs:
     #if not os.path.exists(self.appDir):
     #  raise Exception("Oops! appDir does not exist!")
     if not os.path.exists(self.reftestScriptDir):
-      raise Exception("Oops! reftestScriptDir does not exist!")
+      raise Exception("Oops! reftestScriptDir does not exist! " + self.reftestScriptDir)
     if not os.path.exists(self.reftestFilesDir):
-      raise Exception("Oops! reftestFilesDir does not exist!")
+      raise Exception("Oops! reftestFilesDir does not exist! " + self.reftestFilesDir)
     if not os.path.exists(self.utilityDir):
-      raise Exception("Oops! utilityDir does not exist!")
+      raise Exception("Oops! utilityDir does not exist!" + self.utilityDir)
 
     if not os.path.exists(self.symbolsDir):
       self.symbolsDir = None
