@@ -1430,6 +1430,12 @@ function optionalTests(f, code, wtt)
     return;
   }
 
+  if (f && typeof disassemble == "function") {
+    // It's hard to use the recursive disassembly in the comparator and trap tests,
+    // but let's at least make sure the disassembler itself doesn't crash.
+    disassemble("-r", f);
+  }
+
   if (f && spidermonkeyTrapEnabled && typeof disassemble == "function") { // Disabled due to bug 657524
     trapSanityTests(f, code, wtt);
   }
