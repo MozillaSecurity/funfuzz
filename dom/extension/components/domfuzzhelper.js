@@ -223,24 +223,28 @@ function setGCZeal(zeal)
 
 var quitting = false;
 
-function quitWithLeakCheck()
+function quitWithLeakCheck(leaveWindowsOpen)
 {
   if (quitting)
     return;
   quitting = true;
 
   runSoon(a);
-  function a() { dumpln("QA"); closeAllWindows(); runOnTimer(b); dumpln("QAA"); }
+  function a() { dumpln("QA"); if (!leaveWindowsOpen) closeAllWindows(); runOnTimer(b); dumpln("QAA"); }
   function b() { dumpln("QB"); mpUntilDone(c); }
   function c() { dumpln("QC"); bloatStats(d); }
   function d(objectCounts) {
     dumpln("QD");
 
-    dumpln("Windows: " + objectCounts["nsGlobalWindow"]);
-    dumpln("Documents: " + objectCounts["nsDocument"]);
+    var expectedWindows = 4;
+    var expectedDocuments = 4;
 
-    //if (objectCounts["nsGlobalWindow"] > 4) { dumpln("OMGLEAK"); }
-    //if (objectCounts["nsDocument"] > 4) { dumpln("OMGLEAK"); }
+    dumpln("Windows: " + objectCounts["nsGlobalWindow"] + " (expected " + expectedWindows + ")");
+    if (objectCounts["nsGlobalWindow"] > expectedWindows) { dumpln("OMGLEAK"); }
+
+    dumpln("Documents: " + objectCounts["nsDocument"] + " (expected " + expectedDocuments + ")");
+    if (objectCounts["nsDocument"] > expectedDocuments) { dumpln("OMGLEAK"); }
+
     runSoon(e);
   }
   function e() { dumpln("QE"); goQuitApplication(); }
