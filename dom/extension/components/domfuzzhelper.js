@@ -275,7 +275,6 @@ function closeAllWindows()
   dumpln("1");
 }
 
-// Would be nice to use precise GC (bug 661927)
 function mpUntilDone(callback)
 {
   function mpUntilDoneInner()
@@ -286,6 +285,8 @@ function mpUntilDone(callback)
     ++j;
     if (j > 9)
       runSoon(callback);
+    else if (j % 2 == 1 && typeof Components.utils.schedulePreciseGC == "function")
+      Components.utils.schedulePreciseGC(mpUntilDoneInner)
     else
       runSoon(mpUntilDoneInner);
   }
