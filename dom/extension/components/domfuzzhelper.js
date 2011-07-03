@@ -1,5 +1,9 @@
 "use strict";
 
+const Cu = Components.utils;
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 
@@ -9,10 +13,6 @@ Components.utils.import("resource://gre/modules/Services.jsm");
 // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/console/hudservice/HUDService.jsm#3240
 // https://developer.mozilla.org/en/how_to_build_an_xpcom_component_in_javascript
 
-
-
-const Cc = Components.classes;
-const Ci = Components.interfaces;
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
 function dumpln(s) { dump(s + "\n"); }
