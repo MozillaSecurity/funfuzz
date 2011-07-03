@@ -10,6 +10,11 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
 function dumpln(s) { dump(s + "\n"); }
 
+
+/*****************
+ * API INJECTION *
+ *****************/
+
 // Based on:
 // https://bug549539.bugzilla.mozilla.org/attachment.cgi?id=429661
 // https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_1.9.3
