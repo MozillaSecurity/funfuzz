@@ -34,7 +34,7 @@ This ensures that makeCommand (which isn't *supposed* to have side effects) gets
 
 1. Reduce the fuzzCommands array.
 
-You'll usually want to do this part using an automated reduction program such as Lithium -- it's not only automatic (letting you focus on other things for a while) but also usually faster than doing the same thing by hand.  To prepare the testcase for Lithium, make sure there are comment lines containing "DDBEGIN" and "DDEND" around the meat of the fuzzCommands array (DDEND might be missing due to a crash), and add a to goQuitApplication after the DDEND line.  It should look like this:
+You'll usually want to do this part using an automated reduction program such as Lithium -- it's not only automatic (letting you focus on other things for a while) but also usually faster than doing the same thing by hand.  To prepare the testcase for Lithium, make sure there are comment lines containing "DDBEGIN" and "DDEND" around the meat of the fuzzCommands array (DDEND might be missing due to a crash), and add a to quitApplication after the DDEND line.  It should look like this:
 
 var fuzzCommands = [
   ...
@@ -42,10 +42,10 @@ var fuzzCommands = [
   ... recorded commands ...
   // DDEND
   { origCount: 10000, rest: true },
-  { origCount: 10001, fun: goQuitApplication },
+  { origCount: 10001, fun: function() { fuzzPriv.quitApplication(); } },
 ];
 
-Now the testcase is ready for you to use Lithium: it will always cause Firefox to exit without human intervention (either by crashing or by hitting the goQuitApplication line), and Lithium just needs to find a minimal subsequence of the recorded commands that triggers the bug.
+Now the testcase is ready for you to use Lithium: it will always cause Firefox to exit without human intervention (either by crashing or by hitting the quitApplication line), and Lithium just needs to find a minimal subsequence of the recorded commands that triggers the bug.
 
 See the Lithium docs for how to use Lithium.
 

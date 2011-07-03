@@ -24,57 +24,51 @@ function dumpln(s) { dump(s + "\n"); }
 function DOMFuzzHelper() {}
 
 // Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
-function quitFromContent() { dumpln("Got goQuitApplication from page"); runSoon(goQuitApplication); }
-quitFromContent.__exposedProps__ = {"toString": "r"};
+function quitFromContent() { dumpln("Page called quitApplication."); runSoon(goQuitApplication); }
 
 DOMFuzzHelper.prototype = {
   classDescription: "DOM fuzz helper",
   classID:          Components.ID("{59a52458-13e0-4d90-9d85-a637344f29a1}"),
   contractID:       "@squarefree.com/dom-fuzz-helper;1",
 
-  QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsIObserver]),
-  _xpcom_categories: [{category: "profile-after-change", service: true }],
+  QueryInterface:   XPCOMUtils.generateQI([Ci.nsIDOMGlobalPropertyInitializer]),
 
-  observe: function(aSubject, aTopic, aData)
+  init: function(aWindow)
   {
-    if (aTopic == "profile-after-change") {
-      this.init();
-    } else if (aTopic == "content-document-global-created") {
-      var w = aSubject.wrappedJSObject;
+    // Using bind(this) to ensure web page gets a *copy* of the function (is this necessary?)
 
-      if (w) {
-        w.goQuitApplication = quitFromContent;
-        w.fuzzPrivCloseTabThenQuit = closeTabThenQuit(aSubject);
-        w.fuzzPrivSetGCZeal = setGCZeal;
-        w.fuzzPrivRunSoon = runSoon;
-        w.fuzzPrivEnableAccessibility = enableAccessibility;
-        w.fuzzPrivGC = function() { Components.utils.forceGC(); };
-        w.fuzzPrivMP = sendMemoryPressureNotification;
-        w.fuzzPrivCC = cycleCollect(aSubject);
-        w.fuzzPrivFontList = fontList;
-        // w.fuzzPrivZoom = setZoomLevel(aSubject); // bug 576927
-        w.fuzzPrivPrintToFile = printToFile(aSubject);
-        w.fuzzPrivQuitWithLeakCheck = quitWithLeakCheck;
-      } else {
-        // I don't understand why this happens.  Some chrome windows sneak in here (bug 582109)?
+    var api = {
+      quitApplication:     quitFromContent.bind(this),
+      closeTabThenQuit:    closeTabThenQuit.bind(this, aWindow),
+      quitWithLeakCheck:   quitWithLeakCheck.bind(this),
+      setGCZeal:           setGCZeal.bind(this),
+      runSoon:             runSoon.bind(this),
+      enableAccessibility: enableAccessibility.bind(this),
+      GC:                  function() { Components.utils.forceGC(); },
+      MP:                  sendMemoryPressureNotification.bind(this),
+      CC:                  cycleCollect.bind(this, aWindow),
+      fontList:            fontList.bind(this),
+      // zoom:             setZoomLevel.bind(this, aWindow), // bug 576927
+      printToFile:         printToFile.bind(this, aWindow),
+
+      __exposedProps__: {
+        quitApplication: "r",
+        closeTabThenQuit: "r",
+        quitWithLeakCheck: "r",
+        setGCZeal: "r",
+        runSoon: "r",
+        enableAccessibility: "r",
+        GC: "r",
+        MP: "r",
+        CC: "r",
+        fontList: "r",
+        // zoom: "r",
+        printToFile: "r",
       }
-    } else if (aTopic == "xpcom-shutdown") {
-      this.uninit();
-    }
-  },
+    };
 
-  init: function()
-  {
-    var obs = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-    obs.addObserver(this, "xpcom-shutdown", false);
-    obs.addObserver(this, "content-document-global-created", false);
-  },
-
-  uninit: function()
-  {
-    var obs = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-    obs.removeObserver(this, "content-document-global-created");
-  },
+    return api;
+  }
 };
 
 const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelper]);
@@ -229,6 +223,8 @@ var quitting = false;
 
 function quitWithLeakCheck(leaveWindowsOpen)
 {
+  leaveWindowsOpen = !!leaveWindowsOpen;
+
   if (quitting)
     return;
   quitting = true;

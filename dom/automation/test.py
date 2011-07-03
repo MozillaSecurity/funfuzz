@@ -84,7 +84,7 @@ def wheeLith(level, logPrefix):
     quittage = [
       "// DDEND\n",
       "fuzzCommands.push({origCount: 9999, rest: true});\n",
-      "fuzzCommands.push({origCount: 9999, fun: goQuitApplication});\n"
+      "fuzzCommands.push({origCount: 9999, fun: fuzzPriv.quitApplication});\n"
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + fuzzjs + fuzzstartjs + wafter
 
