@@ -41,7 +41,7 @@ window.addEventListener("load", domFuzzInit, false);
 
 function domFuzzInit(event)
 {
-  window.removeEventListener("load", domFuzzInit, false); 
+  window.removeEventListener("load", domFuzzInit, false);
 
   var appcontent = document.getElementById("appcontent");
   appcontent.addEventListener("load", onPageLoad, true);
@@ -76,9 +76,9 @@ function onPageLoad(event)
 
   d.append("extensions");
   d.append("domfuzz@squarefree.com");
-  
+
   var extensionLocation = readFile(d).replace(/\s*$/, "");
-  
+
   var f = Components.classes["@mozilla.org/file/local;1"]
                     .createInstance(Components.interfaces.nsILocalFile);
   f.initWithPath(extensionLocation);
@@ -87,7 +87,7 @@ function onPageLoad(event)
   dir.append("fuzzers");
   // dir now points to the directory containing fuzzer-combined.js, etc.
 
-  var scriptToInject = 
+  var scriptToInject =
     readFile(indir(dir, "fuzz.js")) + "\n"
   + readFile(indir(dir, r[1])) + "\n"
   + readFile(indir(dir, "fuzz-finish-auto.js")) + "\n"
@@ -96,7 +96,7 @@ function onPageLoad(event)
   + "setTimeout(fuzzOnload, 400);\n";
 
   var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
-  
+
   if (!insertionPoint)
     return;
 
@@ -126,24 +126,24 @@ function canQuitApplication()
 {
   var os = Components.classes["@mozilla.org/observer-service;1"]
     .getService(Components.interfaces.nsIObserverService);
-  if (!os) 
+  if (!os)
   {
     return true;
   }
 
-  try 
+  try
  {
     var cancelQuit = Components.classes["@mozilla.org/supports-PRBool;1"]
       .createInstance(Components.interfaces.nsISupportsPRBool);
     os.notifyObservers(cancelQuit, "quit-application-requested", null);
-  
-    // Something aborted the quit process. 
+
+    // Something aborted the quit process.
     if (cancelQuit.data)
     {
       return false;
     }
   }
-  catch (ex) 
+  catch (ex)
   {
   }
   os.notifyObservers(null, "quit-application-granted", null);
