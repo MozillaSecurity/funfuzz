@@ -6,16 +6,15 @@ const Ci = Components.interfaces;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
+
+function dumpln(s) { dump(s + "\n"); }
 
 // Based on:
 // https://bug549539.bugzilla.mozilla.org/attachment.cgi?id=429661
 // https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_1.9.3
 // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/console/hudservice/HUDService.jsm#3240
 // https://developer.mozilla.org/en/how_to_build_an_xpcom_component_in_javascript
-
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
-
-function dumpln(s) { dump(s + "\n"); }
 
 function DOMFuzzHelper() {}
 
