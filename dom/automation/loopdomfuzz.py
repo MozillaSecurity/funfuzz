@@ -90,9 +90,9 @@ def createReproFile(lines, logPrefix):
         'application/vnd.mozilla.xul+xml': 'xul',
         # 'text/xml' is tricky.  We'd want to know the xmlns of the root, and steal its contents but use .xml.
         # But treating it as xhtml is better than doing nothing, for now.
-        'text/xml': 'xhtml' 
+        'text/xml': 'xhtml'
     }
-    
+
     if contentType in extDict:
         extension = extDict[contentType]
     else:
@@ -106,7 +106,7 @@ def createReproFile(lines, logPrefix):
         docTypes = linesWith(lines, "FRCX Doctype: ")
         if len(docTypes) > 0:
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
-            
+
     fuzzjs = open(os.path.join(fuzzersDir, "fuzz.js")).readlines()
     fuzzstartjs = open(os.path.join(fuzzersDir, "fuzz-start.js")).readlines()
     [jbefore, jafter] = fuzzSplice(open(os.path.join(fuzzersDir, fuzzerJS)))
@@ -117,12 +117,12 @@ def createReproFile(lines, logPrefix):
       "fuzzCommands.push({origCount: 9999, fun: function() { goQuitApplication(); } });\n"
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + fuzzjs + fuzzstartjs + wafter
-    
+
     oFN = logPrefix + "-splice-orig." + extension
     rFN = logPrefix + "-splice-reduced." + extension
     writeLinesToFile(linesToWrite, oFN)
     writeLinesToFile(linesToWrite, rFN)
-    
+
     return rFN
 
 # status returns for runLithium and many_timed_runs
@@ -188,11 +188,11 @@ def getURLs(reftestFilesDir):
                 URLs.append("file:" + urllib.pathname2url(localPath))
             else:
                 URLs.append(line.rstrip())
-            
+
     for iteration in range(0, maxIterations):
         u = random.choice(URLs) + randomHash()
         fullURLs.append(u)
-    
+
     return fullURLs
 
 
@@ -246,7 +246,7 @@ def fuzzSplice(file):
 
     file.close()
     return [before, after]
-	
+
 
 def fuzzDice(file):
     '''Returns the lines of the file, except for the one line containing DICE'''
