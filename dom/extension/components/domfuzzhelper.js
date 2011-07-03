@@ -38,6 +38,7 @@ DOMFuzzHelper.prototype = {
 
       if (w) {
         w.goQuitApplication = quitFromContent;
+        w.fuzzPrivCloseTabThenQuit = closeTabThenQuit(aSubject);
         w.fuzzPrivSetGCZeal = setGCZeal;
         w.fuzzPrivRunSoon = runSoon;
         w.fuzzPrivEnableAccessibility = enableAccessibility;
@@ -77,6 +78,14 @@ const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelper]);
 /*****************************
  * MISC PRIVILEGED FUNCTIONS *
  *****************************/
+
+function closeTabThenQuit(w)
+{
+  return function() {
+    runOnTimer(goQuitApplication);
+    w.close();
+  }
+}
 
 function fontList()
 {
