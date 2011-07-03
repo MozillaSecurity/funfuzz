@@ -1,3 +1,5 @@
+"use strict";
+
 (function() { // just for scoping
 
 function dumpln(s) { dump(s + "\n"); }

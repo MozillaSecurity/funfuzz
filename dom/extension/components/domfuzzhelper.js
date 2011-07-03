@@ -1,3 +1,5 @@
+"use strict";
+
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 
@@ -326,7 +328,7 @@ function bloatStats(callback)
         if (SET_QUOTA) {
           dumpln("'" + a[1] + "': " + a[2] + ",");
         } else if (USE_QUOTA) {
-          quotaA = QUOTA[a[1]] || 0;
+          var quotaA = QUOTA[a[1]] || 0;
           if (a[2] > quotaA) { dumpln("Leak? Too many " + a[1] + " (" + a[2] + " > " + quotaA + ")"); }
         }
         objectCounts[a[1]] = a[2];
