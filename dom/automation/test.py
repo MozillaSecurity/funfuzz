@@ -19,7 +19,7 @@ yummy = (urlListFilename == "urls-random")
 
 
 def many_timed_runs(fullURLs):
-    
+
     for iteration in range(0, maxIterations):
 
         if yummy:
@@ -61,12 +61,12 @@ def wheeLith(level, logPrefix):
         'image/svg+xml': 'svg',
         'application/vnd.mozilla.xul+xml': 'xul'
     }
-    
+
     if contentType not in extDict:
         # In particular, 'text/xml' is tricky... we'd want to know the xmlns of the root, and steal its contents but use .xml, perhaps
         print "af_timed_run does not know what to do with content type " + repr(contentType) + " :("
         return
-        
+
     extension = extDict[contentType]
 
     [wbefore, wafter] = fuzzDice(open(os.path.join(emptiesDir, "a." + extension)))
@@ -76,7 +76,7 @@ def wheeLith(level, logPrefix):
         docTypes = linesWith(open(logPrefix + "-out"), "XA Doctype: ")
         if len(docTypes) > 0:
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
-            
+
     fuzzjs = open(os.path.join(fuzzersDir, "fuzz.js")).readlines()
     fuzzstartjs = open(os.path.join(fuzzersDir, "fuzz-start.js")).readlines()
     [jbefore, jafter] = fuzzSplice(fuzzRemoveIDLInfo(open(os.path.join(fuzzersDir, "fuzzer-combined-smart-rjs.js"))))
@@ -87,12 +87,12 @@ def wheeLith(level, logPrefix):
       "fuzzCommands.push({origCount: 9999, fun: goQuitApplication});\n"
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + fuzzjs + fuzzstartjs + wafter
-    
+
     oFN = logPrefix + "-splice-orig." + extension
     rFN = logPrefix + "-splice-reduced." + extension
     writeLinesToFile(linesToWrite, oFN)
     writeLinesToFile(linesToWrite, rFN)
-    
+
     # Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level
     lithArgs = [domunhappypy, str(level), str(timeout), knownPath] + browser + [rFN]
     print "af_timed_run is running Lithium..."
@@ -105,21 +105,21 @@ def wheeLith(level, logPrefix):
 def getURLs():
     URLs = []
     fullURLs = []
-    
+
     urlfile = open(urlListFilename, "r")
     for line in urlfile:
         if (not line.startswith("#") and len(line) > 2):
             URLs.append(line.rstrip())
-            
+
     plan = file(tempDir + os.sep + "wplan", 'w')
 
     for iteration in range(0, maxIterations):
         u = random.choice(URLs) + randomHash()
         fullURLs.append(u)
         plan.write(tempDir + os.sep + "w" + str(iteration) + " = " + u + "\n")
-    
+
     plan.close()
-    
+
     return fullURLs
 
 
@@ -157,8 +157,8 @@ def fuzzRemoveIDLInfo(file):
         code.append(line)
     file.close()
     return code
-	
-	
+
+
 def fuzzSplice(file):
     '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
     before = []
