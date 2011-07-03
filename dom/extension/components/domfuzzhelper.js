@@ -52,7 +52,7 @@ DOMFuzzHelper.prototype = {
         w.fuzzPrivPrintToFile = printToFile(aSubject);
         w.fuzzPrivQuitWithLeakCheck = quitWithLeakCheck;
       } else {
-        // I don't understand why this happens.  Some chrome windows sneak in here?
+        // I don't understand why this happens.  Some chrome windows sneak in here (bug 582109)?
       }
     } else if (aTopic == "xpcom-shutdown") {
       this.uninit();
