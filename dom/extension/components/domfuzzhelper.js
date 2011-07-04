@@ -239,8 +239,8 @@ function quitWithLeakCheck(leaveWindowsOpen)
     // Mac normally has extra documents (due to the hidden window?)
     var isMac = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS == "Darwin";
 
-    var expectedWindows = 4;
-    var expectedDocuments = 4 + 4*isMac;
+    var expectedWindows = 4 + 6*leaveWindowsOpen;
+    var expectedDocuments = 4 + 4*isMac + 24*leaveWindowsOpen;
 
     dumpln("Windows: " + objectCounts["nsGlobalWindow"] + " (expected " + expectedWindows + ")");
     if (objectCounts["nsGlobalWindow"] > expectedWindows) { dumpln("OMGLEAK"); }
