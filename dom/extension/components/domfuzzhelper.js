@@ -39,17 +39,17 @@ DOMFuzzHelper.prototype = {
 
     var api = {
       quitApplication:     quitFromContent.bind(this),
-      closeTabThenQuit:    closeTabThenQuit.bind(this, aWindow),
+      closeTabThenQuit:    closeTabThenQuit(aWindow),
       quitWithLeakCheck:   quitWithLeakCheck.bind(this),
       setGCZeal:           setGCZeal.bind(this),
       runSoon:             runSoon.bind(this),
       enableAccessibility: enableAccessibility.bind(this),
       GC:                  function() { Components.utils.forceGC(); },
       MP:                  sendMemoryPressureNotification.bind(this),
-      CC:                  cycleCollect.bind(this, aWindow),
+      CC:                  cycleCollect(aWindow),
       fontList:            fontList.bind(this),
-      // zoom:             setZoomLevel.bind(this, aWindow), // bug 576927
-      printToFile:         printToFile.bind(this, aWindow),
+      // zoom:             setZoomLevel(aWindow), // bug 576927
+      printToFile:         printToFile(aWindow),
 
       __exposedProps__: {
         quitApplication: "r",
