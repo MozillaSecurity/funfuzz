@@ -204,8 +204,8 @@ class AmissLogHandler:
       self.sawProcessedCrash = True
       if platform.system() == "Linux":
         self.crashIsKnown = True # Bug 610311
-    if (msg == "** Unknown exception behavior" or msg.startswith("Crash address: 0xffffffffbf7ff")) and platform.system() == "Darwin":
-      # Bug 614172 is a crash that causes a stack overflow.
+    if platform.system() == "Darwin" and (msg == "** Unknown exception behavior" or msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
+      # There are several [TMR] bugs listed in crashes.txt
       # Bug 507876 is a breakpad issue that means stack overflows don't give me stack traces on Mac
       # (and Linux, but differently).
       # The combination means we lose.
