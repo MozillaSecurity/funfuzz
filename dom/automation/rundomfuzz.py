@@ -167,8 +167,9 @@ class AmissLogHandler:
       self.expectedToHang = False
     if msg == "Not expected to leak":
       self.expectedToLeak = False
-    if msg == "OMGLEAK":
+    if msg.startswith("Leaked until "):
       self.sawOMGLEAK = True
+      self.printAndLog("@@@ " + msg)
     if msg.startswith("FAILURE:"):
       self.fuzzerComplained = True
       self.printAndLog("@@@ " + msg)
@@ -419,7 +420,6 @@ def rdfInit(args):
       lev = max(lev, DOM_NEW_LEAK)
     else:
       if alh.sawOMGLEAK and not alh.expectedToLeak:
-        alh.printAndLog("@@@ Detected a leak-until-shutdown")
         lev = max(lev, DOM_NEW_LEAK)
       if leakLogFile:
         # Remove the main leak log file, plus any plugin-process leak log files

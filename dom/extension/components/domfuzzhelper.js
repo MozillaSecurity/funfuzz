@@ -225,6 +225,9 @@ function quitWithLeakCheck(leaveWindowsOpen)
 {
   leaveWindowsOpen = !!leaveWindowsOpen;
 
+  // Magic string that rundomfuzz.py looks for
+  var messagePrefix = "Leaked until " + (leaveWindowsOpen ? "tab close" : "shutdown");
+
   if (quitting)
     return;
   quitting = true;
@@ -239,14 +242,23 @@ function quitWithLeakCheck(leaveWindowsOpen)
     // Mac normally has extra documents (due to the hidden window?)
     var isMac = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS == "Darwin";
 
-    var expectedWindows = 4 + 6*leaveWindowsOpen;
-    var expectedDocuments = 4 + 4*isMac + 24*leaveWindowsOpen;
+    var expected = {
+      'nsGlobalWindow':          4 + 6*leaveWindowsOpen,
+      'nsDocument':              4 + 4*isMac + 24*leaveWindowsOpen,
+      'nsDocShell':              5,
+      'BackstagePass':           1,
+      'nsGenericElement':        1927,
+      'nsHTMLDivElement':        4,
+      'xpc::CompartmentPrivate': 3,
+    }
 
-    dumpln("Windows: " + objectCounts["nsGlobalWindow"] + " (expected " + expectedWindows + ")");
-    if (objectCounts["nsGlobalWindow"] > expectedWindows) { dumpln("OMGLEAK"); }
-
-    dumpln("Documents: " + objectCounts["nsDocument"] + " (expected " + expectedDocuments + ")");
-    if (objectCounts["nsDocument"] > expectedDocuments) { dumpln("OMGLEAK"); }
+    for (var p in expected) {
+      if (objectCounts[p] > expected[p]) {
+        dumpln(messagePrefix + ": " + p + "(" + objectCounts[p] + " > " + expected[p] + ")");
+      } else if (objectCounts[p] < expected[p]) {
+        dumpln("That's odd"  + ": " + p + "(" + objectCounts[p] + " < " + expected[p] + ")");
+      }
+    }
 
     runSoon(e);
   }
