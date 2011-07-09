@@ -25,6 +25,7 @@ function DOMFuzzHelper() {}
 
 // Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
 function quitFromContent() { dumpln("Page called quitApplication."); runSoon(goQuitApplication); }
+function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); runOnTimer(goQuitApplication); }
 
 DOMFuzzHelper.prototype = {
   classDescription: "DOM fuzz helper",
@@ -39,6 +40,7 @@ DOMFuzzHelper.prototype = {
 
     var api = {
       quitApplication:     quitFromContent.bind(this),
+      quitApplicationSoon: quitApplicationSoon.bind(this),
       closeTabThenQuit:    closeTabThenQuit(aWindow),
       quitWithLeakCheck:   quitWithLeakCheck.bind(this),
       setGCZeal:           setGCZeal.bind(this),
@@ -53,6 +55,7 @@ DOMFuzzHelper.prototype = {
 
       __exposedProps__: {
         quitApplication: "r",
+        quitApplicationSoon: "r",
         closeTabThenQuit: "r",
         quitWithLeakCheck: "r",
         setGCZeal: "r",
