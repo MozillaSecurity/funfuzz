@@ -38,7 +38,12 @@
 This file contains functions for startjsfunfuzz.py.
 '''
 
-import os, platform, shutil, subprocess, sys, shlex
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import shlex
 
 from multiprocessing import cpu_count
 

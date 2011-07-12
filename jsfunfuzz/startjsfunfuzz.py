@@ -71,7 +71,13 @@
 #   by porting remaining stuff to os.path.join. Also reduce number of
 #   calls to `hg identify`.
 
-import os, platform, shutil, subprocess, sys, time
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import time
+
 from fnStartjsfunfuzz import *
 
 path0 = os.path.dirname(sys.argv[0])
