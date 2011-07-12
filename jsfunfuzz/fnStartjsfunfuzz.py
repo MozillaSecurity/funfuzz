@@ -44,6 +44,7 @@ import shutil
 import subprocess
 import sys
 import shlex
+import time
 
 from multiprocessing import cpu_count
 
@@ -488,6 +489,14 @@ def testDbgOrOptGivenACompileType(jsShellName, compileType):
         print 'exitCode is: ' + str(exitCode)
         print
         raise Exception('The compiled binary is not an optimized shell.')
+
+def timeShellFunction(command, cwd=os.getcwdu()):
+    print 'Running `%s` now..' % command
+    startTime = time.time()
+    retVal = subprocess.call([command], shell=True, cwd=cwd)
+    endTime = time.time()
+    print '`' + command + '` took %.3f seconds.\n' % (endTime - startTime)
+    return retVal
 
 if __name__ == '__main__':
     pass
