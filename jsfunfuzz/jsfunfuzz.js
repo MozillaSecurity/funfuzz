@@ -1430,9 +1430,10 @@ function optionalTests(f, code, wtt)
     return;
   }
 
-  if (f && typeof disassemble == "function") {
+  if (0 && f && typeof disassemble == "function") {
     // It's hard to use the recursive disassembly in the comparator and trap tests,
     // but let's at least make sure the disassembler itself doesn't crash.
+    // (Disabled: relatively unimportant, a little slow)
     disassemble("-r", f);
   }
 
