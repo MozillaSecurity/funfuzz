@@ -180,9 +180,8 @@ class AmissLogHandler:
         self.expectedToHang = True
     if msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1:
       self.sawFatalAssertion = True
-      if platform.system() == "Linux" or platform.system() in ("Microsoft", "Windows"):
-        # Linux: Bug 610311? Or maybe aborts don't get caught by breakpad?
-        # Windows: We might not have symbols for the file that contains abort(). Or something.
+      if platform.system() in ("Microsoft", "Windows"):
+        # On Windows, we might not have symbols for the file that contains abort(). Or something.
         self.crashIsKnown = True
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
@@ -203,8 +202,6 @@ class AmissLogHandler:
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
-      if platform.system() == "Linux":
-        self.crashIsKnown = True # Bug 610311
     if platform.system() == "Darwin" and (msg == "** Unknown exception behavior" or msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
       # There are several [TMR] bugs listed in crashes.txt
       # Bug 507876 is a breakpad issue that means stack overflows don't give me stack traces on Mac
