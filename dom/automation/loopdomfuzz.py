@@ -122,6 +122,7 @@ def createReproFile(lines, logPrefix):
     rFN = logPrefix + "-splice-reduced." + extension
     writeLinesToFile(linesToWrite, oFN)
     writeLinesToFile(linesToWrite, rFN)
+    subprocess.call(["gzip", oFN])
 
     return rFN
 
