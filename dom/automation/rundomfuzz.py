@@ -401,7 +401,7 @@ def rdfInit(args):
         crashlog = grabCrashLog(appName, alh.pid, None, signum)
         if crashlog:
           print open(crashlog).read()
-          if detect_interesting_crashes.amiss(knownPath, crashlog, False, signame):
+          if detect_interesting_crashes.amiss(knownPath, crashlog, True, signame):
             alh.printAndLog("@@@ New crash (from mac crash reporter)")
             if logPrefix:
               shutil.copyfile(crashlog, logPrefix + "-crash.txt")
