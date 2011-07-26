@@ -401,7 +401,10 @@ def rdfInit(args):
         crashlog = grabCrashLog(appName, alh.pid, None, signum)
         if crashlog:
           print open(crashlog).read()
-          if detect_interesting_crashes.amiss(knownPath, crashlog, True, signame):
+          if not file_contains(open(crashlog), " main + "):
+            # e.g. this build only has breakpad symbols, not native symbols
+            alh.printAndLog("%%% Busted crash report (from mac crash reporter)")
+          elif detect_interesting_crashes.amiss(knownPath, crashlog, True, signame):
             alh.printAndLog("@@@ New crash (from mac crash reporter)")
             if logPrefix:
               shutil.copyfile(crashlog, logPrefix + "-crash.txt")
@@ -503,6 +506,11 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
                 #return open(macCrashLogFilename).read()
     return None
 
+def file_contains(f, s):
+   for line in f:
+       if line.find(s) != -1:
+           return True
+   return False
 
 
 # For use by Lithium
