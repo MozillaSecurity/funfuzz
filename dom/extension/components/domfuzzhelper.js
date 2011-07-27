@@ -134,7 +134,7 @@ function cycleCollect(window)
   return function cycleCollectInner() {
     window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
           .getInterface(Components.interfaces.nsIDOMWindowUtils)
-          .garbageCollect();
+          .cycleCollect();
   }
 }
 
