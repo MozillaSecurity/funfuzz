@@ -167,7 +167,7 @@ function printToFile(window)
 
   // Linux: works for PDF and PS.
   // Windows: works for PDF at least. Text may be invisible (bug 653336).
-  // Mac: tested, printToFile is ignored and it goes to a printer!
+  // Mac: tested, printToFile is ignored and it goes to a printer! (bug 675709)
   var xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
                              .getService(Components.interfaces.nsIXULRuntime);
   dumpln("xulRuntime.OS: " + xulRuntime.OS);
