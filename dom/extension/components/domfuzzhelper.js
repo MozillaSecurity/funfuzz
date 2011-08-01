@@ -52,6 +52,7 @@ DOMFuzzHelper.prototype = {
       fontList:            fontList.bind(this),
       // zoom:             setZoomLevel(aWindow), // bug 576927
       printToFile:         printToFile(aWindow),
+      openAboutMemory:     openNewTab.bind(this, aWindow, "about:memory"),
 
       __exposedProps__: {
         quitApplication: "r",
@@ -67,6 +68,7 @@ DOMFuzzHelper.prototype = {
         fontList: "r",
         // zoom: "r",
         printToFile: "r",
+        openAboutMemory: "r",
       }
     };
 
@@ -81,6 +83,11 @@ const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelper]);
 /*****************************
  * MISC PRIVILEGED FUNCTIONS *
  *****************************/
+
+function openNewTab(w, url)
+{
+  w.open(url);
+}
 
 function closeTabThenQuit(w)
 {
