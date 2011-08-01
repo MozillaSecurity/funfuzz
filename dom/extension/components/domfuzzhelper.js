@@ -156,12 +156,15 @@ function setZoomLevel(window)
 
 function printToFile(window)
 {
-  // Linux: tested, works for PDF and PS, oddly asynchronous.
+  // Oddly asynchronous, at least on Linux.
+
+  // Linux: works for PDF and PS.
+  // Windows: works for PDF at least. Text may be invisible (bug 653336).
   // Mac: tested, printToFile is ignored and it goes to a printer!
-  // Windows: untested.
   var xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
                              .getService(Components.interfaces.nsIXULRuntime);
-  if (xulRuntime.OS != "Linux") return function() { };
+  dumpln("xulRuntime.OS: " + xulRuntime.OS);
+  if (xulRuntime.OS != "Linux" && xulRuntime.OS != "WINNT") return function() { };
 
   var fired = false;
 
@@ -171,7 +174,7 @@ function printToFile(window)
         if (fired) { return false; }
         fired = true;
 
-        // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pav and bho
+        // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pavlov (Stuart Parmenter) and bho
 
         var webBrowserPrint = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
         .getInterface(Components.interfaces.nsIWebBrowserPrint);
@@ -186,7 +189,7 @@ function printToFile(window)
         var file = Components.classes["@mozilla.org/file/directory_service;1"].
                               getService(Components.interfaces.nsIProperties).
                               get("ProfD", Components.interfaces.nsIFile);
-        file.append(ps ? "a.ps" : "a.pdf");
+        file.append(ps ? "fuzzout.ps" : "fuzzout.pdf");
         dumpln("Printing to: " + file.path);
 
         printSettings.printToFile = true;
