@@ -299,6 +299,9 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
         if os.uname()[1] == 'tegra-ubuntu':
             cfgCmdList.append('--with-ccache')
     cfgCmdList.append('--enable-type-inference')
+    
+    if os.uname()[1] == 'tegra-ubuntu':
+        cfgCmdList.append('--with-arch=armv7-a')
 
     if os.name == 'nt':
         # Only tested to work for pymake.
