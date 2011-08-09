@@ -271,7 +271,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("++") == -1                  // bug 622265
        && code.indexOf("--") == -1                  // bug 622265
        && code.indexOf("instanceof") == -1          // bug 617949
-       && !(code.match(/\S=/))                      // bug 620746 (+= etc)
+       && !(code.match(/\S=/))                      // bug 622271 (+= etc)
 
   };
 }
