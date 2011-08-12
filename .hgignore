@@ -11,3 +11,6 @@ refdyn.log
 autoconf.js
 wlog
 wtmp
+LangFuzz/LangFuzz/target
+LangFuzz/LangDDMin/target
+LangFuzz/target
