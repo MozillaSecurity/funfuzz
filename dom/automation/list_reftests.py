@@ -50,7 +50,7 @@ def parse(filename, add_result_callback):
                     pos += 1
                     while pos < len(parts):
                         part = parts[pos]
-                        if not part.startswith("data:") and not part.startswith("javascript:") and not part.startswith("about:"):
+                        if not part.startswith("data:") and not part.startswith("javascript:") and not part.startswith("about:") and not part.startswith("view-source:"):
                             add_result_callback(os.path.join(reldir, parts[pos]))
                         pos += 1
                     break
@@ -66,7 +66,8 @@ def add_result(r):
     if not ("pngsuite" in r or "351236" in r or "432561" in r or "wrapper.html" in r or "xul" in r or "xbl" in r or r.endswith(".sjs")):
         if r not in testfiles:
             assert r.startswith(sourcetree)
-            assert os.path.exists(r.split("?")[0])
+            if not os.path.exists(r.split("?")[0]):
+                raise Exception("Missing test: " + r.split("?")[0])
             testfiles.add(r.split("?")[0])
 
 sourcetree = os.path.expanduser("~/trees/mozilla-central/") # XXX assumption alert!
