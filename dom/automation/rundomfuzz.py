@@ -92,7 +92,7 @@ user_pref("security.warn_submit_insecure", false);
 user_pref("security.warn_viewing_mixed", false);
 user_pref("toolkit.telemetry.prompted", true);
 
-// Turn off various things in firefox that try to update themselves,
+// Turn off various things in firefox that try to contact servers,
 // to improve performance and sanity.
 // http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
 user_pref("browser.safebrowsing.enabled", false);
@@ -106,6 +106,7 @@ user_pref("extensions.showMismatchUI", false);
 user_pref("extensions.testpilot.runStudies", false);
 user_pref("lightweightThemes.update.enabled", false);
 user_pref("browser.microsummary.enabled", false);
+user_pref("toolkit.telemetry.enabled", false);
 """
 
   if valgrindMode:
