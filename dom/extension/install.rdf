@@ -8,13 +8,13 @@
     <em:version>1.0</em:version>
     <em:type>2</em:type>
 
-    <!-- Target Application this extension can install into, 
+    <!-- Target Application this extension can install into,
          with minimum and maximum supported versions. -->
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>4.0b2pre</em:minVersion>
-        <em:maxVersion>9</em:maxVersion>
+        <em:maxVersion>20</em:maxVersion>
       </Description>
     </em:targetApplication>
 
@@ -22,5 +22,5 @@
     <em:name>DOM Fuzzer</em:name>
     <em:description>For testing Gecko</em:description>
     <em:creator>Jesse Ruderman</em:creator>
-  </Description>      
+  </Description>
 </RDF>
