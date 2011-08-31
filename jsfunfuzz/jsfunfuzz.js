@@ -260,6 +260,10 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Date") == -1                // time marches on
     ,
 
+    expectConsistentOutputAcrossIter: true
+       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
+    ,
+
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("Error") == -1               // avoid bug 525518
        && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
@@ -301,6 +305,7 @@ function whatToTestJavaScriptCore(code)
     checkUneval: false, // JavaScriptCore does not support |uneval|
 
     expectConsistentOutput: false,
+    expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
 
   };
@@ -318,6 +323,7 @@ function whatToTestGeneric(code)
     allowIter: (typeof Iterator == "function"),
     checkUneval: haveRealUneval,
     expectConsistentOutput: false,
+    expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
   };
 }
@@ -586,6 +592,10 @@ function tryItOut(code)
     tryEnsureSanity();
   }
 
+  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
+    nestingConsistencyTest(code);
+  }
+
   // "checkRecompiling && checkForMismatch" here to catch returned functions
   if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
     testUneval(rv);
@@ -595,6 +605,31 @@ function tryItOut(code)
     dumpln("Done trying out that function!");
 
   dumpln("");
+}
+
+function nestingConsistencyTest(code)
+{
+  // Inspired by 676343
+  // This only makes sense if |code| is an expression (or an expression followed by a semicolon). Oh well.
+  function nestExpr(e) { return "(function() { return " + code + "; })()"; }
+  var codeNestedOnce = nestExpr(code);
+  var codeNestedDeep = code;
+  var depth = rnd(5) + 14; // 16 might be special
+  for (var i = 0; i < depth; ++i) {
+    codeNestedDeep = nestExpr(codeNestedDeep);
+  }
+
+  var resultO = sandboxResult(codeNestedOnce);
+  var resultD = sandboxResult(codeNestedDeep);
+
+  if (resultO != "" && resultO != "undefined" && resultO != "use strict")
+    print("NestTest: " + resultO);
+
+  if (resultO != resultD) {
+    print("resultO: " + resultO);
+    print("resultD: " + resultD);
+    printAndStop("NestTest mismatch");
+  }
 }
 
 // Hack to make line numbers be consistent, to make spidermonkey
@@ -1325,7 +1360,7 @@ function sandboxResult(code)
   } catch(e) {
     result = "Error: " + errorToString(e);
   }
-  print("resultStr: " + resultStr);
+  //print("resultStr: " + resultStr);
   return resultStr;
 }
 
