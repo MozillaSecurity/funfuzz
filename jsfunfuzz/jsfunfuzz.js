@@ -4184,7 +4184,7 @@ throw 1;
  **************************************/
 
 // 1. grep tryIt LOGFILE | grep -v "function tryIt" | pbcopy
-// 2. Paste the result between "ddbegin" and "ddend", replacing "start();"
+// 2. Paste the result between "ddbegin" and "ddend", replacing "start(this);"
 // 3. Run Lithium to remove unnecessary lines between "ddbegin" and "ddend".
 // SPLICE DDBEGIN
 start(this);
