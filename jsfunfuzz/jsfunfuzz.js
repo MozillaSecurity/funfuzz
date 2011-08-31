@@ -595,6 +595,7 @@ function tryItOut(code)
 
   if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
     nestingConsistencyTest(code);
+    compartmentConsistencyTest(code);
   }
 
   // "checkRecompiling && checkForMismatch" here to catch returned functions
@@ -610,7 +611,7 @@ function tryItOut(code)
 
 function nestingConsistencyTest(code)
 {
-  // Inspired by 676343
+  // Inspired by bug 676343
   // This only makes sense if |code| is an expression (or an expression followed by a semicolon). Oh well.
   function nestExpr(e) { return "(function() { return " + code + "; })()"; }
   var codeNestedOnce = nestExpr(code);
@@ -620,16 +621,34 @@ function nestingConsistencyTest(code)
     codeNestedDeep = nestExpr(codeNestedDeep);
   }
 
-  var resultO = sandboxResult(codeNestedOnce);
-  var resultD = sandboxResult(codeNestedDeep);
+  var resultO = sandboxResult(codeNestedOnce, "same-compartment");
+  var resultD = sandboxResult(codeNestedDeep, "same-compartment");
 
-  if (resultO != "" && resultO != "undefined" && resultO != "use strict")
-    print("NestTest: " + resultO);
+  //if (resultO != "" && resultO != "undefined" && resultO != "use strict")
+  //  print("NestTest: " + resultO);
 
   if (resultO != resultD) {
     print("resultO: " + resultO);
     print("resultD: " + resultD);
     printAndStop("NestTest mismatch");
+  }
+}
+
+function compartmentConsistencyTest(code)
+{
+  if ((code.indexOf("/") != -1 && code.indexOf(">") != -1) || code.indexOf("XML") != -1) {
+    return; // bug 683361: XML (see comment 1)
+  }
+
+  // Inspired by bug 683361
+  // Vary both the top-level compartment type and internal compartment type.
+  var resultS = sandboxResult(code.replace(/new-compartment/g, "same-compartment"), "same-compartment");
+  var resultN = sandboxResult(code.replace(/same-compartment/g, "new-compartment"), "new-compartment");
+
+  if (resultS != resultN) {
+    print("resultO: " + resultS);
+    print("resultD: " + resultN);
+    printAndStop("CompartmentTest mismatch");
   }
 }
 
@@ -1308,11 +1327,11 @@ function trapCorrectnessTest(code)
   var prefix = getBytecodeOffsets + printStealer + "function fff() { " + code + " }; ";
   function printAccumulator() { }
 
-  var r0 = sandboxResult(prefix + "(uneval(getBytecodeOffsets(fff)));");
+  var r0 = sandboxResult(prefix + "(uneval(getBytecodeOffsets(fff)));", "new-compartment");
   dumpln("offsets: " + r0);
   var offsets = eval(r0);
 
-  var r1 = sandboxResult(prefix + "fff(); printed;");
+  var r1 = sandboxResult(prefix + "fff(); printed;", "new-compartment");
   dumpln("Printed: " + r1);
 
   for (var i = 0; i < offsets.length; ++i) {
@@ -1322,7 +1341,7 @@ function trapCorrectnessTest(code)
 
     var trapStr = "trap(fff, " + offset + ", ''); ";
     print(trapStr);
-    var r2 = sandboxResult(prefix + trapStr + " fff(); printed;");
+    var r2 = sandboxResult(prefix + trapStr + " fff(); printed;", "new-compartment");
 
     if (r1 != r2) {
       if (r1.indexOf("TypeError") != -1 && r2.indexOf("TypeError") != -1) {
@@ -1343,7 +1362,7 @@ function trapCorrectnessTest(code)
   //print("Happy: " + f + r1);
 }
 
-function sandboxResult(code)
+function sandboxResult(code, globalType)
 {
   // Use sandbox to isolate side-effects.
   var result;
@@ -1351,7 +1370,7 @@ function sandboxResult(code)
   try {
     // Using newGlobal("new-compartment"), rather than evalcx(''), to get
     // shell functions such as "trap". (see bug 647412 comment 2)
-    var sandbox = newGlobal("new-compartment");
+    var sandbox = newGlobal(globalType);
 
     result = evalcx(code, sandbox);
     if (typeof result != "object") {
@@ -2638,7 +2657,7 @@ function makeNamespacePrefix(d, b)
 // An incomplete list of builtin methods for various data types.
 var objectMethods = [
   // String
-  "fromCharCode",
+  "fromCharCode", "replace",
 
   // Strings
   "charAt", "charCodeAt", "concat", "indexOf", "lastIndexOf", "localeCompare",
@@ -2930,6 +2949,12 @@ if (typeof evalcx == "function") {
     // Test evalcx: sandbox use
     function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
     function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
+
+    // Test evalcx: immediate new-global use (good for compartmentConsistencyTest)
+    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", newGlobal('same-compartment'))"; },
+    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", newGlobal('same-compartment'))"; },
+    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", newGlobal('new-compartment'))"; },
+    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", newGlobal('new-compartment'))"; },
   ]);
 }
 
