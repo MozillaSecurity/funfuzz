@@ -442,9 +442,9 @@ def main():
         jsCompareJIT += '--repo=' + repoDict['mi'] + ' '
 
     if methodJitSwitch:
-        jsMethodJit = ' -m '
+        jsMethodJit = ' -m -n '
         if methodJitAllSwitch:
-            jsMethodJit = ' -m -a '
+            jsMethodJit = ' -m -n -a '
     else:
         jsMethodJit = ' '
 
@@ -455,8 +455,9 @@ def main():
         jsMethodJit += '-d '
     if deepFreezeGlobalObjPrototypeSwitch:
         jsMethodJit += '-P '
-    if branchType == 'jm':
-        jsMethodJit += '-n '  # For type inference
+    # TI has landed on m-c!
+    #if branchType == 'jm':
+    #    jsMethodJit += '-n '  # For type inference
 
 
     # Commands to simulate bash's `tee`.
