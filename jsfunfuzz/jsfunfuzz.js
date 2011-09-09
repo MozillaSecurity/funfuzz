@@ -190,7 +190,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
       && !( code.match( /\#.*=/ ))                 // avoid bug 568734
-      && !( code.match( /yield/ ))                 // avoid bug 683738
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
