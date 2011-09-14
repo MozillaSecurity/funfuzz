@@ -111,7 +111,7 @@ def sendEmail(subject, body):
   msg['From'] = fromAddr
   msg['To'] = toAddr
 
-  server = smtplib.SMTP('localhost')
+  server = smtplib.SMTP('mail.build.mozilla.org')
   server.sendmail(fromAddr, [toAddr], msg.as_string())
   server.quit()
 
@@ -235,7 +235,7 @@ if __name__ == "__main__":
       if not options.reuse_build and os.path.exists("build"):
         shutil.rmtree("build")
 
-      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and (platform.system() not in ("Microsoft", "Windows")):
+      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and (platform.system():
         print "Sending email..."
         sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType() + "/" + newjobname + "/")
         print "Email sent!"
