@@ -132,7 +132,7 @@ if __name__ == "__main__":
   parser.add_option("--retest-all", dest="retestAll", action="store_true",
       help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
   options, args = parser.parse_args()
-  
+
   if options.retestAll:
     options.reuse_build = True
 
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             downloadLatestBuild()
         lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
-    
+
       else:
         print "Fuzz time!"
         if options.reuse_build and os.path.exists("build"):
@@ -199,7 +199,7 @@ if __name__ == "__main__":
           os.rename("wtmp1", oldjobname)
           job = oldjobname + localSep
           lithlog = job + "lith1-out"
-  
+
     if lithlog:
       statePostfix = ({
         loopdomfuzz.NO_REPRO_AT_ALL: "_no_repro",
@@ -210,14 +210,14 @@ if __name__ == "__main__":
         loopdomfuzz.LITH_PLEASE_CONTINUE: "_needsreduction",
         loopdomfuzz.LITH_BUSTED: "_sad"
       })[ldfResult]
-  
+
       if ldfResult == loopdomfuzz.LITH_PLEASE_CONTINUE:
         writeTinyFile(job + "lithium-command.txt", lithDetails)
-        
+
       if ldfResult == loopdomfuzz.LITH_FINISHED:
         # lithDetails should be a string like "11 lines"
         statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
-  
+
       #print "oldjobname: " + oldjobname
       newjobname = oldjobname + statePostfix
       print "Uploading as: " + newjobname
