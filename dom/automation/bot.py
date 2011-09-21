@@ -235,7 +235,7 @@ if __name__ == "__main__":
       if not options.reuse_build and os.path.exists("build"):
         shutil.rmtree("build")
 
-      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED and (platform.system():
+      if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
         print "Sending email..."
         sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType() + "/" + newjobname + "/")
         print "Email sent!"
