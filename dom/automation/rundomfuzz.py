@@ -181,8 +181,8 @@ class AmissLogHandler:
         self.expectedToHang = True
     if msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1:
       self.sawFatalAssertion = True
-      if platform.system() in ("Microsoft", "Windows"):
-        # On Windows, we might not have symbols for the file that contains abort(). Or something.
+      if platform.system() in ("Microsoft", "Windows", "Linux"):
+        # We might not have symbols for the file that contains abort().
         self.crashIsKnown = True
     if detect_assertions.scanLine(self.knownPath, msgLF):
       self.newAssertionFailure = True
