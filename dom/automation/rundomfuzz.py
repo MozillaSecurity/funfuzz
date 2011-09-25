@@ -276,9 +276,15 @@ def findSrcDir(objDir):
   with file(os.path.join(objDir, "Makefile")) as f:
     for line in f:
       if line.startswith("topsrcdir	= "):
-        return line[12:].strip()
+        return deCygPath(line[12:].strip())
   raise Exception("Didn't find a topsrcdir line in the Makefile")
 
+def deCygPath(p):
+  """Convert a cygwin-style path to a native Windows path"""
+  if (platform.system() in ("Microsoft", "Windows")) and p.startswith("/c/"):
+    p = "c:\\" + p.replace("/", "\\")[3:]
+  return p
+  
 def rdfInit(args):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
 
