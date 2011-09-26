@@ -301,11 +301,13 @@ def main():
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
         if 'Windows-XP' not in platform.platform():
-            jsCompareJITCode = subprocess.call(['patch', '-p3', '-i', os.path.normpath(repoDict['fuzzing']) + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff')])
+            # -F4 to switch the fuzz factor to 4 until we get an updated patch (might not work on old changesets) or a patch with less context.
+            jsCompareJITCode = subprocess.call(['patch', '-p3', '-F4', '-i', os.path.normpath(repoDict['fuzzing']) + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff')])
         else:
+            # -F4 to switch the fuzz factor to 4 until we get an updated patch (might not work on old changesets) or a patch with less context.
             # We have to use `<` and `shell=True` here because of the drive letter of the path to patchGC.diff.
             # Python piping might be possible though slightly more complicated.
-            jsCompareJITCode = subprocess.call(['patch -p3 < ' + os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff'))], shell=True)
+            jsCompareJITCode = subprocess.call(['patch -p3 -F4 < ' + os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff'))], shell=True)
         if (jsCompareJITCode == 1) or (jsCompareJITCode == 2):
             jsCompareJITCodeBool1 = str(raw_input('Was a previously applied patch detected? (y/n): '))
             if jsCompareJITCodeBool1 == ('y' or 'yes'):
