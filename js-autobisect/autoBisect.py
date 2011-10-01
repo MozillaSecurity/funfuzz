@@ -237,18 +237,26 @@ def internalTestAndLabel(filename, flagsRequired, valgrindSupport, stdoutOutput,
 
         if (stdoutStderr.find(stdoutOutput) != -1) and (stdoutOutput != ''):
             return ('bad', 'Specified-bad output')
-        elif exitCode == watchExitCode:
+        elif watchExitCode != None and exitCode == watchExitCode:
             return ('bad', 'Specified-bad exit code ' + str(exitCode))
-        elif 129 <= exitCode <= 159:
+        elif watchExitCode == None and 129 <= exitCode <= 159:
             return ('bad', 'High exit code ' + str(exitCode))
         elif exitCode < 0:
-            return ('bad', 'Negative exit code ' + str(exitCode))
+            # On Unix-based systems, the exit code for signals is negative,
+            # so we check if 128 + abs(exitCode) meets our specified signal
+            # exit code.
+            if (watchExitCode != None and 128 - exitCode == watchExitCode):
+                return ('bad', 'Specified-bad exit code ' + str(exitCode) + ' (after converting to signal)')
+            else:
+                return ('bad', 'Negative exit code ' + str(exitCode))
         elif exitCode == 0:
             return ('good', 'Exit code 0')
         elif exitCode == 2 and (stdoutStderr.find('usage: js [') != -1) and (stdoutOutput != ''):
             return ('good', 'Exit code 2 - js shell quits because it does not support a given CLI parameter')
         elif 3 <= exitCode <= 6:
             return ('good', 'Acceptable exit code ' + str(exitCode))
+        elif watchExitCode != None:
+            return ('good', 'Unknown exit code ' + str(exitCode) + ', but not the specified one')
         else:
             return ('bad', 'Unknown exit code ' + str(exitCode))
     return inner
@@ -326,9 +334,9 @@ def parseOpts():
                            'For assertions, set to "ssertion fail"')
     parser.add_option('-w', '--watchExitCode',
                       dest='watchExitCode',
-                      type='choice',
-                      choices=['3', '4', '5', '6'],
-                      help='Look out for a specific exit code in the range [3,6]')
+                      type='int',
+		      default=None,
+                      help='Look out for a specific exit code. Only this exit code will be considered bad.')
     parser.add_option('-i', '--interestingness',
                       dest='interestingnessBool',
                       default=False,
@@ -364,9 +372,6 @@ def parseOpts():
 
     flagsReq = filter(None, flagsReq)  # Remove empty list entries
     assert '' not in flagsReq
-
-    if options.watchExitCode:
-        options.watchExitCode = int(options.watchExitCode)
 
     if len(args) < 1:
         parser.error('Not enough arguments')
