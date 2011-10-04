@@ -46,7 +46,7 @@ DOMFuzzHelperObserver.prototype = {
 
       var messageManager = Cc["@mozilla.org/globalmessagemanager;1"].
                                getService(Ci.nsIChromeFrameMessageManager);
-    
+
       // Register for any messages our API needs us to handle
       messageManager.addMessageListener("DOMFuzzHelper.quitApplication", this);
       messageManager.addMessageListener("DOMFuzzHelper.quitApplicationSoon", this);
@@ -153,7 +153,6 @@ function getProfileDirectory()
   var d = Components.classes["@mozilla.org/file/directory_service;1"]
                     .getService(Components.interfaces.nsIProperties)
                     .get("ProfD", Components.interfaces.nsIFile);
-  dumpln("^ " + d.path);
   return d.path;
 }
 

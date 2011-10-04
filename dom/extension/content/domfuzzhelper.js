@@ -260,7 +260,6 @@ function reftestList()
 function profileDirectory()
 {
   var fn = sendSyncMessage('DOMFuzzHelper.getProfileDirectory', {})[0];
-  dumpln(uneval(fn));
   var d = Components.classes["@mozilla.org/file/local;1"]
                     .createInstance(Components.interfaces.nsILocalFile);
   d.initWithPath(fn);
