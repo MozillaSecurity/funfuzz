@@ -636,7 +636,7 @@ function nestingConsistencyTest(code)
 function compartmentConsistencyTest(code)
 {
   if ((code.indexOf("/") != -1 && code.indexOf(">") != -1) || code.indexOf("XML") != -1) {
-    return; // bug 683361: XML (see comment 1)
+    return; // see bug 683361 comment 2 (XML can't be wrapped; luke says this is intentional even after that bug is fixed)
   }
 
   // Inspired by bug 683361
