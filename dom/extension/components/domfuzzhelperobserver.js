@@ -4,12 +4,13 @@ const Cu = Components.utils;
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/NetUtil.jsm");
 
 function dumpln(s) { dump(s + "\n"); }
 
+const CHILD_SCRIPT = "chrome://domfuzzhelper/content/domfuzzhelper.js";
 
 /*****************
  * API INJECTION *
@@ -21,68 +22,94 @@ function dumpln(s) { dump(s + "\n"); }
 // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/console/hudservice/HUDService.jsm#3240
 // https://developer.mozilla.org/en/how_to_build_an_xpcom_component_in_javascript
 
-function DOMFuzzHelper() {}
+function DOMFuzzHelperObserver() {
+  this._isFrameScriptLoaded = false;
+}
 
 // Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
 function quitFromContent() { dumpln("Page called quitApplication."); runSoon(goQuitApplication); }
 function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); runOnTimer(goQuitApplication); }
 
-DOMFuzzHelper.prototype = {
-  classDescription: "DOM fuzz helper",
-  classID:          Components.ID("{59a52458-13e0-4d90-9d85-a637344f29a1}"),
-  contractID:       "@squarefree.com/dom-fuzz-helper;1",
+DOMFuzzHelperObserver.prototype = {
+  classDescription: "DOM fuzz helper observer",
+  classID:          Components.ID("{73DD0F4A-B201-44A1-8C56-D1D72432B02A}"),
+  contractID:       "@squarefree.com/dom-fuzz-helper-observer;1",
+  _xpcom_categories: [{category: "profile-after-change", service: true }],
 
-  QueryInterface:   XPCOMUtils.generateQI([Ci.nsIDOMGlobalPropertyInitializer]),
+  //QueryInterface:   XPCOMUtils.generateQI([Ci.nsIDOMGlobalPropertyInitializer]),
+  QueryInterface:   XPCOMUtils.generateQI([Ci.nsIObserver]),
 
-  init: function(aWindow)
-  {
-    // Using bind(this) to ensure web page gets a *copy* of the function (is this necessary?)
+  observe: function(aSubject, aTopic, aData) {
+    if (aTopic == "profile-after-change") {
+      this.init();
+    } else if (!this.isFrameScriptLoaded && aTopic == "chrome-document-global-created") {
 
-    var api = {
-      quitApplication:     quitFromContent.bind(this),
-      quitApplicationSoon: quitApplicationSoon.bind(this),
-      closeTabThenQuit:    closeTabThenQuit(aWindow),
-      quitWithLeakCheck:   quitWithLeakCheck.bind(this),
-      setGCZeal:           setGCZeal.bind(this),
-      runSoon:             runSoon.bind(this),
-      enableAccessibility: enableAccessibility.bind(this),
-      GC:                  function() { Components.utils.forceGC(); },
-      MP:                  sendMemoryPressureNotification.bind(this),
-      CC:                  cycleCollect(aWindow),
-      fontList:            fontList.bind(this),
-      // zoom:             setZoomLevel(aWindow), // bug 576927
-      printToFile:         printToFile(aWindow),
-      openAboutMemory:     openNewTab.bind(this, aWindow, "about:memory"),
+      var messageManager = Cc["@mozilla.org/globalmessagemanager;1"].
+                               getService(Ci.nsIChromeFrameMessageManager);
+    
+      // Register for any messages our API needs us to handle
+      messageManager.addMessageListener("DOMFuzzHelper.quitApplication", this);
+      messageManager.addMessageListener("DOMFuzzHelper.quitApplicationSoon", this);
+      messageManager.addMessageListener("DOMFuzzHelper.quitWithLeakCheck", this);
+      messageManager.addMessageListener("DOMFuzzHelper.setGCZeal", this);
+      messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
+      messageManager.loadFrameScript(CHILD_SCRIPT, true);
 
-      __exposedProps__: {
-        quitApplication: "r",
-        quitApplicationSoon: "r",
-        closeTabThenQuit: "r",
-        quitWithLeakCheck: "r",
-        setGCZeal: "r",
-        runSoon: "r",
-        enableAccessibility: "r",
-        GC: "r",
-        MP: "r",
-        CC: "r",
-        fontList: "r",
-        // zoom: "r",
-        printToFile: "r",
-        openAboutMemory: "r",
-      }
-    };
+      this.isFrameScriptLoaded = true;
 
-    return api;
+    } else if (aTopic == "xpcom-shutdown") {
+        this.uninit();
+    }
+  },
+
+  init: function() {
+    var obs = Services.obs;
+
+    obs.addObserver(this, "xpcom-shutdown", false);
+    obs.addObserver(this, "chrome-document-global-created", false);
+  },
+
+  uninit: function() {
+    var obs = Services.obs;
+
+    obs.removeObserver(this, "chrome-document-global-created", false);
+  },
+
+  /**
+    * messageManager callback function
+    * This will get requests from our API in the window and process them in chrome for it
+    **/
+
+  receiveMessage: function(aMessage) {
+    switch(aMessage.name) {
+      case "DOMFuzzHelper.quitApplication":
+        quitFromContent();
+        break;
+
+      case "DOMFuzzHelper.quitApplicationSoon":
+        quitApplicationSoon();
+        break;
+
+      case "DOMFuzzHelper.quitWithLeakCheck":
+        quitWithLeakCheck();
+        break;
+
+      case "DOMFuzzHelper.setGCZeal":
+        setGCZeal(aMessage.json.zeal);
+        break;
+
+      case "DOMFuzzHelper.getProfileDirectory":
+        return getProfileDirectory();
+    }
   }
 };
 
-const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelper]);
+const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelperObserver]);
 
 
-
-/*****************************
- * MISC PRIVILEGED FUNCTIONS *
- *****************************/
+/********************************************
+ * MISC PRIVILEGED FUNCTIONS - MAIN PROCESS *
+ ********************************************/
 
 function openNewTab(w, url)
 {
@@ -91,19 +118,14 @@ function openNewTab(w, url)
 
 function closeTabThenQuit(w)
 {
+  dumpln("closeTabThenQuit : w is " + w);
+
   return function() {
     runOnTimer(goQuitApplication);
     w.close();
   }
 }
 
-function fontList()
-{
-  return Components.classes["@mozilla.org/gfx/fontenumerator;1"]
-          .createInstance(Components.interfaces.nsIFontEnumerator)
-          .EnumerateAllFonts({})
-          .join("\n");
-}
 
 function runSoon(f)
 {
@@ -118,108 +140,6 @@ function runSoon(f)
 }
 
 
-function enableAccessibility()
-{
-  try {
-    Components.classes["@mozilla.org/accessibilityService;1"]
-      .getService(Components.interfaces.nsIAccessibleRetrieval);
-    dump("Enabled accessibility!\n");
-  } catch(e) {
-    dump("Couldn't enable accessibility: " + e + "\n");
-  }
-}
-
-function sendMemoryPressureNotification()
-{
-  var os = Components.classes["@mozilla.org/observer-service;1"]
-           .getService(Components.interfaces.nsIObserverService);
-  os.notifyObservers(null, "memory-pressure", "heap-minimize");
-}
-
-function cycleCollect(window)
-{
-  return function cycleCollectInner() {
-    window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-          .getInterface(Components.interfaces.nsIDOMWindowUtils)
-          .cycleCollect();
-  }
-}
-
-function setZoomLevel(window)
-{
-  return function setZoomLevelInner(textOrFull, factor) {
-    var viewer = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                       .getInterface(Components.interfaces.nsIWebNavigation)
-                       .QueryInterface(Components.interfaces.nsIDocShell)
-                       .contentViewer
-                       .QueryInterface(Components.interfaces.nsIMarkupDocumentViewer);
-
-    if (textOrFull == "text")
-      viewer.textZoom = +factor;
-    else if (textOrFull == "full")
-      viewer.fullZoom = +factor;
-  }
-}
-
-function printToFile(window)
-{
-  // Oddly asynchronous, at least on Linux.
-
-  // Linux: works for PDF and PS.
-  // Windows: works for PDF at least. Text may be invisible (bug 653336).
-  // Mac: tested, printToFile is ignored and it goes to a printer! (bug 675709)
-  var xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
-                             .getService(Components.interfaces.nsIXULRuntime);
-  dumpln("xulRuntime.OS: " + xulRuntime.OS);
-  if (xulRuntime.OS != "Linux" && xulRuntime.OS != "WINNT") return function() { };
-
-  var fired = false;
-
-  return function printToFileInner(showHeaders, showBGColor, showBGImages, ps) {
-    runSoon(function() {
-        // Don't print more than once, it gets messy fast.
-        if (fired) { return false; }
-        fired = true;
-
-        ps = ps && xulRuntime.OS != "WINNT"; // Windows gets confused when trying to print to ps, and tosses up a *.xps filepicker outside the Firefox process!?
-
-        // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pavlov (Stuart Parmenter) and bho
-
-        var webBrowserPrint = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-        .getInterface(Components.interfaces.nsIWebBrowserPrint);
-
-        var nsIPrintSettings = Components.interfaces.nsIPrintSettings;
-
-        var PSSVC = Components.classes["@mozilla.org/gfx/printsettings-service;1"]
-        .getService(Components.interfaces.nsIPrintSettingsService);
-
-        var printSettings = PSSVC.newPrintSettings;
-
-        var file = Components.classes["@mozilla.org/file/directory_service;1"].
-                              getService(Components.interfaces.nsIProperties).
-                              get("ProfD", Components.interfaces.nsIFile);
-        file.append(ps ? "fuzzout.ps" : "fuzzout.pdf");
-        dumpln("Printing to: " + file.path);
-
-        printSettings.printToFile = true;
-        printSettings.toFileName  = file.path;
-        printSettings.printSilent = true;
-        printSettings.outputFormat = ps ? nsIPrintSettings.kOutputFormatPS : nsIPrintSettings.kOutputFormatPDF;
-        printSettings.printBGColors   = !!showBGColor;
-        printSettings.printBGImages   = !!showBGImages;
-        if (!showHeaders) {
-            printSettings.footerStrCenter = '';
-            printSettings.footerStrLeft   = '';
-            printSettings.footerStrRight  = '';
-            printSettings.headerStrCenter = '';
-            printSettings.headerStrLeft   = '';
-            printSettings.headerStrRight  = '';
-        }
-
-        webBrowserPrint.print(printSettings, null);
-    });
-  }
-}
 
 function setGCZeal(zeal)
 {
@@ -228,7 +148,14 @@ function setGCZeal(zeal)
   }
 }
 
-
+function getProfileDirectory()
+{
+  var d = Components.classes["@mozilla.org/file/directory_service;1"]
+                    .getService(Components.interfaces.nsIProperties)
+                    .get("ProfD", Components.interfaces.nsIFile);
+  dumpln("^ " + d.path);
+  return d.path;
+}
 
 /************************
  * QUIT WITH LEAK CHECK *
@@ -415,7 +342,7 @@ function canQuitApplication()
 
 function goQuitApplication()
 {
-  dumpln("goQuitApplication (js component)");
+  dumpln("goQuitApplication (domfuzzhelperobserver.js component)");
 
   if (!canQuitApplication())
   {
