@@ -49,8 +49,11 @@ function makeDOMFuzzHelper(aWindow) {
       },
 
       closeTabThenQuit: function () {
+        // Somehow async messages get lost in close().
+        sendSyncMessage('DOMFuzzHelper.quitApplicationSoon', {});
+
+        // This frame-script stops running immediately after close().
         content.close();
-        sendAsyncMessage('DOMFuzzHelper.quitApplicationSoon', {});
       },
 
       quitWithLeakCheck: function () {
