@@ -78,6 +78,7 @@ import subprocess
 import sys
 import time
 
+from random import randint
 from fnStartjsfunfuzz import *
 
 path0 = os.path.dirname(sys.argv[0])
@@ -460,6 +461,24 @@ def main():
     # TI has landed on m-c!
     #if branchType == 'jm':
     #    jsMethodJit += '-n '  # For type inference
+    # Thanks to decoder and sstangl:
+    # useful flag combinations are {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
+    if branchType == 'im':
+        # Actually these flags should be random within multi timed run, not in startjsfunfuzz
+        #rndIntIM = randint(0,5)
+        rndIntIM = 5  # start off with ion-eager. --random-flags might treat --ion -n as two flags, which should not be the case.
+        if rndIntIM == 0:
+            jsMethodJit += '--ion -n --ion-regalloc=greedy '
+        elif rndIntIM == 1:
+            jsMethodJit += '--ion --ion-regalloc=greedy '
+        elif rndIntIM == 2:
+            jsMethodJit += '--ion-eager --ion-regalloc=greedy '
+        elif rndIntIM == 3:
+            jsMethodJit += '--ion -n --ion-regalloc=lsra '
+        elif rndIntIM == 4:
+            jsMethodJit += '--ion --ion-regalloc=lsra '
+        elif rndIntIM == 5:
+            jsMethodJit += '--ion-eager --ion-regalloc=lsra '
 
 
     # Commands to simulate bash's `tee`.
