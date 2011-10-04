@@ -6,7 +6,7 @@ const Ci = Components.interfaces;
 
 function dumpln(s) { dump(s + "\n"); }
 
-// content script for e10s support 
+// content script for e10s support
 
 // This is a frame script, so it may be running in a content process.
 // In any event, it is targeted at a specific "tab", so we listen for
@@ -48,16 +48,16 @@ function makeDOMFuzzHelper(aWindow) {
         sendAsyncMessage('DOMFuzzHelper.quitApplicationSoon', {});
       },
 
-      closeTabThenQuit: function () { 
+      closeTabThenQuit: function () {
         content.close();
-        sendAsyncMessage('DOMFuzzHelper.quitApplicationSoon', {}); 
+        sendAsyncMessage('DOMFuzzHelper.quitApplicationSoon', {});
       },
 
       quitWithLeakCheck: function () {
         sendAsyncMessage('DOMFuzzHelper.quitWithLeakCheck', {});
       },
 
-      setGCZeal: function(zeal) { 
+      setGCZeal: function(zeal) {
         sendSyncMessage("DOMFuzzHelper.setGCZeal", {'zeal' : zeal});
       },
 
@@ -75,7 +75,7 @@ function makeDOMFuzzHelper(aWindow) {
 
       printToFile: printToFile(aWindow),
 
-      openAboutMemory: function() { 
+      openAboutMemory: function() {
         content.open("about:memory");
       },
 
@@ -84,15 +84,15 @@ function makeDOMFuzzHelper(aWindow) {
         'quitApplication': 'r',
         'quitApplicationSoon': 'r',
         'closeTabThenQuit': 'r',
-        'quitWithLeakCheck': 'r', 
+        'quitWithLeakCheck': 'r',
         'setGCZeal': 'r',
         'runSoon': 'r',
-        'enableAccessibility': 'r',    
+        'enableAccessibility': 'r',
         'GC': 'r',
         'CC': 'r',
         'MP': 'r',
         'fontList': 'r',
-        'printToFile': 'r', 
+        'printToFile': 'r',
         'openAboutMemory': 'r'
       }
   };
@@ -243,9 +243,10 @@ function fontList()
 
 
 
-/*************************
- * FUZZ SCRIPT INJECTION *
- *************************/
+
+/**********************
+ * FILESYSTEM HELPERS *
+ **********************/
 
 function profileDirectory()
 {
@@ -269,47 +270,6 @@ function extensionLocation()
                     .createInstance(Components.interfaces.nsILocalFile);
   f.initWithPath(extensionLocation);
   return f;
-}
-
-function maybeInjectScript(event)
-{
-  var doc = event.originalTarget;
-  if (doc.nodeName != "#document")
-    return;
-
-  var hash = doc.location.hash;
-
-  var r = hash.split(",");
-
-  if (r[0] != "#squarefree-af") {
-    return;
-  }
-  if (!(/^[a-zA-Z0-9\-.]*$/.test(r[1]))) {
-    dump("Sketchy fuzzer filename!\n");
-    return;
-  }
-
-  var dir = extensionLocation().parent;
-  dir.append("fuzzers");
-
-  var scriptToInject =
-    readFile(indir(dir, "fuzz.js")) + "\n"
-  + readFile(indir(dir, r[1])) + "\n"
-  + readFile(indir(dir, "fuzz-finish-auto.js")) + "\n"
-  + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
-  + "fuzzSettings = [" + r.slice(2).join(",") + "];\n"
-  + "setTimeout(fuzzOnload, 400);\n";
-
-  var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
-
-  if (!insertionPoint)
-    return;
-
-  var script = doc.createElementNS("http://www.w3.org/1999/xhtml", "script");
-  script.setAttribute("id", "fuzz1");
-  script.setAttribute("type", "text/javascript");
-  script.textContent = scriptToInject;
-  insertionPoint.appendChild(script);
 }
 
 
@@ -352,3 +312,49 @@ function indir(dir, filename)
   return d;
 }
 
+
+/*************************
+ * FUZZ SCRIPT INJECTION *
+ *************************/
+
+
+function maybeInjectScript(event)
+{
+  var doc = event.originalTarget;
+  if (doc.nodeName != "#document")
+    return;
+
+  var hash = doc.location.hash;
+
+  var r = hash.split(",");
+
+  if (r[0] != "#squarefree-af") {
+    return;
+  }
+  if (!(/^[a-zA-Z0-9\-.]*$/.test(r[1]))) {
+    dump("Sketchy fuzzer filename!\n");
+    return;
+  }
+
+  var dir = extensionLocation().parent;
+  dir.append("fuzzers");
+
+  var scriptToInject =
+    readFile(indir(dir, "fuzz.js")) + "\n"
+  + readFile(indir(dir, r[1])) + "\n"
+  + readFile(indir(dir, "fuzz-finish-auto.js")) + "\n"
+  + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
+  + "fuzzSettings = [" + r.slice(2).join(",") + "];\n"
+  + "setTimeout(fuzzOnload, 400);\n";
+
+  var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
+
+  if (!insertionPoint)
+    return;
+
+  var script = doc.createElementNS("http://www.w3.org/1999/xhtml", "script");
+  script.setAttribute("id", "fuzz1");
+  script.setAttribute("type", "text/javascript");
+  script.textContent = scriptToInject;
+  insertionPoint.appendChild(script);
+}
