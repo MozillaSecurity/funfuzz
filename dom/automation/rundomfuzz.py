@@ -80,6 +80,7 @@ user_pref("dom.disable_window_move_resize", true);
 user_pref("dom.disable_open_during_load", false);
 user_pref("extensions.enabledScopes", 3);
 user_pref("nglayout.debug.disable_xul_cache", true);
+user_pref("security.fileuri.strict_origin_policy", false);
 
 // Reset things (on each startup) that might be set by fuzzing
 user_pref("javascript.options.gczeal", 0);
@@ -284,7 +285,7 @@ def deCygPath(p):
   if (platform.system() in ("Microsoft", "Windows")) and p.startswith("/c/"):
     p = "c:\\" + p.replace("/", "\\")[3:]
   return p
-  
+
 def rdfInit(args):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
 

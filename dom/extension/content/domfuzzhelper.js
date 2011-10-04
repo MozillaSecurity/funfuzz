@@ -73,6 +73,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       fontList: fontList.bind(this),
 
+      reftestList: reftestList.bind(this),
+
       printToFile: printToFile(aWindow),
 
       openAboutMemory: function() {
@@ -93,7 +95,8 @@ function makeDOMFuzzHelper(aWindow) {
         'MP': 'r',
         'fontList': 'r',
         'printToFile': 'r',
-        'openAboutMemory': 'r'
+        'openAboutMemory': 'r',
+        'reftestList': 'r'
       }
   };
 };
@@ -242,6 +245,12 @@ function fontList()
 }
 
 
+function reftestList()
+{
+  var dir = extensionLocation().parent;
+  dir.append("automation");
+  return readFile(indir(dir, "urls-reftests"));
+}
 
 
 /**********************
