@@ -116,17 +116,6 @@ function openNewTab(w, url)
   w.open(url);
 }
 
-function closeTabThenQuit(w)
-{
-  dumpln("closeTabThenQuit : w is " + w);
-
-  return function() {
-    runOnTimer(goQuitApplication);
-    w.close();
-  }
-}
-
-
 function runSoon(f)
 {
   var tm = Components.classes["@mozilla.org/thread-manager;1"]
