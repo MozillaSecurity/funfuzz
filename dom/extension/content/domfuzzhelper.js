@@ -186,6 +186,8 @@ function printToFile(window)
         if (fired) { return false; }
         fired = true;
 
+        ps = ps && xulRuntime.OS != "WINNT"; // Windows gets confused when trying to print to ps, and tosses up a *.xps filepicker outside the Firefox process!?
+
         // Based on https://addons.mozilla.org/en-US/firefox/addon/5971/ by pavlov (Stuart Parmenter) and bho
 
         var webBrowserPrint = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
