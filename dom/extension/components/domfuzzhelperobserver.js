@@ -53,6 +53,7 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.quitWithLeakCheck", this);
       messageManager.addMessageListener("DOMFuzzHelper.setGCZeal", this);
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
+      messageManager.addMessageListener("DOMFuzzHelper.openAboutMemory", this);
       messageManager.loadFrameScript(CHILD_SCRIPT, true);
 
       this.isFrameScriptLoaded = true;
@@ -100,6 +101,14 @@ DOMFuzzHelperObserver.prototype = {
 
       case "DOMFuzzHelper.getProfileDirectory":
         return getProfileDirectory();
+
+      case "DOMFuzzHelper.openAboutMemory":
+        openAboutMemory();
+        break;
+
+      default:
+        dumpln("Unrecognized message sent to domfuzzhelperobserver.js");
+
     }
   }
 };
@@ -110,11 +119,6 @@ const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelperObserver]);
 /********************************************
  * MISC PRIVILEGED FUNCTIONS - MAIN PROCESS *
  ********************************************/
-
-function openNewTab(w, url)
-{
-  w.open(url);
-}
 
 function runSoon(f)
 {
@@ -144,6 +148,16 @@ function getProfileDirectory()
                     .get("ProfD", Components.interfaces.nsIFile);
   return d.path;
 }
+
+
+function openAboutMemory()
+{
+  var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
+                     .getService(Ci.nsIWindowWatcher);
+
+  ww.openWindow(null, "about:memory", null, "width=200,height=200", null);
+}
+
 
 /************************
  * QUIT WITH LEAK CHECK *

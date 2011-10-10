@@ -84,7 +84,7 @@ function makeDOMFuzzHelper(aWindow) {
       printToFile: printToFile(aWindow),
 
       openAboutMemory: function() {
-        content.open("about:memory");
+        sendAsyncMessage('DOMFuzzHelper.openAboutMemory', {});
       },
 
       __exposedProps__: {
