@@ -1,5 +1,8 @@
 "use strict";
 
+// Separate scope to work around bug 693234
+(function() {
+
 const Cu = Components.utils;
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -370,3 +373,5 @@ function maybeInjectScript(event)
   script.textContent = scriptToInject;
   insertionPoint.appendChild(script);
 }
+
+})();
