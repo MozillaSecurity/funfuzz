@@ -175,7 +175,6 @@ function printToFile(window)
   // Mac: tested, printToFile is ignored and it goes to a printer!
   var xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
                              .getService(Components.interfaces.nsIXULRuntime);
-  dumpln("xulRuntime.OS: " + xulRuntime.OS);
   if (xulRuntime.OS != "Linux" && xulRuntime.OS != "WINNT") return function() { };
 
   var fired = false;
