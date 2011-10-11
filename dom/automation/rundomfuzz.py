@@ -172,7 +172,7 @@ class AmissLogHandler:
     if msg.startswith("Leaked until "):
       self.sawOMGLEAK = True
       self.printAndLog("@@@ " + msg)
-    if msg.startswith("FAILURE:") or (((msg.startswith("JavaScript error: chrome://") and not "installStatus is null" in msg and not "overlay is null" in msg and not "aTab is null" in msg) or "JS frame :: chrome://" in msg) and not "marquee" in msg):
+    if msg.startswith("FAILURE:") or (((msg.startswith("JavaScript error: chrome://") and not "installStatus is null" in msg and not "overlay is null" in msg and not "aTab is null" in msg) or "JS frame :: chrome://" in msg) and not "marquee" in msg and not "domfuzzhelper.js" in msg):
       self.fuzzerComplained = True
       self.printAndLog("@@@ " + msg)
     if msg.find("###!!! ASSERTION") != -1:
