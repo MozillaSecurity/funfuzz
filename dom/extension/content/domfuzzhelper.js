@@ -1,6 +1,6 @@
 "use strict";
 
-// Separate scope to work around bug 693234
+// Separate scope to work around bug 673569
 (function() {
 
 const Cu = Components.utils;
