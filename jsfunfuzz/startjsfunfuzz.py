@@ -291,6 +291,8 @@ def main():
     # Copy the js tree to the fuzzPath.
     compilePath = os.path.join(fuzzPath, 'compilePath', 'js', 'src')
     cpJsTreeDir(repoDict[branchType], compilePath, 'jsSrcDir')
+    if os.path.isdir(os.path.normpath(os.path.join(repoDict[branchType], 'js', 'public'))):
+        cpJsTreeDir(repoDict[branchType], os.path.join(compilePath, '..', 'public'), 'jsPublicDir')
     if os.path.isdir(os.path.normpath(os.path.join(repoDict[branchType], 'mfbt'))):
         cpJsTreeDir(repoDict[branchType], os.path.join(compilePath, '..', '..', 'mfbt'), 'mfbtDir')
     os.chdir(compilePath)  # Change into compilation directory.

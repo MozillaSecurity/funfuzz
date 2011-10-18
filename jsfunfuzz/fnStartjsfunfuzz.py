@@ -176,6 +176,9 @@ def cpJsTreeDir(repo, dest, sourceDir):
     # Changeset 91a8d742c509 introduced a mfbt directory on the same level as the js directory.
     elif sourceDir == 'mfbtDir':
         repo = os.path.normpath(os.path.join(repo, 'mfbt'))
+    # Changeset b9c673621e1e introduced a public directory on the same level as the js/src directory.
+    elif sourceDir == 'jsPublicDir':
+        repo = os.path.normpath(os.path.join(repo, 'js', 'public'))
     else:
         raise Exception('Unknown sourceDir:', sourceDir)
     if 'Windows-XP' not in platform.platform():
