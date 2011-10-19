@@ -456,7 +456,7 @@ def main():
     # FIXME: This can be done in a better way instead of appending to jsMethodJit
     if profileJitSwitch:
         jsMethodJit += '-p '
-    if debugJitSwitch:
+    if debugJitSwitch and branchType != 'im':
         jsMethodJit += '-d '
     if deepFreezeGlobalObjPrototypeSwitch:
         jsMethodJit += '-P '
