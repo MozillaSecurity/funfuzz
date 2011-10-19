@@ -447,11 +447,11 @@ def main():
         jsCompareJIT += '--repo=' + repoDict['mi'] + ' '
 
     if methodJitSwitch:
-        jsMethodJit = ' -m -n '
+        jsMethodJit = '-m -n '
         if methodJitAllSwitch:
-            jsMethodJit = ' -m -n -a '
+            jsMethodJit = '-m -n -a '
     else:
-        jsMethodJit = ' '
+        jsMethodJit = ''
 
     # FIXME: This can be done in a better way instead of appending to jsMethodJit
     if profileJitSwitch:
