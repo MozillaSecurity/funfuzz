@@ -87,6 +87,8 @@ function makeDOMFuzzHelper(aWindow) {
         sendAsyncMessage('DOMFuzzHelper.openAboutMemory', {});
       },
 
+      cssPropertyDatabase: cssPropertyDatabase.bind(this),
+
       __exposedProps__: {
         'toString': 'r',
         'quitApplication': 'r',
@@ -102,7 +104,8 @@ function makeDOMFuzzHelper(aWindow) {
         'fontList': 'r',
         'printToFile': 'r',
         'openAboutMemory': 'r',
-        'reftestList': 'r'
+        'reftestList': 'r',
+        'cssPropertyDatabase': 'r'
       }
   };
 };
@@ -257,6 +260,26 @@ function reftestList()
   var dir = extensionLocation().parent;
   dir.append("automation");
   return readFile(indir(dir, "urls-reftests"));
+}
+
+function cssPropertyDatabase()
+{
+  var fn = sendSyncMessage('DOMFuzzHelper.getBinDirectory', {})[0];
+  var f = Components.classes["@mozilla.org/file/local;1"]
+                    .createInstance(Components.interfaces.nsILocalFile);
+  f.initWithPath(fn);
+  while (f.leafName != "dist") {
+    f = f.parent;
+  }
+  f = f.parent;
+  f.append("tests");
+  f.append("reftest");
+  f.append("tests");
+  f.append("layout");
+  f.append("style");
+  f.append("test");
+  f.append("property_database.js");
+  return readFile(f);
 }
 
 

@@ -53,6 +53,7 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.quitWithLeakCheck", this);
       messageManager.addMessageListener("DOMFuzzHelper.setGCZeal", this);
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
+      messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
       messageManager.addMessageListener("DOMFuzzHelper.openAboutMemory", this);
       messageManager.loadFrameScript(CHILD_SCRIPT, true);
 
@@ -102,6 +103,9 @@ DOMFuzzHelperObserver.prototype = {
       case "DOMFuzzHelper.getProfileDirectory":
         return getProfileDirectory();
 
+      case "DOMFuzzHelper.getBinDirectory":
+        return getBinDirectory();
+
       case "DOMFuzzHelper.openAboutMemory":
         openAboutMemory();
         break;
@@ -149,6 +153,13 @@ function getProfileDirectory()
   return d.path;
 }
 
+function getBinDirectory()
+{
+  var d = Components.classes["@mozilla.org/file/directory_service;1"]
+                    .getService(Components.interfaces.nsIProperties)
+                    .get("CurProcD", Components.interfaces.nsIFile);
+  return d.path;
+}
 
 function openAboutMemory()
 {
