@@ -80,6 +80,8 @@ user_pref("dom.disable_window_move_resize", false);
 user_pref("dom.disable_open_during_load", false);
 user_pref("dom.disable_window_flip", false);
 user_pref("extensions.enabledScopes", 3);
+user_pref("extensions.autoDisableScopes", 10);
+user_pref("extensions.update.notifyUser", false);
 user_pref("nglayout.debug.disable_xul_cache", true);
 user_pref("security.fileuri.strict_origin_policy", false);
 
