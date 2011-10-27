@@ -104,7 +104,7 @@ geo.enabled
 gfx.color_management.enablev4
 gfx.downloadable_fonts.enabled
 gfx.use_text_smoothing_setting
-html5.parser.enable
+#html5.parser.enable # Bug 697833
 image.mem.decodeondraw
 image.mem.discardable
 intl.locale.matchOS
