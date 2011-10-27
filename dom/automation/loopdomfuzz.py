@@ -32,6 +32,7 @@ def many_timed_runs(targetTime, args):
 
         reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
         urls = getURLs(os.path.abspath(reftestFilesDir))
+        boolPrefNames = filter(lambda s: len(s) and s[0] != "#", open(os.path.join(p0, "bool-prefs.txt")))
 
         for iteration in range(0, maxIterations):
             if targetTime and time.time() > startTime + targetTime:
@@ -41,15 +42,17 @@ def many_timed_runs(targetTime, args):
                 return (None, HAPPY, None)
 
             url = urls[iteration]
+            boolPrefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames)
 
             logPrefix = os.path.join(tempDir, "q" + str(iteration))
             now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
             print "%%% " + now + " starting q" + str(iteration) + ": " + url
-            level, lines = levelAndLines(url, logPrefix=logPrefix)
+            level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(boolPrefs))
 
             if level > rundomfuzz.DOM_FINE:
                 print "loopdomfuzz.py: will try reducing from " + url
                 rFN = createReproFile(lines, logPrefix)
+                writeLinesToFile(boolPrefs, logPrefix + "-prefs.txt") # rundomfuzz.py will look for this file when invoked by Lithium or directly
                 extraRDFArgs = ["--valgrind"] if options.valgrind else []
                 lithArgs = [rundomfuzzpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
                 (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
@@ -217,9 +220,6 @@ def randomHash():
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5 + int(metaInterval / 10)
     metaMax = 3000
     return "#squarefree-af," + fuzzerJS + "," + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
-
-
-
 
 def fuzzSplice(file):
     '''Returns the lines of a file, minus the ones between the two lines containing SPLICE and between the two lines containing IDLINFO'''

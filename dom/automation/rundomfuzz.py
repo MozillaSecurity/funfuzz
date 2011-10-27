@@ -60,11 +60,7 @@ def getFullPath(path):
   "Get an absolute path relative to oldcwd."
   return os.path.normpath(os.path.join(oldcwd, os.path.expanduser(path)))
 
-def createDOMFuzzProfile(profileDir, valgrindMode):
-  "Sets up a profile for domfuzz."
-
-  # Set preferences.
-
+def writePrefs(profileDir, valgrindMode, extraPrefs):
   prefsText = """
 // Disable slow script dialogs.
 user_pref("dom.max_script_run_time", 0);
@@ -95,6 +91,7 @@ user_pref("browser.EULA.override", true);
 user_pref("security.warn_submit_insecure", false);
 user_pref("security.warn_viewing_mixed", false);
 user_pref("toolkit.telemetry.prompted", true);
+user_pref("browser.rights.3.shown", true);
 
 // Turn off various things in firefox that try to contact servers,
 // to improve performance and sanity.
@@ -110,7 +107,7 @@ user_pref("extensions.showMismatchUI", false);
 user_pref("extensions.testpilot.runStudies", false);
 user_pref("lightweightThemes.update.enabled", false);
 user_pref("browser.microsummary.enabled", false);
-user_pref("toolkit.telemetry.enabled", false);
+user_pref("toolkit.telemetry.server", "");
 """
 
   if valgrindMode:
@@ -120,9 +117,15 @@ user_pref("javascript.options.methodjit.content", false);
 user_pref("javascript.options.methodjit.chrome", false);
 """
 
-  prefsFile = open(os.path.join(profileDir, "user.js"), "w")
+  prefsText += extraPrefs
+
+  prefsFile = open(os.path.join(profileDir, "prefs.js"), "w")
   prefsFile.write(prefsText)
   prefsFile.close()
+
+
+def createDOMFuzzProfile(profileDir):
+  "Sets up a profile for domfuzz."
 
   # Install a domfuzz extension 'pointer file' into the profile.
   profileExtensionsPath = os.path.join(profileDir, "extensions")
@@ -292,6 +295,20 @@ def deCygPath(p):
     p = "c:\\" + p.replace("/", "\\")[3:]
   return p
 
+def grabExtraPrefs(p):
+  basename = os.path.basename(p)
+  if os.path.exists(p):
+    hyphen = basename.find("-")
+    if hyphen != -1:
+      prefsFile = os.path.join(os.path.dirname(p), basename[0:hyphen] + "-prefs.txt")
+      print "Looking for prefsFile: " + prefsFile
+      if os.path.exists(prefsFile):
+        print "Found prefs.txt"
+        with open(prefsFile) as f:
+          return f.read()
+  return ""
+
+
 def rdfInit(args):
   """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
 
@@ -313,7 +330,7 @@ def rdfInit(args):
   options.browserDir = browserDir # used by loopdomfuzz
 
   profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
-  createDOMFuzzProfile(profileDir, options.valgrind)
+  createDOMFuzzProfile(profileDir)
 
   runBrowserOptions = []
   if dirs.symbolsDir:
@@ -346,8 +363,10 @@ def rdfInit(args):
       print "Deleting Firefox profile in " + profileDir
       shutil.rmtree(profileDir)
 
-  def levelAndLines(url, logPrefix=None):
+  def levelAndLines(url, logPrefix=None, extraPrefs=""):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
+
+    writePrefs(profileDir, options.valgrind, extraPrefs)
 
     leakLogFile = logPrefix + "-leaks.txt"
 
@@ -531,23 +550,31 @@ def file_contains(f, s):
 
 # For use by Lithium
 def init(args):
-  global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL
+  global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
   levelAndLinesForLithium, deleteProfileForLithium, options = rdfInit(args)
   minimumInterestingLevel = options.minimumInterestingLevel
   lithiumURL = options.argURL
 def interesting(args, tempPrefix):
-  actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix)
+  extraPrefs = grabExtraPrefs(lithiumURL) # Here in case Lithium is reducing the prefs file
+  actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix, extraPrefs = extraPrefs)
   return actualLevel >= minimumInterestingLevel
 def cleanup(args):
   # we don't get to try..finally for Ctrl+C.
   # could this be fixed by using a generator with yield?
   deleteProfileForLithium()
 
-
-if __name__ == "__main__":
+# For direct (usually manual) invocations
+def directMain():
   logPrefix = os.path.join(mkdtemp(prefix="domfuzz-rdf-main"), "t")
   print logPrefix
   levelAndLines, deleteProfileForMain, options = rdfInit(sys.argv[1:])
-  level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix)
+  if options.argURL:
+    extraPrefs = grabExtraPrefs(options.argURL)
+  else:
+    extraPrefs = ""
+  level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix, extraPrefs = extraPrefs)
   print level
   #deleteProfileForMain()
+
+if __name__ == "__main__":
+  directMain()
