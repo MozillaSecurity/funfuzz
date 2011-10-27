@@ -59,7 +59,7 @@ def many_timed_runs(targetTime, args):
                 if lithresult == LITH_NO_REPRO:
                     os.remove(rFN)
                     print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
-                    level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry")
+                    level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(boolPrefs))
                     if level2 > rundomfuzz.DOM_FINE:
                         print "%%% Lithium can't reproduce, but I can!"
                         reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
