@@ -110,14 +110,14 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
 def isNumericDir(n):
   return re.match(r"^\d+$", n.split("/")[-2])
 
-def findLatestBuild(buildType):
+def downloadLatestBuild(buildType):
   """buildType can be e.g. mozilla-central-macosx-debug"""
   buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + buildType + "/"
   builds = filter(isNumericDir, httpDirList(buildsDir))
-  if len(builds) == 0:
-    raise Exception("No builds in " + buildsDir + "!")
-  latestBuild = builds[-1]
-  return latestBuild
+  for b in reversed(builds):
+    if downloadBuild(b):
+      return b
+  raise Exception("No builds in " + buildsDir + "!")
 
 def mozPlatform():
   s = platform.system()
@@ -137,10 +137,11 @@ def mozPlatform():
     return "win32"
   raise Exception("Unknown platform.system(): " + s)
 
+def defaultBuildType():
+  return "mozilla-central-" + mozPlatform() + "-debug"
+
 if __name__ == "__main__":
   if len(sys.argv) > 1:
-    build = sys.argv[1]
+    downloadBuild(sys.argv[1])
   else:
-    build = findLatestBuild("mozilla-central-" + mozPlatform() + "-debug")
-  if not downloadBuild(build):
-    print "Failed!"
+    downloadLatestBuild(defaultBuildType())

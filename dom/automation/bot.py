@@ -6,6 +6,7 @@ import sys, os, platform, subprocess, time, socket, random, shutil
 import build_downloader
 import loopdomfuzz
 devnull = open(os.devnull, "w")
+buildType = build_downloader.defaultBuildType()
 
 targetTime = 15*60 # for build machines, use 15 minutes (15*60)
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
@@ -90,15 +91,6 @@ def writeTinyFile(fn, text):
 def timestamp():
   return str(int(time.time()))
 
-def downloadLatestBuild():
-  latestBuild = build_downloader.findLatestBuild(buildType())
-  build_downloader.downloadBuild(latestBuild)
-  return latestBuild
-
-def buildType():
-  return "mozilla-central-" + build_downloader.mozPlatform() + "-debug"
-
-
 def sendEmail(subject, body):
   import smtplib
   from email.mime.text import MIMEText
@@ -141,7 +133,7 @@ if __name__ == "__main__":
   # remotePrefix is used as a prefix for remoteBase when using scp
   remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else ""
   remoteSep = "/" if remoteLoginAndMachine else localSep
-  relevantJobsDir = remoteBase + buildType() + remoteSep
+  relevantJobsDir = remoteBase + buildType + remoteSep
   runCommand("mkdir -p " + relevantJobsDir)
 
   shouldLoop = True
@@ -174,7 +166,7 @@ if __name__ == "__main__":
           preferredBuild = readTinyFile(job + "preferred-build.txt")
           if not build_downloader.downloadBuild(preferredBuild):
             print "Preferred build for this reduction was missing, grabbing latest build"
-            downloadLatestBuild()
+            build_downloader.downloadLatestBuild(buildType)
         lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
 
@@ -186,7 +178,7 @@ if __name__ == "__main__":
           if os.path.exists("build"):
             print "Deleting old build"
             shutil.rmtree("build")
-          buildUsed = downloadLatestBuild()
+          buildUsed = build_downloader.downloadLatestBuild(buildType)
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
         if ldfResult == loopdomfuzz.HAPPY:
           print "Happy happy! No bugs found!"
@@ -237,5 +229,5 @@ if __name__ == "__main__":
 
       if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
         print "Sending email..."
-        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType() + "/" + newjobname + "/")
+        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/")
         print "Email sent!"
