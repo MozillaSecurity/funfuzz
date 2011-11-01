@@ -286,7 +286,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # Method JIT is off by default.
     if methodJit:
         cfgCmdList.append('--enable-methodjit')
-    if valgrindSupport:
+    # Enable compilation with Valgrind support as requested on any OS, but by default on non-ARM Linux.
+    if valgrindSupport or ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')):
         cfgCmdList.append('--enable-valgrind')
     if threadsafe:
         cfgCmdList.append('--enable-threadsafe')
@@ -303,7 +304,7 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             cfgCmdList.append('--with-ccache')
             cfgCmdList.append('--with-arch=armv7-a')
     cfgCmdList.append('--enable-type-inference')
-    
+
     if os.name == 'nt':
         # Only tested to work for pymake.
         counter = 0
