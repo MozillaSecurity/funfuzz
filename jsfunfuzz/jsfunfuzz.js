@@ -952,8 +952,8 @@ function testUnevalString(uo)
       &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
       && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
       && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
-      &&  uo.indexOf("NaN") == -1                          // ignore bug 379521
-      &&  uo.indexOf("Infinity") == -1                     // ignore bug 379521
+      &&  uo.indexOf("NaN") == -1                          // see bug 379521 (wontfix)
+      &&  uo.indexOf("Infinity") == -1                     // see bug 379521 (wontfix)
       &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
       &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
       &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
