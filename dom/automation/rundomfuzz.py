@@ -90,7 +90,7 @@ user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.EULA.override", true);
 user_pref("security.warn_submit_insecure", false);
 user_pref("security.warn_viewing_mixed", false);
-user_pref("toolkit.telemetry.prompted", true);
+user_pref("toolkit.telemetry.prompted", 2);
 user_pref("browser.rights.3.shown", true);
 
 // Turn off various things in firefox that try to contact servers,
