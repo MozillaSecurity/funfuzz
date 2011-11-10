@@ -108,6 +108,7 @@ image.mem.decodeondraw
 image.mem.discardable
 intl.locale.matchOS
 javascript.options.gc_on_memory_pressure
+javascript.options.jit_hardening
 javascript.options.jitprofiling.chrome
 javascript.options.jitprofiling.content
 javascript.options.mem.gc_per_compartment
