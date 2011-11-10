@@ -286,8 +286,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # Method JIT is off by default.
     if methodJit:
         cfgCmdList.append('--enable-methodjit')
-    # Enable compilation with Valgrind support as requested on any OS, but by default on non-ARM Linux.
-    if valgrindSupport or ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')):
+    # Enable compilation with Valgrind support as requested on any OS, but by default on non-ARM Linux and Mac.
+    if valgrindSupport or ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or isMac:
         cfgCmdList.append('--enable-valgrind')
     if threadsafe:
         cfgCmdList.append('--enable-threadsafe')
