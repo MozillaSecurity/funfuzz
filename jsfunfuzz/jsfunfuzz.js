@@ -3224,14 +3224,9 @@ function makeBoolean(d, b)
 function makeZealLevel()
 {
   // gczeal is really slow, so only turn it on very occasionally.
-  switch(rnd(100)) {
-  case 0:
-    return "2";
-  case 1:
-    return "1";
-  default:
+  if (rnd(50))
     return "0";
-  }
+  return "" + (rnd(4) + 1);
 }
 
 if (haveE4X) {
