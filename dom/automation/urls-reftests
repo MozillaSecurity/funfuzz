@@ -1,4 +1,4 @@
-# To generate this list: python list_reftests.py | sort | grep -v "image/test/reftest/"
+# To generate this list: python list_reftests.py | sort | grep -v "image/test/reftest/" | pbcopy
 
 content/base/crashtests/116848-1.html
 content/base/crashtests/149320-1.html
@@ -94,6 +94,10 @@ content/base/crashtests/667336-1.html
 content/base/crashtests/679459.html
 content/base/crashtests/679689-1.html
 content/base/crashtests/682463.html
+content/base/crashtests/693212.xhtml
+content/base/crashtests/698974-1.html
+content/base/crashtests/700090-1.html
+content/base/crashtests/700090-2.html
 content/canvas/crashtests/0px-size-font-667225.html
 content/canvas/crashtests/360293-1.html
 content/canvas/crashtests/421715-1.html
@@ -242,6 +246,7 @@ content/media/test/crashtests/492286-1.xhtml
 content/media/test/crashtests/493915-1.html
 content/media/test/crashtests/495794-1.html
 content/media/test/crashtests/576612-1.html
+content/media/test/crashtests/691096-1.html
 content/smil/crashtests/483584-1.svg
 content/smil/crashtests/483584-2.svg
 content/smil/crashtests/523188-1.svg
@@ -286,6 +291,11 @@ content/smil/crashtests/670313-1.svg
 content/smil/crashtests/678822-1.svg
 content/smil/crashtests/678847-1.svg
 content/smil/crashtests/678938-1.svg
+content/smil/crashtests/690994-1.svg
+content/smil/crashtests/691337-1.svg
+content/smil/crashtests/691337-2.svg
+content/smil/crashtests/697640-1.svg
+content/smil/crashtests/699325-1.svg
 content/svg/content/src/crashtests/307322-1.svg
 content/svg/content/src/crashtests/327705-1.svg
 content/svg/content/src/crashtests/336994-1.html
@@ -445,6 +455,8 @@ dom/base/crashtests/637116.html
 dom/base/crashtests/666869.html
 dom/base/crashtests/675621-1.html
 dom/base/crashtests/693894.html
+dom/base/crashtests/695867.html
+dom/base/crashtests/697643.html
 dom/base/crashtests/90613-1.html
 dom/plugins/test/crashtests/110650-1.html
 dom/plugins/test/crashtests/41276-1.html
@@ -982,6 +994,7 @@ layout/base/crashtests/665837.html
 layout/base/crashtests/668941.xhtml
 layout/base/crashtests/670226.html
 layout/base/crashtests/675246-1.xhtml
+layout/base/crashtests/695861.html
 layout/base/crashtests/89101-1.html
 layout/base/crashtests/89358-1.html
 layout/base/crashtests/90205-1.html
@@ -1402,6 +1415,7 @@ layout/generic/crashtests/673770.html
 layout/generic/crashtests/679933-1.html
 layout/generic/crashtests/682649-1.html
 layout/generic/crashtests/683702-1.xhtml
+layout/generic/crashtests/683712.html
 layout/generic/crashtests/688996-1.html
 layout/generic/crashtests/688996-2.html
 layout/generic/crashtests/text-overflow-bug666751-1.html
@@ -1943,6 +1957,8 @@ layout/reftests/bidi/662288-1-ref.html
 layout/reftests/bidi/662288-1.html
 layout/reftests/bidi/670226-1-ref.html
 layout/reftests/bidi/670226-1.html
+layout/reftests/bidi/698706-1-ref.html
+layout/reftests/bidi/698706-1.html
 layout/reftests/bidi/83958-1-ref.html
 layout/reftests/bidi/83958-1a.html
 layout/reftests/bidi/83958-1b.html
@@ -4629,6 +4645,11 @@ layout/reftests/bugs/605157-1-ref.xhtml
 layout/reftests/bugs/605157-1.xhtml
 layout/reftests/bugs/608636-1-ref.html
 layout/reftests/bugs/608636-1.html
+layout/reftests/bugs/608756-1-ref.html
+layout/reftests/bugs/608756-1a.html
+layout/reftests/bugs/608756-1b.html
+layout/reftests/bugs/608756-2-ref.html
+layout/reftests/bugs/608756-2.html
 layout/reftests/bugs/609272-1-ref.html
 layout/reftests/bugs/609272-1.html
 layout/reftests/bugs/613433-1-ref.html
@@ -4748,6 +4769,10 @@ layout/reftests/bugs/691087-1-ref.html
 layout/reftests/bugs/691087-1.html
 layout/reftests/bugs/691571-1-ref.html
 layout/reftests/bugs/691571-1.html
+layout/reftests/bugs/696307-1-ref.html
+layout/reftests/bugs/696307-1.html
+layout/reftests/bugs/696739-1-ref.html
+layout/reftests/bugs/696739-1.html
 layout/reftests/bugs/76331-1-ref.html
 layout/reftests/bugs/76331-1.html
 layout/reftests/bugs/81947-1.html
@@ -5307,18 +5332,25 @@ layout/reftests/css-gradients/height-dependence-2-ref.html
 layout/reftests/css-gradients/height-dependence-2.html
 layout/reftests/css-gradients/height-dependence-3-ref.html
 layout/reftests/css-gradients/height-dependence-3.html
+layout/reftests/css-gradients/linear-1-ref.html
+layout/reftests/css-gradients/linear-1a.html
+layout/reftests/css-gradients/linear-1b.html
 layout/reftests/css-gradients/linear-diagonal-1-ref.html
 layout/reftests/css-gradients/linear-diagonal-1a.html
 layout/reftests/css-gradients/linear-diagonal-1b.html
+layout/reftests/css-gradients/linear-diagonal-1c.html
 layout/reftests/css-gradients/linear-diagonal-2-ref.html
 layout/reftests/css-gradients/linear-diagonal-2a.html
 layout/reftests/css-gradients/linear-diagonal-2b.html
+layout/reftests/css-gradients/linear-diagonal-2c.html
 layout/reftests/css-gradients/linear-diagonal-3-ref.html
 layout/reftests/css-gradients/linear-diagonal-3a.html
 layout/reftests/css-gradients/linear-diagonal-3b.html
+layout/reftests/css-gradients/linear-diagonal-3c.html
 layout/reftests/css-gradients/linear-diagonal-4-ref.html
 layout/reftests/css-gradients/linear-diagonal-4a.html
 layout/reftests/css-gradients/linear-diagonal-4b.html
+layout/reftests/css-gradients/linear-diagonal-4c.html
 layout/reftests/css-gradients/linear-diagonal-5-ref.html
 layout/reftests/css-gradients/linear-diagonal-5a.html
 layout/reftests/css-gradients/linear-diagonal-6-ref.html
@@ -5327,8 +5359,11 @@ layout/reftests/css-gradients/linear-diagonal-7-ref.html
 layout/reftests/css-gradients/linear-diagonal-7a.html
 layout/reftests/css-gradients/linear-diagonal-8-ref.html
 layout/reftests/css-gradients/linear-diagonal-8a.html
-layout/reftests/css-gradients/linear-keywords-ref.html
-layout/reftests/css-gradients/linear-keywords.html
+layout/reftests/css-gradients/linear-diagonal-9-ref.html
+layout/reftests/css-gradients/linear-diagonal-9a.html
+layout/reftests/css-gradients/linear-keywords-1-ref.html
+layout/reftests/css-gradients/linear-keywords-1a.html
+layout/reftests/css-gradients/linear-keywords-1b.html
 layout/reftests/css-gradients/linear-mix-ref.html
 layout/reftests/css-gradients/linear-mix.html
 layout/reftests/css-gradients/linear-onestopposition-1-ref.html
@@ -5338,7 +5373,6 @@ layout/reftests/css-gradients/linear-percent-ref.html
 layout/reftests/css-gradients/linear-percent.html
 layout/reftests/css-gradients/linear-position-1-ref.html
 layout/reftests/css-gradients/linear-position-1a.html
-layout/reftests/css-gradients/linear-ref.html
 layout/reftests/css-gradients/linear-repeat-1-ref.html
 layout/reftests/css-gradients/linear-repeat-1a.html
 layout/reftests/css-gradients/linear-repeat-1b.html
@@ -5361,13 +5395,13 @@ layout/reftests/css-gradients/linear-vertical-1a.html
 layout/reftests/css-gradients/linear-vertical-1b.html
 layout/reftests/css-gradients/linear-vertical-1c.html
 layout/reftests/css-gradients/linear-vertical-1d.html
+layout/reftests/css-gradients/linear-vertical-1e.html
 layout/reftests/css-gradients/linear-viewport-ref.html
 layout/reftests/css-gradients/linear-viewport.html
 layout/reftests/css-gradients/linear-zero-length-1-ref.html
 layout/reftests/css-gradients/linear-zero-length-1a.html
 layout/reftests/css-gradients/linear-zero-length-1b.html
 layout/reftests/css-gradients/linear-zero-length-1c.html
-layout/reftests/css-gradients/linear.html
 layout/reftests/css-gradients/nostops.html
 layout/reftests/css-gradients/onestop.html
 layout/reftests/css-gradients/orange-square.html
@@ -5415,6 +5449,8 @@ layout/reftests/css-gradients/twostops-1b.html
 layout/reftests/css-gradients/twostops-1c.html
 layout/reftests/css-gradients/twostops-1d.html
 layout/reftests/css-gradients/twostops-1e.html
+layout/reftests/css-gradients/twostops-1f.html
+layout/reftests/css-gradients/twostops-1g.html
 layout/reftests/css-import/290018-1.html
 layout/reftests/css-import/290018-ref.html
 layout/reftests/css-import/436261-1.html
@@ -6130,6 +6166,10 @@ layout/reftests/editor/672709-ref.html
 layout/reftests/editor/672709.html
 layout/reftests/editor/674212-spellcheck-ref.html
 layout/reftests/editor/674212-spellcheck.html
+layout/reftests/editor/694880-1.html
+layout/reftests/editor/694880-2.html
+layout/reftests/editor/694880-3.html
+layout/reftests/editor/694880-ref.html
 layout/reftests/editor/caret_after_reframe-ref.html
 layout/reftests/editor/caret_after_reframe.html
 layout/reftests/editor/caret_on_focus-ref.html
@@ -6448,6 +6488,7 @@ layout/reftests/font-face/font-error-404-1-ref.html
 layout/reftests/font-face/font-error-404-1.html
 layout/reftests/font-face/font-error-404-2-ref.html
 layout/reftests/font-face/font-error-404-2.html
+layout/reftests/font-face/font-redirect.html
 layout/reftests/font-face/helveticaneue-ultra-ref.html
 layout/reftests/font-face/helveticaneue-ultra.html
 layout/reftests/font-face/insert-rule-1-ref.html
@@ -8108,6 +8149,7 @@ layout/reftests/reftest-sanity/test-async.html
 layout/reftests/reftest-sanity/test-bg-attachment-fixed-ref.html
 layout/reftests/reftest-sanity/test-bg-attachment-fixed.html
 layout/reftests/reftest-sanity/test-displayport-2.html
+layout/reftests/reftest-sanity/test-displayport-bg.html
 layout/reftests/reftest-sanity/test-displayport-ref.html
 layout/reftests/reftest-sanity/test-displayport.html
 layout/reftests/reftest-sanity/test-zoom-ref.html
@@ -8197,13 +8239,18 @@ layout/reftests/svg/as-image/canvas-drawImage-slice-1a.html
 layout/reftests/svg/as-image/canvas-drawImage-slice-1b.html
 layout/reftests/svg/as-image/img-and-image-1-ref.svg
 layout/reftests/svg/as-image/img-and-image-1.html
+layout/reftests/svg/as-image/img-blobBuilder-1.html
+layout/reftests/svg/as-image/img-blobBuilder-2.html
 layout/reftests/svg/as-image/img-content-outside-viewBox-1-ref.html
 layout/reftests/svg/as-image/img-content-outside-viewBox-1.html
 layout/reftests/svg/as-image/img-dyn-1-ref.html
 layout/reftests/svg/as-image/img-dyn-1.html
 layout/reftests/svg/as-image/img-foreignObject-1.html
+layout/reftests/svg/as-image/img-foreignObject-embed-1-helper.svg
 layout/reftests/svg/as-image/img-foreignObject-embed-1.html
-layout/reftests/svg/as-image/img-foreignObject-embed-2.html
+layout/reftests/svg/as-image/img-foreignObject-iframe-1a.html
+layout/reftests/svg/as-image/img-foreignObject-iframe-1b-helper.svg
+layout/reftests/svg/as-image/img-foreignObject-iframe-1b.html
 layout/reftests/svg/as-image/img-height-meet-1-ref.html
 layout/reftests/svg/as-image/img-height-meet-1.html
 layout/reftests/svg/as-image/img-height-meet-2-ref.html
@@ -8266,6 +8313,10 @@ layout/reftests/svg/as-image/svg-image-script-2.svg
 layout/reftests/svg/as-image/svg-image-simple-1.svg
 layout/reftests/svg/as-image/svg-image-simple-2.svg
 layout/reftests/svg/as-image/svg-image-simple-3.svg
+layout/reftests/svg/as-image/svg-image-visited-1-helper.svg
+layout/reftests/svg/as-image/svg-image-visited-1.html
+layout/reftests/svg/as-image/svg-image-visited-2-helper.svg
+layout/reftests/svg/as-image/svg-image-visited-2.html
 layout/reftests/svg/as-image/svg-stylesheet-datauri-1.html
 layout/reftests/svg/as-image/svg-stylesheet-external-1.html
 layout/reftests/svg/as-image/zoom/img-zoomIn-1.html
@@ -8516,6 +8567,7 @@ layout/reftests/svg/image/../pass.svg
 layout/reftests/svg/image/image-fill-01.svg
 layout/reftests/svg/image/image-filter-01-ref.svg
 layout/reftests/svg/image/image-filter-01.svg
+layout/reftests/svg/image/image-load-01.svg
 layout/reftests/svg/image/image-opacity-01-ref.svg
 layout/reftests/svg/image/image-opacity-01.svg
 layout/reftests/svg/image/image-opacity-02-ref.svg
@@ -8617,7 +8669,8 @@ layout/reftests/svg/pattern-live-01a.svg
 layout/reftests/svg/pattern-live-01b.svg
 layout/reftests/svg/pattern-live-01c.svg
 layout/reftests/svg/pattern-scale-01-ref.svg
-layout/reftests/svg/pattern-scale-01.svg
+layout/reftests/svg/pattern-scale-01a.svg
+layout/reftests/svg/pattern-scale-01b.svg
 layout/reftests/svg/pattern-transform-presence-01-ref.svg
 layout/reftests/svg/pattern-transform-presence-01.svg
 layout/reftests/svg/polygon-marker-01.svg
@@ -9541,6 +9594,8 @@ layout/reftests/table-anonymous-boxes/448111-1-ref.html
 layout/reftests/table-anonymous-boxes/448111-1.html
 layout/reftests/table-anonymous-boxes/490174-1-ref.html
 layout/reftests/table-anonymous-boxes/490174-1.html
+layout/reftests/table-anonymous-boxes/695538-1-ref.html
+layout/reftests/table-anonymous-boxes/695538-1.html
 layout/reftests/table-anonymous-boxes/blocks-divide-tables-1.html
 layout/reftests/table-anonymous-boxes/blocks-divide-tables-2.html
 layout/reftests/table-anonymous-boxes/cols-test-1.html
@@ -10539,6 +10594,7 @@ layout/reftests/text/zwnj-02-ref.xhtml
 layout/reftests/text/zwnj-02.xhtml
 layout/reftests/transform-3d/backface-visibility-1a.html
 layout/reftests/transform-3d/backface-visibility-1b.html
+layout/reftests/transform-3d/green-rect.html
 layout/reftests/transform-3d/matrix3d-1-ref.html
 layout/reftests/transform-3d/matrix3d-1a.html
 layout/reftests/transform-3d/matrix3d-2-ref.html
@@ -10553,6 +10609,9 @@ layout/reftests/transform-3d/preserve3d-2a.html
 layout/reftests/transform-3d/preserve3d-2b.html
 layout/reftests/transform-3d/preserve3d-2c.html
 layout/reftests/transform-3d/preserve3d-2d.html
+layout/reftests/transform-3d/preserve3d-3-ref.html
+layout/reftests/transform-3d/preserve3d-3a.html
+layout/reftests/transform-3d/preserve3d-4a.html
 layout/reftests/transform-3d/preserve3d-clipped.html
 layout/reftests/transform-3d/rotate3d-1a.html
 layout/reftests/transform-3d/rotate3d-2a.html
@@ -10561,6 +10620,8 @@ layout/reftests/transform-3d/rotatex-1a.html
 layout/reftests/transform-3d/rotatex-perspective-1a.html
 layout/reftests/transform-3d/rotatex-perspective-1b.html
 layout/reftests/transform-3d/rotatex-perspective-1c.html
+layout/reftests/transform-3d/rotatex-transformorigin-1-ref.html
+layout/reftests/transform-3d/rotatex-transformorigin-1a.html
 layout/reftests/transform-3d/rotatey-1-ref.html
 layout/reftests/transform-3d/rotatey-1a.html
 layout/reftests/transform-3d/scale3d-1-ref.html
@@ -10577,6 +10638,7 @@ layout/reftests/transform-3d/sorting-1a.html
 layout/reftests/transform-3d/sorting-2-ref.html
 layout/reftests/transform-3d/sorting-2a.html
 layout/reftests/transform-3d/sorting-2b.html
+layout/reftests/transform-3d/sorting-3a.html
 layout/reftests/transform-3d/translate3d-1-ref.html
 layout/reftests/transform-3d/translate3d-1a.html
 layout/reftests/transform-3d/translatez-1-ref.html
@@ -10830,6 +10892,8 @@ layout/style/crashtests/665209-1.html
 layout/style/crashtests/671799-1.html
 layout/style/crashtests/671799-2.html
 layout/style/crashtests/690990-1.html
+layout/style/crashtests/696188-1.html
+layout/style/crashtests/700116.html
 layout/style/crashtests/font-face-truncated-src.html
 layout/style/crashtests/long-url-list-stack-overflow.html
 layout/svg/crashtests/220165-1.svg
@@ -10949,6 +11013,7 @@ layout/svg/crashtests/669025-2.svg
 layout/svg/crashtests/682411-1.svg
 layout/svg/crashtests/692203-1.svg
 layout/svg/crashtests/692203-2.svg
+layout/svg/crashtests/693424-1.svg
 layout/svg/crashtests/extref-test-1.xhtml
 layout/tables/crashtests/110523-1.html
 layout/tables/crashtests/138725-1.html
@@ -11059,6 +11124,7 @@ layout/tables/crashtests/595758-1.xhtml
 layout/tables/crashtests/595758-2.xhtml
 layout/tables/crashtests/678447-1.html
 layout/tables/crashtests/691824-1.xhtml
+layout/tables/crashtests/695430-1.html
 layout/tables/crashtests/78623-1.html
 media/libpng/crashtests/374810-1.html
 netwerk/test/reftest/658949-1-ref.html
@@ -11111,9 +11177,12 @@ parser/htmlparser/tests/crashtests/58455-1.html
 parser/htmlparser/tests/crashtests/591330-1.html
 parser/htmlparser/tests/crashtests/60110-1.html
 parser/htmlparser/tests/crashtests/650501-1.xhtml
+parser/htmlparser/tests/crashtests/696651-1.html
 parser/htmlparser/tests/crashtests/73331-1.html
 parser/htmlparser/tests/crashtests/92647-1.html
 parser/htmlparser/tests/crashtests/92788-1.html
+parser/htmlparser/tests/reftest/bug482921-1-ref.html
+parser/htmlparser/tests/reftest/bug482921-2-ref.html
 parser/htmlparser/tests/reftest/bug566280-1-ref.html
 parser/htmlparser/tests/reftest/bug566280-1.html
 parser/htmlparser/tests/reftest/bug577418-1-ref.html
@@ -11126,6 +11195,22 @@ parser/htmlparser/tests/reftest/bug592656-1-ref.html
 parser/htmlparser/tests/reftest/bug592656-1.html
 parser/htmlparser/tests/reftest/bug608373-1-ref.html
 parser/htmlparser/tests/reftest/bug608373-1.html
+parser/htmlparser/tests/reftest/bug659763-1-ref.html
+parser/htmlparser/tests/reftest/bug659763-1.html
+parser/htmlparser/tests/reftest/bug659763-2-ref.html
+parser/htmlparser/tests/reftest/bug659763-2.html
+parser/htmlparser/tests/reftest/bug659763-3-ref.html
+parser/htmlparser/tests/reftest/bug659763-3.html
+parser/htmlparser/tests/reftest/bug659763-4-ref.html
+parser/htmlparser/tests/reftest/bug659763-4.html
+parser/htmlparser/tests/reftest/bug659763-5-ref.html
+parser/htmlparser/tests/reftest/bug659763-5.html
+parser/htmlparser/tests/reftest/bug659763-6-ref.html
+parser/htmlparser/tests/reftest/bug659763-6.html
+parser/htmlparser/tests/reftest/bug696651-1-ref.html
+parser/htmlparser/tests/reftest/bug696651-1.html
+parser/htmlparser/tests/reftest/bug696651-2-ref.html
+parser/htmlparser/tests/reftest/bug696651-2.html
 security/manager/ssl/crashtests/327524-1.html
 security/manager/ssl/crashtests/398665-1.html
 view/crashtests/281743-1.html
