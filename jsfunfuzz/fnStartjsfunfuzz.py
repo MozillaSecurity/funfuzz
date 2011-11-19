@@ -280,12 +280,12 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
         # --enable-profiling is needed to obtain backtraces on optimized shells.
         cfgCmdList.append('--enable-profiling')
 
-    # Trace JIT is on by default.
-    if not traceJit:
-        cfgCmdList.append('--disable-tracejit')
-    # Method JIT is off by default.
-    if methodJit:
-        cfgCmdList.append('--enable-methodjit')
+    # Trace JIT is off by default.
+    if traceJit:
+        cfgCmdList.append('--enable-tracejit')
+    # Method JIT is on by default.
+    if not methodJit:
+        cfgCmdList.append('--disable-methodjit')
     # Enable compilation with Valgrind support as requested on any OS except Windows, but by default on non-ARM Linux and Mac.
     if os.name != 'nt':
         if valgrindSupport or ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or isMac:
