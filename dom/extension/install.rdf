@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>domfuzz@squarefree.com</em:id>
-    <em:version>2011.09.27</em:version>
+    <em:version>2011.11.17</em:version>
     <em:type>2</em:type>
 
     <!-- Target Application this extension can install into,
