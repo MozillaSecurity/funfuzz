@@ -99,8 +99,8 @@ def main():
         else:
             multiTimedRunTimeout = '600'
 
-    traceJit = True  # Activate support for tracing JIT in configure.
-    jsJitSwitch = True  # Activate JIT fuzzing here.
+    traceJit = False  # Activate support for tracing JIT in configure.
+    jsJitSwitch = False  # Activate tracing JIT fuzzing here.
     methodJit = True  # Activate support for method JIT in configure.
     methodJitSwitch = True  # Activate JIT fuzzing here.
     methodJitAllSwitch = True  # turn on -a
@@ -113,8 +113,8 @@ def main():
     usePymake = True if os.name == 'nt' else False
 
     jsCompareJITSwitch = True
-    # Disable compareJIT if traceJit support is disabled in configure.
-    if not traceJit:
+    # Disable compareJIT if methodJit support is disabled in configure.
+    if not methodJitSwitch:
         jsCompareJITSwitch = False
     # Disable compareJIT for 1.9.1 and 1.9.2 branches.
     if sys.argv[3] == '191' or sys.argv[3] == '192':
