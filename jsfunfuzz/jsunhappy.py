@@ -14,7 +14,8 @@ import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
 # JITFLAGS from http://hg.mozilla.org/tracemonkey/file/default/js/src/Makefile.in
 # or actually http://hg.mozilla.org/projects/jaegermonkey/file/default/js/src/Makefile.in
-flagCombos = ",m,j,mj,mjp,am,amj,amjp,amd,n,mn,jn,mjn,mjpn,amn,amjn,amjpn,amdn"
+# FIXME: I think --random-flags, which uses this, overwrites whatever we specify on the multi_timed_run.py input command line.
+flagCombos = ",m,am,amd,n,mn,amn,amdn,mdn"
 flagCombos = flagCombos.split(",")
 flagCombos = [["-"+c for c in s] for s in flagCombos]  # [[], ['-m'], ['-j'], ['-m', '-j'], ...]
 
