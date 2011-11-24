@@ -522,7 +522,7 @@ def main():
 
     # Commands to simulate bash's `tee`.
     # Start fuzzing the newly compiled builds.
-    subprocess.call([fuzzCmd], stdout=tee.stdin, shell=True)
+    subprocess.call(fuzzCmd, stdout=tee.stdin, shell=True)
 
 
 # Run main when run as a script, this line means it will not be run as a module.
