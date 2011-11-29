@@ -210,8 +210,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
-      && (code.indexOf("&&") == -1)        // ignore bug 461226 with a hatchet
-      && (code.indexOf("||") == -1)        // ignore bug 461226 with a hatchet
       // at constant-folding time (?) away from strings
       &&
            (
@@ -235,7 +233,6 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     checkForExtraParens: true
-      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213, and unfortunately anything with genexps
       && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
       && !code.match( /\?.*\=/)             // ignore bug 475893
@@ -270,12 +267,10 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
        && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
-       && code.indexOf("options('strict')") == -1   // bug 621418, bug 621421
-       && code.indexOf("use strict") == -1          // bug 622271
+       && code.indexOf("options('strict')") == -1   // bug 621421
        && code.indexOf("++") == -1                  // bug 622265
        && code.indexOf("--") == -1                  // bug 622265
        && code.indexOf("instanceof") == -1          // bug 617949
-       && !(code.match(/\S=/))                      // bug 622271 (+= etc)
 
   };
 }
@@ -904,16 +899,7 @@ function testUneval(o)
 
   var uo, euo, ueuo;
 
-  try {
-    uo = uneval(o);
-  } catch(e) {
-    if (errorToString(e).indexOf("called on incompatible") != -1) {
-      dumpln("Ignoring bug 379528!".toUpperCase());
-      return;
-    }
-    else
-      throw e;
-  }
+  uo = uneval(o);
 
   if (uo == "({})") {
     // ?
@@ -1086,7 +1072,6 @@ function testForExtraParens(f, code)
   if (uf.indexOf(".(") != -1) return; // bug 381207
   if (code.indexOf("new") != -1) return; // "new" is weird. what can i say?
   if (code.indexOf("let") != -1) return; // reasonable to overparenthesize "let" (see expclo#c33)
-  if (code.match(/for.*in.*=/)) return; // bug 381213
   if (code.match(/\:.*function/)) return; // why?
   if (uf.indexOf("(function") != -1) return; // expression closures over-parenthesize
 
@@ -3972,9 +3957,11 @@ function maybeMakeTerm(d, b)
 
 function makeCrazyToken()
 {
-  if (rnd(2) == 0) {
-    // This can be more aggressive once bug 368694 is fixed.
+  if (rnd(3) == 0) {
     return String.fromCharCode(32 + rnd(128 - 32));
+  }
+  if (rnd(6) == 0) {
+    return String.fromCharCode(rnd(65536));
   }
 
   return rndElt([
