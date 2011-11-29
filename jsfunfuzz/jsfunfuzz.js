@@ -265,10 +265,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
        && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
-       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454
-       && code.indexOf("options('strict')") == -1   // bug 621421
-       && code.indexOf("++") == -1                  // bug 622265
-       && code.indexOf("--") == -1                  // bug 622265
        && code.indexOf("instanceof") == -1          // bug 617949
 
   };
@@ -856,11 +852,6 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
 {
   if (e.indexOf("missing variable name") != -1) {
     dumpln("Bug 355667 sure is annoying!");
-    return;
-  }
-
-  if (e.indexOf("octal literals and octal escape sequences are deprecated") != -1) {
-    dumpln("Ignoring bug 621119.");
     return;
   }
 
