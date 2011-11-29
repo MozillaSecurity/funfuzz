@@ -262,7 +262,6 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-       && code.indexOf("Error") == -1               // avoid bug 525518
        && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
        && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
