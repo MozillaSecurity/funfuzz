@@ -3298,20 +3298,6 @@ function makeFunction(d, b)
 }
 
 
-function makeFunPrefix(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-  switch(rnd(20)) {
-// Leaving this stuff out until bug 381203 is fixed.
-// Eventually this stuff should be moved from functionMakers to somewhere
-// like statementMakers, right?
-//    case 0: return "getter ";
-//    case 1: return "setter ";
-    default: return "";
-  }
-}
-
 function maybeName(d, b)
 {
   if (rnd(2) == 0)
@@ -3345,8 +3331,8 @@ var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
 
   // Functions and expression closures
-  function(d, b) { var v = makeNewId(d, b); return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
-  function(d, b) {                          return cat([makeFunPrefix(d, b), "function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
+  function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
+  function(d, b) {                          return cat(["function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
 
   // Methods
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); },
