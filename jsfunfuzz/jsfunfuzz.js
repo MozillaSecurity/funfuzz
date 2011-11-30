@@ -2240,7 +2240,7 @@ var statementMakers = weighted([
   { w: 1, fun: function(d, b) { return '"use strict"; ' + makeStatement(d - 1, b); } },
 
   // Spidermonkey strict warnings
-  { w: 1, fun: function(d, b) { return "options('strict');" } },
+  { w: 1, fun: function(d, b) { return "(void options('strict'));" } },
 
   // Blocks of statements related to typed arrays
   { w: 8, fun: makeTypedArrayStatements },
