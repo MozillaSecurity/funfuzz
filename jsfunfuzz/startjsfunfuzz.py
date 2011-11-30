@@ -104,7 +104,7 @@ def main():
     methodJit = True  # Activate support for method JIT in configure.
     methodJitSwitch = True  # Activate JIT fuzzing here.
     methodJitAllSwitch = True  # turn on -a
-    profileJitSwitch = True  # turn on -p
+    profileJitSwitch = False  # turn on -p
     debugJitSwitch = True  # turn on -d
 
     # This produces "can't change object's extensibility" messages in a lot of jsfunfuzz testcases.
