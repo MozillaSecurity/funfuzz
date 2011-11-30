@@ -147,6 +147,7 @@ def main():
     branchSuppList.append('jm')
     branchSuppList.append('im')
     branchSuppList.append('mi')
+    branchSuppList.append('larch')
 
     branchSupp = '['
     branchSupp += '|'.join('%s' % n for n in branchSuppList)
@@ -232,6 +233,7 @@ def main():
     repoDict['jm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'jaegermonkey'))) + pathSeparator
     repoDict['im'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'ionmonkey'))) + pathSeparator
     repoDict['mi'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-inbound'))) + pathSeparator
+    repoDict['larch'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'larch'))) + pathSeparator
     # Start of fuzzing directory, does not need pathSeparator at the end.
     fuzzPathStart = os.path.normpath(os.path.expanduser(os.path.join('~', 'Desktop', 'jsfunfuzz-')))
     if os.name == 'nt' and 'Windows-XP' in platform.platform():
@@ -426,6 +428,7 @@ def main():
     jsknownDict['jm'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
     jsknownDict['im'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
     jsknownDict['mi'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
+    jsknownDict['larch'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
 
     multiTimedRun = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'multi_timed_run.py'))
 
@@ -445,6 +448,8 @@ def main():
         jsCompareJIT += '--repo=' + repoDict['im'] + ' '
     if branchType == 'mi':
         jsCompareJIT += '--repo=' + repoDict['mi'] + ' '
+    if branchType == 'larch':
+        jsCompareJIT += '--repo=' + repoDict['larch'] + ' '
 
     if methodJitSwitch:
         jsMethodJit = '-m -n '
