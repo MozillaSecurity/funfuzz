@@ -351,10 +351,10 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir, valgr
     compiledName = os.path.join(objdir, 'js' + binaryPostfix())
     try:
         if usePymake:
-            out = captureStdout(['python', '-O', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objdir)
+            out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objdir)
             # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
             if 'no such option: -s' in out:
-                out = captureStdout(['python', '-O', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs)], combineStderr=True, currWorkingDir=objdir)
+                out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs)], combineStderr=True, currWorkingDir=objdir)
         else:
             out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True, currWorkingDir=objdir)
     except:
