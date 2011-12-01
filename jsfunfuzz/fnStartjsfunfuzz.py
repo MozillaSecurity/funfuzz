@@ -305,6 +305,8 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             cfgCmdList.append('--with-ccache')
             cfgCmdList.append('--with-arch=armv7-a')
     cfgCmdList.append('--enable-type-inference')
+    # Our fuzzing tweaks to make some output more useful, see bug 706433.
+    cfgCmdList.append('--enable-more-deterministic')
 
     if os.name == 'nt':
         # Only tested to work for pymake.
