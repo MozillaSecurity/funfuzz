@@ -301,7 +301,8 @@ def main():
 
 
     # Only patch the gc() function if on default tip.
-    if jsCompareJITSwitch and onDefaultTip:
+    # Update: this is no longer needed from m-c rev f0159088a7c3.
+    if False and jsCompareJITSwitch and onDefaultTip:
         # This patch makes the gc() function return an empty string (consistently)
         # rather than returning some information about the gc heap.
         verboseDump('Patching the gc() function now.')
