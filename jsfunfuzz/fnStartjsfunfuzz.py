@@ -349,7 +349,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir, valgr
     '''
     This function compiles and copies a binary.
     '''
-    jobs = (cpu_count() * 3) // 2
+    jobs = (cpu_count() * 5) // 4
     compiledName = os.path.join(objdir, 'js' + binaryPostfix())
     try:
         if usePymake:
