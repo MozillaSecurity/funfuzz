@@ -56,7 +56,6 @@ var jsshell = (typeof window == "undefined");
 var dump;
 var dumpln;
 var printImportant;
-var spidermonkeyTrapEnabled = false;
 if (jsshell) {
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
@@ -64,11 +63,6 @@ if (jsshell) {
 
     if (typeof snarf == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
-      try {
-        // trap() is enabled iff shell was invoked with -d
-        trap(function(){}, 0, '');
-        spidermonkeyTrapEnabled = true;
-      } catch(e) { }
     }
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
@@ -1138,10 +1132,6 @@ function checkRoundTripDisassembly(f, code, wtt)
     return;
   if (df.indexOf("lineno") != -1)
     return;
-  if (df.indexOf("trap") != -1) {
-    print("checkRoundTripDisassembly: trapped");
-    return;
-  }
 
   try {
     var g = directEvalC(uf);
@@ -1154,8 +1144,6 @@ function checkRoundTripDisassembly(f, code, wtt)
 
   if (df == dg) {
     // Happy!
-    if (wtt.allowExec && wtt.expectConsistentOutput && spidermonkeyTrapEnabled)
-      trapCorrectnessTest(code);
     return;
   }
 
@@ -1235,105 +1223,10 @@ function checkRoundTripDisassembly(f, code, wtt)
 
 
 
-/*****************************
- * SPIDERMONKEY TRAP TESTING *
- *****************************/
+/***********
+ * SANDBOX *
+ ***********/
 
-// The shell trap() function is insane: it will happily overwrite
-// parts of a function that aren't opcodes (bug 429239).
-// As a workaround, getBytecodeOffsets returns the offsets that
-// are sane to trap.
-function getBytecodeOffsets(f)
-{
-  var disassembly = disassemble(f);
-  var lines = disassembly.split("\n");
-  var i;
-
-  var offsets = [];
-
-  for (i = 0; i < lines.length; ++i) {
-    if (lines[i] == "main:")
-      break;
-    if (i + 1 == lines.length)
-      printAndStop("disassembly -- no main?");
-  }
-  for (++i; i < lines.length; ++i) {
-    if (lines[i] == "")
-      break;
-    if (i + 1 == lines.length)
-      printAndStop("disassembly -- ended suddenly?")
-
-    // The opcodes |tableswitch| and |lookupswitch| add indented lists,
-    // which we want to ignore.
-    var c = lines[i].charCodeAt(0);
-    if (!(0x30 <= c && c <= 0x39))
-      continue;
-
-    var op = lines[i].substr(8).split(" ")[0]; // used only for avoiding known bugs
-    var offset = parseInt(lines[i], 10);
-    if (   op != "lineno"
-        && op != "tableswitchx"         // bug 619830
-        && op != "tableswitch"          // bug 619830
-        && op != "lookupswitchx"        // bug 619830
-        && op != "lookupswitch"         // bug 619830
-        && op != "newarray"             // bug 656847
-       ) {
-      offsets.push({ offset: offset, op: op });
-    }
-    if (op == "getter" || op == "setter") {
-      ++i; // skip the next opcode per bug 476073 comment 4
-    }
-  }
-
-  return offsets;
-}
-
-// This tests that null traps don't change program behavior.
-function trapCorrectnessTest(code)
-{
-  // Bytecode can differ between 'new Function' and 'function(){}'
-  // (see bug 656538) or for other mysterious reasons. Do disassembly
-  // in sandbox to reduce likelihood of trapping the right offsets.
-
-  print("trapCorrectnessTest...");
-  var printStealer = "var printed = ''; function print(s) { printed += s }";
-  var prefix = getBytecodeOffsets + printStealer + "function fff() { " + code + " }; ";
-  function printAccumulator() { }
-
-  var r0 = sandboxResult(prefix + "(uneval(getBytecodeOffsets(fff)));", "new-compartment");
-  dumpln("offsets: " + r0);
-  var offsets = eval(r0);
-
-  var r1 = sandboxResult(prefix + "fff(); printed;", "new-compartment");
-  dumpln("Printed: " + r1);
-
-  for (var i = 0; i < offsets.length; ++i) {
-    var offset = offsets[i].offset;
-    var op = offsets[i].op;
-    // print(offset + " " + op);
-
-    var trapStr = "trap(fff, " + offset + ", ''); ";
-    print(trapStr);
-    var r2 = sandboxResult(prefix + trapStr + " fff(); printed;", "new-compartment");
-
-    if (r1 != r2) {
-      if (r1.indexOf("TypeError") != -1 && r2.indexOf("TypeError") != -1) {
-        // Why does this get printed multiple times???
-        // count=6544; tIO("var x; x.y;");
-        print("A TypeError changed. Might be bug 476088.");
-        continue;
-      }
-
-      print("Adding a trap changed the result!");
-      print(code);
-      print(r1);
-      print(trapStr);
-      print(r2);
-      printAndStop(":(");
-    }
-  }
-  //print("Happy: " + f + r1);
-}
 
 function sandboxResult(code, globalType)
 {
@@ -1342,7 +1235,7 @@ function sandboxResult(code, globalType)
   var resultStr = "";
   try {
     // Using newGlobal("new-compartment"), rather than evalcx(''), to get
-    // shell functions such as "trap". (see bug 647412 comment 2)
+    // shell functions. (see bug 647412 comment 2)
     var sandbox = newGlobal(globalType);
 
     result = evalcx(code, sandbox);
@@ -1356,71 +1249,6 @@ function sandboxResult(code, globalType)
   //print("resultStr: " + resultStr);
   return resultStr;
 }
-
-// This puts a single trap in a function at random, and tests that:
-// 1) decompilation does not change
-// 2) no crash calling a function with a trap
-// 3) no crash calling a function with a trap that does something [disabled]
-// These should probably be split into "trapDecompile" and "trapStability"
-
-function trapSanityTests(f, code, wtt)
-{
-  var offsets = getBytecodeOffsets(f);
-
-  if (typeof trap == "function") {
-
-    // Save for trap
-    //if (wtt.allowExec && count % 2 == 0) {
-      //nextTrapCode = code;
-    //  return;
-    //}
-
-    // Use trap
-
-    if (verbose)
-      dumpln("About to try the trap sanity test.");
-
-    var ode;
-    if (wtt.allowDecompile)
-      ode = "" + f;
-
-    var trapCode;
-    var nextTrapCode;
-    //if (nextTrapCode) {
-    //  trapCode = nextTrapCode;
-    //  nextTrapCode = null;
-    //  print("trapCode = " + simpleSource(trapCode));
-    //} else {
-      trapCode = "print('Trap hit!')";
-    //}
-
-    var trapOp = offsets[count % offsets.length];
-    var trapOffset = trapOp.offset;
-    print("trapOffset: " + trapOffset + " (" + trapOp.op + ")");
-    if (!(trapOffset > -1)) {
-      print(disassemble(f));
-      print(count);
-      print(uneval(offsets));
-      print(offsets.length);
-      printAndStop("WTF");
-    }
-
-    trap(f, trapOffset, trapCode);
-
-    if (wtt.allowDecompile) {
-      var nde = "" + f;
-
-      if (ode != nde) {
-        print(ode);
-        print(nde);
-        printAndStop("Trap decompilation mismatch");
-      }
-    }
-
-  }
-}
-
-
 
 
 /*********************
@@ -1459,14 +1287,10 @@ function optionalTests(f, code, wtt)
   }
 
   if (0 && f && typeof disassemble == "function") {
-    // It's hard to use the recursive disassembly in the comparator and trap tests,
+    // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
     // (Disabled: relatively unimportant, a little slow)
     disassemble("-r", f);
-  }
-
-  if (f && spidermonkeyTrapEnabled && typeof disassemble == "function") { // Disabled due to bug 657524
-    trapSanityTests(f, code, wtt);
   }
 
   if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
@@ -4136,7 +3960,6 @@ var verbose = false;
 
 var maxHeapCount = 0;
 var sandbox = null;
-//var nextTrapCode = null;
 // https://bugzilla.mozilla.org/show_bug.cgi?id=394853#c19
 //try { eval("/") } catch(e) { }
 // Remember the number of countHeap.
