@@ -60,7 +60,7 @@ def getFullPath(path):
   "Get an absolute path relative to oldcwd."
   return os.path.normpath(os.path.join(oldcwd, os.path.expanduser(path)))
 
-def writePrefs(profileDir, valgrindMode, extraPrefs):
+def writePrefs(profileDir, extraPrefs):
   prefsText = """
 // Disable slow script dialogs.
 user_pref("dom.max_script_run_time", 0);
@@ -108,13 +108,6 @@ user_pref("extensions.testpilot.runStudies", false);
 user_pref("lightweightThemes.update.enabled", false);
 user_pref("browser.microsummary.enabled", false);
 user_pref("toolkit.telemetry.server", "");
-"""
-
-  if valgrindMode:
-    # Bug 598263
-    prefsText = prefsText + """
-user_pref("javascript.options.methodjit.content", false);
-user_pref("javascript.options.methodjit.chrome", false);
 """
 
   prefsText += extraPrefs
@@ -354,7 +347,10 @@ def rdfInit(args):
       "--suppressions=" + os.path.join(knownPath, "valgrind.txt") + " " +
       "--gen-suppressions=all" + " " +
       "--child-silent-after-fork=yes" + " " + # First part of the workaround for bug 658840
-      "--leak-check=full" + " " +
+#      "--leak-check=full" + " " +
+      "--smc-check=all-non-file" + " " +
+#      "--track-origins=yes" + " " +
+#      "--num-callers=50" + " " +
       "--quiet"
     )
 
@@ -366,7 +362,7 @@ def rdfInit(args):
   def levelAndLines(url, logPrefix=None, extraPrefs=""):
     """Run Firefox using the profile created above, detecting bugs and stuff."""
 
-    writePrefs(profileDir, options.valgrind, extraPrefs)
+    writePrefs(profileDir, extraPrefs)
 
     leakLogFile = logPrefix + "-leaks.txt"
 
@@ -419,10 +415,13 @@ def rdfInit(args):
       else:
         alh.printAndLog("@@@ New crash (from minidump_stackwalk)")
         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-    elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE and False:
-      # Disabled due to leaks in the glxtest process that Firefox forks on Linux. (Second part of the workaruond for bug 658840.)
-      alh.printAndLog("@@@ Valgrind complained via exit code")
-      lev = max(lev, DOM_VG_AMISS)
+    elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
+      # Disabled due to leaks in the glxtest process that Firefox forks on Linux.
+      # (Second part of the workaround for bug 658840.)
+      # (We detect Valgrind warnings as they happen, instead.)
+      #alh.printAndLog("@@@ Valgrind complained via exit code")
+      #lev = max(lev, DOM_VG_AMISS)
+      pass
     elif status < 0 and (platform.system() not in ("Microsoft", "Windows")):
       # The program was terminated by a signal, which usually indicates a crash.
       signum = -status
