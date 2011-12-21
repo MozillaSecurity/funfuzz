@@ -2709,6 +2709,9 @@ var exprMakers =
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ", " + makeBoolean(d, b) + ")"; },
 
+  // Change spidermonkey mjit chunking (see https://bugzilla.mozilla.org/show_bug.cgi?id=706914)
+  function(d, b) { return "mjitChunkLimit(" + (5+rnd(4)+rnd(10)*rnd(10)) + ")"; },
+
   // Unary Math functions
   function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
   function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeNumber(d, b) + ")"; },
