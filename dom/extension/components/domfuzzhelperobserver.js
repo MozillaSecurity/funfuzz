@@ -27,8 +27,8 @@ function DOMFuzzHelperObserver() {
 }
 
 // Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
-function quitFromContent() { dumpln("Page called quitApplication."); runSoon(goQuitApplication); }
-function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); runOnTimer(goQuitApplication); }
+function quitFromContent() { dumpln("Page called quitApplication."); runSoon(quitOnce); }
+function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); runOnTimer(quitOnce); }
 
 DOMFuzzHelperObserver.prototype = {
   classDescription: "DOM fuzz helper observer",
@@ -217,7 +217,7 @@ function quitWithLeakCheck(leaveWindowsOpen)
 
     runSoon(e);
   }
-  function e() { dumpln("QE"); goQuitApplication(); }
+  function e() { dumpln("QE"); quitOnce(); }
 }
 
 var timerDeathGrip;
@@ -415,3 +415,11 @@ function goQuitApplication()
   return true;
 }
 
+var alreadyQuitting = false;
+function quitOnce()
+{
+  if (!alreadyQuitting) {
+    alreadyQuitting = true;
+    goQuitApplication();
+  }
+}
