@@ -43,6 +43,9 @@ def parse(filename, add_result_callback):
                 elif part.startswith("require-or("):
                     pos += 1
                     pass
+                elif part.startswith("pref("):
+                    pos += 1
+                    pass
                 elif part.startswith("HTTP"):
                     pos += 1
                     pass
