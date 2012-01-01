@@ -38,24 +38,16 @@
 
 import os
 import platform
-import shutil
 import subprocess
 import sys
 import time
 
-from random import randint
 from fnStartjsfunfuzz import verboseDump, osCheck, hgHashAddToFuzzPath, cpJsTreeDir, autoconfRun, \
     cfgJsBin, compileCopy, cpUsefulFiles, archOfBinary, testDbgOrOptGivenACompileType
-
-path0 = os.path.dirname(sys.argv[0])
-path2 = os.path.abspath(os.path.join(path0, "..", "js-autobisect"))
-sys.path.append(path2)
-import autoBisect
 
 def main():
 
     # Variables
-    verbose = False
     selfTests = True
     multiTimedRunTimeout = '10'
 
@@ -66,15 +58,11 @@ def main():
             multiTimedRunTimeout = '600'
 
     traceJit = False  # Activate support for tracing JIT in configure.
-    jsJitSwitch = False  # Activate tracing JIT fuzzing here.
     methodJit = True  # Activate support for method JIT in configure.
     methodJitSwitch = True  # Activate JIT fuzzing here.
     methodJitAllSwitch = True  # turn on -a
-    profileJitSwitch = False  # turn on -p
     debugJitSwitch = True  # turn on -d
 
-    # This produces "can't change object's extensibility" messages in a lot of jsfunfuzz testcases.
-    deepFreezeGlobalObjPrototypeSwitch = False  # turn on -P
     # Pymake is activated on Windows platforms by default, for default tip only.
     usePymake = True if os.name == 'nt' else False
 
@@ -82,13 +70,12 @@ def main():
     # Disable compareJIT if methodJit support is disabled in configure.
     if not methodJitSwitch:
         jsCompareJITSwitch = False
-    # Disable compareJIT for 1.9.1 and 1.9.2 branches.
-    if sys.argv[3] == '191' or sys.argv[3] == '192':
+    # Disable compareJIT for 1.9.2 branch.
+    if sys.argv[3] == '192':
         jsCompareJITSwitch = False
 
-    # Activate to True to --enable-threadsafe for a multithreaded js shell.
-    # Make sure NSPR is first installed! (Use `make` instead of `gmake`)
-    #   https://developer.mozilla.org/en/NSPR_build_instructions
+    # Sets --enable-threadsafe for a multithreaded js shell, first make sure NSPR is installed!
+    # (Use `make` instead of `gmake`), see https://developer.mozilla.org/en/NSPR_build_instructions
     threadsafe = False
 
     if os.name != 'nt' and (os.uname()[0] == "Linux" or os.uname()[0] == "Darwin"):
@@ -99,10 +86,8 @@ def main():
             # Only allow one process to create a coredump at a time.
             subprocess.call(['echo 1 | sudo tee /proc/sys/kernel/core_uses_pid'], shell=True)
 
-
     branchSuppList = []
     # Add supported branches here.
-    branchSuppList.append('191')
     branchSuppList.append('192')
     branchSuppList.append('mc')
     branchSuppList.append('tm')
@@ -126,9 +111,6 @@ def main():
         # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
         if os.name != 'nt' and os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64':
             raise Exception('64-bit compilation is not supported on non-x86_64 Linux platforms.')
-        if (sys.argv[3] == '191'):
-            raise Exception('64-bit compilation is not supported on 1.9.1 branch.')
-
 
     # Accept 32-bit and 64-bit parameters only.
     if (sys.argv[1] == '32') or (sys.argv[1] == '64'):
@@ -175,13 +157,11 @@ def main():
             else:
                 exceptionBadOs()
 
-
     repoDict = {}
     pathSeparator = os.sep
     # Definitions of the different repository and fuzzing locations.
     # Remember to normalize paths to counter forward/backward slash issues on Windows.
     repoDict['fuzzing'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'fuzzing'))) + pathSeparator
-    repoDict['191'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-1.9.1'))) + pathSeparator
     repoDict['192'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-1.9.2'))) + pathSeparator
     repoDict['mc'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-central'))) + pathSeparator
     repoDict['tm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'tracemonkey'))) + pathSeparator
@@ -199,9 +179,8 @@ def main():
             # repoDict[repo] = repoDict[repo][1:]
         # fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
 
-    if verbose:
-        for repo in repoDict.keys():
-            verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
+    for repo in repoDict.keys():
+        verboseDump('The directory for the "' + repo + '" repository is "' + repoDict[repo] + '"')
 
     fuzzPath = fuzzPathStart + compileType + '-' + archNum + '-' + branchType + pathSeparator
     if 'Windows-XP' not in platform.platform():
@@ -244,7 +223,6 @@ def main():
     except OSError:
         raise Exception("The fuzzing path at '" + fuzzPath + "' already exists!")
 
-
     # Copy the js tree to the fuzzPath.
     compilePath = os.path.join(fuzzPath, 'compilePath', 'js', 'src')
     cpJsTreeDir(repoDict[branchType], compilePath, 'jsSrcDir')
@@ -254,32 +232,8 @@ def main():
         cpJsTreeDir(repoDict[branchType], os.path.join(compilePath, '..', '..', 'mfbt'), 'mfbtDir')
     os.chdir(compilePath)  # Change into compilation directory.
 
-
-    # Only patch the gc() function if on default tip.
-    # Update: this is no longer needed from m-c rev f0159088a7c3.
-    if False and jsCompareJITSwitch and onDefaultTip:
-        # This patch makes the gc() function return an empty string (consistently)
-        # rather than returning some information about the gc heap.
-        verboseDump('Patching the gc() function now.')
-        if 'Windows-XP' not in platform.platform():
-            # -F4 to switch the fuzz factor to 4 until we get an updated patch (might not work on old changesets) or a patch with less context.
-            jsCompareJITCode = subprocess.call(['patch', '-p3', '-F4', '-i', os.path.normpath(repoDict['fuzzing']) + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff')])
-        else:
-            # -F4 to switch the fuzz factor to 4 until we get an updated patch (might not work on old changesets) or a patch with less context.
-            # We have to use `<` and `shell=True` here because of the drive letter of the path to patchGC.diff.
-            # Python piping might be possible though slightly more complicated.
-            jsCompareJITCode = subprocess.call(['patch -p3 -F4 < ' + os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'patchGC.diff'))], shell=True)
-        if (jsCompareJITCode == 1) or (jsCompareJITCode == 2):
-            jsCompareJITCodeBool1 = str(raw_input('Was a previously applied patch detected? (y/n): '))
-            if jsCompareJITCodeBool1 == ('y' or 'yes'):
-                jsCompareJITCodeBool2 = str(raw_input('Did you assume -R? (y/n): '))
-                if jsCompareJITCodeBool2 != ('n' or 'no'):
-                    raise Exception('The patch for --comparejit should be patched.')
-            else:
-                raise Exception('Required js patch for --comparejit failed to patch.')
-        verboseDump('Finished incorporating the gc() patch that is needed for compareJIT.')
-
     # Patch the codebase if specified, accept up to 2 patches.
+    # FIXME: Replace this with `hg qimport`.
     patchReturnCode = 0
     patchReturnCode2 = 0
     if len(sys.argv) < 8 and len(sys.argv) >= 6 and sys.argv[4] == 'patch':
@@ -311,10 +265,6 @@ def main():
     # Compile the first binary.
     cfgJsBin(archNum, compileType, traceJit, methodJit,
                       valgrindSupport, threadsafe, os.path.join(compilePath, 'configure'), objdir)
-    # No longer need `export SHELL` with latest MozillaBuild.
-    #if usePymake and os.name == 'nt':
-        ## This has to use `shell=True`.
-        #subprocess.call(['export SHELL'], shell=True)  # See https://developer.mozilla.org/en/pymake
 
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir, valgrindSupport)
@@ -346,7 +296,6 @@ def main():
                           os.path.join(compilePath, 'configure'), objdir2)
         compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
 
-
     os.chdir('../../../../')  # Change into fuzzPath directory.
 
     # Test fuzzPath.
@@ -365,15 +314,11 @@ def main():
     # Copy over useful files that are updated in hg fuzzing branch.
     cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'jsfunfuzz.js')))
     cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'analysis.py')))
-    cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'findInterestingFiles.py')))
-    cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'runFindInterestingFiles.sh')))
     cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'runFindInterestingFiles.py')))
     cpUsefulFiles(os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', '4test.py')))
 
-
     jsknownDict = {}
     # Define the corresponding js-known directories.
-    jsknownDict['191'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-1.9.1')) + pathSeparator
     jsknownDict['192'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-1.9.2')) + pathSeparator
     jsknownDict['mc'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
     # For TM and JM, we use mozilla-central's js-known directories.
@@ -385,10 +330,6 @@ def main():
 
     multiTimedRun = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('jsfunfuzz', 'multi_timed_run.py'))
 
-    if jsJitSwitch:
-        jsJit = ' -j '
-    else:
-        jsJit = ' '
     # FIXME: --random-flags can be done in a better way instead of appending here
     if jsCompareJITSwitch:
         jsCompareJIT = ' --comparejit --random-flags'
@@ -405,28 +346,23 @@ def main():
         jsCompareJIT += ' --repo=' + repoDict['larch']
 
     if methodJitSwitch:
-        jsMethodJit = '-m -n '
+        jsMethodJit = ' -m -n '
         if methodJitAllSwitch:
-            jsMethodJit = '-m -n -a '
+            jsMethodJit = ' -m -n -a '
     else:
         jsMethodJit = ''
 
     # FIXME: This can be done in a better way instead of appending to jsMethodJit
-    if profileJitSwitch:
-        jsMethodJit += '-p '
     if debugJitSwitch and branchType != 'im':
         jsMethodJit += '-d '
-    if deepFreezeGlobalObjPrototypeSwitch:
-        jsMethodJit += '-P '
-    # TI has landed on m-c!
-    #if branchType == 'jm':
-    #    jsMethodJit += '-n '  # For type inference
-    # Thanks to decoder and sstangl:
-    # useful flag combinations are {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
+    # Thanks to decoder and sstangl, useful flag combinations are:
+    # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
     if branchType == 'im':
         # Actually these flags should be random within multi timed run, not in startjsfunfuzz
-        #rndIntIM = randint(0,5)
-        rndIntIM = 5  # start off with ion-eager. --random-flags might treat --ion -n as two flags, which should not be the case.
+        #rndIntIM = randint(0,5)  # randint comes from the random module.
+        # Start off with ion-eager.
+        # --random-flags might treat --ion -n as 2 flags, which should not be the case.
+        rndIntIM = 5
         if rndIntIM == 0:
             jsMethodJit += '--ion -n --ion-regalloc=greedy '
         elif rndIntIM == 1:
@@ -440,10 +376,8 @@ def main():
         elif rndIntIM == 5:
             jsMethodJit += '--ion-eager --ion-regalloc=lsra '
 
-
     # Commands to simulate bash's `tee`.
     tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE)
-
 
     # Define fuzzing command with the required parameters.
     if 'Windows-XP' not in platform.platform():
@@ -452,7 +386,7 @@ def main():
     fuzzCmd1 = 'python -u ' + multiTimedRun + jsCompareJIT
     if valgrindSupport:
         fuzzCmd1 = fuzzCmd1 + ' --valgrind'
-    fuzzCmd = fuzzCmd1 + ' ' + multiTimedRunTimeout + ' ' + jsknownDict[branchType] + ' ' + jsShellName + jsJit + jsMethodJit
+    fuzzCmd = fuzzCmd1 + ' ' + multiTimedRunTimeout + ' ' + jsknownDict[branchType] + ' ' + jsShellName + jsMethodJit
 
     verboseDump('jsShellName is: ' + jsShellName)
     verboseDump('fuzzPath + jsShellName is: ' + jsShellName)
@@ -461,7 +395,6 @@ def main():
     else:
         print('fuzzCmd is: ' + fuzzCmd + '\n')
 
-
     # 32-bit or 64-bit verification test.
     if (os.name == 'posix'):
         if (os.uname()[0] == 'Linux') or (os.uname()[0] == 'Darwin'):
@@ -469,7 +402,6 @@ def main():
 
     # Debug or optimized binary verification test.
     testDbgOrOptGivenACompileType(jsShellName, compileType)
-
 
     print '''
     ================================================
@@ -481,7 +413,6 @@ def main():
     # Commands to simulate bash's `tee`.
     # Start fuzzing the newly compiled builds.
     subprocess.call(fuzzCmd, stdout=tee.stdin, shell=True)
-
 
 # Run main when run as a script, this line means it will not be run as a module.
 if __name__ == '__main__':
