@@ -242,7 +242,7 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i386-apple-darwin8.0.0')
         # 32-bit shell on Mac OS X 10.7 Lion
-        if isMac and isLion:
+        elif isMac and isLion:
             cfgEnvList['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
             cfgEnvList['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
             cfgEnvList['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
