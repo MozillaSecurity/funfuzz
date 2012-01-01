@@ -35,41 +35,6 @@
 # the terms of any one of the MPL, the GPL or the LGPL.
 #
 # * ***** END LICENSE BLOCK	****	/
-#
-# Version History:
-#
-# April 2008 - 1.x:
-#   Initial idea, previously called ./jsfunfuzz-moz18branch-start-intelmac
-# June 2008 - 2.x:
-#   Rewritten from scratch to support the new hg fuzzing branch.
-# August 2008 - 3.0.x:
-#   Rewritten from scratch again to support command-line inputs and consolidate
-#   all existing jsfunfuzz bash scripts.
-# September 2008 - 3.1.x:
-# 	Support fuzzing v8 engine.
-# December 2008 - 3.2.x:
-#   Supports 1.9.1.x branch. Rip out 1.8.1.x code.
-# January 2009 - 3.3.x:
-#   Rework v8 support, add JavaScriptCore support.
-# July 2009 - 4.x:
-#   Python rewrite - only 1.9.1.x, 1.9.2.x and TM planned for support. 1.9.0.x
-#   is becoming obsolete in 5.5 months, mozTrunk is rarely fuzzed in favour of
-#   TM, JavaScriptCore doesn't feel like a significant competing engine,
-#   and Safari uses its own Nitro engine. v8 might come later too.
-# November 2009 - 5.x:
-#   (version numbers are now obsolete - will no longer be added)
-#   Add 32-bit and 64-bit compilation, patching support. Host of other
-#   improvements. Now only supports 1.9.1.x, 1.9.2.x, TM and a future 1.9.3.x.
-# February 2010:
-#   Massive rewrite, reducing code by ~8%. Support Valgrind on Linux, 64-bit
-#   Linux and Jaegermonkey. No longer supports 10.5.x, 32-bit Linux.
-# July 2010:
-#   Disable tests, support 10.5 and 32-bit Linux again.
-#   Support 2.0 instead of 1.9.3.
-# December 2010:
-#   Support Windows again, but not Windows XP, which has its own little quirks
-#   by porting remaining stuff to os.path.join. Also reduce number of
-#   calls to `hg identify`.
 
 import os
 import platform
