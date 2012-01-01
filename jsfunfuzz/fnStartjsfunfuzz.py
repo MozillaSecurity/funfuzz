@@ -55,7 +55,13 @@ showCapturedCommands = False
 globalRepo = ''
 
 isMac = os.name == 'posix' and os.uname()[0] == 'Darwin'
-isSnowLeopardOrHigher = isMac and platform.mac_ver()[0].split('.') >= ['10', '6']
+if isMac:
+    # Script has only been tested on Snow Leopard and Lion.
+    assert 6 <= int(platform.mac_ver()[0].split('.')[1]) <= 7
+    isSnowLeopard = isMac and platform.mac_ver()[0].split('.')[1] == '6' \
+        and platform.mac_ver()[0].split('.') >= ['10', '6']
+    isLion = isMac and platform.mac_ver()[0].split('.')[1] == '7' \
+        and platform.mac_ver()[0].split('.') >= ['10', '7']
 
 def exceptionBadCompileType():
     raise Exception('Unknown compileType')
@@ -220,12 +226,27 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
-        # 32-bit shell on Mac OS X 10.6+
-        if isMac and isSnowLeopardOrHigher:
+        # 32-bit shell on Mac OS X 10.6
+        if isMac and isSnowLeopard:
             cfgEnvList['CC'] = 'gcc-4.2 -arch i386'
             cfgEnvList['CXX'] = 'g++-4.2 -arch i386'
             cfgEnvList['HOST_CC'] = 'gcc-4.2'
             cfgEnvList['HOST_CXX'] = 'g++-4.2'
+            cfgEnvList['RANLIB'] = 'ranlib'
+            cfgEnvList['AR'] = 'ar'
+            cfgEnvList['AS'] = '$CC'
+            cfgEnvList['LD'] = 'ld'
+            cfgEnvList['STRIP'] = 'strip -x -S'
+            cfgEnvList['CROSS_COMPILE'] = '1'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+            cfgCmdList.append('--target=i386-apple-darwin8.0.0')
+        # 32-bit shell on Mac OS X 10.7 Lion
+        if isMac and isLion:
+            cfgEnvList['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvList['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvList['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvList['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
             cfgEnvList['RANLIB'] = 'ranlib'
             cfgEnvList['AR'] = 'ar'
             cfgEnvList['AS'] = '$CC'
@@ -255,13 +276,21 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
     # 64-bit shell on Mac OS X 10.5 Leopard
-    elif (archNum == '64') and (isMac and not isSnowLeopardOrHigher):
+    elif (archNum == '64') and (isMac and not isSnowLeopard and not isLion):
         cfgEnvList['CC'] = 'gcc -m64'
         cfgEnvList['CXX'] = 'g++ -m64'
         cfgEnvList['AR'] = 'ar'
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))
         cfgCmdList.append('--target=x86_64-apple-darwin10.0.0')
+    # 64-bit shell on Mac OS X 10.7 Lion
+    elif (archNum == '64') and (isMac and not isSnowLeopard):
+        cfgEnvList['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvList['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvList['AR'] = 'ar'
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
+        cfgCmdList.append('--target=x86_64-apple-darwin11.2.0')
     elif (archNum == '64') and (os.name == 'nt'):
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))

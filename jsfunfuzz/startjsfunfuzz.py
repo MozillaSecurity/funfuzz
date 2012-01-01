@@ -44,7 +44,8 @@ import sys
 import time
 
 from random import randint
-from fnStartjsfunfuzz import *
+from fnStartjsfunfuzz import verboseDump, osCheck, hgHashAddToFuzzPath, cpJsTreeDir, autoconfRun, \
+    cfgJsBin, compileCopy, cpUsefulFiles, archOfBinary, testDbgOrOptGivenACompileType
 
 path0 = os.path.dirname(sys.argv[0])
 path2 = os.path.abspath(os.path.join(path0, "..", "js-autobisect"))
@@ -103,10 +104,6 @@ def main():
     # Add supported branches here.
     branchSuppList.append('191')
     branchSuppList.append('192')
-    # Uncomment this and add 2.0's js-known dir, then get immediate 2.0 support
-    #branchSuppList.append('20')
-    #201support
-    #branchSuppList.append('201')
     branchSuppList.append('mc')
     branchSuppList.append('tm')
     branchSuppList.append('jm')
@@ -125,11 +122,7 @@ def main():
 
     # Check supported operating systems.
     osCheck()
-    if (sys.argv[1] == '32') and (os.name == 'posix'):
-        # For the Mac, 32-bit js shells have only been tested on i386.
-        if (os.uname()[0] == 'Darwin' and os.uname()[4] != 'i386'):
-            raise Exception('32-bit compilation is not supported on non-i386 Darwin platforms.')
-    elif (sys.argv[1] == '64'):
+    if (sys.argv[1] == '64'):
         # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
         if os.name != 'nt' and os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64':
             raise Exception('64-bit compilation is not supported on non-x86_64 Linux platforms.')
@@ -188,17 +181,14 @@ def main():
     # Definitions of the different repository and fuzzing locations.
     # Remember to normalize paths to counter forward/backward slash issues on Windows.
     repoDict['fuzzing'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'fuzzing'))) + pathSeparator
-    repoDict['191'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-1.9.1'))) + pathSeparator
-    repoDict['192'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-1.9.2'))) + pathSeparator
-    repoDict['20'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-2.0'))) + pathSeparator
-    #201support
-    #repoDict['201'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-2.0.1'))) + pathSeparator
-    repoDict['mc'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-central'))) + pathSeparator
-    repoDict['tm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'tracemonkey'))) + pathSeparator
-    repoDict['jm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'jaegermonkey'))) + pathSeparator
-    repoDict['im'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'ionmonkey'))) + pathSeparator
-    repoDict['mi'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'mozilla-inbound'))) + pathSeparator
-    repoDict['larch'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'larch'))) + pathSeparator
+    repoDict['191'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-1.9.1'))) + pathSeparator
+    repoDict['192'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-1.9.2'))) + pathSeparator
+    repoDict['mc'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-central'))) + pathSeparator
+    repoDict['tm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'tracemonkey'))) + pathSeparator
+    repoDict['jm'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'jaegermonkey'))) + pathSeparator
+    repoDict['im'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'ionmonkey'))) + pathSeparator
+    repoDict['mi'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'mozilla-inbound'))) + pathSeparator
+    repoDict['larch'] = os.path.normpath(os.path.expanduser(os.path.join('~', 'trees', 'larch'))) + pathSeparator
     # Start of fuzzing directory, does not need pathSeparator at the end.
     fuzzPathStart = os.path.normpath(os.path.expanduser(os.path.join('~', 'Desktop', 'jsfunfuzz-')))
     if os.name == 'nt' and 'Windows-XP' in platform.platform():
@@ -385,9 +375,6 @@ def main():
     # Define the corresponding js-known directories.
     jsknownDict['191'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-1.9.1')) + pathSeparator
     jsknownDict['192'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-1.9.2')) + pathSeparator
-    jsknownDict['20'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-2.0')) + pathSeparator
-    #201support
-    #jsknownDict['201'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-2.0.1')) + pathSeparator
     jsknownDict['mc'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
     # For TM and JM, we use mozilla-central's js-known directories.
     jsknownDict['tm'] = os.path.normpath(repoDict['fuzzing'] + os.sep + os.path.join('js-known', 'mozilla-central')) + pathSeparator
@@ -404,18 +391,18 @@ def main():
         jsJit = ' '
     # FIXME: --random-flags can be done in a better way instead of appending here
     if jsCompareJITSwitch:
-        jsCompareJIT = ' --comparejit --random-flags '
+        jsCompareJIT = ' --comparejit --random-flags'
     else:
-        jsCompareJIT = ' --random-flags '
+        jsCompareJIT = ' --random-flags'
 
     if branchType == 'jm':
-        jsCompareJIT += '--repo=' + repoDict['jm'] + ' '
+        jsCompareJIT += ' --repo=' + repoDict['jm']
     if branchType == 'im':
-        jsCompareJIT += '--repo=' + repoDict['im'] + ' '
+        jsCompareJIT += ' --repo=' + repoDict['im']
     if branchType == 'mi':
-        jsCompareJIT += '--repo=' + repoDict['mi'] + ' '
+        jsCompareJIT += ' --repo=' + repoDict['mi']
     if branchType == 'larch':
-        jsCompareJIT += '--repo=' + repoDict['larch'] + ' '
+        jsCompareJIT += ' --repo=' + repoDict['larch']
 
     if methodJitSwitch:
         jsMethodJit = '-m -n '
