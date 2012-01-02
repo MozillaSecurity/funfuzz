@@ -54,14 +54,18 @@ showCapturedCommands = False
 # This is used for propagating the global repository directory across functions in this file.
 globalRepo = ''
 
-isMac = os.name == 'posix' and os.uname()[0] == 'Darwin'
-if isMac:
+if platform.system() == 'Darwin':
+    isMac = True
+    macType()
+
+def macType():
     # Script has only been tested on Snow Leopard and Lion.
     assert 6 <= int(platform.mac_ver()[0].split('.')[1]) <= 7
     isSnowLeopard = isMac and platform.mac_ver()[0].split('.')[1] == '6' \
         and platform.mac_ver()[0].split('.') >= ['10', '6']
     isLion = isMac and platform.mac_ver()[0].split('.')[1] == '7' \
         and platform.mac_ver()[0].split('.') >= ['10', '7']
+    return (isSnowLeopard, isLion)
 
 def exceptionBadCompileType():
     raise Exception('Unknown compileType')

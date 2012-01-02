@@ -407,7 +407,8 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # in "descendants(x) - descendants(y)".
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
-    snowLeopardOrHigher = (platform.system() == 'Darwin') and (platform.mac_ver()[0].split('.') >= ['10', '6'])
+    if platform.system() == 'Darwin':
+        (isSL, isLion) = macType()
 
     profilejitBool = True if '-p' in flagsRequired else False
     methodjitBool = True if '-m' in flagsRequired else False
@@ -416,31 +417,31 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     debugModeBool = True if '-d' in flagsRequired else False
 
     if typeInferBool:
-        return '228e319574f9' # ?????? on TM, first rev that has the -n option
+        return '228e319574f9' # 74704 on m-c, first rev that has the -n option
     elif methodjitAllBool:
         # This supercedes methodjitBool, -a only works with -m
-        return 'f569d49576bb' # ~62161 on TM, first rev that has the -a option
+        return 'f569d49576bb' # 62574 on m-c, first rev that has the -a option
     elif profilejitBool:
-        return '339457364540' # ~55724 on TM, first rev that has the -p option
+        return '339457364540' # 56551 on m-c, first rev that has the -p option
     elif debugModeBool:
         # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
-        return 'ea0669bacf12' # ~54291 on TM, first rev that has the -d option
+        return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
     elif methodjitBool and os.name == 'nt':
-        return '9f2641871ce8' # ~52707 on TM, first rev that can run with pymake and -m
+        return '9f2641871ce8' # 53544 on m-c, first rev that can run with pymake and -m
     elif methodjitBool:
-        return '547af2626088' # ~52268 on TM, first rev that can run jsfunfuzz-n.js with -m
+        return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif os.name == 'nt':
-        return 'ea59b927d99f' # ~46545 on TM, first rev that can run pymake on Windows with most recent set of instructions
-    elif snowLeopardOrHigher and archNum == "64":
-        return "1a44373ccaf6" # ~32547 on TM, config.guess change for snow leopard
-    elif (os.uname()[0] == 'Linux') or (snowLeopardOrHigher and archNum == "32"):
-        return "db4d22859940" # ~24564 on TM, imacros compilation change
+        return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
+    elif (isSL or isLion) and archNum == "64":
+        return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
+    elif (os.uname()[0] == 'Linux') or ((isSL or isLion) and archNum == "32"):
+        return "db4d22859940" # 24546 on m-c, imacros compilation change
     elif valgrindSupport:
         assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
-        return "582a62c8f910" # ~21412 on TM, fixed a regexp valgrind warning that is triggered by an empty jsfunfuzz testcase
+        return "582a62c8f910" # 21512 on m-c, fixed a regexp valgrind warning that is triggered by an empty jsfunfuzz testcase
     else:
         assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
-        return "8c52a9486c8f" # ~21110 on TM, switch from Makefile.ref to autoconf
+        return "8c52a9486c8f" # 21062 on m-c, switch from Makefile.ref to autoconf
 
 def extractChangesetFromMessage(str):
     # For example, a bisect message like "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
