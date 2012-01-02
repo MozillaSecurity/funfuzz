@@ -81,20 +81,6 @@ def verboseDump(input):
     if verbose:
         print 'DEBUG -', input
 
-def error(branchSupp):
-    '''
-    This function prints the corresponding CLI requirements that should be input.
-    '''
-    print '\n==========\n| Error! |\n=========='
-    print 'General usage: python startjsfunfuzz.py [32|64] [dbg|opt]',
-    print '%s [patch <directory to patch>] [patch <directory to patch>]' % branchSupp,
-    print '[valgrind]\n'
-    print
-    print 'Requirements: Python 2.6.x, Mozilla build prerequisites and repositories at "/" (WinXP) or "~/" (other platforms).'
-    print
-    print 'Windows platforms only compile in 32-bit.'
-    print 'Valgrind only works for Linux platforms.\n'
-
 def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=os.getcwdu()):
     '''
     This function captures standard output into a python string.

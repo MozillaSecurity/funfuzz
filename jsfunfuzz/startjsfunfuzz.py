@@ -102,7 +102,6 @@ def main():
 
     # There should be a minimum of 4 command-line parameters.
     if len(sys.argv) < 4:
-        error(branchSupp)
         raise Exception('Too little command-line parameters.')
 
     # Check supported operating systems.
@@ -115,7 +114,6 @@ def main():
     if (sys.argv[1] == '32') or (sys.argv[1] == '64'):
         archNum = sys.argv[1]
     else:
-        error(branchSupp)
         print '\nYour archNum variable is "' + sys.argv[1] + '".',
         raise Exception('archNum not among list of [32|64].')
 
@@ -123,7 +121,6 @@ def main():
     if (sys.argv[2] == 'dbg') or (sys.argv[2] == 'opt'):
         compileType = sys.argv[2]
     else:
-        error(branchSupp)
         print '\nYour compileType variable is "' + sys.argv[2] + '".',
         print 'Choose only from [dbg|opt].\n'
         exceptionBadCompileType()
@@ -134,7 +131,6 @@ def main():
         if (brnch == sys.argv[3]):
             branchType = sys.argv[3]
     if branchType == '':
-        error(branchSupp)
         print '\nYour branchType variable is "' + sys.argv[3] + '".',
         print 'Choose only from %s.\n' % branchSupp
         exceptionBadBranchType()
