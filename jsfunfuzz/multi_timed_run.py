@@ -26,8 +26,8 @@ parser.add_option("--fuzzjs",
                   help = "Which fuzzer to run (e.g. jsfunfuzz.js or regexpfuzz.js)")
 parser.add_option("--repo",
                   action = "store", dest = "repo",
-                  default = os.path.expanduser("~/mozilla-central/"),
-                  help = "The hg repository (e.g. ~/mozilla-central/), for bisection")
+                  default = os.path.expanduser("~/trees/mozilla-central/"),
+                  help = "The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
 parser.add_option("--valgrind",
                   action = "store_true", dest = "valgrind",
                   default = False,
