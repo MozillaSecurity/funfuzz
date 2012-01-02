@@ -81,22 +81,6 @@ def verboseDump(input):
     if verbose:
         print 'DEBUG -', input
 
-def osCheck():
-    '''
-    This function raises an exception if running on an unsupported operating system.
-    '''
-    if os.name == 'posix':
-        if os.uname()[0] == 'Darwin':
-            pass
-        elif os.uname()[0] == 'Linux':
-            pass
-    elif os.name == 'nt':
-        if float(sys.version[:3]) < 2.6:
-            raise Exception('A minimum Python version of 2.6 is required.')
-    else:
-        print '\nOnly Windows XP/Vista/7, Linux and Mac OS X 10.5+ are supported.\n'
-        raise Exception('Unknown OS - Platform is unsupported.')
-
 def error(branchSupp):
     '''
     This function prints the corresponding CLI requirements that should be input.

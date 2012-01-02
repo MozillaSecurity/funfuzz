@@ -42,8 +42,8 @@ import subprocess
 import sys
 import time
 
-from fnStartjsfunfuzz import verboseDump, osCheck, hgHashAddToFuzzPath, cpJsTreeDir, autoconfRun, \
-    cfgJsBin, compileCopy, cpUsefulFiles, archOfBinary, testDbgOrOptGivenACompileType
+from fnStartjsfunfuzz import verboseDump, hgHashAddToFuzzPath, cpJsTreeDir, autoconfRun, cfgJsBin, \
+    compileCopy, cpUsefulFiles, archOfBinary, testDbgOrOptGivenACompileType
 
 def main():
 
@@ -106,7 +106,6 @@ def main():
         raise Exception('Too little command-line parameters.')
 
     # Check supported operating systems.
-    osCheck()
     if (sys.argv[1] == '64'):
         # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
         if os.name != 'nt' and os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64':

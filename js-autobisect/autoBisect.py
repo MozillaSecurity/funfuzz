@@ -360,10 +360,6 @@ def parseOpts():
 
     (options, args) = parser.parse_args()
 
-    # Only WinXP/Vista/7, Linux and Mac OS X 10.6.x are supported. This is what
-    # the osCheck() function checks. Though, Windows platforms are already unsupported.
-    osCheck()
-
     flagsReq = options.flagsRequired
 
     if type(flagsReq) is StringType:
@@ -480,7 +476,6 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, val
 
     # Run configure.
     threadsafe = False  # Let's disable support for threadsafety in the js shell
-    osCheck()
     cfgJsBin(archNum, compileType,
                       True, True, # always *build* with both JITs enabled
                       valgrindSupport,
