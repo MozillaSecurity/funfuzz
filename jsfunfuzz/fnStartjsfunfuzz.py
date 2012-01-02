@@ -57,7 +57,7 @@ globalRepo = ''
 def macType():
     # Script has only been tested on Snow Leopard and Lion.
     assert 6 <= int(platform.mac_ver()[0].split('.')[1]) <= 7
-    isSnowLeopard = isMac and platform.mac_ver()[0].split('.')[1] == '6' \
+    isSL = isMac and platform.mac_ver()[0].split('.')[1] == '6' \
         and platform.mac_ver()[0].split('.') >= ['10', '6']
     isLion = isMac and platform.mac_ver()[0].split('.')[1] == '7' \
         and platform.mac_ver()[0].split('.') >= ['10', '7']
