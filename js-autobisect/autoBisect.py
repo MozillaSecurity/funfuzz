@@ -289,8 +289,8 @@ def parseOpts():
     # Define the repository (working directory) in which to bisect.
     parser.add_option('-d', '--dir',
                       dest='dir',
-                      default=os.path.expanduser('~/mozilla-central/'),
-                      help='Source code directory. Defaults to "~/mozilla-central/"')
+                      default=os.path.expanduser('~/trees/mozilla-central/'),
+                      help='Source code directory. Defaults to "~/trees/mozilla-central/"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
                       action='store_true',
