@@ -432,9 +432,11 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif os.name == 'nt':
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
-    elif (isSL or isLion) and archNum == "64":
+    elif isLion:
+        return "1a44373ccaf6" # 32315 on m-c, config.guess change for Lion
+    elif isSL and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
-    elif (os.uname()[0] == 'Linux') or ((isSL or isLion) and archNum == "32"):
+    elif (os.uname()[0] == 'Linux') or (isSL and archNum == "32"):
         return "db4d22859940" # 24546 on m-c, imacros compilation change
     elif valgrindSupport:
         assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
