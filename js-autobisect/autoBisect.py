@@ -337,7 +337,7 @@ def parseOpts():
     parser.add_option('-w', '--watchExitCode',
                       dest='watchExitCode',
                       type='int',
-		      default=None,
+                      default=None,
                       help='Look out for a specific exit code. Only this exit code will be considered bad.')
     parser.add_option('-i', '--interestingness',
                       dest='interestingnessBool',
