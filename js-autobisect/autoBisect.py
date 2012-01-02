@@ -433,7 +433,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     elif os.name == 'nt':
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
     elif isLion:
-        return "0485355df13d" # 78875 on m-c, one of the first stable revs to compile on Lion
+        return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
     elif isSL and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
     elif (os.uname()[0] == 'Linux') or (isSL and archNum == "32"):
