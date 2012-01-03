@@ -44,7 +44,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
             "--leak-check=full"
           ] +
             (["--dsymutil=yes"] if sys.platform=='darwin' else []) +
-            (["--smc-check=all"] if "-m" in runthis else []) + # Bug 598263
+            (["--smc-check=all-non-file"] if "-m" in runthis else []) + # Bug 598263
           runthis)
         #print " ".join(runthis)
 
