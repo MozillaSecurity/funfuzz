@@ -412,8 +412,11 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     typeInferBool = True if '-n' in flagsRequired else False
     debugModeBool = True if '-d' in flagsRequired else False
 
+    # These should be in descending order, or bisection will break at earlier changesets.
     if typeInferBool:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
+    elif isLion:
+        return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
     elif methodjitAllBool:
         # This supercedes methodjitBool, -a only works with -m
         return 'f569d49576bb' # 62574 on m-c, first rev that has the -a option
@@ -428,8 +431,6 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif os.name == 'nt':
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
-    elif isLion:
-        return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
     elif isSL and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
     elif (os.uname()[0] == 'Linux') or (isSL and archNum == "32"):
