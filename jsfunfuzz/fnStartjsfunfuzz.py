@@ -63,6 +63,7 @@ def macType():
         and platform.mac_ver()[0].split('.') >= ['10', '7']
     return (isSL, isLion)
 
+isMac = False
 if platform.system() == 'Darwin':
     isMac = True
     (isSnowLeopard, isLion) = macType()
