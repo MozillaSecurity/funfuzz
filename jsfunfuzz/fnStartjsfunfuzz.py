@@ -48,7 +48,7 @@ import time
 
 from multiprocessing import cpu_count
 
-verbose = False  # Turn this to True to enable verbose output for debugging.
+verbose = True  # Turn this to True to enable verbose output for debugging.
 showCapturedCommands = False
 
 # This is used for propagating the global repository directory across functions in this file.
@@ -67,13 +67,6 @@ isMac = False
 if platform.system() == 'Darwin':
     isMac = True
     (isSnowLeopard, isLion) = macType()
-
-def exceptionBadCompileType():
-    raise Exception('Unknown compileType')
-def exceptionBadBranchType():
-    raise Exception('Unknown branchType')
-def exceptionBadOs():
-    raise Exception("Unknown OS - Platform is unsupported.")
 
 def verboseDump(input):
     '''
@@ -180,19 +173,14 @@ def autoconfRun(cwd):
     '''
     Sniff platform and run different autoconf types:
     '''
-    if os.name == 'posix':
-        if os.uname()[0] == 'Darwin':
-            retCode = subprocess.call(['autoconf213'], cwd=cwd)
-        elif os.uname()[0] == 'Linux':
-            retCode = subprocess.call(['autoconf2.13'], cwd=cwd)
-    elif os.name == 'nt':
-        retCode = subprocess.call(['sh', 'autoconf-2.13'], cwd=cwd)
+    if platform.system() == 'Darwin':
+        subprocess.check_call(['autoconf213'], cwd=cwd)
+    elif platform.system() == 'Linux':
+        subprocess.check_call(['autoconf2.13'], cwd=cwd)
+    elif platform.system() == 'Windows':
+        subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
 
-    if retCode is not 0:
-        raise Exception('autoconf did not return code 0.')
-
-def cfgJsBin(archNum, compileType, traceJit, methodJit,
-                      valgrindSupport, threadsafe, configure, objdir):
+def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     '''
     This function configures a js binary depending on the parameters.
     '''
@@ -250,14 +238,6 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
         else:
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
-    # 64-bit shell on Mac OS X 10.5 Leopard
-    elif (archNum == '64') and (isMac and not isSnowLeopard and not isLion):
-        cfgEnvList['CC'] = 'gcc -m64'
-        cfgEnvList['CXX'] = 'g++ -m64'
-        cfgEnvList['AR'] = 'ar'
-        cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(configure))
-        cfgCmdList.append('--target=x86_64-apple-darwin10.0.0')
     # 64-bit shell on Mac OS X 10.7 Lion
     elif (archNum == '64') and (isMac and not isSnowLeopard):
         cfgEnvList['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
@@ -281,36 +261,31 @@ def cfgJsBin(archNum, compileType, traceJit, methodJit,
     elif compileType == 'opt':
         cfgCmdList.append('--enable-optimize')
         cfgCmdList.append('--disable-debug')
-        # --enable-profiling is needed to obtain backtraces on optimized shells.
-        cfgCmdList.append('--enable-profiling')
+        cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
 
-    # Trace JIT is off by default.
-    if traceJit:
-        cfgCmdList.append('--enable-tracejit')
-    # Method JIT is on by default.
-    if not methodJit:
-        cfgCmdList.append('--disable-methodjit')
-    # Enable compilation with Valgrind support as requested on any OS except Windows, but by default on non-ARM Linux and Mac.
+    cfgCmdList.append('--disable-methodjit')
+    cfgCmdList.append('--enable-type-inference')
+    # Fuzzing tweaks for more useful output, bug 706433
+    cfgCmdList.append('--enable-more-deterministic')
+    cfgCmdList.append('--disable-tests')
+
     if os.name != 'nt':
-        if valgrindSupport or ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or isMac:
+        if ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or isMac:
             cfgCmdList.append('--enable-valgrind')
+            # ccache does not seem to work on Mac.
+            if not isMac:
+                cfgCmdList.append('--with-ccache')
+        # ccache is not applicable for Windows and non-Tegra Ubuntu ARM builds.
+        elif os.uname()[1] == 'tegra-ubuntu':
+            cfgCmdList.append('--with-ccache')
+            cfgCmdList.append('--with-arch=armv7-a')
+
     if threadsafe:
         cfgCmdList.append('--enable-threadsafe')
         cfgCmdList.append('--with-system-nspr')
-
-    # Miscellaneous flags
-    cfgCmdList.append('--disable-tests')
     # Works-around "../editline/libeditline.a: No such file or directory" build errors by using
     # readline instead of editline.
     #cfgCmdList.append('--enable-readline')
-    # ccache is not applicable for Windows and non-Tegra Ubuntu ARM builds.
-    if os.name != 'nt':  # Don't combine with the line below because Windows does not recognize os.uname()
-        if os.uname()[1] == 'tegra-ubuntu':
-            cfgCmdList.append('--with-ccache')
-            cfgCmdList.append('--with-arch=armv7-a')
-    cfgCmdList.append('--enable-type-inference')
-    # Our fuzzing tweaks to make some output more useful, see bug 706433.
-    cfgCmdList.append('--enable-more-deterministic')
 
     if os.name == 'nt':
         # Only tested to work for pymake.

@@ -477,10 +477,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, val
 
     # Run configure.
     threadsafe = False  # Let's disable support for threadsafety in the js shell
-    cfgJsBin(archNum, compileType,
-                      True, True, # always *build* with both JITs enabled
-                      valgrindSupport,
-                      threadsafe, os.path.join(compilePath, 'configure'), objdir)
+    cfgJsBin(archNum, compileType, threadsafe, os.path.join(compilePath, 'configure'), objdir)
 
     # Compile and copy the first binary.
     # Only pymake was tested on Windows.

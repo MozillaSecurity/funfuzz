@@ -27,10 +27,6 @@
 # the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
 # in which case the provisions of the GPL or the LGPL are applicable instead
 # of those above. If you wish to allow use of your version of this file only
-# under the terms of either the GPL or the LGPL, and not to allow others to
-# use your version of this file under the terms of the MPL, indicate your
-# decision by deleting the provisions above and replace them with the notice
-# and other provisions required by the GPL or the LGPL. If you do not delete
 # the provisions above, a recipient may use your version of this file under
 # the terms of any one of the MPL, the GPL or the LGPL.
 #
@@ -87,7 +83,6 @@ def main():
             subprocess.call(['echo 1 | sudo tee /proc/sys/kernel/core_uses_pid'], shell=True)
 
     branchSuppList = []
-    # Add supported branches here.
     branchSuppList.append('192')
     branchSuppList.append('mc')
     branchSuppList.append('tm')
@@ -95,10 +90,6 @@ def main():
     branchSuppList.append('im')
     branchSuppList.append('mi')
     branchSuppList.append('larch')
-
-    branchSupp = '['
-    branchSupp += '|'.join('%s' % n for n in branchSuppList)
-    branchSupp += ']'
 
     # There should be a minimum of 4 command-line parameters.
     if len(sys.argv) < 4:
@@ -110,30 +101,12 @@ def main():
         if os.name != 'nt' and os.uname()[0] == 'Linux' and os.uname()[4] != 'x86_64':
             raise Exception('64-bit compilation is not supported on non-x86_64 Linux platforms.')
 
-    # Accept 32-bit and 64-bit parameters only.
-    if (sys.argv[1] == '32') or (sys.argv[1] == '64'):
-        archNum = sys.argv[1]
-    else:
-        print '\nYour archNum variable is "' + sys.argv[1] + '".',
-        raise Exception('archNum not among list of [32|64].')
-
-    # Accept dbg and opt parameters for compileType only.
-    if (sys.argv[2] == 'dbg') or (sys.argv[2] == 'opt'):
-        compileType = sys.argv[2]
-    else:
-        print '\nYour compileType variable is "' + sys.argv[2] + '".',
-        print 'Choose only from [dbg|opt].\n'
-        exceptionBadCompileType()
-
-    # Accept appropriate parameters for branchType.
-    branchType = ''
-    for brnch in branchSuppList:
-        if (brnch == sys.argv[3]):
-            branchType = sys.argv[3]
-    if branchType == '':
-        print '\nYour branchType variable is "' + sys.argv[3] + '".',
-        print 'Choose only from %s.\n' % branchSupp
-        exceptionBadBranchType()
+    archNum = sys.argv[1]
+    assert int(archNum) in (32, 64)
+    compileType = sys.argv[2]
+    assert compileType in ('dbg', 'opt')
+    branchType = sys.argv[3]
+    assert branchType in branchSuppList
 
     valgrindSupport = False
     if (os.name == 'posix'):
@@ -145,8 +118,6 @@ def main():
                 # compareJIT is too slow..
                 jsCompareJITSwitch = False  # Turn off compareJIT when in Valgrind.
                 multiTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
-            else:
-                exceptionBadOs()
 
     repoDict = {}
     pathSeparator = os.sep
@@ -254,8 +225,7 @@ def main():
     os.chdir(objdir)
 
     # Compile the first binary.
-    cfgJsBin(archNum, compileType, traceJit, methodJit,
-                      valgrindSupport, threadsafe, os.path.join(compilePath, 'configure'), objdir)
+    cfgJsBin(archNum, compileType, threadsafe, os.path.join(compilePath, 'configure'), objdir)
 
     # Compile and copy the first binary.
     jsShellName = compileCopy(archNum, compileType, branchType, usePymake, fuzzPath, objdir, valgrindSupport)
@@ -276,15 +246,11 @@ def main():
     # No need to assign jsShellName here, because we are not fuzzing this one.
     if compileType == 'dbg':
         os.chdir('opt-objdir')
-        cfgJsBin(archNum, 'opt', traceJit, methodJit,
-                          valgrindSupport, threadsafe,
-                          os.path.join(compilePath, 'configure'), objdir2)
+        cfgJsBin(archNum, 'opt', threadsafe, os.path.join(compilePath, 'configure'), objdir2)
         compileCopy(archNum, 'opt', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
     elif compileType == 'opt':
         os.chdir('dbg-objdir')
-        cfgJsBin(archNum, 'dbg', traceJit, methodJit,
-                          valgrindSupport, threadsafe,
-                          os.path.join(compilePath, 'configure'), objdir2)
+        cfgJsBin(archNum, 'dbg', threadsafe, os.path.join(compilePath, 'configure'), objdir2)
         compileCopy(archNum, 'dbg', branchType, usePymake, fuzzPath, objdir2, valgrindSupport)
 
     os.chdir('../../../../')  # Change into fuzzPath directory.
