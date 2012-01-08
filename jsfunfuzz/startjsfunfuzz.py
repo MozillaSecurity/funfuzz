@@ -241,7 +241,7 @@ def main():
     # Thanks to decoder and sstangl, useful flag combinations are:
     # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
     if branchType == 'im':
-        rndIntIM = randint(0,5)  # randint comes from the random module.
+        rndIntIM = randint(0, 5)  # randint comes from the random module.
         # --random-flags takes in flags from jsunhappy, so it must be disabled.
         mTimedRunFlagList.remove('--random-flags')
         assert '--random-flags' not in mTimedRunFlagList
