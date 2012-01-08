@@ -137,8 +137,7 @@ def main():
         vdump('Finished copying the js tree')
     except OSError as e:
         vdump(repr(e))
-        raise Exception(
-            'Do the js src dir located at "' + repoDt[branchType] + '" or the destination exist?')
+        raise Exception('Do the js source directory or the destination exist?')
 
     # 91a8d742c509 introduced a mfbt directory on the same level as the js/ directory.
     mfbtDir = normExpUserPath(os.path.join(repoDt[branchType], 'mfbt'))
