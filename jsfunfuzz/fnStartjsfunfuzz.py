@@ -36,7 +36,7 @@ if platform.system() == 'Darwin':
 if platform.system() == 'Windows':
     assert 'Windows-XP' not in platform.platform()
 
-def verboseDump(inp):
+def vdump(inp):
     '''
     This function appends the word 'DEBUG' to any verbose output.
     '''
@@ -88,7 +88,7 @@ def hgHashAddToFuzzPath(fuzzPath, repoDir):
     It also prompts if the user wants to continue, should the repository not be on tip.
     '''
     hgIdCmdList = ['hg', 'identify', '-i', '-n', '-b', repoDir]
-    verboseDump('About to start running `' + ' '.join(hgIdCmdList) + '` ...')
+    vdump('About to start running `' + ' '.join(hgIdCmdList) + '` ...')
     hgIdFull = captureStdout(hgIdCmdList, os.getcwdu())
     hgIdChangesetHash = hgIdFull.split(' ')[0]
     hgIdLocalNum = hgIdFull.split(' ')[1]
@@ -108,7 +108,7 @@ def hgHashAddToFuzzPath(fuzzPath, repoDir):
             else:
                 raise Exception('Not on default tip.')
     fuzzPath = '-'.join([fuzzPath, hgIdLocalNum, hgIdChangesetHash])
-    verboseDump('Finished running `' + ' '.join(hgIdCmdList) + '`.')
+    vdump('Finished running `' + ' '.join(hgIdCmdList) + '`.')
     return normExpUserPath(fuzzPath), onDefaultTip
 
 def patchHgRepoUsingMq(patchLoc, cwd=os.getcwdu()):
@@ -117,10 +117,10 @@ def patchHgRepoUsingMq(patchLoc, cwd=os.getcwdu()):
     pname = os.path.basename(p)
     assert (p, pname) != ('','')
     subprocess.check_call(['hg', 'qimport', p], cwd=cwd)
-    verboseDump("Patch qimport'ed.")
+    vdump("Patch qimport'ed.")
     try:
         subprocess.check_call(['hg', 'qpush', pname], cwd=cwd)
-        verboseDump("Patch qpush'ed.")
+        vdump("Patch qpush'ed.")
     except subprocess.CalledProcessError as e:
         subprocess.check_call(['hg', 'qpop'], cwd=cwd)
         subprocess.check_call(['hg', 'qdelete', pname], cwd=cwd)
@@ -260,8 +260,8 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
                 cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
             counter = counter + 1
 
-    verboseDump('This is the configure command (environment variables not included):')
-    verboseDump('%s\n' % ' '.join(cfgCmdList))
+    vdump('This is the configure command (environment variables not included):')
+    vdump('%s\n' % ' '.join(cfgCmdList))
 
     # On Windows, install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
     # Note that on Windows, redirecting stdout to subprocess.STDOUT does not work on Python 2.6.5.
@@ -404,9 +404,9 @@ def testDbgOrOptGivenACompileType(jsShellName, compileType):
     '''
     exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
 
-    verboseDump('The error code for debug shells should be 0.')
-    verboseDump('The error code for opt shells should be 3.')
-    verboseDump('The actual error code for ' + jsShellName + ' now, is: ' + str(exitCode))
+    vdump('The error code for debug shells should be 0.')
+    vdump('The error code for opt shells should be 3.')
+    vdump('The actual error code for ' + jsShellName + ' now, is: ' + str(exitCode))
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if compileType == 'dbg' and exitCode != 0:

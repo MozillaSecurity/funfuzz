@@ -12,7 +12,7 @@ import sys
 import time
 
 from random import randint
-from fnStartjsfunfuzz import verboseDump, normExpUserPath, hgHashAddToFuzzPath, \
+from fnStartjsfunfuzz import vdump, normExpUserPath, hgHashAddToFuzzPath, \
     patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy, archOfBinary, \
     testDbgOrOptGivenACompileType
 
@@ -44,7 +44,7 @@ def main():
             mTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
 
     if platform.system() == "Linux" or platform.system() == "Darwin":
-        verboseDump('Setting ulimit -c to unlimited..')
+        vdump('Setting ulimit -c to unlimited..')
         subprocess.check_call(['ulimit', '-c', 'unlimited']) # Enable creation of coredumps.
         if platform.system() == "Linux":
             fnull = open(os.devnull, 'w')
@@ -56,8 +56,8 @@ def main():
             p1.stdout.close()
             (p2stdout, p2stderr) = p2.communicate()[0]  # p2stdout should have been piped to null
             fnull.close()
-            verboseDump(p2stdout)
-            verboseDump(p2stderr)
+            vdump(p2stdout)
+            vdump(p2stderr)
             try:
                 fcoreuses = open('/proc/sys/kernel/core_uses_pid', 'r')
             except IOError as e:
@@ -105,7 +105,7 @@ def main():
     # fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
 
     for repo in repoDt.keys():
-        verboseDump('The "' + repo + '" repository is located at "' + repoDt[repo] + '"')
+        vdump('The "' + repo + '" repository is located at "' + repoDt[repo] + '"')
 
     fuzzPath = normExpUserPath(
         os.path.join(
@@ -131,12 +131,12 @@ def main():
     # Copy the js tree to the fuzzPath.
     jsSrcDir = normExpUserPath(os.path.join(repoDt[branchType], 'js', 'src'))
     try:
-        verboseDump('Copying the js source tree, which is located at ' + jsSrcDir)
+        vdump('Copying the js source tree, which is located at ' + jsSrcDir)
         shutil.copytree(jsSrcDir, compilePath,
                         ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
-        verboseDump('Finished copying the js tree')
+        vdump('Finished copying the js tree')
     except OSError as e:
-        verboseDump(repr(e))
+        vdump(repr(e))
         raise Exception(
             'Do the js src dir located at "' + repoDt[branchType] + '" or the destination exist?')
 
@@ -155,19 +155,19 @@ def main():
     # Remove the patches from the codebase if they were applied
     if len(sys.argv) >= 6 and sys.argv[4] == 'patch':
         subprocess.check_call(['hg', 'qpop'], cwd=repoDt[branchType])
-        verboseDump("First patch qpop'ed.")
+        vdump("First patch qpop'ed.")
         subprocess.check_call(['hg', 'qdelete', p1name], cwd=repoDt[branchType])
-        verboseDump("First patch qdelete'd.")
+        vdump("First patch qdelete'd.")
         if len(sys.argv) >= 8 and sys.argv[6] == 'patch':
             subprocess.check_call(['hg', 'qpop'], cwd=repoDt[branchType])
-            verboseDump("Second patch qpop'ed.")
+            vdump("Second patch qpop'ed.")
             subprocess.check_call(['hg', 'qdelete', p2name], cwd=repoDt[branchType])
-            verboseDump("Second patch qdelete'd.")
+            vdump("Second patch qdelete'd.")
             if len(sys.argv) >= 10 and sys.argv[8] == 'patch':
                 subprocess.check_call(['hg', 'qpop'], cwd=repoDt[branchType])
-                verboseDump("Third patch qpop'ed.")
+                vdump("Third patch qpop'ed.")
                 subprocess.check_call(['hg', 'qdelete', p3name], cwd=repoDt[branchType])
-                verboseDump("Third patch qdelete'd.")
+                vdump("Third patch qdelete'd.")
 
     autoconfRun(compilePath)
 
