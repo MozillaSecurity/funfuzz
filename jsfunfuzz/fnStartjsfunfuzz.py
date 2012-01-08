@@ -362,16 +362,15 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
     while True:
         try:
             if os.name == 'posix':
-                testFileExitCode = subprocess.check_call([shell, testFilename])
+                testFileExitCode = subprocess.call([shell, testFilename])
             elif os.name == 'nt':
-                testFileExitCode = subprocess.check_call([shell, testFilename], shell=True)
+                testFileExitCode = subprocess.call([shell, testFilename], shell=True)
         except Exception:
             # xpcshells need another argument after run-mozilla.sh
             if os.name == 'posix':
-                testFileExitCode = subprocess.check_call([shell, './xpcshell', testFilename])
+                testFileExitCode = subprocess.call([shell, './xpcshell', testFilename])
             elif os.name == 'nt':
-                testFileExitCode = subprocess.check_call([shell, './xpcshell', testFilename],
-                    shell=True)
+                testFileExitCode = subprocess.call([shell, './xpcshell', testFilename], shell=True)
         finally:
             os.remove(testFilename)  # Remove testfile after grabbing the error code.
             break
@@ -436,7 +435,7 @@ def testDbgOrOptGivenACompileType(jsShellName, compileType):
 def timeShellFunction(command, cwd=os.getcwdu()):
     print 'Running `%s` now..' % ' '.join(command)
     startTime = time.time()
-    retVal = subprocess.check_call(command, cwd=cwd)
+    retVal = subprocess.call(command, cwd=cwd)
     endTime = time.time()
     print '`' + ' '.join(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return retVal

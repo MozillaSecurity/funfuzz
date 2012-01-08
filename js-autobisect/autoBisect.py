@@ -60,7 +60,7 @@ def main():
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
-        subprocess.check_call(hgPrefix + ['up', '-C', 'default'])
+        subprocess.call(hgPrefix + ['up', '-C', 'default'])
         # XXX should also "hg purge" here, but "purge" is an extension.
 
     labels = {}
@@ -127,7 +127,7 @@ def main():
 
     if verbose:
         print "Resetting bisect"
-    subprocess.check_call(hgPrefix + ['bisect', '-U', '-r'])
+    subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
 
     if verbose:
         print "Resetting working directory"
