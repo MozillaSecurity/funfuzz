@@ -295,10 +295,10 @@ def main():
     ''' % (archNum + '-bit', compileType, branchType, time.asctime( time.localtime(time.time()) ))
 
     # Commands to simulate bash's `tee`.
-    tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE)
+    tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE, cwd=fuzzPath)
 
     # Start fuzzing the newly compiled builds.
-    subprocess.call(fuzzCmdList, stdout=tee.stdin)
+    subprocess.call(fuzzCmdList, stdout=tee.stdin, cwd=fuzzPath)
 
 # Run main when run as a script, this line means it will not be run as a module.
 if __name__ == '__main__':
