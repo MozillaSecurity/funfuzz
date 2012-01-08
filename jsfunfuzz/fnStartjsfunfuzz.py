@@ -13,12 +13,10 @@ import shlex
 import time
 
 from multiprocessing import cpu_count
+from traceback import format_exc
 
-verbose = True  # Turn this to True to enable verbose output for debugging.
+verbose = False  # Turn this to True to enable verbose output for debugging.
 showCapturedCommands = False
-
-# This is used for propagating the global repository directory across functions in this file.
-globalRepo = ''
 
 def macType():
     # Script has only been tested on Snow Leopard and Lion.
@@ -29,17 +27,24 @@ def macType():
         and platform.mac_ver()[0].split('.') >= ['10', '7']
     return (isSL, isLion)
 
+assert platform.system() in ('Windows', 'Linux', 'Darwin')
 isMac = False
 if platform.system() == 'Darwin':
     isMac = True
     (isSnowLeopard, isLion) = macType()
 
-def verboseDump(inp, verbose=True):
+if platform.system() == 'Windows':
+    assert 'Windows-XP' not in platform.platform()
+
+def verboseDump(inp):
     '''
     This function appends the word 'DEBUG' to any verbose output.
     '''
     if verbose:
         print 'DEBUG -', inp
+
+def normExpUserPath(p):
+    return os.path.normpath(os.path.expanduser(p))
 
 def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=os.getcwdu()):
     '''
@@ -77,63 +82,57 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
             print stderr
     return stdout.rstrip()
 
-def hgHashAddToFuzzPath(fuzzPath, currWorkingDir=os.getcwdu()):
+def hgHashAddToFuzzPath(fuzzPath, repoDir):
     '''
     This function finds the mercurial revision and appends it to the directory name.
     It also prompts if the user wants to continue, should the repository not be on tip.
     '''
-    verboseDump('About to start running `hg identify -i -n -b` ...')
-    hgIdFull = captureStdout(['hg', 'identify', '-i', '-n', '-b'], currWorkingDir=os.getcwdu())
+    hgIdCmdList = ['hg', 'identify', '-i', '-n', '-b', repoDir]
+    verboseDump('About to start running `' + ' '.join(hgIdCmdList) + '` ...')
+    hgIdFull = captureStdout(hgIdCmdList, os.getcwdu())
     hgIdChangesetHash = hgIdFull.split(' ')[0]
     hgIdLocalNum = hgIdFull.split(' ')[1]
-    hgIdBranch = hgIdFull.split(' ')[2]  # If on tip, value should be 'default'.
+    hgIdBranch = subprocess.check_output(['hg', 'id', '-t'])
     onDefaultTip = True
-    if hgIdBranch != 'default':
+    if 'tip' not in hgIdBranch:
         print 'The repository is at this changeset -', hgIdLocalNum + ':' + hgIdChangesetHash
-        notOnDefaultTipApproval = str(raw_input('Not on default tip! Are you sure you want to continue? (y/n): '))
+        notOnDefaultTipApproval = str(
+            raw_input('Not on default tip! Are you sure you want to continue? (y/n): '))
         if notOnDefaultTipApproval == ('y' or 'yes'):
             onDefaultTip = False
         else:
-            switchToDefaultTipApproval = str(raw_input('Do you want to switch to the default tip? (y/n): '))
+            switchToDefaultTipApproval = str(
+                raw_input('Do you want to switch to the default tip? (y/n): '))
             if switchToDefaultTipApproval == ('y' or 'yes'):
-                subprocess.call(['hg', 'up', 'default'])
+                subprocess.check_call(['hg', 'up', 'default'], cwd=repoDir)
             else:
                 raise Exception('Not on default tip.')
-    fuzzPath = fuzzPath[:-1] + '-' + hgIdLocalNum + '-' + hgIdChangesetHash + os.sep
-    verboseDump('Finished running `hg identify -i -n -b`.')
-    return os.path.normpath(fuzzPath), onDefaultTip
+    fuzzPath = '-'.join([fuzzPath, hgIdLocalNum, hgIdChangesetHash])
+    verboseDump('Finished running `' + ' '.join(hgIdCmdList) + '`.')
+    return normExpUserPath(fuzzPath), onDefaultTip
 
-def cpJsTreeDir(repo, dest, sourceDir):
-    '''
-    This function copies the js tree or the pymake build directory.
-    '''
-    # This globalRepo variable is only needed to propagate the repository to compileCopy function, it can be
-    # removed if compileCopy accepts a repo directory as one of its parameters.
-    global globalRepo
-    globalRepo = repo
-    if sourceDir == 'jsSrcDir':
-        repo = os.path.normpath(os.path.join(repo, 'js', 'src'))
-    # Changeset 91a8d742c509 introduced a mfbt directory on the same level as the js directory.
-    elif sourceDir == 'mfbtDir':
-        repo = os.path.normpath(os.path.join(repo, 'mfbt'))
-    # Changeset b9c673621e1e introduced a public directory on the same level as the js/src directory.
-    elif sourceDir == 'jsPublicDir':
-        repo = os.path.normpath(os.path.join(repo, 'js', 'public'))
-    else:
-        raise Exception('Unknown sourceDir:', sourceDir)
-    if 'Windows-XP' not in platform.platform():
-        repo = os.path.expanduser(repo)
-    assert os.path.isdir(repo)
+def patchHgRepoUsingMq(patchLoc, cwd=os.getcwdu()):
+    # We may have passed in the patch with or without the full directory.
+    p = os.path.abspath(normExpUserPath(patchLoc))
+    pname = os.path.basename(p)
+    assert (p, pname) != ('','')
+    subprocess.check_call(['hg', 'qimport', p], cwd=cwd)
+    verboseDump("Patch qimport'ed.")
     try:
-        verboseDump('Copying the js tree, which is located at ' + repo)
-        shutil.copytree(os.path.normpath(repo), dest, ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
-        verboseDump('Finished copying the js tree')
-    except OSError as e:
-        if verbose:
-            print repr(e)
-        raise Exception("Either the js tree directory located at '" + repo + "' doesn't exist, or the destination already exists.")
-    except:
-        raise Exception("Problem copying files related to the js tree.")
+        subprocess.check_call(['hg', 'qpush', pname], cwd=cwd)
+        verboseDump("Patch qpush'ed.")
+    except subprocess.CalledProcessError as e:
+        subprocess.check_call(['hg', 'qpop'], cwd=cwd)
+        subprocess.check_call(['hg', 'qdelete', pname], cwd=cwd)
+        print 'You may have untracked .rej files in the repository.'
+        print '`hg st` output of the repository in ' + cwd + ' :'
+        subprocess.check_call(['hg', 'st'], cwd=cwd)
+        hgPurgeAns = str(raw_input('Do you want to run `hg purge`? (y/n): '))
+        assert hgPurgeAns.lower() in ('y', 'n')
+        if hgPurgeAns == 'y':
+            subprocess.check_call(['hg', 'purge'], cwd=cwd)
+        raise Exception(format_exc())
+    return pname
 
 def autoconfRun(cwd):
     '''
@@ -264,70 +263,51 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     verboseDump('This is the configure command (environment variables not included):')
     verboseDump('%s\n' % ' '.join(cfgCmdList))
 
-    if os.name == 'nt':
-        nullLocation = open('nul', 'w')
-    else:
-        nullLocation = open('/dev/null', 'w')
-
-    # If on Windows, be sure to first install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
+    # On Windows, install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
     # Note that on Windows, redirecting stdout to subprocess.STDOUT does not work on Python 2.6.5.
     if verbose:
-        subprocess.call(cfgCmdList, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
+        subprocess.check_call(cfgCmdList, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
     else:
-        subprocess.call(cfgCmdList, stdout=nullLocation, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
-
-def binaryPostfix():
-    if os.name == 'posix':
-        return ''
-    elif os.name == 'nt':
-        return '.exe'
+        fnull = open(os.devnull, 'w')
+        subprocess.check_call(
+            cfgCmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
+        fnull.close()
 
 def shellName(archNum, compileType, extraID, valgrindSupport):
-    if os.name == 'posix':
-        osname = os.uname()[0].lower()
-    elif os.name == 'nt':
-        osname = os.name.lower()
-    vgmark = "-vg" if valgrindSupport else ""
-    return 'js-' + compileType + '-' + archNum + vgmark + '-' + extraID + '-' + osname + binaryPostfix()
+    return '-'.join(filter(None, ['js', compileType, archNum,
+                     "vg" if valgrindSupport else "", extraID, platform.system().lower(),
+                     '.exe' if platform.system() == 'Windows' else '']))
 
-def compileCopy(archNum, compileType, extraID, usePymake, destDir, objdir, valgrindSupport):
+def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objDir, valgrindSupport):
     '''
     This function compiles and copies a binary.
     '''
     jobs = (cpu_count() * 5) // 4
-    compiledName = os.path.join(objdir, 'js' + binaryPostfix())
+    compiledNamePath = normExpUserPath(os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
     try:
         if usePymake:
-            out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objdir)
+            out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objDir)
             # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
             if 'no such option: -s' in out:
-                out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(globalRepo, 'build', 'pymake', 'make.py')), '-j' + str(jobs)], combineStderr=True, currWorkingDir=objdir)
+                out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')), '-j' + str(jobs)], combineStderr=True, currWorkingDir=objDir)
         else:
-            out = captureStdout(['make', '-C', objdir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True, currWorkingDir=objdir)
-    except:
+            out = captureStdout(['make', '-C', objDir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True, currWorkingDir=objDir)
+    except Exception as e:
         # Sometimes a non-zero error can be returned during the make process, but eventually a
         # shell still gets compiled.
-        if os.path.exists(compiledName):
+        if os.path.exists(compiledNamePath):
             print 'A shell was compiled even though there was a non-zero exit code returned. Continuing...'
         else:
             print out
-            raise Exception("Running 'make' did not result in a js shell")
+            raise Exception("Running 'make' did not result in a js shell, '" + repr(e) + "' thrown.")
 
-    if not os.path.exists(compiledName):
+    if not os.path.exists(compiledNamePath):
         print out
-        raise Exception("Running 'make' did not result in a js shell")
+        raise Exception("Running 'make' did not result in a js shell, no exception thrown.")
     else:
-        newName = os.path.join(destDir, shellName(archNum, compileType, extraID, valgrindSupport))
-        shutil.copy2(compiledName, newName)
-        return newName
-
-def cpUsefulFiles(filePath):
-    '''
-    This function copies over useful files that are updated in hg fuzzing branch.
-    '''
-    if 'Windows-XP' not in platform.platform():
-        filePath = os.path.expanduser(filePath)
-    shutil.copy2(filePath, '.')
+        newNamePath = normExpUserPath(os.path.join(destDir, shellName(archNum, compileType, extraID, valgrindSupport)))
+        shutil.copy2(compiledNamePath, newNamePath)
+        return newNamePath
 
 ####################
 #  Test Functions  #
