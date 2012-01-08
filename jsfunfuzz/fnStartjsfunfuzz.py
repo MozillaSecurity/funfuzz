@@ -34,12 +34,12 @@ if platform.system() == 'Darwin':
     isMac = True
     (isSnowLeopard, isLion) = macType()
 
-def verboseDump(input):
+def verboseDump(inp, verbose=True):
     '''
     This function appends the word 'DEBUG' to any verbose output.
     '''
     if verbose:
-        print 'DEBUG -', input
+        print 'DEBUG -', inp
 
 def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=os.getcwdu()):
     '''
