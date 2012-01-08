@@ -8,8 +8,6 @@ import os
 import platform
 import shutil
 import subprocess
-import sys
-import shlex
 import time
 
 from multiprocessing import cpu_count
@@ -23,9 +21,9 @@ def macType():
     assert 6 <= int(platform.mac_ver()[0].split('.')[1]) <= 7
     isSL = isMac and platform.mac_ver()[0].split('.')[1] == '6' \
         and platform.mac_ver()[0].split('.') >= ['10', '6']
-    isLion = isMac and platform.mac_ver()[0].split('.')[1] == '7' \
+    amiLion = isMac and platform.mac_ver()[0].split('.')[1] == '7' \
         and platform.mac_ver()[0].split('.') >= ['10', '7']
-    return (isSL, isLion)
+    return (isSL, amiLion)
 
 assert platform.system() in ('Windows', 'Linux', 'Darwin')
 isMac = False
@@ -46,7 +44,8 @@ def vdump(inp):
 def normExpUserPath(p):
     return os.path.normpath(os.path.expanduser(p))
 
-def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=os.getcwdu()):
+def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
+                  currWorkingDir=os.getcwdu()):
     '''
     This function captures standard output into a python string.
     '''
@@ -59,10 +58,10 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         cwd=currWorkingDir)
     (stdout, stderr) = p.communicate()
     if not ignoreExitCode and p.returncode != 0:
-        # Potential problem area: Note that having a non-zero exit code does not mean that the operation
-        # did not succeed, for example when compiling a shell. A non-zero exit code can appear even
-        # though a shell compiled successfully. This issue has been bypassed in the makeShell
-        # function in autoBisect.
+        # Potential problem area: Note that having a non-zero exit code does not mean that the
+        # operation did not succeed, for example when compiling a shell. A non-zero exit code can
+        # appear even though a shell compiled successfully. This issue has been bypassed in the
+        # makeShell function in autoBisect.
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'no such option: -s' not in stdout:
             print 'Nonzero exit code from ' + repr(cmd)
@@ -121,7 +120,7 @@ def patchHgRepoUsingMq(patchLoc, cwd=os.getcwdu()):
     try:
         subprocess.check_call(['hg', 'qpush', pname], cwd=cwd)
         vdump("Patch qpush'ed.")
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         subprocess.check_call(['hg', 'qpop'], cwd=cwd)
         subprocess.check_call(['hg', 'qdelete', pname], cwd=cwd)
         print 'You may have untracked .rej files in the repository.'
@@ -273,39 +272,49 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
             cfgCmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
         fnull.close()
 
-def shellName(archNum, compileType, extraID, valgrindSupport):
-    return '-'.join(filter(None, ['js', compileType, archNum,
-                     "vg" if valgrindSupport else "", extraID, platform.system().lower(),
-                     '.exe' if platform.system() == 'Windows' else '']))
+def shellName(archNum, compileType, extraID, vgSupport):
+    return '-'.join(x for x in ['js', compileType, archNum,
+                     "vg" if vgSupport else "", extraID, platform.system().lower(),
+                     '.exe' if platform.system() == 'Windows' else ''] if x)
 
-def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objDir, valgrindSupport):
+def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objDir, vgSupport):
     '''
     This function compiles and copies a binary.
     '''
     jobs = (cpu_count() * 5) // 4
-    compiledNamePath = normExpUserPath(os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
+    compiledNamePath = normExpUserPath(
+        os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
     try:
         if usePymake:
-            out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objDir)
+            out = captureStdout(
+                ['python', '-OO',
+                 os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')),
+                 '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objDir)
             # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
             if 'no such option: -s' in out:
-                out = captureStdout(['python', '-OO', os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')), '-j' + str(jobs)], combineStderr=True, currWorkingDir=objDir)
+                out = captureStdout(
+                    ['python', '-OO',
+                     os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')),
+                     '-j' + str(jobs)], combineStderr=True, currWorkingDir=objDir)
         else:
-            out = captureStdout(['make', '-C', objDir, '-j' + str(jobs), '-s'], combineStderr=True, ignoreExitCode=True, currWorkingDir=objDir)
+            out = captureStdout(
+                ['make', '-C', objDir, '-j' + str(jobs), '-s'],
+                combineStderr=True, ignoreExitCode=True, currWorkingDir=objDir)
     except Exception as e:
         # Sometimes a non-zero error can be returned during the make process, but eventually a
         # shell still gets compiled.
         if os.path.exists(compiledNamePath):
-            print 'A shell was compiled even though there was a non-zero exit code returned. Continuing...'
+            print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
         else:
             print out
-            raise Exception("Running 'make' did not result in a js shell, '" + repr(e) + "' thrown.")
+            raise Exception("`make` did not result in a js shell, '" + repr(e) + "' thrown.")
 
     if not os.path.exists(compiledNamePath):
         print out
-        raise Exception("Running 'make' did not result in a js shell, no exception thrown.")
+        raise Exception("`make` did not result in a js shell, no exception thrown.")
     else:
-        newNamePath = normExpUserPath(os.path.join(destDir, shellName(archNum, compileType, extraID, valgrindSupport)))
+        newNamePath = normExpUserPath(
+            os.path.join(destDir, shellName(archNum, compileType, extraID, vgSupport)))
         shutil.copy2(compiledNamePath, newNamePath)
         return newNamePath
 
@@ -356,7 +365,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
                 testFileExitCode = subprocess.call([shell, testFilename])
             elif os.name == 'nt':
                 testFileExitCode = subprocess.call([shell, testFilename], shell=True)
-        except:
+        except Exception:
             # xpcshells need another argument after run-mozilla.sh
             if os.name == 'posix':
                 testFileExitCode = subprocess.call([shell, './xpcshell', testFilename])
@@ -368,11 +377,11 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
 
     return testFileExitCode
 
-def testJsShellOrXpcshell(shellName):
+def testJsShellOrXpcshell(sname):
     '''
     This function tests if a binary is a js shell or xpcshell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(shellName, 'jsShellXpcshell')
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(sname, 'jsShellXpcshell')
 
     # The error code for xpcshells when passing in the Components function should be 0.
     if exitCode == 0:
@@ -410,14 +419,14 @@ def testDbgOrOptGivenACompileType(jsShellName, compileType):
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if compileType == 'dbg' and exitCode != 0:
-        print 'ERROR: A debug shell when tested with the gczeal() should return "0" as the error code.'
+        print 'ERROR: A debug shell tested with gczeal() should return "0" as the error code.'
         print 'compileType is: ' + compileType
         print 'exitCode is: ' + str(exitCode)
         print
         raise Exception('The compiled binary is not a debug shell.')
     # Optimized shells don't have gczeal() compiled in by default.
     elif compileType == 'opt' and exitCode != 3:
-        print 'ERROR: An optimized shell when tested with the gczeal() should return "3" as the error code.'
+        print 'ERROR: An optimized shell tested with gczeal() should return "3" as the error code.'
         print 'compileType is: ' + compileType
         print 'exitCode is: ' + str(exitCode)
         print
