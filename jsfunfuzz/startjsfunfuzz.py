@@ -134,7 +134,8 @@ def main():
     try:
         vdump('Copying the js source tree, which is located at ' + jsSrcDir)
         shutil.copytree(jsSrcDir, compilePath,
-                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+                        ignore=shutil.ignore_patterns(
+                            'jit-test', 'tests', 'trace-test', 'xpconnect'))
         vdump('Finished copying the js tree')
     except OSError as e:
         vdump(repr(e))
@@ -143,14 +144,12 @@ def main():
     # 91a8d742c509 introduced a mfbt directory on the same level as the js/ directory.
     mfbtDir = normExpUserPath(os.path.join(repoDt[branchType], 'mfbt'))
     if os.path.isdir(mfbtDir):
-        shutil.copytree(mfbtDir, os.path.join(compilePath, '..', '..', 'mfbt'),
-                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+        shutil.copytree(mfbtDir, os.path.join(compilePath, '..', '..', 'mfbt'))
 
     # b9c673621e1e introduced a public directory on the same level as the js/src directory.
     jsPubDir = normExpUserPath(os.path.join(repoDt[branchType], 'js', 'public'))
     if os.path.isdir(jsPubDir):
-        shutil.copytree(jsPubDir, os.path.join(compilePath, '..', 'public'),
-                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+        shutil.copytree(jsPubDir, os.path.join(compilePath, '..', 'public'))
 
     # Remove the patches from the codebase if they were applied
     if len(sys.argv) >= 6 and sys.argv[4] == 'patch':
