@@ -200,10 +200,15 @@ def main():
                     vgBool)
 
     # Copy over useful files that are updated in hg fuzzing branch.
-    shutil.copy2('jsfunfuzz.js', fuzzPath)
-    shutil.copy2('analysis.py', fuzzPath)
-    shutil.copy2('runFindInterestingFiles.py', fuzzPath)
-    shutil.copy2('4test.py', fuzzPath)
+    shutil.copy2(
+        normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'jsfunfuzz.js')), fuzzPath)
+    shutil.copy2(
+        normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'analysis.py')), fuzzPath)
+    shutil.copy2(
+        normExpUserPath(
+            os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'runFindInterestingFiles.py')), fuzzPath)
+    shutil.copy2(
+        normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', '4test.py')), fuzzPath)
 
     jsknwnDt = {}
     # Define the corresponding js-known directories.
