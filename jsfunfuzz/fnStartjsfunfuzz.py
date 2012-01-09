@@ -256,7 +256,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
         cfgCmdList.append('--disable-debug')
         cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
 
-    cfgCmdList.append('--disable-methodjit')
+    cfgCmdList.append('--enable-methodjit')
     cfgCmdList.append('--enable-type-inference')
     # Fuzzing tweaks for more useful output, bug 706433
     cfgCmdList.append('--enable-more-deterministic')
