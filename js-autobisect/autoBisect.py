@@ -551,17 +551,17 @@ def rmDirInclSubDirs(dir):
     shutil.rmtree(dir)
 
 def lockedMain():
-  """Prevent running two instances of autoBisect at once, because we don't want to confuse hg."""
-  lockDir = os.path.join(shellCacheDir, "autobisect-lock")
-  try:
-    os.mkdir(lockDir)
-  except OSError, e:
-    print "autoBisect is already running"
-    return
-  try:
-    main()
-  finally:
-    os.rmdir(lockDir)
+    """Prevent running two instances of autoBisect at once, because we don't want to confuse hg."""
+    lockDir = os.path.join(shellCacheDir, "autobisect-lock")
+    try:
+        os.mkdir(lockDir)
+    except OSError, e:
+        print "autoBisect is already running"
+        return
+    try:
+        main()
+    finally:
+        os.rmdir(lockDir)
 
 if __name__ == '__main__':
     # Reopen stdout, unbuffered.
