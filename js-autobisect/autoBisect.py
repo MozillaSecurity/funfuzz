@@ -24,6 +24,7 @@ if not os.path.exists(shellCacheDir):
     os.mkdir(shellCacheDir)
 
 def main():
+    bashDate()
     global hgPrefix
     global shellCacheDir
 
@@ -132,6 +133,8 @@ def main():
     if verbose:
         print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
+
+    bashDate()
 
 def findCommonAncestor(a, b):
     # Requires hg 1.6 for the revset feature
@@ -428,12 +431,16 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, val
         print "Compiling in " + tempDir
 
     # Copy the js tree.
-    # There's some duplicate here and in fnStartjsfunfuzz.py.
-    cpJsTreeDir(sourceDir, compilePath, 'jsSrcDir')
-    if os.path.isdir(os.path.normpath(os.path.join(sourceDir, 'js', 'public'))):
-        cpJsTreeDir(sourceDir, os.path.join(compilePath, '..', 'public'), 'jsPublicDir')
-    if os.path.isdir(os.path.normpath(os.path.join(sourceDir, 'mfbt'))):
-        cpJsTreeDir(sourceDir, os.path.join(compilePath, '..', '..', 'mfbt'), 'mfbtDir')
+    shutil.copytree(sourceDir, compilePath,
+                    ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+    if os.path.isdir(normExpUserPath(os.path.join(sourceDir, 'js', 'public'))):
+        jsPubDir = normExpUserPath(os.path.join(sourceDir, 'js', 'public'))
+        shutil.copytree(jsPubDir, os.path.join(compilePath, '..', 'public'),
+                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+    if os.path.isdir(normExpUserPath(os.path.join(sourceDir, 'mfbt'))):
+        mfbtDir = normExpUserPath(os.path.join(sourceDir, 'mfbt'))
+        shutil.copytree(mfbtDir, os.path.join(compilePath, '..', '..', 'mfbt'),
+                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
 
     # Run autoconf.
     autoconfRun(compilePath)
