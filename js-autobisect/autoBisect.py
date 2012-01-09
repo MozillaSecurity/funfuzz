@@ -16,7 +16,6 @@ path2 = os.path.abspath(os.path.join(path0, "..", "jsfunfuzz"))
 sys.path.append(path2)
 from fnStartjsfunfuzz import *
 
-verbose = False
 COMPILATION_FAILED_LABEL = 'skip'
 
 shellCacheDir = os.path.join(os.path.expanduser("~"), "Desktop", "autobisect-cache")
@@ -56,8 +55,7 @@ def main():
     realStartRepo = startRepo = hgId(startRepo)
     realEndRepo = endRepo = hgId(endRepo)
 
-    if verbose:
-        print "Bisecting in the range " + startRepo + ":" + endRepo
+    vdump("Bisecting in the range " + startRepo + ":" + endRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
@@ -126,12 +124,10 @@ def main():
     if blamedRev is not None:
         checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo, realEndRepo)
 
-    if verbose:
-        print "Resetting bisect"
+    vdump("Resetting bisect")
     subprocess.call(hgPrefix + ['bisect', '-U', '-r'])
 
-    if verbose:
-        print "Resetting working directory"
+    vdump("Resetting working directory")
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
     print bashDate()
@@ -427,8 +423,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, val
     tempDir = tempfile.mkdtemp(prefix="abc-" + currRev + "-")
     compilePath = os.path.join(tempDir, 'compilePath', 'js', 'src')
 
-    if verbose:
-        print "Compiling in " + tempDir
+    vdump("Compiling in " + tempDir)
 
     # Copy the js tree.
     shutil.copytree(sourceDir, compilePath,
@@ -469,8 +464,7 @@ def testBinary(shell, file, flagsRequired, valgSupport):
     testBinaryCmd = [shell] + flagsRequired + [file]
     if valgSupport:
         testBinaryCmd = ['valgrind'] + testBinaryCmd
-    if verbose:
-        print 'The testing command is:', ' '.join(testBinaryCmd)
+    vdump('The testing command is:', ' '.join(testBinaryCmd))
 
     # Capture stdout and stderr into the same string.
     p = subprocess.Popen(testBinaryCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -529,9 +523,8 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     if ignoreResult:
         return None, None, None, startRepo, endRepo
 
-    if verbose:
-        # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
-        print outputLines[0]
+    # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
+    vdump(outputLines[0])
 
     currRev = extractChangesetFromMessage(outputLines[0])
     if currRev is None:
