@@ -98,7 +98,7 @@ def main():
         captureStdout(hgPrefix + ['bisect', '-U', '-g', startRepo])
         currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', endRepo])))
 
-    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, testAndLabel)
+    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel)
 
     iterNum = 1
     if paranoidBool:
@@ -172,7 +172,7 @@ def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, en
         print label[0] + " (" + label[1] + ") "
         print "Try setting -s to %s, and -e to %s, and re-run autoBisect." % (ca, parents[0])
 
-def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, testAndLabel):
+def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel):
     def testRev(rev):
         cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, rev, valgrindSupport))
         cachedNoShell = cachedShell + ".busted"
@@ -189,7 +189,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, v
             try:
                 print "Compiling...",
                 jsShellName = makeShell(shellCacheDir, sourceDir,
-                                        archNum, compileType, flagsRequired, valgrindSupport,
+                                        archNum, compileType, valgrindSupport,
                                         rev)
             except Exception as e:
                 open(cachedNoShell, 'w').close()
@@ -419,40 +419,41 @@ assert extractChangesetFromMessage("x 12345:abababababab") == "abababababab"
 assert extractChangesetFromMessage("x 12345:123412341234") == "123412341234"
 assert extractChangesetFromMessage("12345:abababababab y") == "abababababab"
 
-def makeShell(shellCacheDir, sourceDir, archNum, compileType, flagsRequired, valgrindSupport, currRev):
+def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, currRev):
     tempDir = tempfile.mkdtemp(prefix="abc-" + currRev + "-")
-    compilePath = os.path.join(tempDir, 'compilePath', 'js', 'src')
+    compileJsSrcPath = normExpUserPath(os.path.join(tempDir, 'compilePath', 'js', 'src'))
 
     vdump("Compiling in " + tempDir)
 
     # Copy the js tree.
-    shutil.copytree(sourceDir, compilePath,
-                    ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
-    if os.path.isdir(normExpUserPath(os.path.join(sourceDir, 'js', 'public'))):
-        jsPubDir = normExpUserPath(os.path.join(sourceDir, 'js', 'public'))
-        shutil.copytree(jsPubDir, os.path.join(compilePath, '..', 'public'),
-                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
-    if os.path.isdir(normExpUserPath(os.path.join(sourceDir, 'mfbt'))):
-        mfbtDir = normExpUserPath(os.path.join(sourceDir, 'mfbt'))
-        shutil.copytree(mfbtDir, os.path.join(compilePath, '..', '..', 'mfbt'),
-                        ignore=shutil.ignore_patterns('tests', 'trace-test', 'xpconnect'))
+    jsSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'src'))
+    shutil.copytree(jsSrcDir, compileJsSrcPath,
+                    ignore=shutil.ignore_patterns(
+                        'jit-test', 'tests', 'trace-test', 'xpconnect'))
+    jsPubSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'public'))
+    if os.path.isdir(jsPubSrcDir):
+        shutil.copytree(jsPubSrcDir, os.path.join(compileJsSrcPath, '..', 'public'))
+    mfbtSrcDir = normExpUserPath(os.path.join(sourceDir, 'mfbt'))
+    if os.path.isdir(mfbtSrcDir):
+        shutil.copytree(mfbtSrcDir, os.path.join(compileJsSrcPath, '..', '..', 'mfbt'))
 
     # Run autoconf.
-    autoconfRun(compilePath)
+    autoconfRun(compileJsSrcPath)
 
-    # Create objdir within the compilePath.
-    objdir = os.path.join(compilePath, compileType + '-objdir')
+    # Create objdir within the compileJsSrcPath.
+    objdir = os.path.join(compileJsSrcPath, compileType + '-objdir')
     os.mkdir(objdir)
 
     # Run configure.
     threadsafe = False  # Let's disable support for threadsafety in the js shell
-    cfgJsBin(archNum, compileType, threadsafe, os.path.join(compilePath, 'configure'), objdir)
+    cfgPath = normExpUserPath(os.path.join(compileJsSrcPath, 'configure'))
+    cfgJsBin(archNum, compileType, threadsafe, cfgPath, objdir)
 
     # Compile and copy the first binary.
     # Only pymake was tested on Windows.
     usePymake = True if os.name == 'nt' else False
     try:
-        shell = compileCopy(archNum, compileType, currRev, usePymake, shellCacheDir, objdir, valgrindSupport)
+        shell = compileCopy(archNum, compileType, currRev, usePymake, sourceDir, shellCacheDir, objdir, valgrindSupport)
     finally:
         assert os.path.isdir(tempDir) is True
         rmDirInclSubDirs(tempDir)
@@ -464,7 +465,7 @@ def testBinary(shell, file, flagsRequired, valgSupport):
     testBinaryCmd = [shell] + flagsRequired + [file]
     if valgSupport:
         testBinaryCmd = ['valgrind'] + testBinaryCmd
-    vdump('The testing command is:', ' '.join(testBinaryCmd))
+    vdump('The testing command is:' + ' '.join(testBinaryCmd))
 
     # Capture stdout and stderr into the same string.
     p = subprocess.Popen(testBinaryCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
