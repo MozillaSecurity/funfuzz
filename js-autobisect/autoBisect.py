@@ -24,7 +24,7 @@ if not os.path.exists(shellCacheDir):
     os.mkdir(shellCacheDir)
 
 def main():
-    bashDate()
+    print bashDate()
     global hgPrefix
     global shellCacheDir
 
@@ -134,7 +134,7 @@ def main():
         print "Resetting working directory"
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
-    bashDate()
+    print bashDate()
 
 def findCommonAncestor(a, b):
     # Requires hg 1.6 for the revset feature
