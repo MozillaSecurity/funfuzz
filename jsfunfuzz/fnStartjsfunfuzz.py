@@ -16,6 +16,10 @@ from traceback import format_exc
 verbose = False  # Turn this to True to enable verbose output for debugging.
 showCapturedCommands = False
 
+########################
+#  Platform Detection  #
+########################
+
 def macType():
     # Script has only been tested on Snow Leopard and Lion.
     assert 6 <= int(platform.mac_ver()[0].split('.')[1]) <= 7
@@ -33,6 +37,10 @@ if platform.system() == 'Darwin':
 
 if platform.system() == 'Windows':
     assert 'Windows-XP' not in platform.platform()
+
+#####################
+#  Shell Functions  #
+#####################
 
 def vdump(inp):
     '''
@@ -80,6 +88,27 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         if stderr is not None:
             print stderr
     return stdout.rstrip()
+
+def timeShellFunction(command, cwd=os.getcwdu()):
+    print 'Running `%s` now..' % ' '.join(command)
+    startTime = time.time()
+    retVal = subprocess.call(command, cwd=cwd)
+    endTime = time.time()
+    print '`' + ' '.join(command) + '` took %.3f seconds.\n' % (endTime - startTime)
+    return retVal
+
+def bashDate():
+    '''
+    Equivalent of: assert subprocess.check_output(['Date'])[:-1] == currDateTime
+    '''
+    currTz = time.tzname[0] if time.daylight == 1 else time.tzname[1]
+    currAscDateTime = time.asctime( time.localtime(time.time()) )
+    currDateTime = currAscDateTime[:-4] + currTz + ' ' + currAscDateTime[-4:]
+    return currDateTime
+
+##############################
+#  startjsfunfuzz Functions  #
+##############################
 
 def hgHashAddToFuzzPath(fuzzPath, repoDir):
     '''
@@ -431,14 +460,6 @@ def testDbgOrOptGivenACompileType(jsShellName, compileType):
         print 'exitCode is: ' + str(exitCode)
         print
         raise Exception('The compiled binary is not an optimized shell.')
-
-def timeShellFunction(command, cwd=os.getcwdu()):
-    print 'Running `%s` now..' % ' '.join(command)
-    startTime = time.time()
-    retVal = subprocess.call(command, cwd=cwd)
-    endTime = time.time()
-    print '`' + ' '.join(command) + '` took %.3f seconds.\n' % (endTime - startTime)
-    return retVal
 
 if __name__ == '__main__':
     pass

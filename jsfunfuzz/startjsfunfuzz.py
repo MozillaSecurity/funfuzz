@@ -12,11 +12,12 @@ import sys
 import time
 
 from random import randint
-from fnStartjsfunfuzz import vdump, normExpUserPath, hgHashAddToFuzzPath, \
+from fnStartjsfunfuzz import vdump, normExpUserPath, bashDate, hgHashAddToFuzzPath, \
     patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy, archOfBinary, \
     testDbgOrOptGivenACompileType
 
 def main():
+    print bashDate()
     mjit = True  # turn on -m
     mjitAll = True  # turn on -a
     debugJit = True  # turn on -d
@@ -292,7 +293,7 @@ def main():
     !  Fuzzing %s %s %s js shell builds now  !
        DATE: %s
     ================================================
-    ''' % (archNum + '-bit', compileType, branchType, time.asctime( time.localtime(time.time()) ))
+    ''' % (archNum + '-bit', compileType, branchType, bashDate() )
 
     # Commands to simulate bash's `tee`.
     tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE, cwd=fuzzPath)
