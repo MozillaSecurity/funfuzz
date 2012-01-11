@@ -386,9 +386,9 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
         # ./xpcshell is the testcase they should run instead.
         if 'run-mozilla' in shell:
             cmdList.append('./xpcshell')
-            assert len(contentsList) == 2
+            assert len(cmdList) == 2
         else:
-            assert len(contentsList) == 1
+            assert len(cmdList) == 1
 
     contentsList.append(contents)
     f.writelines(contentsList)
