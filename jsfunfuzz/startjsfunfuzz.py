@@ -290,7 +290,7 @@ def main():
 
     if platform.system() == 'Linux' or platform.system() == 'Darwin':
         assert archOfBinary(shname) == archNum  # 32-bit or 64-bit verification test.
-    testDbgOrOptGivenACompileType(shname, compileType)
+    testDbgOrOptGivenACompileType(shname, compileType, cwd=fuzzPath)
 
     print '''
     ================================================

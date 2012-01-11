@@ -11,6 +11,7 @@ import subprocess
 import time
 
 from multiprocessing import cpu_count
+from tempfile import NamedTemporaryFile
 from traceback import format_exc
 
 verbose = False  # Turn this to True to enable verbose output for debugging.
@@ -366,51 +367,50 @@ def archOfBinary(b):
         assert '32-bit' not in filetype
         return '64'
 
-def createTestFiles(name, contentsLineList):
-    testFile = open(name, 'w')
-    for line in contentsLineList:
-        testFile.writelines(line)
-    testFile.close()
-
-    if not os.path.isfile(name):
-        raise Exception(name, 'does not exist.')
-
-def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
+def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcwdu()):
     '''
     This function returns the exit code after testing the shell.
     '''
-    contents = []
+    contents = ''
+    contentsList = []
+    cmdList = []
+    f = NamedTemporaryFile()
+
+    cmdList.append(shell)
     if dbgOptOrJsShellXpcshell == 'dbgOpt':
-        testFilename = 'dbgOptTest.js'
-        contents.append('gczeal()')
+        contents = 'gczeal()'
     elif dbgOptOrJsShellXpcshell == 'jsShellXpcshell':
-        testFilename = 'jsShellXpcshellTest.js'
-        contents.append('Components')
-    createTestFiles(testFilename, contents)
+        contents = 'Components'
+        cmdList.append('./xpcshell')
 
-    while True:
-        try:
-            if os.name == 'posix':
-                testFileExitCode = subprocess.call([shell, testFilename])
-            elif os.name == 'nt':
-                testFileExitCode = subprocess.call([shell, testFilename], shell=True)
-        except Exception:
-            # xpcshells need another argument after run-mozilla.sh
-            if os.name == 'posix':
-                testFileExitCode = subprocess.call([shell, './xpcshell', testFilename])
-            elif os.name == 'nt':
-                testFileExitCode = subprocess.call([shell, './xpcshell', testFilename], shell=True)
-        finally:
-            os.remove(testFilename)  # Remove testfile after grabbing the error code.
-            break
+    contentsList.append(contents)
+    f.writelines(contentsList)
+    f.flush()  # Important! Or else nothing will be in the file when the js shell executes the file.
 
-    return testFileExitCode
+    cmdList.append(f.name)
+    vdump(' '.join(cmdList))
+    if verbose:
+        subprocess.call(cmdList, stderr=subprocess.STDOUT, cwd=cwd)
+    else:
+        fnull = open(os.devnull, 'w')
+        retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=cwd)
+        fnull.close()
 
-def testJsShellOrXpcshell(sname):
+    # Verbose logging.
+    vdump('The contents of ' + f.name + ' is:')
+    if verbose:
+        # Go back to the beginning of the file to print if verbose. It hasn't yet been closed.
+        f.seek(0)
+    print ''.join([line for line in f.readlines() if verbose])
+    f.close()
+
+    return retCode
+
+def testJsShellOrXpcshell(sname, cwd=os.getcwdu()):
     '''
     This function tests if a binary is a js shell or xpcshell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(sname, 'jsShellXpcshell')
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(sname, 'jsShellXpcshell', cwd=cwd)
 
     # The error code for xpcshells when passing in the Components function should be 0.
     if exitCode == 0:
@@ -421,11 +421,11 @@ def testJsShellOrXpcshell(sname):
     else:
         raise Exception('Unknown exit code after testing if js shell or xpcshell: ' + str(exitCode))
 
-def testDbgOrOpt(jsShellName):
+def testDbgOrOpt(jsShellName, cwd=os.getcwdu()):
     '''
     This function tests if a binary is a debug or optimized shell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt', cwd=cwd)
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if exitCode == 0:
@@ -436,11 +436,11 @@ def testDbgOrOpt(jsShellName):
     else:
         raise Exception('Unknown exit code after testing if debug or opt: ' + exitCode)
 
-def testDbgOrOptGivenACompileType(jsShellName, compileType):
+def testDbgOrOptGivenACompileType(jsShellName, compileType, cwd=os.getcwdu()):
     '''
     This function tests if a binary is a debug or optimized shell given a compileType.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt', cwd=cwd)
 
     vdump('The error code for debug shells should be 0.')
     vdump('The error code for opt shells should be 3.')
