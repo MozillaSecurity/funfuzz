@@ -381,7 +381,14 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
         contents = 'gczeal()'
     elif dbgOptOrJsShellXpcshell == 'jsShellXpcshell':
         contents = 'Components'
-        cmdList.append('./xpcshell')
+        # To run xpcshell, command is `./run-mozilla.sh ./xpcshell testcase.js`
+        # js shells do not have the middle parameter, so they will mis-understand and think that
+        # ./xpcshell is the testcase they should run instead.
+        if 'run-mozilla' in shell:
+            cmdList.append('./xpcshell')
+            assert len(contentsList) == 2
+        else:
+            assert len(contentsList) == 1
 
     contentsList.append(contents)
     f.writelines(contentsList)
@@ -390,7 +397,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     cmdList.append(f.name)
     vdump(' '.join(cmdList))
     if verbose:
-        subprocess.call(cmdList, stderr=subprocess.STDOUT, cwd=cwd)
+        retCode = subprocess.call(cmdList, stderr=subprocess.STDOUT, cwd=cwd)
     else:
         fnull = open(os.devnull, 'w')
         retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=cwd)
