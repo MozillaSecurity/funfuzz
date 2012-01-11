@@ -404,6 +404,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     print ''.join([line for line in f.readlines() if verbose])
     f.close()
 
+    vdump('The return code is: ' + retCode)
     return retCode
 
 def testJsShellOrXpcshell(sname, cwd=os.getcwdu()):
