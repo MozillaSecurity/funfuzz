@@ -311,8 +311,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
     '''
     This function compiles and copies a binary.
     '''
-    ccnt = cpu_count()
-    jobs = (ccnt * 5) // 4 if ccnt < 5 else (ccnt * 3) // 2
+    jobs = (cpu_count() * 3) // 2
     compiledNamePath = normExpUserPath(
         os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
     try:
