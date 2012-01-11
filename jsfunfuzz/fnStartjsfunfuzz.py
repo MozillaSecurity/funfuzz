@@ -121,7 +121,7 @@ def hgHashAddToFuzzPath(fuzzPath, repoDir):
     hgIdFull = captureStdout(hgIdCmdList, currWorkingDir=repoDir)
     hgIdChangesetHash = hgIdFull.split(' ')[0]
     hgIdLocalNum = hgIdFull.split(' ')[1]
-    hgIdBranch = subprocess.check_output(['hg', 'id', '-t'], cwd=repoDir)
+    hgIdBranch = captureStdout(['hg', 'id', '-t'], currWorkingDir=repoDir)
     onDefaultTip = True
     if 'tip' not in hgIdBranch:
         print 'The repository is at this changeset -', hgIdLocalNum + ':' + hgIdChangesetHash
