@@ -42,24 +42,24 @@ def many_timed_runs(targetTime, args):
                 return (None, HAPPY, None)
 
             url = urls[iteration]
-            boolPrefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames)
+            prefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames) + nonBoolPrefs()
 
             logPrefix = os.path.join(tempDir, "q" + str(iteration))
             now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
             print "%%% " + now + " starting q" + str(iteration) + ": " + url
-            level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(boolPrefs))
+            level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(prefs))
 
             if level > rundomfuzz.DOM_FINE:
                 print "loopdomfuzz.py: will try reducing from " + url
                 rFN = createReproFile(lines, logPrefix)
-                writeLinesToFile(boolPrefs, logPrefix + "-prefs.txt") # rundomfuzz.py will look for this file when invoked by Lithium or directly
+                writeLinesToFile(prefs, logPrefix + "-prefs.txt") # rundomfuzz.py will look for this file when invoked by Lithium or directly
                 extraRDFArgs = ["--valgrind"] if options.valgrind else []
                 lithArgs = [rundomfuzzpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
                 (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
                 if lithresult == LITH_NO_REPRO:
                     os.remove(rFN)
                     print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
-                    level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(boolPrefs))
+                    level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(prefs))
                     if level2 > rundomfuzz.DOM_FINE:
                         print "%%% Lithium can't reproduce, but I can!"
                         reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
@@ -279,6 +279,14 @@ def writeLinesToFile(lines, filename):
 def afterColon(s):
     (head, sep, tail) = s.partition(": ")
     return tail.strip()
+
+def nonBoolPrefs():
+    p = []
+    if random.random() > 0.8:
+        p += ['user_pref("font.size.inflation.minTwips", 120);\n']
+    if random.random() > 0.8:
+        p += ['user_pref("font.size.inflation.emPerLine", 15);\n']
+    return p
 
 if __name__ == "__main__":
     many_timed_runs(None, sys.argv[1:])
