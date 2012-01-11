@@ -9,7 +9,6 @@ import platform
 import shutil
 import subprocess
 import sys
-import time
 
 from random import randint
 from fnStartjsfunfuzz import vdump, normExpUserPath, bashDate, hgHashAddToFuzzPath, \
