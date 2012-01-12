@@ -118,10 +118,18 @@ def hgHashAddToFuzzPath(fuzzPath, repoDir):
     '''
     hgIdCmdList = ['hg', 'identify', '-i', '-n', '-b', repoDir]
     vdump('About to start running `' + ' '.join(hgIdCmdList) + '` ...')
-    hgIdFull = captureStdout(hgIdCmdList, currWorkingDir=repoDir)
+    # In Windows, this throws up a warning about failing to set color mode to win32.
+    if platform.system() == 'Windows':
+        hgIdFull = captureStdout(hgIdCmdList, currWorkingDir=repoDir, ignoreStderr=True)
+    else:
+        hgIdFull = captureStdout(hgIdCmdList, currWorkingDir=repoDir)
     hgIdChangesetHash = hgIdFull.split(' ')[0]
     hgIdLocalNum = hgIdFull.split(' ')[1]
-    hgIdBranch = captureStdout(['hg', 'id', '-t'], currWorkingDir=repoDir)
+    # In Windows, this throws up a warning about failing to set color mode to win32.
+    if platform.system() == 'Windows':
+        hgIdBranch = captureStdout(['hg', 'id', '-t'], currWorkingDir=repoDir, ignoreStderr=True)
+    else:
+        hgIdBranch = captureStdout(['hg', 'id', '-t'], currWorkingDir=repoDir)
     onDefaultTip = True
     if 'tip' not in hgIdBranch:
         print 'The repository is at this changeset -', hgIdLocalNum + ':' + hgIdChangesetHash
