@@ -45,17 +45,17 @@ def main():
 
     if platform.system() == "Linux" or platform.system() == "Darwin":
         vdump('Setting ulimit -c to unlimited..')
-        subprocess.check_call(['ulimit', '-c', 'unlimited']) # Enable creation of coredumps.
+        # ulimit requires shell=True to work properly.
+        subprocess.check_call(['ulimit -c unlimited'], shell=True) # Enable creation of coredumps.
         if platform.system() == "Linux":
-            fnull = open(os.devnull, 'w')
             # Only allow one process to create a coredump at a time.
             p1 = subprocess.Popen(
                 ['echo', '1'], stdout=subprocess.PIPE)
             p2 = subprocess.Popen(
-                ['sudo', 'tee', '/proc/sys/kernel/core_uses_pid'], stdin=p1.stdout, stdout=fnull)
+                ['sudo tee /proc/sys/kernel/core_uses_pid'], stdin=p1.stdout,
+                    stdout=subprocess.PIPE, shell=True)
             p1.stdout.close()
-            (p2stdout, p2stderr) = p2.communicate()[0]  # p2stdout should have been piped to null
-            fnull.close()
+            (p2stdout, p2stderr) = p2.communicate()[0]
             vdump(p2stdout)
             vdump(p2stderr)
             try:
