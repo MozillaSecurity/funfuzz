@@ -4,7 +4,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os, shutil, subprocess, sys, re, tempfile
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import re
+import tempfile
 from optparse import OptionParser
 from types import *
 
@@ -35,7 +41,7 @@ def main():
     # /c/ to ~-land in Vista/7.
     # Edit 3: Windows 7 is now supported if directories are in ~-land.
     # Edit 4: Windows 7 SP1 is also supported.
-    if os.name == 'nt':
+    if platform.system() == 'windows':
         raise Exception('Suspend autoBisect temporarily.')
         if platform.uname()[3] != '6.1.7600' and platform.uname()[3] != '6.1.7601':
             raise Exception('autoBisect is not supported on Windows versions lower than Windows 7.')
@@ -391,15 +397,15 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     elif debugModeBool:
         # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
         return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
-    elif methodjitBool and os.name == 'nt':
+    elif methodjitBool and platform.system() == 'windows':
         return '9f2641871ce8' # 53544 on m-c, first rev that can run with pymake and -m
     elif methodjitBool:
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
-    elif os.name == 'nt':
+    elif platform.system() == 'windows':
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
     elif isMac and isSL and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
-    elif (os.uname()[0] == 'Linux') or (isSL and archNum == "32"):
+    elif (os.uname()[0] == 'Linux') or (isMac and isSL and archNum == "32"):
         return "db4d22859940" # 24546 on m-c, imacros compilation change
     elif valgrindSupport:
         assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
@@ -451,7 +457,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
 
     # Compile and copy the first binary.
     # Only pymake was tested on Windows.
-    usePymake = True if os.name == 'nt' else False
+    usePymake = True if platform.system() == 'windows' else False
     try:
         shell = compileCopy(archNum, compileType, currRev, usePymake, sourceDir, shellCacheDir, objdir, valgrindSupport)
     finally:
