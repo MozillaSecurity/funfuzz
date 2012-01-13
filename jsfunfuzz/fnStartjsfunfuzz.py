@@ -383,7 +383,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     contents = ''
     contentsList = []
     cmdList = []
-    f = NamedTemporaryFile()
+    f = NamedTemporaryFile(delete=False)  # Don't delete upon close; Windows needs it to be closed.
 
     cmdList.append(shell)
     if dbgOptOrJsShellXpcshell == 'dbgOpt':
@@ -402,6 +402,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     contentsList.append(contents)
     f.writelines(contentsList)
     f.flush()  # Important! Or else nothing will be in the file when the js shell executes the file.
+    f.close()  # We have to close the file here, or else Windows won't be able to access the file.
 
     cmdList.append(f.name)
     vdump(' '.join(cmdList))
@@ -415,11 +416,12 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     # Verbose logging.
     vdump('The contents of ' + f.name + ' is:')
     if verbose:
-        # Go back to the beginning of the file to print if verbose. It hasn't yet been closed.
-        f.seek(0)
-    print ''.join([line for line in f.readlines() if verbose])
-    f.close()
+        with open(f.name, 'rb') as f:
+            print ''.join([line for line in f.readlines() if verbose])
 
+    assert os.path.exists(f.name)
+    os.remove(f.name)
+    assert not os.path.exists(f.name)
     vdump('The return code is: ' + str(retCode))
     return retCode
 
