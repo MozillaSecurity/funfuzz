@@ -381,7 +381,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # These should be in descending order, or bisection will break at earlier changesets.
     if typeInferBool:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
-    elif isLion:
+    elif isMac and isLion:
         return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
     elif methodjitAllBool:
         # This supercedes methodjitBool, -a only works with -m
@@ -397,7 +397,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif os.name == 'nt':
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
-    elif isSL and archNum == "64":
+    elif isMac and isSL and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
     elif (os.uname()[0] == 'Linux') or (isSL and archNum == "32"):
         return "db4d22859940" # 24546 on m-c, imacros compilation change
