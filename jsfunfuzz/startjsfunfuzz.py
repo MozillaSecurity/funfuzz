@@ -60,7 +60,7 @@ def main():
             vdump(p2stderr)
             try:
                 fcoreuses = open('/proc/sys/kernel/core_uses_pid', 'r')
-            except IOError as e:
+            except IOError:
                 raise
             assert '1' in fcoreuses.readline() # Double-check that only one process is allowed
             fcoreuses.close()
