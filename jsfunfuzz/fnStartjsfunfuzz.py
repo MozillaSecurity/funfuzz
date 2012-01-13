@@ -311,9 +311,10 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
         fnull.close()
 
 def shellName(archNum, compileType, extraID, vgSupport):
-    return '-'.join(x for x in ['js', compileType, archNum,
-                     "vg" if vgSupport else "", extraID, platform.system().lower()] if x) + \
-                        '.exe' if platform.system() == 'Windows' else ''
+    sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
+                                 platform.system().lower()] if x)
+    ext = '.exe' if platform.system() == 'Windows' else ''
+    return sname + ext
 
 def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objDir, vgSupport):
     '''
