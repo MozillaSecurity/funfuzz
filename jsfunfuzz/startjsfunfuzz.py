@@ -39,6 +39,9 @@ def main():
             (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or \
             (len(sys.argv) == 9 and sys.argv[8] == 'valgrind') or \
             (len(sys.argv) == 11 and sys.argv[10] == 'valgrind'):
+            # Valgrind does not work for 32-bit binaries in a 64-bit Linux system.
+            if platform.system() == 'Linux':
+                assert platform.uname()[4] == 'x86_64' and sys.argv[1] == '64'
             vgBool = True
             jsCompareJITSwitch = False  # Turn off compareJIT (too slow) when in Valgrind.
             mTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
@@ -64,10 +67,6 @@ def main():
                 raise
             assert '1' in fcoreuses.readline() # Double-check that only one process is allowed
             fcoreuses.close()
-
-            if sys.argv[1] == '64':
-                # 64-bit js shells have only been tested on Linux x86_64 (AMD64) platforms.
-                assert platform.system() == 'Linux' and platform.uname()[4] == 'x86_64'
 
     if sys.argv[3] == '192':
         jsCompareJITSwitch = False
