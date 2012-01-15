@@ -89,6 +89,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       cssPropertyDatabase: cssPropertyDatabase.bind(this),
 
+      comparePixels: comparePixels(aWindow),
+
       __exposedProps__: {
         'toString': 'r',
         'quitApplication': 'r',
@@ -105,7 +107,8 @@ function makeDOMFuzzHelper(aWindow) {
         'printToFile': 'r',
         'openAboutMemory': 'r',
         'reftestList': 'r',
-        'cssPropertyDatabase': 'r'
+        'cssPropertyDatabase': 'r',
+        'comparePixels': 'r'
       }
   };
 };
@@ -151,6 +154,50 @@ function cycleCollect(window)
     window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
           .getInterface(Components.interfaces.nsIDOMWindowUtils)
           .cycleCollect();
+  }
+}
+
+function comparePixels(aWindow)
+{
+  return function comparePixels2() {
+    var w = aWindow.innerWidth;
+    var h = aWindow.innerHeight;
+    dumpln(w + " x " + h);
+
+    var canvas1 = aWindow.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+    canvas1.setAttribute("width", w);
+    canvas1.setAttribute("height", h);
+
+    var canvas2 = aWindow.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+    canvas2.setAttribute("width", w);
+    canvas2.setAttribute("height", h);
+
+    function drawInto(canvas)
+    {
+      var ctx = canvas.getContext("2d");
+      ctx.drawWindow(aWindow,
+                     aWindow.scrollX,
+                     aWindow.scrollY,
+                     w,
+                     h,
+                     "rgb(255,255,255)",
+                     ctx.DRAWWINDOW_DRAW_CARET |
+                     ctx.DRAWWINDOW_USE_WIDGET_LAYERS);
+    }
+
+    drawInto(canvas1);
+    return function comparePixels3() {
+      drawInto(canvas2);
+      var wu = aWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+      var o = {};
+      var n = wu.compareCanvases(canvas1, canvas2, o);
+      if (n == 0) { return ""; }
+      return (
+        n + " pixel" + (n == 1 ? "" : "s") + " differ (max channel difference: " + o.value + ")\n" +
+        "Before:\n" + canvas1.toDataURL() + "\n" +
+        "After:\n" + canvas2.toDataURL() + "\n"
+      );
+    }
   }
 }
 

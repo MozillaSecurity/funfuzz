@@ -144,6 +144,7 @@ class AmissLogHandler:
     self.summaryLog = []
     self.expectedToHang = True
     self.expectedToLeak = True
+    self.expectedToRenderInconsistently = False
     self.sawOMGLEAK = False
     self.nsassertionCount = 0
     self.sawFatalAssertion = False
@@ -168,6 +169,12 @@ class AmissLogHandler:
       self.expectedToHang = False
     if msg == "Not expected to leak":
       self.expectedToLeak = False
+    if msg == "Allowed to render inconsistently" or msg.find("nscoord_MAX") != -1:
+      self.expectedToRenderInconsistently = True
+    if msg.startswith("Rendered inconsistently") and not self.expectedToRenderInconsistently and self.nsassertionCount == 0:
+      # Ignoring testcases with assertion failures (or nscoord_MAX warnings) because of bug 575011 and bug 265084, more or less.
+      self.fuzzerComplained = True
+      self.printAndLog("@@@ " + msg)
     if msg.startswith("Leaked until "):
       self.sawOMGLEAK = True
       self.printAndLog("@@@ " + msg)
@@ -376,6 +383,10 @@ def rdfInit(args):
 
     alh = AmissLogHandler(knownPath)
     alh.valgrind = options.valgrind
+
+    # Bug 718208
+    if extraPrefs.find("inflation") != -1:
+      alh.expectedToRenderInconsistently = True
 
     statusLinePrefix = "RUNBROWSER INFO | runbrowser.py | runApp: exited with status "
     status = -9000
