@@ -87,7 +87,7 @@ dom.enable_performance
 dom.event.contextmenu.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
-dom.ipc.plugins.java.enabled
+#dom.ipc.plugins.java.enabled # bug 718233
 dom.new_bindings
 dom.send_after_paint_to_content
 dom.server-events.enabled
