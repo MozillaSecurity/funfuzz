@@ -169,7 +169,7 @@ class AmissLogHandler:
       self.expectedToHang = False
     if msg == "Not expected to leak":
       self.expectedToLeak = False
-    if msg == "Allowed to render inconsistently" or msg.find("nscoord_MAX") != -1:
+    if msg == "Allowed to render inconsistently" or msg.find("nscoord_MAX") != -1 or msg.find("nscoord_MIN") != -1:
       self.expectedToRenderInconsistently = True
     if msg.startswith("Rendered inconsistently") and not self.expectedToRenderInconsistently and self.nsassertionCount == 0:
       # Ignoring testcases with assertion failures (or nscoord_MAX warnings) because of bug 575011 and bug 265084, more or less.
