@@ -79,9 +79,12 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         if 'no such option: -s' not in stdout:
             raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
-        print 'Unexpected output on stderr from ' + repr(cmd)
-        print stdout, stderr
-        raise Exception('Unexpected output on stderr')
+        if not (platform.system() == 'Windows' and \
+            # Ignore hg color mode throwing an error in console on Windows platforms.
+            'warning: failed to set color mode to win32' in stderr):
+            print 'Unexpected output on stderr from ' + repr(cmd)
+            print stdout, stderr
+            raise Exception('Unexpected output on stderr')
     if ignoreStderr and len(stderr) > 0 and p.returncode != 0:
         # During configure, there will always be stderr. Sometimes this stderr causes configure to
         # stop the entire script, especially on Windows.
