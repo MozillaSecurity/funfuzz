@@ -82,6 +82,12 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         print 'Unexpected output on stderr from ' + repr(cmd)
         print stdout, stderr
         raise Exception('Unexpected output on stderr')
+    if ignoreStderr and len(stderr) > 0 and p.returncode != 0:
+        # During configure, there will always be stderr. Sometimes this stderr causes configure to
+        # stop the entire script, especially on Windows.
+        print 'Return code not zero, and unexpected output on stderr from ' + repr(cmd)
+        print stdout, stderr
+        raise Exception('Return code not zero, and unexpected output on stderr')
     if verbose:
         print stdout
         if stderr is not None:
