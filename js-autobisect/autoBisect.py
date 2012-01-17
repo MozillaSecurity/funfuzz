@@ -42,7 +42,6 @@ def main():
     # Edit 3: Windows 7 is now supported if directories are in ~-land.
     # Edit 4: Windows 7 SP1 is also supported.
     if platform.system() == 'Windows':
-        raise Exception('Suspend autoBisect temporarily.')
         if platform.uname()[3] != '6.1.7600' and platform.uname()[3] != '6.1.7601':
             raise Exception('autoBisect is not supported on Windows versions lower than Windows 7.')
 
