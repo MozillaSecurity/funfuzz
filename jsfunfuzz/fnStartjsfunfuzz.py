@@ -54,7 +54,7 @@ def normExpUserPath(p):
     return os.path.normpath(os.path.expanduser(p))
 
 def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                  currWorkingDir=os.getcwdu()):
+                  currWorkingDir=os.getcwdu(), env=os.environ):
     '''
     This function captures standard output into a python string.
     '''
@@ -64,7 +64,7 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         stdin = subprocess.PIPE,
         stdout = subprocess.PIPE,
         stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE,
-        cwd=currWorkingDir)
+        cwd=currWorkingDir, env=env)
     (stdout, stderr) = p.communicate()
     if not ignoreExitCode and p.returncode != 0:
         # Potential problem area: Note that having a non-zero exit code does not mean that the
@@ -300,15 +300,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     vdump('This is the configure command (environment variables not included):')
     vdump('%s\n' % ' '.join(cfgCmdList))
 
-    # On Windows, install prerequisites at https://developer.mozilla.org/En/Windows_SDK_versions
-    # Note that on Windows, redirecting stdout to subprocess.STDOUT does not work on Python 2.6.5.
-    if verbose:
-        subprocess.check_call(cfgCmdList, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
-    else:
-        fnull = open(os.devnull, 'w')
-        subprocess.check_call(
-            cfgCmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=objdir, env=cfgEnvList)
-        fnull.close()
+    captureStdout(cfgCmdList, currWorkingDir=objdir, env=cfgEnvList)
 
 def shellName(archNum, compileType, extraID, vgSupport):
     sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
