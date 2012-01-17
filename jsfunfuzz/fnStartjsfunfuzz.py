@@ -15,7 +15,6 @@ from tempfile import NamedTemporaryFile
 from traceback import format_exc
 
 verbose = False  # Turn this to True to enable verbose output for debugging.
-showCapturedCommands = False
 
 ########################
 #  Platform Detection  #
@@ -58,7 +57,7 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
     '''
     This function captures standard output into a python string.
     '''
-    if showCapturedCommands:
+    if verbose:
         print ' '.join(cmd)
     p = subprocess.Popen(cmd,
         stdin = subprocess.PIPE,
@@ -84,7 +83,7 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         print 'Unexpected output on stderr from ' + repr(cmd)
         print stdout, stderr
         raise Exception('Unexpected output on stderr')
-    if showCapturedCommands:
+    if verbose:
         print stdout
         if stderr is not None:
             print stderr
