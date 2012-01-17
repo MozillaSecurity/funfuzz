@@ -57,8 +57,7 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
     '''
     This function captures standard output into a python string.
     '''
-    if verbose:
-        print ' '.join(cmd)
+    vdump(' '.join(cmd))
     p = subprocess.Popen(cmd,
         stdin = subprocess.PIPE,
         stdout = subprocess.PIPE,
