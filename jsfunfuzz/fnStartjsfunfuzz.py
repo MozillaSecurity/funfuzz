@@ -298,7 +298,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     vdump('This is the configure command (environment variables not included):')
     vdump('%s\n' % ' '.join(cfgCmdList))
 
-    captureStdout(cfgCmdList, currWorkingDir=objdir, env=cfgEnvList)
+    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvList)
 
 def shellName(archNum, compileType, extraID, vgSupport):
     sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
