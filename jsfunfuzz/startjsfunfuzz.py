@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 from random import randint
-from fnStartjsfunfuzz import vdump, normExpUserPath, bashDate, hgHashAddToFuzzPath, \
+from fnStartjsfunfuzz import isVM, vdump, normExpUserPath, bashDate, hgHashAddToFuzzPath, \
     patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy, archOfBinary, \
     testDbgOrOptGivenACompileType
 
@@ -91,24 +91,23 @@ def main():
     assert branchType in branchSuppList
 
     repoDt = {}
-    repoDt['fuzzing'] = normExpUserPath(os.path.join('~', 'fuzzing'))
-    repoDt['192'] = normExpUserPath(os.path.join('~', 'trees', 'mozilla-1.9.2'))
-    repoDt['mc'] = normExpUserPath(os.path.join('~', 'trees', 'mozilla-central'))
-    repoDt['jm'] = normExpUserPath(os.path.join('~', 'trees', 'jaegermonkey'))
-    repoDt['im'] = normExpUserPath(os.path.join('~', 'trees', 'ionmonkey'))
-    repoDt['mi'] = normExpUserPath(os.path.join('~', 'trees', 'mozilla-inbound'))
-    repoDt['larch'] = normExpUserPath(os.path.join('~', 'trees', 'larch'))
-    # for repo in repoDt.keys():
-        ## It is assumed that on WinXP, the corresponding directories are in the root / folder.
-        # repoDt[repo] = repoDt[repo][1:]
-    # fuzzPathStart = '/jsfunfuzz-'  # Start of fuzzing directory
+    startVMorNot = os.path.join('z:', os.sep) if isVM() else '~'
+    repoDt['fuzzing'] = normExpUserPath(os.path.join(startVMorNot, 'fuzzing'))
+    assert os.path.exists(repoDt['fuzzing'])
+    repoDt['192'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-1.9.2'))
+    repoDt['mc'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-central'))
+    repoDt['jm'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'jaegermonkey'))
+    repoDt['im'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'ionmonkey'))
+    repoDt['mi'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-inbound'))
+    repoDt['larch'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'larch'))
 
     for repo in repoDt.keys():
         vdump('The "' + repo + '" repository is located at "' + repoDt[repo] + '"')
 
+    fuzzPathStart = os.path.join('c:', os.sep) if isVM() else os.path.join('~', 'Desktop')
     fuzzPath = normExpUserPath(
         os.path.join(
-            '~', 'Desktop', 'jsfunfuzz-' + compileType + '-' + archNum + '-' + branchType)
+            fuzzPathStart, 'jsfunfuzz-' + compileType + '-' + archNum + '-' + branchType)
         )
 
     # Patch the codebase if specified, accept up to 3 patches.

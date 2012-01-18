@@ -24,7 +24,8 @@ from fnStartjsfunfuzz import *
 
 COMPILATION_FAILED_LABEL = 'skip'
 
-shellCacheDir = os.path.join(os.path.expanduser("~"), "Desktop", "autobisect-cache")
+shellCacheDirStart = os.path.join('c:', os.sep) if isVM() else os.path.join('~', 'Desktop')
+shellCacheDir = normExpUserPath(os.path.join(shellCacheDirStart, 'autobisect-cache'))
 if not os.path.exists(shellCacheDir):
     os.mkdir(shellCacheDir)
 
@@ -33,17 +34,13 @@ def main():
     global hgPrefix
     global shellCacheDir
 
-    # Do not support Windows XP because the ~ folder is in "/Documents and Settings/",
-    # which contains spaces. This breaks MinGW, which is what MozillaBuild uses.
-    # From Windows Vista onwards, the folder is in "/Users/".
-    # Edit 2: Don't support Windows till XP is deprecated, and when we create fuzzing
-    # directories in ~-land instead of in /c/. We lack permissions when we move from
-    # /c/ to ~-land in Vista/7.
-    # Edit 3: Windows 7 is now supported if directories are in ~-land.
-    # Edit 4: Windows 7 SP1 is also supported.
+    # autoBisect uses temporary directory python APIs. On WinXP, these are located at
+    # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
+    # This can be fixed by moving compilations to autobisect-cache, but we lose the benefit of
+    # compiling in a temporary directory. Not worth it, for an OS that is on its way out.
     if platform.system() == 'Windows':
-        if platform.uname()[3] != '6.1.7600' and platform.uname()[3] != '6.1.7601':
-            raise Exception('autoBisect is not supported on Windows versions lower than Windows 7.')
+        assert platform.uname()[2] != 'XP'
+
 
     # Parse options and parameters from the command-line.
     options = parseOpts()
@@ -257,11 +254,13 @@ def parseOpts():
     # See http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
 
+    mcRepoDirStart = os.path.join('z:', os.sep) if isVM() else '~'
+    mcRepoDir = normExpUserPath(os.path.join(mcRepoDirStart, 'trees', 'mozilla-central'))
     # Define the repository (working directory) in which to bisect.
     parser.add_option('-d', '--dir',
                       dest='dir',
-                      default=os.path.expanduser('~/trees/mozilla-central/'),
-                      help='Source code directory. Defaults to "~/trees/mozilla-central/"')
+                      default=mcRepoDir,
+                      help='Source code directory. Defaults to "' + mcRepoDir + '"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
                       action='store_true',

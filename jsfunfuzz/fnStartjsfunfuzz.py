@@ -35,8 +35,15 @@ if platform.system() == 'Darwin':
     isMac = True
     (isSnowLeopard, isLion) = macType()
 
-if platform.system() == 'Windows':
-    assert 'Windows-XP' not in platform.platform()
+def isVM():
+    vm = False
+    # In VMware, shared folders are in z:, and we copy from the shared folders to avoid having
+    # another copy of the repository in the VM.
+    if platform.uname()[2] == 'XP' and os.path.exists(os.path.join('z:', os.sep, 'fuzzing')):
+        assert not os.path.exists(normExpUserPath(os.path.join('~', 'fuzzing')))
+        assert not os.path.exists(normExpUserPath(os.path.join('~', 'trees')))
+        vm = True
+    return vm
 
 #####################
 #  Shell Functions  #
