@@ -14,6 +14,13 @@ import tempfile
 from optparse import OptionParser
 from types import *
 
+if platform.system() == 'Windows':
+    # autoBisect uses temporary directory python APIs. On WinXP, these are located at
+    # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
+    # This can be fixed by moving compilations to autobisect-cache, but we lose the benefit of
+    # compiling in a temporary directory. Not worth it, for an OS that is on its way out.
+    assert platform.uname()[2] != 'XP'
+
 path0 = os.path.dirname(sys.argv[0])
 path1 = os.path.abspath(os.path.join(path0, "..", "lithium"))
 sys.path.append(path1)
@@ -33,14 +40,6 @@ def main():
     print bashDate()
     global hgPrefix
     global shellCacheDir
-
-    # autoBisect uses temporary directory python APIs. On WinXP, these are located at
-    # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
-    # This can be fixed by moving compilations to autobisect-cache, but we lose the benefit of
-    # compiling in a temporary directory. Not worth it, for an OS that is on its way out.
-    if platform.system() == 'Windows':
-        assert platform.uname()[2] != 'XP'
-
 
     # Parse options and parameters from the command-line.
     options = parseOpts()
