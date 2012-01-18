@@ -304,9 +304,6 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
                 cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
             counter = counter + 1
 
-    vdump('This is the configure command (environment variables not included):')
-    vdump('%s\n' % ' '.join(cfgCmdList))
-
     captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvList)
 
 def shellName(archNum, compileType, extraID, vgSupport):
