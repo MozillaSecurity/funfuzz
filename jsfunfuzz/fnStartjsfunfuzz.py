@@ -39,11 +39,14 @@ def isVM():
     vm = False
     # In VMware, shared folders are in z:, and we copy from the shared folders to avoid having
     # another copy of the repository in the VM.
-    if platform.uname()[2] == 'XP' and os.path.exists(os.path.join('z:', os.sep, 'fuzzing')):
+    if (platform.uname()[2] == 'XP' \
+            and os.path.exists(os.path.join('z:', os.sep, 'fuzzing'))) or \
+        platform.uname()[0] == 'Linux' \
+            and os.path.exists(os.path.join('/', 'mnt', 'hgfs', 'fuzzing')):
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'fuzzing')))
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'trees')))
         vm = True
-    return vm
+    return (platform.system(), vm)
 
 #####################
 #  Shell Functions  #
@@ -86,9 +89,13 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         if 'no such option: -s' not in stdout:
             raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
-        if not (platform.system() == 'Windows' and \
+        if not ((platform.system() == 'Windows' and \
             # Ignore hg color mode throwing an error in console on Windows platforms.
-            'warning: failed to set color mode to win32' in stderr):
+            'warning: failed to set color mode to win32' in stderr) or \
+            (isVM() == ('Linux', True) and \
+            # Ignore stderr warning when running a Linux VM on a Mac host:
+            # Not trusting file /mnt/hgfs/trees/mozilla-central/.hg/hgrc from untrusted user 501...
+            'hgrc from untrusted user 501' in stderr)):
             print 'Unexpected output on stderr from ' + repr(cmd)
             print stdout, stderr
             raise Exception('Unexpected output on stderr')

@@ -31,7 +31,8 @@ from fnStartjsfunfuzz import *
 
 COMPILATION_FAILED_LABEL = 'skip'
 
-shellCacheDirStart = os.path.join('c:', os.sep) if isVM() else os.path.join('~', 'Desktop')
+shellCacheDirStart = os.path.join('c:', os.sep) if isVM() == ('Windows', True) \
+    else os.path.join('~', 'Desktop')
 shellCacheDir = normExpUserPath(os.path.join(shellCacheDirStart, 'autobisect-cache'))
 if not os.path.exists(shellCacheDir):
     os.mkdir(shellCacheDir)
@@ -253,7 +254,12 @@ def parseOpts():
     # See http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
 
-    mcRepoDirStart = os.path.join('z:', os.sep) if isVM() else '~'
+    if isVM() == ('Windows', True):
+        mcRepoDirStart = os.path.join('z:', os.sep)
+    elif isVM() == ('Linux', True):
+        mcRepoDirStart = os.path.join('/', 'mnt', 'hgfs')
+    else:
+        mcRepoDirStart = '~'
     mcRepoDir = normExpUserPath(os.path.join(mcRepoDirStart, 'trees', 'mozilla-central'))
     # Define the repository (working directory) in which to bisect.
     parser.add_option('-d', '--dir',

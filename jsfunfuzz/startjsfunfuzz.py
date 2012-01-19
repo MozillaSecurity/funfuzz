@@ -91,7 +91,12 @@ def main():
     assert branchType in branchSuppList
 
     repoDt = {}
-    startVMorNot = os.path.join('z:', os.sep) if isVM() else '~'
+    if isVM() == ('Windows', True):
+        startVMorNot = os.path.join('z:', os.sep)
+    elif isVM() == ('Linux', True):
+        startVMorNot = os.path.join('/', 'mnt', 'hgfs')
+    else:
+        startVMorNot = '~'
     repoDt['fuzzing'] = normExpUserPath(os.path.join(startVMorNot, 'fuzzing'))
     assert os.path.exists(repoDt['fuzzing'])
     repoDt['192'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-1.9.2'))
@@ -104,7 +109,8 @@ def main():
     for repo in repoDt.keys():
         vdump('The "' + repo + '" repository is located at "' + repoDt[repo] + '"')
 
-    fuzzPathStart = os.path.join('c:', os.sep) if isVM() else os.path.join('~', 'Desktop')
+    fuzzPathStart = os.path.join('c:', os.sep) if isVM() == ('Windows', True) \
+        else os.path.join('~', 'Desktop')
     fuzzPath = normExpUserPath(
         os.path.join(
             fuzzPathStart, 'jsfunfuzz-' + compileType + '-' + archNum + '-' + branchType)
