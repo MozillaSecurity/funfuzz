@@ -14,13 +14,6 @@ import tempfile
 from optparse import OptionParser
 from types import *
 
-if platform.system() == 'Windows':
-    # autoBisect uses temporary directory python APIs. On WinXP, these are located at
-    # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
-    # This can be fixed by moving compilations to autobisect-cache, but we lose the benefit of
-    # compiling in a temporary directory. Not worth it, for an OS that is on its way out.
-    assert platform.uname()[2] != 'XP'
-
 path0 = os.path.dirname(sys.argv[0])
 path1 = os.path.abspath(os.path.join(path0, "..", "lithium"))
 sys.path.append(path1)
@@ -28,6 +21,16 @@ import ximport
 path2 = os.path.abspath(os.path.join(path0, "..", "jsfunfuzz"))
 sys.path.append(path2)
 from fnStartjsfunfuzz import *
+
+# autoBisect uses temporary directory python APIs. On WinXP, these are located at
+# c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
+# This can be fixed by moving compilations to autobisect-cache, but we lose the benefit of
+# compiling in a temporary directory. Not worth it, for an OS that is on its way out.
+#assert platform.uname()[2] != 'XP'
+# Disable autoBisect when running in a VM, even Linux. This has the possibility of interacting with
+# the repositories in the trees directory as they can update to a different changeset within the VM.
+# It should work when running manually though.
+assert isVM()[1] == False
 
 COMPILATION_FAILED_LABEL = 'skip'
 
