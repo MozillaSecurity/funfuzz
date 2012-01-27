@@ -20,6 +20,7 @@ def main():
     mjit = True  # turn on -m
     mjitAll = True  # turn on -a
     debugJit = True  # turn on -d
+    codeProfiling = False  # turn on -D
     usePymake = True if platform.system() == 'Windows' else False
     jsCompareJITSwitch = True if mjit else False
     # Sets --enable-threadsafe for a multithreaded js shell, first make sure NSPR is installed!
@@ -69,6 +70,10 @@ def main():
             fcoreuses.close()
 
     if sys.argv[3] == '192':
+        jsCompareJITSwitch = False
+
+    if codeProfiling == True:
+        # -D intentionally outputs a lot of console spew.
         jsCompareJITSwitch = False
 
     # There should be a minimum of 4 command-line parameters.
@@ -244,8 +249,11 @@ def main():
         jsCliFlagList.append('-n')
         if mjitAll:
             jsCliFlagList.append('-a')
-    if debugJit and branchType != 'im':
-        jsCliFlagList.append('-d')
+    if branchType != 'im':
+        if debugJit:
+            jsCliFlagList.append('-d')
+        if codeProfiling:
+            jsCliFlagList.append('-D')
     # Thanks to decoder and sstangl, useful flag combinations are:
     # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
     if branchType == 'im':

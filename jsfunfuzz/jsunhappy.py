@@ -16,6 +16,8 @@ import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 # or actually http://hg.mozilla.org/projects/jaegermonkey/file/default/js/src/Makefile.in
 # FIXME: I think --random-flags, which uses this, overwrites whatever we specify on the multi_timed_run.py input command line.
 flagCombos = ",m,am,amd,n,mn,amn,amdn,mdn"
+# -D trips compareJIT, and this is noted in startjsfunfuzz.py, but --random-flags uses this list instead of what is provided.
+#flagCombos = ",m,am,amd,n,mn,amn,amdn,mdn,D,mD,amD,amdD,nD,mnD,amnD,amdnD,mdnD"
 flagCombos = flagCombos.split(",")
 flagCombos = [["-"+c for c in s] for s in flagCombos]  # [[], ['-m'], ['-j'], ['-m', '-j'], ...]
 
@@ -23,12 +25,12 @@ flagCombos = [["-"+c for c in s] for s in flagCombos]  # [[], ['-m'], ['-j'], ['
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-(  JS_FINE, 
+(  JS_FINE,
    JS_KNOWN_CRASH, JS_TIMED_OUT,                          # frustrates understanding of stdout; not even worth reducing
    JS_ABNORMAL_EXIT,                                      # frustrates understanding of stdout; can mean several things
    JS_DID_NOT_FINISH, JS_DECIDED_TO_EXIT,                 # specific to jsfunfuzz
    JS_OVERALL_MISMATCH,                                   # specific to comparejit (set in compareJIT.py)
-   JS_VG_AMISS, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH   # stuff really going wrong 
+   JS_VG_AMISS, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH   # stuff really going wrong
 ) = range(10)
 
 
@@ -53,7 +55,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
 
     lev = JS_FINE
     issues = []
-    
+
     if detect_assertions.amiss(knownPath, logPrefix, True):
         issues.append("unknown assertion")
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
