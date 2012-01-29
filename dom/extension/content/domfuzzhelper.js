@@ -89,9 +89,9 @@ function makeDOMFuzzHelper(aWindow) {
 
       printToFile: printToFile(aWindow),
 
-      openAboutMemory: function() {
-        sendAsyncMessage('DOMFuzzHelper.openAboutMemory', {});
-      },
+      openAboutMemory: function() { aWindow.open("about:memory"); },
+
+      openAboutNewtab: function() { aWindow.open("about:newtab"); },
 
       cssPropertyDatabase: cssPropertyDatabase.bind(this),
 
@@ -115,6 +115,7 @@ function makeDOMFuzzHelper(aWindow) {
         'fontList': 'r',
         'printToFile': 'r',
         'openAboutMemory': 'r',
+        'openAboutNewtab': 'r',
         'reftestList': 'r',
         'cssPropertyDatabase': 'r',
         'comparePixels': 'r'

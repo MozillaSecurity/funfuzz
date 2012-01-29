@@ -54,7 +54,6 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.setGCZeal", this);
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
       messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
-      messageManager.addMessageListener("DOMFuzzHelper.openAboutMemory", this);
       messageManager.loadFrameScript(CHILD_SCRIPT, true);
 
       this.isFrameScriptLoaded = true;
@@ -106,10 +105,6 @@ DOMFuzzHelperObserver.prototype = {
       case "DOMFuzzHelper.getBinDirectory":
         return getBinDirectory();
 
-      case "DOMFuzzHelper.openAboutMemory":
-        openAboutMemory();
-        break;
-
       default:
         dumpln("Unrecognized message sent to domfuzzhelperobserver.js");
 
@@ -159,14 +154,6 @@ function getBinDirectory()
                     .getService(Components.interfaces.nsIProperties)
                     .get("CurProcD", Components.interfaces.nsIFile);
   return d.path;
-}
-
-function openAboutMemory()
-{
-  var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-                     .getService(Ci.nsIWindowWatcher);
-
-  ww.openWindow(null, "about:memory", null, "width=200,height=200", null);
 }
 
 
