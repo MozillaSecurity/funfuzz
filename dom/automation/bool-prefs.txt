@@ -89,6 +89,8 @@ dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
 #dom.ipc.plugins.java.enabled # (bug 559432: see bug 718233, my dup)
 dom.new_bindings
+dom.network.enabled
+dom.network.metered
 dom.send_after_paint_to_content
 dom.server-events.enabled
 dom.storage.enabled
@@ -101,6 +103,7 @@ gecko.handlerService.allowRegisterFromDifferentHost
 general.autoScroll
 general.smoothScroll
 geo.enabled
+gfx.canvas.azure.enabled
 gfx.color_management.enablev4
 gfx.downloadable_fonts.enabled
 gfx.use_text_smoothing_setting
@@ -132,7 +135,6 @@ layout.frames.force_resizability
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
 media.autoplay.enabled
-media.enforce_same_site_origin
 media.ogg.enabled
 media.wave.enabled
 media.webm.enabled
