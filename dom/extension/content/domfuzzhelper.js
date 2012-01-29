@@ -77,6 +77,12 @@ function makeDOMFuzzHelper(aWindow) {
 
       MP: sendMemoryPressureNotification.bind(this),
 
+      forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
+
+      schedulePreciseGC: function() { Cu.schedulePreciseGC(function() { dumpln("precise GC complete"); }); },
+
+      schedulePreciseShrinkingGC: function() { Cu.schedulePreciseShrinkingGC(function() { dumpln("precise shrinking GC complete"); }); },
+
       fontList: fontList.bind(this),
 
       reftestList: reftestList.bind(this),
@@ -103,6 +109,9 @@ function makeDOMFuzzHelper(aWindow) {
         'GC': 'r',
         'CC': 'r',
         'MP': 'r',
+        'forceShrinkingGC': 'r',
+        'schedulePreciseGC': 'r',
+        'schedulePreciseShrinkingGC': 'r',
         'fontList': 'r',
         'printToFile': 'r',
         'openAboutMemory': 'r',
