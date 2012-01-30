@@ -288,7 +288,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
 
     cfgCmdList.append('--enable-methodjit')
     cfgCmdList.append('--enable-type-inference')
-    # Fuzzing tweaks for more useful output, bug 706433
+    # Fuzzing tweaks for more useful output, implemented in bug 706433
     cfgCmdList.append('--enable-more-deterministic')
     cfgCmdList.append('--disable-tests')
 
