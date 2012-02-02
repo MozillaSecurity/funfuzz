@@ -624,9 +624,8 @@ function compartmentConsistencyTest(code)
   }
 
   // Inspired by bug 683361
-  // Vary both the top-level compartment type and internal compartment type.
-  var resultS = sandboxResult(code.replace(/new-compartment/g, "same-compartment"), "same-compartment");
-  var resultN = sandboxResult(code.replace(/same-compartment/g, "new-compartment"), "new-compartment");
+  var resultS = sandboxResult(code, "same-compartment");
+  var resultN = sandboxResult(code, "new-compartment");
 
   if (resultS != resultN) {
     print("resultO: " + resultS);
