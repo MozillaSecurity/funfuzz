@@ -45,14 +45,14 @@ Bugs in V8 found with this fuzzer are tracked by <not yet set up>.
 
 Recommended command line:
   python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/v8/ ./shell_g
-  
+
 Hints for building v8:
   http://code.google.com/apis/v8/build.html
   |scons mode=release library=static snapshot=on sample=shell| or
   |scons mode=debug library=shared snapshot=on sample=shell| in v8/
-  
+
   The shell will be a file called shell or shell_g (debug) in v8/
-  
+
 
 TESTING WEB BROWSERS
 
