@@ -389,9 +389,12 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     methodjitAllBool = True if '-a' in flagsRequired else False
     typeInferBool = True if '-n' in flagsRequired else False
     debugModeBool = True if '-d' in flagsRequired else False
+    ionBool = True if '--ion' in flagsRequired else False
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    if typeInferBool:
+    if ionBool:
+        return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
+    elif typeInferBool:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
     elif isMac and isLion:
         return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
