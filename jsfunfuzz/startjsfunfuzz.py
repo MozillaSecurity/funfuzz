@@ -249,38 +249,36 @@ def main():
         jsCliFlagList.append('-n')
         if mjitAll:
             jsCliFlagList.append('-a')
-    if branchType != 'im':
-        if debugJit:
-            jsCliFlagList.append('-d')
-        if codeProfiling:
-            jsCliFlagList.append('-D')
+    if debugJit:
+        jsCliFlagList.append('-d')
+    if codeProfiling:
+        jsCliFlagList.append('-D')
     # Thanks to decoder and sstangl, useful flag combinations are:
     # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
     if branchType == 'im':
-        rndIntIM = randint(0, 5)  # randint comes from the random module.
+        #rndIntIM = randint(0, 5)  # randint comes from the random module.
         # --random-flags takes in flags from jsunhappy, so it must be disabled.
         mTimedRunFlagList.remove('--random-flags')
+        if '-d' in jsCliFlagList:
+            jsCliFlagList.remove('-d')  # as of early Feb 2012, -d disables --ion
+        if '-n' in jsCliFlagList:
+            jsCliFlagList.remove('-n')
         assert '--random-flags' not in mTimedRunFlagList
-        if rndIntIM == 0:
-            jsCliFlagList.append('--ion')
-            jsCliFlagList.append('-n')
-            jsCliFlagList.append('--ion-regalloc=greedy')
-        elif rndIntIM == 1:
-            jsCliFlagList.append('--ion')
-            jsCliFlagList.append('--ion-regalloc=greedy')
-        elif rndIntIM == 2:
-            jsCliFlagList.append('--ion-eager')
-            jsCliFlagList.append('--ion-regalloc=greedy')
-        elif rndIntIM == 3:
-            jsCliFlagList.append('--ion')
-            jsCliFlagList.append('-n')
-            jsCliFlagList.append('--ion-regalloc=lsra')
-        elif rndIntIM == 4:
-            jsCliFlagList.append('--ion')
-            jsCliFlagList.append('--ion-regalloc=lsra')
-        elif rndIntIM == 5:
-            jsCliFlagList.append('--ion-eager')
-            jsCliFlagList.append('--ion-regalloc=lsra')
+        jsCliFlagList.append('--ion')
+        jsCliFlagList.append('-n')  # ensure -n is really appended.
+        # Description from bug 724444:
+        #We're ready for fuzzing! (I hope.)
+        #
+        #To run IonMonkey, you need --ion -n. Running --ion without -n isn't supported.
+        #
+        #Other interesting flags:
+        #    --ion-eager:    Compile eagerly, like -a. This is somewhat buggy right now.
+        #    --ion-gvn=off:  Disables folding/code elimination.
+        #    --ion-licm=off: Disables loop hoisting.
+        #    --ion-inlining=off: Disables function inlining.
+        #    -m: Still enables the method JIT,
+        #
+        #There are other --ion flags but they are experimental and not ready for testing. Also note, -a has no effect on --ion and -d will disable ion.
 
     fuzzCmdList = []
     # Define fuzzing command with the required parameters.
