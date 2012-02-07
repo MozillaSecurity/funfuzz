@@ -266,6 +266,8 @@ def main():
         assert '--random-flags' not in mTimedRunFlagList
         jsCliFlagList.append('--ion')
         jsCliFlagList.append('-n')  # ensure -n is really appended.
+        #jsCliFlagList.append('--ion-eager')
+
         # Description from bug 724444:
         #We're ready for fuzzing! (I hope.)
         #
