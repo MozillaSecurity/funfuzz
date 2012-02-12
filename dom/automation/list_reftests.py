@@ -26,7 +26,7 @@ def parse(filename, add_result_callback):
         else:
             pos = 0
             while pos < len(parts):
-                K = ['fails', 'skip', 'random', 'asserts']
+                K = ['fails', 'skip', 'random', 'asserts', 'fuzzy']
                 part = parts[pos]
                 if any([part.startswith(k) for k in K]):
                     # fails, fails-if(...), asserts(3)
