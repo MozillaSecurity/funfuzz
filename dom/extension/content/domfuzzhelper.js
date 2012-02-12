@@ -177,10 +177,12 @@ function comparePixels(aWindow)
     var canvas1 = aWindow.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
     canvas1.setAttribute("width", w);
     canvas1.setAttribute("height", h);
+    canvas1.setAttribute("moz-opaque", "true");
 
     var canvas2 = aWindow.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
     canvas2.setAttribute("width", w);
     canvas2.setAttribute("height", h);
+    canvas2.setAttribute("moz-opaque", "true");
 
     function drawInto(canvas)
     {
