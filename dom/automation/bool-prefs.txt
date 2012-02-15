@@ -85,6 +85,7 @@ converter.html2txt.structs
 device.motion.enabled
 dom.disable_image_src_set
 dom.enable_performance
+dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
