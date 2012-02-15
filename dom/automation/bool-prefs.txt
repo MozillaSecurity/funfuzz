@@ -89,6 +89,7 @@ dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
+dom.ipc.plugins.unloadASAP
 #dom.ipc.plugins.java.enabled # (bug 559432: see bug 718233, my dup)
 dom.new_bindings
 dom.network.enabled
