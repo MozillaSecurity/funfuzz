@@ -123,6 +123,7 @@ def main():
 
     # Patch the codebase if specified, accept up to 3 patches.
     if len(sys.argv) >= 6 and sys.argv[4] == 'patch':
+        print 'NOTE: The hash in the directory is post-patch, not pre-patch!'
         p1name = patchHgRepoUsingMq(sys.argv[5], repoDt[branchType])
         if len(sys.argv) >= 8 and sys.argv[6] == 'patch':
             p2name = patchHgRepoUsingMq(sys.argv[7], repoDt[branchType])
@@ -130,6 +131,7 @@ def main():
                 p3name = patchHgRepoUsingMq(sys.argv[9], repoDt[branchType])
 
     # Patches must already been qimport'ed and qpush'ed.
+    # FIXME: we should grab the hash first before applying the patch
     (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath, repoDt[branchType])
 
     # Turn off pymake if not on default tip.
