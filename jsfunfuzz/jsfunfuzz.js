@@ -2705,6 +2705,14 @@ var exprMakers =
   // Force garbage collection "soon"
   function(d, b) { return "schedulegc(" + rnd(100) + ", " + makeBoolean(d, b) + ")"; },
 
+  // Verify write barriers. These functions are effective in pairs.
+  // The first call sets up the start barrier, the second call sets up the end barrier.
+  // Nothing happens when there is only one call.
+  function(d, b) { return "verifybarriers()"; },
+
+  // Invoke an incremental garbage collection slice.
+  function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
+
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ", " + makeBoolean(d, b) + ")"; },
 
