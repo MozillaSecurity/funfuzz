@@ -183,7 +183,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
-      && !( code.match( /\#.*=/ ))                 // avoid bug 568734
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
@@ -200,7 +199,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\[.*\+/ ))        // constant folding bug 646599
       && (code.indexOf("*") == -1)         // constant folding bug 539819
       && (code.indexOf("/") == -1)         // constant folding bug 539819
-      && (code.indexOf("#") == -1)         // avoid bug 646600
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
@@ -919,7 +917,6 @@ function testUnevalString(uo)
 
   return true
       &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
-      && (uo.indexOf("#") == -1)                           // ignore bug 328745 (ugh)
       && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
       &&  uo.indexOf("NaN") == -1                          // see bug 379521 (wontfix)
       &&  uo.indexOf("Infinity") == -1                     // see bug 379521 (wontfix)
@@ -2582,11 +2579,8 @@ var exprMakers =
   function(d, b) { return cat([     makeExpr(d, b),      "[", "'_'", " + ", "(", makeExpr(d, b), ")", "]"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
-  function(d, b) { return cat([maybeSharpDecl(), "[", makeExpr(d, b), "]"]); },
-  function(d, b) { return cat([maybeSharpDecl(), "(", "{", makeId(d, b), ": ", makeExpr(d, b), "}", ")"]); },
-
-  // Sharps on random stuff?
-  function(d, b) { return cat([maybeSharpDecl(), makeExpr(d, b)]); },
+  function(d, b) { return cat(["[", makeExpr(d, b), "]"]); },
+  function(d, b) { return cat(["(", "{", makeId(d, b), ": ", makeExpr(d, b), "}", ")"]); },
 
   // Functions: called immediately/not
   function(d, b) { return makeFunction(d, b); },
@@ -3079,14 +3073,6 @@ var constructors = [
   "Namespace", "QName", "XML", "XMLList",
   "AttributeName" // not listed as a constructor in e4x spec, but exists!
 ];
-
-function maybeSharpDecl()
-{
-  if (rnd(3) == 0)
-    return cat(["#", "" + (rnd(3)), "="]);
-  else
-    return "";
-}
 
 
 function makeObjLiteralPart(d, b)
@@ -3735,10 +3721,6 @@ var termMakers = [
     "[z1]", "[z1,,]", "[,,z1]",
     // Possibly-destructuring objects
     "({a2:z2})",
-    // Sharp use
-    "#1#",
-    // Sharp creation and use
-    "#1=[#1#]", "#3={a:#3#}",
     "function(id) { return id }",
     "function ([y]) { }",
     "(function ([y]) { })()",
@@ -3812,7 +3794,6 @@ function makeCrazyToken()
   // a few operators
   "!", "@", "%", "^", "*", "|", ":", "?", "'", "\"", ",", ".", "/",
   "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=",
-  "#", "#1", "#1=", // usually an "invalid character", but used as sharps too
 
   // most real keywords plus a few reserved keywords
   " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
