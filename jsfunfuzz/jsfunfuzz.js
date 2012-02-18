@@ -3038,7 +3038,7 @@ function makeZealLevel()
   // If gczeal not 0, (4%)
   if (rnd(5) == 0) {
     // Do this 1-in-5 times.
-    rndNumber = rnd(3);
+    var rndNumber = rnd(3);
     if (rndNumber == 0) {
       // gczeal(1) is useful almost only for embedders.
       return "1";  // do this 1-in-15 times. (6.67% of 4% = 0.2668%)
