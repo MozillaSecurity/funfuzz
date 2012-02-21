@@ -284,8 +284,20 @@ def nonBoolPrefs():
     p = []
     if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.minTwips", 120);\n']
-    if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.emPerLine", 15);\n']
+        p += ['user_pref("browser.sessionhistory.max_entries", ' + str(random.randrange(1, 10)) + ');\n']
+        p += ['user_pref("browser.sessionhistory.max_total_viewers", ' + str(random.randrange(0, 4)) + ');\n']
+        p += ['user_pref("bidi.direction", ' + random.choice(["1", "2"]) + ');\n']
+        p += ['user_pref("bidi.numeral", ' + random.choice(["0", "1", "2", "3", "4"]) + ');\n']
+        p += ['user_pref("browser.display.use_document_fonts", ' + random.choice(["0", "1"]) + ');\n']
+        p += ['user_pref("browser.history.maxStateObjectSize", ' + random.choice(["0", "100", "655360", "655360"]) + ');\n']
+        p += ['user_pref("browser.sessionstore.interval", ' + random.choice(["100", "1000", "15000"]) + ');\n']
+        p += ['user_pref("browser.sessionstore.max_tabs_undo", ' + random.choice(["0", "1", "10"]) + ');\n']
+        p += ['user_pref("browser.sessionstore.browser.sessionstore.max_windows_undo", ' + random.choice(["0", "1", "10"]) + ');\n']
+        p += ['user_pref("browser.sessionstore.postdata", ' + random.choice(["0", "-1", "1000"]) + ');\n']
+        p += ['user_pref("layout.scrollbar.side", ' + random.choice(["0", "1", "2", "3"]) + ');\n']
+        p += ['user_pref("permissions.default.image", ' + random.choice(["1", "2", "3"]) + ');\n']
+        #layout.css.devPixelsPerPx
     return p
 
 if __name__ == "__main__":
