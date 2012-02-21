@@ -78,7 +78,6 @@ def downloadBuild(httpDir, jsShell=False, wantSymbols=True, wantTests=True):
       #jsshell is jsshell-mac64.zip
       if "jsshell-" in remotefn:
         print "Downloading js shell..."
-        pdb.set_trace()
         unzip(downloadURL(remotefn, localfn), appDir)
         # FIXME: jsshell needs symbols
         gotApp = True
