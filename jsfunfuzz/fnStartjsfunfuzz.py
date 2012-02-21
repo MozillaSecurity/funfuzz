@@ -4,13 +4,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# needed for Python 2.5
+from __future__ import with_statement
+
 import os
 import platform
 import shutil
 import subprocess
 import time
 
-from multiprocessing import cpu_count
+# Incompatible with Python 2.5
+#from multiprocessing import cpu_count
 from tempfile import NamedTemporaryFile
 from traceback import format_exc
 
@@ -110,6 +114,26 @@ def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=F
         if stderr is not None:
             print stderr
     return stdout.rstrip()
+
+def detectCPUs():
+    # A version of cpu_count() that seems compatible with Python 2.5
+    # POSIX platforms
+    if hasattr(os, 'sysconf'):
+        if os.sysconf_names.has_key('SC_NPROCESSORS_ONLN'):
+            # Linux
+            cpuNum = os.sysconf('SC_NPROCESSORS_ONLN')
+            if cpuNum > 0 and isinstance(cpuNum, int):
+                return cpuNum
+        else:
+            # Mac OS X
+            return int(os.popen2('sysctl -n hw.ncpu')[1].read())
+    # Windows
+    if os.environ.has_key('NUMBER_OF_PROCESSORS'):
+        cpuNum = int(os.environ['NUMBER_OF_PROCESSORS']);
+        if cpuNum > 0:
+            return cpuNum
+    # Return 1 by default
+    return 1
 
 def timeShellFunction(command, cwd=os.getcwdu()):
     print 'Running `%s` now..' % ' '.join(command)
@@ -330,7 +354,9 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
     '''
     This function compiles and copies a binary.
     '''
-    jobs = (cpu_count() * 3) // 2
+    # Replace detectCPUs() with cpu_count from the multiprocessing library once Python 2.6 is in all
+    # build machines.
+    jobs = (detectCPUs() * 3) // 2
     compiledNamePath = normExpUserPath(
         os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
     try:
@@ -393,6 +419,7 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     contents = ''
     contentsList = []
     cmdList = []
+    # The following line (specifically the delete keyword) is incompatible with Python 2.5
     f = NamedTemporaryFile(delete=False)  # Don't delete upon close; Windows needs it to be closed.
 
     cmdList.append(shell)

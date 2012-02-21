@@ -144,11 +144,12 @@ def main():
     try:
         vdump('Copying the js source tree, which is located at ' + jsSrcDir)
         shutil.copytree(jsSrcDir, compilePath,
+                        # ignore_patterns does not work in Python 2.5, but we don't use
+                        # startjsfunfuzz with Python 2.5 anyway.
                         ignore=shutil.ignore_patterns(
                             'jit-test', 'tests', 'trace-test', 'xpconnect'))
         vdump('Finished copying the js tree')
-    except OSError as e:
-        vdump(repr(e))
+    except OSError:
         raise Exception('Do the js source directory or the destination exist?')
 
     # 91a8d742c509 introduced a mfbt directory on the same level as the js/ directory.
@@ -303,6 +304,7 @@ def main():
 
     if platform.system() == 'Linux' or platform.system() == 'Darwin':
         assert archOfBinary(shname) == archNum  # 32-bit or 64-bit verification test.
+    # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
     testDbgOrOptGivenACompileType(shname, compileType, cwd=fuzzPath)
 
     print '''
