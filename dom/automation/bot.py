@@ -2,9 +2,23 @@
 
 # bot.py runs domfuzz or lithium as needed, for a limited amount of time, storing jobs using ssh.
 
-import sys, os, platform, subprocess, time, socket, random, shutil
+import os
+import platform
+import random
+import shutil
+import socket
+import subprocess
+import sys
+import time
+
 import build_downloader
 import loopdomfuzz
+
+path0 = os.path.dirname(sys.argv[0])
+path2 = os.path.abspath(os.path.join(path0, "..", "..", "jsfunfuzz"))
+sys.path.append(path2)
+import fnStartjsfunfuzz
+
 devnull = open(os.devnull, "w")
 buildType = build_downloader.defaultBuildType()
 
@@ -91,12 +105,17 @@ def writeTinyFile(fn, text):
 def timestamp():
   return str(int(time.time()))
 
-def sendEmail(subject, body):
+def sendEmail(subject, body, receiver):
   import smtplib
   from email.mime.text import MIMEText
 
-  fromAddr = 'jruderman+fuzzbot@mozilla.com'
-  toAddr = 'jruderman@gmail.com'
+  assert receiver in ('jruderman', 'gkwong')
+  if receiver == 'jruderman':
+    fromAddr = 'jruderman+fuzzbot@mozilla.com'
+    toAddr = 'jruderman@gmail.com'
+  elif receiver == 'gkwong':
+    fromAddr = 'gkwong+fuzzbot@mozilla.com'
+    toAddr = 'gary@rumblingedge.com'
 
   msg = MIMEText(body)
   msg['Subject'] = subject
@@ -114,6 +133,7 @@ if __name__ == "__main__":
   parser.set_defaults(
       remote_host=None,
       basedir=os.path.expanduser("~") + localSep + "domfuzzjobs" + localSep,
+      jsfunfuzzBool=False,
   )
   parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
       help="Use the existing 'build' directory.")
@@ -123,7 +143,12 @@ if __name__ == "__main__":
       help="Base directory on remote machine to store fuzzing data")
   parser.add_option("--retest-all", dest="retestAll", action="store_true",
       help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
+  parser.add_option("--jsfunfuzz", dest="jsfunfuzzBool", action="store_true",
+      help="Fuzz jsfunfuzz instead of DOM fuzzer.")
   options, args = parser.parse_args()
+
+  if options.jsfunfuzzBool:
+    assert False # js shells seemingly cannot be run standalone, see bug 729010
 
   if options.retestAll:
     options.reuse_build = True
@@ -178,7 +203,11 @@ if __name__ == "__main__":
           if os.path.exists("build"):
             print "Deleting old build"
             shutil.rmtree("build")
-          buildUsed = build_downloader.downloadLatestBuild(buildType)
+          if not options.jsfunfuzzBool:
+            buildUsed = build_downloader.downloadLatestBuild(buildType)
+          else:
+            buildUsed = build_downloader.downloadLatestBuild(buildType, jsShell=True)
+            assert False # untested beyond this point.
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
         if ldfResult == loopdomfuzz.HAPPY:
           print "Happy happy! No bugs found!"
@@ -229,5 +258,6 @@ if __name__ == "__main__":
 
       if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
         print "Sending email..."
-        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/")
+        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "jruderman")
+        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "gkwong")
         print "Email sent!"

@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
-import re, os, sys, shutil, subprocess, time, StringIO, stat
+import os
 import platform
+import re
+import shutil
+import stat
+import StringIO
+import subprocess
+import sys
+import time
 devnull = open(os.devnull, "w")
 
 # Use curl/wget rather than urllib because urllib can't check certs.
@@ -53,7 +60,7 @@ def undmg(fn, dest, mountpoint):
     subprocess.check_call(["hdiutil", "detach", mountpoint], stdout=devnull)
 
 
-def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
+def downloadBuild(httpDir, jsShell=False, wantSymbols=True, wantTests=True):
   gotApp = False
   gotTests = False
   gotSyms = False
@@ -67,55 +74,65 @@ def downloadBuild(httpDir, wantSymbols=True, wantTests=True):
   symbolsDir = os.path.join("build", "symbols") + os.sep
   for remotefn in httpDirList(httpDir):
     localfn = os.path.join(downloadDir, remotefn.split("/")[-1])
-    if remotefn.endswith(".linux-i686.tar.bz2") or remotefn.endswith(".linux-x86_64.tar.bz2"):
-      print "Downloading application..."
-      untarbz2(downloadURL(remotefn, localfn), appDir)
-      os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
-      stackwalk = os.path.join("build", "minidump_stackwalk")
-      if remotefn.endswith(".linux-i686.tar.bz2"):
-        downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk", stackwalk)
-      else:
-        downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk", stackwalk)
-      os.chmod(stackwalk, stat.S_IRWXU)
-      gotApp = True
-    if remotefn.endswith(".win32.zip"):
-      print "Downloading application..."
-      unzip(downloadURL(remotefn, localfn), appDir)
-      os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
-      for filename in ['minidump_stackwalk.exe',
-                       'cyggcc_s-1.dll',
-                       'cygstdc++-6.dll',
-                       'cygwin1.dll']:
-          remoteURL = "http://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s" % filename
-          localfile = os.path.join("build", filename)
-          downloadURL(remoteURL, localfile)
-      gotApp = True
-    if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
-      print "Downloading application..."
-      undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
-      stackwalk = os.path.join("build", "minidump_stackwalk")
-      downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk", stackwalk)
-      os.chmod(stackwalk, stat.S_IRWXU)
-      gotApp = True
-    if remotefn.endswith(".tests.zip") and wantTests:
-      print "Downloading tests..."
-      unzip(downloadURL(remotefn, localfn), testsDir)
-      gotTests = True
-    if remotefn.endswith(".crashreporter-symbols.zip") and wantSymbols:
-      print "Downloading crash reporter symbols..."
-      unzip(downloadURL(remotefn, localfn), symbolsDir)
-      gotSyms = True
+    if jsShell:
+      #jsshell is jsshell-mac64.zip
+      if "jsshell-" in remotefn:
+        print "Downloading js shell..."
+        pdb.set_trace()
+        unzip(downloadURL(remotefn, localfn), appDir)
+        # FIXME: jsshell needs symbols
+        gotApp = True
+        return gotApp
+    else:
+      if remotefn.endswith(".linux-i686.tar.bz2") or remotefn.endswith(".linux-x86_64.tar.bz2"):
+        print "Downloading application..."
+        untarbz2(downloadURL(remotefn, localfn), appDir)
+        os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
+        stackwalk = os.path.join("build", "minidump_stackwalk")
+        if remotefn.endswith(".linux-i686.tar.bz2"):
+          downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk", stackwalk)
+        else:
+          downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk", stackwalk)
+        os.chmod(stackwalk, stat.S_IRWXU)
+        gotApp = True
+      if remotefn.endswith(".win32.zip"):
+        print "Downloading application..."
+        unzip(downloadURL(remotefn, localfn), appDir)
+        os.rename(os.path.join(appDir, "firefox"), os.path.join(appDir, "bin")) # hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work
+        for filename in ['minidump_stackwalk.exe',
+                         'cyggcc_s-1.dll',
+                         'cygstdc++-6.dll',
+                         'cygwin1.dll']:
+            remoteURL = "http://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s" % filename
+            localfile = os.path.join("build", filename)
+            downloadURL(remoteURL, localfile)
+        gotApp = True
+      if remotefn.endswith(".mac.dmg") or remotefn.endswith(".mac64.dmg"):
+        print "Downloading application..."
+        undmg(downloadURL(remotefn, localfn), appDir, os.path.join("build", "MOUNTEDDMG"))
+        stackwalk = os.path.join("build", "minidump_stackwalk")
+        downloadURL("http://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk", stackwalk)
+        os.chmod(stackwalk, stat.S_IRWXU)
+        gotApp = True
+      if remotefn.endswith(".tests.zip") and wantTests:
+        print "Downloading tests..."
+        unzip(downloadURL(remotefn, localfn), testsDir)
+        gotTests = True
+      if remotefn.endswith(".crashreporter-symbols.zip") and wantSymbols:
+        print "Downloading crash reporter symbols..."
+        unzip(downloadURL(remotefn, localfn), symbolsDir)
+        gotSyms = True
   return gotApp and gotTests and gotSyms
 
 def isNumericDir(n):
   return re.match(r"^\d+$", n.split("/")[-2])
 
-def downloadLatestBuild(buildType):
+def downloadLatestBuild(buildType, jsShell=False):
   """buildType can be e.g. mozilla-central-macosx-debug"""
   buildsDir = "https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/" + buildType + "/"
   builds = filter(isNumericDir, httpDirList(buildsDir))
   for b in reversed(builds):
-    if downloadBuild(b):
+    if downloadBuild(b, jsShell):
       return b
   raise Exception("No builds in " + buildsDir + "!")
 
