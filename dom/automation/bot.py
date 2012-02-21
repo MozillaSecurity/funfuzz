@@ -14,11 +14,6 @@ import time
 import build_downloader
 import loopdomfuzz
 
-path0 = os.path.dirname(sys.argv[0])
-path2 = os.path.abspath(os.path.join(path0, "..", "..", "jsfunfuzz"))
-sys.path.append(path2)
-import fnStartjsfunfuzz
-
 devnull = open(os.devnull, "w")
 buildType = build_downloader.defaultBuildType()
 
