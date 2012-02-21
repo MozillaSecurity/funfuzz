@@ -349,7 +349,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
             out = captureStdout(
                 ['make', '-C', objDir, '-j' + str(jobs), '-s'],
                 combineStderr=True, ignoreExitCode=True, currWorkingDir=objDir)
-    except Exception as e:
+    except Exception:
         # Sometimes a non-zero error can be returned during the make process, but eventually a
         # shell still gets compiled.
         if os.path.exists(compiledNamePath):
