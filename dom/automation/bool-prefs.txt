@@ -26,6 +26,7 @@ application.use_ns_plugin_finder
 bidi.browser.ui
 bidi.edit.delete_immediately
 browser.allTabs.previews
+browser.autofocus
 browser.blink_allowed
 browser.cache.disk.enable
 browser.cache.disk.smart_size.enabled
@@ -109,6 +110,9 @@ geo.enabled
 gfx.canvas.azure.enabled
 gfx.color_management.enablev4
 gfx.downloadable_fonts.enabled
+gfx.font_rendering.graphite.enabled
+gfx.font_rendering.directwrite.enabled
+gfx.font_rendering.directwrite.use_gdi_table_loading
 gfx.use_text_smoothing_setting
 image.mem.decodeondraw
 image.mem.discardable
@@ -142,6 +146,7 @@ media.autoplay.enabled
 media.ogg.enabled
 media.wave.enabled
 media.webm.enabled
+network.auth.use-sspi
 network.IDN_show_punycode
 network.dns.disableIPv6
 network.enableIDN

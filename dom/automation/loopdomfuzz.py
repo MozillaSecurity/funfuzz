@@ -297,6 +297,7 @@ def nonBoolPrefs():
         p += ['user_pref("browser.sessionstore.postdata", ' + random.choice(["0", "-1", "1000"]) + ');\n']
         p += ['user_pref("layout.scrollbar.side", ' + random.choice(["0", "1", "2", "3"]) + ');\n']
         p += ['user_pref("permissions.default.image", ' + random.choice(["1", "2", "3"]) + ');\n']
+        p += ['user_pref("gfx.font_rendering.harfbuzz.scripts", ' + str(random.randrange(0, 0x80)) + ');\n'] # gfx/thebes/gfxUnicodeProperties.h ShapingType bitfield
         #layout.css.devPixelsPerPx
     return p
 
