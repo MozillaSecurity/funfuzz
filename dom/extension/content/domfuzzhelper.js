@@ -97,6 +97,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       comparePixels: comparePixels(aWindow),
 
+      callDrawWindow: callDrawWindow(aWindow),
+
       __exposedProps__: {
         'toString': 'r',
         'quitApplication': 'r',
@@ -118,7 +120,8 @@ function makeDOMFuzzHelper(aWindow) {
         'openAboutNewtab': 'r',
         'reftestList': 'r',
         'cssPropertyDatabase': 'r',
-        'comparePixels': 'r'
+        'comparePixels': 'r',
+        'callDrawWindow': 'r'
       }
   };
 };
@@ -164,6 +167,28 @@ function cycleCollect(window)
     window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
           .getInterface(Components.interfaces.nsIDOMWindowUtils)
           .cycleCollect();
+  }
+}
+
+function callDrawWindow(aWindow)
+{
+  return function callDrawWindow2(flags) {
+    var w = aWindow.innerWidth;
+    var h = aWindow.innerHeight;
+
+    var canvas = aWindow.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+    canvas.setAttribute("width", w);
+    canvas.setAttribute("height", h);
+    canvas.setAttribute("moz-opaque", "true");
+
+    var ctx = canvas.getContext("2d");
+    ctx.drawWindow(aWindow,
+                   0,
+                   0,
+                   w,
+                   h,
+                   "rgb(255,255,255)",
+                   +flags);
   }
 }
 
