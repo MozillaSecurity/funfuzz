@@ -103,6 +103,7 @@ editor.use_css
 editor.use_custom_colors
 full-screen-api.allow-trusted-requests-only
 full-screen-api.enabled
+full-screen-api.exit-on-deactivate
 gecko.handlerService.allowRegisterFromDifferentHost
 general.autoScroll
 general.smoothScroll
