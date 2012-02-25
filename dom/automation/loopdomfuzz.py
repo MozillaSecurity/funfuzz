@@ -299,6 +299,8 @@ def nonBoolPrefs():
         p += ['user_pref("permissions.default.image", ' + random.choice(["1", "2", "3"]) + ');\n']
         p += ['user_pref("gfx.font_rendering.harfbuzz.scripts", ' + str(random.randrange(0, 0x80)) + ');\n'] # gfx/thebes/gfxUnicodeProperties.h ShapingType bitfield
         #layout.css.devPixelsPerPx
+    if random.random() > 0.9:
+        p += ['user_pref("intl.uidirection.en", "rtl");\n']
     return p
 
 if __name__ == "__main__":
