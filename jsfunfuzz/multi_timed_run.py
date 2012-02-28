@@ -105,6 +105,11 @@ def many_timed_runs():
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
             # Switch to allowing jsfunfuzz not finishing and deciding to exit, after Fx 4 and integration of jandem's method fuzzer
             # FIXME: jandem's method fuzzer cannot work with JS_DECIDED_TO_EXIT, currently if the latter is allowed, only pure jsfunfuzz.js should be used.
+            # The method fuzzer needs another run of objectTester.js from bug 630996, because it doesn't have evalcx.
+            # The method fuzzer also needs its wrap() function removed.
+            # When running xpcshell, ./run-mozilla-sh appears not necessary, but remember to append LD_LIBRARY_PATH=. especially on Linux.
+            # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
+            # All in all, xpcshell support is still largely blocked because of bug 613142.
             oklevel = jsunhappy.JS_DECIDED_TO_EXIT
         elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
