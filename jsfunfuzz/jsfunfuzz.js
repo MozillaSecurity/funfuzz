@@ -183,6 +183,9 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
+      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
+      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
@@ -2067,6 +2070,8 @@ var statementMakers = weighted([
   // Print statements
   { w: 8, fun: makePrintStatement },
 
+  { w: 20, fun: makeRegexUseBlock },
+
   // Add properties
   //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
   //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
@@ -2733,6 +2738,8 @@ var exprMakers =
   function(d, b) { return makeId(d, b) + " = " + "Proxy.createFunction(" + makeProxyHandler(d, b) + ", " + makeFunction(d, b) + ", " + makeFunction(d, b) + ")"; },
 
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
+
+  makeRegexUseBlock,
 ];
 
 var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
@@ -3737,6 +3744,7 @@ var termMakers = [
   function(d, b) { return rndElt([" \"\" ", " '' "]) },
   randomUnitStringLiteral,
   function(d, b) { return rndElt([" /x/ ", " /x/g "]) },
+  makeRegex,
 ];
 
 function randomUnitStringLiteral()
@@ -4197,6 +4205,78 @@ function regexCharacterClassData(dr, inRange)
 }
 
 
+/*****************
+ * USING REGEXPS *
+ *****************/
+
+function randomRegexFlags() {
+  return rndElt(["g", ""]) + rndElt(["i", ""]) + rndElt(["m", ""]) + rndElt(["y", ""]);
+}
+
+function toRegexSource(rexpat)
+{
+  return (rnd(2) == 0 && rexpat.charAt(0) != "*") ?
+    "/" + rexpat + "/" + randomRegexFlags() :
+    "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
+}
+
+function makeRegexUseBlock(d, b)
+{
+  var rexpair = regexPattern(10, false);
+  var rexpat = rexpair[0];
+  var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
+
+  var rexExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
+  var strExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : simpleSource(str);
+
+  var bv = b.concat(["s", "r"]);
+
+  return ("/*RXUB*/var r = " + rexExpr + "; " +
+          "var s = " + strExpr + "; " +
+          "print(" +
+            rndElt([
+              "r.exec(s)",
+              "uneval(r.exec(s))",
+              "r.test(s)",
+              "s.match(r)",
+              "uneval(s.match(r))",
+              "s.search(r)",
+              "s.replace(r, " + makeReplacement(d, bv) + (rnd(3) ? "" : ", " + simpleSource(randomRegexFlags())) + ")",
+              "s.split(r)"
+            ]) +
+          "); " +
+          (rnd(3) ? "" : "print(r.lastIndex); ")
+          );
+}
+
+function makeRegexUseExpr(d, b)
+{
+  var rexpair = regexPattern(8, false);
+  var rexpat = rexpair[0];
+  var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
+
+  var rexExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
+  var strExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : simpleSource(str);
+
+  return "/*RXUE*/" + rexExpr + ".exec(" + strExpr + ")";
+}
+
+function makeRegex(d, b)
+{
+  var rexpair = regexPattern(8, false);
+  var rexpat = rexpair[0];
+  var rexExpr = toRegexSource(rexpat);
+  return rexExpr;
+}
+
+function makeReplacement(d, b)
+{
+  switch(rnd(3)) {
+    case 0:  return rndElt(["''", "'x'", "'\\u0341'"]);
+    case 1:  return makeExpr(d, b);
+    default: return makeFunction(d, b);
+  }
+}
 
 /****************
  * MORE DRIVING *
