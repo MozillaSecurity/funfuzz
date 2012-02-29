@@ -3239,7 +3239,6 @@ var functionMakers = [
   function(d, b) { return "JSON.stringify" }, // has interesting arguments...
   function(d, b) { return "Math." + rndElt(unaryMathFunctions) },
   function(d, b) { return "Math." + rndElt(binaryMathFunctions) },
-  function(d, b) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
   function(d, b) { return "XPCNativeWrapper" },
   function(d, b) { return "XPCSafeJSObjectWrapper" },
   function(d, b) { return "ArrayBuffer" },
