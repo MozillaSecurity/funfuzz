@@ -2739,7 +2739,7 @@ var exprMakers =
 
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
-  makeRegexUseBlock,
+  makeRegexUseExpr,
 ];
 
 var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
