@@ -25,3 +25,7 @@ optimized or not canonical.  Brendan has been nice about fixing these
 "round-trip change" bugs even when they're not really bugs, since he sees value
 in this type of fuzzing.
 
+
+Contributors:
+* David Keeler modified the regular expression generator to also generate (almost-)matching strings, based on an idea from Oliver Hunt.
+* Gary Kwong
