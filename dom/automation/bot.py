@@ -142,9 +142,6 @@ if __name__ == "__main__":
       help="Fuzz jsfunfuzz instead of DOM fuzzer.")
   options, args = parser.parse_args()
 
-  if options.jsfunfuzzBool:
-    assert False # js shells seemingly cannot be run standalone, see bug 729010
-
   if options.retestAll:
     options.reuse_build = True
 
