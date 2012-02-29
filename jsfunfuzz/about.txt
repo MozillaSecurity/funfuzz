@@ -9,9 +9,9 @@ Once it creates a function body, it does the following things with it:
 * Splits it in half and tries to compile each half, mostly to find bugs in the compiler's error-handling.
 * Compiles it
 * Decompiles it (using both toString and uneval)
-* Checks two things about each decompilation: 
-  * Does it compile? 
-  * The "round-trip" test: when passed through the compiler and decomiler a second time, 
+* Checks two things about each decompilation:
+  * Does it compile?
+  * The "round-trip" test: when passed through the compiler and decomiler a second time,
     is the decompilation exactly the same? see below**
 * Executes it
 * If executing returned a generator, loops through the generator.
