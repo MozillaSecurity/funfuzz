@@ -159,7 +159,7 @@ if __name__ == "__main__":
     oldjobname = None
     takenNameOnServer = None
     lithlog = None
-    sendEmail("justInWhileLoop: Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+    sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
     if os.path.exists("wtmp1"):
       print "wtmp1 shouldn't exist now. killing it."
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
       else:
         print "Fuzz time!"
-        sendEmail("justFuzzTime: Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+        sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
         if options.reuse_build and os.path.exists("build"):
           buildUsed = "reused"
         else:
