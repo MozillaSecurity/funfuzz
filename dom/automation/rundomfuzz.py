@@ -128,9 +128,6 @@ def createDOMFuzzProfile(profileDir):
   extFile.write(domfuzzExtensionPath)
   extFile.close()
 
-  # Give the profile an empty bookmarks file, so there are no live-bookmark requests
-  shutil.copyfile(os.path.join(THIS_SCRIPT_DIRECTORY, "empty-bookmarks.html"), os.path.join(profileDir, "bookmarks.html"))
-
 valgrindComplaintRegexp = re.compile("^==\d+== ")
 
 class AmissLogHandler:
