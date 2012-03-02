@@ -248,15 +248,8 @@ if __name__ == "__main__":
       if not options.reuse_build and os.path.exists("build"):
         shutil.rmtree("build")
 
-      # Needed to get the version number of Python as a string in Python 2.5, 2.6 and 2.7.
-      verNumList = []
-      for i in sys.version_info:
-          verNumList.append(i) if 'str' in str(type(i)) else verNumList.append(str(i))
-          assert verNumList != []
-      pyVer = ".".join(verNumList[0:3])
-
       if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
         print "Sending email..."
         sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "jruderman")
-        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + "Python " + "".join(pyVer) + " - " +  " ".join(platform.uname()), "gkwong")
+        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + "Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
         print "Email sent!"
