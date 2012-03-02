@@ -159,8 +159,8 @@ if __name__ == "__main__":
     oldjobname = None
     takenNameOnServer = None
     lithlog = None
-    if remoteLoginAndMachine:
-      sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+    #if remoteLoginAndMachine:
+    #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
     if os.path.exists("wtmp1"):
       print "wtmp1 shouldn't exist now. killing it."
@@ -191,8 +191,8 @@ if __name__ == "__main__":
 
       else:
         print "Fuzz time!"
-        if remoteLoginAndMachine:
-          sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+        #if remoteLoginAndMachine:
+        #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
         if options.reuse_build and os.path.exists("build"):
           buildUsed = "reused"
         else:
@@ -255,6 +255,6 @@ if __name__ == "__main__":
       if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
         print "Sending email..."
         sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "jruderman")
-        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + \
-                  " - " + platform.node() + " - Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
+        #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + \
+        #          " - " + platform.node() + " - Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
         print "Email sent!"
