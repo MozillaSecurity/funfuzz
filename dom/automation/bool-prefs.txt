@@ -170,6 +170,7 @@ network.websocket.enabled
 network.websocket.extensions.stream-deflate
 nglayout.enable_drag_images
 notification.feature.enabled
+plugin.allow.asyncdrawing
 plugin.expose_full_path
 plugin.override_internal_types
 plugins.hide_infobar_for_carbon_failure_plugin
