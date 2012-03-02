@@ -92,6 +92,9 @@ def main():
     branchSuppList.append('im')
     branchSuppList.append('mi')
     branchSuppList.append('larch')
+    branchSuppList.append('ma')
+    branchSuppList.append('mb')
+    branchSuppList.append('esr10')
     branchType = sys.argv[3]
     assert branchType in branchSuppList
 
@@ -110,6 +113,9 @@ def main():
     repoDt['im'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'ionmonkey'))
     repoDt['mi'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-inbound'))
     repoDt['larch'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'larch'))
+    repoDt['ma'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-aurora'))
+    repoDt['mb'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-beta'))
+    repoDt['esr10'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-esr10'))
 
     for repo in repoDt.keys():
         vdump('The "' + repo + '" repository is located at "' + repoDt[repo] + '"')
@@ -228,6 +234,9 @@ def main():
     jsknwnDt['im'] = jsknwnDt['mc']
     jsknwnDt['mi'] = jsknwnDt['mc']
     jsknwnDt['larch'] = jsknwnDt['mc']
+    jsknwnDt['ma'] = jsknwnDt['mc']
+    jsknwnDt['mb'] = jsknwnDt['mc']
+    jsknwnDt['esr10'] = jsknwnDt['mc']
 
     mTimedRunFlagList = []
     mTimedRunFlagList.append('--random-flags')
@@ -245,6 +254,12 @@ def main():
         mTimedRunFlagList.append('--repo=' + repoDt['mi'])
     elif branchType == 'larch':
         mTimedRunFlagList.append('--repo=' + repoDt['larch'])
+    elif branchType == 'ma':
+        mTimedRunFlagList.append('--repo=' + repoDt['ma'])
+    elif branchType == 'mb':
+        mTimedRunFlagList.append('--repo=' + repoDt['mb'])
+    elif branchType == 'esr10':
+        mTimedRunFlagList.append('--repo=' + repoDt['esr10'])
 
     jsCliFlagList = []
     if mjit:
