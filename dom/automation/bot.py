@@ -251,5 +251,5 @@ if __name__ == "__main__":
       if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
         print "Sending email..."
         sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "jruderman")
-        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + "Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
+        sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + " - " + platform.node() + " - Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
         print "Email sent!"
