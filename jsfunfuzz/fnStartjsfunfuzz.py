@@ -52,6 +52,19 @@ def isVM():
         vm = True
     return (platform.system(), vm)
 
+def pyVer():
+    '''Returns the version branch of Python as a string.'''
+    v = ''
+    if ' 2.5 ' or ' 2.5.' in sys.version[:5]:
+        v = 'py25'
+    elif ' 2.6 ' or ' 2.6.' in sys.version[:5]:
+        v = 'py26'
+    elif ' 2.7 ' or ' 2.7. ' in sys.version[:5]:
+        v = 'py27'
+    else:
+        raise Exception ('Unsupported version of Python: ' + sys.version)
+    return v
+
 #####################
 #  Shell Functions  #
 #####################
