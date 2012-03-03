@@ -440,8 +440,9 @@ def rdfInit(args):
         appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
         crashlog = grabCrashLog(appName, alh.pid, None, signum)
         if crashlog:
-          print open(crashlog).read()
-          if not file_contains(open(crashlog), " main + "):
+          crashText = open(crashlog).read()
+          print crashText
+          if not (" main + " in crashText or " XRE_main + " in crashText):
             # e.g. this build only has breakpad symbols, not native symbols
             alh.printAndLog("%%% Busted crash report (from mac crash reporter)")
           elif detect_interesting_crashes.amiss(knownPath, crashlog, True, signame):
@@ -547,12 +548,6 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
                 return macCrashLogFilename
                 #return open(macCrashLogFilename).read()
     return None
-
-def file_contains(f, s):
-   for line in f:
-       if line.find(s) != -1:
-           return True
-   return False
 
 
 # For use by Lithium
