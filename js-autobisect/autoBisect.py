@@ -196,7 +196,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport,
                 jsShellName = makeShell(shellCacheDir, sourceDir,
                                         archNum, compileType, valgrindSupport,
                                         rev)
-            except Exception as e:
+            except Exception, e:
                 open(cachedNoShell, 'w').close()
                 return (COMPILATION_FAILED_LABEL, 'compilation failed (' + str(e) + ')')
 
@@ -444,6 +444,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
     jsSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'src'))
     shutil.copytree(jsSrcDir, compileJsSrcPath,
                     ignore=shutil.ignore_patterns(
+                        # ignore_patterns does not work in Python 2.5.
                         'jit-test', 'tests', 'trace-test', 'xpconnect'))
     jsPubSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'public'))
     if os.path.isdir(jsPubSrcDir):
