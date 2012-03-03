@@ -150,6 +150,8 @@ class AmissLogHandler:
     self.crashIsKnown = False
     self.timedOut = False
     self.sawValgrindComplaint = False
+    self.sawQuittingMessage = False
+    self.sawChromeFailure = False
     detect_interesting_crashes.resetCounts()
   def processLine(self, msgLF):
     msgLF = stripBeeps(msgLF)
@@ -222,6 +224,20 @@ class AmissLogHandler:
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       self.printAndLog("%%% Known crash signature: " + msg)
       self.crashIsKnown = True
+    if msg.find("quitApplication") != -1:
+      self.sawQuittingMessage = True
+    if (not self.sawQuittingMessage and
+        (msg.find("uncaught exception") != -1 or msg.find("JavaScript error") != -1) and
+        (msg.find("chrome://browser/") != -1 or msg.find("resource:///components") != -1) and
+         msg.find("nsIWebProgress.DOMWindow") == -1 and # bug 732593
+         msg.find("installStatus is null") == -1 and # bug 693237
+         msg.find("overlay is null") == -1 and # bug 693238
+         msg.find("aTab is null") == -1 and # bug 693239
+         msg.find("too much recursion") == -1 and # bug 732665
+         msg.find("nsIWebContentHandlerRegistrar::registerProtocolHandler") == -1 # bug 732692, bug 693270
+        ):
+        self.printAndLog("@@@ " + msg)
+        self.sawChromeFailure = True
   def printAndLog(self, msg):
     print "$ " + msg
     self.fullLogHead.append(msg + "\n")
@@ -406,7 +422,7 @@ def rdfInit(args):
       lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
     if alh.mallocFailure:
       lev = max(lev, DOM_MALLOC_ERROR)
-    if alh.fuzzerComplained:
+    if alh.fuzzerComplained or alh.sawChromeFailure:
       lev = max(lev, DOM_FUZZER_COMPLAINED)
     if alh.sawValgrindComplaint:
       lev = max(lev, DOM_VG_AMISS)
