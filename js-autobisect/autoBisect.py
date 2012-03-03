@@ -442,10 +442,14 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
 
     # Copy the js tree.
     jsSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'src'))
-    shutil.copytree(jsSrcDir, compileJsSrcPath,
-                    ignore=shutil.ignore_patterns(
-                        # ignore_patterns does not work in Python 2.5.
-                        'jit-test', 'tests', 'trace-test', 'xpconnect'))
+    assert pyVer() in ('py25', 'py26', 'py27')
+    if pyVer() != 'py25':
+        shutil.copytree(jsSrcDir, compileJsSrcPath,
+                        ignore=shutil.ignore_patterns(
+                            # ignore_patterns does not work in Python 2.5.
+                            'jit-test', 'tests', 'trace-test', 'xpconnect'))
+    else:
+        shutil.copytree(jsSrcDir, compileJsSrcPath)
     jsPubSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'public'))
     if os.path.isdir(jsPubSrcDir):
         shutil.copytree(jsPubSrcDir, os.path.join(compileJsSrcPath, '..', 'public'))
