@@ -99,6 +99,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       callDrawWindow: callDrawWindow(aWindow),
 
+      resizeTo: safeResizeTo(aWindow),
+
       __exposedProps__: {
         'toString': 'r',
         'quitApplication': 'r',
@@ -121,7 +123,8 @@ function makeDOMFuzzHelper(aWindow) {
         'reftestList': 'r',
         'cssPropertyDatabase': 'r',
         'comparePixels': 'r',
-        'callDrawWindow': 'r'
+        'callDrawWindow': 'r',
+        'resizeTo': 'r',
       }
   };
 };
@@ -255,6 +258,21 @@ function setZoomLevel(window)
   }
 }
 */
+
+function safeResizeTo(aWindow)
+{
+  function clamp(a, b, c)
+  {
+    return Math.min(c, Math.max(a, b));
+  }
+
+  return function(w, h) {
+    w = clamp(200, w, aWindow.screen.width);
+    h = clamp(200, h, aWindow.screen.height);
+    aWindow.resizeTo(w, h);
+  };
+}
+
 
 function printToFile(window)
 {
