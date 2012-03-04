@@ -150,7 +150,7 @@ class AmissLogHandler:
     self.crashIsKnown = False
     self.timedOut = False
     self.sawValgrindComplaint = False
-    self.sawQuittingMessage = False
+    self.expectChromeFailure = False
     self.sawChromeFailure = False
     detect_interesting_crashes.resetCounts()
   def processLine(self, msgLF):
@@ -224,9 +224,9 @@ class AmissLogHandler:
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       self.printAndLog("%%% Known crash signature: " + msg)
       self.crashIsKnown = True
-    if msg.find("quitApplication") != -1:
-      self.sawQuittingMessage = True
-    if (not self.sawQuittingMessage and
+    if msg.find("quitApplication") != -1 or msg.find("fuzzerWhenDeep") != -1:
+      self.expectChromeFailure = True
+    if (not self.expectChromeFailure and
         (msg.find("uncaught exception") != -1 or msg.find("JavaScript error") != -1) and
         (msg.find("chrome://browser/") != -1 or msg.find("resource:///components") != -1) and
          msg.find("nsIWebProgress.DOMWindow") == -1 and # bug 732593
