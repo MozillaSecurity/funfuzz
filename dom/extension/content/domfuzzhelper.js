@@ -75,6 +75,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       CC: cycleCollect(aWindow),
 
+      CCLog: cycleCollectLog(aWindow),
+
       MP: sendMemoryPressureNotification.bind(this),
 
       forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
@@ -112,6 +114,7 @@ function makeDOMFuzzHelper(aWindow) {
         'enableAccessibility': 'r',
         'GC': 'r',
         'CC': 'r',
+        'CCLog': 'r',
         'MP': 'r',
         'forceShrinkingGC': 'r',
         'schedulePreciseGC': 'r',
@@ -171,6 +174,19 @@ function cycleCollect(window)
           .getInterface(Components.interfaces.nsIDOMWindowUtils)
           .cycleCollect();
   }
+}
+
+function cycleCollectLog(window)
+{
+  return function(allTraces, wantAfterProcessing) {
+    var logger = Components.classes["@mozilla.org/cycle-collector-logger;1"].createInstance(Components.interfaces.nsICycleCollectorListener);
+    if (allTraces) {
+      logger.allTraces();
+    }
+    logger.disableLog = true;
+    logger.wantAfterProcessing = wantAfterProcessing;
+    window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindowUtils).cycleCollect(logger);
+  };
 }
 
 function callDrawWindow(aWindow)
