@@ -179,7 +179,6 @@ function cycleCollect(window)
 function cycleCollectLog(window)
 {
   return function(allTraces, wantAfterProcessing) {
-    return; // bug 733242
     var logger = Components.classes["@mozilla.org/cycle-collector-logger;1"].createInstance(Components.interfaces.nsICycleCollectorListener);
     if (allTraces) {
       logger.allTraces();
