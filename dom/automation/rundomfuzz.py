@@ -235,6 +235,7 @@ class AmissLogHandler:
          msg.find("aTab is null") == -1 and # bug 693239
          msg.find("too much recursion") == -1 and # bug 732665
          msg.find("nsIWebContentHandlerRegistrar::registerProtocolHandler") == -1 and # bug 732692, bug 693270
+         msg.find("iconStatus is null") == -1 and # bug 733305
          msg.find("prompt aborted by user") == -1 # thrown intentionally in nsPrompter.js
         ):
         self.printAndLog("@@@ " + msg)
