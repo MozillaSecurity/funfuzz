@@ -2072,7 +2072,7 @@ var statementMakers = weighted([
 
   { w: 20, fun: makeRegexUseBlock },
 
-  // Add properties
+  // Discover properties to add to the specialProperties list
   //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
   //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
