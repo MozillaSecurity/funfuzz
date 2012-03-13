@@ -247,8 +247,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("<>") == -1)                            // avoid bug 334628
     ,
 
+    // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     expectConsistentOutput: true
-       && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
        && code.indexOf("Date") == -1                // time marches on
     ,
 
@@ -257,10 +257,8 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (wontfix).
-       && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
-       && code.indexOf("instanceof") == -1          // bug 617949
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
+       && code.indexOf("use strict") == -1          // bug 735161
 
   };
 }
