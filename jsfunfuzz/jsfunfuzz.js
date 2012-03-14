@@ -490,7 +490,8 @@ function tryItOut(code)
   if (primarySandbox) {
     if (wtt.allowExec) {
       try {
-        Components.utils.evalInSandbox(code, primarySandbox);
+        // Internal try..catch to work around bug 613142.
+        Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
       } catch(e) {
         // It might not be safe to operate on |e|.
       }
@@ -2783,7 +2784,11 @@ function newSandbox(n)
 
   // Allow the sandbox to do a few things
   s.newSandbox = newSandbox;
-  s.evalInSandbox = function(str, sbx) { return Components.utils.evalInSandbox(str, sbx); };
+  s.evalInSandbox = function(str, sbx) {
+    // Internal try..catch to work around bug 613142.
+    str = "try{"+str+"}catch(e){}";
+    return Components.utils.evalInSandbox(str, sbx);
+  };
   s.print = function(str) { print(str); };
 
   return s;
@@ -2793,6 +2798,7 @@ if ("Components" in this) {
   exprMakers = exprMakers.concat([
     function(d, b) { var n = rnd(4); return "newSandbox(" + n + ")"; },
     function(d, b) { var n = rnd(4); return "s" + n + " = newSandbox(" + n + ")"; },
+    // Doesn't this need to be Components.utils.evalInSandbox? Oh well, we need to fix bug 613142 first.
     function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", newSandbox(" + n + "))"; },
     function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", s" + n + ")"; },
     function(d, b) { return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
