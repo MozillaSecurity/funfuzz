@@ -116,6 +116,7 @@ gfx.font_rendering.directwrite.enabled
 gfx.font_rendering.directwrite.use_gdi_table_loading
 gfx.font_rendering.fallback.always_use_cmaps
 gfx.use_text_smoothing_setting
+gfx.textures.poweroftwo.force-enabled
 image.mem.decodeondraw
 image.mem.discardable
 intl.locale.matchOS
@@ -136,6 +137,7 @@ javascript.options.typeinference
 keyword.enabled
 layers.acceleration.disabled
 layers.acceleration.force-enabled
+layers.offmainthreadcomposition.enabled
 layout.3d-transforms.enabled
 layout.css.report_errors
 layout.css.visited_links_enabled
