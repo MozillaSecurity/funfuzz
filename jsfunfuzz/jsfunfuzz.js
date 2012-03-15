@@ -1844,6 +1844,9 @@ function makeStatement(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
+  if (rnd(2))
+    return makeBuilderStatement(d, b);
+
   if (d < 6 && rnd(3) == 0)
     return makePrintStatement(d, b);
 
@@ -2075,6 +2078,203 @@ var statementMakers = weighted([
   //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
   //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
+
+// Test built-in types
+var makeBuilderStatement;
+(function() {
+  var ARRAY_SIZE = 20;
+  var OBJECTS_PER_TYPE = 3;
+  var smallPowersOfTwo = [1, 2, 4, 8]; // The largest typed array views are 64-bit aka 8-byte
+  function bufsize() { return rnd(ARRAY_SIZE) * rndElt(smallPowersOfTwo); }
+
+  function m(t)
+  {
+    if (!t)
+      t = "aosmevbti";
+    t = t.charAt(rnd(t.length));
+    var name = t + rnd(OBJECTS_PER_TYPE);
+    switch(rnd(8)) {
+      case 0:  return m("o") + "." + name
+      case 1:  return "this." + name;
+      default: return name;
+    }
+  }
+
+  function val(d, b)
+  {
+    if (rnd(10))
+      return m();
+    return makeExpr(d, b);
+  }
+
+  function makeEvilCallback(d, b)
+  {
+    // Variant 1: Do some stuff.
+    if (rnd(3))
+      return "(function() { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " })"
+
+    // Variant 2: Evil evil use of bind. (This could be smarter, and/or folded into makeFunction.)
+    if (rnd(30) == 0)
+      return rndElt([
+        "Array.prototype.join",
+        "Array.prototype.sort",
+        "Array.prototype.reverse",
+        "Object.freeze",
+        "Object.preventExtensions",
+        "Object.seal"
+      ]) + ".bind(" + m() + ")";
+
+    // Variant 3: Anything
+    if (rnd(10) == 0)
+      return makeFunction(d, b);
+
+    // Variant 4: A function we made earlier
+    if (rnd(5) == 0)
+      return m("f");
+
+    // Variant 5: A closure with a counter. Do stuff depending on the counter.
+    var v = uniqueVarName();
+    var mod = rnd(10) + 2;
+    var target = rnd(mod);
+    return (
+      "(function() { " +
+        "var " + v + " = 0; " +
+        "return function() { " +
+          "++" + v + "; " +
+          "if (" + v + " % " + mod + " == " + target + ") { dumpln('hit!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
+          "else { dumpln('miss!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
+        "};" +
+      "})()");
+  }
+
+  var builderStatementMakers = weighted([
+    // a: Array
+    { w: 1,  fun: function(d, b) { return m("a") + " = [];"; } },
+    { w: 1,  fun: function(d, b) { return m("a") + " = new Array;"; } },
+    { w: 1,  fun: function(d, b) { return m("a") + ".length = " + rnd(ARRAY_SIZE) + ";"; } },
+    { w: 5,  fun: function(d, b) { return m("v") + " = " + m("at") + ".length;"; } },
+    { w: 2,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
+    { w: 2,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
+    // Array mutators
+    { w: 5,  fun: function(d, b) { return m("a") + ".push(" + val(d, b) + ");"; } },
+    { w: 5,  fun: function(d, b) { return m("a") + ".pop();"; } },
+    { w: 5,  fun: function(d, b) { return m("a") + ".unshift(" + val(d, b) + ");"; } },
+    { w: 5,  fun: function(d, b) { return m("a") + ".shift();"; } },
+    { w: 3,  fun: function(d, b) { return m("a") + ".reverse();"; } },
+    { w: 3,  fun: function(d, b) { return m("a") + ".sort(" + makeEvilCallback(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("a") + ".splice(" + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + rnd(ARRAY_SIZE) + ");" ; } }, // should also add new elements...
+    // Array accessors
+    { w: 1,  fun: function(d, b) { return m("s") + " = " + m("a") + ".join('');"; } },
+    { w: 1,  fun: function(d, b) { return m("s") + " = " + m("a") + ".join(', ');"; } },
+    { w: 1,  fun: function(d, b) { return m("a") + " = " + m("a") + ".concat(" + m("a") + ");"; } }, // can actually take multiple array or non-arrays...
+    { w: 1,  fun: function(d, b) { return m("a") + " = " + m("a") + ".slice(" + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ");"; } },
+    // Array iterators
+    { w: 3,  fun: function(d, b) { return m("a") + "." + rndElt(["filter", "forEach", "every", "map", "some"]) + "(" + makeEvilCallback(d, b) + ");"; } },
+    { w: 3,  fun: function(d, b) { return m("a") + "." + rndElt(["reduce, reduceRight"]) + "(" + makeEvilCallback(d, b) + ");"; } },
+    { w: 3,  fun: function(d, b) { return m("a") + "." + rndElt(["reduce, reduceRight"]) + "(" + makeEvilCallback(d, b) + ", " + m() + ");"; } },
+
+    // o: Object
+    { w: 1,  fun: function(d, b) { return m("o") + " = {};"; } },
+    { w: 1,  fun: function(d, b) { return m("o") + " = new Object;"; } },
+    { w: 1,  fun: function(d, b) { return m("o") + " = Object.create(" + val(d, b) + ");"; } },
+
+    // s: String
+    { w: 1,  fun: function(d, b) { return m("s") + " = '';"; } },
+    { w: 1,  fun: function(d, b) { return m("s") + " = new String;"; } },
+    { w: 1,  fun: function(d, b) { return m("s") + " = new String(" + m() + ");"; } },
+    { w: 5,  fun: function(d, b) { return m("s") + " += 'x';"; } },
+    { w: 5,  fun: function(d, b) { return m("s") + " += " + m("s") + ";"; } },
+    { w: 1,  fun: function(d, b) { return m("s") + " = " + m("s") + ".charAt(" + rnd(ARRAY_SIZE) + ");"; } },
+
+    // m: Map, WeakMap
+    { w: 1,  fun: function(d, b) { return m("m") + " = new Map;"; } },
+    { w: 1,  fun: function(d, b) { return m("m") + " = new WeakMap;"; } },
+    { w: 5,  fun: function(d, b) { return m("m") + ".has(" + val(d, b) + ");"; } },
+    { w: 4,  fun: function(d, b) { return m("m") + ".get(" + val(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = " + m("m") + ".get(" + val(d, b) + ");"; } },
+    { w: 5,  fun: function(d, b) { return m("m") + ".set(" + val(d, b) + ", " + val(d, b) + ");"; } },
+    { w: 3,  fun: function(d, b) { return m("m") + ".delete(" + val(d, b) + ");"; } },
+
+    // e: Set
+    { w: 1,  fun: function(d, b) { return m("e") + " = new Set;"; } },
+    { w: 5,  fun: function(d, b) { return m("e") + ".has(" + val(d, b) + ");"; } },
+    { w: 5,  fun: function(d, b) { return m("e") + ".add(" + val(d, b) + ");"; } },
+    { w: 3,  fun: function(d, b) { return m("e") + ".delete(" + val(d, b) + ");"; } },
+
+    // b: Buffer
+    { w: 1,  fun: function(d, b) { return m("b") + " = new ArrayBuffer(" + bufsize() + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("b") + " = " + m("t") + ".buffer;"; } },
+
+    // t: Typed arrays, aka ArrayBufferViews
+    // Can be constructed using a length, typed array, sequence (e.g. array), or buffer with optional offsets!
+    { w: 1,  fun: function(d, b) { return m("t") + " = new " + rndElt(typedArrayConstructors) + "(" + rnd(ARRAY_SIZE) + ");"; } },
+    { w: 3,  fun: function(d, b) { return m("t") + " = new " + rndElt(typedArrayConstructors) + "(" + m("abt") + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("t") + " = new " + rndElt(typedArrayConstructors) + "(" + m("b") + ", " + bufsize() + ", " + rnd(ARRAY_SIZE) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("t") + " = " + m("t") + ".subarray(" + rnd(ARRAY_SIZE) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("t") + " = " + m("t") + ".subarray(" + rnd(ARRAY_SIZE) + ", " + rnd(ARRAY_SIZE) + ");"; } },
+    { w: 3,  fun: function(d, b) { return m("t") + ".set(" + m("at") + ", " + rnd(ARRAY_SIZE) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("v") + " = " + m("tb") + ".byteLength;"; } },
+    { w: 1,  fun: function(d, b) { return m("v") + " = " + m("t") + ".byteOffset;"; } },
+    { w: 1,  fun: function(d, b) { return m("v") + " = " + m("t") + ".BYTES_PER_ELEMENT;"; } },
+
+    // p: proxy (?)
+    // h: proxy handler (!!)
+    // r: regexp
+
+    // f: function (?)
+    // Could probably do better with args / b
+    { w: 3,  fun: function(d, b) { return m("f") + " = (function(" + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " });"; } },
+    { w: 1,  fun: function(d, b) { return m("f") + " = (function(" + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " });"; } },
+    { w: 1,  fun: function(d, b) { return m("f") + "(" + m() + ");"; } },
+
+    // i: Iterator
+    { w: 1,  fun: function(d, b) { return m("i") + " = new Iterator(" + m() + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("i") + " = new Iterator(" + m() + ", true);"; } },
+    { w: 3,  fun: function(d, b) { return m("i") + ".next();"; } },
+    { w: 3,  fun: function(d, b) { return m("i") + ".send(" + m() + ");"; } },
+    // Other ways to build iterators: https://developer.mozilla.org/en/JavaScript/Guide/Iterators_and_Generators
+
+    // v: Primitive
+    { w: 2,  fun: function(d, b) { return m("v") + " = " + rndElt(["4", "4.2", "NaN", "0", "-0", "Infinity", "-Infinity"]) + ";"; } },
+    { w: 1,  fun: function(d, b) { return m("v") + " = new Number(" + rndElt(["4", "4.2", "NaN", "0", "-0", "Infinity", "-Infinity"]) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("v") + " = new Number(" + m() + ");"; } },
+    { w: 2,  fun: function(d, b) { return m("v") + " = " + rndElt(["undefined", "null", "true", "false"]) + ";"; } },
+
+    // evil things we can do to any object property
+    { w: 1,  fun: function(d, b) { return "Object.defineProperty(" + m() + ", " + makePropertyName(d, b) + ", " + makePropertyDescriptor(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return "Object.prototype.watch.call(" + m() + ", " + makePropertyName(d, b) + ", " + makeEvilCallback(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return "Object.prototype.unwatch.call(" + m() + ", " + makePropertyName(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return "delete " + m() + "[" + makePropertyName(d, b) + "];"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = " + m() + "[" + makePropertyName(d, b) + "];"; } },
+    { w: 1,  fun: function(d, b) { return m() + "[" + makePropertyName(d, b) + "] = " + val(d, b) + ";"; } },
+
+    // evil things we can do to any object
+    { w: 5,  fun: function(d, b) { return "print(" + m() + ");" } },
+    { w: 5,  fun: function(d, b) { return "print(uneval(" + m() + "));" } },
+    { w: 5,  fun: function(d, b) { return m() + ".toString = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 5,  fun: function(d, b) { return m() + ".toSource = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 5,  fun: function(d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 2,  fun: function(d, b) { return m() + ".__iterator__ = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = " + m() + ";"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = wrap(" + val(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
+    { w: 10, fun: function(d, b) { return "gc();"; } },
+    { w: 10, fun: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
+    { w: 10, fun: function(d, b) { return "for (var v of " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
+    { w: 10, fun: function(d, b) { return m() + " + " + m() + ";"; } }, // valueOf
+    { w: 10, fun: function(d, b) { return m() + " + '';"; } }, // toString
+    { w: 10, fun: function(d, b) { return m("v") + " = (" + m() + " instanceof " + m() + ");"; } },
+    { w: 10, fun: function(d, b) { return m("v") + " = Object.prototype.isPrototypeOf.call(" + m() + ", " + m() + ");"; } },
+    { w: 2,  fun: function(d, b) { return "Object." + rndElt(["preventExtensions", "seal", "freeze"]) + "(" + m() + ");"; } },
+
+    // Be promiscuous with the rest of jsfunfuzz
+    { w: 1,  fun: function(d, b) { return m() + " = x;"; } },
+    { w: 1,  fun: function(d, b) { return "x = " + m() + ";"; } },
+  ]);
+  makeBuilderStatement = function(d, b) {
+    return (rndElt(builderStatementMakers))(d - 1, b)
+  }
+})();
 
 function linkedList(x, n)
 {
@@ -2416,7 +2616,8 @@ var specialProperties = [
   // arguments object
   "arguments", "caller", "callee",
   // Math object
-  "E", "PI"
+  "E", "PI",
+  "0", "1",
 ]
 
 function makeSpecialProperty(d, b)
@@ -2649,8 +2850,8 @@ var exprMakers =
   function(d, b) { return cat([makeLValue(d, b), rndElt(["|=", "%=", "+=", "-="]), makeExpr(d, b)]); },
 
   // Watchpoints (similar to setters)
-  function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", uneval(makeId(d, b)), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", uneval(makePropertyName(d, b)), ", ", makeFunction(d, b), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", uneval(makePropertyName(d, b)), ")"]); },
 
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
   function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", makePropertyName(d, b), ", ", makePropertyDescriptor(d, b), ")"]); },
@@ -2660,9 +2861,6 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineSetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat(["this", ".", "__defineGetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat(["this", ".", "__defineSetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
-
-  // Very old getter/setter syntax, imperative (removed in Gecko 1.9.3)
-  function(d, b) { return cat([makeId(d, b), ".", makeId(d, b), " ", rndElt(["getter", "setter"]), "= ", makeFunction(d, b)]); },
 
   // Object literal
   function(d, b) { return cat(["(", "{", makeObjLiteralPart(d, b), " }", ")"]); },
@@ -2976,7 +3174,13 @@ function makePropertyName(d, b)
 {
   if (rnd(10) == 0)
     return "new AttributeName()";
-  return simpleSource(makeId(d, b));
+  if (rnd(3) == 0)
+    return simpleSource("" + rnd(20));
+  if (rnd(100) == 0)
+    return simpleSource("-" + rnd(3));
+  if (rnd(3) == 0)
+    return makeSpecialProperty(d - 1, b);
+  return simpleSource(makeId(d - 1, b));
 }
 
 function makeShapeyConstructorLoop(d, b)
@@ -3077,7 +3281,8 @@ if (haveE4X) {
 
 var constructors = [
   "Error", "RangeError", "Exception",
-  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean", "WeakMap",
+  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean",
+  "WeakMap", "Map", "Set",
   "Date",
   "Iterator",
   // E4X
