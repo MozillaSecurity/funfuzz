@@ -137,7 +137,7 @@ javascript.options.typeinference
 keyword.enabled
 layers.acceleration.disabled
 layers.acceleration.force-enabled
-#layers.offmainthreadcomposition.enabled # bug 736219
+#layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 layout.3d-transforms.enabled
 layout.css.report_errors
 layout.css.visited_links_enabled
