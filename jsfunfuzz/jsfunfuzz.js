@@ -183,6 +183,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
+      && !( code.match(/\/.*[\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
       && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
