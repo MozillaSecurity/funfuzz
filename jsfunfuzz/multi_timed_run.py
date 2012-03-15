@@ -42,9 +42,9 @@ knownPath = os.path.expanduser(args[1])
 engine = args[2]
 engineFlags = args[3:]
 # This is the original jsfunfuzz file from the jsfunfuzz directory, with full paths.
-#jsfunfuzzToBeUsed = options.fuzzjs
+jsfunfuzzToBeUsed = options.fuzzjs
 # This is the local jsfunfuzz file to be used.
-jsfunfuzzToBeUsed = 'jsfunfuzz.js'
+#jsfunfuzzToBeUsed = 'jsfunfuzz.js'
 runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
 
 def showtail(filename):
@@ -69,7 +69,7 @@ def many_timed_runs():
         jsunhappyArgsWithoutRunThis.append("--valgrind")
     jsunhappyArgsWithoutRunThis.append(knownPath)
 
-    shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
+    #shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
     while True:
 
         if options.randomFlags:
@@ -85,16 +85,17 @@ def many_timed_runs():
 
         iteration += 1
 
-        # Integration of jandem's method fuzzer with jsfunfuzz
-        # Keep regenerating new objects together with jsfunfuzz.js
-        shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
-        # Run 4test.py and output to current directory.
-        subprocess.call(['python', '-u', tempDir + os.sep + '..' + os.sep + '4test.py', engine, '.'])
+        if False:
+            # Integration of jandem's method fuzzer with jsfunfuzz
+            # Keep regenerating new objects together with jsfunfuzz.js
+            shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
+            # Run 4test.py and output to current directory.
+            subprocess.call(['python', '-u', tempDir + os.sep + '..' + os.sep + '4test.py', engine, '.'])
 
-        # Splice jsfunfuzz.js with current.js from 4test.py
-        [before2, after2] = fuzzSpliceHacky(open('jsfunfuzz.js'))
-        newfileLines2 = before2 + linesWith(open('current.js'), "") + after2
-        writeLinesToFile(newfileLines2, 'jsfunfuzz.js')
+            # Splice jsfunfuzz.js with current.js from 4test.py
+            [before2, after2] = fuzzSpliceHacky(open('jsfunfuzz.js'))
+            newfileLines2 = before2 + linesWith(open('current.js'), "") + after2
+            writeLinesToFile(newfileLines2, 'jsfunfuzz.js')
 
         logPrefix = tempDir + os.sep + "w" + str(iteration)
 
@@ -110,7 +111,7 @@ def many_timed_runs():
             # When running xpcshell, ./run-mozilla-sh appears not necessary, but remember to append LD_LIBRARY_PATH=. especially on Linux.
             # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
             # All in all, xpcshell support is still largely blocked because of bug 613142.
-            oklevel = jsunhappy.JS_DECIDED_TO_EXIT
+            oklevel = jsunhappy.JS_ABNORMAL_EXIT
         elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
             oklevel = jsunhappy.JS_TIMED_OUT
@@ -225,4 +226,5 @@ try:
     many_timed_runs()
 except KeyboardInterrupt:
     # If the user presses Ctrl-C to stop multi_timed_run, overwrite jsfunfuzz.js with the original.
-    shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
+    #shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
+    pass
