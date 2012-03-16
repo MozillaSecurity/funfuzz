@@ -259,6 +259,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
+       && !( code.match(/\/.*[\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
 }
@@ -2081,6 +2082,8 @@ var statementMakers = weighted([
 
 // Test built-in types
 var makeBuilderStatement;
+var makeEvilCallback;
+
 (function() {
   var ARRAY_SIZE = 20;
   var OBJECTS_PER_TYPE = 3;
@@ -2090,7 +2093,7 @@ var makeBuilderStatement;
   function m(t)
   {
     if (!t)
-      t = "aosmevbti";
+      t = "aosmevbtih";
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
     switch(rnd(8)) {
@@ -2107,32 +2110,19 @@ var makeBuilderStatement;
     return makeExpr(d, b);
   }
 
-  function makeEvilCallback(d, b)
+  // It might make sense to fold this into makeFunction.
+  var functionsToBind = [
+    "Array.prototype.join",
+    "Array.prototype.sort",
+    "Array.prototype.reverse",
+    "Object.freeze",
+    "Object.preventExtensions",
+    "Object.seal"
+  ];
+
+  function makeCounterClosure(d, b)
   {
-    // Variant 1: Do some stuff.
-    if (rnd(3))
-      return "(function() { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " })"
-
-    // Variant 2: Evil evil use of bind. (This could be smarter, and/or folded into makeFunction.)
-    if (rnd(30) == 0)
-      return rndElt([
-        "Array.prototype.join",
-        "Array.prototype.sort",
-        "Array.prototype.reverse",
-        "Object.freeze",
-        "Object.preventExtensions",
-        "Object.seal"
-      ]) + ".bind(" + m() + ")";
-
-    // Variant 3: Anything
-    if (rnd(10) == 0)
-      return makeFunction(d, b);
-
-    // Variant 4: A function we made earlier
-    if (rnd(5) == 0)
-      return m("f");
-
-    // Variant 5: A closure with a counter. Do stuff depending on the counter.
+    // A closure with a counter. Do stuff depending on the counter.
     var v = uniqueVarName();
     var mod = rnd(10) + 2;
     var target = rnd(mod);
@@ -2146,6 +2136,49 @@ var makeBuilderStatement;
         "};" +
       "})()");
   }
+
+  var builderFunctionMakers = weighted([
+    { w: 9,  fun: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " return " + makeBuilderStatement(d - 1, b) + " })"; } },
+    { w: 1,  fun: function(d, b) { return "(function() { throw " + makeBuilderStatement(d - 1, b) + " })"; } },
+    { w: 1,  fun: function(d, b) { return rndElt(functionsToBind) + ".bind(" + m() + ")"; } },
+    { w: 5,  fun: function(d, b) { return m("f"); } },
+    { w: 3,  fun: makeCounterClosure },
+    { w: 1,  fun: makeFunction },
+  ]);
+  makeEvilCallback = function(d, b) {
+    return (rndElt(builderFunctionMakers))(d - 1, b)
+  };
+
+  var handlerTraps = ["getOwnPropertyDescriptor", "getPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
+
+  function forwardingHandler(d, b) {
+    return (
+      "({"+
+        "getOwnPropertyDescriptor: function(name) { Z; var desc = Object.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
+        "getPropertyDescriptor: function(name) { Z; var desc = Object.getPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
+        "defineProperty: function(name, desc) { Z; Object.defineProperty(X, name, desc); }, " +
+        "getOwnPropertyNames: function() { Z; return Object.getOwnPropertyNames(X); }, " +
+        "delete: function(name) { Z; return delete X[name]; }, " +
+        "fix: function() { Z; if (Object.isFrozen(X)) { return Object.getOwnProperties(X); } }, " +
+        "has: function(name) { Z; return name in X; }, " +
+        "hasOwn: function(name) { Z; return Object.prototype.hasOwnProperty.call(X, name); }, " +
+        "get: function(receiver, name) { Z; return X[name]; }, " +
+        "set: function(receiver, name, val) { Z; X[name] = val; return true; }, " +
+        "iterate: function() { Z; return (function() { for (var name in X) { yield name; } })(); }, " +
+        "enumerate: function() { Z; var result = []; for (var name in X) { result.push(name); }; return result; }, " +
+        "keys: function() { Z; return Object.keys(X); } " +
+      "})"
+    )
+    .replace(/X/g, m())
+    .replace(/Z/g, function() {
+      switch(rnd(20)){
+        case 0:  return "return " + makeBuilderStatement(d - 2, b);
+        case 1:  return "throw " + makeBuilderStatement(d - 2, b);
+        default: return makeBuilderStatement(d - 2, b);
+      }
+    });
+  }
+
 
   var builderStatementMakers = weighted([
     // a: Array
@@ -2217,15 +2250,21 @@ var makeBuilderStatement;
     { w: 1,  fun: function(d, b) { return m("v") + " = " + m("t") + ".byteOffset;"; } },
     { w: 1,  fun: function(d, b) { return m("v") + " = " + m("t") + ".BYTES_PER_ELEMENT;"; } },
 
-    // p: proxy (?)
-    // h: proxy handler (!!)
+    // h: proxy handler
+    { w: 1,  fun: function(d, b) { return m("h") + " = {};"; } },
+    { w: 1,  fun: function(d, b) { return m("h") + " = " + forwardingHandler(d, b) + ";"; } },
+    { w: 1,  fun: function(d, b) { return "delete " + m("h") + "." + rndElt(handlerTraps) + ";"; } },
+    { w: 4,  fun: function(d, b) { return m("h") + "." + rndElt(handlerTraps) + " = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 4,  fun: function(d, b) { return m("h") + "." + rndElt(handlerTraps) + " = " + m("f") + ";"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = Proxy.create(" + m("h") + ", " + m() + ");"; } },
+    { w: 1,  fun: function(d, b) { return m("f") + " = Proxy.createFunction(" + m("h") + ", " + m("f") + ", " + m("f") + ");"; } },
+
     // r: regexp
 
     // f: function (?)
     // Could probably do better with args / b
-    { w: 3,  fun: function(d, b) { return m("f") + " = (function(" + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " });"; } },
-    { w: 1,  fun: function(d, b) { return m("f") + " = (function(" + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " });"; } },
-    { w: 1,  fun: function(d, b) { return m("f") + "(" + m() + ");"; } },
+    { w: 2,  fun: function(d, b) { return m("f") + " = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 2,  fun: function(d, b) { return m("f") + "(" + m() + ");"; } },
 
     // i: Iterator
     { w: 1,  fun: function(d, b) { return m("i") + " = new Iterator(" + m() + ");"; } },
@@ -2270,6 +2309,7 @@ var makeBuilderStatement;
     // Be promiscuous with the rest of jsfunfuzz
     { w: 1,  fun: function(d, b) { return m() + " = x;"; } },
     { w: 1,  fun: function(d, b) { return "x = " + m() + ";"; } },
+    { w: 5,  fun: makeStatement },
   ]);
   makeBuilderStatement = function(d, b) {
     return (rndElt(builderStatementMakers))(d - 1, b)
