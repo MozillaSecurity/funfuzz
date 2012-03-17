@@ -183,7 +183,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
-      && !( code.match(/\/.*[\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones)
+      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
       && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
@@ -259,7 +259,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
-       && !( code.match(/\/.*[\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
+       && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
 }
@@ -2179,6 +2179,32 @@ var makeEvilCallback;
     });
   }
 
+  function propertyDescriptorPrefix(d, b)
+  {
+    return "configurable: " + makeBoolean(d, b) + ", " + "enumerable: " + makeBoolean(d, b) + ", ";
+  }
+
+  var initializedEverything = false;
+  function initializeEverything(d, b)
+  {
+    if (initializedEverything)
+      return ";";
+    initializedEverything = true;
+
+    var s = "";
+    for (var i = 0; i < OBJECTS_PER_TYPE; ++i) {
+      s += "a" + i + " = []; ";
+      s += "o" + i + " = {}; ";
+      s += "s" + i + " = ''; ";
+      s += "m" + i + " = new WeakMap; ";
+      s += "e" + i + " = new Set; ";
+      s += "v" + i + " = null; ";
+      s += "b" + i + " = new ArrayBuffer(64); ";
+      s += "t" + i + " = new Uint8ClampedArray; ";
+      // nothing for iterators, handlers
+    }
+    return s;
+  }
 
   var builderStatementMakers = weighted([
     // a: Array
@@ -2188,6 +2214,9 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return m("v") + " = " + m("at") + ".length;"; } },
     { w: 2,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
     { w: 2,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
+    { w: 2,  fun: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
+    { w: 2,  fun: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
+
     // Array mutators
     { w: 5,  fun: function(d, b) { return m("a") + ".push(" + val(d, b) + ");"; } },
     { w: 5,  fun: function(d, b) { return m("a") + ".pop();"; } },
@@ -2218,6 +2247,7 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return m("s") + " += 'x';"; } },
     { w: 5,  fun: function(d, b) { return m("s") + " += " + m("s") + ";"; } },
     { w: 1,  fun: function(d, b) { return m("s") + " = " + m("s") + ".charAt(" + rnd(ARRAY_SIZE) + ");"; } },
+    // substr, substring, ...
 
     // m: Map, WeakMap
     { w: 1,  fun: function(d, b) { return m("m") + " = new Map;"; } },
@@ -2281,6 +2311,8 @@ var makeEvilCallback;
 
     // evil things we can do to any object property
     { w: 1,  fun: function(d, b) { return "Object.defineProperty(" + m() + ", " + makePropertyName(d, b) + ", " + makePropertyDescriptor(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return "/*ODP*/Object.defineProperty(" + m("") + ", " + makePropertyName(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
+    { w: 1,  fun: function(d, b) { return "/*ODP*/Object.defineProperty(" + m("") + ", " + makePropertyName(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
     { w: 1,  fun: function(d, b) { return "Object.prototype.watch.call(" + m() + ", " + makePropertyName(d, b) + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return "Object.prototype.unwatch.call(" + m() + ", " + makePropertyName(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return "delete " + m() + "[" + makePropertyName(d, b) + "];"; } },
@@ -2310,6 +2342,8 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m() + " = x;"; } },
     { w: 1,  fun: function(d, b) { return "x = " + m() + ";"; } },
     { w: 5,  fun: makeStatement },
+
+    { w: 5,  fun: initializeEverything },
   ]);
   makeBuilderStatement = function(d, b) {
     return (rndElt(builderStatementMakers))(d - 1, b)
