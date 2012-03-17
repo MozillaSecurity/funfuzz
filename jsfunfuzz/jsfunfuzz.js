@@ -187,6 +187,9 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
       && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
+      && !( code.match( /\].*\=.*\(/ ))          // avoid bug 736742
+      && !( code.match( /\}.*\=.*\(/ ))          // avoid bug 736742
+      && !( code.match( /\{.*\:.*yield/ ))       // avoid bug 736747
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
