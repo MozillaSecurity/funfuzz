@@ -503,11 +503,6 @@ function tryItOut(code)
     return;
   }
 
-  try {
-    Reflect.parse(code);
-  } catch(e) {
-  }
-
   if (count % 20 == 1) {
     if (wtt.allowExec) {
       try {
@@ -1273,8 +1268,15 @@ function simpleDVGTest(code)
 
 function optionalTests(f, code, wtt)
 {
-  if (0) {
+  if (count % 100 == 1) {
     tryHalves(code);
+  }
+
+  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    try {
+      Reflect.parse(code);
+    } catch(e) {
+    }
   }
 
   if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
@@ -1288,7 +1290,7 @@ function optionalTests(f, code, wtt)
     return;
   }
 
-  if (0 && f && typeof disassemble == "function") {
+  if (count % 100 == 3 && f && typeof disassemble == "function") {
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
     // (Disabled: relatively unimportant, a little slow)
