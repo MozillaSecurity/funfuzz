@@ -162,6 +162,9 @@ function errorToString(e)
 
 function whatToTestSpidermonkeyTrunk(code)
 {
+  // regexps can't match across lines, so replace whitespace with spaces.
+  var codeL = code.replace(/\s/g, " ");
+
   return {
 
     allowParse: true,
@@ -171,41 +174,41 @@ function whatToTestSpidermonkeyTrunk(code)
 
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: true
-      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
-      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506
-      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
-      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
-      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
-      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( code.match( /const.*arguments/ ))        // avoid bug 355480
-      && !( code.match( /var.*arguments/ ))          // avoid bug 355480
-      && !( code.match( /let.*arguments/ ))          // avoid bug 355480
-      && !( code.match( /let/ ))   // avoid bug 462309 :( :( :(
-      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
-      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
-      && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
-      && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
-      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones)
+      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
+      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
+      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
+      && !( codeL.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
+      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
+      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
+      && !( codeL.match( /const.*arguments/ ))        // avoid bug 355480
+      && !( codeL.match( /var.*arguments/ ))          // avoid bug 355480
+      && !( codeL.match( /let.*arguments/ ))          // avoid bug 355480
+      && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
+      && !( codeL.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
+      && !( codeL.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
+      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
+      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
+      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
       && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
       && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
-      && !( code.match( /\].*\=.*\(/ ))          // avoid bug 736742
-      && !( code.match( /\}.*\=.*\(/ ))          // avoid bug 736742
-      && !( code.match( /\{.*\:.*yield/ ))       // avoid bug 736747
+      && !( codeL.match( /\].*\=.*\(/ ))          // avoid bug 736742
+      && !( codeL.match( /\}.*\=.*\(/ ))          // avoid bug 736742
+      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: true
-      && !( code.match( /const.*if/ ))               // avoid bug 352985
-      && !( code.match( /if.*const/ ))               // avoid bug 352985
-      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285
-      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( code.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
-      && !( code.match( /\?.*\?/ ))                  // avoid bug 475895
-      && !( code.match( /if.*function/ ))            // avoid bug 355980 *changes*
-      && !( code.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
-      && !( code.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
-      && !( code.match( /\[.*\+/ ))        // constant folding bug 646599
+      && !( codeL.match( /const.*if/ ))               // avoid bug 352985
+      && !( codeL.match( /if.*const/ ))               // avoid bug 352985
+      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
+      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285
+      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
+      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895
+      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
+      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
+      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
+      && !( codeL.match( /\[.*\+/ ))        // constant folding bug 646599
       && (code.indexOf("*") == -1)         // constant folding bug 539819
       && (code.indexOf("/") == -1)         // constant folding bug 539819
       && (code.indexOf("default") == -1)   // avoid bug 355509
@@ -229,14 +232,14 @@ function whatToTestSpidermonkeyTrunk(code)
 
     // Exclude things here if the decompilation doesn't match what the function actually does
     checkDisassembly: true
-      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
-      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985
+      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
+      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
     ,
 
     checkForExtraParens: true
-      && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
-      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !code.match( /\?.*\=/)             // ignore bug 475893
+      && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
+      && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !codeL.match( /\?.*\=/)             // ignore bug 475893
     ,
 
     allowExec: unlikelyToHang(code)
@@ -264,7 +267,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
-       && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
 }
@@ -328,14 +331,16 @@ else
 
 function unlikelyToHang(code)
 {
+  var codeL = code.replace(/\s/g, " ");
+
   // Things that are likely to hang in all JavaScript engines
   return true
     && code.indexOf("infloop") == -1
-    && !( code.match( /const.*for/ )) // can be an infinite loop: function() { const x = 1; for each(x in ({a1:1})) dumpln(3); }
-    && !( code.match( /for.*const/ )) // can be an infinite loop: for each(x in ...); const x;
-    && !( code.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
-    && !( code.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
-    && !( code.match( /for.*for.*gc/ ))
+    && !( codeL.match( /const.*for/ )) // can be an infinite loop: function() { const x = 1; for each(x in ({a1:1})) dumpln(3); }
+    && !( codeL.match( /for.*const/ )) // can be an infinite loop: for each(x in ...); const x;
+    && !( codeL.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
+    && !( codeL.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
+    && !( codeL.match( /for.*for.*gc/ ))
     ;
 }
 
@@ -527,9 +532,7 @@ function tryItOut(code)
     realGC();
   }
 
-  // regexps can't match across lines, so replace whitespace with spaces.
-  var codeWithoutLineBreaks = code.replace(/\s/g, " ");
-  var wtt = whatToTest(codeWithoutLineBreaks);
+  var wtt = whatToTest(code);
 
   if (!wtt.allowParse)
     return;
