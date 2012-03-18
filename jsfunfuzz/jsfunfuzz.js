@@ -2277,6 +2277,7 @@ var makeEvilCallback;
 
     // m: Map, WeakMap
     { w: 1,  fun: function(d, b) { return m("m") + " = new Map;"; } },
+    { w: 1,  fun: function(d, b) { return m("m") + " = new Map(" + m() + ");"; } },
     { w: 1,  fun: function(d, b) { return m("m") + " = new WeakMap;"; } },
     { w: 5,  fun: function(d, b) { return m("m") + ".has(" + val(d, b) + ");"; } },
     { w: 4,  fun: function(d, b) { return m("m") + ".get(" + val(d, b) + ");"; } },
@@ -2286,6 +2287,7 @@ var makeEvilCallback;
 
     // e: Set
     { w: 1,  fun: function(d, b) { return m("e") + " = new Set;"; } },
+    { w: 1,  fun: function(d, b) { return m("e") + " = new Set(" + m() + ");"; } },
     { w: 5,  fun: function(d, b) { return m("e") + ".has(" + val(d, b) + ");"; } },
     { w: 5,  fun: function(d, b) { return m("e") + ".add(" + val(d, b) + ");"; } },
     { w: 3,  fun: function(d, b) { return m("e") + ".delete(" + val(d, b) + ");"; } },
