@@ -464,29 +464,29 @@ function testOne()
   tryItOut(code);
 }
 
+function fillShellSandbox(sandbox)
+{
+  var safeFuns = ["schedulegc", "verifybarriers", "gcslice", "gczeal", "mjitChunkLimit",
+  "print", "dumpln", "gc", "gczeal", "evalcx", "newGlobal"];
+
+  for (var i = 0; i < safeFuns.length; ++i) {
+    var fn = safeFuns[i];
+    if (this[fn]) {
+      sandbox[fn] = this[fn].bind(this);
+    } else {
+      // XXX only warn in debug builds, since more functions are present there?
+      print("Warning: missing " + fn);
+    }
+  }
+}
+
 function spidermonkeyShellUseSandbox(sandboxType)
 {
   var primarySandbox;
 
-  function fillSandbox(sandbox)
-  {
-    var safeFuns = ["schedulegc", "verifybarriers", "gcslice", "gczeal", "mjitChunkLimit",
-    "print", "dumpln", "gc", "gczeal", "evalcx", "newGlobal"];
-
-    for (var i = 0; i < safeFuns.length; ++i) {
-      var fn = safeFuns[i];
-      if (this[fn]) {
-        sandbox[fn] = this[fn].bind(this);
-      } else {
-        // XXX only warn in debug builds, since more functions are present there?
-        print("Warning: missing " + fn);
-      }
-    }
-  }
-
   switch (sandboxType) {
-    case 0:  primarySandbox = fillSandbox(evalcx(''));
-    case 1:  primarySandbox = fillSandbox(evalcx('lazy'));
+    case 0:  primarySandbox = fillShellSandbox(evalcx(''));
+    case 1:  primarySandbox = fillShellSandbox(evalcx('lazy'));
     case 2:  primarySandbox = newGlobal('same-compartment');
     default: primarySandbox = newGlobal('new-compartment');
   }
@@ -517,8 +517,6 @@ function failsToCompileInTry(code) {
 
 function tryItOut(code)
 {
-  var c; // a harmless variable for closure fun
-
   // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
   if (typeof gczeal == "function")
     gczeal(0);
@@ -3046,6 +3044,8 @@ if (typeof evalcx == "function") {
     // Test evalcx: sandbox creation
     function(d, b) { return "evalcx('')"; },
     function(d, b) { return "evalcx('lazy')"; },
+    function(d, b) { return "fillShellSandbox(evalcx(''))"; },
+    function(d, b) { return "fillShellSandbox(evalcx('lazy'))"; },
 
     // Test evalcx: sandbox use
     function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
@@ -3064,7 +3064,9 @@ if (typeof newGlobal == "function") {
   exprMakers = exprMakers.concat([
     // Test multiple globals and multiple compartments.
     function(d, b) { return "newGlobal('same-compartment')"; },
-    function(d, b) { return "newGlobal('new-compartment')"; }
+    function(d, b) { return "newGlobal('new-compartment')"; },
+    function(d, b) { return "fillShellSandbox(newGlobal('same-compartment'))"; },
+    function(d, b) { return "fillShellSandbox(newGlobal('new-compartment'))"; }
   ]);
 }
 
