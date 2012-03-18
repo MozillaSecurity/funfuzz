@@ -2311,6 +2311,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m("f") + " = Proxy.createFunction(" + m("h") + ", " + m("f") + ", " + m("f") + ");"; } },
 
     // r: regexp
+    // g: sandbox global
 
     // f: function (?)
     // Could probably do better with args / b
