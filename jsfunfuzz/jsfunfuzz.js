@@ -505,19 +505,17 @@ function tryItOut(code)
 
   if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 && code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 && code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      if (true) {
-        // FCM cookie
-        var cookie1 = "/*F";
-        var cookie2 = "CM*/";
-        var nCode = code;
-        // Avoid compile-time errors because those are no fun.
-        // But leave some things out of function(){} because some bugs are only detectable at top-level, and
-        // pure jsfunfuzz doesn't test top-level at all.
-        // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
-        if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
-          nCode = "(function(){" + nCode + "})()"
-        dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
-      }
+      // FCM cookie
+      var cookie1 = "/*F";
+      var cookie2 = "CM*/";
+      var nCode = code;
+      // Avoid compile-time errors because those are no fun.
+      // But leave some things out of function(){} because some bugs are only detectable at top-level, and
+      // pure jsfunfuzz doesn't test top-level at all.
+      // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
+      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
+        nCode = "(function(){" + nCode + "})()"
+      dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
     }
   }
 
