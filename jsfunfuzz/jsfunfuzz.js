@@ -370,12 +370,16 @@ function testEachMaker()
     dumpln("");
     for (var i = 0; i < 100; ++i) {
       try {
-        dumpln(f(8, ["A", "B"]));
+        var r = f(8, ["A", "B"]);
+        if (typeof r != "string")
+          throw ("Got a " + typeof r);
+        dumpln(r);
       } catch(e) {
         dumpln("");
         dumpln(uneval(e));
         dumpln(e.stack);
         dumpln("");
+        throw "testEachMaker found a bug in jsfunfuzz";
       }
     }
     dumpln("");
@@ -1713,11 +1717,11 @@ function cat(toks)
     // instead of
     //   return "/*foo*/" + ...
     // Unary plus in the first one coerces the string that follows to number!
-    if(typeof(toks[i]) != "string") {
-      dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + toks[i]);
+    if (typeof(toks[i]) != "string") {
+      dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
       dumpln(cat.caller)
       dumpln(cat.caller.caller)
-      printAndStop('yarr')
+      dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
     }
 
     if (!(torture && rnd(12) == 0))
