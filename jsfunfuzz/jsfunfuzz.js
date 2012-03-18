@@ -449,6 +449,11 @@ function testOne()
 
   var code = makeOv(depth);
 
+  if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
+    code = "tryRunning = spidermonkeyShellUseSandbox(" + rnd(4) + ");"
+    //print("Sane mode!")
+  }
+
 //  if (rnd(10) == 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
 //    if (dp)
@@ -457,6 +462,42 @@ function testOne()
   dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
 
   tryItOut(code);
+}
+
+function spidermonkeyShellUseSandbox(sandboxType)
+{
+  var primarySandbox;
+
+  function fillSandbox(sandbox)
+  {
+    var safeFuns = ["schedulegc", "verifybarriers", "gcslice", "gczeal", "mjitChunkLimit",
+    "print", "dumpln", "gc", "gczeal", "evalcx", "newGlobal"];
+
+    for (var i = 0; i < safeFuns.length; ++i) {
+      var fn = safeFuns[i];
+      if (this[fn]) {
+        sandbox[fn] = this[fn].bind(this);
+      } else {
+        // XXX only warn in debug builds, since more functions are present there?
+        print("Warning: missing " + fn);
+      }
+    }
+  }
+
+  switch (sandboxType) {
+    case 0:  primarySandbox = fillSandbox(evalcx(''));
+    case 1:  primarySandbox = fillSandbox(evalcx('lazy'));
+    case 2:  primarySandbox = newGlobal('same-compartment');
+    default: primarySandbox = newGlobal('new-compartment');
+  }
+
+  return function(f, code, wtt) {
+    try {
+      evalcx(code, primarySandbox)
+    } catch(e) {
+      dumpln("Running in sandbox threw " + errorToString(e));
+    }
+  }
 }
 
 function makeOv(d, ignoredB)
@@ -3059,7 +3100,7 @@ if ("Components" in this) {
   ]);
 
   var primarySandbox = newSandbox(0);
-  tryRunning = function() {
+  tryRunning = function(f, code, wtt) {
     try {
       // Internal try..catch to work around bug 613142.
       Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
