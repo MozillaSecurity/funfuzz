@@ -2296,7 +2296,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m("t") + " = new " + rndElt(typedArrayConstructors) + "(" + m("b") + ", " + bufsize() + ", " + rnd(ARRAY_SIZE) + ");"; } },
     { w: 1,  fun: function(d, b) { return m("t") + " = " + m("t") + ".subarray(" + rnd(ARRAY_SIZE) + ");"; } },
     { w: 1,  fun: function(d, b) { return m("t") + " = " + m("t") + ".subarray(" + rnd(ARRAY_SIZE) + ", " + rnd(ARRAY_SIZE) + ");"; } },
-    { w: 3,  fun: function(d, b) { return m("t") + ".set(" + m("at") + ", " + rnd(ARRAY_SIZE) + ");"; } },
+    //{ w: 3,  fun: function(d, b) { return m("t") + ".set(" + m("at") + ", " + rnd(ARRAY_SIZE) + ");"; } }, // bug 736609
     { w: 1,  fun: function(d, b) { return m("v") + " = " + m("tb") + ".byteLength;"; } },
     { w: 1,  fun: function(d, b) { return m("v") + " = " + m("t") + ".byteOffset;"; } },
     { w: 1,  fun: function(d, b) { return m("v") + " = " + m("t") + ".BYTES_PER_ELEMENT;"; } },
