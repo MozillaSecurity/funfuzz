@@ -425,8 +425,8 @@ function testOne()
   // Split this string across two source strings to ensure that if a
   // generated function manages to output the entire jsfunfuzz source,
   // that output won't match the grep command.
-  var grepforme = "/*F";
-  grepforme += "RC*/"
+  var cookie = "/*F";
+  cookie += "RC*/"
 
   // Sometimes it makes sense to start with simpler functions:
   //var depth = (~~(count / 1000)) & 16;
@@ -437,10 +437,10 @@ function testOne()
     var MTA = uneval(rnd.fuzzMT.export_mta());
     var MTI = rnd.fuzzMT.export_mti();
     if (MTA != rnd.lastDumpedMTA) {
-      dumpln(grepforme + "rnd.fuzzMT.import_mta(" + MTA + ");");
+      dumpln(cookie + "rnd.fuzzMT.import_mta(" + MTA + ");");
       rnd.lastDumpedMTA = MTA;
     }
-    dumpln(grepforme + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
+    dumpln(cookie + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
   }
 
   var code = makeOv(depth);
@@ -450,7 +450,7 @@ function testOne()
 //    if (dp)
 //      code = dp;
 //  }
-  dumpln(grepforme + "count=" + count + "; tryItOut(" + uneval(code) + ");");
+  dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
 
   tryItOut(code);
 }
