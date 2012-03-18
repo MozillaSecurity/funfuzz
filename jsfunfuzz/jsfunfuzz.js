@@ -486,10 +486,10 @@ function tryItOut(code)
   var codeWithoutLineBreaks = code.replace(/\s/g, " ");
   var wtt = whatToTest(codeWithoutLineBreaks);
 
-  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
-
   if (!wtt.allowParse)
     return;
+
+  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
 
   if (primarySandbox) {
     if (wtt.allowExec) {
