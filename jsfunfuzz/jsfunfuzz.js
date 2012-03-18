@@ -356,7 +356,7 @@ function totallyRandom(d, b) {
 function init(glob)
 {
   for (var f in glob)
-    if (f.indexOf("make") == 0 && typeof glob[f] == "function")
+    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver")
       allMakers.push(glob[f]);
 }
 
