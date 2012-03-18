@@ -2553,6 +2553,8 @@ function makeExceptionyStatement(d, b)
   return (rndElt(exceptionyStatementMakers))(d, b);
 }
 
+var exceptionProperties = ["constructor", "message", "name", "fileName", "lineNumber", "stack"];
+
 var exceptionyStatementMakers = [
   function(d, b) { return makeTryBlock(d, b); },
 
@@ -2565,6 +2567,8 @@ var exceptionyStatementMakers = [
   function(d, b) { return cat(["throw ", makeId(d, b), ";"]); },
   function(d, b) { return "throw StopIteration;"; },
   function(d, b) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
+  function(d, b) { return b[b.length - 1] + "." + rndElt(exceptionProperties) + ";"; },
+  function(d, b) { return makeId(d, b) + "." + rndElt(exceptionProperties) + ";"; },
   function(d, b) { return cat([makeId(d, b), " = ", makeId(d, b), ";"]); },
   function(d, b) { return cat([makeLValue(d, b), " = ", makeId(d, b), ";"]); },
 
@@ -2615,16 +2619,20 @@ function makeTryBlock(d, b)
   while(rnd(3) == 0) {
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
+    var catchId = makeId(d, b);
+    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]))
     if (rnd(2))
-      s += cat(["catch", "(", makeId(d, b), " if ",                 makeExpr(d, b),                    ")", " { ", makeExceptionyStatement(d, b), " } "]);
+      s += cat(["catch", "(", catchId, " if ",                 makeExpr(d, b),                    ")", " { ", catchBlock, " } "]);
     else
-      s += cat(["catch", "(", makeId(d, b), " if ", "(function(){", makeExceptionyStatement(d, b), "})())", " { ", makeExceptionyStatement(d, b), " } "]);
+      s += cat(["catch", "(", catchId, " if ", "(function(){", makeExceptionyStatement(d, b), "})())", " { ", catchBlock, " } "]);
   }
 
   if (rnd(2)) {
     // Add an unguarded catch.
     ++numCatches;
-    s +=   cat(["catch", "(", makeId(d, b),                                                          ")", " { ", makeExceptionyStatement(d, b), " } "]);
+    var catchId = makeId(d, b);
+    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]))
+    s +=   cat(["catch", "(", catchId,                                                          ")", " { ", catchBlock, " } "]);
   }
 
   if (numCatches == 0 || rnd(2) == 1) {
