@@ -48,7 +48,7 @@ var jsStrictMode = false;
 // a web browser, but you might have trouble reproducing bugs that way.
 
 var ENGINE_UNKNOWN = 0;
-var ENGINE_SPIDERMONKEY_TRUNK = 1; // also 1.9.1 and tracemonkey branch
+var ENGINE_SPIDERMONKEY_TRUNK = 1;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
@@ -56,6 +56,7 @@ var jsshell = (typeof window == "undefined");
 var dump;
 var dumpln;
 var printImportant;
+var tryRunning = tryRunningDirectly;
 if (jsshell) {
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
@@ -74,6 +75,7 @@ if (jsshell) {
   }
 } else {
   if (navigator.userAgent.indexOf("WebKit") != -1) {
+    // XXX detect Google Chrome for V8
     engine = ENGINE_JAVASCRIPTCORE;
     // This worked in Safari 3.0, but it might not work in Safari 3.1.
     dump = function(s) { console.log(s); }
@@ -491,59 +493,14 @@ function tryItOut(code)
 
   code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
 
-  if (primarySandbox) {
-    if (wtt.allowExec) {
-      try {
-        // Internal try..catch to work around bug 613142.
-        Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
-      } catch(e) {
-        // It might not be safe to operate on |e|.
-      }
-    }
-    return;
-  }
-
-  if (count % 20 == 1) {
-    if (wtt.allowExec) {
-      try {
-        print("Plain eval");
-        eval(code);
-      } catch(e) {
-        print(errorToString(e));
-      }
-      tryEnsureSanity();
-    }
-    return;
-  }
+  if (jsStrictMode)
+    code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
 
   var f;
-  var compileMode;
   try {
-    // Try two methods of creating functions, just in case there are differences.
-    if (count % 2 == 0 && wtt.allowExec) {
-      compileMode = "directEvalC";
-      if (verbose)
-        dumpln("About to compile, using eval hack.")
-      f = directEvalC("(function(){" + code + "});"); // Disadvantage: "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
-    }
-    else {
-      compileMode = "newFun"
-      if (verbose)
-        dumpln("About to compile, using new Function.")
-      if (jsStrictMode)
-        code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
-      f = newFun(code);
-    }
+    f = new Function(code);
   } catch(compileError) {
     dumpln("Compiling threw: " + errorToString(compileError));
-  }
-
-  optionalTests(f, code, wtt);
-
-  if (f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt);
-    if (typeof disassemble == "function" && compileMode == "directEvalC" && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly)
-      checkRoundTripDisassembly(f, code, wtt);
   }
 
   if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
@@ -564,25 +521,12 @@ function tryItOut(code)
     }
   }
 
-  var rv = null;
+  if (tryRunning != tryRunningDirectly) {
+    optionalTests(f, code, wtt);
+  }
+
   if (wtt.allowExec && f) {
-    rv = tryRunning(f, code);
-    tryEnsureSanity();
-  }
-
-  if (wtt.allowIter && rv && typeof rv == "object") {
-    tryIteration(rv);
-    tryEnsureSanity();
-  }
-
-  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
-    nestingConsistencyTest(code);
-    compartmentConsistencyTest(code);
-  }
-
-  // "checkRecompiling && checkForMismatch" here to catch returned functions
-  if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
-    testUneval(rv);
+    tryRunning(f, code, wtt);
   }
 
   if (verbose)
@@ -637,25 +581,43 @@ function compartmentConsistencyTest(code)
 // disassemble() comparison testing easier (e.g. for round-trip testing)
 function directEvalC(s) { var c; /* evil closureizer */ return eval(s); } function newFun(s) { return new Function(s); }
 
-function tryRunning(f, code)
+function tryRunningDirectly(f, code, wtt)
 {
+  if (count % 23 == 3) {
+    dumpln("Plain eval!");
+    try { eval(code); } catch(e) { }
+    tryEnsureSanity();
+    return;
+  }
+
+  if (count % 23 == 4) {
+    dumpln("About to recompile, using eval hack.")
+    f = directEvalC("(function(){" + code + "});");
+  }
+
   try {
     if (verbose)
-    dumpln("About to run it!");
+      dumpln("About to run it!");
     var rv = f();
     if (verbose)
       dumpln("It ran!");
-    return rv;
+    if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
+      // "checkRecompiling && checkForMismatch" to avoid confusion if we decompile a function returned by f()
+      testUneval(rv);
+    }
+    if (wtt.allowIter && rv && typeof rv == "object") {
+      tryIteration(rv);
+    }
   } catch(runError) {
     if(verbose)
       dumpln("Running threw!  About to toString to error.");
     var err = errorToString(runError);
     dumpln("Running threw: " + err);
-    tryEnsureSanity();
     // bug 465908 and other e4x uneval nonsense make this show lots of false positives
     // checkErrorMessage(err, code);
-    return null;
   }
+
+  tryEnsureSanity();
 }
 
 
@@ -1287,19 +1249,32 @@ function optionalTests(f, code, wtt)
         trySandboxEval(code, true);
       }
     }
-    return;
   }
 
   if (count % 100 == 3 && f && typeof disassemble == "function") {
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
-    // (Disabled: relatively unimportant, a little slow)
     disassemble("-r", f);
   }
 
   if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
     simpleDVGTest(code);
     tryEnsureSanity();
+  }
+
+  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
+    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
+    var fx = directEvalC("(function(){" + code + "});");
+    checkRoundTripDisassembly(fx, code, wtt);
+  }
+
+  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
+    nestingConsistencyTest(code);
+    compartmentConsistencyTest(code);
+  }
+
+  if (count % 10 == 7 && f && wtt.allowDecompile) {
+    tryRoundTripStuff(f, code, wtt);
   }
 }
 
@@ -3082,6 +3057,14 @@ if ("Components" in this) {
   ]);
 
   var primarySandbox = newSandbox(0);
+  tryRunning = function() {
+    try {
+      // Internal try..catch to work around bug 613142.
+      Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
+    } catch(e) {
+      // It might not be safe to operate on |e|.
+    }
+  }
 }
 
 // In addition, can always use "undefined" or makeFunction
