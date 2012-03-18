@@ -91,7 +91,9 @@ function makeDOMFuzzHelper(aWindow) {
 
       printToFile: printToFile(aWindow),
 
-      openAboutMemory: function() { aWindow.open("about:memory"); },
+      openAboutMemory: function(compartments, verbose) {
+        aWindow.open((compartments ? "about:compartments" : "about:memory") + (verbose ? "?verbose" : ""));
+      },
 
       openAboutNewtab: function() { aWindow.open("about:newtab"); },
 
