@@ -501,9 +501,7 @@ function spidermonkeyShellUseSandbox(sandboxType)
     try {
       evalcx(code, primarySandbox)
     } catch(e) {
-      // Try not to anger bug 736807
-      // dumpln("Running in sandbox threw " + errorToString(e));
-      dumpln("Running in sandbox threw");
+      dumpln("Running in sandbox threw " + errorToString(e));
     }
   }
 }
