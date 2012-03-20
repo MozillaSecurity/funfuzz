@@ -2,19 +2,14 @@ TESTING SPIDERMONKEY
 
 Bugs in SpiderMonkey found with this fuzzer are tracked by https://bugzilla.mozilla.org/show_bug.cgi?id=349611.
 
-Long-running without JIT:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js
-Long-running with JIT:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/js-known/mozilla-central/ ./js -j
-  LD_LIBRARY_PATH=. python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 50 ~/fuzzing/js-known/mozilla-central/ ./xpcshell -j -m
-Comparing JIT against non-JIT:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py --comparejit 10 ~/fuzzing/js-known/mozilla-central/ ./js -j -m
-Valgrind+JIT: (must build with --enable-valgrind. opt build recommended.)
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py --valgrind 60 ~/fuzzing/js-known/mozilla-central/ ./js -j
-xpcshell:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 20 ~/fuzzing/js-known/mozilla-central/ ~/tracemonkey/debug-obj/dist/bin/xpcshell -j -m -p
+Fuzz and compare optimization modes:
+  ~/fuzzing/js/loopjsfunfuzz.py --comparejit 20 ~/fuzzing/js-known/mozilla-central/ $tmd -m -n -a
+Fuzz with Valgrind: (must build with --enable-valgrind. opt build recommended.)
+  ~/fuzzing/js/loopjsfunfuzz.py --valgrind 60 ~/fuzzing/js-known/mozilla-central/ $tmd -m -n
+Fuzz xpcshell:
+  ~/fuzzing/js/loopjsfunfuzz.py 20 ~/fuzzing/js-known/mozilla-central/ xpcshell -j -m -p
 
-For maximum coverage, test spidermonkey in all 6 modes: http://blog.mozilla.com/nnethercote/2009/11/18/nanojit-test-coverage/
+For maximum coverage, test spidermonkey with multiple C++ compiler modes <http://blog.mozilla.com/nnethercote/2009/11/18/nanojit-test-coverage/> and multiple JS engine modes.
 
 Hints for building spidermonkey:
   http://developer.mozilla.org/en/docs/SpiderMonkey_Build_Documentation
