@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 from __future__ import with_statement
 
-import os, sys
+import os
+import sys
+
 from optparse import OptionParser
 
-p0=os.path.dirname(sys.argv[0])
-p1=os.path.abspath(os.path.join(p0, "..", "lithium"))
+p0 = os.path.dirname(__file__)
+p1 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
 sys.path.append(p1)
-import ntr
-p1=os.path.abspath(os.path.join(p0, "..", "dom", "automation"))
-sys.path.append(p1)
+import timedRun
+p2 = os.path.abspath(os.path.join(p0, os.pardir, "dom", "automation"))
+sys.path.append(p2)
 import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 
 # JITFLAGS from http://hg.mozilla.org/tracemonkey/file/default/js/src/Makefile.in
@@ -50,7 +52,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
           runthis)
         #print " ".join(runthis)
 
-    runinfo = ntr.timed_run(runthis, timeout, logPrefix)
+    runinfo = timedRun.timed_run(runthis, timeout, logPrefix)
     sta = runinfo.sta
 
     lev = JS_FINE
@@ -59,7 +61,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     if detect_assertions.amiss(knownPath, logPrefix, True):
         issues.append("unknown assertion")
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-    if sta == ntr.CRASHED and lev != JS_NEW_ASSERT_OR_CRASH:
+    if sta == timedRun.CRASHED and lev != JS_NEW_ASSERT_OR_CRASH:
         if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash", True, runinfo.msg):
             if detect_assertions.amiss(knownPath, logPrefix, False, ignoreKnownAssertions=False):
                 issues.append("treating known assertion as a known crash")
@@ -73,10 +75,10 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     if detect_malloc_errors.amiss(logPrefix):
         issues.append("malloc error")
         lev = max(lev, JS_MALLOC_ERROR)
-    if sta == ntr.ABNORMAL:
+    if sta == timedRun.ABNORMAL:
         issues.append("abnormal exit")
         lev = max(lev, JS_ABNORMAL_EXIT)
-    if sta == ntr.TIMED_OUT:
+    if sta == timedRun.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, JS_TIMED_OUT)
     if valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
@@ -128,7 +130,7 @@ def parseOptions(args):
     parser.add_option("--minlevel",
                       type = "int", dest = "minimumInterestingLevel",
                       default = JS_FINE + 1,
-                      help = "minimum jsunhappy level for lithium to consider the testcase interesting")
+                      help = "minimum js/jsInteresting.py level for lithium to consider the testcase interesting")
     parser.add_option("--timeout",
                       type = "int", dest = "timeout",
                       default = 120,

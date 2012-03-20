@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 
-import os, random, shutil, sys, subprocess
+import os
+import random
+import shutil
+import subprocess
+import sys
+
 from optparse import OptionParser
 
-p0=os.path.dirname(__file__)
-jsunhappypy = os.path.join(p0, "jsunhappy.py")
+p0 = os.path.dirname(__file__)
+interestingpy = os.path.join(p0, 'jsInteresting.py')
 
-import jsunhappy
+import jsInteresting
 import pinpoint
 import compareJIT
 
@@ -74,14 +79,14 @@ def many_timed_runs():
 
         if options.randomFlags:
             # Grab a flag set from flagCombos
-            engineFlags = random.choice(jsunhappy.flagCombos)
+            engineFlags = random.choice(jsInteresting.flagCombos)
             if random.randint(0, 5) == 0:
                 # Test a subset of the flags, in random order
                 engineFlags = random.sample(engineFlags, random.randint(0, len(engineFlags)))
 
         runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
         jsunhappyArgs = jsunhappyArgsWithoutRunThis + runThis
-        jsunhappyOptions = jsunhappy.parseOptions(jsunhappyArgs)
+        jsunhappyOptions = jsInteresting.parseOptions(jsunhappyArgs)
 
         iteration += 1
 
@@ -99,9 +104,9 @@ def many_timed_runs():
 
         logPrefix = tempDir + os.sep + "w" + str(iteration)
 
-        level = jsunhappy.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
+        level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
-        oklevel = jsunhappy.JS_KNOWN_CRASH
+        oklevel = jsInteresting.JS_KNOWN_CRASH
         if jsfunfuzzToBeUsed.find("jsfunfuzz") != -1:
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
             # Switch to allowing jsfunfuzz not finishing and deciding to exit, after Fx 4 and integration of jandem's method fuzzer
@@ -111,10 +116,10 @@ def many_timed_runs():
             # When running xpcshell, ./run-mozilla-sh appears not necessary, but remember to append LD_LIBRARY_PATH=. especially on Linux.
             # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
             # All in all, xpcshell support is still largely blocked because of bug 613142.
-            oklevel = jsunhappy.JS_ABNORMAL_EXIT
+            oklevel = jsInteresting.JS_ABNORMAL_EXIT
         elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
-            oklevel = jsunhappy.JS_TIMED_OUT
+            oklevel = jsInteresting.JS_TIMED_OUT
 
         if level > oklevel:
             showtail(logPrefix + "-out")
@@ -128,18 +133,18 @@ def many_timed_runs():
             writeLinesToFile(newfileLines, filenameToReduce)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
-            itest = [jsunhappypy]
+            itest = [interestingpy]
             if options.valgrind:
                 itest.append("--valgrind")
             itest.append("--minlevel=" + str(level))
             itest.append("--timeout=" + str(timeout))
             itest.append(knownPath)
-            alsoRunChar = (level > jsunhappy.JS_DECIDED_TO_EXIT)
-            alsoReduceEntireFile = (level > jsunhappy.JS_OVERALL_MISMATCH)
+            alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
+            alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
             pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
 
         else:
-            if options.useCompareJIT and level == jsunhappy.JS_FINE:
+            if options.useCompareJIT and level == jsInteresting.JS_FINE:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)

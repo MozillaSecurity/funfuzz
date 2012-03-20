@@ -11,12 +11,16 @@ import subprocess
 import sys
 
 from random import randint
-from fnStartjsfunfuzz import isVM, vdump, normExpUserPath, bashDate, hgHashAddToFuzzPath, \
-    patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy, archOfBinary, \
-    testDbgOrOptGivenACompileType
+from compileShell import hgHashAddToFuzzPath, patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy
+from inspectShell import archOfBinary, testDbgOrOptGivenACompileType
+
+path0 = os.path.dirname(__file__)
+path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+sys.path.append(path1)
+from subprocesses import dateStr, isVM, normExpUserPath, vdump
 
 def main():
-    print bashDate()
+    print dateStr()
     mjit = True  # turn on -m
     mjitAll = True  # turn on -a
     debugJit = True  # turn on -d
@@ -149,11 +153,12 @@ def main():
     jsSrcDir = normExpUserPath(os.path.join(repoDt[branchType], 'js', 'src'))
     try:
         vdump('Copying the js source tree, which is located at ' + jsSrcDir)
-        shutil.copytree(jsSrcDir, compilePath,
-                        # ignore_patterns does not work in Python 2.5, but we don't use
-                        # startjsfunfuzz with Python 2.5 anyway.
-                        ignore=shutil.ignore_patterns(
-                            'jit-test', 'tests', 'trace-test', 'xpconnect'))
+        if sys.version_info >= (2, 6):
+            shutil.copytree(jsSrcDir, compilePath,
+                            ignore=shutil.ignore_patterns(
+                                'jit-test', 'tests', 'trace-test', 'xpconnect'))
+        else:
+            shutil.copytree(jsSrcDir, compilePath)
         vdump('Finished copying the js tree')
     except OSError:
         raise Exception('Do the js source directory or the destination exist?')
@@ -217,14 +222,10 @@ def main():
 
     # Copy over useful files that are updated in hg fuzzing branch.
     shutil.copy2(
-        normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'jsfunfuzz.js')), fuzzPath)
-    shutil.copy2(
         normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'analysis.py')), fuzzPath)
     shutil.copy2(
         normExpUserPath(
             os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'runFindInterestingFiles.py')), fuzzPath)
-    shutil.copy2(
-        normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', '4test.py')), fuzzPath)
 
     jsknwnDt = {}
     # Define the corresponding js-known directories.
@@ -275,7 +276,7 @@ def main():
     # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
     if branchType == 'im':
         #rndIntIM = randint(0, 5)  # randint comes from the random module.
-        # --random-flags takes in flags from jsunhappy, so it must be disabled.
+        # --random-flags takes in flags from jsInteresting.py, so it must be disabled.
         mTimedRunFlagList.remove('--random-flags')
         if '-d' in jsCliFlagList:
             jsCliFlagList.remove('-d')  # as of early Feb 2012, -d disables --ion
@@ -304,7 +305,7 @@ def main():
     # Define fuzzing command with the required parameters.
     fuzzCmdList.append('python')
     fuzzCmdList.append('-u')
-    mTimedRun = normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'multi_timed_run.py'))
+    mTimedRun = normExpUserPath(os.path.join(repoDt['fuzzing'], 'js', 'loopjsfunfuzz.py'))
     fuzzCmdList.append(mTimedRun)
     fuzzCmdList.extend(mTimedRunFlagList)
     fuzzCmdList.append(mTimedRunTimeout)
@@ -319,15 +320,16 @@ def main():
 
     if platform.system() == 'Linux' or platform.system() == 'Darwin':
         assert archOfBinary(shname) == archNum  # 32-bit or 64-bit verification test.
-    # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
-    testDbgOrOptGivenACompileType(shname, compileType, cwd=fuzzPath)
+    if sys.version_info >= (2, 6):
+        # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
+        testDbgOrOptGivenACompileType(shname, compileType, cwd=fuzzPath)
 
     print '''
     ================================================
     !  Fuzzing %s %s %s js shell builds now  !
        DATE: %s
     ================================================
-    ''' % (archNum + '-bit', compileType, branchType, bashDate() )
+    ''' % (archNum + '-bit', compileType, branchType, dateStr() )
 
     # Commands to simulate bash's `tee`.
     tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE, cwd=fuzzPath)

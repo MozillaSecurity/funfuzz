@@ -14,13 +14,20 @@ import tempfile
 from optparse import OptionParser
 from types import *
 
-path0 = os.path.dirname(sys.argv[0])
-path1 = os.path.abspath(os.path.join(path0, "..", "lithium"))
+path0 = os.path.dirname(__file__)
+path1 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
 sys.path.append(path1)
 import ximport
-path2 = os.path.abspath(os.path.join(path0, "..", "jsfunfuzz"))
+
+path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path2)
-from fnStartjsfunfuzz import *
+from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, vdump
+
+path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
+sys.path.append(path3)
+from compileShell import autoconfRun, cfgJsBin, compileCopy, shellName
+
+verbose = False
 
 # autoBisect uses temporary directory python APIs. On WinXP, these are located at
 # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
@@ -41,7 +48,7 @@ if not os.path.exists(shellCacheDir):
     os.mkdir(shellCacheDir)
 
 def main():
-    print bashDate()
+    print dateStr()
     global hgPrefix
     global shellCacheDir
 
@@ -101,7 +108,7 @@ def main():
         labels[startRepo] = ('good', 'assumed start rev is good')
         labels[endRepo] = ('bad', 'assumed end rev is bad')
         captureStdout(hgPrefix + ['bisect', '-U', '-g', startRepo])
-        currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', endRepo])))
+        currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', endRepo])[0]))
 
     testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel)
 
@@ -135,18 +142,18 @@ def main():
     vdump("Resetting working directory")
     captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
 
-    print bashDate()
+    print dateStr()
 
 def findCommonAncestor(a, b):
     # Requires hg 1.6 for the revset feature
-    return captureStdout(hgPrefix + ["log", "--template={node|short}", "-r", "ancestor("+a+","+b+")"])
+    return captureStdout(hgPrefix + ["log", "--template={node|short}", "-r", "ancestor("+a+","+b+")"])[0]
 
 def isAncestor(a, b):
     return findCommonAncestor(a, b) == a
 
 def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """Ensure we actually tested the parents of the blamed revision."""
-    parents = captureStdout(hgPrefix + ["parent", '--template={node|short},', "-r", blamedRev]).split(",")[:-1]
+    parents = captureStdout(hgPrefix + ["parent", '--template={node|short},', "-r", blamedRev])[0].split(",")[:-1]
     bisectLied = False
     for p in parents:
         testedLastMinute = False
@@ -368,7 +375,7 @@ def parseOpts():
             flagsReq, options.watchExitCode, options.valgSupport, testAndLabel
 
 def hgId(rev):
-    return captureStdout(hgPrefix + ["id", "-i", "-r", rev])
+    return captureStdout(hgPrefix + ["id", "-i", "-r", rev])[0]
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
@@ -442,8 +449,7 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
 
     # Copy the js tree.
     jsSrcDir = normExpUserPath(os.path.join(sourceDir, 'js', 'src'))
-    assert pyVer() in ('py25', 'py26', 'py27')
-    if pyVer() != 'py25':
+    if sys.version_info >= (2, 6):
         shutil.copytree(jsSrcDir, compileJsSrcPath,
                         ignore=shutil.ignore_patterns(
                             # ignore_patterns does not work in Python 2.5.
@@ -525,7 +531,7 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
 
-    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])
+    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):

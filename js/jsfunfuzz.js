@@ -141,7 +141,8 @@ function printAndStop(s, happy)
 {
   printImportant(s);
   if (jsshell) {
-    print(happy ? "It's looking good!" : "jsfunfuzz stopping due to above error!"); // Magic strings that jsunhappy.py look for
+    // Magic strings that jsInteresting.py looks for
+    print(happy ? "It's looking good!" : "jsfunfuzz stopping due to above error!");
     quit();
   }
 }
@@ -4654,7 +4655,7 @@ start(this);
 // SPLICE DDEND
 
 if (jsshell)
-  print("It's looking good!"); // Magic string that jsunhappy.py looks for
+  print("It's looking good!"); // Magic string that jsInteresting.py looks for
 
 
 // 3. Run it.
