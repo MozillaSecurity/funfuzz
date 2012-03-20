@@ -21,7 +21,7 @@ import ximport
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, vdump
+from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, vdump, macType
 
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path3)
@@ -388,8 +388,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # in "descendants(x) - descendants(y)".
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
-    if platform.system() == 'Darwin':
-        (isSL, isLion) = macType()
+    (isMac, isSL, isLion) = macType()
 
     profilejitBool = True if '-p' in flagsRequired else False
     methodjitBool = True if '-m' in flagsRequired else False
