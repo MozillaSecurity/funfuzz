@@ -21,7 +21,7 @@ def macType():
     If system is a Mac, return the mac type.
     '''
     assert platform.system() in ('Windows', 'Linux', 'Darwin')
-    isMac = False
+    isMac = isSL = amiLion = False
     if platform.system() == 'Darwin':
         isMac = True
         # Script has only been tested on Snow Leopard and Lion.
