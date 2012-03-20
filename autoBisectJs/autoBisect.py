@@ -489,7 +489,13 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
 def testBinary(shell, file, flagsRequired, valgSupport):
     testBinaryCmd = [shell] + flagsRequired + [file]
     if valgSupport:
-        testBinaryCmd = ['valgrind'] + testBinaryCmd
+        valgPrefixCmd = []
+        valgPrefixCmd.append('valgrind')
+        if platform.system() == 'Darwin':
+            valgPrefixCmd.append('--dsymutil=yes')
+        valgPrefixCmd.append('--smc-check=all-non-file')
+        valgPrefixCmd.append('--leak-check=full')
+        testBinaryCmd = valgPrefixCmd + testBinaryCmd
     vdump('The testing command is:' + ' '.join(testBinaryCmd))
 
     # Capture stdout and stderr into the same string.
