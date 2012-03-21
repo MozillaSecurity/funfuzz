@@ -154,9 +154,17 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
             #lithTmpDirTarball.add(logPrefix + '-lith' + str(iterNum) + '-tmp')
         #lithTmpDirTarball.close()
 
+    # FIXME: We should do the build slave detection logic later, and maybe somewhere else.
+    isBuildSlave = False
     jsEngineName = os.path.basename(jsEngine)
-    if bisectRepo is not "none" and testJsShellOrXpcshell(jsEngine) != "xpcshell":
-        autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), "--flags=," + ','.join(engineFlags)] + [infilename] + itest
-        print ' '.join(autobisectCmd)
-        subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
-        print "Done running autobisect. Log: " + logPrefix + "-autobisect"
+    if bisectRepo is not "none":
+        # We cannot test that it is not xpcshell with Python 2.5 since testJsShellOrXpcshell relies
+        # on 'delete' being a keyword argument in NamedTemporaryFile(). The testing functions in
+        # inspectShell in general need at least Python 2.6 because of this.
+        if not isBuildSlave and sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
+            autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), "--flags=," + ','.join(engineFlags)] + [infilename] + itest
+            print ' '.join(autobisectCmd)
+            subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
+            print "Done running autobisect. Log: " + logPrefix + "-autobisect"
+        elif not isBuildSlave and sys.version_info < (2, 6):
+            print 'Not pinpointing to exact changeset, please use a Python version >= 2.6.'
