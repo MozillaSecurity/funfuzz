@@ -11,7 +11,7 @@ from inspectShell import archOfBinary, testDbgOrOpt, testJsShellOrXpcshell
 p0 = os.path.dirname(__file__)
 lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, 'lithium', 'lithium.py'))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'js-autobisect', 'autoBisect.py'))
-jsShellBeautificationpy = os.path.join(p0, 'jsShellBeautification.py')
+shellBeautificationpy = os.path.join(p0, 'shellBeautification.py')
 
 path0 = os.path.dirname(__file__)
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -55,7 +55,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         # Beautify the output. This will remove DDBEGIN and DDEND as they are comments.
         # This will output a file with the '-beautified' suffix.
         # Reduce once using toString decompile method.
-        subprocess.call([sys.executable, jsShellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
+        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
 
         print 'Operating on the beautified testcase for the n-th time where n =',
         # iterNum starts from 3 because lith1 and lith2 are already used above.
@@ -119,23 +119,23 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                     if iterNum % 2 == 0 and iterNum != 10:
                         # toString
                         assert iterNum in (4, 6, 8, 12)
-                        subprocess.call([sys.executable, jsShellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
+                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
                     else:
                         # uneval
                         # iterNum 3 has already occurred prior to the increment of iterNum above.
                         assert iterNum in (5, 7, 10)
-                        subprocess.call([sys.executable, jsShellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
+                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
                 else:
                     # If alsoRunChar is false, which occurs when jsInteresting.py is operating at JS_DID_NOT_FINISH and below. iterNumStart also starts from 2.
                     if iterNum % 2 != 0:
                         # toString
                         assert iterNum in (3, 5, 7, 9, 11, 13)
-                        subprocess.call([sys.executable, jsShellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
+                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
                     else:
                         # uneval
                         # iterNum 3 has already occurred prior to the increment of iterNum above.
                         assert iterNum in (4, 6, 8, 10, 12)
-                        subprocess.call([sys.executable, jsShellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
+                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
             else:
                 print
 
