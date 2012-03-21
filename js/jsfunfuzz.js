@@ -2889,9 +2889,9 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b),  ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
 
   // Property access / index into array
-  function(d, b) { return cat([     makeExpr(d, b),      "[", makeExpr(d, b), "]"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", "[", makeExpr(d, b), "]"]); },
-  function(d, b) { return cat([     makeExpr(d, b),      "[", "'_'", " + ", "(", makeExpr(d, b), ")", "]"]); },
+  function(d, b) { return cat([     "arguments",         "[", makePropertyName(d, b), "]"]); },
+  function(d, b) { return cat([     makeExpr(d, b),      "[", makePropertyName(d, b), "]"]); },
+  function(d, b) { return cat(["(", makeExpr(d, b), ")", "[", makePropertyName(d, b), "]"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
   function(d, b) { return cat(["[", makeExpr(d, b), "]"]); },
@@ -2960,8 +2960,8 @@ var exprMakers =
   function(d, b) { return cat([makeLValue(d, b), rndElt(["|=", "%=", "+=", "-="]), makeExpr(d, b)]); },
 
   // Watchpoints (similar to setters)
-  function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", uneval(makePropertyName(d, b)), ", ", makeFunction(d, b), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", uneval(makePropertyName(d, b)), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", makePropertyName(d, b), ", ", makeFunction(d, b), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", makePropertyName(d, b), ")"]); },
 
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
   function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", makePropertyName(d, b), ", ", makePropertyDescriptor(d, b), ")"]); },
@@ -3291,17 +3291,25 @@ function makeShapeyConstructor(d, b)
   return funText;
 }
 
+
+var propertyNameMakers = weighted([
+  { w: 1,  fun: function(d, b) { return makeExpr(d - 1, b); } },
+  { w: 1,  fun: function(d, b) { return "new QName(" + makePropertyName(d - 1, b) + ")"; } },
+  { w: 1,  fun: function(d, b) { return "new QName('http://www.w3.org/1999/xhtml', " + makePropertyName(d - 1, b) + ")"; } },
+  { w: 1,  fun: function(d, b) { return maybeNeg() + rnd(20); } },
+  { w: 1,  fun: function(d, b) { return '"' + maybeNeg() + rnd(20) + '"'; } },
+  { w: 1,  fun: function(d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
+  { w: 1,  fun: function(d, b) { return simpleSource(makeSpecialProperty(d - 1, b)); } },
+  { w: 1,  fun: function(d, b) { return simpleSource(makeId(d - 1, b)); } },
+]);
+
+function maybeNeg() { return rnd(5) ? "" : "-"; }
+
 function makePropertyName(d, b)
 {
-  if (rnd(10) == 0)
-    return "new AttributeName()";
-  if (rnd(3) == 0)
-    return simpleSource("" + rnd(20));
-  if (rnd(100) == 0)
-    return simpleSource("-" + rnd(3));
-  if (rnd(3) == 0)
-    return makeSpecialProperty(d - 1, b);
-  return simpleSource(makeId(d - 1, b));
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  return (rndElt(propertyNameMakers))(d, b);
 }
 
 function makeShapeyConstructorLoop(d, b)
