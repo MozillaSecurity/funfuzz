@@ -50,6 +50,10 @@ def typeOfRepo(r):
         try:
             os.mkdir(os.path.join(r, rtype))
             os.rmdir(os.path.join(r, rtype))
+        except WindowsError, e:
+            # This block has to come before OSError, because WindowsError is a subclass of OSError.
+            if 'Cannot create a file when that file already exists' in e:
+                return rtype[1:]
         except OSError, e:
             if 'File exists' in e:
                 return rtype[1:]
@@ -57,7 +61,6 @@ def typeOfRepo(r):
 
 def main():
     print dateStr()
-
     cwdParent = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     cwdParentParent = os.path.abspath(os.path.join(cwdParent, os.pardir))
 
