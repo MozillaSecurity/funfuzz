@@ -54,7 +54,7 @@ def main():
     if platform.system() == "Linux" or platform.system() == "Darwin":
         vdump('Setting ulimit -c to unlimited..')
         # ulimit requires shell=True to work properly.
-        subprocess.check_call(['ulimit -c unlimited'], shell=True) # Enable creation of coredumps.
+        subprocess.check_call(['ulimit -S -c unlimited'], shell=True) # Enable creation of coredumps
         if platform.system() == "Linux":
             # Only allow one process to create a coredump at a time.
             p1 = subprocess.Popen(
