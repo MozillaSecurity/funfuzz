@@ -3407,8 +3407,7 @@ var constructors = [
   "Date",
   "Iterator",
   // E4X
-  "Namespace", "QName", "XML", "XMLList",
-  "AttributeName" // not listed as a constructor in e4x spec, but exists!
+  "Namespace", "QName", "XML", "XMLList"
 ];
 
 
