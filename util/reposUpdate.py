@@ -50,12 +50,8 @@ def typeOfRepo(r):
         try:
             os.mkdir(os.path.join(r, rtype))
             os.rmdir(os.path.join(r, rtype))
-        except WindowsError, e:
-            # This block has to come before OSError, because WindowsError is a subclass of OSError.
-            if 'Cannot create a file when that file already exists' in e:
-                return rtype[1:]
         except OSError, e:
-            if 'File exists' in e:
+            if 'File exists' in e or 'Cannot create a file when that file already exists' in e:
                 return rtype[1:]
     raise Exception('Type of repository located at ' + r + ' cannot be determined.')
 
