@@ -63,10 +63,6 @@ function makeDOMFuzzHelper(aWindow) {
         sendAsyncMessage('DOMFuzzHelper.quitWithLeakCheck', {});
       },
 
-      setGCZeal: function(zeal) {
-        sendSyncMessage("DOMFuzzHelper.setGCZeal", {'zeal' : zeal});
-      },
-
       runSoon: runSoon.bind(this),
 
       enableAccessibility: enableAccessibility.bind(this),
@@ -78,6 +74,14 @@ function makeDOMFuzzHelper(aWindow) {
       CCLog: cycleCollectLog(aWindow),
 
       MP: sendMemoryPressureNotification.bind(this),
+
+      deterministicgc:  function(a)       { Components.utils.getJSTestingFunctions().deterministicgc(a); },
+      schedulegc:       function(a, b)    { Components.utils.getJSTestingFunctions().schedulegc(a,b); },
+      gczeal:           function(a, b, c) { Components.utils.getJSTestingFunctions().gczeal(a, b, c); },
+      gcslice:          function(a)       { Components.utils.getJSTestingFunctions().gcslice(a); },
+      verifybarriers:   function()        { Components.utils.getJSTestingFunctions().verifybarriers(); },
+      mjitChunkLimit:   function(a)       { Components.utils.getJSTestingFunctions().mjitChunkLimit(a); },
+      terminate:        function()        { Components.utils.getJSTestingFunctions().terminate(); },
 
       forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
 
@@ -111,7 +115,6 @@ function makeDOMFuzzHelper(aWindow) {
         'quitApplicationSoon': 'r',
         'closeTabThenQuit': 'r',
         'quitWithLeakCheck': 'r',
-        'setGCZeal': 'r',
         'runSoon': 'r',
         'enableAccessibility': 'r',
         'GC': 'r',
@@ -130,6 +133,13 @@ function makeDOMFuzzHelper(aWindow) {
         'comparePixels': 'r',
         'callDrawWindow': 'r',
         'resizeTo': 'r',
+        deterministicgc: 'r',
+        schedulegc: 'r',
+        gczeal: 'r',
+        gcslice: 'r',
+        verifybarriers: 'r',
+        mjitChunkLimit: 'r',
+        terminate: 'r',
       }
   };
 };
