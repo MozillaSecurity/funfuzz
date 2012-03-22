@@ -11,11 +11,11 @@ import subprocess
 import sys
 import time
 
-import build_downloader
+import downloadBuild
 import loopdomfuzz
 
 devnull = open(os.devnull, "w")
-buildType = build_downloader.defaultBuildType()
+buildType = downloadBuild.defaultBuildType()
 
 targetTime = 15*60 # for build machines, use 15 minutes (15*60)
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
@@ -183,9 +183,9 @@ if __name__ == "__main__":
         print "Reduction time!"
         if not options.reuse_build:
           preferredBuild = readTinyFile(job + "preferred-build.txt")
-          if not build_downloader.downloadBuild(preferredBuild):
+          if not downloadBuild.downloadBuild(preferredBuild):
             print "Preferred build for this reduction was missing, grabbing latest build"
-            build_downloader.downloadLatestBuild(buildType)
+            downloadBuild.downloadLatestBuild(buildType)
         lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
 
@@ -200,9 +200,9 @@ if __name__ == "__main__":
             print "Deleting old build"
             shutil.rmtree("build")
           if not options.jsfunfuzzBool:
-            buildUsed = build_downloader.downloadLatestBuild(buildType)
+            buildUsed = downloadBuild.downloadLatestBuild(buildType)
           else:
-            buildUsed = build_downloader.downloadLatestBuild(buildType, jsShell=True)
+            buildUsed = downloadBuild.downloadLatestBuild(buildType, jsShell=True)
             assert False # untested beyond this point.
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, ["build"]) # xxx support --valgrind
         if ldfResult == loopdomfuzz.HAPPY:

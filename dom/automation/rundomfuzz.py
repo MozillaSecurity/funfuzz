@@ -261,7 +261,7 @@ class FigureOutDirs:
       raise Exception("browserDir (%s) does not exist" % browserDir)
 
     if os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "tests")):
-      # browserDir is a downloaded packaged build, perhaps downloaded with build_downloader.py.  Great!
+      # browserDir is a downloaded packaged build, perhaps downloaded with downloadBuild.py.  Great!
       #self.appDir = os.path.join(browserDir, "dist")
       self.reftestFilesDir = os.path.join(browserDir, "tests", "reftest", "tests")
       self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
@@ -281,7 +281,7 @@ class FigureOutDirs:
       self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
       self.symbolsDir = os.path.join(browserDir, "dist", "crashreporter-symbols")
     else:
-      raise Exception("browserDir should be an objdir for a local build, or a Tinderbox build downloaded with build_downloader.py")
+      raise Exception("browserDir should be an objdir for a local build, or a Tinderbox build downloaded with downloadBuild.py")
 
     #if not os.path.exists(self.appDir):
     #  raise Exception("Oops! appDir does not exist!")
