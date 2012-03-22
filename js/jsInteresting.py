@@ -10,7 +10,7 @@ p0 = os.path.dirname(__file__)
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
 sys.path.append(p1)
 import timedRun
-p2 = os.path.abspath(os.path.join(p0, os.pardir, "dom", "automation"))
+p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
 sys.path.append(p2)
 import detect_assertions, detect_malloc_errors, detect_interesting_crashes
 

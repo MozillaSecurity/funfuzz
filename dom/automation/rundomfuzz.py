@@ -28,15 +28,15 @@ from optparse import OptionParser
 from tempfile import mkdtemp
 import subprocess
 
-import runbrowser
+# could also use sys._getframe().f_code.co_filename, but this seems cleaner
+THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
+p1 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'detect'))
+sys.path.append(p1)
 import detect_assertions
 import detect_malloc_errors
 import detect_interesting_crashes
 import detect_leaks
-
-# could also use sys._getframe().f_code.co_filename, but this seems cleaner
-THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
