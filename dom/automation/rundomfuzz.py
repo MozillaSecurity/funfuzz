@@ -123,7 +123,7 @@ def createDOMFuzzProfile(profileDir):
   # Install a domfuzz extension 'pointer file' into the profile.
   profileExtensionsPath = os.path.join(profileDir, "extensions")
   os.mkdir(profileExtensionsPath)
-  domfuzzExtensionPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "extension")
+  domfuzzExtensionPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, "extension")
   extFile = open(os.path.join(profileExtensionsPath, "domfuzz@squarefree.com"), "w")
   extFile.write(domfuzzExtensionPath)
   extFile.close()
@@ -359,7 +359,7 @@ def rdfInit(args):
 
   close_fds = sys.platform != 'win32'
 
-  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, "..", "known", "mozilla-central")
+  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, "known", "mozilla-central")
   detect_interesting_crashes.readIgnoreList(knownPath)
 
   if options.valgrind:
