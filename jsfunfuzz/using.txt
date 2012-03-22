@@ -7,7 +7,7 @@ Fuzz and compare optimization modes:
 Fuzz with Valgrind: (must build with --enable-valgrind. opt build recommended.)
   ~/fuzzing/js/loopjsfunfuzz.py --valgrind 60 ~/fuzzing/js-known/mozilla-central/ $tmd -m -n
 Fuzz xpcshell:
-  ~/fuzzing/js/loopjsfunfuzz.py 20 ~/fuzzing/js-known/mozilla-central/ xpcshell -j -m -p
+  ~/fuzzing/js/loopjsfunfuzz.py 20 ~/fuzzing/js-known/mozilla-central/ xpcshell -m
 
 For maximum coverage, test spidermonkey with multiple C++ compiler modes <http://blog.mozilla.com/nnethercote/2009/11/18/nanojit-test-coverage/> and multiple JS engine modes.
 
