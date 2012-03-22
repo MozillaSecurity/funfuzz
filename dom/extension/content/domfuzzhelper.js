@@ -181,23 +181,23 @@ function sendMemoryPressureNotification()
 
 function cycleCollect(window)
 {
-  return function cycleCollectInner() {
+  return function cycleCollectInner(aExtraForgetSkippableCalls) {
     window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
           .getInterface(Components.interfaces.nsIDOMWindowUtils)
-          .cycleCollect();
+          .cycleCollect(null, aExtraForgetSkippableCalls);
   }
 }
 
 function cycleCollectLog(window)
 {
-  return function(allTraces, wantAfterProcessing) {
+  return function(allTraces, wantAfterProcessing, aExtraForgetSkippableCalls) {
     var logger = Components.classes["@mozilla.org/cycle-collector-logger;1"].createInstance(Components.interfaces.nsICycleCollectorListener);
     if (allTraces) {
       logger.allTraces();
     }
     logger.disableLog = true;
     logger.wantAfterProcessing = wantAfterProcessing;
-    window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindowUtils).cycleCollect(logger);
+    window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindowUtils).cycleCollect(logger, aExtraForgetSkippableCalls);
   };
 }
 
