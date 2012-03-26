@@ -12,8 +12,9 @@ import time
 devnull = open(os.devnull, "w")
 
 # Use curl/wget rather than urllib because urllib can't check certs.
-# Want to move toward wget since it's in mozillabuild and on the build machines.  But wget on Mac has cert issues...
-preferCurl = platform.system() == "Darwin"
+# If you've installed wget using macports, you may want to put in ~/.wgetrc:
+#    CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt
+preferCurl = False
 def readFromURL(url):
   if preferCurl:
     p = subprocess.Popen(["curl", "--silent", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
