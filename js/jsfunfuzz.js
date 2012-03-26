@@ -2109,7 +2109,7 @@ var statementMakers = weighted([
 var makeBuilderStatement;
 var makeEvilCallback;
 
-(function() {
+(function setUpBuilderStuff() {
   var ARRAY_SIZE = 20;
   var OBJECTS_PER_TYPE = 3;
   var smallPowersOfTwo = [1, 2, 4, 8]; // The largest typed array views are 64-bit aka 8-byte
