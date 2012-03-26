@@ -580,6 +580,56 @@ function tryItOut(code)
   dumpln("");
 }
 
+function optionalTests(f, code, wtt)
+{
+  if (count % 100 == 1) {
+    tryHalves(code);
+  }
+
+  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    try {
+      Reflect.parse(code);
+    } catch(e) {
+    }
+  }
+
+  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    if (wtt.allowExec && (typeof sandbox == "function")) {
+      f = null;
+      if (trySandboxEval(code, false)) {
+        dumpln("Trying it again to see if it's a 'real leak' (???)")
+        trySandboxEval(code, true);
+      }
+    }
+  }
+
+  if (count % 100 == 3 && f && typeof disassemble == "function") {
+    // It's hard to use the recursive disassembly in the comparator,
+    // but let's at least make sure the disassembler itself doesn't crash.
+    disassemble("-r", f);
+  }
+
+  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    simpleDVGTest(code);
+    tryEnsureSanity();
+  }
+
+  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
+    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
+    var fx = directEvalC("(function(){" + code + "});");
+    checkRoundTripDisassembly(fx, code, wtt);
+  }
+
+  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
+    nestingConsistencyTest(code);
+    compartmentConsistencyTest(code);
+  }
+
+  if (count % 10 == 7 && f && wtt.allowDecompile) {
+    tryRoundTripStuff(f, code, wtt);
+  }
+}
+
 function nestingConsistencyTest(code)
 {
   // Inspired by bug 676343
@@ -1271,59 +1321,6 @@ function simpleDVGTest(code)
     }
   }
 }
-
-
-function optionalTests(f, code, wtt)
-{
-  if (count % 100 == 1) {
-    tryHalves(code);
-  }
-
-  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    try {
-      Reflect.parse(code);
-    } catch(e) {
-    }
-  }
-
-  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    if (wtt.allowExec && (typeof sandbox == "function")) {
-      f = null;
-      if (trySandboxEval(code, false)) {
-        dumpln("Trying it again to see if it's a 'real leak' (???)")
-        trySandboxEval(code, true);
-      }
-    }
-  }
-
-  if (count % 100 == 3 && f && typeof disassemble == "function") {
-    // It's hard to use the recursive disassembly in the comparator,
-    // but let's at least make sure the disassembler itself doesn't crash.
-    disassemble("-r", f);
-  }
-
-  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    simpleDVGTest(code);
-    tryEnsureSanity();
-  }
-
-  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
-    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
-    var fx = directEvalC("(function(){" + code + "});");
-    checkRoundTripDisassembly(fx, code, wtt);
-  }
-
-  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
-    nestingConsistencyTest(code);
-    compartmentConsistencyTest(code);
-  }
-
-  if (count % 10 == 7 && f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt);
-  }
-}
-
-
 
 function trySandboxEval(code, isRetry)
 {
