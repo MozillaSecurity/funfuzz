@@ -34,8 +34,8 @@ def main():
         # Remove the '(function () {' and '})' at the bottom. Note the lack of \n.
         beautifiedOutputWithAnonPrintFn = beautifiedOutputWithAnonPrintFn[14:-2]
     assert beautifiedOutputWithAnonPrintFn != ''
-    # The beautified output is highly unlikely that an empty function is returned post-beautification.
-    # Thus, there is only a faint possibility that this assertion is hit.
+    # The beautified output is highly unlikely that an empty function is returned
+    # post-beautification. Thus, there is only a faint possibility that this assertion is hit.
     assert beautifiedOutputWithAnonPrintFn != '(function () {})'
 
     # Write the beautified contents with the anonymous print function back to the file.
@@ -57,12 +57,21 @@ def main():
         else:
             if decompileType == 'toString':
                 # Remove first 4 characters of whitespace when decompilationType toString is used.
-                # Also put '{', '}' and ';' chars to a new line by themselves, except when the " char
-                # and the 'return {' string is found, as well as regex matching.
-                if '"' not in line and 'return' not in line and 'match' not in line:
-                    linesExclEmptyLines.append(line[4:].replace('{', '\n{\n').replace('}', '\n}\n').replace(';', '\n;\n'))
+                # Also put '{', '}' and ';' chars to a new line by themselves, except when the
+                # " char and the 'return {' string is found, as well as regex matching.
+                replaceLine = line[4:] if '    ' in line[:4] else line
+                if '"' not in line and 'return' not in line and \
+                   'match' not in line and 'for (' not in line:
+                    linesExclEmptyLines.append(
+                        replaceLine.replace('{', '\n{\n')
+                                   .replace('}', '\n}\n')
+                                   .replace(';', '\n;\n'))
+                # We can try to put the entire for (...) condition on its own line.
+                elif '"' not in line and 'return' not in line and \
+                     'match' not in line and 'for (' in line:
+                    linesExclEmptyLines.append(replaceLine.replace('{', '\n{\n'))
                 else:
-                    linesExclEmptyLines.append(line[4:])
+                    linesExclEmptyLines.append(replaceLine)
             elif decompileType == 'uneval':
                 linesExclEmptyLines.append(line)
 
@@ -125,7 +134,7 @@ def addAnonPrintFn(filename, typeOfDecompile):
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
     parser = OptionParser(usage)
-    # See http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
+    # http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
 
     parser.add_option('--shell',
