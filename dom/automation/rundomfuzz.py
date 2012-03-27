@@ -359,7 +359,7 @@ def rdfInit(args):
 
   close_fds = sys.platform != 'win32'
 
-  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, "known", "mozilla-central")
+  knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, "known", "mozilla-central")
   detect_interesting_crashes.readIgnoreList(knownPath)
 
   if options.valgrind:

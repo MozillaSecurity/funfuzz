@@ -228,9 +228,9 @@ def main():
             os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'runFindInterestingFiles.py')), fuzzPath)
 
     jsknwnDt = {}
-    # Define the corresponding js-known directories.
-    jsknwnDt['192'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'js-known', 'mozilla-1.9.2'))
-    jsknwnDt['mc'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'js-known', 'mozilla-central'))
+    # Define the corresponding known-bugs directories.
+    jsknwnDt['192'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'known', 'mozilla-1.9.2'))
+    jsknwnDt['mc'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'known', 'mozilla-central'))
     jsknwnDt['jm'] = jsknwnDt['mc']
     jsknwnDt['im'] = jsknwnDt['mc']
     jsknwnDt['mi'] = jsknwnDt['mc']

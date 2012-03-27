@@ -1,0 +1,27 @@
+SIZE huge. objects that can entrain just about anything.
+
+       nsDocShell
+       nsDocument
+       nsGlobalWindow
+
+SIZE medium. when known to leak, allowed to entrain unknown objects.
+
+       nsGenericElement
+       BackstagePass
+       nsTimerImpl
+  LEAK nsDNSService                    # Bug 102229 or bug 419562
+  LEAK nsJVMManager                    # Bug 417630 and friends
+  LEAK nsSimpleNestedURI               # Bug 403199
+  LEAK nsHTMLDNSPrefetch::nsDeferrals  # Bug 463724
+  LEAK nsDNSPrefetch                   # Bug 463724
+  LEAK nsDNSAsyncRequest               # Bug 463724
+  LEAK nsHostResolver                  # Bug 463724
+  LEAK StartupCacheListener            # Bug 601341
+  LEAK imgRequest                      # Bug 614149
+  LEAK nsNPAPIPluginInstance           # Goddamn Java
+  LEAK nsLocalFile                     # Intermittent, but frequent, at least in the range 2011-08-20 to 2011-09-14
+
+SIZE tiny. objects that should never entrain others. (last group is also the default for unknown objects)
+
+       nsStringBuffer
+       nsTArray_base
