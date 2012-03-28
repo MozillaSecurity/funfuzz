@@ -43,12 +43,10 @@ def readIgnoreLists(knownPath):
     global ready
     ignoreList = []
     while os.path.basename(knownPath) != "known":
-        filename = os.path.join(knownPath, "assertions.txt")
+        filename = os.path.join(knownPath, "crashes.txt")
         if os.path.exists(filename):
              readIgnoreList(filename)
         knownPath = os.path.dirname(os.path.dirname(filename))
-    ready = True
-    knownPath = os.path.dirname(knownPath)
     ready = True
     #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
 
