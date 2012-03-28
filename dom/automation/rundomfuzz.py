@@ -360,7 +360,7 @@ def rdfInit(args):
   close_fds = sys.platform != 'win32'
 
   knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, "known", "mozilla-central")
-  detect_interesting_crashes.readIgnoreList(knownPath)
+  detect_interesting_crashes.readIgnoreLists(knownPath)
 
   if options.valgrind:
     runBrowserOptions.append("--valgrind")
