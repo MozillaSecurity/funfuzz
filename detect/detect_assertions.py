@@ -14,7 +14,7 @@ ready = False
 def scanLine(knownPath, line):
     global ignoreList
     if not ready:
-        readIgnoreList(knownPath)
+        readIgnoreLists(knownPath)
 
     line = line.strip("\x07").rstrip("\n")
 
@@ -26,7 +26,7 @@ def scanLine(knownPath, line):
 def scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions):
     global ignoreList
     if not ready:
-        readIgnoreList(knownPath)
+        readIgnoreLists(knownPath)
 
     foundSomething = False
 
@@ -59,11 +59,19 @@ def assertiony(line):
              line.find("failed assertion") != -1 # nanojit
             )
 
-def readIgnoreList(knownPath):
-    global simpleIgnoreList
-    global twoPartIgnoreList
+def readIgnoreLists(knownPath):
     global ready
-    ignoreFile = file(os.path.join(knownPath, "assertions.txt"), "r")
+    while os.path.basename(knownPath) != "known":
+        filename = os.path.join(knownPath, "assertions.txt")
+        if os.path.exists(filename):
+             readIgnoreList(filename)
+        knownPath = os.path.dirname(os.path.dirname(filename))
+    ready = True
+    print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
+
+def readIgnoreList(filename):
+    global ready
+    ignoreFile = file(filename, "r")
     for line in ignoreFile:
         line = line.rstrip()
         if ((len(line) > 0) and not line.startswith("#")):
@@ -76,9 +84,8 @@ def readIgnoreList(knownPath):
                 twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:]))
     ignoreFile.close()
     ready = True
-    #print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
 
-        
+
 def ignore(assertion):
     global simpleIgnoreList
     for ig in simpleIgnoreList:

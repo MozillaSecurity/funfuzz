@@ -43,10 +43,10 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
         runthis = ([
             "valgrind",
             "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
-            "--suppressions=" + os.path.join(knownPath, "valgrind.txt"),
             "--gen-suppressions=all",
             "--leak-check=full"
           ] +
+            valgrindSuppressions(knownPath) +
             (["--dsymutil=yes"] if sys.platform=='darwin' else []) +
             (["--smc-check=all-non-file"] if "-m" in runthis else []) + # Bug 598263
           runthis)
@@ -119,6 +119,15 @@ def truncateFile(fn, maxSize):
     if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
         with open(fn, "r+") as f:
             f.truncate(maxSize)
+
+def valgrindSuppressions(knownPath):
+    a = []
+    while os.path.basename(knownPath) != "known":
+        filename = os.path.join(knownPath, "valgrind.txt")
+        if os.path.exists(filename):
+             a.append("--suppressions=" + filename)
+        knownPath = os.path.dirname(os.path.dirname(filename))
+    return a
 
 def parseOptions(args):
     parser = OptionParser()

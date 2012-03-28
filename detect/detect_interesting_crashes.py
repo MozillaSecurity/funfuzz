@@ -5,19 +5,19 @@ ready = False
 
 def amiss(knownPath, crashLogFilename, verbose, msg):
     if not ready:
-        readIgnoreList(knownPath)
+        readIgnoreLists(knownPath)
 
     resetCounts()
 
     igmatch = []
-    
+
     if os.path.exists(crashLogFilename):
         currentFile = file(crashLogFilename, "r")
         for line in currentFile:
             if isKnownCrashSignature(line):
                 igmatch.append(line.rstrip())
         currentFile.close()
-        
+
         if len(igmatch) == 0:
             # Would be great to print [@ nsFoo::Bar] in addition to the filename, but
             # that would require understanding the crash log format much better than
@@ -38,11 +38,22 @@ def amiss(knownPath, crashLogFilename, verbose, msg):
 
 TOO_MUCH_RECURSION_MAGIC = "[TMR] "
 
-def readIgnoreList(knownPath):
+def readIgnoreLists(knownPath):
     global ignoreList
     global ready
     ignoreList = []
-    ignoreFile = file(os.path.join(knownPath, "crashes.txt"), "r")
+    while os.path.basename(knownPath) != "known":
+        filename = os.path.join(knownPath, "assertions.txt")
+        if os.path.exists(filename):
+             readIgnoreList(filename)
+        knownPath = os.path.dirname(os.path.dirname(filename))
+    ready = True
+    knownPath = os.path.dirname(knownPath)
+    ready = True
+    #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
+
+def readIgnoreList(filename):
+    ignoreFile = file(filename, "r")
     for line in ignoreFile:
         line = line.rstrip()
         if line.startswith(TOO_MUCH_RECURSION_MAGIC):
@@ -50,9 +61,6 @@ def readIgnoreList(knownPath):
         elif len(line) > 0 and not line.startswith("#"):
             ignoreList.append({"seenCount": 0, "needCount": 1,  "theString": line})
     ignoreFile.close()
-    ready = True
-    #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
-
 
 def isKnownCrashSignature(line):
     global ignoreList
