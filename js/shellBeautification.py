@@ -61,14 +61,14 @@ def main():
                 # " char and the 'return {' string is found, as well as regex matching.
                 replaceLine = line[4:] if '    ' in line[:4] else line
                 if '"' not in line and 'return' not in line and \
-                   'match' not in line and 'for (' not in line:
+                   'match' not in line and 'for (' not in line and '/g' not in line:
                     linesExclEmptyLines.append(
                         replaceLine.replace('{', '\n{\n')
                                    .replace('}', '\n}\n')
                                    .replace(';', '\n;\n'))
                 # We can try to put the entire for (...) condition on its own line.
                 elif '"' not in line and 'return' not in line and \
-                     'match' not in line and 'for (' in line:
+                     'match' not in line and 'for (' in line and '/g' not in line:
                     linesExclEmptyLines.append(replaceLine.replace('{', '\n{\n'))
                 else:
                     linesExclEmptyLines.append(replaceLine)
