@@ -232,7 +232,7 @@ def main():
     jsknwnDt['192'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'known', 'mozilla-1.9.2'))
     jsknwnDt['mc'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'known', 'mozilla-central'))
     jsknwnDt['jm'] = jsknwnDt['mc']
-    jsknwnDt['im'] = jsknwnDt['mc']
+    jsknwnDt['im'] = os.path.join(jsknwnDt['mc'], 'ionmonkey')
     jsknwnDt['mi'] = jsknwnDt['mc']
     jsknwnDt['larch'] = jsknwnDt['mc']
     jsknwnDt['ma'] = jsknwnDt['mc']
