@@ -93,6 +93,9 @@ user_pref("security.warn_viewing_mixed", false);
 user_pref("toolkit.telemetry.prompted", 2);
 user_pref("browser.rights.3.shown", true);
 
+// Suppress automatic safe mode after crashes.
+user_pref("toolkit.startup.max_resumed_crashes", -1);
+
 // Turn off various things in firefox that try to contact servers,
 // to improve performance and sanity.
 // http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
