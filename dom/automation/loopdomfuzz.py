@@ -222,7 +222,7 @@ def randomHash():
     return "#squarefree-af," + fuzzerJS + "," + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
 
 def fuzzSplice(file):
-    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE and between the two lines containing IDLINFO'''
+    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
     before = []
     after = []
     for line in file:
@@ -233,18 +233,8 @@ def fuzzSplice(file):
         if line.find("SPLICE") != -1:
             after.append(line)
             break
-
     for line in file:
         after.append(line)
-        if line.find("IDLINFO") != -1:
-            break
-    for line in file:
-        if line.find("IDLINFO") != -1:
-            after.append(line)
-            break
-    for line in file:
-        after.append(line)
-
     file.close()
     return [before, after]
 
