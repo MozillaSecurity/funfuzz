@@ -13,7 +13,7 @@ lithiumpy = ["python", "-u", os.path.join(p0, "..", "..", "lithium", "lithium.py
 domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
-fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
+fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
 
 tempDir = None
 
