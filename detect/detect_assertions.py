@@ -10,7 +10,7 @@ simpleIgnoreList = []
 twoPartIgnoreList = []
 ready = False
 
-# Called directly by rundomfuzz.py
+# Called directly by domInteresting.py
 def scanLine(knownPath, line):
     global ignoreList
     if not ready:

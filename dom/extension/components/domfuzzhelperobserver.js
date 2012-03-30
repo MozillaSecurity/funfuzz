@@ -167,7 +167,7 @@ function quitWithLeakCheck(leaveWindowsOpen)
 {
   leaveWindowsOpen = !!leaveWindowsOpen;
 
-  // Magic string that rundomfuzz.py looks for
+  // Magic string that domInteresting.py looks for
   var messagePrefix = "Leaked until " + (leaveWindowsOpen ? "tab close" : "shutdown");
 
   if (quitting)

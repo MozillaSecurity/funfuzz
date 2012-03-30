@@ -6,8 +6,8 @@ Runs Firefox with DOM fuzzing.  Identifies output that indicates that a bug has 
 
 We run runbrowser.py through a (s)ubprocess.  runbrowser.py (i)mports automation.py.  This setup allows us to postprocess all automation.py output, including crash logs.
 
-        i                  i                 s*                i                 s
-bot.py --> loopdomfuzz.py --> rundomfuzz.py --> runbrowser.py --> automation.py+ --> firefox-bin
+        i                  i                     s*                i                  s
+bot.py --> loopdomfuzz.py --> domInteresting.py --> runbrowser.py --> automation.py+ --> firefox-bin
                                    ^
                                    |
                                    |
@@ -189,7 +189,7 @@ class AmissLogHandler:
         print "Ignoring memory leaks (bug 622315)" # testcase in comment 2
         self.expectedToLeak = True
       if self.nsassertionCount == 100:
-        print "rundomfuzz.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
+        print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
         self.expectedToHang = True
     if msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1:
       self.sawFatalAssertion = True
@@ -455,7 +455,7 @@ def rdfInit(args):
       # The program was terminated by a signal, which usually indicates a crash.
       signum = -status
       signame = getSignalName(signum, "unknown signal")
-      print("DOMFUZZ INFO | rundomfuzz.py | Terminated by signal " + str(signum) + " (" + signame + ")")
+      print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
       if platform.system() == "Darwin" and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
         # well, maybe the OS crash reporter picked it up.
         appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
@@ -500,7 +500,7 @@ def rdfInit(args):
       summaryLogFile.writelines(alh.summaryLog)
       summaryLogFile.close()
 
-    print("DOMFUZZ INFO | rundomfuzz.py | Running for fuzzage, level " + str(lev) + ".")
+    print("DOMFUZZ INFO | domInteresting.py | Running for fuzzage, level " + str(lev) + ".")
 
     FRClines = alh.FRClines
 

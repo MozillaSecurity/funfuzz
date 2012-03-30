@@ -4,13 +4,13 @@ from __future__ import with_statement
 import sys, random, time, os, subprocess, datetime, urllib
 from tempfile import mkdtemp
 import shutil
-import rundomfuzz
+import domInteresting
 
 p0 = os.path.dirname(__file__)
 emptiesDir = os.path.abspath(os.path.join(p0, "..", "empties"))
 fuzzersDir = os.path.abspath(os.path.join(p0, "..", "fuzzers"))
 lithiumpy = ["python", "-u", os.path.join(p0, "..", "..", "lithium", "lithium.py")]
-rundomfuzzpy = os.path.join("fuzzing", "dom", "automation", "rundomfuzz.py")
+domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow, needed for fuzzer-combined-smart-rjs.js
@@ -26,11 +26,11 @@ def many_timed_runs(targetTime, args):
     createTempDir()
     startTime = time.time()
 
-    levelAndLines, deleteProfile, options = rundomfuzz.rdfInit(args)
+    levelAndLines, deleteProfile, options = domInteresting.rdfInit(args)
     try:
         browserDir = options.browserDir
 
-        reftestFilesDir = rundomfuzz.FigureOutDirs(browserDir).reftestFilesDir
+        reftestFilesDir = domInteresting.FigureOutDirs(browserDir).reftestFilesDir
         urls = getURLs(os.path.abspath(reftestFilesDir))
         boolPrefNames = filter(lambda s: len(s) and s[0] != "#", open(os.path.join(p0, "bool-prefs.txt")))
 
@@ -49,29 +49,29 @@ def many_timed_runs(targetTime, args):
             print "%%% " + now + " starting q" + str(iteration) + ": " + url
             level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(prefs))
 
-            if level > rundomfuzz.DOM_FINE:
+            if level > domInteresting.DOM_FINE:
                 print "loopdomfuzz.py: will try reducing from " + url
                 rFN = createReproFile(lines, logPrefix)
-                writeLinesToFile(prefs, logPrefix + "-prefs.txt") # rundomfuzz.py will look for this file when invoked by Lithium or directly
+                writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
                 extraRDFArgs = ["--valgrind"] if options.valgrind else []
-                lithArgs = [rundomfuzzpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
+                lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
                 (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
                 if lithresult == LITH_NO_REPRO:
                     os.remove(rFN)
                     print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
                     level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(prefs))
-                    if level2 > rundomfuzz.DOM_FINE:
+                    if level2 > domInteresting.DOM_FINE:
                         print "%%% Lithium can't reproduce, but I can!"
                         reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
                         reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
-                        reproOnlyFile.write(rundomfuzzpy  + " " + browserDir + " " + url + "\n")
+                        reproOnlyFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
                         reproOnlyFile.close()
                         lithresult = NO_REPRO_EXCEPT_BY_URL
                     else:
                         print "%%% Lithium can't reproduce, and neither can I."
                         sorryFile = open(logPrefix + "-sorry.txt", "w")
                         sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
-                        sorryFile.write(rundomfuzzpy  + " " + browserDir + " " + url + "\n")
+                        sorryFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
                         sorryFile.close()
                         lithresult = NO_REPRO_AT_ALL
                 print ""

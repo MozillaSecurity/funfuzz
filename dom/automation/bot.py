@@ -172,7 +172,7 @@ if __name__ == "__main__":
       if job:
         reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
         print "reduced filename: " + reducedFn
-        lithArgs = ["--strategy=check-only", loopdomfuzz.rundomfuzzpy, "build", reducedFn]
+        lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
         (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "T")
       else:
         shouldLoop = False
