@@ -474,7 +474,8 @@ def rdfInit(args):
           else:
             alh.printAndLog("%%% Known crash (from mac crash reporter)")
     elif status == 1:
-      alh.printAndLog("%%% Exited with status 1 -- OOM?")
+      alh.printAndLog("@@@ Exited with status 1 -- either OOM or an ASAN crash")
+      lev = max(lev, DOM_VG_AMISS)
     elif status != 0 and not ((platform.system() in ("Microsoft", "Windows")) and alh.sawFatalAssertion):
       alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
       lev = max(lev, DOM_ABNORMAL_EXIT)
