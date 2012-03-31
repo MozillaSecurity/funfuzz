@@ -2715,7 +2715,7 @@ var specialProperties = [
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "length",
-  // Typed arraays
+  // Typed arrays
   "buffer", "byteLength", "byteOffset",
   // E4X
   "ignoreComments", "ignoreProcessingInstructions", "ignoreWhitespace",

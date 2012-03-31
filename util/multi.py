@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import sys
-import subprocess
-import time
 import platform
+import subprocess
+import sys
+import time
 
 WIN = (platform.system() in ("Microsoft", "Windows"))
 DEV_NULL = 'NUL' if WIN else '/dev/null'
