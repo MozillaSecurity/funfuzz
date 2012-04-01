@@ -193,8 +193,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
       && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
       && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
-      && !( codeL.match( /\].*\=.*\(/ ))          // avoid bug 736742
-      && !( codeL.match( /\}.*\=.*\(/ ))          // avoid bug 736742
       && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
       ,
 
