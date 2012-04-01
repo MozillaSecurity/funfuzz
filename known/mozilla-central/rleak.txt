@@ -25,3 +25,4 @@ SIZE tiny. objects that should never entrain others. (last group is also the def
 
        nsStringBuffer
        nsTArray_base
+  LEAK HoldJSObjects
