@@ -11,6 +11,7 @@ import shutil
 import sys
 
 from traceback import format_exc
+from copy import deepcopy
 
 path0 = os.path.dirname(__file__)
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -94,7 +95,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     This function configures a js binary depending on the parameters.
     '''
     cfgCmdList = []
-    cfgEnvList = os.environ
+    cfgEnvList = deepcopy(os.environ)
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
