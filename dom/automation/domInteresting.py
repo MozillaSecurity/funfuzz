@@ -32,7 +32,7 @@ import subprocess
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 p1 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'detect'))
-sys.path.append(p1)
+sys.path.insert(0, p1)
 import detect_assertions
 import detect_malloc_errors
 import detect_interesting_crashes
