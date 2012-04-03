@@ -191,14 +191,20 @@ class AmissLogHandler:
       if self.nsassertionCount == 100:
         print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
         self.expectedToHang = True
-    if msg.find("###!!! ABORT") != -1 or msg.find("Assertion fail") != -1 or msg.find("failed assertion") != -1:
-      self.sawFatalAssertion = True
-      if platform.system() in ("Microsoft", "Windows", "Linux"):
-        # We might not have symbols for the file that contains abort().
-        self.crashIsKnown = True
-    if detect_assertions.scanLine(self.knownPath, msgLF):
+
+    # It might be sensible to push more of this logic into detect_assertions...
+    newAssertion = detect_assertions.scanLine(self.knownPath, msgLF)
+    fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
+    if newAssertion:
       self.newAssertionFailure = True
       self.printAndLog("@@@ " + msg)
+    if fatalAssertion:
+      self.sawFatalAssertion = True
+      overlyGenericAssertion = ("You can't dereference a NULL" in msg)
+      if not newAssertion and not overlyGenericAssertion:
+        self.printAndLog("%%% Ignoring the following crash log, because we saw a known, non-generic, fatal assertion")
+        self.crashIsKnown = True
+
     if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
       self.mallocFailure = True
       self.printAndLog("@@@ Malloc is unhappy")
