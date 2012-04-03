@@ -389,6 +389,10 @@ def rdfInit(args):
 
     writePrefs(profileDir, extraPrefs)
 
+    localstoreRDF = os.path.join(profileDir, "localstore.rdf")
+    if os.path.exists(localstoreRDF):
+        os.remove(localstoreRDF)
+
     leakLogFile = logPrefix + "-leaks.txt"
 
     runbrowser = subprocess.Popen(
