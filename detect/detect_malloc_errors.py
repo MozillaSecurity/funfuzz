@@ -3,6 +3,7 @@
 # Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
 # which are signs of malloc being unhappy (double free, out-of-memory, etc).
 
+from __future__ import with_statement
 
 pline = ""
 ppline = ""
@@ -11,18 +12,15 @@ def amiss(logPrefix):
     foundSomething = False
     global pline, ppline
 
-    currentFile = file(logPrefix + "-err", "r")
-    
     pline = ""
     ppline = ""
 
-    for line in currentFile:
-        if scanLine(line):
-            foundSomething = True
-            break # Don't flood the log with repeated malloc failures
+    with open(logPrefix + "-err") as f:
+        for line in f:
+            if scanLine(line):
+                foundSomething = True
+                break # Don't flood the log with repeated malloc failures
 
-    currentFile.close()
-    
     return foundSomething
 
 

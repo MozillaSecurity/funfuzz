@@ -2,6 +2,7 @@
 
 # bot.py runs domfuzz or lithium as needed, for a limited amount of time, storing jobs using ssh.
 
+from __future__ import with_statement
 import os
 import platform
 import random
@@ -87,15 +88,13 @@ def grabJob(relevantJobsDir, desiredJobType):
 
 
 def readTinyFile(fn):
-  f = open(fn)
-  text = f.read()
-  f.close()
+  with open(fn) as f:
+    text = f.read()
   return text.strip()
 
 def writeTinyFile(fn, text):
-  f = open(fn, "w")
-  f.write(text)
-  f.close()
+  with open(fn, "w") as f:
+    f.write(text)
 
 def timestamp():
   return str(int(time.time()))

@@ -115,9 +115,8 @@ user_pref("toolkit.telemetry.server", "");
 
   prefsText += extraPrefs
 
-  prefsFile = open(os.path.join(profileDir, "prefs.js"), "w")
-  prefsFile.write(prefsText)
-  prefsFile.close()
+  with open(os.path.join(profileDir, "prefs.js"), "w") as prefsFile:
+    prefsFile.write(prefsText)
 
 
 def createDOMFuzzProfile(profileDir):
@@ -127,9 +126,8 @@ def createDOMFuzzProfile(profileDir):
   profileExtensionsPath = os.path.join(profileDir, "extensions")
   os.mkdir(profileExtensionsPath)
   domfuzzExtensionPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, "extension")
-  extFile = open(os.path.join(profileExtensionsPath, "domfuzz@squarefree.com"), "w")
-  extFile.write(domfuzzExtensionPath)
-  extFile.close()
+  with open(os.path.join(profileExtensionsPath, "domfuzz@squarefree.com"), "w") as extFile:
+    extFile.write(domfuzzExtensionPath)
 
 valgrindComplaintRegexp = re.compile("^==\d+== ")
 
@@ -307,7 +305,7 @@ class FigureOutDirs:
       self.symbolsDir = getFullPath(self.symbolsDir)
 
 def findSrcDir(objDir):
-  with file(os.path.join(objDir, "Makefile")) as f:
+  with open(os.path.join(objDir, "Makefile")) as f:
     for line in f:
       if line.startswith("topsrcdir	= "):
         return deCygPath(line[12:].strip())
@@ -471,7 +469,8 @@ def rdfInit(args):
         appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
         crashlog = grabCrashLog(appName, alh.pid, None, signum)
         if crashlog:
-          crashText = open(crashlog).read()
+          with open(crashlog) as f:
+            crashText = f.read()
           print crashText
           if not (" main + " in crashText or " XRE_main + " in crashText):
             # e.g. this build only has breakpad symbols, not native symbols
@@ -503,13 +502,11 @@ def rdfInit(args):
 
 
     if (lev > DOM_FINE) and logPrefix:
-      outlog = open(logPrefix + "-output.txt", "w")
-      outlog.writelines(alh.fullLogHead)
-      outlog.close()
+      with open(logPrefix + "-output.txt", "w") as outlog:
+        outlog.writelines(alh.fullLogHead)
       subprocess.call(["gzip", logPrefix + "-output.txt"])
-      summaryLogFile = open(logPrefix + "-summary.txt", "w")
-      summaryLogFile.writelines(alh.summaryLog)
-      summaryLogFile.close()
+      with open(logPrefix + "-summary.txt", "w") as summaryLogFile:
+        summaryLogFile.writelines(alh.summaryLog)
 
     print("DOMFUZZ INFO | domInteresting.py | Running for fuzzage, level " + str(lev) + ".")
 
@@ -551,9 +548,8 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
             for fn in crashLogs:
                 fullfn = os.path.join(crashLogDir, fn)
                 try:
-                    c = file(fullfn)
-                    firstLine = c.readline()
-                    c.close()
+                    with open(fullfn) as c:
+                        firstLine = c.readline()
                     if firstLine.rstrip().endswith("[" + str(crashedPID) + "]"):
                         macCrashLogFilename = fullfn
                         break
@@ -578,7 +574,7 @@ def grabCrashLog(progname, crashedPID, logPrefix, signum):
                 return logPrefix + "-crash"
             else:
                 return macCrashLogFilename
-                #return open(macCrashLogFilename).read()
+                #return with open(macCrashLogFilename) as f: f.read()
     return None
 
 

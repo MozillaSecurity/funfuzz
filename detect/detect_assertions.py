@@ -4,6 +4,7 @@
 # Recognizes JS_ASSERT based on condition only :(
 # Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
 
+from __future__ import with_statement
 import os, sys
 
 simpleIgnoreList = []
@@ -70,18 +71,17 @@ def readIgnoreLists(knownPath):
 
 def readIgnoreList(filename):
     global ready
-    ignoreFile = file(filename, "r")
-    for line in ignoreFile:
-        line = line.rstrip()
-        if ((len(line) > 0) and not line.startswith("#")):
-            mpi = line.find(", file ")  # NS_ASSERTION and friends use this format
-            if (mpi == -1):
-                mpi = line.find(": file ")  # NS_ABORT uses this format
-            if (mpi == -1):
-                simpleIgnoreList.append(line)
-            else:
-                twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:]))
-    ignoreFile.close()
+    with open(filename) as ignoreFile:
+        for line in ignoreFile:
+            line = line.rstrip()
+            if ((len(line) > 0) and not line.startswith("#")):
+                mpi = line.find(", file ")  # NS_ASSERTION and friends use this format
+                if (mpi == -1):
+                    mpi = line.find(": file ")  # NS_ABORT uses this format
+                if (mpi == -1):
+                    simpleIgnoreList.append(line)
+                else:
+                    twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:]))
     ready = True
 
 
@@ -98,11 +98,11 @@ def ignore(assertion):
 
 # For use by af_timed_run and jsunhappy.py
 def amiss(knownPath, logPrefix, verbose, ignoreKnownAssertions=True):
-    currentFile = file(logPrefix + "-err", "r")
-    return scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions)
+    with open(logPrefix + "-err") as currentFile:
+        return scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions)
 
 # For standalone use
 if __name__ == "__main__":
     knownPath = sys.argv[1]
-    currentFile = file(sys.argv[2], "r")
-    print scanFile(knownPath, currentFile, False, True)
+    with open(sys.argv[2]) as currentFile:
+        print scanFile(knownPath, currentFile, False, True)

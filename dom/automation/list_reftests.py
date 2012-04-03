@@ -2,6 +2,7 @@
 
 # Based on js/src/tests/manifest.py
 
+from __future__ import with_statement
 import os, re, sys
 from subprocess import *
 
@@ -10,58 +11,54 @@ def parse(filename, add_result_callback):
     comment_re = re.compile(r'#.*') # this is wrong, because URLs are allowed to have #, but that works just fine for the fuzzer
     reldir = os.path.dirname(filename)
 
-    try:
-        f = open(filename)
-    except IOError:
-        print "warning: include file not found: '%s'"%filename
-
-    for line in f:
-        sline = comment_re.sub('', line)
-        parts = sline.split()
-        if len(parts) == 0:
-            # line is empty or just a comment, skip
-            pass
-        elif parts[0] == 'url-prefix':
-            pass
-        else:
-            pos = 0
-            while pos < len(parts):
-                K = ['fails', 'skip', 'random', 'asserts', 'fuzzy']
-                part = parts[pos]
-                if any([part.startswith(k) for k in K]):
-                    # fails, fails-if(...), asserts(3)
-                    #print "Skipping: " + part
-                    pos += 1
-                    pass
-                elif part == 'include':
-                    pos += 1
-                    parse(os.path.normpath(os.path.join(reldir, parts[pos])), add_result_callback)
-                    break
-                elif part == "needs-focus":
-                    pos += 1
-                    pass
-                elif part.startswith("require-or("):
-                    pos += 1
-                    pass
-                elif part.startswith("pref("):
-                    pos += 1
-                    pass
-                elif part.startswith("HTTP"):
-                    pos += 1
-                    pass
-                elif part in ["==", "!=", "load"]:
-                    pos += 1
-                    while pos < len(parts):
-                        part = parts[pos]
-                        if not part.startswith("data:") and not part.startswith("javascript:") and not part.startswith("about:") and not part.startswith("view-source:"):
-                            add_result_callback(os.path.join(reldir, parts[pos]))
+    with open(filename) as f:
+        for line in f:
+            sline = comment_re.sub('', line)
+            parts = sline.split()
+            if len(parts) == 0:
+                # line is empty or just a comment, skip
+                pass
+            elif parts[0] == 'url-prefix':
+                pass
+            else:
+                pos = 0
+                while pos < len(parts):
+                    K = ['fails', 'skip', 'random', 'asserts', 'fuzzy']
+                    part = parts[pos]
+                    if any([part.startswith(k) for k in K]):
+                        # fails, fails-if(...), asserts(3)
+                        #print "Skipping: " + part
                         pos += 1
-                    break
-                elif part == "script":
-                    break
-                else:
-                    print 'warning: in %s unrecognized manifest line element "%s"' % (filename, parts[pos])
-                    pos += 1
+                        pass
+                    elif part == 'include':
+                        pos += 1
+                        parse(os.path.normpath(os.path.join(reldir, parts[pos])), add_result_callback)
+                        break
+                    elif part == "needs-focus":
+                        pos += 1
+                        pass
+                    elif part.startswith("require-or("):
+                        pos += 1
+                        pass
+                    elif part.startswith("pref("):
+                        pos += 1
+                        pass
+                    elif part.startswith("HTTP"):
+                        pos += 1
+                        pass
+                    elif part in ["==", "!=", "load"]:
+                        pos += 1
+                        while pos < len(parts):
+                            part = parts[pos]
+                            if not part.startswith("data:") and not part.startswith("javascript:") and not part.startswith("about:") and not part.startswith("view-source:"):
+                                add_result_callback(os.path.join(reldir, parts[pos]))
+                            pos += 1
+                        break
+                    elif part == "script":
+                        break
+                    else:
+                        print 'warning: in %s unrecognized manifest line element "%s"' % (filename, parts[pos])
+                        pos += 1
 
 testfiles = set()
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement
+
 import jsInteresting
 import os
 import pinpoint
@@ -7,7 +9,6 @@ import subprocess
 import sys
 
 from optparse import OptionParser
-
 
 lengthLimit = 1000000
 
@@ -52,8 +53,11 @@ def compareLevel(jsEngine, infilename, logPrefix, knownPath, timeout, showDetail
     command = commands[i]
     (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
-    r.out = file(prefix + "-out").read()
-    r.err = file(prefix + "-err").read()
+    with open(prefix + "-out") as f:
+       r.out = f.read()
+    with open(prefix + "-err") as f:
+       r.err = f.read()
+
     if len(r.out) > lengthLimit:
       r.out = "VERYLONGOUT"
     r.err = ignoreMallocScribble(r.err)

@@ -32,7 +32,8 @@ def many_timed_runs(targetTime, args):
 
         reftestFilesDir = domInteresting.FigureOutDirs(browserDir).reftestFilesDir
         urls = getURLs(os.path.abspath(reftestFilesDir))
-        boolPrefNames = filter(lambda s: len(s) and s[0] != "#", open(os.path.join(p0, "bool-prefs.txt")))
+        with open(os.path.join(p0, "bool-prefs.txt")) as f:
+            boolPrefNames = filter(lambda s: len(s) and s[0] != "#", f)
 
         for iteration in range(0, maxIterations):
             if targetTime and time.time() > startTime + targetTime:
@@ -62,17 +63,15 @@ def many_timed_runs(targetTime, args):
                     level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(prefs))
                     if level2 > domInteresting.DOM_FINE:
                         print "%%% Lithium can't reproduce, but I can!"
-                        reproOnlyFile = open(logPrefix + "-repro-only.txt", "w")
-                        reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
-                        reproOnlyFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
-                        reproOnlyFile.close()
+                        with open(logPrefix + "-repro-only.txt", "w") as reproOnlyFile:
+                            reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
+                            reproOnlyFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
                         lithresult = NO_REPRO_EXCEPT_BY_URL
                     else:
                         print "%%% Lithium can't reproduce, and neither can I."
-                        sorryFile = open(logPrefix + "-sorry.txt", "w")
-                        sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
-                        sorryFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
-                        sorryFile.close()
+                        with open(logPrefix + "-sorry.txt", "w") as sorryFile:
+                            sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
+                            sorryFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
                         lithresult = NO_REPRO_AT_ALL
                 print ""
                 if targetTime:
@@ -161,7 +160,7 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
     return r
 
 def readLithiumResult(lithlogfn):
-    with file(lithlogfn) as f:
+    with open(lithlogfn) as f:
       for line in f:
         if line.startswith("Lithium result"):
           print line.rstrip()
@@ -183,15 +182,15 @@ def getURLs(reftestFilesDir):
     URLs = []
     fullURLs = []
 
-    urlfile = open(os.path.join(p0, urlListFilename), "r")
-    for line in urlfile:
-        if (not line.startswith("#") and len(line) > 2):
-            if urlListFilename == "urls-reftests":
-                localPath = os.path.join(reftestFilesDir, line.rstrip())
-                # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
-                URLs.append("file:" + urllib.pathname2url(localPath))
-            else:
-                URLs.append(line.rstrip())
+    with open(os.path.join(p0, urlListFilename)) as urlfile:
+        for line in urlfile:
+            if (not line.startswith("#") and len(line) > 2):
+                if urlListFilename == "urls-reftests":
+                    localPath = os.path.join(reftestFilesDir, line.rstrip())
+                    # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
+                    URLs.append("file:" + urllib.pathname2url(localPath))
+                else:
+                    URLs.append(line.rstrip())
 
     for iteration in range(0, maxIterations):
         u = random.choice(URLs) + randomHash()
@@ -262,9 +261,8 @@ def linesWith(lines, searchFor):
     return matchingLines
 
 def writeLinesToFile(lines, filename):
-      f = open(filename, "w")
-      f.writelines(lines)
-      f.close()
+    with open(filename, "w") as f:
+        f.writelines(lines)
 
 def afterColon(s):
     (head, sep, tail) = s.partition(": ")
