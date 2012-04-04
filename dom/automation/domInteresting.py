@@ -243,7 +243,8 @@ class AmissLogHandler:
          msg.find("too much recursion") == -1 and # bug 732665
          msg.find("nsIWebContentHandlerRegistrar::registerProtocolHandler") == -1 and # bug 732692, bug 693270
          msg.find("iconStatus is null") == -1 and # bug 733305
-         msg.find("prompt aborted by user") == -1 # thrown intentionally in nsPrompter.js
+         msg.find("prompt aborted by user") == -1 and # thrown intentionally in nsPrompter.js
+         msg.find(":: pageShowEventHandlers ::") == -1 # bug 742139
         ):
         self.printAndLog("@@@ " + msg)
         self.sawChromeFailure = True
