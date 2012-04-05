@@ -10,51 +10,43 @@ import subprocess
 import shutil
 import sys
 
-from traceback import format_exc
 from copy import deepcopy
+from traceback import format_exc
 
 path0 = os.path.dirname(__file__)
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, macType, normExpUserPath, vdump
 from countCpus import cpuCount
+from subprocesses import captureStdout, macType, normExpUserPath, vdump
 
-def hgHashAddToFuzzPath(fuzzPath, repoDir):
+def getRepoHashAndId(repoDir):
     '''
-    This function finds the mercurial revision and appends it to the directory name.
-    It also prompts if the user wants to continue, should the repository not be on tip.
+    This function returns the repository hash and id, and whether it is on default.
+    It also asks what the user would like to do, should the repository not be on default.
     '''
-    hgIdCmdList = ['hg', 'identify', '-i', '-n', '-b', repoDir]
-    vdump('About to start running `' + ' '.join(hgIdCmdList) + '` ...')
-    # In Windows, this throws up a warning about failing to set color mode to win32.
-    if platform.system() == 'Windows':
-        hgIdFull = captureStdout(hgIdCmdList, currWorkingDir=repoDir, ignoreStderr=True)[0]
-    else:
-        hgIdFull = captureStdout(hgIdCmdList, currWorkingDir=repoDir)[0]
-    hgIdChangesetHash = hgIdFull.split(' ')[0]
-    hgIdLocalNum = hgIdFull.split(' ')[1]
-    # In Windows, this throws up a warning about failing to set color mode to win32.
-    if platform.system() == 'Windows':
-        hgIdBranch = captureStdout(['hg', 'id', '-t'], currWorkingDir=repoDir, ignoreStderr=True)[0]
-    else:
-        hgIdBranch = captureStdout(['hg', 'id', '-t'], currWorkingDir=repoDir)[0]
-    onDefaultTip = True
-    if 'tip' not in hgIdBranch:
-        print 'The repository is at this changeset -', hgIdLocalNum + ':' + hgIdChangesetHash
-        notOnDefaultTipApproval = str(
-            raw_input('Not on default tip! Are you sure you want to continue? (y/n): '))
-        if notOnDefaultTipApproval == ('y' or 'yes'):
-            onDefaultTip = False
+    # This returns null if the repository is not on default.
+    hgLogTmplList = ['hg', 'log', '-r', '"parents() and default"',
+                     '--template', '"{node|short} {rev}"']
+    hgIdFull = captureStdout(hgLogTmplList, currWorkingDir=repoDir)[0]
+    onDefault = bool(hgIdFull)
+    if not onDefault:
+        updateDefault = raw_input('Not on default tip! ' + \
+            'Would you like to (a)bort, update to (d)efault, or (u)se this rev: ')
+        if updateDefault == 'a':
+            print 'Aborting...'
+            sys.exit(0)
+        elif updateDefault == 'd':
+            subprocess.check_call(['hg', 'up', 'default'], cwd=repoDir)
+            onDefault = True
+        elif updateDefault == 'u':
+            hgLogTmplList = ['hg', 'log', '-r', 'parents()', '--template', '{node|short} {rev}']
         else:
-            switchToDefaultTipApproval = str(
-                raw_input('Do you want to switch to the default tip? (y/n): '))
-            if switchToDefaultTipApproval == ('y' or 'yes'):
-                subprocess.check_call(['hg', 'up', 'default'], cwd=repoDir)
-            else:
-                raise Exception('Not on default tip.')
-    fuzzPath = '-'.join([fuzzPath, hgIdLocalNum, hgIdChangesetHash])
-    vdump('Finished running `' + ' '.join(hgIdCmdList) + '`.')
-    return normExpUserPath(fuzzPath), onDefaultTip
+            raise Exception('Invalid choice.')
+        hgIdFull = captureStdout(hgLogTmplList, currWorkingDir=repoDir)[0]
+    assert hgIdFull != ''
+    (hgIdChangesetHash, hgIdLocalNum) = hgIdFull.split(' ')
+    vdump('Finished getting the hash and local id number of the repository.')
+    return hgIdChangesetHash, hgIdLocalNum, onDefault
 
 def patchHgRepoUsingMq(patchLoc, cwd=os.getcwdu()):
     # We may have passed in the patch with or without the full directory.
@@ -95,54 +87,55 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     This function configures a js binary depending on the parameters.
     '''
     cfgCmdList = []
-    cfgEnvList = deepcopy(os.environ)
+    cfgEnvDt = deepcopy(os.environ)
+    origCfgEnvDt = deepcopy(os.environ)
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
         # 32-bit shell on Mac OS X 10.6
         if macType() == (True, True, False):
-            cfgEnvList['CC'] = 'gcc-4.2 -arch i386'
-            cfgEnvList['CXX'] = 'g++-4.2 -arch i386'
-            cfgEnvList['HOST_CC'] = 'gcc-4.2'
-            cfgEnvList['HOST_CXX'] = 'g++-4.2'
-            cfgEnvList['RANLIB'] = 'ranlib'
-            cfgEnvList['AR'] = 'ar'
-            cfgEnvList['AS'] = '$CC'
-            cfgEnvList['LD'] = 'ld'
-            cfgEnvList['STRIP'] = 'strip -x -S'
-            cfgEnvList['CROSS_COMPILE'] = '1'
+            cfgEnvDt['CC'] = 'gcc-4.2 -arch i386'
+            cfgEnvDt['CXX'] = 'g++-4.2 -arch i386'
+            cfgEnvDt['HOST_CC'] = 'gcc-4.2'
+            cfgEnvDt['HOST_CXX'] = 'g++-4.2'
+            cfgEnvDt['RANLIB'] = 'ranlib'
+            cfgEnvDt['AR'] = 'ar'
+            cfgEnvDt['AS'] = '$CC'
+            cfgEnvDt['LD'] = 'ld'
+            cfgEnvDt['STRIP'] = 'strip -x -S'
+            cfgEnvDt['CROSS_COMPILE'] = '1'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i386-apple-darwin8.0.0')
         # 32-bit shell on Mac OS X 10.7 Lion
         elif macType() == (True, False, True):
-            cfgEnvList['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
-            cfgEnvList['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
-            cfgEnvList['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
-            cfgEnvList['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
-            cfgEnvList['RANLIB'] = 'ranlib'
-            cfgEnvList['AR'] = 'ar'
-            cfgEnvList['AS'] = '$CC'
-            cfgEnvList['LD'] = 'ld'
-            cfgEnvList['STRIP'] = 'strip -x -S'
-            cfgEnvList['CROSS_COMPILE'] = '1'
+            cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvDt['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvDt['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvDt['RANLIB'] = 'ranlib'
+            cfgEnvDt['AR'] = 'ar'
+            cfgEnvDt['AS'] = '$CC'
+            cfgEnvDt['LD'] = 'ld'
+            cfgEnvDt['STRIP'] = 'strip -x -S'
+            cfgEnvDt['CROSS_COMPILE'] = '1'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i386-apple-darwin8.0.0')
         # 32-bit shell on 32/64-bit x86 Linux
         elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            cfgEnvList['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
-            cfgEnvList['CC'] = 'gcc -m32'
-            cfgEnvList['CXX'] = 'g++ -m32'
-            cfgEnvList['AR'] = 'ar'
+            cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
+            cfgEnvDt['CC'] = 'gcc -m32'
+            cfgEnvDt['CXX'] = 'g++ -m32'
+            cfgEnvDt['AR'] = 'ar'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i686-pc-linux')
         # 32-bit shell on ARM (non-tegra ubuntu)
         elif os.uname()[4] == 'armv7l':
-            cfgEnvList['CC'] = '/opt/cs2007q3/bin/gcc'
-            cfgEnvList['CXX'] = '/opt/cs2007q3/bin/g++'
+            cfgEnvDt['CC'] = '/opt/cs2007q3/bin/gcc'
+            cfgEnvDt['CXX'] = '/opt/cs2007q3/bin/g++'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
         else:
@@ -150,9 +143,9 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
             cfgCmdList.append(os.path.normpath(configure))
     # 64-bit shell on Mac OS X 10.7 Lion
     elif (archNum == '64') and (macType() == (True, False, True)):
-        cfgEnvList['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
-        cfgEnvList['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
-        cfgEnvList['AR'] = 'ar'
+        cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvDt['AR'] = 'ar'
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))
         cfgCmdList.append('--target=x86_64-apple-darwin11.2.0')
@@ -205,7 +198,15 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
                 cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
             counter = counter + 1
 
-    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvList)
+    # Print whatever we added to the environment
+    envVarList = []
+    for envVar in set(cfgEnvDt.keys()) - set(origCfgEnvDt.keys()):
+        strToBeAppended = envVar + '="' + cfgEnvDt[envVar] + '"' \
+            if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
+        envVarList.append(strToBeAppended)
+    vdump('Environment variables added are: ' + ' '.join(envVarList))
+
+    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvDt)
 
 def shellName(archNum, compileType, extraID, vgSupport):
     sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
@@ -217,27 +218,26 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
     '''
     This function compiles and copies a binary.
     '''
-    # Replace cpuCount() with cpu_count from the multiprocessing library once Python 2.6 is in
-    # all build machines.
+    # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
     jobs = (cpuCount() * 3) // 2
     compiledNamePath = normExpUserPath(
         os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
     try:
+        cmdList = []
+        ignoreECode = False
         if usePymake:
-            out = captureStdout(
-                ['python', '-OO',
-                 os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')),
-                 '-j' + str(jobs), '-s'], combineStderr=True, currWorkingDir=objDir)[0]
-            # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
-            if 'no such option: -s' in out:
-                out = captureStdout(
-                    ['python', '-OO',
+            cmdList = ['python', '-OO',
                      os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')),
-                     '-j' + str(jobs)], combineStderr=True, currWorkingDir=objDir)[0]
+                     '-j' + str(jobs)]
+            if 'no such option: -s' not in out:
+                cmdList.append('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
         else:
-            out = captureStdout(
-                ['make', '-C', objDir, '-j' + str(jobs), '-s'],
-                combineStderr=True, ignoreExitCode=True, currWorkingDir=objDir)[0]
+            cmdList = ['make', '-C', objDir, '-s']
+            ignoreECode = True
+            if platform.system() != 'Windows':
+                cmdList.append('-j' + str(jobs))  # Win needs pymake for multicore compiles.
+        out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+                            currWorkingDir=objDir)[0]
     except Exception:
         # Sometimes a non-zero error can be returned during the make process, but eventually a
         # shell still gets compiled.

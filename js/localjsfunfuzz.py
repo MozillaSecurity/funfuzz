@@ -10,287 +10,225 @@ import shutil
 import subprocess
 import sys
 
+from ConfigParser import SafeConfigParser
 from random import randint
-from compileShell import hgHashAddToFuzzPath, patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy
+from optparse import OptionParser
+from tempfile import mkdtemp
+from compileShell import getRepoHashAndId, patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy
 from inspectShell import archOfBinary, testDbgOrOptGivenACompileType
 
 path0 = os.path.dirname(__file__)
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import dateStr, isVM, normExpUserPath, vdump
+from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, verbose, vdump
+from fileIngredients import fileContains
 
-def main():
-    print dateStr()
-    mjit = True  # turn on -m
-    mjitAll = True  # turn on -a
-    debugJit = True  # turn on -d
-    codeProfiling = False  # turn on -D
-    usePymake = True if platform.system() == 'Windows' else False
-    jsCompareJITSwitch = True if mjit else False
-    # Sets --enable-threadsafe for a multithreaded js shell, first make sure NSPR is installed!
-    # (Use `make` instead of `gmake`), see https://developer.mozilla.org/en/NSPR_build_instructions
-    threadsafe = False
-
+def machineTypeDefaults(timeout):
+    '''
+    Sets different defaults depending on the machine type.
+    '''
     if platform.uname()[1] == 'tegra-ubuntu':
-        mTimedRunTimeout = '180'
+        return 180
     elif platform.uname()[4] == 'armv7l':
-        mTimedRunTimeout = '600'
+        return 600
     else:
-        mTimedRunTimeout = '10'
+        return timeout
 
-    vgBool = False
-    if platform.system() == 'Linux' or platform.system() == 'Darwin':
-        if (len(sys.argv) == 5 and sys.argv[4] == 'valgrind') or \
-            (len(sys.argv) == 7 and sys.argv[6] == 'valgrind') or \
-            (len(sys.argv) == 9 and sys.argv[8] == 'valgrind') or \
-            (len(sys.argv) == 11 and sys.argv[10] == 'valgrind'):
-            # Valgrind does not work for 32-bit binaries in a 64-bit Linux system.
-            if platform.system() == 'Linux':
-                assert platform.uname()[4] == 'x86_64' and sys.argv[1] == '64'
-            vgBool = True
-            jsCompareJITSwitch = False  # Turn off compareJIT (too slow) when in Valgrind.
-            mTimedRunTimeout = '300'  # Increase timeout to 300 in Valgrind.
+def parseOptions():
+    usage = 'Usage: %prog [options]'
+    parser = OptionParser(usage)
 
-    if platform.system() == "Linux" or platform.system() == "Darwin":
-        vdump('Setting ulimit -c to unlimited..')
-        # ulimit requires shell=True to work properly.
-        subprocess.check_call(['ulimit -S -c unlimited'], shell=True) # Enable creation of coredumps
-        if platform.system() == "Linux":
-            # Only allow one process to create a coredump at a time.
-            p1 = subprocess.Popen(
-                ['echo', '1'], stdout=subprocess.PIPE)
-            p2 = subprocess.Popen(
-                ['sudo tee /proc/sys/kernel/core_uses_pid'], stdin=p1.stdout,
-                    stdout=subprocess.PIPE, shell=True)
-            p1.stdout.close()
-            (p2stdout, p2stderr) = p2.communicate()[0]
-            vdump(p2stdout)
-            vdump(p2stderr)
-            try:
-                fcoreuses = open('/proc/sys/kernel/core_uses_pid', 'r')
-            except IOError:
-                raise
-            assert '1' in fcoreuses.readline() # Double-check that only one process is allowed
-            fcoreuses.close()
+    parser.set_defaults(
+        disableCompareJIT = False,
+        disableRndFlags = False,
+        disableStartFuzzing = False,
+        archType = '32',
+        shellType = 'dbg,opt',
+        shellflags = '',
+        srcRepo = '~/trees/mozilla-central',
+        timeout = 10,
+        enablePymake = True if platform.system == 'Windows' else False,
+        enableTs = False,
+        enableVg = False,
+    )
 
-    if sys.argv[3] == '192':
-        jsCompareJITSwitch = False
+    parser.add_option('--disable-comparejit', dest='disableCompareJIT', action='store_true',
+                      help='Disable comparejit fuzzing.')
+    parser.add_option('--disable-random-flags', dest='disableRndFlags', action='store_true',
+                      help='Disable random flag fuzzing.')
+    parser.add_option('--disable-start-fuzzing', dest='disableStartFuzzing', action='store_true',
+                      help='Compile shells only, do not start fuzzing.')
 
-    if codeProfiling == True:
-        # -D intentionally outputs a lot of console spew.
-        jsCompareJITSwitch = False
+    parser.add_option('-a', '--set-archtype', dest='archType',
+                      help='Sets the shell architecture to be fuzzed. Defaults to "%default".')
+    parser.add_option('-c', '--set-shelltype', dest='shellType',
+                      help='Sets the shell type to be fuzzed. Defaults to "dbg". Note that both ' + \
+                           'debug and opt will be compiled by default for easy future testing.')
+    parser.add_option('-f', '--set-shellflags', dest='shellflags',
+                      # This is not set to %default because of the upcoming revamp of --random-flags
+                      help='Sets the flags for the shell. Defaults to [-m, -a, -n, [-d if debug]].')
+    parser.add_option('-r', '--set-src-repo', dest='srcRepo',
+                      help='Sets the source repository. Defaults to "%default".')
+    parser.add_option('-t', '--set-loop-timeout', type='int', dest='timeout',
+                      help='Sets the timeout for loopjsfunfuzz.py. ' + \
+                           'Defaults to "180" seconds for tegra-ubuntu machines. ' + \
+                           'Defaults to "300" seconds when Valgrind is turned on. ' + \
+                           'Defaults to "600" seconds for arm7l machines. ' + \
+                           'Defaults to "%default" seconds for all other machines.')
 
-    # There should be a minimum of 4 command-line parameters.
-    if len(sys.argv) < 4:
-        raise Exception('Too little command-line parameters.')
+    parser.add_option('-p', '--enable-patch-dir', dest='patchdir',
+                      #help='Define the path to a single patch or to a directory containing mq ' + \
+                      #     'patches. Must have a "series" file present, containing the names ' + \
+                      #     'of the patches, the first patch required at the bottom of the list.')
+                      help='Define the path to a single patch. Multiple patches are not yet ' + \
+                           'supported.')
+    parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
+                      help='Enable pymake. Defaults to "%default" on the current platform.')
+    parser.add_option('--enable-threadsafe', dest='enableTs', action='store_true',
+                      help='Enable compilation and fuzzing of threadsafe js shell. ' + \
+                           'NSPR should first be installed, see: ' + \
+                           'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
+                           'Defaults to "%default".')
+    parser.add_option('--enable-valgrind', dest='enableVg', action='store_true',
+                      help='Enable valgrind. ' + \
+                           'compareJIT will then be disabled due to speed issues. ' + \
+                           'Defaults to "%default".')
 
-    archNum = sys.argv[1]
-    assert int(archNum) in (32, 64)
-    compileType = sys.argv[2]
-    assert compileType in ('dbg', 'opt')
+    options, args = parser.parse_args()
+    return options
 
-    branchSuppList = []
-    branchSuppList.append('192')
-    branchSuppList.append('mc')
-    branchSuppList.append('jm')
-    branchSuppList.append('im')
-    branchSuppList.append('mi')
-    branchSuppList.append('larch')
-    branchSuppList.append('ma')
-    branchSuppList.append('mb')
-    branchSuppList.append('esr10')
-    branchType = sys.argv[3]
-    assert branchType in branchSuppList
-
-    repoDt = {}
+def baseDir():
+    '''
+    Returns different base directories depending on whether system is a VM or not.
+    '''
     if isVM() == ('Windows', True):
-        startVMorNot = os.path.join('z:', os.sep)
+        return os.path.join('z:', os.sep)
     elif isVM() == ('Linux', True):
-        startVMorNot = os.path.join('/', 'mnt', 'hgfs')
+        return os.path.join('/', 'mnt', 'hgfs')
     else:
-        startVMorNot = '~'
-    repoDt['fuzzing'] = normExpUserPath(os.path.join(startVMorNot, 'fuzzing'))
-    assert os.path.exists(repoDt['fuzzing'])
-    repoDt['192'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-1.9.2'))
-    repoDt['mc'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-central'))
-    repoDt['jm'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'jaegermonkey'))
-    repoDt['im'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'ionmonkey'))
-    repoDt['mi'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-inbound'))
-    repoDt['larch'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'larch'))
-    repoDt['ma'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-aurora'))
-    repoDt['mb'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-beta'))
-    repoDt['esr10'] = normExpUserPath(os.path.join(startVMorNot, 'trees', 'mozilla-esr10'))
+        return '~'
 
-    for repo in repoDt.keys():
-        vdump('The "' + repo + '" repository is located at "' + repoDt[repo] + '"')
+def getRepoNameInHgrc(rDir):
+    '''
+    Checks to see if the input repository is supported.
+    '''
+    assert os.path.exists(rDir)
+    hgrcFile = normExpUserPath(os.path.join(rDir, '.hg', 'hgrc'))
+    assert os.path.isfile(hgrcFile)
 
-    fuzzPathStart = os.path.join('c:', os.sep) if isVM() == ('Windows', True) \
-        else os.path.join('~', 'Desktop')
-    fuzzPath = normExpUserPath(
-        os.path.join(
-            fuzzPathStart, 'jsfunfuzz-' + compileType + '-' + archNum + '-' + branchType)
-        )
+    hgCfg = SafeConfigParser()
+    hgCfg.read(hgrcFile)
+    # Not all default entries in [paths] end with "/".
+    rName = filter(None, (hgCfg.get('paths', 'default').split('/')))[-1]
+    vdump('Repository name is: ' + rName)
+    return rName
 
-    # Patch the codebase if specified, accept up to 3 patches.
-    if len(sys.argv) >= 6 and sys.argv[4] == 'patch':
-        print 'NOTE: The hash in the directory is post-patch, not pre-patch!'
-        p1name = patchHgRepoUsingMq(sys.argv[5], repoDt[branchType])
-        if len(sys.argv) >= 8 and sys.argv[6] == 'patch':
-            p2name = patchHgRepoUsingMq(sys.argv[7], repoDt[branchType])
-            if len(sys.argv) >= 10 and sys.argv[8] == 'patch':
-                p3name = patchHgRepoUsingMq(sys.argv[9], repoDt[branchType])
+def mkFullPath(hgHash, hgNum, pDir, repo, start):
+    '''
+    Creates the fuzzing directory in the start path.
+    '''
+    appendStr = '-' + hgHash + '-' + hgNum
+    if pDir is not None:
+        appendStr += '-patched'
+    path = mkdtemp(appendStr + os.sep,
+                       os.path.join('jsfunfuzz-' + repo + '-'), start)
+    assert os.path.exists(path)
+    return path
 
-    # Patches must already been qimport'ed and qpush'ed.
-    # FIXME: we should grab the hash first before applying the patch
-    (fuzzPath, onDefaultTip) = hgHashAddToFuzzPath(fuzzPath, repoDt[branchType])
-
-    # Turn off pymake if not on default tip.
-    if usePymake and not onDefaultTip:
-        usePymake = False
-
-    compilePath = normExpUserPath(os.path.join(fuzzPath, 'compilePath', 'js', 'src'))
-    # Copy the js tree to the fuzzPath.
-    jsSrcDir = normExpUserPath(os.path.join(repoDt[branchType], 'js', 'src'))
+def copyJsSrcDirs(fPath, repo):
+    '''
+    Copies required js source directories into the specified path.
+    '''
+    cPath = normExpUserPath(os.path.join(fPath, 'compilePath', 'js', 'src'))
+    origJsSrc = normExpUserPath(os.path.join(repo, 'js', 'src'))
     try:
-        vdump('Copying the js source tree, which is located at ' + jsSrcDir)
+        vdump('Copying the js source tree, which is located at ' + origJsSrc)
         if sys.version_info >= (2, 6):
-            shutil.copytree(jsSrcDir, compilePath,
+            shutil.copytree(origJsSrc, cPath,
                             ignore=shutil.ignore_patterns(
                                 'jit-test', 'tests', 'trace-test', 'xpconnect'))
         else:
-            shutil.copytree(jsSrcDir, compilePath)
+            shutil.copytree(origJsSrc, cPath)  # Remove once Python 2.5.x is no longer used.
         vdump('Finished copying the js tree')
     except OSError:
         raise Exception('Do the js source directory or the destination exist?')
 
     # 91a8d742c509 introduced a mfbt directory on the same level as the js/ directory.
-    mfbtDir = normExpUserPath(os.path.join(repoDt[branchType], 'mfbt'))
+    mfbtDir = normExpUserPath(os.path.join(repo, 'mfbt'))
     if os.path.isdir(mfbtDir):
-        shutil.copytree(mfbtDir, os.path.join(compilePath, '..', '..', 'mfbt'))
+        shutil.copytree(mfbtDir, os.path.join(cPath, os.pardir, os.pardir, 'mfbt'))
 
     # b9c673621e1e introduced a public directory on the same level as the js/src directory.
-    jsPubDir = normExpUserPath(os.path.join(repoDt[branchType], 'js', 'public'))
+    jsPubDir = normExpUserPath(os.path.join(repo, 'js', 'public'))
     if os.path.isdir(jsPubDir):
-        shutil.copytree(jsPubDir, os.path.join(compilePath, '..', 'public'))
+        shutil.copytree(jsPubDir, os.path.join(cPath, os.pardir, 'public'))
 
-    # Remove the patches from the codebase if they were applied
-    if len(sys.argv) >= 6 and sys.argv[4] == 'patch':
-        subprocess.check_call(['hg', 'qpop'], cwd=repoDt[branchType])
-        vdump("First patch qpop'ed.")
-        subprocess.check_call(['hg', 'qdelete', p1name], cwd=repoDt[branchType])
-        vdump("First patch qdelete'd.")
-        if len(sys.argv) >= 8 and sys.argv[6] == 'patch':
-            subprocess.check_call(['hg', 'qpop'], cwd=repoDt[branchType])
-            vdump("Second patch qpop'ed.")
-            subprocess.check_call(['hg', 'qdelete', p2name], cwd=repoDt[branchType])
-            vdump("Second patch qdelete'd.")
-            if len(sys.argv) >= 10 and sys.argv[8] == 'patch':
-                subprocess.check_call(['hg', 'qpop'], cwd=repoDt[branchType])
-                vdump("Third patch qpop'ed.")
-                subprocess.check_call(['hg', 'qdelete', p3name], cwd=repoDt[branchType])
-                vdump("Third patch qdelete'd.")
+    return cPath
 
-    autoconfRun(compilePath)
+def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPath, setValg):
+    '''
+    Configures, compiles then copies a js shell, according to its parameters, and returns its name.
+    '''
+    cfgPath = normExpUserPath(os.path.join(cPath, 'configure'))
+    autoconfRun(cPath)
+    objdir = os.path.join(cPath, cType + '-objdir')
+    try:
+        os.mkdir(objdir)
+    except OSError:
+        raise Exception('Unable to create objdir.')
+    cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
+    sname = compileCopy(aNum, cType, rName, setPymake, src, fPath, objdir, setValg)
+    assert sname != ''
+    return sname
 
-    cfgPath = normExpUserPath(os.path.join(compilePath, 'configure'))
-    # Compile the first binary.
-    objdir = os.path.join(compilePath, compileType + '-objdir')
-    os.mkdir(objdir)
-    cfgJsBin(archNum, compileType, threadsafe, cfgPath, objdir)
-    shname = compileCopy(archNum, compileType, branchType, usePymake, repoDt[branchType],
-                         fuzzPath, objdir, vgBool)
-
-    # Re-run autoconf again.
-    autoconfRun(compilePath)
-
-    # Compile the other shell.
-    if compileType == 'dbg':
-        objdir2 = os.path.join(compilePath, 'opt-objdir')
-    elif compileType == 'opt':
-        objdir2 = os.path.join(compilePath, 'dbg-objdir')
-    os.mkdir(objdir2)
-
-    # No need to assign shname here, because we are not fuzzing this one.
-    if compileType == 'dbg':
-        cfgJsBin(archNum, 'opt', threadsafe, cfgPath, objdir2)
-        compileCopy(archNum, 'opt', branchType, usePymake, repoDt[branchType], fuzzPath, objdir2,
-                    vgBool)
-    elif compileType == 'opt':
-        cfgJsBin(archNum, 'dbg', threadsafe, cfgPath, objdir2)
-        compileCopy(archNum, 'dbg', branchType, usePymake, repoDt[branchType], fuzzPath, objdir2,
-                    vgBool)
-
-    # Copy over useful files that are updated in hg fuzzing branch.
-    shutil.copy2(
-        normExpUserPath(os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'analysis.py')), fuzzPath)
-    shutil.copy2(
-        normExpUserPath(
-            os.path.join(repoDt['fuzzing'], 'jsfunfuzz', 'runFindInterestingFiles.py')), fuzzPath)
-
-    jsknwnDt = {}
+def knownBugsDir(srcRepo, repoName):
+    '''
+    Defines the known bugs' directory and returns it as a string.
+    '''
     # Define the corresponding known-bugs directories.
-    jsknwnDt['192'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'known', 'mozilla-1.9.2'))
-    jsknwnDt['mc'] = normExpUserPath(os.path.join(repoDt['fuzzing'], 'known', 'mozilla-central'))
-    jsknwnDt['jm'] = jsknwnDt['mc']
-    jsknwnDt['im'] = os.path.join(jsknwnDt['mc'], 'ionmonkey')
-    jsknwnDt['mi'] = jsknwnDt['mc']
-    jsknwnDt['larch'] = jsknwnDt['mc']
-    jsknwnDt['ma'] = jsknwnDt['mc']
-    jsknwnDt['mb'] = jsknwnDt['mc']
-    jsknwnDt['esr10'] = jsknwnDt['mc']
+    mcKnDir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'known',
+                                              'mozilla-central'))
+    if repoName == 'ionmonkey':
+        return normExpUserPath(os.path.join(mcKnDir, 'ionmonkey'))
+    elif repoName != 'mozilla-central':
+        # XXX: mozilla-aurora, mozilla-beta, mozilla-release and esr directories should have their
+        # own "known" directories. Using mozilla-central for now.
+        vdump('Ignore list for the ' + repoName + ' repository does not exist, so using the ' + \
+              'ignore list for mozilla-central.')
+    return mcKnDir
 
-    mTimedRunFlagList = []
-    mTimedRunFlagList.append('--random-flags')
-    if jsCompareJITSwitch:
-        mTimedRunFlagList.append('--comparejit')
-    if vgBool:
-        mTimedRunFlagList.append('--valgrind')
-    if branchType == 'mc':
-        mTimedRunFlagList.append('--repo=' + repoDt['mc'])
-    elif branchType == 'jm':
-        mTimedRunFlagList.append('--repo=' + repoDt['jm'])
-    elif branchType == 'im':
-        mTimedRunFlagList.append('--repo=' + repoDt['im'])
-    elif branchType == 'mi':
-        mTimedRunFlagList.append('--repo=' + repoDt['mi'])
-    elif branchType == 'larch':
-        mTimedRunFlagList.append('--repo=' + repoDt['larch'])
-    elif branchType == 'ma':
-        mTimedRunFlagList.append('--repo=' + repoDt['ma'])
-    elif branchType == 'mb':
-        mTimedRunFlagList.append('--repo=' + repoDt['mb'])
-    elif branchType == 'esr10':
-        mTimedRunFlagList.append('--repo=' + repoDt['esr10'])
+def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo, repoName):
+    '''
+    Returns a list of CLI flags for the js shell.
+    '''
+    loopFList = []
+    loopFList.append('--repo=' + srcRepo)
+    if setV:
+        loopFList.append('--valgrind')
+    if not noCompareJIT:
+        loopFList.append('--comparejit')
 
-    jsCliFlagList = []
-    if mjit:
-        jsCliFlagList.append('-m')
-        jsCliFlagList.append('-n')
-        if mjitAll:
-            jsCliFlagList.append('-a')
-    if debugJit:
-        jsCliFlagList.append('-d')
-    if codeProfiling:
-        jsCliFlagList.append('-D')
+    if not noRndFlags:
+        loopFList.append('--random-flags')
+    elif enableDbg:
+        shFlags.append('-d')
+
     # Thanks to decoder and sstangl, useful flag combinations are:
     # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
-    if branchType == 'im':
+    if repoName == 'ionmonkey':
         #rndIntIM = randint(0, 5)  # randint comes from the random module.
         # --random-flags takes in flags from jsInteresting.py, so it must be disabled.
-        mTimedRunFlagList.remove('--random-flags')
-        if '-d' in jsCliFlagList:
-            jsCliFlagList.remove('-d')  # as of early Feb 2012, -d disables --ion
-        if '-n' in jsCliFlagList:
-            jsCliFlagList.remove('-n')
-        assert '--random-flags' not in mTimedRunFlagList
-        jsCliFlagList.append('--ion')
-        jsCliFlagList.append('-n')  # ensure -n is really appended.
-        #jsCliFlagList.append('--ion-eager')
+        loopFList.remove('--random-flags')
+        if '-d' in shFlags:
+            shFlags.remove('-d')  # as of early Feb 2012, -d disables --ion
+        if '-n' in shFlags:
+            shFlags.remove('-n')
+        assert '--random-flags' not in loopFList
+        shFlags.append('--ion')
+        shFlags.append('-n')  # ensure -n is really appended.
+        #shFlags.append('--ion-eager')
 
-        # Description from bug 724444:
-        #We're ready for fuzzing! (I hope.)
-        #
-        #To run IonMonkey, you need --ion -n. Running --ion without -n isn't supported.
+        # From bug 724444: In IonMonkey, use --ion -n. Running --ion without -n isn't supported.
         #
         #Other interesting flags:
         #    --ion-eager:    Compile eagerly, like -a. This is somewhat buggy right now.
@@ -299,43 +237,177 @@ def main():
         #    --ion-inlining=off: Disables function inlining.
         #    -m: Still enables the method JIT,
         #
-        #There are other --ion flags but they are experimental and not ready for testing. Also note, -a has no effect on --ion and -d will disable ion.
+        #There are other --ion flags but they are experimental and not ready for testing.
+        #Also note, -a has no effect on --ion and -d will disable ion.
 
-    fuzzCmdList = []
+    return loopFList, shFlags
+
+def genShellCmd(lfList, lTimeout, repoKnDir, shName, shFlags):
+    '''
+    Returns a list of the shell command to be run.
+    '''
+    shCmdList = []
     # Define fuzzing command with the required parameters.
-    fuzzCmdList.append('python')
-    fuzzCmdList.append('-u')
-    mTimedRun = normExpUserPath(os.path.join(repoDt['fuzzing'], 'js', 'loopjsfunfuzz.py'))
-    fuzzCmdList.append(mTimedRun)
-    fuzzCmdList.extend(mTimedRunFlagList)
-    fuzzCmdList.append(mTimedRunTimeout)
-    fuzzCmdList.append(jsknwnDt[branchType])
-    fuzzCmdList.append(shname)
-    fuzzCmdList.extend(jsCliFlagList)
+    shCmdList.append('python')
+    shCmdList.append('-u')
+    shCmdList.append(os.path.abspath(os.path.join(path0, 'loopjsfunfuzz.py')))
+    shCmdList.extend(lfList)
+    shCmdList.append(lTimeout)
+    shCmdList.append(repoKnDir)
+    shCmdList.append(shName)
+    shCmdList.extend(shFlags)
 
-    if platform.system() == 'Windows':
-        print('fuzzCmd is: ' + ' '.join(fuzzCmdList).replace('\\', '\\\\') + '\n')
-    else:
-        print('fuzzCmd is: ' + ' '.join(fuzzCmdList) + '\n')
+    return shCmdList
 
+def selfTests(shName, aNum, cType, fPath):
+    '''
+    Runs a bunch of verification tests to see if arch and compile type are as intended.
+    '''
     if platform.system() == 'Linux' or platform.system() == 'Darwin':
-        assert archOfBinary(shname) == archNum  # 32-bit or 64-bit verification test.
+        assert archOfBinary(shName) == aNum  # 32-bit or 64-bit verification test.
     if sys.version_info >= (2, 6):
         # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
-        testDbgOrOptGivenACompileType(shname, compileType, cwd=fuzzPath)
+        testDbgOrOptGivenACompileType(shName, cType, cwd=fPath)
 
-    print '''
-    ================================================
-    !  Fuzzing %s %s %s js shell builds now  !
-       DATE: %s
-    ================================================
-    ''' % (archNum + '-bit', compileType, branchType, dateStr() )
+def diagPrinting(cmdList, aNum, cType, rName):
+    '''
+    Prints a bunch of commands prior to fuzzing, for reference.
+    '''
+    cmdStr = ' '.join(cmdList)
+    outputCmdStr = cmdStr.replace('\\', '\\\\') \
+        if platform.system() == 'Windows' else cmdStr
+
+    print('Command to be run is: ' + outputCmdStr + '\n')
+
+    print '========================================================'
+    print '|  Fuzzing %s %s %s js shell builds' % (aNum + '-bit', cType, rName )
+    print '|  DATE: %s' % dateStr()
+    print '========================================================\n'
+
+def main():
+    options = parseOptions()
+
+    shFlagList = filter(None, options.shellflags.split(','))
+    patchDir = normExpUserPath(options.patchdir) if options.patchdir is not None else None
+
+    assert options.disableCompareJIT or '-D' not in shFlagList  # -D outputs a lot of spew.
+    archList = options.archType.split(',')
+    assert '32' in archList or '64' in archList
+    assert not ('32' in archList and '64' in archList), '32 & 64-bit cannot be fuzzed together yet.'
+    assert platform.system() != 'Windows' or '64' not in archList
+    shellTypeList = options.shellType.split(',')
+    assert 'dbg' in shellTypeList or 'opt' in shellTypeList
+
+    if shFlagList == []:
+        shFlagList = ['-m', '-a', '-n']
+    else:
+        # If flags are specified, --disable-random-flags should be specified.
+        assert options.disableRndFlags
+
+    # Set different timeouts depending on machine.
+    loopyTimeout = str(machineTypeDefaults(options.timeout))
+    if options.enableVg:
+        if (platform.system() == 'Linux' or platform.system() == 'Darwin') \
+            and platform.uname()[4] != 'armv7l':
+            loopyTimeout = 300
+        else:
+            raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
+
+    print dateStr()
+    srcRepo = normExpUserPath(options.srcRepo)
+    repoName = getRepoNameInHgrc(srcRepo)
+
+    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(srcRepo)
+
+    setPymake = options.enablePymake
+    if setPymake and not isOnDefault:
+        vdump('We are not on default, so turning off pymake now.')
+        setPymake = False  # Turn off pymake if not on default tip.
+
+    if isVM() == ('Windows', True):
+        # FIXME: Add an assertion that isVM() is a WinXP VM, and not Vista/Win7/Win8.
+        # Set to root directory of Windows VM since we only test WinXP in a VM.
+        # This might fail on a Vista or Win7 VM due to lack of permissions.
+        intendedDir = os.path.join('c:', os.sep)
+    else:
+        intendedDir = normExpUserPath(os.path.join('~', 'Desktop'))
+
+    # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
+    assert captureStdout(['hg', 'qapp'], currWorkingDir=srcRepo)[0] == ''
+
+    if patchDir is not None:
+        # Assumes mq extension is enabled in Mercurial config.
+        # Series file should be optional if only one patch is needed.
+        assert not os.path.isdir(patchDir), 'Support for multiple patches has not yet been added.'
+        if os.path.isfile(patchDir):
+            p1name = patchHgRepoUsingMq(patchDir, srcRepo)
+
+    fullPath = mkFullPath(localOrigHgHash, localOrigHgNum, patchDir, repoName, intendedDir)
+
+    # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
+    compilePath = copyJsSrcDirs(fullPath, srcRepo)
+
+    if patchDir is not None:
+        # Remove the patches from the codebase if they were applied.
+        assert not os.path.isdir(patchDir), 'Support for multiple patches has not yet been added.'
+        assert p1name != ''
+        if os.path.isfile(patchDir):
+            subprocess.check_call(['hg', 'qpop'], cwd=srcRepo)
+            vdump("First patch qpop'ed.")
+            subprocess.check_call(['hg', 'qdelete', p1name], cwd=srcRepo)
+            vdump("First patch qdelete'd.")
+
+    # Ensure there is no applied patch remaining in the main repository.
+    assert captureStdout(['hg', 'qapp'], currWorkingDir=srcRepo)[0] == ''
+
+    vdump('archList is: ' + str(archList))
+    # FIXME: Change this once target time is implemented in loopjsfunfuzz.py
+    # Default to compiling 32-bit first, unless 32-bit builds are specifically not to be built.
+    archNum = '32' if '32' in archList else '64'
+
+    vdump('shellTypeList is: ' + str(shellTypeList))
+    # Default to compiling debug first, unless debug builds are specifically not to be built.
+    shellType = 'dbg' if 'dbg' in shellTypeList else 'opt'
+
+    shellName = cfgCompileCopy(compilePath, archNum, shellType, options.enableTs, repoName,
+                               setPymake, srcRepo, fullPath, options.enableVg)
+
+    # FIXME: Change this once target time is implemented in loopjsfunfuzz.py
+    # Always compile the other same-arch shell for future testing purposes.
+    shellType2 = 'opt' if shellType == 'dbg' else 'dbg'
+    cfgCompileCopy(compilePath, archNum, shellType2, options.enableTs, repoName, setPymake,
+                   srcRepo, fullPath, options.enableVg)
+
+    # Copy over useful files that are updated in hg fuzzing branch.
+    global path0
+    shutil.copy2(os.path.abspath(
+        os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py')), fullPath)
+    shutil.copy2(os.path.abspath(
+        os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py')), fullPath)
+
+    loopFlagList, shFlagList = genJsCliFlagList(
+        options.disableCompareJIT, options.disableRndFlags, 'dbg' in shellTypeList,
+        options.enableVg, shFlagList, srcRepo, repoName)
+
+    shellCmdList = genShellCmd(
+        loopFlagList, loopyTimeout, knownBugsDir(srcRepo, repoName), shellName, shFlagList)
+
+    selfTests(shellName, archNum, shellType, fullPath)
+
+    diagPrinting(shellCmdList, archNum, shellType, repoName)
+
+    # FIXME: Randomize logic should be developed later, possibly together with target time in
+    # loopjsfunfuzz.py. Randomize Valgrind runs too.
+
+    if options.disableStartFuzzing:
+        print 'Exiting, --disable-start-fuzzing is set.'
+        sys.exit(0)
 
     # Commands to simulate bash's `tee`.
-    tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE, cwd=fuzzPath)
+    tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE, cwd=fullPath)
 
     # Start fuzzing the newly compiled builds.
-    subprocess.call(fuzzCmdList, stdout=tee.stdin, cwd=fuzzPath)
+    subprocess.call(shellCmdList, stdout=tee.stdin, cwd=fullPath)
 
 # Run main when run as a script, this line means it will not be run as a module.
 if __name__ == '__main__':

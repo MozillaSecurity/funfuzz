@@ -21,7 +21,7 @@ import ximport
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, vdump, macType
+from subprocesses import captureStdout, dateStr, isVM, macType, normExpUserPath, vdump
 
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path3)
@@ -275,14 +275,14 @@ def parseOpts():
     parser.add_option('-d', '--dir',
                       dest='dir',
                       default=mcRepoDir,
-                      help='Source code directory. Defaults to "' + mcRepoDir + '"')
+                      help='Source code directory. Defaults to "%default"')
     parser.add_option('-r', '--resetToTipFirstBool',
                       dest='resetBool',
                       action='store_true',
                       default=False,
                       help='First reset to default tip overwriting all local changes. ' + \
                            'Equivalent to first executing `hg update -C default`. ' + \
-                           'Defaults to "False"')
+                           'Defaults to "%default"')
 
     # Define the revisions between which to bisect.
     # If you want to find out when a problem *went away*, give -s the later revision and -e an earlier revision,
@@ -293,7 +293,7 @@ def parseOpts():
     parser.add_option('-e', '--end',
                       dest='endRepo',
                       default='default',
-                      help='Initial bad revision (usually the latest). Defaults to "default"')
+                      help='Initial bad revision (usually the latest). Defaults to "%default"')
     parser.add_option('-p', '--paranoid',
                       dest='paranoidBool',
                       action='store_true',
@@ -311,13 +311,13 @@ def parseOpts():
                       type='choice',
                       choices=['dbg', 'opt'],
                       default='dbg',
-                      help='js shell compile type. Defaults to "dbg"')
+                      help='js shell compile type. Defaults to "%default"')
 
     # Define specific type of failure to look for (optional).
     parser.add_option('-o', '--output',
                       dest='output',
                       default='',
-                      help='Stdout or stderr output to be observed. Defaults to "". ' + \
+                      help='Stdout or stderr output to be observed. Defaults to "%default". ' + \
                            'For assertions, set to "ssertion fail"')
     parser.add_option('-w', '--watchExitCode',
                       dest='watchExitCode',
@@ -333,28 +333,20 @@ def parseOpts():
     # Define parameters to be passed to the binary.
     parser.add_option('--flags',
                       dest='flagsRequired',
-                      default=[],
-                      help='Define the flags to reproduce the bug, e.g. "-m,-j". Defaults to ""')
+                      default='',
+                      help='Define the flags to reproduce the bug, e.g. "-m,-j". ' + \
+                           'Defaults to "%default"')
 
     # Enable valgrind support.
     parser.add_option('-v', '--valgrind',
                       dest='valgSupport',
                       action='store_true',
                       default=False,
-                      help='Enable valgrind support. Defaults to "False"')
+                      help='Enable valgrind support. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
 
-    flagsReq = options.flagsRequired
-
-    if type(flagsReq) is StringType:
-        flagsReq = ',' + flagsReq
-        flagsReq = flagsReq.split(',')
-
-    assert type(flagsReq) is ListType, "--flags is not a list: %s" % flagsReq
-
-    flagsReq = filter(None, flagsReq)  # Remove empty list entries
-    assert '' not in flagsReq
+    flagsReqList = options.flagsRequired.split(',')
 
     if len(args) < 1:
         parser.error('Not enough arguments')
@@ -363,16 +355,16 @@ def parseOpts():
     if options.interestingnessBool:
         if len(args) < 2:
             parser.error('Not enough arguments.')
-        testAndLabel = externalTestAndLabel(filename, flagsReq, args[1:])
+        testAndLabel = externalTestAndLabel(filename, flagsReqList, args[1:])
     else:
         if len(args) >= 2:
             parser.error('Too many arguments.')
-        testAndLabel = internalTestAndLabel(filename, flagsReq, options.valgSupport, options.output, options.watchExitCode)
+        testAndLabel = internalTestAndLabel(filename, flagsReqList, options.valgSupport, options.output, options.watchExitCode)
 
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
-            flagsReq, options.watchExitCode, options.valgSupport, testAndLabel
+            flagsReqList, options.watchExitCode, options.valgSupport, testAndLabel
 
 def hgId(rev):
     return captureStdout(hgPrefix + ["id", "-i", "-r", rev])[0]
@@ -481,7 +473,8 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
         shell = compileCopy(archNum, compileType, currRev, usePymake, sourceDir, shellCacheDir, objdir, valgrindSupport)
     finally:
         assert os.path.isdir(tempDir) is True
-        rmDirInclSubDirs(tempDir)
+        vdump('Removing ' + tempDir)
+        shutil.rmtree(tempDir)
         assert os.path.isdir(tempDir) is False
     return shell
 
@@ -576,11 +569,6 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
 
 def firstLine(s):
     return s.split('\n')[0]
-
-# This function removes a directory along with its subdirectories.
-def rmDirInclSubDirs(dir):
-    #print 'Removing ' + dir
-    shutil.rmtree(dir)
 
 def lockedMain():
     """Prevent running two instances of autoBisect at once, because we don't want to confuse hg."""

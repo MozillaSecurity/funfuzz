@@ -8,23 +8,23 @@ from __future__ import with_statement
 
 import re
 
-def fileContains(f, s, isRegex):
+def fileContains(f, s, isRegex, vb=True):
     if isRegex:
-        return fileContainsRegex(f, re.compile(s, re.MULTILINE))
+        return fileContainsRegex(f, re.compile(s, re.MULTILINE), verbose=vb)
     else:
-        return fileContainsStr(f, s), s
+        return fileContainsStr(f, s, verbose=vb), s
 
 
-def fileContainsStr(f, s):
-    found = False
+def fileContainsStr(f, s, verbose=True):
     with open(f, 'rb') as g:
         for line in g:
             if line.find(s) != -1:
-                print line.rstrip()
-                found = True
-    return found
+                if verbose:
+                    print line.rstrip()
+                return True
+    return False
 
-def fileContainsRegex(f, regex):
+def fileContainsRegex(f, regex, verbose=True):
     # e.g. ~/fuzzing/lithium/lithium.py crashesat --timeout=30
     #       --regex '^#0\s*0x.* in\s*.*(?:\n|\r\n?)#1\s*' ./js --ion -n 735957.js
     # Note that putting "^" and "$" together is unlikely to work.
@@ -34,6 +34,7 @@ def fileContainsRegex(f, regex):
         foundRegex = regex.search(g.read())
         if foundRegex:
             matchedStr = foundRegex.group()
-            print matchedStr
+            if verbose:
+                print matchedStr
             found = True
     return found, matchedStr

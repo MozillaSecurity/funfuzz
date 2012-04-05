@@ -162,7 +162,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         # on 'delete' being a keyword argument in NamedTemporaryFile(). The testing functions in
         # inspectShell in general need at least Python 2.6 because of this.
         if not isBuildSlave and sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
-            autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), "--flags=," + ','.join(engineFlags)] + [infilename] + itest
+            autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), "--flags=" + ','.join(engineFlags)] + [infilename] + itest
             print ' '.join(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"

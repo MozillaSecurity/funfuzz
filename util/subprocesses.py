@@ -51,12 +51,19 @@ def isVM():
 #  Shell Functions  #
 #####################
 
-def captureStdout(cmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
+def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                   currWorkingDir=os.getcwdu(), env=os.environ, verbosity=False):
     '''
     Captures standard output, returns the output as a string, along with the return value.
     '''
-    vdump(' '.join(cmd))
+    vdump(' '.join(inputCmd))
+    cmd = []
+    for el in inputCmd:
+        if (el.startswith('"') and el.endswith('"')):
+            cmd.append(str(el[1:-1]))
+        else:
+            cmd.append(str(el))
+    assert cmd != []
     p = subprocess.Popen(cmd,
         stdin = subprocess.PIPE,
         stdout = subprocess.PIPE,
@@ -113,15 +120,17 @@ def dateStr():
 def normExpUserPath(p):
     return os.path.normpath(os.path.expanduser(p))
 
-def timeSubprocess(command, cwd=os.getcwdu(), vb=False):
+def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
+                   cwd=os.getcwdu(), env=os.environ, vb=False):
     '''
     Calculates how long a captureStdout command takes and prints it. Returns the stdout and return
     value that captureStdout passes on.
     '''
     print 'Running `%s` now..' % ' '.join(command)
     startTime = time.time()
-    stdOutput, retVal = captureStdout(
-        command, ignoreStderr=True, combineStderr=True, currWorkingDir=cwd, verbosity=vb)
+    stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
+                                      combineStderr=combineStderr, ignoreExitCode=ignoreExitCode,
+                                      currWorkingDir=cwd, env=env, verbosity=vb)
     endTime = time.time()
     print '`' + ' '.join(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return stdOutput, retVal

@@ -87,11 +87,15 @@ def main():
                     [repoType, 'update'], cwd=os.path.abspath(os.path.join(repoLocation)), vb=True)
             elif repoType == 'hg':
                 hgPullRebaseStdout, retval = timeSubprocess(
-                    ['hg', 'pull', '--rebase'], cwd=repoLocation, vb=True)
+                    # Ignore exit codes so the loop can continue retrying up to number of counts.
+                    ['hg', 'pull', '--rebase'], ignoreStderr=True, combineStderr=True,
+                    ignoreExitCode=True, cwd=repoLocation, vb=True)
             else:
                 assert repoType == 'git'
+                # Ignore exit codes so the loop can continue retrying up to number of counts.
                 gitStdout, retval = timeSubprocess(
-                    ['git', 'pull'], cwd=repoLocation, vb=True)
+                    ['git', 'pull'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+                    cwd=repoLocation, vb=True)
 
             if ((retval == 255) or (retval == -1)) and \
                 'hg pull: option --rebase not recognized' in hgPullRebaseStdout:

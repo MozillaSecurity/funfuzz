@@ -15,9 +15,7 @@ from tempfile import NamedTemporaryFile
 path0 = os.path.dirname(__file__)
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, vdump
-
-verbose = False
+from subprocesses import captureStdout, verbose, vdump
 
 def archOfBinary(b):
     '''
