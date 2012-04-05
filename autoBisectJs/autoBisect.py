@@ -346,7 +346,7 @@ def parseOpts():
 
     (options, args) = parser.parse_args()
 
-    flagsReqList = options.flagsRequired.split(',')
+    flagsReqList = filter(None, options.flagsRequired.split(','))
 
     if len(args) < 1:
         parser.error('Not enough arguments')
@@ -479,8 +479,9 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
     return shell
 
 # Run the testcase on the compiled js binary.
-def testBinary(shell, file, flagsRequired, valgSupport):
-    testBinaryCmd = [shell] + flagsRequired + [file]
+def testBinary(shell, testFile, flagsRequired, valgSupport):
+    # Normalize the path to the testFile because of slash/backslash issues on Windows.
+    testBinaryCmd = [shell] + flagsRequired + [normExpUserPath(testFile)]
     if valgSupport:
         valgPrefixCmd = []
         valgPrefixCmd.append('valgrind')
@@ -489,7 +490,7 @@ def testBinary(shell, file, flagsRequired, valgSupport):
         valgPrefixCmd.append('--smc-check=all-non-file')
         valgPrefixCmd.append('--leak-check=full')
         testBinaryCmd = valgPrefixCmd + testBinaryCmd
-    vdump('The testing command is:' + ' '.join(testBinaryCmd))
+    vdump('The testing command is: ' + ' '.join(testBinaryCmd))
 
     # Capture stdout and stderr into the same string.
     p = subprocess.Popen(testBinaryCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

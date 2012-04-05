@@ -228,9 +228,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
         if usePymake:
             cmdList = ['python', '-OO',
                      os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')),
-                     '-j' + str(jobs)]
-            if 'no such option: -s' not in out:
-                cmdList.append('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
+                     '-j' + str(jobs), '-s']
         else:
             cmdList = ['make', '-C', objDir, '-s']
             ignoreECode = True
@@ -238,6 +236,10 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
                 cmdList.append('-j' + str(jobs))  # Win needs pymake for multicore compiles.
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
                             currWorkingDir=objDir)[0]
+        if usePymake and 'no such option: -s' in out:  # Retry only for this situation.
+            cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
+            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+                                currWorkingDir=objDir)[0]
     except Exception:
         # Sometimes a non-zero error can be returned during the make process, but eventually a
         # shell still gets compiled.
