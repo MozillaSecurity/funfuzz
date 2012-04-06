@@ -269,20 +269,29 @@ def selfTests(shName, aNum, cType, fPath):
         # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
         testDbgOrOptGivenACompileType(shName, cType, cwd=fPath)
 
-def diagPrinting(cmdList, aNum, cType, rName):
+def outputStrFromList(lst):
     '''
-    Prints a bunch of commands prior to fuzzing, for reference.
+    Escapes backslashes in Windows, for commands that can then be copied and pasted into the shell.
+    For all platforms, returns a string form with a space joining each element in the list.
     '''
-    cmdStr = ' '.join(cmdList)
-    outputCmdStr = cmdStr.replace('\\', '\\\\') \
-        if platform.system() == 'Windows' else cmdStr
+    return ' '.join(lst).replace('\\', '\\\\') if platform.system() == 'Windows' else ' '.join(lst)
 
-    print('Command to be run is: ' + outputCmdStr + '\n')
+def diagDump(fPath, cmdStr, aNum, cType, rName):
+    '''
+    Dumps commands to file and also prints them to stdout prior to fuzzing, for reference.
+    '''
+    localLog = normExpUserPath(os.path.join(fPath, 'log-localjsfunfuzz.txt'))
+    with open(localLog, 'w') as f:
+        f.writelines('Command to be run is:\n')
+        f.writelines(cmdStr + '\n')
+        f.writelines('========================================================\n')
+        f.writelines('|  Fuzzing %s %s %s js shell builds\n' % (aNum + '-bit', cType, rName ))
+        f.writelines('|  DATE: %s\n' % dateStr())
+        f.writelines('========================================================\n')
 
-    print '========================================================'
-    print '|  Fuzzing %s %s %s js shell builds' % (aNum + '-bit', cType, rName )
-    print '|  DATE: %s' % dateStr()
-    print '========================================================\n'
+    with open(localLog, 'r') as f:
+        for line in f:
+            print line
 
 def main():
     options = parseOptions()
@@ -394,7 +403,7 @@ def main():
 
     selfTests(shellName, archNum, shellType, fullPath)
 
-    diagPrinting(shellCmdList, archNum, shellType, repoName)
+    diagDump(fullPath, outputStrFromList(shellCmdList), archNum, shellType, repoName)
 
     # FIXME: Randomize logic should be developed later, possibly together with target time in
     # loopjsfunfuzz.py. Randomize Valgrind runs too.
@@ -404,7 +413,7 @@ def main():
         sys.exit(0)
 
     # Commands to simulate bash's `tee`.
-    tee = subprocess.Popen(['tee', 'log-jsfunfuzz'], stdin=subprocess.PIPE, cwd=fullPath)
+    tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=fullPath)
 
     # Start fuzzing the newly compiled builds.
     subprocess.call(shellCmdList, stdout=tee.stdin, cwd=fullPath)
