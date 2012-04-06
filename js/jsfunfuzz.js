@@ -3048,7 +3048,7 @@ var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "
 var binaryMathFunctions = ["atan2", "max", "min", "pow"]; // min and max are technically N-ary, but the generic makeFunction mechanism should give that some testing
 
 
-// spidermonkey shell (but not xpcshell) has an "evalcx" function.
+// spidermonkey shell (but not xpcshell) has an "evalcx" function and a "newGlobal" function.
 if (typeof evalcx == "function") {
   exprMakers = exprMakers.concat([
     // Test evalcx: sandbox creation
@@ -3066,12 +3066,7 @@ if (typeof evalcx == "function") {
     function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", newGlobal('same-compartment'))"; },
     function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", newGlobal('new-compartment'))"; },
     function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", newGlobal('new-compartment'))"; },
-  ]);
-}
 
-// spidermonkey shell (but not xpcshell) has a "newGlobal" function.
-if (typeof newGlobal == "function") {
-  exprMakers = exprMakers.concat([
     // Test multiple globals and multiple compartments.
     function(d, b) { return "newGlobal('same-compartment')"; },
     function(d, b) { return "newGlobal('new-compartment')"; },
