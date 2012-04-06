@@ -238,6 +238,11 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
                             currWorkingDir=objDir)[0]
         if usePymake and 'no such option: -s' in out:  # Retry only for this situation.
             cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
+            print 'Trying once more without -s...'
+            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+                                currWorkingDir=objDir)[0]
+        if platform.system() == 'Windows' and 'Permission denied' in out:
+            print 'Trying once more because of "Permission denied" error...'
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
                                 currWorkingDir=objDir)[0]
     except Exception:
