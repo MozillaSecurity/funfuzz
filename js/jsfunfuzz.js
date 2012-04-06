@@ -2202,8 +2202,8 @@ var makeEvilCallback;
     .replace(/X/g, m())
     .replace(/Z/g, function() {
       switch(rnd(20)){
-        case 0:  return "return " + makeBuilderStatement(d - 2, b);
-        case 1:  return "throw " + makeBuilderStatement(d - 2, b);
+        case 0:  return "return " + m();
+        case 1:  return "throw " + m();
         default: return makeBuilderStatement(d - 2, b);
       }
     });
