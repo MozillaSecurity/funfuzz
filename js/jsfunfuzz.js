@@ -2158,16 +2158,6 @@ var makeEvilCallback;
     }
   }
 
-  // It might make sense to fold this into makeFunction.
-  var functionsToBind = [
-    "Array.prototype.join",
-    "Array.prototype.sort",
-    "Array.prototype.reverse",
-    "Object.freeze",
-    "Object.preventExtensions",
-    "Object.seal"
-  ];
-
   function makeCounterClosure(d, b)
   {
     // A closure with a counter. Do stuff depending on the counter.
@@ -2188,10 +2178,10 @@ var makeEvilCallback;
   var builderFunctionMakers = weighted([
     { w: 9,  fun: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " return " + m() + "; })"; } },
     { w: 1,  fun: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " throw " + m() + "; })"; } },
-    { w: 1,  fun: function(d, b) { return rndElt(functionsToBind) + ".bind(" + m() + ")"; } },
+    { w: 1,  fun: function(d, b) { return rndElt(builtinFunctions) + ".bind(" + m() + ")"; } },
     { w: 5,  fun: function(d, b) { return m("f"); } },
     { w: 3,  fun: makeCounterClosure },
-    { w: 1,  fun: makeFunction },
+    { w: 2,  fun: makeFunction },
   ]);
   makeEvilCallback = function(d, b) {
     return (rndElt(builderFunctionMakers))(d - 1, b)
@@ -2796,63 +2786,7 @@ function makeNamespacePrefix(d, b)
 
 // An incomplete list of builtin methods for various data types.
 var objectMethods = [
-  // String
-  "fromCharCode", "replace",
-
-  // Strings
-  "charAt", "charCodeAt", "concat", "indexOf", "lastIndexOf", "localeCompare",
-  "match", "quote", "replace", "search", "slice", "split", "substr", "substring",
-  "toLocaleUpperCase", "toLocaleLowerCase", "toLowerCase", "toUpperCase",
-
-  // String methods added in ES5
-  "trim", "trimLeft", "trimRight",
-
-  // Regular expressions
-  "test", "exec",
-
-  // Arrays
-  "splice", "shift", "sort", "pop", "push", "reverse", "unshift",
-  "concat", "join", "slice",
-
-  // Array extras in JavaScript 1.6
-  "map", "forEach", "filter", "some", "every", "indexOf", "lastIndexOf",
-
-  // Array extras in JavaScript 1.8
-  "reduce", "reduceRight",
-
-  // Weak Maps
-  "get", "set", "delete", "has",
-
-  // Functions
-  "call", "apply",
-
-  // Date
-  "now", "parse", "UTC",
-
-  // Date instances
-  "getDate", "setDay", // many more not listed
-
-  // Number
-  "toExponential", "toFixed", "toLocaleString", "toPrecision",
-
-  // General -- defined on each type of object, but wit a different implementation
-  "toSource", "toString", "valueOf", "constructor", "prototype", "__proto__",
-
-  // General -- same implementation inherited from Object.prototype
-  "__defineGetter__", "__defineSetter__", "hasOwnProperty", "isPrototypeOf", "__lookupGetter__", "__lookupSetter__", "__noSuchMethod__", "propertyIsEnumerable", "unwatch", "watch",
-
-  // Things that are only built-in on Object itself
-  "defineProperty", "defineProperties", "create", "getOwnPropertyDescriptor", "getPrototypeOf",
-
-  // E4X functions on XML objects
-  // "parent" is commented out because of a similarly-named debugging function in the js shell (see bug 619064)
-  "addNamespace", "appendChild", "attribute", "attributes", "child", "childIndex", "children", "comments", "contains", "copy", "descendants", "elements", "hasOwnProperty", "hasComplexContent", "hasSimpleContent", "isScopeNamespace", "insertChildAfter", "insertChildBefore", "length", "localName", "name", "namespace", "namespaceDeclarations", "nodeKind", "normalize", /*"parent",*/ "processingInstructions", "prependChild", "propertyIsEnumerable", "removeNamespace", "replace", "setChildren", "setLocalName", "setName", "setNamespace", "text", "toString", "toXMLString", "valueOf",
-
-  // E4X functions on the XML constructor
-  "settings", "setSettings", "defaultSettings",
-
-  // E4X functions on the global object
-  "isXMLName",
+  "sort"
 ];
 
 
@@ -3049,7 +2983,7 @@ var exprMakers =
   function(d, b) { return "verifybarriers()"; },
 
   // Invoke an incremental garbage collection slice.
-  //function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
+  //function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; }, // bug 742003
 
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ", " + makeBoolean(d, b) + ")"; },
@@ -3438,13 +3372,7 @@ if (haveE4X) {
 
 
 var constructors = [
-  "Error", "RangeError", "Exception",
-  "Function", "RegExp", "String", "Array", "Object", "Number", "Boolean",
-  "WeakMap", "Map", "Set",
-  "Date",
-  "Iterator",
-  // E4X
-  "Namespace", "QName", "XML", "XMLList"
+  "Error"
 ];
 
 
@@ -3489,6 +3417,55 @@ function makeObjLiteralName(d, b)
   }
 }
 
+var builtinFunctions = ["(function(){})"];
+
+// XXX grab getters/setters too (e.g. Debugger.prototype.enabled, but mysteriously not Array.prototype.length)
+(function exploreBuiltins() {
+
+  function exploreDeeper(a, an)
+  {
+    if (!a)
+      return;
+    var hns = Object.getOwnPropertyNames(a);
+    for (var j = 0; j < hns.length; ++j) {
+      var hn = hns[j];
+      if (hn == "constructor")
+        continue;
+      objectMethods.push(hn);
+      try { var h = a[hn]; } catch(e) { h = null; }
+      if (typeof h == "function") {
+        builtinFunctions.push(an + "." + hn);
+      }
+    }
+  }
+
+  function exploreConstructors()
+  {
+    var gns = Object.getOwnPropertyNames(this);
+    for (var i = 0; i < gns.length; ++i) {
+      var gn = gns[i];
+      if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60) { // assume that uppercase names are constructors
+        var g = this[gn];
+        if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
+          constructors.push(gn);
+          builtinFunctions.push(gn);
+          exploreDeeper(g, gn);
+          exploreDeeper(g.prototype, gn + ".prototype");
+        }
+      }
+    }
+  }
+
+  exploreConstructors();
+  exploreDeeper(Math, "Math");
+  exploreDeeper(JSON, "JSON");
+  exploreDeeper(Proxy, "Proxy");
+
+})();
+
+for (let g of builtinFunctions) print(g);
+print(builtinFunctions.length);
+print(objectMethods)
 
 
 function makeFunction(d, b)
@@ -3499,6 +3476,9 @@ function makeFunction(d, b)
 
   if(rnd(5) == 1)
     return makeExpr(d, b);
+
+  if (rnd(4) == 1)
+    return rndElt(builtinFunctions);
 
   return (rndElt(functionMakers))(d, b);
 }
@@ -3540,9 +3520,6 @@ var functionMakers = [
   function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
   function(d, b) {                          return cat(["function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
 
-  // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(objectMethods)]); },
-
   // The identity function
   function(d, b) { return "function(q) { return q; }" },
 
@@ -3582,39 +3559,16 @@ var functionMakers = [
   function(d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
   function(d, b) { return "Function" }, // without "new"!  it does seem to work...
   function(d, b) { return "gc" },
-  function(d, b) { return "Object.defineProperty" },
-  function(d, b) { return "Object.defineProperties" },
-  function(d, b) { return "Object.create" },
-  function(d, b) { return "Object.getOwnPropertyDescriptor" },
-  function(d, b) { return "Object.getOwnPropertyNames" },
-  function(d, b) { return "Object.getPrototypeOf" },
-  function(d, b) { return "Object.keys" },
-  function(d, b) { return "Object.preventExtensions" },
-  function(d, b) { return "Object.seal" },
-  function(d, b) { return "Object.freeze" },
-  function(d, b) { return "Object.isExtensible" },
-  function(d, b) { return "Object.isSealed" },
-  function(d, b) { return "Object.isFrozen" },
   function(d, b) { return "decodeURI" },
   function(d, b) { return "decodeURIComponent" },
   function(d, b) { return "encodeURI" },
   function(d, b) { return "encodeURIComponent" },
-  function(d, b) { return "Array.reduce" }, // also known as Array.prototype.reduce
-  function(d, b) { return "Array.isArray" },
-  function(d, b) { return "JSON.parse" },
-  function(d, b) { return "JSON.stringify" }, // has interesting arguments...
-  function(d, b) { return "Math." + rndElt(unaryMathFunctions) },
-  function(d, b) { return "Math." + rndElt(binaryMathFunctions) },
+  function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return "XPCNativeWrapper" },
   function(d, b) { return "XPCSafeJSObjectWrapper" },
-  function(d, b) { return "ArrayBuffer" },
-  function(d, b) { return rndElt(typedArrayConstructors); },
-  function(d, b) { return "Proxy.isTrapping" },
-  function(d, b) { return "Proxy.create" },
-  function(d, b) { return "Proxy.createFunction" },
-  function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return makeProxyHandlerFactory(d, b); },
   function(d, b) { return makeShapeyConstructor(d, b); },
+  function(d, b) { return rndElt(typedArrayConstructors); },
   function(d, b) { return rndElt(constructors); },
 ];
 
