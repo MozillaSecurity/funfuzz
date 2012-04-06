@@ -470,18 +470,25 @@ function testOne()
 
 function fillShellSandbox(sandbox)
 {
-  var safeFuns = ["schedulegc", "verifybarriers", "gcslice", "gczeal", "mjitChunkLimit",
-  "print", "dumpln", "gc", "gczeal", "evalcx", "newGlobal"];
+  var safeFuns = [
+    "print",
+    "schedulegc", "gczeal", "gc", "gcslice", "verifybarriers", "mjitChunkLimit",
+    "evalcx", "newGlobal",
+    "dumpln", "fillShellSandbox"
+  ];
 
   for (var i = 0; i < safeFuns.length; ++i) {
     var fn = safeFuns[i];
-    if (this[fn]) {
+    if (sandbox[fn]) {
+      //print("Target already has " + fn);
+    } else if (this[fn]) {
       sandbox[fn] = this[fn].bind(this);
     } else {
-      // XXX only warn in debug builds, since more functions are present there?
-      print("Warning: missing " + fn);
+      //print("Source is missing " + fn);
     }
   }
+
+  return sandbox;
 }
 
 function spidermonkeyShellUseSandbox(sandboxType)
@@ -489,11 +496,13 @@ function spidermonkeyShellUseSandbox(sandboxType)
   var primarySandbox;
 
   switch (sandboxType) {
-    case 0:  primarySandbox = fillShellSandbox(evalcx(''));
-    case 1:  primarySandbox = fillShellSandbox(evalcx('lazy'));
+    case 0:  primarySandbox = evalcx('');
+    case 1:  primarySandbox = evalcx('lazy');
     case 2:  primarySandbox = newGlobal('same-compartment');
     default: primarySandbox = newGlobal('new-compartment');
   }
+
+  fillShellSandbox(primarySandbox);
 
   return function(f, code, wtt) {
     try {
@@ -2113,12 +2122,13 @@ var makeEvilCallback;
   function m(t)
   {
     if (!t)
-      t = "aosmevbtih";
+      t = "aosmevbtihgf";
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
-    switch(rnd(8)) {
-      case 0:  return m("o") + "." + name
-      case 1:  return "this." + name;
+    switch(rnd(10)) {
+      case 0:  return m("o") + "." + name;
+      case 1:  return m("g") + "." + name;
+      case 2:  return "this." + name;
       default: return name;
     }
   }
@@ -2216,6 +2226,8 @@ var makeEvilCallback;
       s += "a" + i + " = []; ";
       s += "o" + i + " = {}; ";
       s += "s" + i + " = ''; ";
+      s += "g" + i + " = " + makeGlobal(d, b) + "; ";
+      s += "f" + i + " = function(){}; ";
       s += "m" + i + " = new WeakMap; ";
       s += "e" + i + " = new Set; ";
       s += "v" + i + " = null; ";
@@ -2312,11 +2324,18 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m("f") + " = Proxy.createFunction(" + m("h") + ", " + m("f") + ", " + m("f") + ");"; } },
 
     // r: regexp
-    // g: sandbox global
+
+    // g: global or sandbox
+    { w: 1,  fun: function(d, b) { return m("g") + " = " + makeGlobal(d, b); } },
+    { w: 3,  fun: function(d, b) { return m("o") + " = " + m("g") + ".eval(" + makeExpr(d, b) + ")"; } },
+    { w: 3,  fun: function(d, b) { return m("o") + " = " + m("g") + ".eval(" + makeBuilderStatement(d, b) + ")"; } },
+    { w: 3,  fun: function(d, b) { return m("o") + " = " + "evalcx(" + m("g") + ", " + makeExpr(d, b) + ")"; } },
+    { w: 3,  fun: function(d, b) { return m("o") + " = " + "evalcx(" + m("g") + ", " + makeBuilderStatement(d, b) + ")"; } },
 
     // f: function (?)
     // Could probably do better with args / b
-    { w: 2,  fun: function(d, b) { return m("f") + " = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 1,  fun: function(d, b) { return m("f") + " = " + makeEvilCallback(d, b) + ";"; } },
+    { w: 1,  fun: function(d, b) { return "function " + m("f") + "() { " + makeFunctionBody(d, b) + "}"; } },
     { w: 2,  fun: function(d, b) { return m("f") + "(" + m() + ");"; } },
 
     // i: Iterator
@@ -3012,7 +3031,7 @@ var exprMakers =
   function(d, b) { return "verifybarriers()"; },
 
   // Invoke an incremental garbage collection slice.
-  function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
+  //function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
 
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ", " + makeBoolean(d, b) + ")"; },
@@ -3048,31 +3067,33 @@ var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "
 var binaryMathFunctions = ["atan2", "max", "min", "pow"]; // min and max are technically N-ary, but the generic makeFunction mechanism should give that some testing
 
 
-// spidermonkey shell (but not xpcshell) has an "evalcx" function and a "newGlobal" function.
+// SpiderMonkey shell (but not xpcshell) has an "evalcx" function and a "newGlobal" function.
+// This tests sandboxes and cross-compartment wrappers.
 if (typeof evalcx == "function") {
   exprMakers = exprMakers.concat([
-    // Test evalcx: sandbox creation
-    function(d, b) { return "evalcx('')"; },
-    function(d, b) { return "evalcx('lazy')"; },
-    function(d, b) { return "fillShellSandbox(evalcx(''))"; },
-    function(d, b) { return "fillShellSandbox(evalcx('lazy'))"; },
-
-    // Test evalcx: sandbox use
+    function(d, b) { return makeGlobal(d, b); },
     function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
     function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
-
-    // Test evalcx: immediate new-global use (good for compartmentConsistencyTest)
-    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", newGlobal('same-compartment'))"; },
-    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", newGlobal('same-compartment'))"; },
-    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", newGlobal('new-compartment'))"; },
-    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", newGlobal('new-compartment'))"; },
-
-    // Test multiple globals and multiple compartments.
-    function(d, b) { return "newGlobal('same-compartment')"; },
-    function(d, b) { return "newGlobal('new-compartment')"; },
-    function(d, b) { return "fillShellSandbox(newGlobal('same-compartment'))"; },
-    function(d, b) { return "fillShellSandbox(newGlobal('new-compartment'))"; }
+    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeGlobal(d, b) + ")"; },
+    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeGlobal(d, b) + ")"; },
   ]);
+}
+
+function makeGlobal(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var gs = rndElt([
+    "evalcx('')",
+    "evalcx('lazy')",
+    "newGlobal('same-compartment')",
+    "newGlobal('new-compartment')"
+  ]);
+
+  if (rnd(2))
+    gs = "fillShellSandbox(" + gs + ")";
+
+  return gs;
 }
 
 // When in xpcshell,
