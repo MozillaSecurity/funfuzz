@@ -3463,9 +3463,9 @@ var builtinFunctions = ["(function(){})"];
 
 })();
 
-for (let g of builtinFunctions) print(g);
-print(builtinFunctions.length);
-print(objectMethods)
+//for (let g of builtinFunctions) print(g);
+//print(builtinFunctions.length);
+//print(objectMethods)
 
 
 function makeFunction(d, b)
