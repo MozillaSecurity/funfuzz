@@ -177,8 +177,6 @@ function whatToTestSpidermonkeyTrunk(code)
     checkRecompiling: true
       && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
-      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
-      && !( codeL.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921
       && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
       && !( codeL.match( /const.*arguments/ ))        // avoid bug 355480
@@ -836,9 +834,7 @@ function tryRoundTripStuff(f, code, wtt)
   checkRoundTripToString(f, code, wtt);
 
   if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkForExtraParens) {
-    try {
-      testForExtraParens(f, code);
-    } catch(e) { /* bug 355667 is annoying here too */ }
+    testForExtraParens(f, code);
   }
 
   if (haveRealUneval) {
@@ -907,11 +903,6 @@ function checkForCookies(code)
 
 function reportRoundTripIssue(issue, code, fs, gs, e)
 {
-  if (e.indexOf("missing variable name") != -1) {
-    dumpln("Bug 355667 sure is annoying!");
-    return;
-  }
-
   if (e.indexOf("illegal XML character") != -1) {
     dumpln("Ignoring bug 355674.");
     return;
