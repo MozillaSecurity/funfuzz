@@ -265,6 +265,8 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
+       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
+       && code.indexOf("strict") == -1              // bug 743425
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
