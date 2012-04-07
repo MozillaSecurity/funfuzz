@@ -301,7 +301,7 @@ def diagDump(fPath, cmdStr, aNum, cType, rName, eVarList, fEnvDt, cCmdList):
     with open(localLog, 'rb') as f:
         for line in f:
             if 'Full environment is' not in line:
-                print line
+                print line,
 
 def main():
     options = parseOptions()
