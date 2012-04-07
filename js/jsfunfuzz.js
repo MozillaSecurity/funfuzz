@@ -2165,20 +2165,35 @@ var makeEvilCallback;
     var v = uniqueVarName();
     var mod = rnd(10) + 2;
     var target = rnd(mod);
+    var matchExpr = v + " % " + mod + " == " + target;
     return (
-      "(function() { " +
+      "(function mcc_() { " +
         "var " + v + " = 0; " +
         "return function() { " +
           "++" + v + "; " +
-          "if (" + v + " % " + mod + " == " + target + ") { dumpln('hit!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
-          "else { dumpln('miss!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
+            (rnd(3) ?
+              "if (" + matchExpr + ") { dumpln('hit!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
+              "else { dumpln('miss!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } "
+            : m("f") + "(" + matchExpr + ");"
+            ) +
         "};" +
       "})()");
+  }
+
+  function fdecl(d, b)
+  {
+    var argName = m();
+    var bv = b.concat([argName]);
+    return "function " + m("f") + "(" + argName + ") " + makeFunctionBody(d, bv);
   }
 
   var builderFunctionMakers = weighted([
     { w: 9,  fun: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " return " + m() + "; })"; } },
     { w: 1,  fun: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " throw " + m() + "; })"; } },
+    { w: 1,  fun: function(d, b) { return "(function(j) { " + m("f") + "(j); })"; } }, // a function that just makes one call is begging to be inlined
+    // The following pair create and use boolean-using functions.
+    { w: 4,  fun: function(d, b) { return "(function(j) { if (j) { " + makeBuilderStatement(d - 1, b) + " } else { " + makeBuilderStatement(d - 1, b) + " } })"; } },
+    { w: 4,  fun: function(d, b) { return "(function() { for (var j=0;j<10;++j) { " + m("f") + "(j%"+(2+rnd(4))+"=="+rnd(2)+"); } })"; } },
     { w: 1,  fun: function(d, b) { return rndElt(builtinFunctions) + ".bind(" + m() + ")"; } },
     { w: 5,  fun: function(d, b) { return m("f"); } },
     { w: 3,  fun: makeCounterClosure },
@@ -2338,13 +2353,15 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "g", makeGlobal(d, b)); } },
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + simpleSource(makeExpr(d, b)) + ")"); } },
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + simpleSource(makeBuilderStatement(d, b)) + ")"); } },
+    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + simpleSource(fdecl(d, b)) + ")"); } },
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(makeExpr(d, b)) + ", " + m("g") + ")"); } },
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(makeBuilderStatement(d, b)) + ", " + m("g") + ")"); } },
+    { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(fdecl(d, b)) + ", " + m("g") + ")"); } },
 
     // f: function (?)
     // Could probably do better with args / b
     { w: 1,  fun: function(d, b) { return assign(d, b, "f", makeEvilCallback(d, b)); } },
-    { w: 1,  fun: function(d, b) { return "function " + m("f") + "() { " + makeFunctionBody(d, b) + "}"; } },
+    { w: 1,  fun: fdecl },
     { w: 2,  fun: function(d, b) { return m("f") + "(" + m() + ");"; } },
 
     // i: Iterator
@@ -3265,6 +3282,7 @@ var propertyNameMakers = weighted([
   { w: 1,  fun: function(d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
   { w: 1,  fun: function(d, b) { return simpleSource(makeSpecialProperty(d - 1, b)); } },
   { w: 1,  fun: function(d, b) { return simpleSource(makeId(d - 1, b)); } },
+  { w: 1,  fun: function(d, b) { return simpleSource(rndElt(objectMethods)); } },
 ]);
 
 function maybeNeg() { return rnd(5) ? "" : "-"; }
