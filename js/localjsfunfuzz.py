@@ -176,10 +176,14 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
         os.mkdir(objdir)
     except OSError:
         raise Exception('Unable to create objdir.')
-    cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
+    output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
+    if platform.system() == 'Windows' and 'Permission denied' in output:
+        print 'Trying once more because of "Permission denied" error...'
+        output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
+                                                            objdir)
     sname = compileCopy(aNum, cType, rName, setPymake, src, fPath, objdir, setValg)
     assert sname != ''
-    return sname
+    return sname, envVarList, cfgEnvDt, cfgCmdList
 
 def knownBugsDir(srcRepo, repoName):
     '''
@@ -276,12 +280,17 @@ def outputStrFromList(lst):
     '''
     return ' '.join(lst).replace('\\', '\\\\') if platform.system() == 'Windows' else ' '.join(lst)
 
-def diagDump(fPath, cmdStr, aNum, cType, rName):
+def diagDump(fPath, cmdStr, aNum, cType, rName, eVarList, fEnvDt, cCmdList):
     '''
     Dumps commands to file and also prints them to stdout prior to fuzzing, for reference.
     '''
     localLog = normExpUserPath(os.path.join(fPath, 'log-localjsfunfuzz.txt'))
-    with open(localLog, 'w') as f:
+    with open(localLog, 'wb') as f:
+        f.writelines('Environment variables added are:\n')
+        f.writelines(' '.join(eVarList) + '\n')
+        f.writelines('Full environment is: ' + str(fEnvDt) + '\n')
+        f.writelines('Configuration command was:\n')
+        f.writelines(' '.join(cCmdList) + '\n')
         f.writelines('Command to be run is:\n')
         f.writelines(cmdStr + '\n')
         f.writelines('========================================================\n')
@@ -289,9 +298,10 @@ def diagDump(fPath, cmdStr, aNum, cType, rName):
         f.writelines('|  DATE: %s\n' % dateStr())
         f.writelines('========================================================\n')
 
-    with open(localLog, 'r') as f:
+    with open(localLog, 'rb') as f:
         for line in f:
-            print line
+            if 'Full environment is' not in line:
+                print line
 
 def main():
     options = parseOptions()
@@ -378,8 +388,8 @@ def main():
     # Default to compiling debug first, unless debug builds are specifically not to be built.
     shellType = 'dbg' if 'dbg' in shellTypeList else 'opt'
 
-    shellName = cfgCompileCopy(compilePath, archNum, shellType, options.enableTs, repoName,
-                               setPymake, srcRepo, fullPath, options.enableVg)
+    shellName, addedEnvList, fullEnvDt, configCmdList = cfgCompileCopy(compilePath, archNum,
+        shellType, options.enableTs, repoName, setPymake, srcRepo, fullPath, options.enableVg)
 
     # FIXME: Change this once target time is implemented in loopjsfunfuzz.py
     # Always compile the other same-arch shell for future testing purposes.
@@ -403,7 +413,8 @@ def main():
 
     selfTests(shellName, archNum, shellType, fullPath)
 
-    diagDump(fullPath, outputStrFromList(shellCmdList), archNum, shellType, repoName)
+    diagDump(fullPath, outputStrFromList(shellCmdList), archNum, shellType, repoName, addedEnvList,
+             fullEnvDt, configCmdList)
 
     # FIXME: Randomize logic should be developed later, possibly together with target time in
     # loopjsfunfuzz.py. Randomize Valgrind runs too.

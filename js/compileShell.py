@@ -206,7 +206,9 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
         envVarList.append(strToBeAppended)
     vdump('Environment variables added are: ' + ' '.join(envVarList))
 
-    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvDt)
+    out = captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvDt)
+
+    return out, envVarList, cfgEnvDt, cfgCmdList
 
 def shellName(archNum, compileType, extraID, vgSupport):
     sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
@@ -239,10 +241,6 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
         if usePymake and 'no such option: -s' in out:  # Retry only for this situation.
             cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
             print 'Trying once more without -s...'
-            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
-                                currWorkingDir=objDir)[0]
-        if platform.system() == 'Windows' and 'Permission denied' in out:
-            print 'Trying once more because of "Permission denied" error...'
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
                                 currWorkingDir=objDir)[0]
     except Exception:
