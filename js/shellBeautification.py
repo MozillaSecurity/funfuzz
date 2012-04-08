@@ -137,16 +137,16 @@ def parseOpts():
     # http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
 
-    parser.add_option('--shell',
+    parser.add_option('-s', '--shell',
                       dest='shell',
                       help='Specify js shell')
-    parser.add_option('--decompilationType',
+    parser.add_option('-d', '--decompilationType',
                       dest='decompilationType',
                       type='choice',
                       choices=['toString', 'uneval'],
                       default='toString',
                       help='Decompilation type. Defaults to "toString"')
-    parser.add_option('--overwriteOrigFile',
+    parser.add_option('-o', '--overwriteOrigFile',
                       dest='overwriteOrigBool',
                       action='store_true',
                       default=False,
