@@ -28,9 +28,9 @@ def machineTypeDefaults(timeout):
     Sets different defaults depending on the machine type.
     '''
     if platform.uname()[1] == 'tegra-ubuntu':
-        return 180
+        return '180'
     elif platform.uname()[4] == 'armv7l':
-        return 600
+        return '600'
     else:
         return timeout
 
@@ -328,7 +328,7 @@ def main():
     if options.enableVg:
         if (platform.system() == 'Linux' or platform.system() == 'Darwin') \
             and platform.uname()[4] != 'armv7l':
-            loopyTimeout = 300
+            loopyTimeout = '300'
         else:
             raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
 
