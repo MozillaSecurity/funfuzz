@@ -15,6 +15,7 @@ devnull = open(os.devnull, "w")
 # If you've installed wget using macports, you may want to put in ~/.wgetrc:
 #    CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt
 preferCurl = False
+
 def readFromURL(url):
     if preferCurl:
         p = subprocess.Popen(["curl", "--silent", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -22,6 +23,7 @@ def readFromURL(url):
         p = subprocess.Popen(["wget", "-q", "-O", "-", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     return StringIO.StringIO(out)
+
 def downloadURL(url, dest):
     if preferCurl:
         subprocess.check_call(["curl", "--output", dest, url])
