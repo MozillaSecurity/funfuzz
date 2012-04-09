@@ -177,6 +177,7 @@ function whatToTestSpidermonkeyTrunk(code)
     checkRecompiling: true
       && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
+      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
       && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
       && !( codeL.match( /const.*arguments/ ))        // avoid bug 355480
