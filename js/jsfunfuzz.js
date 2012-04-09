@@ -1211,7 +1211,16 @@ function checkRoundTripDisassembly(f, code, wtt)
   var dgl = dg.split("\n");
   for (var i = 0; i < dfl.length && i < dgl.length; ++i) {
     if (dfl[i] != dgl[i]) {
-      if (dfl[i] == "00000:  generator") {
+      if (dfl[i] == "00000:  arguments") {
+        // The substring 'arguments' disappeared from the function code.
+        // This can be a valid optimization.
+        // It will probably change the function prologue, along with local var
+        // numbering, without changing the function's behavior.
+        // See https://bugzilla.mozilla.org/show_bug.cgi?id=740259#c18
+        print("checkRoundTripDisassembly: ignoring loss of arguments");
+        return;
+      }
+      if (dfl[i] == "00000:  generator" || dfl[i] == "00005:  generator") {
         print("checkRoundTripDisassembly: ignoring loss of generator (bug 350743)");
         return;
       }
