@@ -178,8 +178,6 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
     except OSError:
         raise Exception('Unable to create objdir.')
     try:
-        if platform.system() == 'Windows':
-            pdb.set_trace()  # I need to debug an intermittent configure failure on Windows.
         output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
     except Exception, e:
         if platform.system() == 'Windows' and 'Permission denied' in output:
@@ -396,6 +394,8 @@ def main():
     # Default to compiling debug first, unless debug builds are specifically not to be built.
     shellType = 'dbg' if 'dbg' in shellTypeList else 'opt'
 
+    if platform.system() == 'Windows':
+        pdb.set_trace()  # I need to debug an intermittent configure failure on Windows.
     shellName, addedEnvList, fullEnvDt, configCmdList = cfgCompileCopy(compilePath, archNum,
         shellType, options.enableTs, repoName, setPymake, srcRepo, fullPath, options.enableVg)
 
