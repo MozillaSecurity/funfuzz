@@ -103,6 +103,7 @@ content/base/crashtests/709384.html
 content/base/crashtests/713417-2.html
 content/base/crashtests/713417.html
 content/base/crashtests/715056.html
+content/base/crashtests/741163-1.html
 content/base/crashtests/xhr_html_nullresponse.html
 content/canvas/crashtests/0px-size-font-667225.html
 content/canvas/crashtests/360293-1.html
@@ -157,6 +158,7 @@ content/html/content/crashtests/682058.xhtml
 content/html/content/crashtests/682460.html
 content/html/content/crashtests/68912-1.html
 content/html/content/crashtests/738744.xhtml
+content/html/content/crashtests/741250.xhtml
 content/html/content/reftests/41464-1-ref.html
 content/html/content/reftests/41464-1a.html
 content/html/content/reftests/41464-1b.html
@@ -240,6 +242,7 @@ content/html/document/crashtests/495543.svg
 content/html/document/crashtests/564461.xhtml
 content/html/document/crashtests/601422.html
 content/html/document/crashtests/631421.html
+content/html/document/crashtests/741218.json
 content/html/document/reftests/bug448564-1_ideal.html
 content/html/document/reftests/bug448564-1_malformed.html
 content/html/document/reftests/bug448564-1_well-formed.html
@@ -4947,6 +4950,8 @@ layout/reftests/bugs/723484-1-ref.html
 layout/reftests/bugs/723484-1.html
 layout/reftests/bugs/729143-1-ref.html
 layout/reftests/bugs/729143-1.html
+layout/reftests/bugs/731521-1-ref.html
+layout/reftests/bugs/731521-1.html
 layout/reftests/bugs/731726-1-ref.html
 layout/reftests/bugs/731726-1.html
 layout/reftests/bugs/735481-1-ref.html
@@ -7652,6 +7657,10 @@ layout/reftests/margin-collapsing/inline-table-horizontal-1-dyn.html
 layout/reftests/margin-collapsing/inline-table-horizontal-1-noref.html
 layout/reftests/margin-collapsing/inline-table-horizontal-1-ref.html
 layout/reftests/margin-collapsing/inline-table-horizontal-1.html
+layout/reftests/margin-collapsing/scrollable-horizontal-margin-ref.html
+layout/reftests/margin-collapsing/scrollable-horizontal-margin.html
+layout/reftests/margin-collapsing/scrollable-vertical-margin-ref.html
+layout/reftests/margin-collapsing/scrollable-vertical-margin.html
 layout/reftests/margin-collapsing/table-caption-1-ref.html
 layout/reftests/margin-collapsing/table-caption-1a.html
 layout/reftests/margin-collapsing/table-caption-1b.html
@@ -10697,6 +10706,8 @@ layout/reftests/text-transform/capitalize-4-ref.html
 layout/reftests/text-transform/capitalize-4.html
 layout/reftests/text-transform/capitalize-5-ref.html
 layout/reftests/text-transform/capitalize-5.html
+layout/reftests/text-transform/capitalize-6-ref.html
+layout/reftests/text-transform/capitalize-6.html
 layout/reftests/text-transform/capitalize-ref.html
 layout/reftests/text-transform/lowercase-1.html
 layout/reftests/text-transform/lowercase-ref.html
@@ -11418,6 +11429,8 @@ layout/svg/crashtests/713413-1.svg
 layout/svg/crashtests/722003-1.svg
 layout/svg/crashtests/725918-1.svg
 layout/svg/crashtests/732836-1.svg
+layout/svg/crashtests/740627-1.svg
+layout/svg/crashtests/740627-2.svg
 layout/svg/crashtests/extref-test-1.xhtml
 layout/tables/crashtests/110523-1.html
 layout/tables/crashtests/138725-1.html
