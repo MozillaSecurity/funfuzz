@@ -5,6 +5,7 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+import pdb
 import platform
 import shutil
 import subprocess
@@ -176,11 +177,18 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
         os.mkdir(objdir)
     except OSError:
         raise Exception('Unable to create objdir.')
-    output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
-    if platform.system() == 'Windows' and 'Permission denied' in output:
-        print 'Trying once more because of "Permission denied" error...'
-        output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
-                                                            objdir)
+    try:
+        if platform.system() == 'Windows':
+            pdb.set_trace()  # I need to debug an intermittent configure failure on Windows.
+        output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
+    except Exception, e:
+        if platform.system() == 'Windows' and 'Permission denied' in output:
+            print 'Trying once more because of "Permission denied" error...'
+            output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
+                                                                objdir)
+        else:
+            print repr(e)
+            raise Exception('Configuration of the js binary failed.')
     sname = compileCopy(aNum, cType, rName, setPymake, src, fPath, objdir, setValg)
     assert sname != ''
     return sname, envVarList, cfgEnvDt, cfgCmdList
