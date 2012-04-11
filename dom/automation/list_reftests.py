@@ -23,7 +23,8 @@ def parse(filename, add_result_callback):
             else:
                 pos = 0
                 while pos < len(parts):
-                    K = ['fails', 'skip', 'random', 'asserts', 'fuzzy']
+                    # http://hg.mozilla.org/mozilla-central/file/866777368827/layout/tools/reftest/print-manifest-dirs.py#l42
+                    K = ['fails', 'needs-focus', 'random', 'skip', 'asserts', 'slow', 'require-or', 'silentfail', 'pref', 'test-pref', 'ref-pref', 'fuzzy']
                     part = parts[pos]
                     if any([part.startswith(k) for k in K]):
                         # fails, fails-if(...), asserts(3)
@@ -34,15 +35,6 @@ def parse(filename, add_result_callback):
                         pos += 1
                         parse(os.path.normpath(os.path.join(reldir, parts[pos])), add_result_callback)
                         break
-                    elif part == "needs-focus":
-                        pos += 1
-                        pass
-                    elif part.startswith("require-or("):
-                        pos += 1
-                        pass
-                    elif part.startswith("pref("):
-                        pos += 1
-                        pass
                     elif part.startswith("HTTP"):
                         pos += 1
                         pass
