@@ -8,13 +8,12 @@ import sys
 
 from inspectShell import archOfBinary, testDbgOrOpt, testJsShellOrXpcshell
 
-p0 = os.path.dirname(__file__)
+p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, 'lithium', 'lithium.py'))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autoBisectJs', 'autoBisect.py'))
 shellBeautificationpy = os.path.join(p0, 'shellBeautification.py')
 
-path0 = os.path.dirname(__file__)
-path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+path2 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(path2)
 from subprocesses import captureStdout
 

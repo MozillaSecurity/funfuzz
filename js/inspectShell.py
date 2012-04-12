@@ -4,7 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# needed for Python 2.5
 from __future__ import with_statement
 
 import os
@@ -12,7 +11,7 @@ import subprocess
 import sys
 
 from tempfile import NamedTemporaryFile
-path0 = os.path.dirname(__file__)
+path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import captureStdout, verbose, vdump

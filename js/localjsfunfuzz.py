@@ -18,7 +18,7 @@ from tempfile import mkdtemp
 from compileShell import getRepoHashAndId, patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy
 from inspectShell import archOfBinary, testDbgOrOptGivenACompileType
 
-path0 = os.path.dirname(__file__)
+path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, verbose, vdump
@@ -196,8 +196,8 @@ def knownBugsDir(srcRepo, repoName):
     Defines the known bugs' directory and returns it as a string.
     '''
     # Define the corresponding known-bugs directories.
-    mcKnDir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'known',
-                                              'mozilla-central'))
+    global path0
+    mcKnDir = os.path.abspath(os.path.join(path0, os.pardir, 'known', 'mozilla-central'))
     if repoName == 'ionmonkey':
         return normExpUserPath(os.path.join(mcKnDir, 'ionmonkey'))
     elif repoName != 'mozilla-central':
@@ -260,6 +260,7 @@ def genShellCmd(lfList, lTimeout, repoKnDir, shName, shFlags):
     # Define fuzzing command with the required parameters.
     shCmdList.append('python')
     shCmdList.append('-u')
+    global path0
     shCmdList.append(os.path.abspath(os.path.join(path0, 'loopjsfunfuzz.py')))
     shCmdList.extend(lfList)
     shCmdList.append(lTimeout)

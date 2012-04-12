@@ -8,7 +8,7 @@ import sys
 
 from optparse import OptionParser
 
-p0 = os.path.dirname(__file__)
+p0 = os.path.dirname(os.path.abspath(__file__))
 interestingpy = os.path.join(p0, 'jsInteresting.py')
 
 import jsInteresting

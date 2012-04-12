@@ -58,7 +58,7 @@ def typeOfRepo(r):
 
 def main():
     print dateStr()
-    cwdParent = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    cwdParent = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
     cwdParentParent = os.path.abspath(os.path.join(cwdParent, os.pardir))
 
     for repo in repos:

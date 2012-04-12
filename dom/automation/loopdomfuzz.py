@@ -1,15 +1,24 @@
 #!/usr/bin/env python
 
 from __future__ import with_statement
-import sys, random, time, os, subprocess, datetime, urllib
-from tempfile import mkdtemp
+
+import datetime
+import os
+import random
 import shutil
+import subprocess
+import sys
+import time
+import urllib
+
+from tempfile import mkdtemp
+
 import domInteresting
 
-p0 = os.path.dirname(__file__)
-emptiesDir = os.path.abspath(os.path.join(p0, "..", "empties"))
-fuzzersDir = os.path.abspath(os.path.join(p0, "..", "fuzzers"))
-lithiumpy = ["python", "-u", os.path.join(p0, "..", "..", "lithium", "lithium.py")]
+p0 = os.path.dirname(os.path.abspath(__file__))
+emptiesDir = os.path.abspath(os.path.join(p0, os.pardir, "empties"))
+fuzzersDir = os.path.abspath(os.path.join(p0, os.pardir, "fuzzers"))
+lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, os.pardir, "lithium", "lithium.py")]
 domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
@@ -293,4 +302,3 @@ def nonBoolPrefs():
 
 if __name__ == "__main__":
     many_timed_runs(None, sys.argv[1:])
-

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from __future__ import with_statement
 
 import os
@@ -6,13 +7,15 @@ import sys
 
 from optparse import OptionParser
 
-p0 = os.path.dirname(__file__)
+p0 = os.path.dirname(os.path.abspath(__file__))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
 sys.path.append(p1)
 import timedRun
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
 sys.path.append(p2)
-import detect_assertions, detect_malloc_errors, detect_interesting_crashes
+import detect_assertions
+import detect_interesting_crashes
+import detect_malloc_errors
 
 # JITFLAGS from http://hg.mozilla.org/tracemonkey/file/default/js/src/Makefile.in
 # or actually http://hg.mozilla.org/projects/jaegermonkey/file/default/js/src/Makefile.in
