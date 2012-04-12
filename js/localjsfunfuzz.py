@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -u
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import pdb
 import platform
 import shutil
 import subprocess
@@ -23,6 +22,7 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, verbose, vdump
 from fileIngredients import fileContains
+from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 
 def machineTypeDefaults(timeout):
     '''
@@ -63,6 +63,7 @@ def parseOptions():
     parser.add_option('-a', '--set-archtype', dest='archType',
                       help='Sets the shell architecture to be fuzzed. Defaults to "%default".')
     parser.add_option('-c', '--set-shelltype', dest='shellType',
+                      # FIXME: This should be improved. Seems like a hackish way.
                       help='Sets the shell type to be fuzzed. Defaults to "dbg". Note that both ' + \
                            'debug and opt will be compiled by default for easy future testing.')
     parser.add_option('-f', '--set-shellflags', dest='shellflags',
@@ -94,6 +95,13 @@ def parseOptions():
                       help='Enable valgrind. ' + \
                            'compareJIT will then be disabled due to speed issues. ' + \
                            'Defaults to "%default".')
+
+    # FIXME: This needs to be ripped out in favour of setting it as a boolean and using repoName and
+    # compileType instead.
+    parser.add_option('-u', '--use-tinderboxjsshell', dest='useJsShell',
+                      help='Specify the tinderbox URL to download instead of compiling ' + \
+                           'the js shell. Defaults to "latest" to get the most updated ' + \
+                           'tinderbox version.')
 
     options, args = parser.parse_args()
     return options
@@ -327,13 +335,53 @@ def diagDump(fPath, cmdStr, aNum, cType, rName, eVarList, fEnvDt, cCmdList):
             if 'Full environment is' not in line:
                 print line,
 
-def main():
-    options = parseOptions()
+def defaultStartDir():
+    '''
+    Set a different default starting directory if machine is a virtual machine.
+    '''
+    if isVM() == ('Windows', True):
+        # FIXME: Add an assertion that isVM() is a WinXP VM, and not Vista/Win7/Win8.
+        # Set to root directory of Windows VM since we only test WinXP in a VM.
+        # This might fail on a Vista or Win7 VM due to lack of permissions.
+        # FIXME: Maybe a directory can be passed in? Or why not always use the Desktop?
+        # It would be good to get this machine-specific hack out of the shared file, eventually.
+        sDir = os.path.join('c:', os.sep)
+    else:
+        sDir = normExpUserPath(os.path.join('~', 'Desktop'))
+    return sDir
 
-    shFlagList = filter(None, options.shellflags.split(','))
+def getAnalysisFiles(path):
+    '''
+    Copy over useful files that are updated in hg fuzzing branch.
+    '''
+    global path0
+    if os.path.exists(os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))):
+        shutil.copy2(os.path.abspath(
+            os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py')), path)
+    if os.path.exists(os.path.abspath(
+        os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py'))):
+        shutil.copy2(os.path.abspath(
+            os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py')), path)
+
+def setFlags(options):
+    '''
+    Sets the default flags.
+    '''
+    fList = filter(None, options.shellflags.split(','))
+    assert options.disableCompareJIT or '-D' not in fList  # -D outputs a lot of spew.
+    if fList == []:
+        fList = ['-m', '-a', '-n']
+    else:
+        # If flags are specified, --disable-random-flags should be specified.
+        assert options.disableRndFlags
+    return fList
+
+def localCompileFuzzJsShell(options):
+    '''
+    Compiles and readies a js shell for fuzzing.
+    '''
     patchDir = normExpUserPath(options.patchdir) if options.patchdir is not None else None
 
-    assert options.disableCompareJIT or '-D' not in shFlagList  # -D outputs a lot of spew.
     archList = options.archType.split(',')
     assert '32' in archList or '64' in archList
     # 32-bit and 64-bit cannot be fuzzed together in the same MozillaBuild batch script in Windows.
@@ -344,11 +392,7 @@ def main():
     shellTypeList = options.shellType.split(',')
     assert 'dbg' in shellTypeList or 'opt' in shellTypeList
 
-    if shFlagList == []:
-        shFlagList = ['-m', '-a', '-n']
-    else:
-        # If flags are specified, --disable-random-flags should be specified.
-        assert options.disableRndFlags
+    shFlagList = setFlags(options)
 
     # Set different timeouts depending on machine.
     loopyTimeout = str(machineTypeDefaults(options.timeout))
@@ -370,13 +414,7 @@ def main():
         vdump('We are not on default, so turning off pymake now.')
         setPymake = False  # Turn off pymake if not on default tip.
 
-    if isVM() == ('Windows', True):
-        # FIXME: Add an assertion that isVM() is a WinXP VM, and not Vista/Win7/Win8.
-        # Set to root directory of Windows VM since we only test WinXP in a VM.
-        # This might fail on a Vista or Win7 VM due to lack of permissions.
-        intendedDir = os.path.join('c:', os.sep)
-    else:
-        intendedDir = normExpUserPath(os.path.join('~', 'Desktop'))
+    intendedDir = defaultStartDir()
 
     # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
     assert captureStdout(['hg', 'qapp'], currWorkingDir=srcRepo)[0] == ''
@@ -424,15 +462,7 @@ def main():
     cfgCompileCopy(compilePath, archNum, shellType2, options.enableTs, repoName, setPymake,
                    srcRepo, fullPath, options.enableVg)
 
-    # Copy over useful files that are updated in hg fuzzing branch.
-    global path0
-    if os.path.exists(os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))):
-        shutil.copy2(os.path.abspath(
-            os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py')), fullPath)
-    if os.path.exists(os.path.abspath(
-        os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py'))):
-        shutil.copy2(os.path.abspath(
-            os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py')), fullPath)
+    getAnalysisFiles(fullPath)
 
     loopFlagList, shFlagList = genJsCliFlagList(
         options.disableCompareJIT, options.disableRndFlags, 'dbg' in shellTypeList,
@@ -449,15 +479,121 @@ def main():
     # FIXME: Randomize logic should be developed later, possibly together with target time in
     # loopjsfunfuzz.py. Randomize Valgrind runs too.
 
+    return shellCmdList, fullPath
+
+def startFuzzing(options, cmdList, path):
+    '''
+    Start fuzzing if appropriate.
+    '''
     if options.disableStartFuzzing:
         print 'Exiting, --disable-start-fuzzing is set.'
         sys.exit(0)
 
     # Commands to simulate bash's `tee`.
-    tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=fullPath)
+    tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=path)
 
+    # Note that js shells should be compiled with --enable-more-deterministic.
     # Start fuzzing the newly compiled builds.
-    subprocess.call(shellCmdList, stdout=tee.stdin, cwd=fullPath)
+    subprocess.call(cmdList, stdout=tee.stdin, cwd=path)
+
+class DownloadedJsShell:
+    def __init__(self, options):
+        if options.shellType == 'dbg,opt' or options.shellType == 'dbg':
+            self.cType = 'dbg'  # 'dbg,opt' is the default setting for options.shellType
+            if 'dbg' in options.shellType:
+                print 'Setting to debug only even though opt is specified by default. ' + \
+                      'Overwrite this by specifying the shell type explicitly.'
+        elif options.shellType == 'opt':
+            self.cType = 'opt'
+
+        if options.archType == '32':
+            self.pArchNum = '32'
+            if platform.system() == 'Darwin':
+                self.pArchName = 'macosx'
+            elif platform.system() == 'Linux':
+                self.pArchName = 'linux'
+            elif platform.system() in ('Microsoft', 'Windows'):
+                self.pArchName = 'win32'
+        elif options.archType == '64':
+            self.pArchNum = '64'
+            if platform.system() == 'Darwin':
+                self.pArchName = 'macosx64'
+            elif platform.system() == 'Linux':
+                self.pArchName = 'linux64'
+            elif platform.system() in ('Microsoft', 'Windows'):
+                raise Exception('Windows 64-bit builds are not supported yet.')
+        else:
+            raise Exception('Only either one of these architectures can be specified: 32 or 64')
+        self.srcRepo = options.srcRepo
+        self.repo = self.srcRepo.split('/')[-1]
+        self.shellVer = options.useJsShell
+    def mkFuzzDir(self, startDir):
+        path = mkdtemp('', os.path.join('tinderjsfunfuzz-'), startDir)
+        assert os.path.exists(path)
+        return path
+    def downloadShell(self, sDir):
+        remoteTinderJsUrlStart = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
+        tinderJsType = filter(None, self.repo) + '-' + self.pArchName + \
+            '-debug' if 'dbg' in self.cType else ''
+        if self.shellVer == 'latest':
+            downloadLatestBuild(tinderJsType, getJsShell=True, workingDir=sDir)
+        elif remoteTinderJsUrlStart in self.shellVer:
+            downloadBuild(self.shellVer, cwd=sDir, jsShell=True, wantSymbols=False)
+        else:
+            raise Exception('Please specify either "latest" or ' + \
+                            'the URL of the tinderbox build to be used.' + \
+                            'e.g. FIXME')
+        self.shellName = os.path.abspath(normExpUserPath(os.path.join(sDir, 'build', 'dist', 'js')))
+        assert os.path.exists(self.shellName)
+
+def main():
+    options = parseOptions()
+
+    if options.useJsShell is None:
+        cList, startDir = localCompileFuzzJsShell(options)
+    else:
+        odjs = DownloadedJsShell(options)
+        startDir = odjs.mkFuzzDir(defaultStartDir())
+        odjs.downloadShell(startDir)
+
+        getAnalysisFiles(startDir)
+
+        shFlagList = setFlags(options)
+
+        loopyTimeout = str(machineTypeDefaults(options.timeout))
+        if options.enableVg:
+            if (platform.system() == 'Linux' or platform.system() == 'Darwin') \
+                and platform.uname()[4] != 'armv7l':
+                loopyTimeout = '300'
+            else:
+                raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
+
+        loopFlagList, shFlagList = genJsCliFlagList(
+            options.disableCompareJIT, options.disableRndFlags, 'dbg' == odjs.cType,
+            options.enableVg, shFlagList, odjs.srcRepo, odjs.repo)
+
+        cList = genShellCmd(loopFlagList, loopyTimeout,
+                            knownBugsDir(odjs.srcRepo, odjs.repo), odjs.shellName, shFlagList)
+
+        if sys.version_info >= (2, 6):
+            selfTests(odjs.shellName, odjs.pArchNum, odjs.cType, startDir)
+
+        localLog = normExpUserPath(os.path.join(startDir, 'log-localjsfunfuzz.txt'))
+        with open(localLog, 'wb') as f:
+            f.writelines('Command to be run is:\n')
+            f.writelines(outputStrFromList(cList) + '\n')
+            f.writelines('========================================================\n')
+            f.writelines('|  Fuzzing %s %s %s js shell builds\n' % (odjs.pArchNum + '-bit',
+                                                                    odjs.cType, odjs.repo ))
+            f.writelines('|  DATE: %s\n' % dateStr())
+            f.writelines('========================================================\n')
+
+        with open(localLog, 'rb') as f:
+            for line in f:
+                print line,
+
+    startFuzzing(options, cList, startDir)
+
 
 # Run main when run as a script, this line means it will not be run as a module.
 if __name__ == '__main__':

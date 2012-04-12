@@ -116,7 +116,7 @@ def many_timed_runs():
             # When running xpcshell, ./run-mozilla-sh appears not necessary, but remember to append LD_LIBRARY_PATH=. especially on Linux.
             # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
             # All in all, xpcshell support is still largely blocked because of bug 613142.
-            oklevel = jsInteresting.JS_ABNORMAL_EXIT
+            oklevel = jsInteresting.JS_ABNORMAL_EXIT if os.path.join('build', 'dist', 'js') not in engine else jsInteresting.JS_VG_AMISS
         elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
             # Allow hangs (bug ??????)
             oklevel = jsInteresting.JS_TIMED_OUT
@@ -144,7 +144,7 @@ def many_timed_runs():
             pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
 
         else:
-            if options.useCompareJIT and level == jsInteresting.JS_FINE:
+            if options.useCompareJIT and level == jsInteresting.JS_FINE and os.path.join('build', 'dist', 'js') not in engine:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
