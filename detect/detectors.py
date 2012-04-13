@@ -5,7 +5,7 @@ from __future__ import with_statement
 import os, sys, platform, signal
 
 class Detector:
-  def __init__():
+  def __init__(self):
     pass
 
   def readIgnoreLists(self, knownPath, filename, readerFunction):
@@ -19,7 +19,7 @@ class Detector:
 # Recognizes JS_ASSERT based on condition only :(
 # Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
 class AssertionDetector(Detector):
-  def __init__(knownPath):
+  def __init__(self, knownPath):
     self.simpleAssertionsIgnoreList = []
     self.twoPartAssertionsIgnoreList = []
     self.readIgnoreLists(knownPath, "assertions.txt", self.readAssertionsIgnoreList)
