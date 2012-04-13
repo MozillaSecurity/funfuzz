@@ -8,20 +8,21 @@ class Detector:
   def __init__(self):
     pass
 
-  def readIgnoreLists(self, knownPath, filename, readerFunction):
-      while os.path.basename(knownPath) != "known":
-          filename = os.path.join(knownPath, filename)
-          if os.path.exists(filename):
-               readerFunction(filename)
-          knownPath = os.path.dirname(os.path.dirname(filename))
+  def readIgnoreLists(self, knownPath, baseFilename, readerFunction):
+    currentPath = knownPath
+    while os.path.basename(currentPath) != "known":
+      filename = os.path.join(currentPath, baseFilename)
+      if os.path.exists(filename):
+         readerFunction(filename)
+      currentPath = os.path.dirname(os.path.dirname(filename))
 
 # Recognizes NS_ASSERTIONs based on condition, text, and filename (ignoring irrelevant parts of the path)
 # Recognizes JS_ASSERT based on condition only :(
 # Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
 class AssertionDetector(Detector):
   def __init__(self, knownPath):
-    self.simpleAssertionsIgnoreList = []
-    self.twoPartAssertionsIgnoreList = []
+    self.simpleIgnoreList = []
+    self.twoPartIgnoreList = []
     self.readIgnoreLists(knownPath, "assertions.txt", self.readAssertionsIgnoreList)
     print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(self.simpleIgnoreList), len(self.twoPartIgnoreList))
 
@@ -47,7 +48,7 @@ class AssertionDetector(Detector):
 
       return False
 
-  def scanFileAssertions(self, currentFile, verbose, ignoreKnownAssertions):
+  def scanFileAssertions(self, currentFile, verbose, ignoreKnownAssertions, lineFilter=None):
       foundSomething = False
 
       # map from (assertion message) to (true, if seen in the current file)
@@ -55,9 +56,11 @@ class AssertionDetector(Detector):
 
       for line in currentFile:
           line = line.strip("\x07").rstrip("\n")
+          if (lineFilter != None):
+            line = lineFilter(line)
           if (self.hasAssertion(line) and not (line in seenInCurrentFile)):
               seenInCurrentFile[line] = True
-              if not (self.ignore(line)):
+              if not (self.ignoreAssertion(line)):
                   print "! New assertion: "
                   print line
                   foundSomething = True
