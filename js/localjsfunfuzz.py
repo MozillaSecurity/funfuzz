@@ -395,8 +395,6 @@ def main():
     # Default to compiling debug first, unless debug builds are specifically not to be built.
     shellType = 'dbg' if 'dbg' in shellTypeList else 'opt'
 
-    if platform.system() == 'Windows':
-        pdb.set_trace()  # I need to debug an intermittent configure failure on Windows.
     shellName, addedEnvList, fullEnvDt, configCmdList = cfgCompileCopy(compilePath, archNum,
         shellType, options.enableTs, repoName, setPymake, srcRepo, fullPath, options.enableVg)
 
