@@ -263,7 +263,7 @@ class MallocErrorDetector(Detector):
               print line
               return True
 
-      self-ppline = pline
+      self.ppline = pline
       self.pline = line
 
 # For standalone use
