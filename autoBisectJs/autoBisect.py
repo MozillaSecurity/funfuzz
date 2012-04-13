@@ -367,7 +367,7 @@ def parseOpts():
             flagsReqList, options.watchExitCode, options.valgSupport, testAndLabel
 
 def hgId(rev):
-    return captureStdout(hgPrefix + ["id", "-i", "-r", rev])[0]
+    return captureStdout(hgPrefix + ['log', '--template={node|short}', '-r', rev])[0]
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
