@@ -134,7 +134,7 @@ javascript.options.methodjit_always
 #javascript.options.pccounts.content # bug 723409
 javascript.options.tracejit.chrome
 javascript.options.tracejit.content
-javascript.options.typeinference
+#javascript.options.typeinference # bug 745483
 keyword.enabled
 layers.acceleration.disabled
 layers.acceleration.force-enabled
