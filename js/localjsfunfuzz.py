@@ -406,10 +406,13 @@ def main():
 
     # Copy over useful files that are updated in hg fuzzing branch.
     global path0
-    shutil.copy2(os.path.abspath(
-        os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py')), fullPath)
-    shutil.copy2(os.path.abspath(
-        os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py')), fullPath)
+    if os.path.exists(os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))):
+        shutil.copy2(os.path.abspath(
+            os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py')), fullPath)
+    if os.path.exists(os.path.abspath(
+        os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py'))):
+        shutil.copy2(os.path.abspath(
+            os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py')), fullPath)
 
     loopFlagList, shFlagList = genJsCliFlagList(
         options.disableCompareJIT, options.disableRndFlags, 'dbg' in shellTypeList,
