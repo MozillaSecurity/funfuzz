@@ -224,7 +224,7 @@ class AmissLogHandler:
       # Bug 507876 is a breakpad issue that means stack overflows don't give me stack traces on Mac
       # (and Linux, but differently).
       # The combination means we lose.
-      print "%%% This is probably a too-much-recursion crash. It will be treated as a known crash."
+      self.printAndLog("%%% This is probably a too-much-recursion crash. It will be treated as a known crash.")
       self.crashIsKnown = True
     if self.sawProcessedCrash and len(self.summaryLog) < 300:
       self.summaryLog.append(msgLF)
