@@ -148,6 +148,7 @@ class AmissLogHandler:
     self.sawFatalAssertion = False
     self.fuzzerComplained = False
     self.sawProcessedCrash = False
+    self.crashMightBeTooMuchRecursion = False
     self.crashIsKnown = False
     self.timedOut = False
     self.sawValgrindComplaint = False
@@ -216,21 +217,30 @@ class AmissLogHandler:
        msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
       self.timedOut = True
       self.crashIsKnown = True
+
     if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
       print "We have a crash on our hands!"
       self.sawProcessedCrash = True
-    if platform.system() == "Darwin" and (msg == "** Unknown exception behavior" or msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
-      # There are several [TMR] bugs listed in crashes.txt
-      # Bug 507876 is a breakpad issue that means stack overflows don't give me stack traces on Mac
-      # (and Linux, but differently).
-      # The combination means we lose.
-      self.printAndLog("%%% This is probably a too-much-recursion crash. It will be treated as a known crash.")
-      self.crashIsKnown = True
     if self.sawProcessedCrash and len(self.summaryLog) < 300:
       self.summaryLog.append(msgLF)
     if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
       self.printAndLog("%%% Known crash signature: " + msg)
       self.crashIsKnown = True
+
+    if platform.system() == "Darwin" and (msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
+      # There are several [TMR] bugs listed in crashes.txt
+      # Bug 507876 is a breakpad issue that means too-much-recursion crashes don't give me stack traces on Mac
+      # (and Linux, but differently).
+      # The combination means we lose.
+      self.printAndLog("%%% This crash is at the Mac stack guard page. It is probably a too-much-recursion crash or a stack buffer overflow.")
+      self.crashMightBeTooMuchRecursion = True
+    if self.crashMightBeTooMuchRecursion and msg.startswith(" 3 "):
+      self.printAndLog("%%% The stack trace is not broken, so it's more likely to be a stack buffer overflow.")
+      self.crashMightBeTooMuchRecursion = False
+    if self.crashMightBeTooMuchRecursion and msg.startswith("Thread 1"):
+      self.printAndLog("%%% The stack trace is broken, so it's more likely to be a too-much-recursion crash.")
+      self.crashIsKnown = True
+
     if msg.find("quitApplication") != -1 or msg.find("fuzzerWhenDeep") != -1:
       self.expectChromeFailure = True
     if (not self.expectChromeFailure and
