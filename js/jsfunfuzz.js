@@ -180,9 +180,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
       && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( codeL.match( /const.*arguments/ ))        // avoid bug 355480
-      && !( codeL.match( /var.*arguments/ ))          // avoid bug 355480
-      && !( codeL.match( /let.*arguments/ ))          // avoid bug 355480
       && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
       && !( codeL.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
       && !( codeL.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
@@ -211,7 +208,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("/") == -1)         // constant folding bug 539819
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
-      && (code.indexOf("const") == -1)     // avoid bug 352985 and bug 355480 :(
+      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
       // at constant-folding time (?) away from strings
       &&
            (
@@ -3004,7 +3001,7 @@ var exprMakers =
   function(d, b) { return "verifybarriers()"; },
 
   // Invoke an incremental garbage collection slice.
-  //function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; }, // bug 742003
+  function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
 
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ", " + makeBoolean(d, b) + ")"; },
