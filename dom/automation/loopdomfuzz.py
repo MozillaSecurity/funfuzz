@@ -282,6 +282,7 @@ def nonBoolPrefs():
     if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.minTwips", 120);\n']
         p += ['user_pref("font.size.inflation.emPerLine", 15);\n']
+        p += ['user_pref("font.size.inflation.lineThreshold", ' + str(random.randrange(0, 400)) + ');\n']
         p += ['user_pref("browser.sessionhistory.max_entries", ' + str(random.randrange(2, 10)) + ');\n']
         p += ['user_pref("browser.sessionhistory.max_total_viewers", ' + str(random.randrange(0, 4)) + ');\n']
         p += ['user_pref("bidi.direction", ' + random.choice(["1", "2"]) + ');\n']
