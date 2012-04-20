@@ -47,11 +47,11 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
             "valgrind",
             "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
             "--gen-suppressions=all",
-            "--leak-check=full"
+            "--leak-check=full",
+            "--smc-check=all-non-file"  # Added by default because IonMonkey turns JITs on by default.
           ] +
             valgrindSuppressions(knownPath) +
             (["--dsymutil=yes"] if sys.platform=='darwin' else []) +
-            (["--smc-check=all-non-file"] if "-m" in runthis else []) + # Bug 598263
           runthis)
         #print " ".join(runthis)
 
