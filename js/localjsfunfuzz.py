@@ -223,8 +223,6 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
     elif enableDbg:
         shFlags.append('-d')
 
-    # Thanks to decoder and sstangl, useful flag combinations are:
-    # {{--ion -n, --ion, --ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}}
     if repoName == 'ionmonkey':
         #rndIntIM = randint(0, 5)  # randint comes from the random module.
         # --random-flags takes in flags from jsInteresting.py, so it must be disabled.
@@ -233,22 +231,35 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
             shFlags.remove('-d')  # as of early Feb 2012, -d disables --ion
         if '-n' in shFlags:
             shFlags.remove('-n')
+        if '-m' in shFlags:
+            shFlags.remove('-m')
         assert '--random-flags' not in loopFList
-        shFlags.append('--ion')
-        shFlags.append('-n')  # ensure -n is really appended.
         #shFlags.append('--ion-eager')
 
-        # From bug 724444: In IonMonkey, use --ion -n. Running --ion without -n isn't supported.
+        # From bug 724444:
         #
         #Other interesting flags:
         #    --ion-eager:    Compile eagerly, like -a. This is somewhat buggy right now.
         #    --ion-gvn=off:  Disables folding/code elimination.
         #    --ion-licm=off: Disables loop hoisting.
         #    --ion-inlining=off: Disables function inlining.
-        #    -m: Still enables the method JIT,
         #
         #There are other --ion flags but they are experimental and not ready for testing.
         #Also note, -a has no effect on --ion and -d will disable ion.
+        #
+        # # {{--ion-eager} x {--ion-regalloc=greedy, --ion-regalloc=lsra}} ??
+        #
+        #From bug 724751 comment 2:
+        #The first part of this patch changes shell flags:
+        #--ion is default, and removed. --no-ion disables.
+        #-n is default, and removed. --no-ti disables.
+        #-m is default, and removed. --no-jm disables.
+        #
+        #The second part changes jit_tests and make check:
+        #--ion-tbpl is now --tbpl and tests all salient JIT combinations.
+        #
+        #The last part changes how JM decides to compile, to give IonMonkey a sure chance at
+        #compiling first.
 
     return loopFList, shFlags
 
