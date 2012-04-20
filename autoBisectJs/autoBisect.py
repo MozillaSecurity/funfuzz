@@ -43,6 +43,9 @@ COMPILATION_FAILED_LABEL = 'skip'
 
 shellCacheDirStart = os.path.join('c:', os.sep) if isVM() == ('Windows', True) \
     else os.path.join('~', 'Desktop')
+# This particular machine has insufficient disk space on the main drive.
+if platform.system() == 'Linux' and os.path.exists(os.sep + 'hddbackup'):
+    shellCacheDirStart = os.path.join(os.sep + 'hddbackup' + os.sep)
 shellCacheDir = normExpUserPath(os.path.join(shellCacheDirStart, 'autobisect-cache'))
 if not os.path.exists(shellCacheDir):
     os.mkdir(shellCacheDir)
