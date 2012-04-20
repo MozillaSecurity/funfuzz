@@ -227,6 +227,7 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
         #rndIntIM = randint(0, 5)  # randint comes from the random module.
         # --random-flags takes in flags from jsInteresting.py, so it must be disabled.
         loopFList.remove('--random-flags')
+        loopFList.remove('--comparejit')  # Disabled until compareJIT has its flag support updated.
         if '-d' in shFlags:
             shFlags.remove('-d')  # as of early Feb 2012, -d disables --ion
         if '-n' in shFlags:
