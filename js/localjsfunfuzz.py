@@ -180,7 +180,10 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
     try:
         output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
     except Exception, e:
-        if platform.system() == 'Windows' and 'Permission denied' in output:
+        if platform.system() == 'Windows':
+            print 'Temporary debug: configuration failed!'
+            pdb.set_trace()
+        if platform.system() == 'Windows' and 'Permission denied' in repr(e):
             print 'Trying once more because of "Permission denied" error...'
             output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
                                                                 objdir)
