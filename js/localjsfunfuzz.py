@@ -286,8 +286,7 @@ def selfTests(shName, aNum, cType, fPath):
     '''
     Runs a bunch of verification tests to see if arch and compile type are as intended.
     '''
-    if platform.system() == 'Linux' or platform.system() == 'Darwin':
-        assert archOfBinary(shName) == aNum  # 32-bit or 64-bit verification test.
+    assert archOfBinary(shName) == aNum  # 32-bit or 64-bit verification test.
     if sys.version_info >= (2, 6):
         # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
         testDbgOrOptGivenACompileType(shName, cType, cwd=fPath)
@@ -331,8 +330,10 @@ def main():
     assert options.disableCompareJIT or '-D' not in shFlagList  # -D outputs a lot of spew.
     archList = options.archType.split(',')
     assert '32' in archList or '64' in archList
+    # 32-bit and 64-bit cannot be fuzzed together in the same MozillaBuild batch script in Windows.
     assert not ('32' in archList and '64' in archList), '32 & 64-bit cannot be fuzzed together yet.'
-    assert platform.system() != 'Windows' or '64' not in archList
+    assert 'x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '32'
+    assert 'x64' not in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '64'
     shellTypeList = options.shellType.split(',')
     assert 'dbg' in shellTypeList or 'opt' in shellTypeList
 

@@ -7,6 +7,7 @@
 from __future__ import with_statement
 
 import os
+import platform
 import subprocess
 import sys
 
@@ -22,14 +23,18 @@ def archOfBinary(b):
     '''
     unsplitFiletype = captureStdout(['file', b])[0]
     filetype = unsplitFiletype.split(':', 1)[1]
-    if 'universal binary' in filetype:
-        raise Exception("I don't know how to deal with multiple-architecture binaries")
-    if '386' in filetype or '32-bit' in filetype:
-        assert '64-bit' not in filetype
-        return '32'
-    if '64-bit' in filetype:
-        assert '32-bit' not in filetype
-        return '64'
+    if platform.system() == 'Windows':
+        assert 'PE executable for MS Windows (console)' in filetype
+        return '32' if 'Intel 80386 32-bit' in filetype else '64'
+    else:
+        if 'universal binary' in filetype:
+            raise Exception("I don't know how to deal with multiple-architecture binaries")
+        if '386' in filetype or '32-bit' in filetype:
+            assert '64-bit' not in filetype
+            return '32'
+        if '64-bit' in filetype:
+            assert '32-bit' not in filetype
+            return '64'
 
 def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcwdu()):
     '''
