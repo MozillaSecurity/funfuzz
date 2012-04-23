@@ -335,8 +335,9 @@ def main():
     assert '32' in archList or '64' in archList
     # 32-bit and 64-bit cannot be fuzzed together in the same MozillaBuild batch script in Windows.
     assert not ('32' in archList and '64' in archList), '32 & 64-bit cannot be fuzzed together yet.'
-    assert 'x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '32'
-    assert 'x64' not in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '64'
+    if platform.system() == 'Windows':
+        assert 'x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '32'
+        assert 'x64' not in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '64'
     shellTypeList = options.shellType.split(',')
     assert 'dbg' in shellTypeList or 'opt' in shellTypeList
 
