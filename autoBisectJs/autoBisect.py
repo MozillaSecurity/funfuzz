@@ -396,9 +396,7 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
 
     # These should be in descending order, or bisection will break at earlier changesets.
     if ionBool:
-        return '300ac3d58291' # IonMonkey flags changed in this revision.
-        # To bisect further back, valid flags are: -m -a --ion -n
-        #return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
+        return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
     elif typeInferBool:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
     elif isMac and isLion:
