@@ -643,7 +643,7 @@ function nestingConsistencyTest(code)
   function nestExpr(e) { return "(function() { return " + code + "; })()"; }
   var codeNestedOnce = nestExpr(code);
   var codeNestedDeep = code;
-  var depth = rnd(5) + 14; // 16 might be special
+  var depth = (count % 7) + 14; // 16 might be special
   for (var i = 0; i < depth; ++i) {
     codeNestedDeep = nestExpr(codeNestedDeep);
   }
