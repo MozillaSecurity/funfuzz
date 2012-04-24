@@ -648,8 +648,8 @@ function nestingConsistencyTest(code)
     codeNestedDeep = nestExpr(codeNestedDeep);
   }
 
-  var resultO = sandboxResult(codeNestedOnce, "same-compartment");
-  var resultD = sandboxResult(codeNestedDeep, "same-compartment");
+  // These are on the same line so that line numbers in stack traces will match.
+  var resultO = sandboxResult(codeNestedOnce, "same-compartment"); var resultD = sandboxResult(codeNestedDeep, "same-compartment");
 
   //if (resultO != "" && resultO != "undefined" && resultO != "use strict")
   //  print("NestTest: " + resultO);
