@@ -149,6 +149,7 @@ layout.frames.force_resizability
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
 media.autoplay.enabled
+media.h264.enabled
 media.ogg.enabled
 media.wave.enabled
 media.webm.enabled
