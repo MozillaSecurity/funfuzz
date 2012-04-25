@@ -203,8 +203,11 @@ def knownBugsDir(srcRepo, repoName):
     mcKnDir = os.path.abspath(os.path.join(path0, os.pardir, 'known', 'mozilla-central'))
     if repoName == 'ionmonkey':
         return normExpUserPath(os.path.join(mcKnDir, 'ionmonkey'))
+    elif repoName == 'mozilla-esr10':
+        return os.path.abspath(
+            normExpUserPath(os.path.join(path0, os.pardir, 'known', 'mozilla-esr10')))
     elif repoName != 'mozilla-central':
-        # XXX: mozilla-aurora, mozilla-beta, mozilla-release and esr directories should have their
+        # XXX: mozilla-aurora, mozilla-beta and mozilla-release directories should have their
         # own "known" directories. Using mozilla-central for now.
         vdump('Ignore list for the ' + repoName + ' repository does not exist, so using the ' + \
               'ignore list for mozilla-central.')
