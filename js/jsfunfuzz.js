@@ -49,6 +49,7 @@ var jsStrictMode = false;
 
 var ENGINE_UNKNOWN = 0;
 var ENGINE_SPIDERMONKEY_TRUNK = 1;
+var ENGINE_SPIDERMONKEY_MOZILLA10 = 2;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
@@ -62,8 +63,10 @@ if (jsshell) {
   printImportant = function(s) { dumpln("***"); dumpln(s); }
   if (typeof line2pc == "function") {
 
-    if (typeof snarf == "function") {
+    if (typeof verifybarriers == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
+    } else if (typeof snarf == "function") {
+      engine = ENGINE_SPIDERMONKEY_MOZILLA10;
     }
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
@@ -134,6 +137,8 @@ if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   printImportant("Targeting SpiderMonkey / Gecko (trunk).");
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
+  printImportant("Targeting SpiderMonkey / Gecko (10 branch).");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
 
@@ -271,6 +276,122 @@ function whatToTestSpidermonkeyTrunk(code)
   };
 }
 
+function whatToTestSpidermonkeyMozilla10(code)
+{
+  return {
+
+    allowParse: true,
+
+    // Exclude things here if decompiling the function causes a crash.
+    allowDecompile: true,
+
+    // Exclude things here if decompiling returns something bogus that won't compile.
+    checkRecompiling: true
+      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197 (10 branch)
+      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506 (10 branch)
+      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921 (10 branch)
+      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921 (10 branch)
+      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (10 branch) (more rebracing stuff)
+      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255 (10 branch)
+      && !( code.match( /const.*arguments/ ))        // avoid bug 355480 (10 branch)
+      && !( code.match( /var.*arguments/ ))          // avoid bug 355480 (10 branch)
+      && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (10 branch)
+      && !( code.match( /let/ ))   // avoid bug 462309 (10 branch) :( :( :(
+      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (10 branch)
+      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (10 branch)
+      && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 (10 branch) *errors*
+      && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616 (10 branch)
+      && !( code.match( /\#.*=/ ))                 // avoid bug 568734 (10 branch)
+      ,
+
+    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
+    checkForMismatch: true
+      && !( code.match( /const.*if/ ))               // avoid bug 352985 (10 branch)
+      && !( code.match( /if.*const/ ))               // avoid bug 352985 (10 branch)
+      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285 (10 branch)
+      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285 (10 branch)
+      && !( code.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696 (10 branch)
+      && !( code.match( /\?.*\?/ ))                  // avoid bug 475895 (10 branch)
+      && !( code.match( /if.*function/ ))            // avoid bug 355980 (10 branch) *changes*
+      && !( code.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695 (10 branch), etc)
+      && !( code.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695 (10 branch), etc)
+      && !( code.match( /\[.*\+/ ))        // constant folding bug 646599 (10 branch)
+      && (code.indexOf("*") == -1)         // constant folding bug 539819 (10 branch)
+      && (code.indexOf("/") == -1)         // constant folding bug 539819 (10 branch)
+      && (code.indexOf("#") == -1)         // avoid bug 646600 (10 branch)
+      && (code.indexOf("default") == -1)   // avoid bug 355509 (10 branch)
+      && (code.indexOf("delete") == -1)    // avoid bug 352027 (10 branch), which won't be fixed for a while :(
+      && (code.indexOf("const") == -1)     // avoid bug 352985 (10 branch) and bug 355480 (10 branch) :(
+      && (code.indexOf("&&") == -1)        // ignore bug 461226 (10 branch) with a hatchet
+      && (code.indexOf("||") == -1)        // ignore bug 461226 (10 branch) with a hatchet
+      // at constant-folding time (?) away from strings
+      &&
+           (
+             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
+             ||
+             (
+                  (code.indexOf("%")  == -1)
+               && (code.indexOf("/")  == -1)
+               && (code.indexOf("*")  == -1)
+               && (code.indexOf("-")  == -1)
+               && (code.indexOf(">>") == -1)
+               && (code.indexOf("<<") == -1)
+             )
+          )
+      ,
+
+    // Exclude things here if the decompilation doesn't match what the function actually does
+    checkDisassembly: true
+      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 (10 branch) harder than above
+      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (10 branch)
+    ,
+
+    checkForExtraParens: true
+      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213 (10 branch), and unfortunately anything with genexps
+      && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
+      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !code.match( /\?.*\=/)             // ignore bug 475893 (10 branch)
+    ,
+
+    allowExec: unlikelyToHang(code)
+      && code.indexOf("<>") == -1 // avoid bug 334628 (10 branch), hopefully
+      && (jsshell || code.indexOf("nogeckoex") == -1)
+    ,
+
+    allowIter: true,
+
+    checkUneval: false // bug 539819 (10 branch)
+      // exclusions won't be perfect, since functions can return things they don't
+      // appear to contain, e.g. with "return x;"
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (10 branch)
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (10 branch)
+    ,
+
+    expectConsistentOutput: true
+       && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
+       && code.indexOf("Date") == -1                // time marches on
+    ,
+
+    expectConsistentOutputAcrossIter: true
+       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
+    ,
+
+    expectConsistentOutputAcrossJITs: true
+       && code.indexOf("Error") == -1               // avoid bug 525518 (10 branch)
+       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (10 branch) (wontfix).
+       && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
+       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454 (10 branch)
+       && code.indexOf("options('strict')") == -1   // bug 621418 (10 branch), bug 621421 (10 branch)
+       && code.indexOf("use strict") == -1          // bug 622271 (10 branch)
+       && code.indexOf("++") == -1                  // bug 622265 (10 branch)
+       && code.indexOf("--") == -1                  // bug 622265 (10 branch)
+       && code.indexOf("instanceof") == -1          // bug 617949 (10 branch)
+       && !(code.match(/\S=/))                      // bug 622271 (10 branch) (+= etc)
+
+  };
+}
+
 
 
 function whatToTestJavaScriptCore(code)
@@ -283,13 +404,11 @@ function whatToTestJavaScriptCore(code)
 
     checkRecompiling: true,
 
-    checkForMismatch: true
-      ,
+    checkForMismatch: true,
 
     checkForExtraParens: false, // ?
 
-    allowExec: unlikelyToHang(code)
-      ,
+    allowExec: unlikelyToHang(code),
 
     allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
 
@@ -322,6 +441,8 @@ function whatToTestGeneric(code)
 var whatToTest;
 if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
+  whatToTest = whatToTestSpidermonkeyMozilla10;
 else if (engine == ENGINE_JAVASCRIPTCORE)
   whatToTest = whatToTestJavaScriptCore;
 else
