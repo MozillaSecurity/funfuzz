@@ -105,7 +105,11 @@ var haveE4X = (typeof XML == "function");
 if (haveE4X)
   XML.ignoreComments = false; // to make uneval saner -- see bug 465908
 
-var HOTLOOP = "tracemonkey" in this ? tracemonkey.HOTLOOP : 8;
+// If the JavaScript engine being tested has heuristics like
+//   "recompile any loop that is run more than X times"
+// this should be set to the highest such X.
+var HOTLOOP = 60;
+function loopCount() { return rnd(rnd(HOTLOOP * 3)); }
 
 function simpleSource(s)
 {
@@ -2048,7 +2052,7 @@ function forLoopHead(d, b, v, reps)
 
 function makeOpaqueIdiomaticLoop(d, b)
 {
-  var reps = rnd(rnd(HOTLOOP * 3));
+  var reps = loopCount();
   var vHidden = uniqueVarName();
   return "/*oLoop*/" + forLoopHead(d, b, vHidden, reps) + " { " +
       makeStatement(d - 2, b) +
@@ -2057,7 +2061,7 @@ function makeOpaqueIdiomaticLoop(d, b)
 
 function makeTransparentIdiomaticLoop(d, b)
 {
-  var reps = rnd(rnd(HOTLOOP * 3));
+  var reps = loopCount();
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
   return "/*vLoop*/" + forLoopHead(d, b, vHidden, reps) +
@@ -2069,9 +2073,9 @@ function makeTransparentIdiomaticLoop(d, b)
 
 function makeBranchUnstableLoop(d, b)
 {
-  var reps = rnd(rnd(HOTLOOP + 10));
+  var reps = loopCount();
   var v = uniqueVarName();
-  var mod = rnd(10) + 2;
+  var mod = rnd(HOTLOOP * 2) + 2;
   var target = rnd(mod);
   return "/*bLoop*/" + forLoopHead(d, b, v, reps) + " { " +
     "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
@@ -2320,7 +2324,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return "(function(j) { " + m("f") + "(j); })"; } }, // a function that just makes one call is begging to be inlined
     // The following pair create and use boolean-using functions.
     { w: 4,  fun: function(d, b) { return "(function(j) { if (j) { " + makeBuilderStatement(d - 1, b) + " } else { " + makeBuilderStatement(d - 1, b) + " } })"; } },
-    { w: 4,  fun: function(d, b) { return "(function() { for (var j=0;j<10;++j) { " + m("f") + "(j%"+(2+rnd(4))+"=="+rnd(2)+"); } })"; } },
+    { w: 4,  fun: function(d, b) { return "(function() { for (var j=0;j<" + loopCount() + ";++j) { " + m("f") + "(j%"+(2+rnd(4))+"=="+rnd(2)+"); } })"; } },
     { w: 1,  fun: function(d, b) { return rndElt(builtinFunctions) + ".bind(" + m() + ")"; } },
     { w: 5,  fun: function(d, b) { return m("f"); } },
     { w: 3,  fun: makeCounterClosure },
@@ -2393,6 +2397,7 @@ var makeEvilCallback;
     // a: Array
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", "[]"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", "new Array"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "a", makeMixedTypeArray(d, b)); } },
     { w: 1,  fun: function(d, b) { return m("a") + ".length = " + rnd(ARRAY_SIZE) + ";"; } },
     { w: 8,  fun: function(d, b) { return assign(d, b, "v", m("at") + ".length"); } },
     { w: 4,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
@@ -4416,15 +4421,15 @@ function makeShapeyValue(d, b)
 
 function makeMixedTypeArray(d, b)
 {
-  // Pick two to five of those
+  // Pick two to five values to use as array entries.
   var q = rnd(4) + 2;
   var picks = [];
   for (var j = 0; j < q; ++j)
     picks.push(makeShapeyValue(d, b));
 
-  // Make an array of up to 39 elements, containing those two to five values
+  // Create a large array literal by randomly repeating the values.
   var c = [];
-  var count = rnd(rnd(HOTLOOP + 32));
+  var count = loopCount();
   for (var j = 0; j < count; ++j)
     c.push(rndElt(picks));
 
