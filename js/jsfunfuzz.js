@@ -4768,23 +4768,6 @@ tryItOut("");
 
 
 
-
-/*
-// Aggressive test for type-unstable arrays
-count = 1;
-for (var j = 0; j < 20000; ++j) {
-  x = null;
-  if (j % 100 == 0) gc();
-  var a = makeMixedTypeArray();
-  print(uneval(a));
-  var s = "for each (let i in " + a + ") { }";
-  //var s = "[i for each (i in " + a + ") if (i)]";
-  eval(s);
-}
-throw 1;
-*/
-
-
 /**************************************
  * To reproduce a crash or assertion: *
  **************************************/
