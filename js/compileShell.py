@@ -236,11 +236,13 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
             ignoreECode = True
             if platform.system() != 'Windows':
                 cmdList.append('-j' + str(jobs))  # Win needs pymake for multicore compiles.
+        vdump('cmdList from compileCopy is: ' + ' '.join(cmdList))
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
                             currWorkingDir=objDir)[0]
         if usePymake and 'no such option: -s' in out:  # Retry only for this situation.
             cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
             print 'Trying once more without -s...'
+            vdump('cmdList from compileCopy is: ' + ' '.join(cmdList))
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
                                 currWorkingDir=objDir)[0]
     except Exception:
