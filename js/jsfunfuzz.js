@@ -282,6 +282,9 @@ function whatToTestSpidermonkeyTrunk(code)
 
 function whatToTestSpidermonkeyMozilla10(code)
 {
+  // regexps can't match across lines, so replace whitespace with spaces.
+  var codeL = code.replace(/\s/g, " ");
+
   return {
 
     allowParse: true,
