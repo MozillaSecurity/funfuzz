@@ -41,7 +41,7 @@ def copyFiles(srcDir, destParent):
     if remoteLoginAndMachine == None:
         subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
     else:
-        subprocess.check_call(["scp", "-r", srcDir, destParent], stdout=devnull)
+        subprocess.check_call(["scp", "-p", "-r", srcDir, destParent], stdout=devnull)
     srcDirLeaf = srcDir.split("/" if "/" in srcDir else "\\")[-2]
     return destParent + srcDirLeaf + destParent[-1]
 
@@ -150,6 +150,7 @@ if __name__ == "__main__":
     remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else ""
     remoteSep = "/" if remoteLoginAndMachine else localSep
     relevantJobsDir = remoteBase + buildType + remoteSep
+    runCommand("mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
     runCommand("mkdir -p " + relevantJobsDir)
 
     shouldLoop = True
