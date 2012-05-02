@@ -118,7 +118,7 @@ gfx.font_rendering.directwrite.enabled
 gfx.font_rendering.directwrite.use_gdi_table_loading
 gfx.font_rendering.fallback.always_use_cmaps
 gfx.use_text_smoothing_setting
-gfx.textures.poweroftwo.force-enabled
+#gfx.textures.poweroftwo.force-enabled # bug 750590
 image.mem.decodeondraw
 image.mem.discardable
 intl.locale.matchOS
