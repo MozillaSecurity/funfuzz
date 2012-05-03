@@ -605,7 +605,8 @@ function fillShellSandbox(sandbox)
 {
   var safeFuns = [
     "print",
-    "schedulegc", "gczeal", "gc", "gcslice", "verifybarriers", "mjitChunkLimit",
+    "schedulegc", "gczeal", "gc", "gcslice",
+    "verifybarriers", "mjitChunkLimit", "gcPreserveCode",
     "evalcx", "newGlobal",
     "dumpln", "fillShellSandbox"
   ];
@@ -3143,6 +3144,9 @@ var exprMakers =
 
   // Change spidermonkey mjit chunking (see https://bugzilla.mozilla.org/show_bug.cgi?id=706914)
   function(d, b) { return "mjitChunkLimit(" + (5+rnd(4)+rnd(10)*rnd(10)) + ")"; },
+
+  // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
+  function(d, b) { return "gcPreserveCode()"; },
 
   // Unary Math functions
   function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
