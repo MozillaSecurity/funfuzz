@@ -74,6 +74,15 @@ class AssertionDetector(Detector):
       currentFile.close()
 
       return assertions
+    
+  def hasFatalAssertion(self, currentFile, verbose, lineFilter=None):
+    assertions = self.scanFileAssertions(currentFile, verbose, False, lineFilter)
+    
+    for assertion in assertions:
+      if assertion.startswith("###!!! ABORT") or assertion.startswith("Assertion fail"):
+        return True
+    
+    return False
 
   def hasAssertion(self, line):
       return (line.startswith("###!!!") or # NS_ASSERTION and also aborts
