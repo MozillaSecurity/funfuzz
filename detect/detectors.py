@@ -23,7 +23,8 @@ class AssertionDetector(Detector):
   def __init__(self, knownPath):
     self.simpleIgnoreList = []
     self.twoPartIgnoreList = []
-    self.readIgnoreLists(knownPath, "assertions.txt", self.readAssertionsIgnoreList)
+    if (knownPath != None):
+      self.readIgnoreLists(knownPath, "assertions.txt", self.readAssertionsIgnoreList)
     print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(self.simpleIgnoreList), len(self.twoPartIgnoreList))
 
   def readAssertionsIgnoreList(self, filename):
@@ -49,7 +50,7 @@ class AssertionDetector(Detector):
       return False
 
   def scanFileAssertions(self, currentFile, verbose, ignoreKnownAssertions, lineFilter=None):
-      foundSomething = False
+      assertions = []
 
       # map from (assertion message) to (true, if seen in the current file)
       seenInCurrentFile = {}
@@ -63,16 +64,16 @@ class AssertionDetector(Detector):
               if not (self.ignoreAssertion(line)):
                   print "! New assertion: "
                   print line
-                  foundSomething = True
+                  assertions.append(line)
               elif not ignoreKnownAssertions:
-                  foundSomething = True
+                  assertions.append(line)
               elif verbose:
                   print "@ Known assertion: "
                   print line
 
       currentFile.close()
 
-      return foundSomething
+      return assertions
 
   def hasAssertion(self, line):
       return (line.startswith("###!!!") or # NS_ASSERTION and also aborts
@@ -100,7 +101,8 @@ class CrashDetector(Detector):
   def __init__(self, knownPath):
     self.ignoreList = []
     self.TOO_MUCH_RECURSION_MAGIC = "[TMR] "
-    self.readIgnoreLists(knownPath, "crashes.txt", self.readCrashesIgnoreList)
+    if (knownPath != None):
+      self.readIgnoreLists(knownPath, "crashes.txt", self.readCrashesIgnoreList)
     print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(self.ignoreList))
 
   def readCrashesIgnoreList(self, filename):
@@ -158,7 +160,8 @@ class LeakDetector(Detector):
   def __init__(self, knownPath):
     self.knownObjects = dict()
     self.sizes = 0
-    self.readIgnoreLists(knownPath, "rleak.txt", self.readLeaksIgnoreList)
+    if (knownPath != None):
+      self.readIgnoreLists(knownPath, "rleak.txt", self.readLeaksIgnoreList)
     #print "detect_leaks is ready"
     #print repr(self.knownObjects)
 
