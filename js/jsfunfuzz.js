@@ -605,7 +605,7 @@ function fillShellSandbox(sandbox)
 {
   var safeFuns = [
     "print",
-    "schedulegc", "gczeal", "gc", "gcslice",
+    "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
     "verifybarriers", "mjitChunkLimit", "gcPreserveCode",
     "evalcx", "newGlobal",
     "dumpln", "fillShellSandbox"
@@ -2431,6 +2431,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "{}"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "new Object"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "Object.create(" + val(d, b) + ")"); } },
+    { w: 3,  fun: function(d, b) { return "selectforgc(" + m("o") + ");" } },
 
     // s: String
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", "''"); } },
@@ -2493,6 +2494,7 @@ var makeEvilCallback;
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(makeExpr(d, b)) + ", " + m("g") + ")"); } },
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(makeBuilderStatement(d, b)) + ", " + m("g") + ")"); } },
     { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(fdecl(d, b)) + ", " + m("g") + ")"); } },
+    { w: 3,  fun: function(d, b) { return "schedulegc(" + m("g") + ");" } },
 
     // f: function (?)
     // Could probably do better with args / b
@@ -3130,6 +3132,12 @@ var exprMakers =
 
   // Force garbage collection "soon"
   function(d, b) { return "schedulegc(" + rnd(100) + ", " + makeBoolean(d, b) + ")"; },
+
+  // Add a compartment to the next garbage collection.
+  function(d, b) { return "schedulegc(" + makeExpr(d, b) + ")"; },
+
+  // Schedule the given objects to be marked in the next GC slice.
+  function(d, b) { return "selectforgc(" + makeExpr(d, b) + ")"; },
 
   // Verify write barriers. These functions are effective in pairs.
   // The first call sets up the start barrier, the second call sets up the end barrier.
