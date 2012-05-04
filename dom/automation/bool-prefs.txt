@@ -152,6 +152,7 @@ layout.word_select.stop_at_punctuation
 media.autoplay.enabled
 media.h264.enabled
 media.ogg.enabled
+media.opus.enabled
 media.wave.enabled
 media.webm.enabled
 network.auth.use-sspi
