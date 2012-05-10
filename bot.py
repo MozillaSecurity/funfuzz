@@ -17,7 +17,7 @@ from optparse import OptionParser
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
-sys.path.append(path1)
+sys.path.insert(0, path1)
 import downloadBuild
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
