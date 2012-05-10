@@ -73,7 +73,7 @@ def runCommand(cmd):
     return out
 
 
-def grabJob(relevantJobsDir, desiredJobType):
+def grabJob(remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
     while True:
         jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand("ls -1 " + relevantJobsDir).split("\n") )
         if len(jobs) > 0:
@@ -188,7 +188,7 @@ def main():
 
         if options.retestAll:
             print "Retesting time!"
-            (job, oldjobname, takenNameOnServer) = grabJob(relevantJobsDir, "_reduced")
+            (job, oldjobname, takenNameOnServer) = grabJob(remotePrefix, remoteSep, relevantJobsDir, "_reduced")
             if job:
                 reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                 print "reduced filename: " + reducedFn
@@ -198,7 +198,7 @@ def main():
                 shouldLoop = False
         else:
             shouldLoop = False
-            (job, oldjobname, takenNameOnServer) = grabJob(relevantJobsDir, "_needsreduction")
+            (job, oldjobname, takenNameOnServer) = grabJob(remotePrefix, remoteSep, relevantJobsDir, "_needsreduction")
             if job:
                 print "Reduction time!"
                 if not options.reuse_build:
