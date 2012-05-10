@@ -168,7 +168,9 @@ def main():
     remoteSep = "/" if remoteLoginAndMachine else localSep
     relevantJobsDir = remoteBase + buildType + remoteSep
     runCommand("mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
+    runCommand("chmod og+r " + remoteBase)
     runCommand("mkdir -p " + relevantJobsDir)
+    runCommand("chmod og+r " + relevantJobsDir)
 
     shouldLoop = True
     while shouldLoop:
