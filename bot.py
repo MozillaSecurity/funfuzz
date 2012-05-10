@@ -84,9 +84,9 @@ def grabJob(remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
                 job = copyFiles(remotePrefix + takenNameOnServer + remoteSep, "." + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part that will be redundant
-                os.rename(job, "wtmp1") # so lithium gets the same filename as before
-                print repr(("wtmp1/", oldjobname, takenNameOnServer))
-                return ("wtmp1/", oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
+                os.rename(job, relevantJobsDir + "wtmp1") # so lithium gets the same filename as before
+                print repr((relevantJobsDir + "wtmp1/", oldjobname, takenNameOnServer))
+                return (relevantJobsDir + "wtmp1/", oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
                 print "Raced to grab " + relevantJobsDir + oldNameOnServer + ", trying again"
                 continue
