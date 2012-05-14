@@ -249,7 +249,7 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
         if '-m' in shFlags:
             shFlags.remove('-m')
         assert '--random-flags' not in loopFList
-        #shFlags.append('--ion-eager')
+        shFlags.append('--ion-eager')
 
         # From bug 724444:
         #
