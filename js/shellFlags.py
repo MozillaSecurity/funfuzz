@@ -94,7 +94,7 @@ def randomFlagSet(shell):
 
 
 def basicFlagSets(shell):
-    if shellSupports(shell, "--no-ion"):
+    if shellSupportsFlag(shell, "--no-ion"):
         # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
         return [
             [],
@@ -114,13 +114,13 @@ def basicFlagSets(shell):
             # ,m,am,amd,n,mn,amn,amdn,mdn
             [],
             ['-m'],
-            ['-m', 'a'],
-            ['-m', 'a', 'd'],
+            ['-m', '-a'],
+            ['-m', '-a', '-d'],
             ['-n'],
             ['-m', '-n'],
-            ['-m', '-n', 'a'],
-            ['-m', '-n', 'a', 'd'],
-            ['-m', '-n', 'd']
+            ['-m', '-n', '-a'],
+            ['-m', '-n', '-a', '-d'],
+            ['-m', '-n', '-d']
         ]
 
 
