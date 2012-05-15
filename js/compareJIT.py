@@ -28,15 +28,15 @@ def ignoreMallocScribble(e):
   else:
     return e
 
-
-def compareJIT(jsEngine, infilename, logPrefix, knownPath, repo, timeout, deleteBoring=False):
-  lev = compareLevel(jsEngine, infilename, logPrefix + "-initial", knownPath, timeout, False)
+# For use by loopjsfunfuzz.py
+def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout, deleteBoring):
+  lev = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", knownPath, timeout, False, True)
 
   if jsInteresting.JS_OVERALL_MISMATCH <= lev:
-    itest = [__file__, "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
+    itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
     pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo)
     print infilename
-    print compareLevel(jsEngine, infilename, logPrefix + "-final", knownPath, timeout, True)
+    print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
   else:
     if jsInteresting.JS_FINE < lev:
       print "compareJIT is going to pretend that didn't happen (%d)" % lev
@@ -44,14 +44,16 @@ def compareJIT(jsEngine, infilename, logPrefix, knownPath, repo, timeout, delete
       os.remove(infilename)
 
 
-def compareLevel(jsEngine, infilename, logPrefix, knownPath, timeout, showDetailedDiffs):
-  combos = shellFlags.basicFlagSets(jsEngine)
-  commands = [[jsEngine] + combo + [infilename] for combo in combos]
+def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
+  combos = [flags] + shellFlags.basicFlagSets(jsEngine)
 
-  for i in range(0, len(commands)):
+  if quickMode:
+      # Only used during initial fuzzing. Allowed to have false negatives.
+      combos = combos[0:2]
+
+  for i in range(0, len(combos)):
     prefix = logPrefix + "-r" + str(i)
-    command = commands[i]
-    print repr(command)
+    command = [jsEngine] + combos[i] + [infilename]
     (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
     with open(prefix + "-out") as f:
@@ -141,12 +143,16 @@ def parseOptions(args):
                       type = "int", dest = "timeout",
                       default = 10,
                       help = "timeout in seconds")
+    parser.add_option("--flags",
+                      dest = "flagsSpaceSep",
+                      help = "space-separated list of one set of flags")
     options, args = parser.parse_args(args)
     if len(args) != 3:
         raise Exception("Wrong number of positional arguments. Need 3 (knownPath, jsengine, infilename).")
     options.knownPath = args[0]
     options.jsengine = args[1]
     options.infilename = args[2]
+    options.flags = options.flagsSpaceSep.split(" ")
     if not os.path.exists(options.jsengine):
         raise Exception("js shell does not exist: " + options.jsengine)
     return options
@@ -156,10 +162,10 @@ def init(args):
     global gOptions
     gOptions = parseOptions(args)
 def interesting(args, tempPrefix):
-    actualLevel = compareLevel(gOptions.jsengine, gOptions.infilename, tempPrefix, gOptions.knownPath, gOptions.timeout, False)
+    actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions.knownPath, gOptions.timeout, False, False)
     return actualLevel >= gOptions.minimumInterestingLevel
 
 if __name__ == "__main__":
     options = parseOptions(sys.argv[1:])
     knownPath = sys.argv[1]
-    print compareLevel(options.jsengine, options.infilename, "/tmp/compareJITmain", options.knownPath, options.timeout, True)
+    print compareLevel(options.jsengine, options.flags, options.infilename, "/tmp/compareJITmain", options.knownPath, options.timeout, True, False)

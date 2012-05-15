@@ -141,11 +141,13 @@ def many_timed_runs():
             pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
 
         else:
-            if options.useCompareJIT and level == jsInteresting.JS_FINE and os.path.join('build', 'dist', 'js') not in engine:
+            shellIsDeterministic = os.path.join('build', 'dist', 'js') not in engine
+            flagsAreDeterministic = "--dump-bytecode" not in engineFlags
+            if options.useCompareJIT and level == jsInteresting.JS_FINE and shellIsDeterministic and flagsAreDeterministic:
                 jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(engine, jitcomparefilename, logPrefix + "-cj", knownPath, options.repo, timeout, deleteBoring=True)
+                compareJIT.compareJIT(engine, engineFlags, jitcomparefilename, logPrefix + "-cj", knownPath, options.repo, timeout, True)
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
