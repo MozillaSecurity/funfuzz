@@ -14,6 +14,7 @@ interestingpy = os.path.join(p0, 'jsInteresting.py')
 import jsInteresting
 import pinpoint
 import compareJIT
+import shellFlags
 
 parser = OptionParser()
 parser.disable_interspersed_args()
@@ -78,11 +79,7 @@ def many_timed_runs():
     while True:
 
         if options.randomFlags:
-            # Grab a flag set from flagCombos
-            engineFlags = random.choice(jsInteresting.flagCombos)
-            if random.randint(0, 5) == 0:
-                # Test a subset of the flags, in random order
-                engineFlags = random.sample(engineFlags, random.randint(0, len(engineFlags)))
+            engineFlags = shellFlags.randomFlagSet(engine)
 
         runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
         jsunhappyArgs = jsunhappyArgsWithoutRunThis + runThis

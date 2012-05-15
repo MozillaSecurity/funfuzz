@@ -17,15 +17,6 @@ import detect_assertions
 import detect_interesting_crashes
 import detect_malloc_errors
 
-# JITFLAGS from http://hg.mozilla.org/tracemonkey/file/default/js/src/Makefile.in
-# or actually http://hg.mozilla.org/projects/jaegermonkey/file/default/js/src/Makefile.in
-# FIXME: I think --random-flags, which uses this, overwrites whatever we specify on the multi_timed_run.py input command line.
-flagCombos = ",m,am,amd,n,mn,amn,amdn,mdn"
-# -D trips compareJIT, and this is noted in startjsfunfuzz.py, but --random-flags uses this list instead of what is provided.
-#flagCombos = ",m,am,amd,n,mn,amn,amdn,mdn,D,mD,amD,amdD,nD,mnD,amnD,amdnD,mdnD"
-flagCombos = flagCombos.split(",")
-flagCombos = [["-"+c for c in s] for s in flagCombos]  # [[], ['-m'], ['-j'], ['-m', '-j'], ...]
-
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.

@@ -2,13 +2,15 @@
 
 from __future__ import with_statement
 
-import jsInteresting
 import os
 import pinpoint
 import subprocess
 import sys
 
 from optparse import OptionParser
+
+import jsInteresting
+import shellFlags
 
 lengthLimit = 1000000
 
@@ -26,6 +28,7 @@ def ignoreMallocScribble(e):
   else:
     return e
 
+
 def compareJIT(jsEngine, infilename, logPrefix, knownPath, repo, timeout, deleteBoring=False):
   lev = compareLevel(jsEngine, infilename, logPrefix + "-initial", knownPath, timeout, False)
 
@@ -40,17 +43,15 @@ def compareJIT(jsEngine, infilename, logPrefix, knownPath, repo, timeout, delete
     if deleteBoring:
       os.remove(infilename)
 
-def supportsMethodJIT(jsEngine):
-  p = subprocess.Popen([jsEngine, "-m", "-e", "1"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  (out, err) = p.communicate()
-  return err.find("usage") == -1
 
 def compareLevel(jsEngine, infilename, logPrefix, knownPath, timeout, showDetailedDiffs):
-  commands = [[jsEngine] + combo + [infilename] for combo in jsInteresting.flagCombos]
+  combos = shellFlags.basicFlagSets(jsEngine)
+  commands = [[jsEngine] + combo + [infilename] for combo in combos]
 
   for i in range(0, len(commands)):
     prefix = logPrefix + "-r" + str(i)
     command = commands[i]
+    print repr(command)
     (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
     with open(prefix + "-out") as f:
@@ -118,6 +119,7 @@ def compareLevel(jsEngine, infilename, logPrefix, knownPath, timeout, showDetail
   os.remove(prefix0 + "-out")
   os.remove(prefix0 + "-err")
   return jsInteresting.JS_FINE
+
 
 def showDifferences(f1, f2, showDetailedDiffs):
   diffcmd = ["diff", "-u", f1, f2]
