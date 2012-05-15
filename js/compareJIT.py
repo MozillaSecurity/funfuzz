@@ -51,9 +51,11 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
       # Only used during initial fuzzing. Allowed to have false negatives.
       combos = combos[0:2]
 
-  for i in range(0, len(combos)):
+  commands = [[jsEngine] + combo + [infilename] for combo in combos]
+
+  for i in range(0, len(commands)):
     prefix = logPrefix + "-r" + str(i)
-    command = [jsEngine] + combos[i] + [infilename]
+    command = commands[i]
     (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
     with open(prefix + "-out") as f:
