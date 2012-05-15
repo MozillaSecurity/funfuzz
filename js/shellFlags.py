@@ -70,8 +70,9 @@ def randomFlagSet(shell):
             args.append("--ion-eager")
         if chance(.2):
             args.append("--ion-gvn=" + random.choice(["off", "pessimistic", "optimistic"]))
-        if chance(.2):
-            args.append("--ion-regalloc=" + random.choice(["greedy", "lsra"]))
+        # Bug 755194
+        #if chance(.2):
+        #    args.append("--ion-regalloc=" + random.choice(["greedy", "lsra"]))
         if chance(.2):
             args.append("--ion-licm=off")
         if chance(.2):
