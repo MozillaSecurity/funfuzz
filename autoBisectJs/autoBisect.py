@@ -402,7 +402,9 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     ionBool = True if '--ion' in flagsRequired else False
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    if ionBool:
+    if '--no-ti' in flagsRequired:
+        return '300ac3d58291' # IonMonkey flag change (see bug 724751)
+    elif ionBool:
         return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
     elif typeInferBool:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
