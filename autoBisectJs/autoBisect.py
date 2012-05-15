@@ -39,8 +39,6 @@ verbose = False
 # It should work when running manually though.
 assert isVM()[1] == False
 
-COMPILATION_FAILED_LABEL = 'skip'
-
 shellCacheDirStart = os.path.join('c:', os.sep) if isVM() == ('Windows', True) \
     else os.path.join('~', 'Desktop')
 # This particular machine has insufficient disk space on the main drive.
@@ -58,7 +56,7 @@ def main():
     # Parse options and parameters from the command-line.
     options = parseOpts()
     (compileType, sourceDir, stdoutOutput, resetBool, startRepo, endRepo, paranoidBool, \
-     archNum, flagsRequired, watchExitCode, valgrindSupport, testAndLabel) = options
+     archNum, flagsRequired, watchExitCode, valgrindSupport, testAndLabel, compilationFailedLabel) = options
 
     sourceDir = os.path.expanduser(sourceDir)
     hgPrefix = ['hg', '-R', sourceDir]
@@ -87,13 +85,12 @@ def main():
     # 1. descendants(eae8350841be) - descendants(f3e58c264932) [partial]
     # Note: The following instructions are untested.
     # To add to the list of descendant revsets:
-    # - Temporarily set COMPILATION_FAILED_LABEL in autoBisect.py to 'bad' instead of 'skip'
     # - Then take one of the revs that fails, say fd756976e52c
     # - 404.js does not need to exist, but assuming tip / default works,
     # - (1) will tell you when the brokenness started
-    # - (1) autoBisect.py -p -a32 -s fd756976e52c 404.js
+    # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -s fd756976e52c 404.js
     # - (2) will tell you when the brokenness ended
-    # - (2) autoBisect.py -p -a32 -e fd756976e52c 404.js
+    # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -e fd756976e52c 404.js
     # Alternative: (descendants(last good changeset)-descendants(first working changeset))
     captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
@@ -116,7 +113,7 @@ def main():
         captureStdout(hgPrefix + ['bisect', '-U', '-g', startRepo])
         currRev = extractChangesetFromMessage(firstLine(captureStdout(hgPrefix + ['bisect', '-U', '-b', endRepo])[0]))
 
-    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel)
+    testRev = makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel, compilationFailedLabel)
 
     iterNum = 1
     if paranoidBool:
@@ -190,7 +187,7 @@ def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, en
         print label[0] + " (" + label[1] + ") "
         print "Try setting -s to %s, and -e to %s, and re-run autoBisect." % (ca, parents[0])
 
-def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel):
+def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel, compilationFailedLabel):
     def testRev(rev):
         cachedShell = os.path.join(shellCacheDir, shellName(archNum, compileType, rev, valgrindSupport))
         cachedNoShell = cachedShell + ".busted"
@@ -200,7 +197,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport,
             jsShellName = cachedShell
             print "Found cached shell...   ",
         elif os.path.exists(cachedNoShell):
-            return (COMPILATION_FAILED_LABEL, 'compilation failed (cached)')
+            return (compilationFailedLabel, 'compilation failed (cached)')
         else:
             print "Updating...",
             captureStdout(hgPrefix + ['update', '-r', rev], ignoreStderr=True)
@@ -211,7 +208,7 @@ def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport,
                                         rev)
             except Exception, e:
                 open(cachedNoShell, 'w').close()
-                return (COMPILATION_FAILED_LABEL, 'compilation failed (' + str(e) + ')')
+                return (compilationFailedLabel, 'compilation failed (' + str(e) + ')')
 
         print "Testing...",
         return testAndLabel(jsShellName, rev)
@@ -343,6 +340,12 @@ def parseOpts():
                       help='Define the flags to reproduce the bug, e.g. "-m,-j". ' + \
                            'Defaults to "%default"')
 
+    parser.add_option('--compilation-failed-label',
+                      dest='compilationFailedLabel',
+                      default='skip',
+                      help='How to treat revisions that fail to compile (bad, good, or skip)' + \
+                           'Defaults to "%default"')
+
     # Enable valgrind support.
     parser.add_option('-v', '--valgrind',
                       dest='valgSupport',
@@ -351,6 +354,8 @@ def parseOpts():
                       help='Enable valgrind support. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
+
+    assert options.compilationFailedLabel in ("bad", "good", "skip")
 
     flagsReqList = filter(None, options.flagsRequired.split(','))
 
@@ -370,7 +375,7 @@ def parseOpts():
 
     return options.compileType, options.dir, options.output, \
             options.resetBool, options.startRepo, options.endRepo, options.paranoidBool, options.archi, \
-            flagsReqList, options.watchExitCode, options.valgSupport, testAndLabel
+            flagsReqList, options.watchExitCode, options.valgSupport, testAndLabel, options.compilationFailedLabel
 
 def hgId(rev):
     return captureStdout(hgPrefix + ['log', '--template={node|short}', '-r', rev])[0]
