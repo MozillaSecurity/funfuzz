@@ -148,7 +148,7 @@ def parseOptions(args):
     return options
 
 
-# multi_timed_run uses parseOptions and jsfunfuzzLevel
+# loopjsfunfuzz.py uses parseOptions and jsfunfuzzLevel
 # compareJIT.py uses baseLevel
 
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
