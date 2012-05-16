@@ -404,6 +404,8 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # These should be in descending order, or bisection will break at earlier changesets.
     if '--no-ti' in flagsRequired:
         return '300ac3d58291' # IonMonkey flag change (see bug 724751)
+    elif '--ion-eager' in flagsRequired:
+        return '4ceb3e9961e4' # See bug 683039: "Delay Ion compilation until a function is hot"
     elif ionBool:
         return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
     elif typeInferBool:
