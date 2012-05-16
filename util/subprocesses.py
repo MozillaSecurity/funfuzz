@@ -8,6 +8,7 @@ import os
 import platform
 import subprocess
 import time
+import re
 
 verbose = False
 
@@ -56,7 +57,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
     '''
     Captures standard output, returns the output as a string, along with the return value.
     '''
-    vdump(' '.join(inputCmd))
+    vdump(shellify(inputCmd))
     cmd = []
     for el in inputCmd:
         if (el.startswith('"') and el.endswith('"')):
@@ -77,7 +78,8 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         # makeShell function in autoBisect.
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'no such option: -s' not in stdout:
-            print 'Nonzero exit code from ' + repr(cmd)
+            print 'Nonzero exit code from: '
+            print '  ' + shellify(cmd)
             print stdout
         if stderr is not None:
             print stderr
@@ -93,13 +95,15 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             # Ignore stderr warning when running a Linux VM on a Mac host:
             # Not trusting file /mnt/hgfs/trees/mozilla-central/.hg/hgrc from untrusted user 501...
             'hgrc from untrusted user 501' in stderr)):
-            print 'Unexpected output on stderr from ' + repr(cmd)
+            print 'Unexpected output on stderr from: '
+            print '  ' + shellify(cmd)
             print stdout, stderr
             raise Exception('Unexpected output on stderr')
     if stderr and ignoreStderr and len(stderr) > 0 and p.returncode != 0:
         # During configure, there will always be stderr. Sometimes this stderr causes configure to
         # stop the entire script, especially on Windows.
-        print 'Return code not zero, and unexpected output on stderr from ' + repr(cmd)
+        print 'Return code not zero, and unexpected output on stderr from: '
+        print '  ' + shellify(cmd)
         print stdout, stderr
         raise Exception('Return code not zero, and unexpected output on stderr')
     if verbose or verbosity:
@@ -126,14 +130,31 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     Calculates how long a captureStdout command takes and prints it. Returns the stdout and return
     value that captureStdout passes on.
     '''
-    print 'Running `%s` now..' % ' '.join(command)
+    print 'Running `%s` now..' % shellify(command)
     startTime = time.time()
     stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
                                       combineStderr=combineStderr, ignoreExitCode=ignoreExitCode,
                                       currWorkingDir=cwd, env=env, verbosity=vb)
     endTime = time.time()
-    print '`' + ' '.join(command) + '` took %.3f seconds.\n' % (endTime - startTime)
+    print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return stdOutput, retVal
+
+okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~]*$""")
+okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~ ]*$""")
+
+def shellify(cmd):
+    """Attempt to convert an arguments array to an equivalent string that can be pasted into a shell."""
+    ssc = []
+    for i in xrange(len(cmd)):
+        item = cmd[i]
+        if okUnquotedRE.match(item):
+            ssc.append(item)
+        elif okQuotedRE.match(item):
+            ssc.append('"' + item + '"')
+        else:
+            vdump("Sorry, shellify doesn't know how to escape " + item)
+            return repr(cmd)
+    return ' '.join(ssc)
 
 def vdump(inp):
     '''
