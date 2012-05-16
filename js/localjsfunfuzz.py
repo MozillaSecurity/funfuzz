@@ -239,8 +239,8 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
 
     if repoName == 'ionmonkey':
         #rndIntIM = randint(0, 5)  # randint comes from the random module.
-        # --random-flags takes in flags from jsInteresting.py, so it must be disabled.
-        loopFList.remove('--random-flags')
+        ## --random-flags takes in flags from jsInteresting.py, so it must be disabled.
+        #loopFList.remove('--random-flags')
         loopFList.remove('--comparejit')  # Disabled until compareJIT has its flag support updated.
         if '-d' in shFlags:
             shFlags.remove('-d')  # as of early Feb 2012, -d disables --ion
@@ -248,7 +248,7 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
             shFlags.remove('-n')
         if '-m' in shFlags:
             shFlags.remove('-m')
-        assert '--random-flags' not in loopFList
+        #assert '--random-flags' not in loopFList
         shFlags.append('--ion-eager')
 
         # From bug 724444:
