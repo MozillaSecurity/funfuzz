@@ -607,7 +607,7 @@ function fillShellSandbox(sandbox)
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
     "verifybarriers", "mjitChunkLimit", "gcPreserveCode",
-    "evalcx", "newGlobal",
+    "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox"
   ];
 
@@ -2373,6 +2373,16 @@ var makeEvilCallback;
     return "configurable: " + makeBoolean(d, b) + ", " + "enumerable: " + makeBoolean(d, b) + ", ";
   }
 
+  function strToEval(d, b)
+  {
+    switch(rnd(4)) {
+      case 0:  return simpleSource(fdecl(d, b));
+      case 1:  return simpleSource(makeBuilderStatement(d, b));
+      case 2:  return simpleSource(makeExpr(d, b));
+      default: return simpleSource(makeStatement(d, b));
+    }
+  }
+
   var initializedEverything = false;
   function initializeEverything(d, b)
   {
@@ -2488,12 +2498,9 @@ var makeEvilCallback;
 
     // g: global or sandbox
     { w: 1,  fun: function(d, b) { return assign(d, b, "g", makeGlobal(d, b)); } },
-    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + simpleSource(makeExpr(d, b)) + ")"); } },
-    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + simpleSource(makeBuilderStatement(d, b)) + ")"); } },
-    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + simpleSource(fdecl(d, b)) + ")"); } },
-    { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(makeExpr(d, b)) + ", " + m("g") + ")"); } },
-    { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(makeBuilderStatement(d, b)) + ", " + m("g") + ")"); } },
-    { w: 3,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + simpleSource(fdecl(d, b)) + ", " + m("g") + ")"); } },
+    { w: 5,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + strToEval(d, b) + ")"); } },
+    { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + strToEval(d, b) + ", " + m("g") + ")"); } },
+    { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", { global: " + m("g") + ", fileName: " + rndElt(["'evaluate.js'", "null"]) + ", lineNumber: 42, newContext: " + makeBoolean(d, b) + ", compileAndGo: " + makeBoolean(d, b) + " })"); } },
     { w: 3,  fun: function(d, b) { return "schedulegc(" + m("g") + ");" } },
 
     // f: function (?)
@@ -3199,6 +3206,9 @@ if (typeof evalcx == "function") {
 function makeGlobal(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  if (rnd(10))
+    return "this";
 
   var gs = rndElt([
     "evalcx('')",
