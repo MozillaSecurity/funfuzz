@@ -147,6 +147,7 @@ def parseOptions(args):
                       help = "timeout in seconds")
     parser.add_option("--flags",
                       dest = "flagsSpaceSep",
+                      default = "",
                       help = "space-separated list of one set of flags")
     options, args = parser.parse_args(args)
     if len(args) != 3:
@@ -154,7 +155,7 @@ def parseOptions(args):
     options.knownPath = args[0]
     options.jsengine = args[1]
     options.infilename = args[2]
-    options.flags = options.flagsSpaceSep.split(" ")
+    options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not os.path.exists(options.jsengine):
         raise Exception("js shell does not exist: " + options.jsengine)
     return options
