@@ -11,7 +11,7 @@ import time
 from HTMLParser import HTMLParser
 
 from optparse import OptionParser
-from subprocesses import captureStdout, normExpUserPath, vdump
+from subprocesses import captureStdout, normExpUserPath, shellify, vdump
 
 devnull = open(os.devnull, "w")
 
@@ -30,7 +30,7 @@ def readFromURL(url):
               'in ~/.wgetrc'
         raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
     elif retVal != 0:
-        print 'inpCmdList is: ' + ' '.join(inpCmdList)
+        print 'inpCmdList is: ' + shellify(inpCmdList)
         raise Exception('The following exit code was returned: ' + str(retVal))
     else:
         return out

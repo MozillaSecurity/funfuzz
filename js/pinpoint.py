@@ -15,7 +15,7 @@ shellBeautificationpy = os.path.join(p0, 'shellBeautification.py')
 
 path2 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import captureStdout
+from subprocesses import captureStdout, shellify
 
 def tempdir(path):
     os.mkdir(path)
@@ -34,17 +34,17 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
     valgrindX = ["--valgrind"] if valgrindSupport else []
 
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
-    print ' '.join([lithiumpy] + lithArgs)
+    print shellify([lithiumpy] + lithArgs)
     subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + "-lith1-tmp")] + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
 
     if alsoRunChar:
         lith2Args = ["--char"] + lithArgs
-        print ' '.join([lithiumpy] + lith2Args)
+        print shellify([lithiumpy] + lith2Args)
         subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + "-lith2-tmp")] + lith2Args, stdout=open(logPrefix + "-lith2-out", "w"))
 
     print
     print "Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
-    print ' '.join([lithiumpy, "--strategy=check-only"] + lithArgs)
+    print shellify([lithiumpy, "--strategy=check-only"] + lithArgs)
     print
 
     unbeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only", tempdir(logPrefix + "-lith-b-tmp")] + lithArgs)[0]
@@ -81,7 +81,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                 lithArgs = lithArgs[0:-1]
                 lithArgs = lithArgs + [infilename]
                 assert beautifiedFilename not in lithArgs
-                #print ' '.join([lithiumpy] + lithArgs)
+                #print shellify([lithiumpy] + lithArgs)
                 subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
 
                 # Run it using char only after 3 tries of toString and uneval reduction each.
@@ -92,7 +92,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
                     assert iterNum in (9, 11, 13)  # Refer to reduction method below
                     lith2Args = ["--char"] + lithArgs
                     assert beautifiedFilename not in lith2Args
-                    #print ' '.join([lithiumpy] + lith2Args)
+                    #print shellify([lithiumpy] + lith2Args)
                     subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lith2Args, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
             else:
                 # Beautified testcase is no longer interesting.
@@ -163,7 +163,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, al
         # inspectShell in general need at least Python 2.6 because of this.
         if not isBuildSlave and sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell" and os.path.join('build', 'dist', 'js') not in jsEngine:
             autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-d", bisectRepo, "-i", "-p", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), "--flags=" + ','.join(engineFlags)] + [infilename] + itest
-            print ' '.join(autobisectCmd)
+            print shellify(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
         elif not isBuildSlave and sys.version_info < (2, 6):

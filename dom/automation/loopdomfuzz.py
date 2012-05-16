@@ -21,6 +21,10 @@ fuzzersDir = os.path.abspath(os.path.join(p0, os.pardir, "fuzzers"))
 lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, os.pardir, "lithium", "lithium.py")]
 domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
 
+path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
+sys.path.append(path1)
+from subprocesses import shellify
+
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
 
@@ -159,7 +163,7 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
       lithArgs = ["--tempdir=" + lithtmp] + lithArgs
       lithlogfn = logPrefix + "-lith" + fileTag + "-out"
     print "Preparing to run Lithium, log file " + lithlogfn
-    print " ".join(lithiumpy + lithArgs)
+    print subprocesses.shellify(lithiumpy + lithArgs)
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
     if deletableLithTemp:
