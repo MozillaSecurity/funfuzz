@@ -21,7 +21,7 @@ import ximport
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import captureStdout, dateStr, isVM, macType, normExpUserPath, vdump
+from subprocesses import captureStdout, dateStr, isVM, macType, normExpUserPath, shellify, vdump
 
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path3)
@@ -506,7 +506,7 @@ def testBinary(shell, testFile, flagsRequired, valgSupport):
         valgPrefixCmd.append('--smc-check=all-non-file')
         valgPrefixCmd.append('--leak-check=full')
         testBinaryCmd = valgPrefixCmd + testBinaryCmd
-    vdump('The testing command is: ' + ' '.join(testBinaryCmd))
+    vdump('The testing command is: ' + shellify(testBinaryCmd))
 
     # Capture stdout and stderr into the same string.
     p = subprocess.Popen(testBinaryCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
