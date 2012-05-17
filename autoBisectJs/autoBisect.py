@@ -100,6 +100,7 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(8de0a7fef2c0)-descendants(d43e89d8a20b))'], ignoreStderr=True, ignoreExitCode=True) # early jaeger
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c to tm merge that broke compilation
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True) # clang compilation failure in Mac OS X 10.7
     if 'ionmonkey' in sourceDir:  # Can be removed when IonMonkey lands in mozilla-central.
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(150159ee5c26)-descendants(fed610aff637))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(300ac3d58291)-descendants(bc1833f2111e))'], ignoreStderr=True, ignoreExitCode=True) # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
