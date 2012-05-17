@@ -344,7 +344,7 @@ def parseOpts():
     parser.add_option('--compilation-failed-label',
                       dest='compilationFailedLabel',
                       default='skip',
-                      help='How to treat revisions that fail to compile (bad, good, or skip)' + \
+                      help='How to treat revisions that fail to compile (bad, good, or skip). ' + \
                            'Defaults to "%default"')
 
     # Enable valgrind support.
