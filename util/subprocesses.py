@@ -139,8 +139,8 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return stdOutput, retVal
 
-okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~]*$""")
-okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~ ]*$""")
+okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
+okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@ ]*$""")
 
 def shellify(cmd):
     """Attempt to convert an arguments array to an equivalent string that can be pasted into a shell."""
