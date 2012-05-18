@@ -163,7 +163,7 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
       lithArgs = ["--tempdir=" + lithtmp] + lithArgs
       lithlogfn = logPrefix + "-lith" + fileTag + "-out"
     print "Preparing to run Lithium, log file " + lithlogfn
-    print subprocesses.shellify(lithiumpy + lithArgs)
+    print shellify(lithiumpy + lithArgs)
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
     if deletableLithTemp:
