@@ -48,7 +48,7 @@ def many_timed_runs(targetTime, args):
         with open(os.path.join(p0, "bool-prefs.txt")) as f:
             boolPrefNames = filter(lambda s: len(s) and s[0] != "#", f)
 
-        for iteration in range(0, maxIterations):
+        for iteration in xrange(0, maxIterations):
             if targetTime and time.time() > startTime + targetTime:
                 print "Out of time!"
                 if len(os.listdir(tempDir)) == 0:
