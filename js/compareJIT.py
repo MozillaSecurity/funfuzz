@@ -12,6 +12,12 @@ from optparse import OptionParser
 import jsInteresting
 import shellFlags
 
+path0 = os.path.dirname(os.path.abspath(__file__))
+path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+sys.path.append(path1)
+from subprocesses import shellify
+
+
 lengthLimit = 1000000
 
 def lastLine(err):
@@ -75,7 +81,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
     elif lev != jsInteresting.JS_FINE:
       # would be more efficient to run lithium on one or the other, but meh
       print "compareJIT is not comparing output because a run was unhappy:"
-      print "  " + repr(command) + ": " + jsInteresting.summaryString(issues, r)
+      print "  " + shellify(command)
+      print "  " + jsInteresting.summaryString(issues, r)
       os.remove(prefix + "-out")
       os.remove(prefix + "-err")
       if i > 0:
@@ -101,16 +108,16 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
       elif r.err != r0.err:
         print infilename
         print "Mismatch on stderr"
-        print ' '.join(commands[0])
-        print ' '.join(command)
+        print "  " + shellify(commands[0])
+        print "  " + shellify(command)
         showDifferences(prefix0 + "-err", prefix + "-err", showDetailedDiffs)
         print ""
         return jsInteresting.JS_OVERALL_MISMATCH
       elif r.out != r0.out:
         print infilename
         print "Mismatch on stdout"
-        print ' '.join(commands[0])
-        print ' '.join(command)
+        print "  " + shellify(commands[0])
+        print "  " + shellify(command)
         showDifferences(prefix0 + "-out", prefix + "-out", showDetailedDiffs)
         print ""
         return jsInteresting.JS_OVERALL_MISMATCH
