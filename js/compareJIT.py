@@ -6,6 +6,7 @@ import os
 import pinpoint
 import subprocess
 import sys
+import re
 
 from optparse import OptionParser
 
@@ -49,6 +50,8 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout,
     if deleteBoring:
       os.remove(infilename)
 
+
+dvgRE = re.compile("TypeError\: .* is .*")
 
 def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
   combos = shellFlags.basicFlagSets(jsEngine)
@@ -101,12 +104,18 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
       (r0, prefix0) = (r, prefix)
     else:
       if "js_ReportOverRecursed called" in r.err and "js_ReportOverRecursed called" in r0.err:
+        #print "Ignoring js_ReportOverRecursed difference"
         # delete extra files
         os.remove(prefix + "-out")
         os.remove(prefix + "-err")
         pass
-      elif "can't convert" in r0.out: # Bug 735316
-        # delete extra files
+      elif "can't convert" in r0.out or "can't convert" in r.out: # Bug 735316
+        #print "Ignoring DVG difference (bug 735316?)"
+        os.remove(prefix + "-out")
+        os.remove(prefix + "-err")
+        pass
+      elif dvgRE.search(r0.out) and dvgRE.search(r.out): # Bug 755813
+        #print "Ignoring DVG difference (bug 755813?)"
         os.remove(prefix + "-out")
         os.remove(prefix + "-err")
         pass
