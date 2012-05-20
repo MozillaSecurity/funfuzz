@@ -51,11 +51,14 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout,
 
 
 def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
-  combos = [flags] + shellFlags.basicFlagSets(jsEngine)
+  combos = shellFlags.basicFlagSets(jsEngine)
 
   if quickMode:
       # Only used during initial fuzzing. Allowed to have false negatives.
-      combos = combos[0:2]
+      combos = [combos[0]]
+
+  if len(flags):
+      combos.append(flags)
 
   commands = [[jsEngine] + combo + [infilename] for combo in combos]
 
@@ -73,8 +76,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
       r.out = "VERYLONGOUT"
     r.err = ignoreMallocScribble(r.err)
 
-    if r.rc == 2 and r.err.find('usage: js [') != -1:
-      #print "This js shell doesn't support flag combination " + repr(command[1:-1])
+    if (r.rc == 1 or r.rc == 2) and (r.err.find('usage: ') != -1 or r.out.find('Usage: ') != -1):
+      print "Got usage error from:"
+      print "  " + shellify(command)
+      assert i > 0
       os.remove(prefix + "-out")
       os.remove(prefix + "-err")
       continue
