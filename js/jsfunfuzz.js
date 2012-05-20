@@ -3621,8 +3621,6 @@ var builtinFunctions = ["(function(){})"];
     for (var i = 0; i < gns.length; ++i) {
       var gn = gns[i];
       if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement") { // assume that most uppercase names are constructors
-        if (gn == "ParallelArray")
-          continue; // bug 743480
         var g = this[gn];
         if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
           constructors.push(gn);
