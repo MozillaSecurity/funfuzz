@@ -47,10 +47,7 @@ timeout = int(args[0])
 knownPath = os.path.expanduser(args[1])
 engine = args[2]
 engineFlags = args[3:]
-# This is the original jsfunfuzz file from the jsfunfuzz directory, with full paths.
 jsfunfuzzToBeUsed = options.fuzzjs
-# This is the local jsfunfuzz file to be used.
-#jsfunfuzzToBeUsed = 'jsfunfuzz.js'
 runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
 
 def showtail(filename):
@@ -65,7 +62,6 @@ def showtail(filename):
     print ""
     print ""
 
-
 def many_timed_runs():
     global engineFlags
     iteration = 0
@@ -75,7 +71,6 @@ def many_timed_runs():
         jsunhappyArgsWithoutRunThis.append("--valgrind")
     jsunhappyArgsWithoutRunThis.append(knownPath)
 
-    #shutil.copy2(options.fuzzjs, 'backupJsfunfuzz.js')
     while True:
 
         if options.randomFlags:
@@ -87,18 +82,6 @@ def many_timed_runs():
 
         iteration += 1
 
-        if False:
-            # Integration of jandem's method fuzzer with jsfunfuzz
-            # Keep regenerating new objects together with jsfunfuzz.js
-            shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
-            # Run 4test.py and output to current directory.
-            subprocess.call(['python', '-u', tempDir + os.sep + '..' + os.sep + '4test.py', engine, '.'])
-
-            # Splice jsfunfuzz.js with current.js from 4test.py
-            [before2, after2] = fuzzSpliceHacky(open('jsfunfuzz.js'))
-            newfileLines2 = before2 + linesWith(open('current.js'), "") + after2
-            writeLinesToFile(newfileLines2, 'jsfunfuzz.js')
-
         logPrefix = tempDir + os.sep + "w" + str(iteration)
 
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
@@ -106,10 +89,6 @@ def many_timed_runs():
         oklevel = jsInteresting.JS_KNOWN_CRASH
         if jsfunfuzzToBeUsed.find("jsfunfuzz") != -1:
             # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
-            # Switch to allowing jsfunfuzz not finishing and deciding to exit, after Fx 4 and integration of jandem's method fuzzer
-            # FIXME: jandem's method fuzzer cannot work with JS_DECIDED_TO_EXIT, currently if the latter is allowed, only pure jsfunfuzz.js should be used.
-            # The method fuzzer needs another run of objectTester.js from bug 630996, because it doesn't have evalcx.
-            # The method fuzzer also needs its wrap() function removed.
             # When running xpcshell, ./run-mozilla-sh appears not necessary, but remember to append LD_LIBRARY_PATH=. especially on Linux.
             # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
             # All in all, xpcshell support is still largely blocked because of bug 613142.
@@ -159,7 +138,6 @@ def many_timed_runs():
             if (os.path.exists(logPrefix + "-cj-initial-r5-core.gz")):
                 os.remove(logPrefix + "-cj-initial-r5-core.gz")
 
-
 def fuzzSplice(file):
     '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
     before = []
@@ -177,24 +155,6 @@ def fuzzSplice(file):
     file.close()
     return [before, after]
 
-def fuzzSpliceHacky(file):
-    '''Returns the lines of a file, minus the ones between the two lines specified below'''
-    before = []
-    after = []
-    for line in file:
-        before.append(line)
-        if line.find("// 1. grep tryIt LOGFILE") != -1:
-            break
-    for line in file:
-        if line.find("// 2. Paste the result between ") != -1:
-            after.append(line)
-            break
-    for line in file:
-        after.append(line)
-    file.close()
-    return [before, after]
-
-
 def linesWith(file, searchFor):
     '''Returns the lines from a file that contain a given string'''
     matchingLines = []
@@ -203,7 +163,6 @@ def linesWith(file, searchFor):
             matchingLines.append(line)
     file.close()
     return matchingLines
-
 
 def writeLinesToFile(lines, filename):
     f = open(filename, "w")
@@ -224,11 +183,5 @@ def createTempDir():
             i += 1
     print tempDir + os.sep
 
-
 createTempDir()
-try:
-    many_timed_runs()
-except KeyboardInterrupt:
-    # If the user presses Ctrl-C to stop loopjsfunfuzz.py, overwrite jsfunfuzz.js with the original.
-    #shutil.copy2('backupJsfunfuzz.js', 'jsfunfuzz.js')
-    pass
+many_timed_runs()
