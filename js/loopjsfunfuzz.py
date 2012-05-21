@@ -206,9 +206,9 @@ def linesWith(file, searchFor):
 
 
 def writeLinesToFile(lines, filename):
-      f = open(filename, "w")
-      f.writelines(lines)
-      f.close()
+    f = open(filename, "w")
+    f.writelines(lines)
+    f.close()
 
 def createTempDir():
     global tempDir

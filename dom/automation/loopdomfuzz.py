@@ -152,43 +152,43 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
     """
     deletableLithTemp = None
     if targetTime:
-      # loopdomfuzz.py is being used by bot.py
-      deletableLithTemp = mkdtemp(prefix="domfuzz-ldf-bot")
-      lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
-      lithlogfn = logPrefix[:-1] + os.sep + "lith" + fileTag + "-out"
+        # loopdomfuzz.py is being used by bot.py
+        deletableLithTemp = mkdtemp(prefix="domfuzz-ldf-bot")
+        lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
+        lithlogfn = logPrefix[:-1] + os.sep + "lith" + fileTag + "-out"
     else:
-      # loopdomfuzz.py is being run standalone
-      lithtmp = logPrefix + "-lith" + fileTag + "-tmp"
-      os.mkdir(lithtmp)
-      lithArgs = ["--tempdir=" + lithtmp] + lithArgs
-      lithlogfn = logPrefix + "-lith" + fileTag + "-out"
+        # loopdomfuzz.py is being run standalone
+        lithtmp = logPrefix + "-lith" + fileTag + "-tmp"
+        os.mkdir(lithtmp)
+        lithArgs = ["--tempdir=" + lithtmp] + lithArgs
+        lithlogfn = logPrefix + "-lith" + fileTag + "-out"
     print "Preparing to run Lithium, log file " + lithlogfn
     print shellify(lithiumpy + lithArgs)
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
     if deletableLithTemp:
-      shutil.rmtree(deletableLithTemp)
+        shutil.rmtree(deletableLithTemp)
     r = readLithiumResult(lithlogfn)
     subprocess.call(["gzip", "-f", lithlogfn])
     return r
 
 def readLithiumResult(lithlogfn):
     with open(lithlogfn) as f:
-      for line in f:
-        if line.startswith("Lithium result"):
-          print line.rstrip()
-        if line.startswith("Lithium result: interesting"):
-          return (lithlogfn, LITH_RETESTED_STILL_INTERESTING, None)
-        elif line.startswith("Lithium result: succeeded, reduced to: "):
-          reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
-          return (lithlogfn, LITH_FINISHED, reducedTo)
-        elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
-          return (lithlogfn, LITH_NO_REPRO, None)
-        elif line.startswith("Lithium result: please continue using: "):
-          lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
-          return (lithlogfn, LITH_PLEASE_CONTINUE, lithiumHint)
-      else:
-        return (lithlogfn, LITH_BUSTED, None)
+        for line in f:
+            if line.startswith("Lithium result"):
+                print line.rstrip()
+            if line.startswith("Lithium result: interesting"):
+                return (lithlogfn, LITH_RETESTED_STILL_INTERESTING, None)
+            elif line.startswith("Lithium result: succeeded, reduced to: "):
+                reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
+                return (lithlogfn, LITH_FINISHED, reducedTo)
+            elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
+                return (lithlogfn, LITH_NO_REPRO, None)
+            elif line.startswith("Lithium result: please continue using: "):
+                lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
+                return (lithlogfn, LITH_PLEASE_CONTINUE, lithiumHint)
+        else:
+            return (lithlogfn, LITH_BUSTED, None)
 
 
 def getURLs(reftestFilesDir):
