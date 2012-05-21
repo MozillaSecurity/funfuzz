@@ -6,9 +6,9 @@
 
 import os
 import platform
+import re
 import subprocess
 import time
-import re
 
 verbose = False
 
@@ -139,11 +139,10 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return stdOutput, retVal
 
-okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
-okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@ ]*$""")
-
 def shellify(cmd):
     """Attempt to convert an arguments array to an equivalent string that can be pasted into a shell."""
+    okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
+    okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@ ]*$""")
     ssc = []
     for i in xrange(len(cmd)):
         item = cmd[i]
@@ -162,6 +161,20 @@ def vdump(inp):
     '''
     if verbose:
         print 'DEBUG -', inp
+
+def wtmpDirCreation(tmpDirBase):
+    '''Create wtmp<num> directory, incrementing the number if one is already found.'''
+    i = 1
+    while True:
+        tmpDirWithNum = 'wtmp' + str(i)
+        tmpDir = tmpDirBase + os.sep + tmpDirWithNum
+        try:
+            os.mkdir(tmpDir)  # To avoid race conditions, we use try/except instead of exists/create
+            break
+        except OSError, e:
+            i += 1
+    vdump(tmpDirWithNum + os.sep)  # Even if not verbose, wtmp<num> is also dumped: wtmp1/w1: NORMAL
+    return tmpDirWithNum
 
 if __name__ == '__main__':
     pass
