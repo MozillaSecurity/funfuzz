@@ -163,7 +163,7 @@ def vdump(inp):
         print 'DEBUG -', inp
 
 def wtmpDirCreation(tmpDirBase):
-    '''Create wtmp<num> directory, incrementing the number if one is already found.'''
+    '''Create wtmp<number> directory, incrementing the number if one is already found.'''
     i = 1
     while True:
         tmpDirWithNum = 'wtmp' + str(i)
