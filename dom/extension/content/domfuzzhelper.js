@@ -77,7 +77,7 @@ function makeDOMFuzzHelper(aWindow) {
 
       deterministicgc:  function(a)       { Components.utils.getJSTestingFunctions().deterministicgc(a); },
       schedulegc:       function(a, b)    { Components.utils.getJSTestingFunctions().schedulegc(a,b); },
-      gczeal:           function(a, b, c) { Components.utils.getJSTestingFunctions().gczeal(a, b, c); },
+      gczeal:           function(a, b)    { Components.utils.getJSTestingFunctions().gczeal(a, b); },
       gcslice:          function(a)       { Components.utils.getJSTestingFunctions().gcslice(a); },
       verifybarriers:   function()        { Components.utils.getJSTestingFunctions().verifybarriers(); },
       mjitChunkLimit:   function(a)       { Components.utils.getJSTestingFunctions().mjitChunkLimit(a); },
