@@ -142,7 +142,7 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
 def shellify(cmd):
     """Attempt to convert an arguments array to an equivalent string that can be pasted into a shell."""
     okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
-    okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@ ]*$""")
+    okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\(\) ]*$""")
     ssc = []
     for i in xrange(len(cmd)):
         item = cmd[i]
