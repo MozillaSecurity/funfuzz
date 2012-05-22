@@ -533,6 +533,7 @@ def rdfInit(args):
 
 
 # should eventually try to squeeze this into automation.py or automationutils.py
+# FIXME: Use grabCrashLog in interesting/timedRun.py instead! There is a lot of duplicated code present.
 def grabCrashLog(progname, crashedPID, logPrefix, signum):
     import os, platform, time
     useLogFiles = isinstance(logPrefix, str)
