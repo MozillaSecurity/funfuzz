@@ -256,8 +256,9 @@ def downloadLatestBuild(buildType, workingDir, getJsShell=False):
     buildsSubDirList = filter(isNumericSubDir, buildsRawList)
     builds = [c[:-1] for c in buildsSubDirList]
     for b in reversed(builds):  # Try downloading the latest build first.
-        if downloadBuild(buildsHttpDir + b + '/', workingDir, jsShell=getJsShell):
-            return b
+        fullb = buildsHttpDir + b + '/'
+        if downloadBuild(fullb, workingDir, jsShell=getJsShell):
+            return fullb
     raise Exception('No builds in ' + buildsHttpDir + '!')
 
 def mozPlatformDetails():
