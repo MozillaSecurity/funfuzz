@@ -89,17 +89,16 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         # Read in binary mode, because otherwise Python on Windows will
         # throw a fit when it encounters certain unicode.  Note that this
         # makes line endings platform-specific.
-        logfile = open(logPrefix + "-out", "rb")
-        for line in logfile:
-            if (line.rstrip() == "It's looking good!"):
-                break
-            elif (line.rstrip() == "jsfunfuzz stopping due to above error!"):
-                lev = JS_DECIDED_TO_EXIT
-                issues.append("jsfunfuzz decided to exit")
-        else:
-            issues.append("jsfunfuzz didn't finish")
-            lev = JS_DID_NOT_FINISH
-        logfile.close()
+        with open(logPrefix + "-out", "rb") as f:
+            for line in f:
+                if (line.rstrip() == "It's looking good!"):
+                    break
+                elif (line.rstrip() == "jsfunfuzz stopping due to above error!"):
+                    lev = JS_DECIDED_TO_EXIT
+                    issues.append("jsfunfuzz decided to exit")
+            else:
+                issues.append("jsfunfuzz didn't finish")
+                lev = JS_DID_NOT_FINISH
 
     if not quiet:
         print logPrefix + ": " + summaryString(issues, runinfo)
