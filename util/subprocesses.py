@@ -167,7 +167,7 @@ def wtmpDirCreation(tmpDirBase):
     i = 1
     while True:
         tmpDirWithNum = 'wtmp' + str(i)
-        tmpDir = tmpDirBase + os.sep + tmpDirWithNum
+        tmpDir = os.path.join(tmpDirBase, tmpDirWithNum)
         try:
             os.mkdir(tmpDir)  # To avoid race conditions, we use try/except instead of exists/create
             break
