@@ -103,6 +103,7 @@ def writePrefs(profileDir, extraPrefs):
   user_pref("browser.safebrowsing.malware.enabled", false);
   user_pref("browser.search.update", false);
   user_pref("app.update.enabled", false);
+  user_pref("app.update.stage.enabled", false);
   user_pref("extensions.update.enabled", false);
   user_pref("extensions.getAddons.cache.enabled", false);
   user_pref("extensions.blocklist.enabled", false);

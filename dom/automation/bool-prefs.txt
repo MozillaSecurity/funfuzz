@@ -110,6 +110,7 @@ general.autoScroll
 general.smoothScroll
 geo.enabled
 gfx.canvas.azure.enabled
+gfx.content.azure.enabled
 gfx.color_management.enablev4
 gfx.downloadable_fonts.enabled
 gfx.filter.nearest.force-enabled
