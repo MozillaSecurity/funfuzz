@@ -155,7 +155,7 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
         # loopdomfuzz.py is being used by bot.py
         deletableLithTemp = mkdtemp(prefix="domfuzz-ldf-bot")
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
-        lithlogfn = logPrefix[:-1] + os.sep + "lith" + fileTag + "-out"
+        lithlogfn = os.path.join(logPrefix, "lith" + fileTag + "-out")
     else:
         # loopdomfuzz.py is being run standalone
         lithtmp = logPrefix + "-lith" + fileTag + "-tmp"
