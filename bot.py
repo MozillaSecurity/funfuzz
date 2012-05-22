@@ -34,37 +34,34 @@ localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in 
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
 
-# global which is set in __main__, used to operate over ssh
-remoteLoginAndMachine = None
-
 def assertTrailingSlash(d):
     assert d[-1] in ("/", "\\")
 
 # Copies a directory (the directory itself, not just its contents)
 # whose full name is |srcDir|, creating a subdirectory of |destParent| with the same short name.
-def copyFiles(srcDir, destParent):
+def copyFiles(remoteHost, srcDir, destParent):
     assertTrailingSlash(srcDir)
     assertTrailingSlash(destParent)
-    if remoteLoginAndMachine == None:
+    if remoteHost == None:
         subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
     else:
         subprocess.check_call(["scp", "-p", "-r", srcDir, destParent], stdout=devnull)
     srcDirLeaf = srcDir.split("/" if "/" in srcDir else "\\")[-2]
     return destParent + srcDirLeaf + destParent[-1]
 
-def tryCommand(cmd):
-    if remoteLoginAndMachine == None:
+def tryCommand(remoteHost, cmd):
+    if remoteHost == None:
         p = subprocess.Popen(["bash", "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        p = subprocess.Popen(["ssh", remoteLoginAndMachine, cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(["ssh", remoteHost, cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p.communicate()
     return p.returncode == 0
 
-def runCommand(cmd):
-    if remoteLoginAndMachine == None:
+def runCommand(remoteHost, cmd):
+    if remoteHost == None:
         p = subprocess.Popen(["bash", "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        p = subprocess.Popen(["ssh", remoteLoginAndMachine, cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(["ssh", remoteHost, cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if err != "":
         raise Exception("bot.py runCommand: stderr: " + repr(err))
@@ -73,16 +70,16 @@ def runCommand(cmd):
     return out
 
 
-def grabJob(remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
+def grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
     while True:
-        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand("ls -1 " + relevantJobsDir).split("\n") )
+        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(remoteHost, "ls -1 " + relevantJobsDir).split("\n") )
         if len(jobs) > 0:
             oldNameOnServer = jobs[0]
             shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
             takenNameOnServer = relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
-            if tryCommand("mv " + relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
+            if tryCommand(remoteHost, "mv " + relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
-                job = copyFiles(remotePrefix + takenNameOnServer + remoteSep, "." + localSep)
+                job = copyFiles(remoteHost, remotePrefix + takenNameOnServer + remoteSep, "." + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part that will be redundant
                 os.rename(job, "wtmp1") # so lithium gets the same filename as before
                 print repr(("wtmp1/", oldjobname, takenNameOnServer))
@@ -139,7 +136,7 @@ def parseOpts():
     parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
         help="Use the existing 'build' directory.")
     parser.add_option("--remote-host", dest="remote_host",
-        help="Use remote host to store fuzzing data; format: user@host")
+        help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
     parser.add_option("--basedir", dest="basedir",
         help="Base directory on remote machine to store fuzzing data")
     parser.add_option("--retest-all", dest="retestAll", action="store_true",
@@ -161,16 +158,17 @@ def main():
     options = parseOpts()
 
     buildType = downloadBuild.defaultBuildType(options)
-    remoteLoginAndMachine = options.remote_host
+    remoteHost = options.remote_host
     remoteBase = options.basedir
     # remotePrefix is used as a prefix for remoteBase when using scp
-    remotePrefix = (remoteLoginAndMachine + ":") if remoteLoginAndMachine else ""
-    remoteSep = "/" if remoteLoginAndMachine else localSep
+    remotePrefix = (remoteHost + ":") if remoteHost else ""
+    remoteSep = "/" if remoteHost else localSep
+    assert remoteBase.endswith(remoteSep)
     relevantJobsDir = remoteBase + buildType + remoteSep
-    runCommand("mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
-    runCommand("chmod og+r " + remoteBase)
-    runCommand("mkdir -p " + relevantJobsDir)
-    runCommand("chmod og+r " + relevantJobsDir)
+    runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
+    runCommand(remoteHost, "chmod og+r " + remoteBase)
+    runCommand(remoteHost, "mkdir -p " + relevantJobsDir)
+    runCommand(remoteHost, "chmod og+r " + relevantJobsDir)
 
     shouldLoop = True
     while shouldLoop:
@@ -180,7 +178,7 @@ def main():
         lithlog = None
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         buildDir = 'build'
-        #if remoteLoginAndMachine:
+        #if remoteHost:
         #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
         # FIXME: Put 'wtmp1' somewhere nicer, like ~/fuzztemp/. Make it possible to parallelize.
@@ -190,7 +188,7 @@ def main():
 
         if options.retestAll:
             print "Retesting time!"
-            (job, oldjobname, takenNameOnServer) = grabJob(remotePrefix, remoteSep, relevantJobsDir, "_reduced")
+            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_reduced")
             if job:
                 reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                 print "reduced filename: " + reducedFn
@@ -201,7 +199,7 @@ def main():
                 shouldLoop = False
         else:
             shouldLoop = False
-            (job, oldjobname, takenNameOnServer) = grabJob(remotePrefix, remoteSep, relevantJobsDir, "_needsreduction")
+            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_needsreduction")
             if job:
                 print "Reduction time!"
                 if not options.reuse_build:
@@ -215,7 +213,7 @@ def main():
 
             else:
                 print "Fuzz time!"
-                #if remoteLoginAndMachine:
+                #if remoteHost:
                 #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
                 if options.reuse_build and os.path.exists(buildDir):
                     buildSrc = buildDir
@@ -238,7 +236,6 @@ def main():
                     oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
                     os.rename("wtmp1", oldjobname)
                     job = oldjobname + localSep
-                    lithlog = job + "lith1-out"
 
         if lithlog:
             statePostfix = ({
@@ -263,19 +260,19 @@ def main():
             print "Uploading as: " + newjobname
             newjobnameTmp = newjobname + ".uploading"
             os.rename(job, newjobnameTmp)
-            copyFiles(newjobnameTmp + localSep, remotePrefix + relevantJobsDir + remoteSep)
-            runCommand("mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
+            copyFiles(remoteHost, newjobnameTmp + localSep, remotePrefix + relevantJobsDir + remoteSep)
+            runCommand(remoteHost, "mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
             shutil.rmtree(newjobnameTmp)
 
             # Remove the old *_taken directory from the server
             if takenNameOnServer:
-                runCommand("rm -rf " + takenNameOnServer)
+                runCommand(remoteHost, "rm -rf " + takenNameOnServer)
 
             # Remove build directory
             if not options.reuse_build and os.path.exists(buildDir):
                 shutil.rmtree(buildDir)
 
-            if remoteLoginAndMachine and ldfResult == loopdomfuzz.LITH_FINISHED:
+            if remoteHost and ldfResult == loopdomfuzz.LITH_FINISHED:
                 print "Sending email..."
                 sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "jruderman")
                 #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + \
