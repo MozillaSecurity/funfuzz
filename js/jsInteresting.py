@@ -52,10 +52,18 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     lev = JS_FINE
     issues = []
 
+    if detect_malloc_errors.amiss(logPrefix):
+        issues.append("malloc error")
+        lev = max(lev, JS_MALLOC_ERROR)
+
+    if valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
+        issues.append("valgrind reported an error")
+        lev = max(lev, JS_VG_AMISS)
+
     if detect_assertions.amiss(knownPath, logPrefix, True):
         issues.append("unknown assertion")
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-    if sta == timedRun.CRASHED and lev != JS_NEW_ASSERT_OR_CRASH:
+    elif sta == timedRun.CRASHED:
         if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash", True, runinfo.msg):
             if detect_assertions.amiss(knownPath, logPrefix, False, ignoreKnownAssertions=False):
                 issues.append("treating known assertion as a known crash")
@@ -66,18 +74,12 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
         else:
             issues.append("known crash")
             lev = max(lev, JS_KNOWN_CRASH)
-    if detect_malloc_errors.amiss(logPrefix):
-        issues.append("malloc error")
-        lev = max(lev, JS_MALLOC_ERROR)
-    if sta == timedRun.ABNORMAL:
-        issues.append("abnormal exit")
-        lev = max(lev, JS_ABNORMAL_EXIT)
-    if sta == timedRun.TIMED_OUT:
+    elif sta == timedRun.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, JS_TIMED_OUT)
-    if valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
-        issues.append("valgrind reported an error")
-        lev = max(lev, JS_VG_AMISS)
+    elif sta == timedRun.ABNORMAL and not (valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE):
+        issues.append("abnormal exit")
+        lev = max(lev, JS_ABNORMAL_EXIT)
 
     return (lev, issues, runinfo)
 
