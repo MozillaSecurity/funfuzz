@@ -217,7 +217,7 @@ def main():
                     buildSrc = buildDir
                 else:
                     if os.path.exists(buildDir):
-                        print "Deleting old build"
+                        print "Deleting old build..."
                         shutil.rmtree(buildDir)
                     os.mkdir(buildDir)
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, relevantJobsDir, getJsShell=options.runJsfunfuzz)
