@@ -144,7 +144,8 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
             # Maybe this is the first crash ever on this computer, and the dir does not yet exist.
             crashLogs = []
         # Firefox sometimes still runs as firefox-bin, at least on Mac (likely bug 658850)
-        crashLogs = filter(lambda s: (s.startswith(progname + "_") or s.startswith(progname + "-bin_")), crashLogs)
+        crashLogs = filter(
+            lambda s: (s.startswith(progname + "_") or s.startswith(progname + "-bin_")), crashLogs)
         crashLogs.sort(reverse=True)
         for fn in crashLogs:
             fullfn = os.path.join(reportDir, fn)
@@ -189,8 +190,8 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
                 isPidUsed = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
         coreFilename = 'core.' + str(crashedPID) if isPidUsed else 'core'
     if coreFilename and os.path.exists(coreFilename):
-        # Run gdb and move the core file.
-        # Tip: gdb gives more info for (debug with intact build dir > debug > opt with frame pointers > opt)
+        # Run gdb and move the core file. Tip: gdb gives more info for:
+        # (debug with intact build dir > debug > opt with frame pointers > opt)
         gdbCommandFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gdb-quick.txt")
         assert os.path.exists(gdbCommandFile)
         gdbArgs = ["gdb", "-n", "-batch", "-x", gdbCommandFile, progfullname, coreFilename]
@@ -227,7 +228,8 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
                 if loops > maxLoops:
                     # I suppose this might happen if the process corrupts itself so much that
                     # the crash reporter gets confused about the process name, for example.
-                    print "grabCrashLog waited a long time, but a crash log for " + progname + " [" + str(crashedPID) + "] never appeared!"
+                    print "grabCrashLog waited a long time, but a crash log for " + progname + \
+                        " [" + str(crashedPID) + "] never appeared!"
                     break
 
 def normExpUserPath(p):
@@ -249,7 +251,7 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     return stdOutput, retVal
 
 def shellify(cmd):
-    """Attempt to convert an arguments array to an equivalent string that can be pasted into a shell."""
+    """Try to convert an arguments array to an equivalent string that can be pasted into a shell."""
     okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
     okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\(\) ]*$""")
     ssc = []
@@ -271,7 +273,7 @@ def vdump(inp):
     if verbose:
         print 'DEBUG -', inp
 
-def wtmpDirCreation(tmpDirBase):
+def createWtmpDir(tmpDirBase):
     '''Create wtmp<number> directory, incrementing the number if one is already found.'''
     i = 1
     while True:

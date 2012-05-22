@@ -23,12 +23,11 @@ domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.
 
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import shellify
+from subprocesses import shellify, createWtmpDir
+from fileManipulation import fuzzDice, fuzzSplice, linesWith, writeLinesToFile
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
-
-tempDir = None
 
 maxIterations = 300000
 
@@ -36,7 +35,7 @@ maxIterations = 300000
 # If targetTime is a number, tries not to run for more than targetTime seconds.
 #   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
 def many_timed_runs(targetTime, args):
-    createTempDir()
+    tempDir = createWtmpDir(os.getcwdu())
     startTime = time.time()
 
     levelAndLines, deleteProfile, options = domInteresting.rdfInit(args)
@@ -114,7 +113,7 @@ def createReproFile(lines, logPrefix):
         print "loopdomfuzz is not sure what to do with content type " + repr(contentType) + " :("
         extension = "xhtml"
 
-    [wbefore, wafter] = fuzzDice(open(os.path.join(emptiesDir, "a." + extension)))
+    [wbefore, wafter] = fuzzDice(os.path.join(emptiesDir, "a." + extension))
 
     possibleDoctype = []
     if contentType == "text/html":
@@ -122,9 +121,11 @@ def createReproFile(lines, logPrefix):
         if len(docTypes) > 0:
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
 
-    fuzzjs = open(os.path.join(fuzzersDir, "fuzz.js")).readlines()
-    fuzzstartjs = open(os.path.join(fuzzersDir, "fuzz-start.js")).readlines()
-    [jbefore, jafter] = fuzzSplice(open(os.path.join(fuzzersDir, fuzzerJS)))
+    with open(os.path.join(fuzzersDir, "fuzz.js")) as f:
+        fuzzjs = f.readlines()
+    with open(os.path.join(fuzzersDir, "fuzz-start.js")) as g:
+        fuzzstartjs = g.readlines()
+    [jbefore, jafter] = fuzzSplice(os.path.join(fuzzersDir, fuzzerJS))
     fuzzlines = linesWith(lines, "FRCA")
     quittage = [
       "// DDEND\n",
@@ -210,71 +211,12 @@ def getURLs(reftestFilesDir):
 
     return fullURLs
 
-
-def createTempDir():
-    global tempDir
-    i = 1
-    while 1:
-        tempDir = "wtmp" + str(i)
-        # To avoid race conditions, we use try/except instead of exists/create
-        # Hopefully we don't get any errors other than "File exists" :)
-        try:
-            os.mkdir(tempDir)
-            break
-        except OSError, e:
-            i += 1
-    print tempDir + os.sep
-
 def randomHash():
     metaSeed = random.randint(1, 10000)
     metaInterval = 2 ** random.randint(0, 12) - 1
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5 + int(metaInterval / 10)
     metaMax = 3000
     return "#squarefree-af," + fuzzerJS + "," + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
-
-def fuzzSplice(file):
-    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
-    before = []
-    after = []
-    for line in file:
-        before.append(line)
-        if line.find("SPLICE") != -1:
-            break
-    for line in file:
-        if line.find("SPLICE") != -1:
-            after.append(line)
-            break
-    for line in file:
-        after.append(line)
-    file.close()
-    return [before, after]
-
-
-def fuzzDice(file):
-    '''Returns the lines of the file, except for the one line containing DICE'''
-    before = []
-    after = []
-    for line in file:
-        if line.find("DICE") != -1:
-            break
-        before.append(line)
-    for line in file:
-        after.append(line)
-    file.close()
-    return [before, after]
-
-
-def linesWith(lines, searchFor):
-    '''Returns the lines from an array that contain a given string'''
-    matchingLines = []
-    for line in lines:
-        if line.find(searchFor) != -1:
-            matchingLines.append(line)
-    return matchingLines
-
-def writeLinesToFile(lines, filename):
-    with open(filename, "w") as f:
-        f.writelines(lines)
 
 def afterColon(s):
     (head, sep, tail) = s.partition(": ")

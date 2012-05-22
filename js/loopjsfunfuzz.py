@@ -1,88 +1,96 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement
+
 import os
 import random
 import shutil
 import subprocess
 import sys
-
 from optparse import OptionParser
 
-p0 = os.path.dirname(os.path.abspath(__file__))
-interestingpy = os.path.join(p0, 'jsInteresting.py')
-
+import compareJIT
 import jsInteresting
 import pinpoint
-import compareJIT
 import shellFlags
 
-parser = OptionParser()
-parser.disable_interspersed_args()
-parser.add_option("--comparejit",
-                  action = "store_true", dest = "useCompareJIT",
-                  default = False,
-                  help = "After running the fuzzer, run the FCM lines against the engine in two configurations and compare the output.")
-parser.add_option("--random-flags",
-                  action = "store_true", dest = "randomFlags",
-                  default = False,
-                  help = "Pass a random set of flags (-m, -j, etc) to the js engine")
-parser.add_option("--fuzzjs",
-                  action = "store", dest = "fuzzjs",
-                  default = os.path.join(p0, "jsfunfuzz.js"),
-                  help = "Which fuzzer to run (e.g. jsfunfuzz.js)")
-parser.add_option("--repo",
-                  action = "store", dest = "repo",
-                  default = os.path.expanduser("~/trees/mozilla-central/"),
-                  help = "The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
-parser.add_option("--valgrind",
-                  action = "store_true", dest = "valgrind",
-                  default = False,
-                  help = "use valgrind with a reasonable set of options")
-options, args = parser.parse_args(sys.argv[1:])
+p0 = os.path.dirname(os.path.abspath(__file__))
+interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
+p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
+sys.path.append(p1)
+from subprocesses import createWtmpDir
+from fileManipulation import fuzzSplice, linesWith, writeLinesToFile
 
-if options.valgrind and options.useCompareJIT:
-    print "Note: When running comparejit, the --valgrind option will be ignored"
+def parseOpts():
+    parser = OptionParser()
+    parser.disable_interspersed_args()
+    parser.add_option("--comparejit",
+                      action = "store_true", dest = "useCompareJIT",
+                      default = False,
+                      help = "After running the fuzzer, run the FCM lines against the engine " + \
+                             "in two configurations and compare the output.")
+    parser.add_option("--random-flags",
+                      action = "store_true", dest = "randomFlags",
+                      default = False,
+                      help = "Pass a random set of flags (-m, -j, etc) to the js engine")
+    parser.add_option("--fuzzjs",
+                      action = "store", dest = "fuzzjs",
+                      default = os.path.join(p0, "jsfunfuzz.js"),
+                      help = "Which fuzzer to run (e.g. jsfunfuzz.js)")
+    parser.add_option("--repo",
+                      action = "store", dest = "repo",
+                      default = os.path.expanduser("~/trees/mozilla-central/"),
+                      help = "The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
+    parser.add_option("--valgrind",
+                      action = "store_true", dest = "valgrind",
+                      default = False,
+                      help = "use valgrind with a reasonable set of options")
+    options, args = parser.parse_args(sys.argv[1:])
 
-timeout = int(args[0])
-knownPath = os.path.expanduser(args[1])
-engine = args[2]
-engineFlags = args[3:]
-jsfunfuzzToBeUsed = options.fuzzjs
-runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
+    if options.valgrind and options.useCompareJIT:
+        print "Note: When running comparejit, the --valgrind option will be ignored"
+
+    options.timeout = int(args[0])
+    options.knownPath = os.path.expanduser(args[1])
+    options.jsEngine = args[2]
+    options.engineFlags = args[3:]
+
+    return options
 
 def showtail(filename):
+    # FIXME: Get jsfunfuzz to output start & end of interesting result boundaries instead of this.
     cmd = []
-    cmd.append('tail')
-    cmd.append('-n')
-    cmd.append('20')
+    cmd.extend(['tail', '-n', '20'])
     cmd.append(filename)
     print ' '.join(cmd)
-    print ""
-    subprocess.call(cmd)
-    print ""
-    print ""
+    print
+    subprocess.check_call(cmd)
+    print
+    print
 
 def many_timed_runs():
-    global engineFlags
+    options = parseOpts()
+    engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
+    wtmpDir = createWtmpDir(os.getcwdu())
+
     iteration = 0
-
-    jsunhappyArgsWithoutRunThis = ["--timeout=" + str(timeout)]
-    if options.valgrind:
-        jsunhappyArgsWithoutRunThis.append("--valgrind")
-    jsunhappyArgsWithoutRunThis.append(knownPath)
-
     while True:
-
+        # Construct command needed to loop jsfunfuzz fuzzing.
+        jsInterestingArgs = []
+        jsInterestingArgs.append('--timeout=' + str(options.timeout))
+        if options.valgrind:
+            jsInterestingArgs.append('--valgrind')
+        jsInterestingArgs.append(options.knownPath)
+        jsInterestingArgs.append(options.jsEngine)
         if options.randomFlags:
-            engineFlags = shellFlags.randomFlagSet(engine)
-
-        runThis = [engine] + engineFlags + ["-e", "maxRunTime=" + str(timeout*(1000/2)), "-f", jsfunfuzzToBeUsed]
-        jsunhappyArgs = jsunhappyArgsWithoutRunThis + runThis
-        jsunhappyOptions = jsInteresting.parseOptions(jsunhappyArgs)
+            engineFlags = shellFlags.randomFlagSet(options.jsEngine)
+            jsInterestingArgs.extend(engineFlags)
+        jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout*(1000/2))])
+        jsInterestingArgs.extend(['-f', options.fuzzjs])
+        jsunhappyOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
         iteration += 1
-
-        logPrefix = tempDir + os.sep + "w" + str(iteration)
+        logPrefix = wtmpDir + os.sep + "w" + str(iteration)
 
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
@@ -92,8 +100,9 @@ def many_timed_runs():
 
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
-            [before, after] = fuzzSplice(open(jsfunfuzzToBeUsed))
-            newfileLines = before + linesWith(open(logPrefix + "-out"), "FRC") + after
+            [before, after] = fuzzSplice(options.fuzzjs)
+            with open(logPrefix + '-out', 'rb') as f:
+                newfileLines = before + linesWith(f.readlines(), "FRC") + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
 
@@ -102,20 +111,26 @@ def many_timed_runs():
             if options.valgrind:
                 itest.append("--valgrind")
             itest.append("--minlevel=" + str(level))
-            itest.append("--timeout=" + str(timeout))
-            itest.append(knownPath)
+            itest.append("--timeout=" + str(options.timeout))
+            itest.append(options.knownPath)
             alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
             alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
-            pinpoint.pinpoint(itest, logPrefix, engine, engineFlags, filenameToReduce, options.repo, alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
+            pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
+                              alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
 
         else:
-            shellIsDeterministic = os.path.join('build', 'dist', 'js') not in engine
+            shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags
-            if options.useCompareJIT and level == jsInteresting.JS_FINE and shellIsDeterministic and flagsAreDeterministic:
-                jitcomparelines = linesWith(open(logPrefix + "-out"), "FCM") + ["try{print(uneval(this));}catch(e){}"]
+            if options.useCompareJIT and level == jsInteresting.JS_FINE and \
+                    shellIsDeterministic and flagsAreDeterministic:
+                with open(logPrefix + '-out', 'rb') as f:
+                    jitcomparelines = linesWith(f.readlines(), "FCM") + \
+                        ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(engine, engineFlags, jitcomparefilename, logPrefix + "-cj", knownPath, options.repo, timeout, True)
+                compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename, logPrefix + "-cj",
+                                      options.knownPath, options.repo, options.timeout, True)
+            # FIXME: Make the following cleaner, and remove (.startswith logprefix, .endswith -core.gz) too
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
@@ -124,53 +139,9 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core.gz")):
                 os.remove(logPrefix + "-core.gz")
-            if (os.path.exists(logPrefix + "-cj-initial-r5-core.gz")):
-                os.remove(logPrefix + "-cj-initial-r5-core.gz")
+            #if (os.path.exists(logPrefix + "-cj-initial-r5-core.gz")):
+            #    os.remove(logPrefix + "-cj-initial-r5-core.gz")
 
-def fuzzSplice(file):
-    '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
-    before = []
-    after = []
-    for line in file:
-        before.append(line)
-        if line.find("SPLICE") != -1:
-            break
-    for line in file:
-        if line.find("SPLICE") != -1:
-            after.append(line)
-            break
-    for line in file:
-        after.append(line)
-    file.close()
-    return [before, after]
-
-def linesWith(file, searchFor):
-    '''Returns the lines from a file that contain a given string'''
-    matchingLines = []
-    for line in file:
-        if line.find(searchFor) != -1:
-            matchingLines.append(line)
-    file.close()
-    return matchingLines
-
-def writeLinesToFile(lines, filename):
-    f = open(filename, "w")
-    f.writelines(lines)
-    f.close()
-
-def createTempDir():
-    global tempDir
-    i = 1
-    while 1:
-        tempDir = "wtmp" + str(i)
-        # To avoid race conditions, we use try/except instead of exists/create
-        # Hopefully we don't get any errors other than "File exists" :)
-        try:
-            os.mkdir(tempDir)
-            break
-        except OSError, e:
-            i += 1
-    print tempDir + os.sep
-
-createTempDir()
-many_timed_runs()
+if __name__ == "__main__":
+    #many_timed_runs(None, sys.argv[1:])  # Needed for targetTime
+    many_timed_runs()
