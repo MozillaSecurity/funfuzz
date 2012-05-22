@@ -84,9 +84,9 @@ def grabJob(remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
                 job = copyFiles(remotePrefix + takenNameOnServer + remoteSep, "." + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part that will be redundant
-                os.rename(job, relevantJobsDir + "wtmp1") # so lithium gets the same filename as before
-                print repr((relevantJobsDir + "wtmp1/", oldjobname, takenNameOnServer))
-                return (relevantJobsDir + "wtmp1/", oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
+                os.rename(job, "wtmp1") # so lithium gets the same filename as before
+                print repr(("wtmp1/", oldjobname, takenNameOnServer))
+                return ("wtmp1/", oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
                 print "Raced to grab " + relevantJobsDir + oldNameOnServer + ", trying again"
                 continue
@@ -178,13 +178,15 @@ def main():
         oldjobname = None
         takenNameOnServer = None
         lithlog = None
-        buildDir = relevantJobsDir + 'build'
+        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
+        buildDir = 'build'
         #if remoteLoginAndMachine:
         #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        if os.path.exists(relevantJobsDir + "wtmp1"):
+        # FIXME: Put 'wtmp1' somewhere nicer, like ~/fuzztemp/. Make it possible to parallelize.
+        if os.path.exists("wtmp1"):
             print "wtmp1 shouldn't exist now. killing it."
-            shutil.rmtree(relevantJobsDir + "wtmp1")
+            shutil.rmtree("wtmp1")
 
         if options.retestAll:
             print "Retesting time!"
@@ -203,9 +205,9 @@ def main():
                 print "Reduction time!"
                 if not options.reuse_build:
                     preferredBuild = readTinyFile(job + "preferred-build.txt")
-                    if not downloadBuild.downloadBuild(preferredBuild, relevantJobsDir, jsShell=options.runJsfunfuzz):
+                    if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=options.runJsfunfuzz):
                         print "Preferred build for this reduction was missing, grabbing latest build"
-                        downloadBuild.downloadLatestBuild(buildType, relevantJobsDir, getJsShell=options.runJsfunfuzz)
+                        downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
 
@@ -220,19 +222,19 @@ def main():
                         print "Deleting old build..."
                         shutil.rmtree(buildDir)
                     os.mkdir(buildDir)
-                    buildSrc = downloadBuild.downloadLatestBuild(buildType, relevantJobsDir, getJsShell=options.runJsfunfuzz)
+                    buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 if options.runJsfunfuzz:
                     assert False, 'jsfunfuzz support is not yet completed.'
                 (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
                 if ldfResult == loopdomfuzz.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
-                    job = relevantJobsDir + "wtmp1" + localSep
+                    job = "wtmp1" + localSep
                     writeTinyFile(job + "preferred-build.txt", buildSrc)
                     # not really "oldjobname", but this is how i get newjobname to be what i want below
                     # avoid putting underscores in this part, because those get split on
-                    oldjobname = relevantJobsDir + "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
-                    os.rename(relevantJobsDir + "wtmp1", oldjobname)
+                    oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
+                    os.rename("wtmp1", oldjobname)
                     job = oldjobname + localSep
                     lithlog = job + "lith1-out"
 
