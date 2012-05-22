@@ -69,7 +69,7 @@ def many_timed_runs(targetTime, args):
                 writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
                 extraRDFArgs = ["--valgrind"] if options.valgrind else []
                 lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
-                (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2, "1")
+                (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
                 if lithresult == LITH_NO_REPRO:
                     os.remove(rFN)
                     print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
@@ -145,7 +145,7 @@ def createReproFile(lines, logPrefix):
 (HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO, LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
 
 
-def runLithium(lithArgs, logPrefix, targetTime, fileTag):
+def runLithium(lithArgs, logPrefix, targetTime):
     """
       Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
       Returns a tuple of (lithlogfn, LITH_*, details).
@@ -155,13 +155,12 @@ def runLithium(lithArgs, logPrefix, targetTime, fileTag):
         # loopdomfuzz.py is being used by bot.py
         deletableLithTemp = mkdtemp(prefix="domfuzz-ldf-bot")
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
-        lithlogfn = os.path.join(logPrefix, "lith" + fileTag + "-out")
     else:
         # loopdomfuzz.py is being run standalone
-        lithtmp = logPrefix + "-lith" + fileTag + "-tmp"
+        lithtmp = logPrefix + "-lith-tmp"
         os.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
-        lithlogfn = logPrefix + "-lith" + fileTag + "-out"
+    lithlogfn = logPrefix + "-lith-out"
     print "Preparing to run Lithium, log file " + lithlogfn
     print shellify(lithiumpy + lithArgs)
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)

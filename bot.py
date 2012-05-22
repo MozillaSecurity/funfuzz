@@ -195,7 +195,8 @@ def main():
                 reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                 print "reduced filename: " + reducedFn
                 lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
-                (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "T")
+                logPrefix = job + "retest"
+                (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, logPrefix, targetTime)
             else:
                 shouldLoop = False
         else:
@@ -209,7 +210,8 @@ def main():
                         print "Preferred build for this reduction was missing, grabbing latest build"
                         downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-                (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, job, targetTime, "N")
+                logPrefix = job + "reduce" + timestamp()
+                (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, logPrefix, targetTime)
 
             else:
                 print "Fuzz time!"
