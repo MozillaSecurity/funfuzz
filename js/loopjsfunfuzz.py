@@ -86,15 +86,7 @@ def many_timed_runs():
 
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
-        oklevel = jsInteresting.JS_KNOWN_CRASH
-        if jsfunfuzzToBeUsed.find("jsfunfuzz") != -1:
-            # Allow hangs. Allow abnormal exits in js shell (OOM) and xpcshell (bug 613142).
-            # When running xpcshell, ./run-mozilla-sh appears not necessary, but remember to append LD_LIBRARY_PATH=. especially on Linux.
-            # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
-            # All in all, xpcshell support is still largely blocked because of bug 613142.
-            oklevel = jsInteresting.JS_ABNORMAL_EXIT if os.path.join('build', 'dist', 'js') not in engine else jsInteresting.JS_VG_AMISS
-
-        if level > oklevel:
+        if level != jsInteresting.JS_FINE:
             showtail(logPrefix + "-out")
             showtail(logPrefix + "-err")
 

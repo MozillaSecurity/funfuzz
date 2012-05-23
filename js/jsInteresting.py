@@ -102,6 +102,15 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
                 issues.append("jsfunfuzz didn't finish")
                 lev = JS_DID_NOT_FINISH
 
+    if lev < JS_ABNORMAL_EXIT:
+        vdump("jsfunfuzzLevel is ignoring a baseLevel of " + str(lev))
+        lev = JS_FINE
+        issues = []
+
+    if lev != JS_FINE:
+        # write issues to file
+        pass
+
     if not quiet:
         print logPrefix + ": " + summaryString(issues, runinfo)
     return lev
