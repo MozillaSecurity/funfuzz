@@ -149,6 +149,11 @@ def parseOpts():
         help='Fuzz jsfunfuzz instead of DOM fuzzer. Defaults to "%default".')
     options, args = parser.parse_args()
 
+    if options.remote_host and "/msys/" in options.basedir:
+        # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
+        # when we are trying to refer to a directory on another computer.
+        options.basedir = "/" + options.basedir.split("/msys/")[1]
+    
     if options.retestAll:
         options.reuse_build = True
 
