@@ -105,7 +105,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
                 issues.append("jsfunfuzz didn't finish")
                 lev = JS_DID_NOT_FINISH
 
-    if lev < JS_ABNORMAL_EXIT:
+    if lev <= JS_ABNORMAL_EXIT:  # JS_ABNORMAL_EXIT and below (inclusive) will be ignored.
         vdump("jsfunfuzzLevel is ignoring a baseLevel of " + str(lev))
         lev = JS_FINE
         issues = []
