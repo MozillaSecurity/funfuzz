@@ -29,7 +29,7 @@ parser.add_option("--random-flags",
 parser.add_option("--fuzzjs",
                   action = "store", dest = "fuzzjs",
                   default = os.path.join(p0, "jsfunfuzz.js"),
-                  help = "Which fuzzer to run (e.g. jsfunfuzz.js or regexpfuzz.js)")
+                  help = "Which fuzzer to run (e.g. jsfunfuzz.js)")
 parser.add_option("--repo",
                   action = "store", dest = "repo",
                   default = os.path.expanduser("~/trees/mozilla-central/"),
@@ -93,9 +93,6 @@ def many_timed_runs():
             # I also had to remove --random-flags and any CLI flags, because -a isn't supported like it is in the js shell, as an example.
             # All in all, xpcshell support is still largely blocked because of bug 613142.
             oklevel = jsInteresting.JS_ABNORMAL_EXIT if os.path.join('build', 'dist', 'js') not in engine else jsInteresting.JS_VG_AMISS
-        elif jsfunfuzzToBeUsed.find("regexpfuzz") != -1:
-            # Allow hangs (bug ??????)
-            oklevel = jsInteresting.JS_TIMED_OUT
 
         if level > oklevel:
             showtail(logPrefix + "-out")
