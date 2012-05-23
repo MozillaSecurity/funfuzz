@@ -16,6 +16,9 @@ sys.path.append(p2)
 import detect_assertions
 import detect_interesting_crashes
 import detect_malloc_errors
+p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
+sys.path.append(p3)
+from subprocesses import vdump
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
