@@ -153,7 +153,7 @@ def parseOpts():
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
         # when we are trying to refer to a directory on another computer.
         options.basedir = "/" + options.basedir.split("/msys/")[1]
-    
+
     if options.retestAll:
         options.reuse_build = True
 
@@ -171,9 +171,9 @@ def main():
     assert remoteBase.endswith(remoteSep)
     relevantJobsDir = remoteBase + buildType + remoteSep
     runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
-    runCommand(remoteHost, "chmod og+r " + remoteBase)
+    runCommand(remoteHost, "chmod og+rx " + remoteBase)
     runCommand(remoteHost, "mkdir -p " + relevantJobsDir)
-    runCommand(remoteHost, "chmod og+r " + relevantJobsDir)
+    runCommand(remoteHost, "chmod og+rx " + relevantJobsDir)
 
     shouldLoop = True
     while shouldLoop:
