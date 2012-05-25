@@ -189,7 +189,9 @@ def interesting(args, tempPrefix):
     actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions.knownPath, gOptions.timeout, False, False)
     return actualLevel >= gOptions.minimumInterestingLevel
 
-if __name__ == "__main__":
+def main():
+    import tempfile
     options = parseOptions(sys.argv[1:])
-    knownPath = sys.argv[1]
-    print compareLevel(options.jsengine, options.flags, options.infilename, "/tmp/compareJITmain", options.knownPath, options.timeout, True, False)
+    print compareLevel(options.jsengine, options.flags, options.infilename, tempfile.mkdtemp("compareJITmain"), options.knownPath, options.timeout, True, False)
+if __name__ == "__main__":
+    main()
