@@ -38,6 +38,10 @@ import detect_malloc_errors
 import detect_interesting_crashes
 import detect_leaks
 
+path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
+sys.path.append(path2)
+from subprocesses import grabCrashLog
+
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
@@ -535,69 +539,6 @@ def rdfInit(args):
         return (lev, FRClines)
 
     return levelAndLines, deleteProfile, options # return a closure along with the set of options
-
-
-# should eventually try to squeeze this into automation.py or automationutils.py
-# FIXME: Use grabCrashLog in interesting/timedRun.py instead! There is a lot of duplicated code present.
-def grabCrashLog(progname, crashedPID, logPrefix, signum):
-    import os, platform, time
-    useLogFiles = isinstance(logPrefix, str)
-    if useLogFiles:
-        if os.path.exists(logPrefix + "-crash"):
-            os.remove(logPrefix + "-crash")
-        if os.path.exists(logPrefix + "-core"):
-            os.remove(logPrefix + "-core")
-    if platform.system() == "Darwin":
-        macCrashLogFilename = None
-        loops = 0
-        while macCrashLogFilename == None:
-            # Look for a core file, in case the user did "ulimit -c unlimited"
-            coreFilename = "/cores/core." + str(crashedPID)
-            if useLogFiles and os.path.exists(coreFilename):
-                os.rename(coreFilename, logPrefix + "-core")
-            # Find a crash log for the right process name and pid, preferring
-            # newer crash logs (which sort last).
-            crashLogDir = "~/Library/Logs/CrashReporter/" if platform.mac_ver()[0].startswith("10.5") else "~/Library/Logs/DiagnosticReports/"
-            crashLogDir = os.path.expanduser(crashLogDir)
-            try:
-                crashLogs = os.listdir(crashLogDir)
-            except (OSError, IOError), e:
-                # Maybe this is the first crash ever on this computer, and the directory doesn't exist yet.
-                crashLogs = []
-            crashLogs = filter(lambda s: (s.startswith(progname + "_") or s.startswith(progname + "-bin_")), crashLogs)
-            crashLogs.sort(reverse=True)
-            for fn in crashLogs:
-                fullfn = os.path.join(crashLogDir, fn)
-                try:
-                    with open(fullfn) as c:
-                        firstLine = c.readline()
-                    if firstLine.rstrip().endswith("[" + str(crashedPID) + "]"):
-                        macCrashLogFilename = fullfn
-                        break
-
-                except (OSError, IOError), e:
-                    # Maybe the log was rotated out between when we got the list
-                    # of files and when we tried to open this file.  If so, it's
-                    # clearly not The One.
-                    pass
-            if macCrashLogFilename == None:
-                # print "[grabCrashLog] Waiting for the crash log to appear..."
-                time.sleep(0.100)
-                loops += 1
-                if loops > 2000:
-                    # I suppose this might happen if the process corrupts itself so much that
-                    # the crash reporter gets confused about the process name, for example.
-                    print "grabCrashLog waited a long time, but a crash log for " + progname + " [" + str(crashedPID) + "] never appeared!"
-                    break
-        if macCrashLogFilename != None:
-            if useLogFiles:
-                os.rename(macCrashLogFilename, logPrefix + "-crash")
-                return logPrefix + "-crash"
-            else:
-                return macCrashLogFilename
-                #return with open(macCrashLogFilename) as f: f.read()
-    return None
-
 
 # For use by Lithium
 def init(args):

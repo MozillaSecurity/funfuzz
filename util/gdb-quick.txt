@@ -1,0 +1,14 @@
+set pagination 0
+set backtrace limit 250
+
+echo \n\nthread apply all bt\n\n
+thread apply all bt
+
+# Could use "info all-registers" but that spews lots of junk
+echo \n\ninfo reg\n\n
+info registers
+
+# Dump the disassembly of the crashing instruction and several following instructions.
+# ($pc is an alias for $eip or $rip as needed)
+echo \n\nx/8i $pc\n\n
+x/8i $pc
