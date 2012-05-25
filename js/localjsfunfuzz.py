@@ -6,6 +6,7 @@
 
 import os
 import platform
+import pdb  # needed for Windows debugging of intermittent conftest error.
 import shutil
 import subprocess
 import sys
