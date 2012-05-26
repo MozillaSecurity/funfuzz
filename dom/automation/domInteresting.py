@@ -329,8 +329,9 @@ class FigureOutDirs:
 def findSrcDir(objDir):
     with open(os.path.join(objDir, "Makefile")) as f:
         for line in f:
-            if line.startswith("topsrcdir     = "):
-                return deCygPath(line[12:].strip())
+            if line.startswith("topsrcdir"):
+                return deCygPath(line.split("=", 1)[1].strip())
+
     raise Exception("Didn't find a topsrcdir line in the Makefile")
 
 def deCygPath(p):
