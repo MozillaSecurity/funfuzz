@@ -2232,6 +2232,11 @@ var statementMakers = weighted([
   // Spidermonkey strict warnings
   { w: 1, fun: function(d, b) { return "(void options('strict'));" } },
 
+  // Spidermonkey controls for E4X support
+  { w: 1, fun: function(d, b) { return "(void options('allow_xml'));" } },
+  { w: 1, fun: function(d, b) { return "(void options('moar_xml'));" } },
+  { w: 1, fun: function(d, b) { return "(void options('xml'));" } }, // old name for moar_xml
+
   // Blocks of statements related to typed arrays
   { w: 8, fun: makeTypedArrayStatements },
 
