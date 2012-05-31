@@ -35,20 +35,12 @@ def archOfBinary(b):
             assert '32-bit' not in filetype
             return '64'
 
-def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
+def shellSupports(shell, args):
     '''
-    This function returns the exit code after testing the shell.
+    This function returns True if the shell likes the args.
+    You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
     '''
-    cmdList = []
-
-    cmdList.append(shell)
-    if dbgOptOrJsShellXpcshell == 'dbgOpt':
-        script = 'gczeal()'
-    elif dbgOptOrJsShellXpcshell == 'jsShellXpcshell':
-        script = 'Components'
-
-    cmdList.append("-e")
-    cmdList.append(script)
+    cmdList = [shell] + args
 
     vdump(' '.join(cmdList))
     if verbose:
@@ -59,37 +51,35 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
         fnull.close()
 
     vdump('The return code is: ' + str(retCode))
-    return retCode
+
+    if retCode == 0:
+        return True
+    elif 1 <= retCode <= 3:
+        # Exit codes 1 through 3 are all plausible "non-support":
+        #   * "Usage error" is 1 in new js shell, 2 in old js shell, 2 in xpcshell.
+        #   * "Script threw an error" is 3 in most shells, but 1 in some versions (see bug 751425).
+        # Since we want autoBisect to support all shell versions, allow all these exit codes.
+        return False
+    else:
+        raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
 def testJsShellOrXpcshell(sname):
     '''
     This function tests if a binary is a js shell or xpcshell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(sname, 'jsShellXpcshell')
-
-    # The error code for xpcshells when passing in the Components function should be 0.
-    if exitCode == 0:
+    if shellSupports(sname, ['-e', 'Components']):
         return 'xpcshell'
-    # js shells don't have Components compiled in by default.
-    elif exitCode == 3:
-        return 'jsShell'
     else:
-        raise Exception('Unknown exit code after testing if js shell or xpcshell: ' + str(exitCode))
+        return 'jsShell'
 
 def testDbgOrOpt(jsShellName):
     '''
     This function tests if a binary is a debug or optimized shell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
-
-    # The error code for debug shells when passing in the gczeal() function should be 0.
-    if exitCode == 0:
+    if shellSupports(jsShellName, ['-e', 'gczeal(0)']):
         return 'dbg'
-    # Optimized shells don't have gczeal() compiled in by default.
-    elif exitCode == 3:
-        return 'opt'
     else:
-        raise Exception('Unknown exit code after testing if debug or opt: ' + exitCode)
+        return 'opt'
 
 if __name__ == '__main__':
     pass
