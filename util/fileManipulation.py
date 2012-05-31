@@ -46,5 +46,5 @@ def linesWith(lines, searchFor):
 
 def writeLinesToFile(lines, filename):
     '''Writes lines to a given filename.'''
-    with open(filename, "w") as f:
+    with open(filename, 'wb') as f:
         f.writelines(lines)
