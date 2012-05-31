@@ -46,9 +46,8 @@ def shellSupports(shell, args):
     if verbose:
         retCode = subprocess.call(cmdList, stderr=subprocess.STDOUT)
     else:
-        fnull = open(os.devnull, 'w')
-        retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT)
-        fnull.close()
+        with open(os.devnull, 'w') as fnull:
+            retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT)
 
     vdump('The return code is: ' + str(retCode))
 
