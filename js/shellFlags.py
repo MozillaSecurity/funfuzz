@@ -3,7 +3,7 @@ from __future__ import with_statement
 import random
 import os
 import subprocess
-
+from inspectShell import shellSupports
 
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
@@ -16,14 +16,9 @@ def memoize(f, cache={}):
     return g
 
 
-# This (or something like it) could move to inspectShell.py, where
-# it would replace exitCodeDbgOptOrJsShellXpcshell.
 @memoize
 def shellSupportsFlag(shell, flag):
-    with open(os.devnull, 'w') as devnull:
-        retCode = subprocess.call([shell, flag, "-e", "42"], stdout=devnull, stderr=devnull)
-    assert 0 <= retCode <= 3
-    return (retCode == 0)
+    return shellSupports(shell, [flag, '-e', '42'])
 
 
 def chance(p):
