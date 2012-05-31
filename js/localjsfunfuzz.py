@@ -18,7 +18,7 @@ from random import randint
 from optparse import OptionParser
 from tempfile import mkdtemp
 from compileShell import getRepoHashAndId, patchHgRepoUsingMq, autoconfRun, cfgJsBin, compileCopy
-from inspectShell import archOfBinary, testDbgOrOptGivenACompileType
+from inspectShell import archOfBinary, testDbgOrOpt
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -265,7 +265,7 @@ def selfTests(shName, aNum, cType):
     Runs a bunch of verification tests to see if arch and compile type are as intended.
     '''
     assert archOfBinary(shName) == aNum  # 32-bit or 64-bit verification test.
-    testDbgOrOptGivenACompileType(shName, cType)
+    assert testDbgOrOpt(shName) == cType
 
 def outputStrFromList(lst):
     '''
