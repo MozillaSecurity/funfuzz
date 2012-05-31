@@ -80,6 +80,3 @@ def testDbgOrOpt(jsShellName):
         return 'dbg'
     else:
         return 'opt'
-
-if __name__ == '__main__':
-    pass
