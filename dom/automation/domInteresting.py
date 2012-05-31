@@ -205,9 +205,14 @@ class AmissLogHandler:
         if fatalAssertion:
             self.sawFatalAssertion = True
             overlyGenericAssertion = ("You can't dereference a NULL" in msg)
-            if not newAssertion and not overlyGenericAssertion:
-                self.printAndLog("%%% Ignoring the following crash log, because we saw a known, non-generic, fatal assertion")
-                self.crashIsKnown = True
+            if not newAssertion:
+                if overlyGenericAssertion:
+                    # We will decide based on the stack trace whether the crash is known or unknown.
+                    self.printAndLog("%%% The following crash log is for the assertion:")
+                    self.printAndLog("%%% " + msg)
+                else:
+                    self.printAndLog("%%% Ignoring the following crash log, because we saw a known, non-generic, fatal assertion")
+                    self.crashIsKnown = True
 
         if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
             self.mallocFailure = True
