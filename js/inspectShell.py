@@ -11,7 +11,6 @@ import platform
 import subprocess
 import sys
 
-from tempfile import NamedTemporaryFile
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
@@ -40,17 +39,13 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
     '''
     This function returns the exit code after testing the shell.
     '''
-    contents = ''
-    contentsList = []
     cmdList = []
-    # The following line (specifically the delete keyword) is incompatible with Python 2.5
-    f = NamedTemporaryFile(delete=False)  # Don't delete upon close; Windows needs it to be closed.
 
     cmdList.append(shell)
     if dbgOptOrJsShellXpcshell == 'dbgOpt':
-        contents = 'gczeal()'
+        script = 'gczeal()'
     elif dbgOptOrJsShellXpcshell == 'jsShellXpcshell':
-        contents = 'Components'
+        script = 'Components'
         # To run xpcshell, command is `./run-mozilla.sh ./xpcshell testcase.js`
         # js shells do not have the middle parameter, so they will mis-understand and think that
         # ./xpcshell is the testcase they should run instead.
@@ -60,12 +55,9 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
         else:
             assert len(cmdList) == 1
 
-    contentsList.append(contents)
-    f.writelines(contentsList)
-    f.flush()  # Important! Or else nothing will be in the file when the js shell executes the file.
-    f.close()  # We have to close the file here, or else Windows won't be able to access the file.
+    cmdList.append("-e")
+    cmdList.append(script)
 
-    cmdList.append(f.name)
     vdump(' '.join(cmdList))
     if verbose:
         retCode = subprocess.call(cmdList, stderr=subprocess.STDOUT, cwd=cwd)
@@ -74,15 +66,6 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
         retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=cwd)
         fnull.close()
 
-    # Verbose logging.
-    vdump('The contents of ' + f.name + ' is:')
-    if verbose:
-        with open(f.name, 'rb') as f:
-            print ''.join([line for line in f.readlines() if verbose])
-
-    assert os.path.exists(f.name)
-    os.remove(f.name)
-    assert not os.path.exists(f.name)
     vdump('The return code is: ' + str(retCode))
     return retCode
 

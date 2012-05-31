@@ -265,9 +265,7 @@ def selfTests(shName, aNum, cType, fPath):
     Runs a bunch of verification tests to see if arch and compile type are as intended.
     '''
     assert archOfBinary(shName) == aNum  # 32-bit or 64-bit verification test.
-    if sys.version_info >= (2, 6):
-        # The following line doesn't seem to work in Python 2.5 because of NamedTemporaryFile
-        testDbgOrOptGivenACompileType(shName, cType, cwd=fPath)
+    testDbgOrOptGivenACompileType(shName, cType, cwd=fPath)
 
 def outputStrFromList(lst):
     '''
