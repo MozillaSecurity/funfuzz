@@ -537,8 +537,7 @@ def main():
         cList = genShellCmd(loopFlagList, loopyTimeout,
                             knownBugsDir(odjs.srcRepo, odjs.repo), odjs.shellName, shFlagList)
 
-        if sys.version_info >= (2, 6):
-            selfTests(odjs.shellName, odjs.pArchNum, odjs.cType)
+        selfTests(odjs.shellName, odjs.pArchNum, odjs.cType)
 
         localLog = normExpUserPath(os.path.join(startDir, 'log-localjsfunfuzz.txt'))
         with open(localLog, 'wb') as f:
