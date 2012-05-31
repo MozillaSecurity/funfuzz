@@ -112,7 +112,12 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         issues = []
 
     if lev != JS_FINE:
-        writeLinesToFile([logPrefix + ':' + '\n'] + [i + '\n' for i in issues],  # FIXME: compareJIT failures do not generate this -summary file.
+        # FIXME: compareJIT failures do not generate this -summary file.
+        statusIssueList = []
+        for i in issues:
+            statusIssueList.append('Status: ' + i)
+        assert len(statusIssueList) != 0
+        writeLinesToFile(['Number: ' + logPrefix + '\n'] + [i + '\n' for i in statusIssueList],
             logPrefix + '-summary.txt')
 
     if not quiet:
