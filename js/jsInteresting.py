@@ -18,6 +18,7 @@ import detect_interesting_crashes
 import detect_malloc_errors
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
+from fileManipulation import writeLinesToFile
 from subprocesses import vdump
 
 # Levels of unhappiness.
@@ -111,8 +112,8 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         issues = []
 
     if lev != JS_FINE:
-        # write issues to file
-        pass
+        writeLinesToFile([logPrefix + ':' + '\n'] + [i + '\n' for i in issues],  # FIXME: compareJIT failures do not generate this -summary file.
+            logPrefix + '-summary.txt')
 
     if not quiet:
         print logPrefix + ": " + summaryString(issues, runinfo)
