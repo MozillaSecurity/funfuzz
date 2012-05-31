@@ -46,14 +46,6 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
         script = 'gczeal()'
     elif dbgOptOrJsShellXpcshell == 'jsShellXpcshell':
         script = 'Components'
-        # To run xpcshell, command is `./run-mozilla.sh ./xpcshell testcase.js`
-        # js shells do not have the middle parameter, so they will mis-understand and think that
-        # ./xpcshell is the testcase they should run instead.
-        if 'run-mozilla' in shell:
-            cmdList.append('./xpcshell')
-            assert len(cmdList) == 2
-        else:
-            assert len(cmdList) == 1
 
     cmdList.append("-e")
     cmdList.append(script)
