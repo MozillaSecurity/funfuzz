@@ -115,8 +115,9 @@ def many_timed_runs():
             itest.append(options.knownPath)
             alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
             alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
-            pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
-                              alsoRunChar=alsoRunChar, alsoReduceEntireFile=alsoReduceEntireFile)
+            pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
+                              options.repo, alsoRunChar=alsoRunChar,
+                              alsoReduceEntireFile=alsoReduceEntireFile)
 
         else:
             shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine
@@ -128,8 +129,9 @@ def many_timed_runs():
                         ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename, logPrefix + "-cj",
-                                      options.knownPath, options.repo, options.timeout, True)
+                compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
+                                      logPrefix + "-cj", options.knownPath, options.repo,
+                                      options.timeout, True)
             # FIXME: Make the following cleaner, and remove (.startswith logprefix, .endswith -core.gz) too
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
