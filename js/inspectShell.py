@@ -14,7 +14,7 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, verbose, vdump
+from subprocesses import captureStdout, vdump
 
 def archOfBinary(b):
     '''
@@ -43,12 +43,8 @@ def shellSupports(shell, args):
     cmdList = [shell] + args
 
     vdump(' '.join(cmdList))
-    if verbose:
-        retCode = subprocess.call(cmdList, stderr=subprocess.STDOUT)
-    else:
-        with open(os.devnull, 'w') as fnull:
-            retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT)
-
+    out, retCode = captureStdout(cmdList, ignoreStderr=True, combineStderr=True,
+                                 ignoreExitCode=True)
     vdump('The return code is: ' + str(retCode))
 
     if retCode == 0:
