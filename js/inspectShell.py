@@ -35,7 +35,7 @@ def archOfBinary(b):
             assert '32-bit' not in filetype
             return '64'
 
-def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcwdu()):
+def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell):
     '''
     This function returns the exit code after testing the shell.
     '''
@@ -60,20 +60,20 @@ def exitCodeDbgOptOrJsShellXpcshell(shell, dbgOptOrJsShellXpcshell, cwd=os.getcw
 
     vdump(' '.join(cmdList))
     if verbose:
-        retCode = subprocess.call(cmdList, stderr=subprocess.STDOUT, cwd=cwd)
+        retCode = subprocess.call(cmdList, stderr=subprocess.STDOUT)
     else:
         fnull = open(os.devnull, 'w')
-        retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT, cwd=cwd)
+        retCode = subprocess.call(cmdList, stdout=fnull, stderr=subprocess.STDOUT)
         fnull.close()
 
     vdump('The return code is: ' + str(retCode))
     return retCode
 
-def testJsShellOrXpcshell(sname, cwd=os.getcwdu()):
+def testJsShellOrXpcshell(sname):
     '''
     This function tests if a binary is a js shell or xpcshell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(sname, 'jsShellXpcshell', cwd=cwd)
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(sname, 'jsShellXpcshell')
 
     # The error code for xpcshells when passing in the Components function should be 0.
     if exitCode == 0:
@@ -84,11 +84,11 @@ def testJsShellOrXpcshell(sname, cwd=os.getcwdu()):
     else:
         raise Exception('Unknown exit code after testing if js shell or xpcshell: ' + str(exitCode))
 
-def testDbgOrOpt(jsShellName, cwd=os.getcwdu()):
+def testDbgOrOpt(jsShellName):
     '''
     This function tests if a binary is a debug or optimized shell.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt', cwd=cwd)
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
 
     # The error code for debug shells when passing in the gczeal() function should be 0.
     if exitCode == 0:
@@ -99,11 +99,11 @@ def testDbgOrOpt(jsShellName, cwd=os.getcwdu()):
     else:
         raise Exception('Unknown exit code after testing if debug or opt: ' + exitCode)
 
-def testDbgOrOptGivenACompileType(jsShellName, compileType, cwd=os.getcwdu()):
+def testDbgOrOptGivenACompileType(jsShellName, compileType):
     '''
     This function tests if a binary is a debug or optimized shell given a compileType.
     '''
-    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt', cwd=cwd)
+    exitCode = exitCodeDbgOptOrJsShellXpcshell(jsShellName, 'dbgOpt')
 
     vdump('The error code for debug shells should be 0.')
     vdump('The error code for opt shells should be 3.')

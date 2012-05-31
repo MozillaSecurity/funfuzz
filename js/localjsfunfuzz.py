@@ -260,12 +260,12 @@ def genShellCmd(lfList, lTimeout, repoKnDir, shName, shFlags):
 
     return shCmdList
 
-def selfTests(shName, aNum, cType, fPath):
+def selfTests(shName, aNum, cType):
     '''
     Runs a bunch of verification tests to see if arch and compile type are as intended.
     '''
     assert archOfBinary(shName) == aNum  # 32-bit or 64-bit verification test.
-    testDbgOrOptGivenACompileType(shName, cType, cwd=fPath)
+    testDbgOrOptGivenACompileType(shName, cType)
 
 def outputStrFromList(lst):
     '''
@@ -433,7 +433,7 @@ def localCompileFuzzJsShell(options):
     shellCmdList = genShellCmd(
         loopFlagList, loopyTimeout, knownBugsDir(srcRepo, repoName), shellName, shFlagList)
 
-    selfTests(shellName, archNum, shellType, fullPath)
+    selfTests(shellName, archNum, shellType)
 
     diagDump(fullPath, outputStrFromList(shellCmdList), archNum, shellType, repoName, addedEnvList,
              fullEnvDt, configCmdList)
@@ -538,7 +538,7 @@ def main():
                             knownBugsDir(odjs.srcRepo, odjs.repo), odjs.shellName, shFlagList)
 
         if sys.version_info >= (2, 6):
-            selfTests(odjs.shellName, odjs.pArchNum, odjs.cType, startDir)
+            selfTests(odjs.shellName, odjs.pArchNum, odjs.cType)
 
         localLog = normExpUserPath(os.path.join(startDir, 'log-localjsfunfuzz.txt'))
         with open(localLog, 'wb') as f:
