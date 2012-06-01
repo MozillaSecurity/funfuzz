@@ -132,7 +132,6 @@ def many_timed_runs():
                 compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                       logPrefix + "-cj", options.knownPath, options.repo,
                                       options.timeout, True)
-            # FIXME: Make the following cleaner, and remove (.startswith logprefix, .endswith -core.gz) too
             os.remove(logPrefix + "-out")
             os.remove(logPrefix + "-err")
             if (os.path.exists(logPrefix + "-crash")):
@@ -141,8 +140,6 @@ def many_timed_runs():
                 os.remove(logPrefix + "-vg.xml")
             if (os.path.exists(logPrefix + "-core.gz")):
                 os.remove(logPrefix + "-core.gz")
-            #if (os.path.exists(logPrefix + "-cj-initial-r5-core.gz")):
-            #    os.remove(logPrefix + "-cj-initial-r5-core.gz")
 
 if __name__ == "__main__":
     #many_timed_runs(None, sys.argv[1:])  # Needed for targetTime
