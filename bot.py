@@ -128,7 +128,7 @@ def parseOpts():
     parser = OptionParser()
     parser.set_defaults(
         remote_host = None,
-        basedir = os.path.expanduser("~") + localSep + "domfuzzjobs" + localSep,
+        basedir = os.path.expanduser("~") + localSep + "fuzzingjobs" + localSep,
         repoName = 'mozilla-central',
         compileType = 'dbg',
         runJsfunfuzz = False,
@@ -169,7 +169,7 @@ def main():
     remotePrefix = (remoteHost + ":") if remoteHost else ""
     remoteSep = "/" if remoteHost else localSep
     assert remoteBase.endswith(remoteSep)
-    relevantJobsDir = remoteBase + buildType + remoteSep
+    relevantJobsDir = remoteBase + "dom-" + buildType + remoteSep
     runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
     runCommand(remoteHost, "chmod og+rx " + remoteBase)
     runCommand(remoteHost, "mkdir -p " + relevantJobsDir)
