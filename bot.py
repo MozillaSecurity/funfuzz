@@ -169,7 +169,8 @@ def main():
     remotePrefix = (remoteHost + ":") if remoteHost else ""
     remoteSep = "/" if remoteHost else localSep
     assert remoteBase.endswith(remoteSep)
-    relevantJobsDir = remoteBase + "dom-" + buildType + remoteSep
+    relevantJobsDirName = "dom-" + buildType
+    relevantJobsDir = remoteBase + relevantJobsDirName + remoteSep
     runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
     runCommand(remoteHost, "chmod og+rx " + remoteBase)
     runCommand(remoteHost, "mkdir -p " + relevantJobsDir)
@@ -279,8 +280,8 @@ def main():
 
             if remoteHost and ldfResult == loopdomfuzz.LITH_FINISHED:
                 print "Sending email..."
-                sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/", "jruderman")
-                #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + buildType + "/" + newjobname + "/ " + \
+                sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/", "jruderman")
+                #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/ " + \
                 #          " - " + platform.node() + " - Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
                 print "Email sent!"
 
