@@ -201,7 +201,9 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
             stdin =  None,
             stderr = subprocess.STDOUT,
             stdout = open(logPrefix + "-crash", 'w') if useLogFiles else None,
-            close_fds = close_fds
+            # It would be nice to use this everywhere, but it seems to be broken on Windows
+            # (http://docs.python.org/library/subprocess.html)
+            close_fds = (os.name == "posix")
         )
         if useLogFiles:
             os.rename(coreFilename, logPrefix + "-core")
