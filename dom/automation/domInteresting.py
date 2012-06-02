@@ -96,6 +96,9 @@ def writePrefs(profileDir, extraPrefs):
   user_pref("security.warn_viewing_mixed", false);
   user_pref("toolkit.telemetry.prompted", 2);
   user_pref("browser.rights.3.shown", true);
+  user_pref("browser.firstrun.show.localepicker", false);
+  user_pref("browser.firstrun.show.uidiscovery", false);
+  user_pref("browser.startup.page", 0); // use about:blank, not browser.startup.homepage
 
   // Suppress automatic safe mode after crashes.
   user_pref("toolkit.startup.max_resumed_crashes", -1);
