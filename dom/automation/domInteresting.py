@@ -261,7 +261,7 @@ class AmissLogHandler:
         if msg.find("quitApplication") != -1 or msg.find("fuzzerWhenDeep") != -1:
             self.expectChromeFailure = True
         if (not self.expectChromeFailure and
-            (msg.find("uncaught exception") != -1 or msg.find("JavaScript error") != -1) and
+            (msg.find("uncaught exception") != -1 or msg.find("JavaScript error") != -1 or msg.find("JavaScript Error") != -1) and
             (msg.find("chrome://browser/") != -1 or msg.find("resource:///components") != -1) and
              msg.find("nsIWebProgress.DOMWindow") == -1 and # bug 732593
              msg.find("installStatus is null") == -1 and # bug 693237
@@ -269,6 +269,7 @@ class AmissLogHandler:
              msg.find("aTab is null") == -1 and # bug 693239
              msg.find("too much recursion") == -1 and # bug 732665
              msg.find("nsIWebContentHandlerRegistrar::registerProtocolHandler") == -1 and # bug 732692, bug 693270
+             msg.find("nsIWebContentHandlerRegistrar::registerContentHandler") == -1 and # bug 732692, bug 693270
              msg.find("iconStatus is null") == -1 and # bug 733305
              msg.find("prompt aborted by user") == -1 and # thrown intentionally in nsPrompter.js
              msg.find(":: pageShowEventHandlers ::") == -1 and # bug 742139
