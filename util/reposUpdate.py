@@ -117,7 +117,8 @@ def main():
                 sys.exit(1)
 
         if repoType == 'hg' and repo != 'valgrind':
-            timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, vb=True)
+            timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, combineStderr=True,
+                ignoreStderr=True, vb=True)
             timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
 
         if 'comm-' in repo:
