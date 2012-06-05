@@ -508,7 +508,7 @@ def rdfInit(args):
                     with open(crashlog) as f:
                         crashText = f.read()
                     print crashText
-                    if not (" main + " in crashText or " XRE_main + " in crashText):
+                    if not (" main + " in crashText or " XRE_main + " in crashText or " exit + " in crashText):
                         # e.g. this build only has breakpad symbols, not native symbols
                         alh.printAndLog("%%% Busted crash report (from mac crash reporter)")
                     elif alh.crashIsKnown:
