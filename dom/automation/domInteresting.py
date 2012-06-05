@@ -145,6 +145,7 @@ class AmissLogHandler:
         self.mallocFailure = False
         self.knownPath = knownPath
         self.FRClines = []
+        self.theapp = None
         self.pid = None
         self.fullLogHead = []
         self.summaryLog = []
@@ -171,7 +172,11 @@ class AmissLogHandler:
         pidprefix = "INFO | automation.py | Application pid:"
         if self.pid == None and msg.startswith(pidprefix):
             self.pid = int(msg[len(pidprefix):])
-            print "Firefox pid: " + str(self.pid)
+            #print "Firefox pid: " + str(self.pid)
+        theappPrefix = "theapp: "
+        if self.theapp == None and msg.startswith(theappPrefix):
+            self.theapp = msg[len(theappPrefix):]
+            #print "self.theapp " + repr(self.theapp)
         if msg.find("FRC") != -1:
             self.FRClines.append(msgLF)
         if msg == "Not expected to hang":
@@ -498,8 +503,7 @@ def rdfInit(args):
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
             if platform.system() == "Darwin" and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
                 # well, maybe the OS crash reporter picked it up.
-                appName = "firefox-bin" # should be 'os.path.basename(theapp)' but whatever
-                crashlog = grabCrashLog(appName, alh.pid, None, signum)
+                crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, None)
                 if crashlog:
                     with open(crashlog) as f:
                         crashText = f.read()
