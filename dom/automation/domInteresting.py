@@ -597,6 +597,7 @@ def directMain():
         extraPrefs = ""
     level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix, extraPrefs = extraPrefs)
     print level
+    sys.exit(level)
     #deleteProfileForMain()
 
 if __name__ == "__main__":
