@@ -5,26 +5,23 @@ from __future__ import with_statement
 import datetime
 import os
 import random
-import shutil
 import subprocess
 import sys
 import time
 import urllib
-
-from tempfile import mkdtemp
 
 import domInteresting
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 emptiesDir = os.path.abspath(os.path.join(p0, os.pardir, "empties"))
 fuzzersDir = os.path.abspath(os.path.join(p0, os.pardir, "fuzzers"))
-lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, os.pardir, "lithium", "lithium.py")]
 domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
 
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import shellify, createWtmpDir
 from fileManipulation import fuzzDice, fuzzSplice, linesWith, writeLinesToFile
+import lithOps
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
@@ -52,7 +49,7 @@ def many_timed_runs(targetTime, args):
                 print "Out of time!"
                 if len(os.listdir(tempDir)) == 0:
                     os.rmdir(tempDir)
-                return (None, HAPPY, None)
+                return (None, lithOps.HAPPY, None)
 
             url = urls[iteration]
             prefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames) + nonBoolPrefs()
@@ -68,8 +65,8 @@ def many_timed_runs(targetTime, args):
                 writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
                 extraRDFArgs = ["--valgrind"] if options.valgrind else []
                 lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
-                (lithlog, lithresult, lithdetails) = runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
-                if lithresult == LITH_NO_REPRO:
+                (lithlog, lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
+                if lithresult == lithOps.LITH_NO_REPRO:
                     os.remove(rFN)
                     print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
                     level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(prefs))
@@ -78,13 +75,13 @@ def many_timed_runs(targetTime, args):
                         with open(logPrefix + "-repro-only.txt", "w") as reproOnlyFile:
                             reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
                             reproOnlyFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
-                        lithresult = NO_REPRO_EXCEPT_BY_URL
+                        lithresult = lithOps.NO_REPRO_EXCEPT_BY_URL
                     else:
                         print "%%% Lithium can't reproduce, and neither can I."
                         with open(logPrefix + "-sorry.txt", "w") as sorryFile:
                             sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
                             sorryFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
-                        lithresult = NO_REPRO_AT_ALL
+                        lithresult = lithOps.NO_REPRO_AT_ALL
                 print ""
                 if targetTime:
                     return (lithlog, lithresult, lithdetails)
@@ -141,55 +138,6 @@ def createReproFile(lines, logPrefix):
     subprocess.call(["gzip", oFN])
 
     return rFN
-
-# status returns for runLithium and many_timed_runs
-(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO, LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
-
-
-def runLithium(lithArgs, logPrefix, targetTime):
-    """
-      Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
-      Returns a tuple of (lithlogfn, LITH_*, details).
-    """
-    deletableLithTemp = None
-    if targetTime:
-        # loopdomfuzz.py is being used by bot.py
-        deletableLithTemp = mkdtemp(prefix="domfuzz-ldf-bot")
-        lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
-    else:
-        # loopdomfuzz.py is being run standalone
-        lithtmp = logPrefix + "-lith-tmp"
-        os.mkdir(lithtmp)
-        lithArgs = ["--tempdir=" + lithtmp] + lithArgs
-    lithlogfn = logPrefix + "-lith-out"
-    print "Preparing to run Lithium, log file " + lithlogfn
-    print shellify(lithiumpy + lithArgs)
-    subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
-    print "Done running Lithium"
-    if deletableLithTemp:
-        shutil.rmtree(deletableLithTemp)
-    r = readLithiumResult(lithlogfn)
-    subprocess.call(["gzip", "-f", lithlogfn])
-    return r
-
-def readLithiumResult(lithlogfn):
-    with open(lithlogfn) as f:
-        for line in f:
-            if line.startswith("Lithium result"):
-                print line.rstrip()
-            if line.startswith("Lithium result: interesting"):
-                return (lithlogfn, LITH_RETESTED_STILL_INTERESTING, None)
-            elif line.startswith("Lithium result: succeeded, reduced to: "):
-                reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
-                return (lithlogfn, LITH_FINISHED, reducedTo)
-            elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
-                return (lithlogfn, LITH_NO_REPRO, None)
-            elif line.startswith("Lithium result: please continue using: "):
-                lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
-                return (lithlogfn, LITH_PLEASE_CONTINUE, lithiumHint)
-        else:
-            return (lithlogfn, LITH_BUSTED, None)
-
 
 def getURLs(reftestFilesDir):
     URLs = []

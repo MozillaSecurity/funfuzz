@@ -19,6 +19,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
 sys.path.insert(0, path1)
 import downloadBuild
+import lithOps
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -200,7 +201,7 @@ def main():
                 print "reduced filename: " + reducedFn
                 lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
                 logPrefix = job + "retest"
-                (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, logPrefix, targetTime)
+                (lithlog, ldfResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
             else:
                 shouldLoop = False
         else:
@@ -215,7 +216,7 @@ def main():
                         downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
-                (lithlog, ldfResult, lithDetails) = loopdomfuzz.runLithium(lithArgs, logPrefix, targetTime)
+                (lithlog, ldfResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
 
             else:
                 print "Fuzz time!"
@@ -232,7 +233,7 @@ def main():
                 if options.runJsfunfuzz:
                     assert False, 'jsfunfuzz support is not yet completed.'
                 (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
-                if ldfResult == loopdomfuzz.HAPPY:
+                if ldfResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
                     job = "wtmp1" + localSep
@@ -245,19 +246,19 @@ def main():
 
         if lithlog:
             statePostfix = ({
-              loopdomfuzz.NO_REPRO_AT_ALL: "_no_repro",
-              loopdomfuzz.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
-              loopdomfuzz.LITH_NO_REPRO: "_no_longer_reproducible",
-              loopdomfuzz.LITH_FINISHED: "_reduced",
-              loopdomfuzz.LITH_RETESTED_STILL_INTERESTING: "_retested",
-              loopdomfuzz.LITH_PLEASE_CONTINUE: "_needsreduction",
-              loopdomfuzz.LITH_BUSTED: "_sad"
+              lithOps.NO_REPRO_AT_ALL: "_no_repro",
+              lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
+              lithOps.LITH_NO_REPRO: "_no_longer_reproducible",
+              lithOps.LITH_FINISHED: "_reduced",
+              lithOps.LITH_RETESTED_STILL_INTERESTING: "_retested",
+              lithOps.LITH_PLEASE_CONTINUE: "_needsreduction",
+              lithOps.LITH_BUSTED: "_sad"
             })[ldfResult]
 
-            if ldfResult == loopdomfuzz.LITH_PLEASE_CONTINUE:
+            if ldfResult == lithOps.LITH_PLEASE_CONTINUE:
                 writeTinyFile(job + "lithium-command.txt", lithDetails)
 
-            if ldfResult == loopdomfuzz.LITH_FINISHED:
+            if ldfResult == lithOps.LITH_FINISHED:
                 # lithDetails should be a string like "11 lines"
                 statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
 
@@ -278,7 +279,7 @@ def main():
             if not options.reuse_build and os.path.exists(buildDir):
                 shutil.rmtree(buildDir)
 
-            if remoteHost and ldfResult == loopdomfuzz.LITH_FINISHED:
+            if remoteHost and ldfResult == lithOps.LITH_FINISHED:
                 print "Sending email..."
                 sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/", "jruderman")
                 #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/ " + \
