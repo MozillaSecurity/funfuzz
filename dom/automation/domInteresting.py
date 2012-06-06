@@ -41,6 +41,7 @@ import detect_leaks
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
 from subprocesses import grabCrashLog
+import asanSymbolize
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -156,7 +157,9 @@ class AmissLogHandler:
         self.nsassertionCount = 0
         self.sawFatalAssertion = False
         self.fuzzerComplained = False
-        self.sawProcessedCrash = False
+        self.crashProcessor = None
+        self.asanDump = ""
+        self.crashBoringBits = False
         self.crashMightBeTooMuchRecursion = False
         self.crashIsKnown = False
         self.timedOut = False
@@ -166,6 +169,9 @@ class AmissLogHandler:
         detect_interesting_crashes.resetCounts()
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
+        if self.crashProcessor == "asan":
+            msgLF = asanSymbolize.symbolize_addr2line(msgLF)
+            self.asanDump += msgLF # FIXME this should not be necessary. Maybe this all needs to move to automation.py, like the fix*stack calls.
         msg = msgLF.rstrip("\n")
         if len(self.fullLogHead) < 100000:
             self.fullLogHead.append(msgLF)
@@ -238,10 +244,20 @@ class AmissLogHandler:
 
         if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
             print "We have a crash on our hands!"
-            self.sawProcessedCrash = True
-        if self.sawProcessedCrash and len(self.summaryLog) < 300:
+            self.crashProcessor = "minidump_stackwalk"
+        if "ERROR: AddressSanitizer" in msg:
+            print "We have an asan crash on our hands!"
+            self.crashProcessor = "asan"
+            if "failed to allocate" in msg:
+                self.crashIsKnown = True
+
+        if msg.startswith("freed by thread") or msg.startswith("previously allocated by thread"):
+            # We don't want to treat these as part of the stack trace for the purpose of detect_interesting_crashes.
+            self.crashBoringBits = True
+
+        if self.crashProcessor and len(self.summaryLog) < 300:
             self.summaryLog.append(msgLF)
-        if self.sawProcessedCrash and detect_interesting_crashes.isKnownCrashSignature(msg):
+        if self.crashProcessor and not self.crashBoringBits and detect_interesting_crashes.isKnownCrashSignature(msg):
             self.printAndLog("%%% Known crash signature: " + msg)
             self.crashIsKnown = True
 
@@ -466,6 +482,8 @@ def rdfInit(args):
             else:
                 break
 
+        print alh.asanDump,
+
         lev = DOM_FINE
 
         if alh.newAssertionFailure:
@@ -483,11 +501,11 @@ def rdfInit(args):
             else:
                 alh.printAndLog("@@@ Unexpected hang")
                 lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
-        elif alh.sawProcessedCrash:
+        elif alh.crashProcessor:
             if alh.crashIsKnown:
-                alh.printAndLog("%%% Known crash (from minidump_stackwalk)")
+                alh.printAndLog("%%% Known crash (from " + alh.crashProcessor + ")")
             else:
-                alh.printAndLog("@@@ New crash (from minidump_stackwalk)")
+                alh.printAndLog("@@@ New crash (from " + alh.crashProcessor + ")")
                 lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
         elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
             # Disabled due to leaks in the glxtest process that Firefox forks on Linux.
@@ -501,7 +519,7 @@ def rdfInit(args):
             signum = -status
             signame = getSignalName(signum, "unknown signal")
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
-            if platform.system() == "Darwin" and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.sawProcessedCrash:
+            if platform.system() == "Darwin" and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
                 # well, maybe the OS crash reporter picked it up.
                 crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, None)
                 if crashlog:
@@ -521,8 +539,7 @@ def rdfInit(args):
                     else:
                         alh.printAndLog("%%% Known crash (from mac crash reporter)")
         elif status == 1:
-            alh.printAndLog("@@@ Exited with status 1 -- either OOM or an ASAN crash")
-            lev = max(lev, DOM_VG_AMISS)
+            alh.printAndLog("@@@ Exited with status 1 -- OOM?")
         elif status != 0 and not ((platform.system() in ("Microsoft", "Windows")) and alh.sawFatalAssertion):
             alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
             lev = max(lev, DOM_ABNORMAL_EXIT)
