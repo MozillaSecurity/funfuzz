@@ -279,7 +279,10 @@ class AmissLogHandler:
                 self.printAndLog("%%% This crash report is totally busted. Giving up.")
                 self.crashIsKnown = True
 
-        if msg.find("quitApplication") != -1 or msg.find("fuzzerWhenDeep") != -1:
+        if ("quitApplication" in msg or
+            "fuzzerWhenDeep" in msg or # Bug 732665
+            "InternalError: too much recursion" in msg # Bug 732665 (see bug 762598 for a testcase)
+            ):
             self.expectChromeFailure = True
         if (not self.expectChromeFailure and
             (msg.find("uncaught exception") != -1 or msg.find("JavaScript error") != -1 or msg.find("JavaScript Error") != -1) and
