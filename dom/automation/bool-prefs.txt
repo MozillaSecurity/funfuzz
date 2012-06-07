@@ -139,6 +139,8 @@ javascript.options.methodjit_always
 javascript.options.tracejit.chrome
 javascript.options.tracejit.content
 #javascript.options.typeinference # bug 745483
+javascript.options.xml.content
+javascript.options.xml.chrome
 keyword.enabled
 layers.acceleration.disabled
 layers.acceleration.force-enabled
