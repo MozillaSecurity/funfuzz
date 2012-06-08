@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 
 from subprocesses import shellify
 
+p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
 
 # Status returns for runLithium and many_timed_runs (in loopdomfuzz.py, etc.)
