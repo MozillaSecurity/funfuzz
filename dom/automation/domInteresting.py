@@ -298,7 +298,8 @@ class AmissLogHandler:
              msg.find("prompt aborted by user") == -1 and # thrown intentionally in nsPrompter.js
              msg.find(":: pageShowEventHandlers ::") == -1 and # bug 742139
              msg.find("nsIIOService.getProtocolHandler") == -1 and # bug 746878
-             msg.find("tipElement is null") == -1 # bug 746893
+             msg.find("tipElement is null") == -1 and # bug 746893
+             msg.find("aboutHome.js") == -1 # bug 615785
             ):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
