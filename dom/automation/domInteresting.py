@@ -211,8 +211,10 @@ class AmissLogHandler:
                 self.expectedToHang = True
 
         # It might be sensible to push more of this logic into detect_assertions...
-        newAssertion = detect_assertions.scanLine(self.knownPath, msgLF)
+        newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
+            not (self.sawFatalAssertion and "Tear-off objects remain in hashtable at shutdown" in msg) # bug 763182
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
+
         if newAssertion:
             self.newAssertionFailure = True
             self.printAndLog("@@@ " + msg)
