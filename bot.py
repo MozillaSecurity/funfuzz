@@ -170,7 +170,7 @@ def main():
     remotePrefix = (remoteHost + ":") if remoteHost else ""
     remoteSep = "/" if remoteHost else localSep
     assert remoteBase.endswith(remoteSep)
-    relevantJobsDirName = "dom-" + buildType
+    relevantJobsDirName = "dom-" + buildType if not options.retestAll else "dom-all"
     relevantJobsDir = remoteBase + relevantJobsDirName + remoteSep
     runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
     runCommand(remoteHost, "chmod og+rx " + remoteBase)
