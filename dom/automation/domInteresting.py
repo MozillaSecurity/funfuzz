@@ -212,7 +212,7 @@ class AmissLogHandler:
 
         # It might be sensible to push more of this logic into detect_assertions...
         newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
-            not (self.sawFatalAssertion and "Tear-off objects remain in hashtable at shutdown" in msg) # bug 763182
+            not (self.expectedToLeak and "Tear-off objects remain in hashtable at shutdown" in msg)
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
         if newAssertion:
@@ -220,6 +220,7 @@ class AmissLogHandler:
             self.printAndLog("@@@ " + msg)
         if fatalAssertion:
             self.sawFatalAssertion = True
+            self.expectedToLeak = True # bug 763182
             overlyGenericAssertion = ("You can't dereference a NULL" in msg)
             if not newAssertion:
                 if overlyGenericAssertion:
