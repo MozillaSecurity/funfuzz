@@ -132,14 +132,7 @@ def many_timed_runs():
                 compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                       logPrefix + "-cj", options.knownPath, options.repo,
                                       options.timeout, True)
-            os.remove(logPrefix + "-out")
-            os.remove(logPrefix + "-err")
-            if (os.path.exists(logPrefix + "-crash")):
-                os.remove(logPrefix + "-crash")
-            if (os.path.exists(logPrefix + "-vg.xml")):
-                os.remove(logPrefix + "-vg.xml")
-            if (os.path.exists(logPrefix + "-core.gz")):
-                os.remove(logPrefix + "-core.gz")
+            jsInteresting.deleteLogs(logPrefix)
 
 if __name__ == "__main__":
     #many_timed_runs(None, sys.argv[1:])  # Needed for targetTime

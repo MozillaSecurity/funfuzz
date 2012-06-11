@@ -142,6 +142,18 @@ def valgrindSuppressions(knownPath):
         knownPath = os.path.dirname(os.path.dirname(filename))
     return a
 
+def deleteLogs(logPrefix):
+      """Whoever calls baseLevel should eventually call deleteLogs (unless a bug was found)."""
+      os.remove(logPrefix + "-out")
+      os.remove(logPrefix + "-err")
+      if (os.path.exists(logPrefix + "-crash")):
+          os.remove(logPrefix + "-crash")
+      if (os.path.exists(logPrefix + "-vg.xml")):
+          os.remove(logPrefix + "-vg.xml")
+      # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
+      if (os.path.exists(logPrefix + "-core.gz")):
+          os.remove(logPrefix + "-core.gz")
+
 def parseOptions(args):
     parser = OptionParser()
     parser.disable_interspersed_args()
