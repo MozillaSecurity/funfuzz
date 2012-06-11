@@ -39,14 +39,12 @@ def ignoreMallocScribble(e):
 def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout, deleteBoring):
     lev = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", knownPath, timeout, False, True)
 
-    if jsInteresting.JS_OVERALL_MISMATCH <= lev:
+    if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
         pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo)
         print infilename
         print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
     else:
-        if jsInteresting.JS_FINE < lev:
-            print "compareJIT is going to pretend that didn't happen (%d)" % lev
         if deleteBoring:
             os.remove(infilename)
 
@@ -57,7 +55,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
     combos = shellFlags.basicFlagSets(jsEngine)
 
     if quickMode:
-            # Only used during initial fuzzing. Allowed to have false negatives.
+        # Only used during initial fuzzing. Allowed to have false negatives.
         combos = [combos[0]]
 
     if len(flags):
@@ -83,22 +81,23 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             print "Got usage error from:"
             print "  " + shellify(command)
             assert i > 0
-            os.remove(prefix + "-out")
-            os.remove(prefix + "-err")
+            jsInteresting.deleteLogs(prefix)
             continue
-        elif lev != jsInteresting.JS_FINE:
+        elif lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
-            print "compareJIT is not comparing output because a run was unhappy:"
+            print "compareJIT found a more serious bug:"
             print "  " + shellify(command)
             print "  " + jsInteresting.summaryString(issues, r)
-            os.remove(prefix + "-out")
-            os.remove(prefix + "-err")
-            if i > 0:
-                os.remove(prefix0 + "-out")
-                os.remove(prefix0 + "-err")
-            if (os.path.exists(prefix + "-crash")):
-                os.remove(prefix + "-crash")
             return lev
+        elif lev != jsInteresting.JS_FINE:
+            print "compareJIT is going to pretend this didn't happen (%d):" % lev
+            print "  " + shellify(command)
+            print "  " + jsInteresting.summaryString(issues, r)
+            jsInteresting.deleteLogs(prefix)
+            if i > 0:
+                continue
+            else:
+                return jsInteresting.JS_FINE
 
         if i == 0:
             (r0, prefix0) = (r, prefix)
@@ -106,19 +105,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             if "js_ReportOverRecursed called" in r.err and "js_ReportOverRecursed called" in r0.err:
                 #print "Ignoring js_ReportOverRecursed difference"
                 # delete extra files
-                os.remove(prefix + "-out")
-                os.remove(prefix + "-err")
-                pass
+                jsInteresting.deleteLogs(prefix)
             elif "can't convert" in r0.out or "can't convert" in r.out: # Bug 735316
                 #print "Ignoring DVG difference (bug 735316?)"
-                os.remove(prefix + "-out")
-                os.remove(prefix + "-err")
-                pass
+                jsInteresting.deleteLogs(prefix)
             elif dvgRE.search(r0.out) and dvgRE.search(r.out): # Bug 755813
                 #print "Ignoring DVG difference (bug 755813?)"
-                os.remove(prefix + "-out")
-                os.remove(prefix + "-err")
-                pass
+                jsInteresting.deleteLogs(prefix)
             elif r.err != r0.err:
                 print infilename
                 print "Mismatch on stderr"
@@ -136,13 +129,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             else:
-                # delete extra files
-                os.remove(prefix + "-out")
-                os.remove(prefix + "-err")
+                jsInteresting.deleteLogs(prefix)
 
     # All matched :)
-    os.remove(prefix0 + "-out")
-    os.remove(prefix0 + "-err")
+    jsInteresting.deleteLogs(prefix0)
     return jsInteresting.JS_FINE
 
 
