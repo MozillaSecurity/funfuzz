@@ -212,7 +212,7 @@ class AmissLogHandler:
 
         # It might be sensible to push more of this logic into detect_assertions...
         newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
-            not (self.expectedToLeak and "Tear-off objects remain in hashtable at shutdown" in msg)
+            not ("Tear-off objects remain in hashtable at shutdown" in msg and (self.expectedToLeak or (platform.system() in ("Microsoft", "Windows"))))
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
         if newAssertion:
