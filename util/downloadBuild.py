@@ -61,6 +61,11 @@ def parseOptions():
     parser.add_option('-c', '--compiletype', dest='compileType',
                       help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' + \
                            'Defaults to "%default".')
+    parser.add_option('-a', '--architecture',
+                      dest='arch',
+                      type='choice',
+                      choices=['32', '64'],
+                      help='Test architecture. Only accepts "32" or "64"')
     parser.add_option('-w', '--downloadfolder', dest='downloadFolder',
                       help='Sets the folder to download builds in. Defaults to the current ' + \
                            'working directory, which is "%default".')
@@ -297,13 +302,13 @@ def defaultBuildType(options):
     For Firefox, returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug
     For the js shell, returns FIXME.
     '''
-    return options.repoName + '-' + mozPlatform(None) + '-debug' \
+    return options.repoName + '-' + mozPlatform(options.arch) + '-debug' \
         if options.compileType == 'dbg' else ''
 
 def main():
     options = parseOptions()
     if options.remoteDir is not None:
-        downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell)
+        print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell)
     else:
         downloadLatestBuild(defaultBuildType(options), options.downloadFolder,
                             getJsShell=options.enableJsShell)
