@@ -199,8 +199,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
       && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
       && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
-      && !( codeL.match( /function.*\(.*\[.*\].*\)/ ))  // avoid bug 763313
-      && !( codeL.match( /function.*\(.*\{.*\}.*\)/ ))  // avoid bug 763313
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
