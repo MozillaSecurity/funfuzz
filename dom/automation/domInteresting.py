@@ -85,6 +85,7 @@ def writePrefs(profileDir, extraPrefs):
   user_pref("extensions.update.notifyUser", false);
   user_pref("nglayout.debug.disable_xul_cache", true);
   user_pref("security.fileuri.strict_origin_policy", false);
+  user_pref("dom.min_background_timeout_value", 4);
 
   // Reset things (on each startup) that might be set by fuzzing
   user_pref("javascript.options.gczeal", 0);
