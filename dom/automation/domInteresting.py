@@ -553,7 +553,8 @@ def rdfInit(args):
             lev = max(lev, DOM_ABNORMAL_EXIT)
 
         if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=True) and not alh.expectedToLeak:
-            alh.printAndLog("@@@ Unexpected leak or leak pattern in " + os.path.basename(leakLogFile))
+            alh.printAndLog("@@@ Unexpected leak or leak pattern")
+            alh.printAndLog("Leak details: " + os.path.basename(leakLogFile))
             lev = max(lev, DOM_NEW_LEAK)
         else:
             if alh.sawOMGLEAK and not alh.expectedToLeak:
