@@ -202,11 +202,21 @@ def main():
             print "Retesting time!"
             (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_reduced")
             if job:
-                reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
-                print "reduced filename: " + reducedFn
-                lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
-                logPrefix = job + "retest"
-                (lithlog, ldfResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                if ("1339201819" in job or # Bug 763126
+                    "1339379020" in job or # Bug 763560
+                    "1339589159" in job or # Bug 765109
+                    "1339599262" in job or # lol mv
+                    "1340073462" in job or # Bug 767233
+                    "1340246538" in job):  # Bug 767273
+                    # These testcases cause random crashes, or rely on internal blacklists.
+                    print "Skipping retesting of " + job
+                    (lithlog, ldfResult, lithDetails) = (True, lithOps.LITH_NO_REPRO, "Skipping retest")
+                else:
+                    reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
+                    print "reduced filename: " + reducedFn
+                    lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
+                    logPrefix = job + "retest"
+                    (lithlog, ldfResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
             else:
                 shouldLoop = False
         else:
