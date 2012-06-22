@@ -212,13 +212,13 @@ def main():
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
-                    (lithlog, ldfResult, lithDetails) = (True, lithOps.LITH_NO_REPRO, "Skipping retest")
+                    (lithlog, lithResult, lithDetails) = (True, lithOps.LITH_NO_REPRO, "Skipping retest")
                 else:
                     reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                     print "reduced filename: " + reducedFn
                     lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
                     logPrefix = job + "retest"
-                    (lithlog, ldfResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                    (lithlog, lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
             else:
                 shouldLoop = False
         else:
@@ -233,7 +233,7 @@ def main():
                         downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
-                (lithlog, ldfResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                (lithlog, lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
 
             else:
                 print "Fuzz time!"
@@ -249,8 +249,8 @@ def main():
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 if options.runJsfunfuzz:
                     assert False, 'jsfunfuzz support is not yet completed.'
-                (lithlog, ldfResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
-                if ldfResult == lithOps.HAPPY:
+                (lithlog, lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
+                if lithResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
                     job = "wtmp1" + localSep
@@ -270,12 +270,12 @@ def main():
               lithOps.LITH_RETESTED_STILL_INTERESTING: "_retested",
               lithOps.LITH_PLEASE_CONTINUE: "_needsreduction",
               lithOps.LITH_BUSTED: "_sad"
-            })[ldfResult]
+            })[lithResult]
 
-            if ldfResult == lithOps.LITH_PLEASE_CONTINUE:
+            if lithResult == lithOps.LITH_PLEASE_CONTINUE:
                 writeTinyFile(job + "lithium-command.txt", lithDetails)
 
-            if ldfResult == lithOps.LITH_FINISHED:
+            if lithResult == lithOps.LITH_FINISHED:
                 # lithDetails should be a string like "11 lines"
                 statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
 
@@ -296,7 +296,7 @@ def main():
             if not options.reuse_build and os.path.exists(buildDir):
                 shutil.rmtree(buildDir)
 
-            if remoteHost and ldfResult == lithOps.LITH_FINISHED:
+            if remoteHost and lithResult == lithOps.LITH_FINISHED:
                 print "Sending email..."
                 sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/", "jruderman")
                 #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/ " + \
