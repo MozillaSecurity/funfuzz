@@ -204,6 +204,7 @@ def main():
             if job:
                 if ("1339201819" in job or # Bug 763126
                     "1339379020" in job or # Bug 763560
+                    "1339573949" in job or # Bug 767279
                     "1339589159" in job or # Bug 765109
                     "1339599262" in job or # lol mv
                     "1340073462" in job or # Bug 767233
