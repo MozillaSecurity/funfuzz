@@ -51,14 +51,14 @@ def readLithiumResult(lithlogfn):
             if line.startswith("Lithium result"):
                 print line.rstrip()
             if line.startswith("Lithium result: interesting"):
-                return (lithlogfn, LITH_RETESTED_STILL_INTERESTING, None)
+                return (LITH_RETESTED_STILL_INTERESTING, None)
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
-                return (lithlogfn, LITH_FINISHED, reducedTo)
+                return (LITH_FINISHED, reducedTo)
             elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
-                return (lithlogfn, LITH_NO_REPRO, None)
+                return (LITH_NO_REPRO, None)
             elif line.startswith("Lithium result: please continue using: "):
                 lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
-                return (lithlogfn, LITH_PLEASE_CONTINUE, lithiumHint)
+                return (LITH_PLEASE_CONTINUE, lithiumHint)
         else:
-            return (lithlogfn, LITH_BUSTED, None)
+            return (LITH_BUSTED, None)

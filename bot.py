@@ -187,7 +187,7 @@ def main():
         job = None
         oldjobname = None
         takenNameOnServer = None
-        lithlog = None
+        lithResult = None
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         buildDir = 'build'
         #if remoteHost:
@@ -213,13 +213,13 @@ def main():
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
-                    (lithlog, lithResult, lithDetails) = (True, lithOps.LITH_NO_REPRO, "Skipping retest")
+                    (lithResult, lithDetails) = (lithOps.LITH_NO_REPRO, "Skipping retest")
                 else:
                     reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                     print "reduced filename: " + reducedFn
                     lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
                     logPrefix = job + "retest"
-                    (lithlog, lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                    (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
             else:
                 shouldLoop = False
         else:
@@ -234,7 +234,7 @@ def main():
                         downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
-                (lithlog, lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
 
             else:
                 print "Fuzz time!"
@@ -250,7 +250,7 @@ def main():
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 if options.runJsfunfuzz:
                     assert False, 'jsfunfuzz support is not yet completed.'
-                (lithlog, lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
+                (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
                 if lithResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
@@ -262,7 +262,7 @@ def main():
                     os.rename("wtmp1", oldjobname)
                     job = oldjobname + localSep
 
-        if lithlog:
+        if lithResult is not None:
             statePostfix = ({
               lithOps.NO_REPRO_AT_ALL: "_no_repro",
               lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",

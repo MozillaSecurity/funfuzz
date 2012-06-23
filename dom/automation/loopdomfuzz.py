@@ -65,7 +65,7 @@ def many_timed_runs(targetTime, args):
                 writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
                 extraRDFArgs = ["--valgrind"] if options.valgrind else []
                 lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
-                (lithlog, lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
+                (lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
                 if lithresult == lithOps.LITH_NO_REPRO:
                     os.remove(rFN)
                     print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
@@ -84,7 +84,7 @@ def many_timed_runs(targetTime, args):
                         lithresult = lithOps.NO_REPRO_AT_ALL
                 print ""
                 if targetTime:
-                    return (lithlog, lithresult, lithdetails)
+                    return (lithresult, lithdetails)
     finally:
         deleteProfile()
 
