@@ -1,0 +1,29 @@
+//first do a window.dump + "\n" to get a beautified version
+
+var xyz = function() {
+print();function(){};
+}
+function extractBody(f) {
+    var s = "" + f;
+    var skip = s.indexOf("{") + 2;
+    return s.substring(skip, s.length - 2);
+}
+//window.dump(extractBody(xyz) + "\n");
+print(extractBody(xyz))
+
+
+// var xyz = function() {
+// GAddMessages({});'use strict';
+// }
+// function extractBody(f) {
+    // var s = "" + f;
+    // var skip = s.indexOf("{") + 2;
+    // return s.substring(skip, s.length - 2);
+// }
+// beautifiedStr1 = extractBody(xyz) + "\n";
+// __gjsload_maps2__("util", beautifiedStr1, "", []);
+// var yz2 = function() {
+// var IAa = function(a, b) {    a.C = b;}
+// }
+// beautifiedStr2 = extractBody(yz2) + "\n";
+// __gjsload_maps2__("appiw", beautifiedStr2, "", []);
