@@ -203,6 +203,7 @@ def main():
             (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_reduced")
             if job:
                 if ("1339201819" in oldjobname or # Bug 763126
+                    "1338835174" in oldjobname or # Bug 763126
                     "1339379020" in oldjobname or # Bug 763560
                     "1339573949" in oldjobname or # Bug 767279
                     "1339589159" in oldjobname or # Bug 765109
