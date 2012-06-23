@@ -320,10 +320,6 @@ def getAnalysisFiles(path):
     if os.path.exists(os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))):
         shutil.copy2(os.path.abspath(
             os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py')), path)
-    if os.path.exists(os.path.abspath(
-        os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py'))):
-        shutil.copy2(os.path.abspath(
-            os.path.join(path0, os.pardir, 'jsfunfuzz', 'runFindInterestingFiles.py')), path)
 
 def setFlags(options):
     '''
