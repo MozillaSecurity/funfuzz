@@ -108,7 +108,7 @@ def basicFlagSets(shell):
             ['--no-ion', '-d']
         ]
     else:
-        return [
+        sets = [
             # ,m,am,amd,n,mn,amn,amdn,mdn
             [],
             ['-m'],
@@ -120,6 +120,9 @@ def basicFlagSets(shell):
             ['-m', '-n', '-a', '-d'],
             ['-m', '-n', '-d']
         ]
+        if shellSupportsFlag(shell, "--ion"):
+            sets += [["--ion"] + set for set in sets]
+        return sets
 
 
 # Consider adding a function (for compareJIT reduction) that takes a flag set
