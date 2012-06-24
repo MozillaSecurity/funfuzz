@@ -144,15 +144,17 @@ def valgrindSuppressions(knownPath):
 
 def deleteLogs(logPrefix):
       """Whoever calls baseLevel should eventually call deleteLogs (unless a bug was found)."""
-      os.remove(logPrefix + "-out")
-      os.remove(logPrefix + "-err")
-      if (os.path.exists(logPrefix + "-crash")):
-          os.remove(logPrefix + "-crash")
-      if (os.path.exists(logPrefix + "-vg.xml")):
-          os.remove(logPrefix + "-vg.xml")
-      # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
-      if (os.path.exists(logPrefix + "-core.gz")):
-          os.remove(logPrefix + "-core.gz")
+    # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
+    # the search indexer, anti-virus realtime protection and backup applications.
+     os.remove(logPrefix + "-out")
+     os.remove(logPrefix + "-err")
+     if (os.path.exists(logPrefix + "-crash")):
+         os.remove(logPrefix + "-crash")
+     if (os.path.exists(logPrefix + "-vg.xml")):
+         os.remove(logPrefix + "-vg.xml")
+     # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
+     if (os.path.exists(logPrefix + "-core.gz")):
+         os.remove(logPrefix + "-core.gz")
 
 def parseOptions(args):
     parser = OptionParser()
