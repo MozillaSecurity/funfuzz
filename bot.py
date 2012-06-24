@@ -308,10 +308,12 @@ def main():
                 shutil.rmtree(buildDir)
 
             if remoteHost and lithResult == lithOps.LITH_FINISHED:
+                recipients = ["jruderman"]
+                if options.runJsfunfuzz:
+                    recipients.append("gkwong")
                 print "Sending email..."
-                sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/", "jruderman")
-                #sendEmail("Reduced fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/ " + \
-                #          " - " + platform.node() + " - Python " + sys.version[:5] + " - " +  " ".join(platform.uname()), "gkwong")
+                for recipient in recipients:
+                    sendEmail("Reduced " + testType + " fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/", recipient)
                 print "Email sent!"
 
 if __name__ == "__main__":
