@@ -21,7 +21,7 @@ def tempdir(path):
     os.mkdir(path)
     return "--tempdir=" + path
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, alsoRunChar=True, alsoReduceEntireFile=False):
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, targetTime, alsoRunChar=True, alsoReduceEntireFile=False):
     """
        Run Lithium and autobisect.
 

@@ -7,6 +7,7 @@ import random
 import shutil
 import subprocess
 import sys
+import time
 from optparse import OptionParser
 
 import compareJIT
@@ -20,8 +21,9 @@ p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
 from subprocesses import createWtmpDir
 from fileManipulation import fuzzSplice, linesWith, writeLinesToFile
+import lithOps
 
-def parseOpts():
+def parseOpts(args):
     parser = OptionParser()
     parser.disable_interspersed_args()
     parser.add_option("--comparejit",
@@ -45,7 +47,7 @@ def parseOpts():
                       action = "store_true", dest = "valgrind",
                       default = False,
                       help = "use valgrind with a reasonable set of options")
-    options, args = parser.parse_args(sys.argv[1:])
+    options, args = parser.parse_args(args)
 
     if options.valgrind and options.useCompareJIT:
         print "Note: When running comparejit, the --valgrind option will be ignored"
@@ -68,13 +70,20 @@ def showtail(filename):
     print
     print
 
-def many_timed_runs():
-    options = parseOpts()
+def many_timed_runs(targetTime, args):
+    options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
     wtmpDir = createWtmpDir(os.getcwdu())
+    startTime = time.time()
 
     iteration = 0
     while True:
+        if targetTime and time.time() > startTime + targetTime:
+            print "Out of time!"
+            if len(os.listdir(wtmpDirNum)) == 0:
+                os.rmdir(wtmpDirNum)
+            return (lithOps.HAPPY, None)
+
         # Construct command needed to loop jsfunfuzz fuzzing.
         jsInterestingArgs = []
         jsInterestingArgs.append('--timeout=' + str(options.timeout))
@@ -116,11 +125,13 @@ def many_timed_runs():
             alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
             alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
             pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                              options.repo, alsoRunChar=alsoRunChar,
+                              options.repo, targetTime, alsoRunChar=alsoRunChar,
                               alsoReduceEntireFile=alsoReduceEntireFile)
+            if targetTime:
+                return (lithOps.HAPPY, None)
 
         else:
-            shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine
+            shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine # bug 751700
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
@@ -131,9 +142,8 @@ def many_timed_runs():
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
                 compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                       logPrefix + "-cj", options.knownPath, options.repo,
-                                      options.timeout, True)
+                                      options.timeout, targetTime, True)
             jsInteresting.deleteLogs(logPrefix)
 
 if __name__ == "__main__":
-    #many_timed_runs(None, sys.argv[1:])  # Needed for targetTime
-    many_timed_runs()
+    many_timed_runs(None, sys.argv[1:])
