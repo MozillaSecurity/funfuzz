@@ -16,6 +16,7 @@ shellBeautificationpy = os.path.join(p0, 'shellBeautification.py')
 path2 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(path2)
 from subprocesses import captureStdout, shellify
+import lithOps
 
 def tempdir(path):
     os.mkdir(path)
@@ -34,23 +35,22 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
     valgrindX = ["--valgrind"] if valgrindSupport else []
 
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
-    print shellify([lithiumpy] + lithArgs)
-    subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + "-lith1-tmp")] + lithArgs, stdout=open(logPrefix + "-lith1-out", "w"))
+    (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix + "-1-lines", targetTime)
 
-    if alsoRunChar:
+    if lithResult == lithOps.LITH_FINISHED and targetTime is None:
         lith2Args = ["--char"] + lithArgs
         print shellify([lithiumpy] + lith2Args)
-        subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + "-lith2-tmp")] + lith2Args, stdout=open(logPrefix + "-lith2-out", "w"))
+        (lithResult, lithDetails) = lithOps.runLithium(lith2Args, logPrefix + "-2-chars", targetTime)
 
     print
     print "Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
     print shellify([lithiumpy, "--strategy=check-only"] + lithArgs)
     print
 
-    unbeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only", tempdir(logPrefix + "-lith-b-tmp")] + lithArgs)[0]
     # Check that the testcase is interesting.
-    if False and alsoReduceEntireFile and 'not interesting' not in unbeautifiedOutput:
-        assert 'interesting' in unbeautifiedOutput
+    if False and alsoReduceEntireFile and lithResult == lithOps.LITH_FINISHED:
+        # FIXME: continue replacing direct calls to Lithium with calls to lithOps.runLithium, then remove the tempDir function.
+
         # Beautify the output. This will remove DDBEGIN and DDEND as they are comments.
         # This will output a file with the '-beautified' suffix.
         # Reduce once using toString decompile method.
@@ -164,3 +164,5 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
         elif sys.version_info < (2, 6):
             print 'Not pinpointing to exact changeset, please use a Python version >= 2.6.'
+
+    return (lithResult, lithDetails)
