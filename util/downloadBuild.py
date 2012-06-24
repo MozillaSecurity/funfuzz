@@ -145,6 +145,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     Downloads the build specified, along with symbols and tests. Returns True when all are obtained.
     '''
     wantSymbols = wantSymbols and not jsShell  # Bug 715365, js shell currently lacks native symbols
+    wantTests = wantTests and not jsShell
     gotApp = False
     gotTests = False
     gotTxtFile = False
@@ -243,7 +244,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 unzip(dlAction, symbolsDir)
                 print 'completed!'
                 gotSyms = True
-    return gotApp and gotTests and gotTxtFile and (gotSyms or not wantSymbols)
+    return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
 
 def isNumericSubDir(n):
     '''
