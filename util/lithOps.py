@@ -26,11 +26,11 @@ def runLithium(lithArgs, logPrefix, targetTime):
     """
     deletableLithTemp = None
     if targetTime:
-        # loopdomfuzz.py is being used by bot.py
-        deletableLithTemp = mkdtemp(prefix="domfuzz-ldf-bot")
+        # loopdomfuzz.py or loopjsfuzz.py is being used by bot.py
+        deletableLithTemp = mkdtemp(prefix="fuzzbot-lithium")
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
     else:
-        # loopdomfuzz.py is being run standalone
+        # loopdomfuzz.py or loopjsfuzz.py is being run standalone
         lithtmp = logPrefix + "-lith-tmp"
         os.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
