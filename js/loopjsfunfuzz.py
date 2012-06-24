@@ -124,11 +124,11 @@ def many_timed_runs(targetTime, args):
             itest.append(options.knownPath)
             alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
             alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
-            pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                              options.repo, targetTime, alsoRunChar=alsoRunChar,
-                              alsoReduceEntireFile=alsoReduceEntireFile)
+            (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
+                                                          options.repo, targetTime, alsoRunChar=alsoRunChar,
+                                                          alsoReduceEntireFile=alsoReduceEntireFile)
             if targetTime:
-                return (lithOps.HAPPY, None)
+                return (lithResult, lithDetails)
 
         else:
             shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine # bug 751700
@@ -140,9 +140,11 @@ def many_timed_runs(targetTime, args):
                         ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
-                compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
-                                      logPrefix + "-cj", options.knownPath, options.repo,
-                                      options.timeout, targetTime, True)
+                (lithResult, lithDetails) = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
+                                                                  logPrefix + "-cj", options.knownPath, options.repo,
+                                                                  options.timeout, targetTime, True)
+                if targetTime and lithResult != lithOps.HAPPY:
+                    return (lithResult, lithDetails)
             jsInteresting.deleteLogs(logPrefix)
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import shellify
+import lithOps
 
 
 lengthLimit = 1000000
@@ -41,12 +42,14 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout,
 
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
-        pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, targetTime)
+        (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, targetTime)
         print infilename
         print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
+        return (lithResult, lithDetails)
     else:
         if deleteBoring:
             os.remove(infilename)
+        return (lithOps.HAPPY, None)
 
 
 dvgRE = re.compile("TypeError\: .* is .*")
