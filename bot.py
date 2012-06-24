@@ -23,6 +23,9 @@ import lithOps
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
+path3 = os.path.abspath(os.path.join(path0, 'js'))
+sys.path.append(path3)
+import loopjsfunfuzz
 
 devnull = open(os.devnull, "w")
 
@@ -175,7 +178,8 @@ def main():
     remotePrefix = (remoteHost + ":") if remoteHost else ""
     remoteSep = "/" if remoteHost else localSep
     assert remoteBase.endswith(remoteSep)
-    relevantJobsDirName = "dom-" + buildType if not options.retestAll else "dom-all"
+    testType = "js" if options.runJsfunfuzz else "dom"
+    relevantJobsDirName = testType + "-" + (buildType if not options.retestAll else "all")
     relevantJobsDir = remoteBase + relevantJobsDirName + remoteSep
     runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
     runCommand(remoteHost, "chmod og+rx " + remoteBase)
@@ -249,8 +253,14 @@ def main():
                     os.mkdir(buildDir)
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 if options.runJsfunfuzz:
-                    assert False, 'jsfunfuzz support is not yet completed.'
-                (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
+                    win = platform.system() in ("Microsoft", "Windows")
+                    shell = os.path.join(buildDir, "dist", "js.exe" if win else "js")
+                    # Not using compareJIT: bug 751700, and it's not fully hooked up
+                    # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
+                    mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
+                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(targetTime, mtrArgs)
+                else:
+                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
                 if lithResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
