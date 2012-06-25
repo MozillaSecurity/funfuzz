@@ -19,7 +19,7 @@ import detect_malloc_errors
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
 from fileManipulation import writeLinesToFile
-from subprocesses import vdump
+from subprocesses import vdump, shellify
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -117,8 +117,11 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         for i in issues:
             statusIssueList.append('Status: ' + i)
         assert len(statusIssueList) != 0
-        writeLinesToFile(['Number: ' + logPrefix + '\n'] + [i + '\n' for i in statusIssueList],
-            logPrefix + '-summary.txt')
+        writeLinesToFile(
+          ['Number: ' + logPrefix + '\n',
+           'Command: ' + shellify(options.jsengineWithArgs) + '\n'] +
+          [i + '\n' for i in statusIssueList],
+          logPrefix + '-summary.txt')
 
     if not quiet:
         print logPrefix + ": " + summaryString(issues, runinfo)
