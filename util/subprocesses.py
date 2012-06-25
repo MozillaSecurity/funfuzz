@@ -155,6 +155,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                 if firstLine.rstrip().endswith("[" + str(crashedPID) + "]"):
                     if useLogFiles:
                         os.rename(fullfn, logPrefix + "-crash")
+                        captureStdout(["chmod", "og+r", logPrefix + "-crash"])
                         return logPrefix + "-crash"
                     else:
                         return fullfn
