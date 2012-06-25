@@ -293,6 +293,9 @@ def main():
             if lithResult == lithOps.LITH_FINISHED:
                 # lithDetails should be a string like "11 lines"
                 statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
+                summaryFile = filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
+                with open(summaryFile) as f:
+                    summary = f.read()
 
             #print "oldjobname: " + oldjobname
             newjobname = oldjobname + statePostfix
@@ -313,11 +316,14 @@ def main():
 
             if remoteHost and lithResult == lithOps.LITH_FINISHED:
                 recipients = ["jruderman"]
+                subject = "Reduced " + testType + " fuzz testcase"
+                dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/"
+                body = dirRef + "\n\n" + summary[0:50000]
                 if options.runJsfunfuzz:
                     recipients.append("gkwong")
                 print "Sending email..."
                 for recipient in recipients:
-                    sendEmail("Reduced " + testType + " fuzz testcase", "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/", recipient)
+                    sendEmail(subject, body, recipient)
                 print "Email sent!"
 
 if __name__ == "__main__":
