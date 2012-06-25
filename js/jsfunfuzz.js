@@ -100,6 +100,7 @@ if (jsshell) {
 
 if (typeof gc == "undefined")
   gc = function(){};
+var gcIsQuiet = !(gc()); // see bug 706433
 
 var haveE4X = (typeof XML == "function");
 if (haveE4X)
@@ -262,6 +263,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     expectConsistentOutput: true
+       && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("Date") == -1                // time marches on
        && code.indexOf("random") == -1
     ,
