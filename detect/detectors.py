@@ -74,14 +74,14 @@ class AssertionDetector(Detector):
       currentFile.close()
 
       return assertions
-    
+
   def hasFatalAssertion(self, currentFile, verbose, lineFilter=None):
     assertions = self.scanFileAssertions(currentFile, verbose, False, lineFilter)
-    
+
     for assertion in assertions:
       if assertion.startswith("###!!! ABORT") or assertion.startswith("Assertion fail"):
         return True
-    
+
     return False
 
   def hasAssertion(self, line):
@@ -103,7 +103,7 @@ class AssertionDetector(Detector):
 
   # For use by af_timed_run and jsunhappy.py
   def amiss(self, logPrefix, verbose, ignoreKnownAssertions=True):
-      with open(logPrefix + "-err") as currentFile:
+      with open(logPrefix + "-err.txt") as currentFile:
           return self.scanFile(currentFile, verbose, ignoreKnownAssertions)
 
 class CrashDetector(Detector):
@@ -256,7 +256,7 @@ class MallocErrorDetector(Detector):
       self.pline = ""
       self.ppline = ""
 
-      with open(logPrefix + "-err") as f:
+      with open(logPrefix + "-err.txt") as f:
           for line in f:
               if scanLine(line):
                   foundSomething = True

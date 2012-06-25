@@ -34,7 +34,7 @@ def runLithium(lithArgs, logPrefix, targetTime):
         lithtmp = logPrefix + "-lith-tmp"
         os.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
-    lithlogfn = logPrefix + "-lith-out"
+    lithlogfn = logPrefix + "-lith-out.txt"
     print "Preparing to run Lithium, log file " + lithlogfn
     print shellify(lithiumpy + lithArgs)
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)

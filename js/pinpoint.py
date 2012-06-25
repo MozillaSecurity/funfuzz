@@ -82,7 +82,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
                 lithArgs = lithArgs + [infilename]
                 assert beautifiedFilename not in lithArgs
                 #print shellify([lithiumpy] + lithArgs)
-                subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
+                subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out.txt", "w"))
 
                 # Run it using char only after 3 tries of toString and uneval reduction each.
                 if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNumStart) // 2):
@@ -93,7 +93,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
                     lith2Args = ["--char"] + lithArgs
                     assert beautifiedFilename not in lith2Args
                     #print shellify([lithiumpy] + lith2Args)
-                    subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lith2Args, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out", "w"))
+                    subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lith2Args, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out.txt", "w"))
             else:
                 # Beautified testcase is no longer interesting.
                 print 'Beautified testcase is no longer interesting!'

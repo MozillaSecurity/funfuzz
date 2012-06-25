@@ -15,7 +15,7 @@ def amiss(logPrefix):
     pline = ""
     ppline = ""
 
-    with open(logPrefix + "-err") as f:
+    with open(logPrefix + "-err.txt") as f:
         for line in f:
             if scanLine(line):
                 foundSomething = True

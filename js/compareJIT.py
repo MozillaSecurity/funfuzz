@@ -71,9 +71,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         command = commands[i]
         (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
-        with open(prefix + "-out") as f:
+        with open(prefix + "-out.txt") as f:
             r.out = f.read()
-        with open(prefix + "-err") as f:
+        with open(prefix + "-err.txt") as f:
             r.err = f.read()
 
         if len(r.out) > lengthLimit:
@@ -120,7 +120,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 print "Mismatch on stderr"
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
-                showDifferences(prefix0 + "-err", prefix + "-err", showDetailedDiffs)
+                showDifferences(prefix0 + "-err.txt", prefix + "-err.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             elif r.out != r0.out:
@@ -128,7 +128,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 print "Mismatch on stdout"
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
-                showDifferences(prefix0 + "-out", prefix + "-out", showDetailedDiffs)
+                showDifferences(prefix0 + "-out.txt", prefix + "-out.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             else:

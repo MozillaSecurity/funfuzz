@@ -98,7 +98,7 @@ def ignore(assertion):
 
 # For use by af_timed_run and jsunhappy.py
 def amiss(knownPath, logPrefix, verbose, ignoreKnownAssertions=True):
-    with open(logPrefix + "-err") as currentFile:
+    with open(logPrefix + "-err.txt") as currentFile:
         return scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions)
 
 # For standalone use

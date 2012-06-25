@@ -104,13 +104,13 @@ def many_timed_runs(targetTime, args):
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
         if level != jsInteresting.JS_FINE:
-            showtail(logPrefix + "-out")
-            showtail(logPrefix + "-err")
+            showtail(logPrefix + "-out.txt")
+            showtail(logPrefix + "-err.txt")
 
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
             [before, after] = fuzzSplice(options.fuzzjs)
-            with open(logPrefix + '-out', 'rb') as f:
+            with open(logPrefix + '-out.txt', 'rb') as f:
                 newfileLines = before + linesWith(f.readlines(), "FRC") + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
@@ -135,7 +135,7 @@ def many_timed_runs(targetTime, args):
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
-                with open(logPrefix + '-out', 'rb') as f:
+                with open(logPrefix + '-out.txt', 'rb') as f:
                     jitcomparelines = linesWith(f.readlines(), "FCM") + \
                         ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"

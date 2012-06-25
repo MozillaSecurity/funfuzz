@@ -95,7 +95,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         # Read in binary mode, because otherwise Python on Windows will
         # throw a fit when it encounters certain unicode.  Note that this
         # makes line endings platform-specific.
-        with open(logPrefix + "-out", "rb") as f:
+        with open(logPrefix + "-out.txt", "rb") as f:
             for line in f:
                 if (line.rstrip() == "It's looking good!"):
                     break
@@ -149,8 +149,8 @@ def deleteLogs(logPrefix):
     """Whoever calls baseLevel should eventually call deleteLogs (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
-    os.remove(logPrefix + "-out")
-    os.remove(logPrefix + "-err")
+    os.remove(logPrefix + "-out.txt")
+    os.remove(logPrefix + "-err.txt")
     if (os.path.exists(logPrefix + "-crash.txt")):
         os.remove(logPrefix + "-crash.txt")
     if (os.path.exists(logPrefix + "-vg.xml")):
@@ -193,8 +193,8 @@ def init(args):
     gOptions = parseOptions(args)
 def interesting(args, tempPrefix):
     actualLevel = jsfunfuzzLevel(gOptions, tempPrefix, quiet=True)
-    truncateFile(tempPrefix + "-out", 1000000)
-    truncateFile(tempPrefix + "-err", 1000000)
+    truncateFile(tempPrefix + "-out.txt", 1000000)
+    truncateFile(tempPrefix + "-err.txt", 1000000)
     return actualLevel >= gOptions.minimumInterestingLevel
 
 if __name__ == "__main__":
