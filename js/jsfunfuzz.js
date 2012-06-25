@@ -99,7 +99,7 @@ if (jsshell) {
 }
 
 if (typeof gc == "undefined")
-  gc = function(){};
+  this.gc = function(){};
 var gcIsQuiet = !(gc()); // see bug 706433
 
 var haveE4X = (typeof XML == "function");
@@ -617,7 +617,7 @@ function fillShellSandbox(sandbox)
     var fn = safeFuns[i];
     if (sandbox[fn]) {
       //print("Target already has " + fn);
-    } else if (this[fn]) {
+    } else if (this[fn]) { // FIXME: strict mode compliance requires passing glob around
       sandbox[fn] = this[fn].bind(this);
     } else {
       //print("Source is missing " + fn);
@@ -3605,7 +3605,7 @@ function makeObjLiteralName(d, b)
 var builtinFunctions = ["(function(){})"];
 
 // XXX grab getters/setters too (e.g. Debugger.prototype.enabled, but mysteriously not Array.prototype.length)
-(function exploreBuiltins() {
+(function exploreBuiltins(glob) {
 
   function exploreDeeper(a, an)
   {
@@ -3626,11 +3626,11 @@ var builtinFunctions = ["(function(){})"];
 
   function exploreConstructors()
   {
-    var gns = Object.getOwnPropertyNames(this);
+    var gns = Object.getOwnPropertyNames(glob);
     for (var i = 0; i < gns.length; ++i) {
       var gn = gns[i];
       if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement") { // assume that most uppercase names are constructors
-        var g = this[gn];
+        var g = glob[gn];
         if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
           constructors.push(gn);
           builtinFunctions.push(gn);
@@ -3646,7 +3646,7 @@ var builtinFunctions = ["(function(){})"];
   exploreDeeper(JSON, "JSON");
   exploreDeeper(Proxy, "Proxy");
 
-})();
+})(this);
 
 //for (let g of builtinFunctions) print(g);
 //print(builtinFunctions.length);
@@ -4663,7 +4663,7 @@ function regexTermPair()
     var cc1 = 32 + rnd(128-32);
     //var cc2 = String.fromCharCode(
     var c1 = String.fromCharCode(cc1);
-    c2 = rnd(10) ? c1 : rnd(2) ? c1.toLowerCase() : c1.toUpperCase();
+    var c2 = rnd(10) ? c1 : rnd(2) ? c1.toLowerCase() : c1.toUpperCase();
     return [c1, c2];
   }
 
