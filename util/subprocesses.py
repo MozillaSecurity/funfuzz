@@ -154,9 +154,9 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                     firstLine = c.readline()
                 if firstLine.rstrip().endswith("[" + str(crashedPID) + "]"):
                     if useLogFiles:
-                        os.rename(fullfn, logPrefix + "-crash")
-                        captureStdout(["chmod", "og+r", logPrefix + "-crash"])
-                        return logPrefix + "-crash"
+                        os.rename(fullfn, logPrefix + "-crash.txt")
+                        captureStdout(["chmod", "og+r", logPrefix + "-crash.txt"])
+                        return logPrefix + "-crash.txt"
                     else:
                         return fullfn
                         #return open(fullfn).read()
@@ -174,8 +174,8 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
         return
     useLogFiles = isinstance(logPrefix, str)
     if useLogFiles:
-        if os.path.exists(logPrefix + "-crash"):
-            os.remove(logPrefix + "-crash")
+        if os.path.exists(logPrefix + "-crash.txt"):
+            os.remove(logPrefix + "-crash.txt")
         if os.path.exists(logPrefix + "-core"):
             os.remove(logPrefix + "-core")
 
@@ -201,7 +201,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
             gdbArgs,
             stdin =  None,
             stderr = subprocess.STDOUT,
-            stdout = open(logPrefix + "-crash", 'w') if useLogFiles else None,
+            stdout = open(logPrefix + "-crash.txt", 'w') if useLogFiles else None,
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
             close_fds = (os.name == "posix")
@@ -209,7 +209,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
         if useLogFiles:
             os.rename(coreFilename, logPrefix + "-core")
             subprocess.call(["gzip", logPrefix + "-core"])
-            return logPrefix + "-crash"
+            return logPrefix + "-crash.txt"
         else:
             print "I don't know what to do with a core file when logPrefix is null"
 

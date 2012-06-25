@@ -68,7 +68,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
         issues.append("unknown assertion")
         lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
     elif sta == timedRun.CRASHED:
-        if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash", True, runinfo.msg):
+        if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash.txt", True, runinfo.msg):
             if detect_assertions.amiss(knownPath, logPrefix, False, ignoreKnownAssertions=False):
                 issues.append("treating known assertion as a known crash")
                 lev = max(lev, JS_KNOWN_CRASH)
@@ -151,8 +151,8 @@ def deleteLogs(logPrefix):
     # the search indexer, anti-virus realtime protection and backup applications.
     os.remove(logPrefix + "-out")
     os.remove(logPrefix + "-err")
-    if (os.path.exists(logPrefix + "-crash")):
-        os.remove(logPrefix + "-crash")
+    if (os.path.exists(logPrefix + "-crash.txt")):
+        os.remove(logPrefix + "-crash.txt")
     if (os.path.exists(logPrefix + "-vg.xml")):
         os.remove(logPrefix + "-vg.xml")
     # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
