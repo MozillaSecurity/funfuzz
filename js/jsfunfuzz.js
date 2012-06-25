@@ -3629,7 +3629,9 @@ var builtinFunctions = ["(function(){})"];
     var gns = Object.getOwnPropertyNames(glob);
     for (var i = 0; i < gns.length; ++i) {
       var gn = gns[i];
-      if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement") { // assume that most uppercase names are constructors
+      // Assume that most uppercase names are constructors.
+      // Skip Worker in shell to avoid bug 746006 and bug 746403.
+      if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement" && !(jsshell && gn == "Worker")) {
         var g = glob[gn];
         if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
           constructors.push(gn);
