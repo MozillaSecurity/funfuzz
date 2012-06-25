@@ -146,6 +146,7 @@ def many_timed_runs(targetTime, args):
                 if lithResult == lithOps.HAPPY:
                     os.remove(jitcomparefilename)
                 if targetTime and lithResult != lithOps.HAPPY:
+                    jsInteresting.deleteLogs(logPrefix)
                     return (lithResult, lithDetails)
             jsInteresting.deleteLogs(logPrefix)
 
