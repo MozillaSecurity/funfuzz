@@ -93,7 +93,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             print "  " + jsInteresting.summaryString(issues, r)
             return lev
         elif lev != jsInteresting.JS_FINE:
-            print "compareJIT is going to pretend this didn't happen (%d):" % lev
+            print "compareJIT is not comparing output, because the shell exited strangely (%d):" % lev
             print "  " + shellify(command)
             print "  " + jsInteresting.summaryString(issues, r)
             jsInteresting.deleteLogs(prefix)
