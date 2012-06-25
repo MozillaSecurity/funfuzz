@@ -142,7 +142,9 @@ def many_timed_runs(targetTime, args):
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
                 (lithResult, lithDetails) = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                                                   logPrefix + "-cj", options.knownPath, options.repo,
-                                                                  options.timeout, targetTime, True)
+                                                                  options.timeout, targetTime)
+                if lithResult == lithOps.HAPPY:
+                    os.remove(jitcomparefilename)
                 if targetTime and lithResult != lithOps.HAPPY:
                     return (lithResult, lithDetails)
             jsInteresting.deleteLogs(logPrefix)
