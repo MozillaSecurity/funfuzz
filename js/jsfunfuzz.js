@@ -807,8 +807,8 @@ function compartmentConsistencyTest(code)
   }
 
   // Inspired by bug 683361
-  var resultS = sandboxResult(code, "same-compartment");
-  var resultN = sandboxResult(code, "new-compartment");
+  // These are on the same line so that line numbers in stack traces will match.
+  var resultS = sandboxResult(code, "same-compartment"); var resultN = sandboxResult(code, "new-compartment");
 
   if (resultS != resultN) {
     print("resultO: " + resultS);
