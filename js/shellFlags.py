@@ -56,9 +56,9 @@ def randomFlagSet(shell):
 
     if jaeger:
         if chance(.4):
-            args.append("--always-mjit") # aka -a
+            args.append("-a") # aka --always-mjit
         if chance(.2):
-            args.append("--debugjit") # aka -d
+            args.append("-d") # aka --debugjit
         if chance(.2):
             args.append("--execute=mjitChunkLimit(" + str(random.randint(5, 100)) + ")")
 
@@ -83,7 +83,7 @@ def randomFlagSet(shell):
     #    args.append("--execute=verifybarriers()")
 
     if chance(.05):
-        args.append("--dump-bytecode") # aka -D
+        args.append("-D") # aka --dump-bytecode
 
     if shellSupportsFlag(shell, "--gc-zeal=0") and chance(.05):
         args.append("--gc-zeal=" + random.choice(["1", "2"]) + "," + str(random.randint(1, 100)) + "," + random.choice(["0", "1"]))

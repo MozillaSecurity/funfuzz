@@ -132,7 +132,7 @@ def many_timed_runs(targetTime, args):
 
         else:
             shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine # bug 751700
-            flagsAreDeterministic = "--dump-bytecode" not in engineFlags
+            flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
                 with open(logPrefix + '-out.txt', 'rb') as f:
