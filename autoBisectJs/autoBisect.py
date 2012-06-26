@@ -73,7 +73,8 @@ def main():
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if resetBool:
         subprocess.call(hgPrefix + ['up', '-C', 'default'])
-        # XXX should also "hg purge" here, but "purge" is an extension.
+        # Make sure you've enabled the extension in your ".hgrc" file.
+        subprocess.call(hgPrefix + ['purge', '--all'])
 
     labels = {}
 
@@ -92,6 +93,7 @@ def main():
     # - (2) will tell you when the brokenness ended
     # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -e fd756976e52c 404.js
     # Alternative: (descendants(last good changeset)-descendants(first working changeset))
+    clang = platform.system() == 'Darwin'
     captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
@@ -100,11 +102,14 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(8de0a7fef2c0)-descendants(d43e89d8a20b))'], ignoreStderr=True, ignoreExitCode=True) # early jaeger
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c to tm merge that broke compilation
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True) # clang compilation failure in Mac OS X 10.7
+    if clang:
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(780888b1548c)-descendants(ce10e78d030d))'], ignoreStderr=True, ignoreExitCode=True)
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True)
     if 'ionmonkey' in sourceDir:  # Can be removed when IonMonkey lands in mozilla-central.
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(150159ee5c26)-descendants(fed610aff637))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(300ac3d58291)-descendants(bc1833f2111e))'], ignoreStderr=True, ignoreExitCode=True) # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
-        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True) # compile failure with clang on jesse's mac
+        if clang:
+            captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True)
 
     # Specify `hg bisect` ranges.
     if paranoidBool:
@@ -394,23 +399,32 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
     (isMac, isSL, isLion) = macType()
+    clang = isMac
 
-    profilejitBool = True if '-p' in flagsRequired else False
-    methodjitBool = True if '-m' in flagsRequired else False
-    methodjitAllBool = True if '-a' in flagsRequired else False
-    typeInferBool = True if '-n' in flagsRequired else False
-    debugModeBool = True if '-d' in flagsRequired else False
-    ionBool = True if '--ion' in flagsRequired else False
+    profilejitBool = '-p' in flagsRequired
+    methodjitBool = '-m' in flagsRequired
+    methodjitAllBool = '-a' in flagsRequired
+    typeInferBool = '-n' in flagsRequired
+    debugModeBool = '-d' in flagsRequired
+    ionBool = '--ion' in flagsRequired
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    if '--no-ti' in flagsRequired:
+    if '--no-ti' in flagsRequired or '--no-ion' in flagsRequired or '--no-jm' in flagsRequired:
         return '300ac3d58291' # IonMonkey flag change (see bug 724751)
     elif '--ion-eager' in flagsRequired:
         return '4ceb3e9961e4' # See bug 683039: "Delay Ion compilation until a function is hot"
     elif ionBool:
         return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
+    elif typeInferBool and ('-D' in flagsRequired or '--dump-bytecode' in flagsRequired):
+        return '0c5ed245a04f' # 75176 on m-c, merge that brought in -D from one side and -n from another
     elif typeInferBool:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
+    elif '--debugjit' in flagsRequired or '--methodjit' in flagsRequired or '--dump-bytecode' in flagsRequired:
+        return 'b1923b866d6a' # 73054 on m-c, first rev that has long variants of many options
+    elif '-D' in flagsRequired and clang:
+        return 'ce10e78d030d' # 71141 on m-c, first rev that has the -D option and compiles under clang
+    elif '-D' in flagsRequired:
+        return 'e5b92c2bdd2d' # 70991 on m-c, first rev that has the -D option
     elif isMac and isLion:
         return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
     elif methodjitAllBool:
