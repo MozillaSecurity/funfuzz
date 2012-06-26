@@ -191,8 +191,8 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
       && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
       && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
-      && !( codeL.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
-      && !( codeL.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
       && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
       && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
       && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
@@ -306,8 +306,8 @@ function whatToTestSpidermonkeyMozilla10(code)
       && !( code.match( /var.*arguments/ ))          // avoid bug 355480 (10 branch)
       && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (10 branch)
       && !( code.match( /let/ ))   // avoid bug 462309 (10 branch) :( :( :(
-      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (10 branch)
-      && !( code.match( /\{.*\:.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (10 branch)
+      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (10 branch)
+      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (10 branch)
       && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 (10 branch) *errors*
       && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616 (10 branch)
       && !( code.match( /\#.*=/ ))                 // avoid bug 568734 (10 branch)
