@@ -293,7 +293,7 @@ def main():
             if lithResult == lithOps.LITH_FINISHED:
                 # lithDetails should be a string like "11 lines"
                 statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
-                summaryFile = filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
+                summaryFile = job + filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
                 with open(summaryFile) as f:
                     summary = f.read()
 
