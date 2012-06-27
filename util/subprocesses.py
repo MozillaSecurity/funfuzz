@@ -7,6 +7,7 @@
 from __future__ import with_statement
 
 import os
+import pdb  # needed for Windows debugging of intermittent conftest error.
 import platform
 import re
 import subprocess
@@ -88,7 +89,13 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'hg pull: option --rebase not recognized' not in stdout and \
           'no such option: -s' not in stdout:
-            raise Exception('Nonzero exit code')
+            if platform.system() == 'Windows' and 'Permission denied' in stdout and \
+                    'configure: error: installation or configuration problem: ' + \
+                    'C++ compiler cannot create executables.' in stdout:
+                pdb.set_trace()
+                raise Exception('Windows conftest.exe configuration permission problem')
+            else:
+                raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
         if not ((platform.system() == 'Windows' and \
             # Ignore hg color mode throwing an error in console on Windows platforms.

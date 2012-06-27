@@ -7,8 +7,8 @@
 from __future__ import with_statement
 
 import os
-import platform
 import pdb  # needed for Windows debugging of intermittent conftest error.
+import platform
 import shutil
 import subprocess
 import sys
@@ -189,13 +189,20 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
     except OSError:
         raise Exception('Unable to create objdir.')
     try:
-        output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath, objdir)
+        output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
+                                                            objdir)
     except Exception, e:
         if platform.system() == 'Windows':
             print 'Temporary debug: configuration failed!'
             pdb.set_trace()
-        if platform.system() == 'Windows' and 'Permission denied' in repr(e):
+        if platform.system() == 'Windows' and \
+                # This exception message is returned from captureStdout in subprocesses.py
+                'Windows conftest.exe configuration permission problem' in repr(e):
             print 'Trying once more because of "Permission denied" error...'
+            output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
+                                                                objdir)
+        elif platform.system() == 'Linux':
+            print 'Trying once more because Linux does not handle multiple compilations too well...'
             output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
                                                                 objdir)
         else:
