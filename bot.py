@@ -222,6 +222,7 @@ def main():
                     "1340815388" in oldjobname or # Bug 769015
                     "1340808789" in oldjobname or # Bug 769015
                     "1340809470" in oldjobname or # Bug 769015
+                    "1340802472" in oldjobname or # Bug 769021
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
