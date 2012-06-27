@@ -218,6 +218,10 @@ def main():
                     "1339599262" in oldjobname or # lol mv
                     "1340073462" in oldjobname or # Bug 767233
                     "1338621034" in oldjobname or # Bug 761422
+                    "1340814313" in oldjobname or # Bug 769015
+                    "1340815388" in oldjobname or # Bug 769015
+                    "1340808789" in oldjobname or # Bug 769015
+                    "1340809470" in oldjobname or # Bug 769015
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
