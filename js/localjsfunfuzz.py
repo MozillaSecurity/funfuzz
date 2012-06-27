@@ -195,8 +195,8 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
         if platform.system() == 'Windows':
             print 'Temporary debug: configuration failed!'
             pdb.set_trace()
+        # This exception message is returned from captureStdout in subprocesses.py
         if platform.system() == 'Windows' and \
-                # This exception message is returned from captureStdout in subprocesses.py
                 'Windows conftest.exe configuration permission problem' in repr(e):
             print 'Trying once more because of "Permission denied" error...'
             output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
