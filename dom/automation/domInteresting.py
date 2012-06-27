@@ -73,7 +73,6 @@ def writePrefs(profileDir, extraPrefs):
 
   // Set additional prefs for fuzzing.
   user_pref("browser.dom.window.dump.enabled", true);
-  user_pref("ui.caretBlinkTime", -1);
   user_pref("browser.sessionstore.resume_from_crash", false);
   user_pref("layout.debug.enable_data_xbl", true);
   user_pref("dom.disable_window_status_change", false);

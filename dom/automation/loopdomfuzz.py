@@ -172,6 +172,8 @@ def afterColon(s):
 
 def nonBoolPrefs():
     p = []
+    if random.random() > 0.2:
+        p += ['user_pref("ui.caretBlinkTime", -1);\n']
     if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.minTwips", 120);\n']
         p += ['user_pref("font.size.inflation.emPerLine", 15);\n']
