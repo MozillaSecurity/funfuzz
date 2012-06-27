@@ -71,7 +71,7 @@ def testDbgOrOpt(jsShellName):
     '''
     This function tests if a binary is a debug or optimized shell.
     '''
-    if shellSupports(jsShellName, ['-e', 'gczeal(0)']):
+    if shellSupports(jsShellName, ['-e', 'disassemble()']):
         return 'dbg'
     else:
         return 'opt'
