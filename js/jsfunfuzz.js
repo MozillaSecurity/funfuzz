@@ -3147,7 +3147,7 @@ var exprMakers =
   function(d, b) { return "gc(" + makeExpr(d, b) + ")"; },
 
   // Force garbage collection "soon"
-  function(d, b) { return "schedulegc(" + rnd(100) + ", " + makeBoolean(d, b) + ")"; },
+  function(d, b) { return "schedulegc(" + rnd(100) + ")"; },
 
   // Add a compartment to the next garbage collection.
   function(d, b) { return "schedulegc(" + makeExpr(d, b) + ")"; },
