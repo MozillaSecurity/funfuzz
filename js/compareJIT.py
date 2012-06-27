@@ -78,7 +78,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             r.out = "VERYLONGOUT"
         r.err = ignoreMallocScribble(r.err)
 
-        if (r.rc == 1 or r.rc == 2) and (r.err.find('usage: ') != -1 or r.out.find('Usage: ') != -1):
+        if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
             print "Got usage error from:"
             print "  " + shellify(command)
             assert i > 0
