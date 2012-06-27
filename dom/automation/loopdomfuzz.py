@@ -176,7 +176,9 @@ def nonBoolPrefs():
         p += ['user_pref("ui.caretBlinkTime", -1);\n']
     if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.minTwips", 120);\n']
+    if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.emPerLine", 15);\n']
+    if random.random() > 0.8:
         p += ['user_pref("font.size.inflation.lineThreshold", ' + str(random.randrange(0, 400)) + ');\n']
         p += ['user_pref("browser.sessionhistory.max_entries", ' + str(random.randrange(2, 10)) + ');\n']
         p += ['user_pref("browser.sessionhistory.max_total_viewers", ' + str(random.randrange(0, 4)) + ');\n']
