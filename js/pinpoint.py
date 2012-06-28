@@ -37,7 +37,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix + "-1-lines", targetTime)
 
-    if lithResult == lithOps.LITH_FINISHED and targetTime is None:
+    if lithResult == lithOps.LITH_FINISHED and targetTime is None and alsoRunChar:
         lith2Args = ["--char"] + lithArgs
         print shellify([lithiumpy] + lith2Args)
         (lithResult, lithDetails) = lithOps.runLithium(lith2Args, logPrefix + "-2-chars", targetTime)
