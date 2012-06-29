@@ -147,12 +147,24 @@ else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
 
-function printAndStop(s, happy)
+function confused(s)
 {
-  printImportant(s);
   if (jsshell) {
-    // Magic strings that jsInteresting.py looks for
-    print(happy ? "It's looking good!" : "jsfunfuzz stopping due to above error!");
+    // Magic string that jsInteresting.py looks for
+    print("jsfunfuzz broke its own scripting environment: " + s);
+    quit();
+  }
+}
+
+function foundABug(summary, details)
+{
+  // Magic pair of strings that jsInteresting.py looks for
+  printImportant("Found a bug: " + summary);
+  if (details) {
+    printImportant(details);
+  }
+  if (jsshell) {
+    dumpln("jsfunfuzz stopping due to finding a bug.");
     quit();
   }
 }
@@ -794,9 +806,9 @@ function nestingConsistencyTest(code)
   //  print("NestTest: " + resultO);
 
   if (resultO != resultD) {
-    print("resultO: " + resultO);
-    print("resultD: " + resultD);
-    printAndStop("NestTest mismatch");
+    foundABug("NestTest mismatch",
+      "resultO: " + resultO + "\n" +
+      "resultD: " + resultD);
   }
 }
 
@@ -811,9 +823,9 @@ function compartmentConsistencyTest(code)
   var resultS = sandboxResult(code, "same-compartment"); var resultN = sandboxResult(code, "new-compartment");
 
   if (resultS != resultN) {
-    print("resultO: " + resultS);
-    print("resultD: " + resultN);
-    printAndStop("CompartmentTest mismatch");
+    foundABug("CompartmentTest mismatch",
+      "resultO: " + resultS + "\n" +
+      "resultD: " + resultN);
   }
 }
 
@@ -921,14 +933,14 @@ function tryEnsureSanity()
     this.toSource = realToSource;
     this.toString = realToString;
   } catch(e) {
-    printAndStop("tryEnsureSanity failed: " + e, true);
+    confused("tryEnsureSanity failed: " + errorToString(e));
   }
 
   // These can fail if the page creates a getter for "eval", for example.
   if (this.eval != realEval)
-    printAndStop("Fuzz script replaced |eval|, stopping.", true);
+    confused("Fuzz script replaced |eval|");
   if (Function != realFunction)
-    printAndStop("Fuzz script replaced |Function|, stopping.", true);
+    confused("Fuzz script replaced |Function|");
 }
 
 function tryIteration(rv)
@@ -1037,7 +1049,7 @@ function checkForCookies(code)
    || code.indexOf("/*RETSUB") != -1
    || code.indexOf("/*FORELEM") != -1
    || code.indexOf("/*WITH") != -1)
-    printAndStop(code)
+    foundABug("A 'cookie' from jsopcode.cpp appeared in a decompilation!", code);
 }
 
 function reportRoundTripIssue(issue, code, fs, gs, e)
@@ -1052,13 +1064,12 @@ function reportRoundTripIssue(issue, code, fs, gs, e)
     return;
   }
 
-  var message = issue + "\n\n" +
-                "Code: " + uneval(code) + "\n\n" +
+  var details = "Code: " + uneval(code) + "\n\n" +
                 "fs: " + fs + "\n\n" +
                 "gs: " + gs + "\n\n" +
                 "error: " + e;
 
-  printAndStop(message);
+  foundABug(issue, details);
 }
 
 
@@ -1092,14 +1103,12 @@ function testUneval(o)
     try {
       euo = eval(uo); // if this throws, something's wrong with uneval, probably
     } catch(e) {
-      dumpln("The string returned by uneval failed to eval!");
-      dumpln("The string was: " + uo);
-      printAndStop(e);
+      foundABug("The string returned by uneval failed to eval!", uo);
       return;
     }
     ueuo = uneval(euo);
     if (ueuo != uo) {
-      printAndStop("Mismatch with uneval/eval on the function's return value! " + "\n" + uo + "\n" + ueuo);
+      foundABug("Mismatch with uneval/eval on the function's return value!", uo + "\n" + ueuo);
     }
   } else {
     dumpln("Skipping re-eval test");
@@ -1170,7 +1179,7 @@ function checkErrorMessage2(err, prefix, suffix)
       try {
         eval("(function() { return (" + dvg + "); })");
       } catch(e) {
-        printAndStop("DVG has apparently failed us: " + e);
+        foundABug("DVG has apparently failed us", e);
       }
     }
   }
@@ -1261,8 +1270,9 @@ function testForExtraParens(f, code)
   // Sanity check
   var euf = eval("(" + uf + ")");
   var ueuf = "" + euf;
-  if (ueuf != uf)
-    printAndStop("Shouldn't the earlier round-trip test have caught this?");
+  if (ueuf != uf) {
+    foundABug("Shouldn't the earlier round-trip test have caught this?", ueuf + "\n" + uf);
+  }
 
   var dps = deParen(uf);
   // skip the first, which is the function's formal params.
@@ -1277,12 +1287,7 @@ function testForExtraParens(f, code)
     var ueuf2 = "" + euf2
 
     if (ueuf2 == ueuf) {
-      print(uf);
-      print("    vs    ");
-      print(uf2);
-      print("Both decompile as:");
-      print(ueuf);
-      printAndStop("Unexpected match!!!  Extra parens!?");
+      foundABug("Unexpected match - extra parens?", uf + "\n\n" + uf2 + "\n\n" + "Both decompile as:\n" + ueuf);
     }
   }
 }
@@ -1408,18 +1413,9 @@ function checkRoundTripDisassembly(f, code, wtt)
       break;
     }
   }
-  print("Original code:");
-  print(code);
-  print("");
-  print("Original function:");
-  print(uf);
-  print(df);
-  print("");
-  print("Function from recompiling:");
-  print(uf);
-  print(dg);
-  print("");
-  printAndStop("Disassembly was not stable through decompilation");
+
+  foundABug("Disassembly was not stable through decompilation",
+    "Original code:\n" + code + "\n\nOriginal function:\n" + uf + "\n" + df + "\n\nFunction from recompiling:\n" + dg);
 }
 
 
@@ -1464,7 +1460,7 @@ function simpleDVGTest(code)
     eval(fullCode);
   } catch(e) {
     if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
-      printAndStop("Wrong error message: " + e);
+      foundABug("Wrong error message", e);
     }
   }
 }
@@ -1959,7 +1955,7 @@ function catNice(toks)
   var i;
   for (i=0; i<toks.length; ++i) {
     if(typeof(toks[i]) != "string")
-      printAndStop("Strange toks[i]: " + toks[i]);
+      confused("Strange toks[i]: " + toks[i]);
 
     s += toks[i];
   }

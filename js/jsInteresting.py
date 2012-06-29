@@ -104,14 +104,20 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         # makes line endings platform-specific.
         with open(logPrefix + "-out.txt", "rb") as f:
             for line in f:
-                if (line.rstrip() == "It's looking good!"):
+                if line.rstrip() == "It's looking good!" or line.startswith("jsfunfuzz broke its own scripting environment: "):
                     break
-                elif (line.rstrip() == "jsfunfuzz stopping due to above error!"):
+                elif line.startswith("Found a bug: "):
                     lev = JS_DECIDED_TO_EXIT
-                    issues.append("jsfunfuzz decided to exit")
+                    issues.append(line.rstrip())
+                    # FIXME: if not quiet:
+                    # FIXME:     output everything between this line and "jsfunfuzz stopping due to finding a bug."
+                    break
             else:
                 issues.append("jsfunfuzz didn't finish")
                 lev = JS_DID_NOT_FINISH
+
+    # FIXME: if not quiet:
+    # FIXME:     output the last tryItOut line
 
     if lev <= JS_ABNORMAL_EXIT:  # JS_ABNORMAL_EXIT and below (inclusive) will be ignored.
         vdump("jsfunfuzzLevel is ignoring a baseLevel of " + str(lev))
