@@ -1031,7 +1031,7 @@ function checkRoundTripUneval(f, code, wtt)
 
 function checkForCookies(code)
 {
-  // http://lxr.mozilla.org/seamonkey/source/js/src/jsopcode.c#1613
+  // http://hg.mozilla.org/mozilla-central/annotate/d254c07f3301/js/src/jsopcode.cpp#l2563
   // These are things that shouldn't appear in decompilations.
   if (code.indexOf("/*EXCEPTION") != -1
    || code.indexOf("/*RETSUB") != -1
