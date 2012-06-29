@@ -303,8 +303,7 @@ def defaultBuildType(options):
     For Firefox, returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug
     For the js shell, returns FIXME.
     '''
-    return options.repoName + '-' + mozPlatform(options.arch) + '-debug' \
-        if options.compileType == 'dbg' else ''
+    return options.repoName + '-' + mozPlatform(options.arch) + ('-debug' if options.compileType == 'dbg' else '')
 
 def main():
     options = parseOptions()
