@@ -24,6 +24,7 @@ def scanLine(knownPath, line):
 
     return False
 
+# FIXME: scanFile is now dead code
 def scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions):
     global ignoreList
     if not ready:

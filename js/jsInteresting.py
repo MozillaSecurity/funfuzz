@@ -55,6 +55,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
 
     lev = JS_FINE
     issues = []
+    sawAssertion = False
 
     if detect_malloc_errors.amiss(logPrefix):
         issues.append("malloc error")
@@ -64,17 +65,23 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
         issues.append("valgrind reported an error")
         lev = max(lev, JS_VG_AMISS)
 
-    if detect_assertions.amiss(knownPath, logPrefix, True):
-        issues.append("unknown assertion")
-        lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+    with open(logPrefix + "-err.txt", "rb") as err:
+        for line in err:
+            if detect_assertions.scanLine(knownPath, line):
+                issues.append(line.rstrip())
+                lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+            if line.startswith("Assertion failure:"):
+                # FIXME: detect_assertions.scanLine should return more info: assert(fatal: bool, known: bool) | none
+                sawAssertion = True
+                lev = max(lev, JS_KNOWN_CRASH)
+
+    if sawAssertion:
+        # Ignore the crash log, since we've already seen a new assertion failure.
+        pass
     elif sta == timedRun.CRASHED:
         if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash.txt", True, runinfo.msg):
-            if detect_assertions.amiss(knownPath, logPrefix, False, ignoreKnownAssertions=False):
-                issues.append("treating known assertion as a known crash")
-                lev = max(lev, JS_KNOWN_CRASH)
-            else:
-                issues.append("unknown crash")
-                lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+            issues.append("unknown crash")
+            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         else:
             issues.append("known crash")
             lev = max(lev, JS_KNOWN_CRASH)
