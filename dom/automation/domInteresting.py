@@ -211,7 +211,10 @@ class AmissLogHandler:
                 self.expectedToHang = True
 
         # It might be sensible to push more of this logic into detect_assertions...
+        # cx->isExceptionPending() assertion is here because of bug 709954 and maybe bug 632239
+        # jsfunfuzz needs this out of assertions.txt to try and get a testcase.
         newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
+            not ("cx->isExceptionPending()" in msg) and \
             not ("Tear-off objects remain in hashtable at shutdown" in msg and (self.expectedToLeak or (platform.system() in ("Microsoft", "Windows"))))
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
