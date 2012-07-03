@@ -216,6 +216,7 @@ def main():
                     "1339573949" in oldjobname or # Bug 767279
                     "1339589159" in oldjobname or # Bug 765109
                     "1339599262" in oldjobname or # lol mv
+                    "1341082845" in oldjobname or # hang that should have been ignored
                     "1340073462" in oldjobname or # Bug 767233
                     "1338621034" in oldjobname or # Bug 761422
                     "1340814313" in oldjobname or # Bug 769015
