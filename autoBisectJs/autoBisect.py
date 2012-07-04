@@ -109,6 +109,8 @@ def main():
     if 'ionmonkey' in sourceDir:  # Can be removed when IonMonkey lands in mozilla-central.
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(150159ee5c26)-descendants(fed610aff637))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(300ac3d58291)-descendants(bc1833f2111e))'], ignoreStderr=True, ignoreExitCode=True) # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(53d0ad70087b)-descendants(73e8ca73e5bd))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(b83b72d7fb86)-descendants(45315f6ccb19))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         if clang:
             captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True)
 
