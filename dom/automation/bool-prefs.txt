@@ -222,7 +222,7 @@ signon.autofillForms
 signon.autologin.proxy
 signon.rememberSignons
 svg.smil.enabled
-toolkit.telemetry.enabled
+#toolkit.telemetry.enabled # bug 771083
 view_source.syntax_highlight
 view_source.wrap_long_lines
 viewmanager.do_doublebuffering
