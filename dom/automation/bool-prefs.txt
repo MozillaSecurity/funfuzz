@@ -88,6 +88,7 @@ dom.disable_image_src_set
 dom.enable_performance
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
+dom.experimental_forms
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
