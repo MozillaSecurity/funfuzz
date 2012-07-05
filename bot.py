@@ -20,6 +20,7 @@ path1 = os.path.abspath(os.path.join(path0, 'util'))
 sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
+from countCpus import cpuCount
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -328,6 +329,10 @@ def main():
                 body = dirRef + "\n\n" + summary[0:50000]
                 if options.runJsfunfuzz:
                     recipients.append("gkwong")
+                    # Return more information about host system, temporarily.
+                    dirRef = dirRef + "\n\n" + "Platform details: " + " ".join(platform.uname()) + "\n" + \
+                        "Python " + sys.version[:5] + "\n" + \
+                        "Number of cores visible to OS: " +  str(cpuCount()) + "\n\n"
                 print "Sending email..."
                 for recipient in recipients:
                     sendEmail(subject, body, recipient)
