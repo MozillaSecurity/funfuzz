@@ -80,8 +80,8 @@ def many_timed_runs(targetTime, args):
     while True:
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
-            if len(os.listdir(wtmpDirNum)) == 0:
-                os.rmdir(wtmpDirNum)
+            if len(os.listdir(wtmpDir)) == 0:
+                os.rmdir(wtmpDir)
             return (lithOps.HAPPY, None)
 
         # Construct command needed to loop jsfunfuzz fuzzing.
