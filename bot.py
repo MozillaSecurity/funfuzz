@@ -325,16 +325,20 @@ def main():
                 shutil.rmtree(buildDir)
 
             if remoteHost and lithResult == lithOps.LITH_FINISHED:
-                recipients = ["jruderman"]
+                recipients = []
                 subject = "Reduced " + testType + " fuzz testcase"
                 dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/"
                 body = dirRef + "\n\n" + summary[0:50000]
                 if options.runJsfunfuzz:
+                    # Send jsfunfuzz emails to gkw
                     recipients.append("gkwong")
                     # Return more information about host system, temporarily.
                     dirRef = dirRef + "\n\n" + "Platform details: " + " ".join(platform.uname()) + "\n" + \
                         "Python " + sys.version[:5] + "\n" + \
                         "Number of cores visible to OS: " +  str(cpuCount()) + "\n\n"
+                else:
+                    # Send domfuzz emails to Jesse
+                    recipients.append("jruderman")
                 print "Sending email..."
                 for recipient in recipients:
                     sendEmail(subject, body, recipient)
