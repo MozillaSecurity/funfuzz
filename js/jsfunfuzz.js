@@ -231,6 +231,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && (code.indexOf("default") == -1)   // avoid bug 355509
       && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
       && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
+      // avoid bug 352085: keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
            (
