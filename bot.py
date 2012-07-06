@@ -226,6 +226,8 @@ def main():
                     "1340809470" in oldjobname or # Bug 769015
                     "1340801456" in oldjobname or # Bug 769015
                     "1340802472" in oldjobname or # Bug 769021
+                    "1339959377" in oldjobname or # Bug 766075 (also copied to whenfixed)
+                    "1339728406" in oldjobname or # Bug 766430 (nondeterministic crash)
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
