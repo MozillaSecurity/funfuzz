@@ -286,7 +286,7 @@ def main():
                     os.rename("wtmp1", oldjobname)
                     job = oldjobname + localSep
 
-        if lithResult is not None:
+        if lithResult != lithOps.HAPPY:
             statePostfix = ({
               lithOps.NO_REPRO_AT_ALL: "_no_repro",
               lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
