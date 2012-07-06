@@ -166,6 +166,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
         cfgCmdList.append('--disable-debug')
         cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
         cfgCmdList.append('--enable-gczeal')
+        cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
 
     cfgCmdList.append('--enable-methodjit')  # Enabled by default now, but useful for autoBisect
     cfgCmdList.append('--enable-type-inference') # Enabled by default now, but useful for autoBisect
