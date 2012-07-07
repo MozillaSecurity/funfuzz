@@ -86,6 +86,9 @@ def writePrefs(profileDir, extraPrefs):
   user_pref("security.fileuri.strict_origin_policy", false);
   user_pref("dom.min_background_timeout_value", 4);
 
+  // Disable a timer-based drawWindow call in favor of fuzzPriv.callDrawWindow.
+  user_pref("browser.pageThumbs.enabled", false);
+
   // Reset things (on each startup) that might be set by fuzzing
   user_pref("javascript.options.gczeal", 0);
 

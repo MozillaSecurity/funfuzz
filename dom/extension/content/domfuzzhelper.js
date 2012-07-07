@@ -203,7 +203,11 @@ function cycleCollectLog(window)
 
 function callDrawWindow(aWindow)
 {
-  return function callDrawWindow2(flags) {
+  // We allow the caller to specify a scale to match a drawWindow call that happens in stock Firefox:
+  //   http://hg.mozilla.org/mozilla-central/annotate/6d7fae9764b3/browser/components/thumbnails/PageThumbs.jsm#l114
+  // An alternative would be to allow the caller to pass in a canvas ctx (and then clear the ctx?).
+
+  return function callDrawWindow2(flags, scale) {
     var w = aWindow.innerWidth;
     var h = aWindow.innerHeight;
 
@@ -213,6 +217,9 @@ function callDrawWindow(aWindow)
     canvas.setAttribute("moz-opaque", "true");
 
     var ctx = canvas.getContext("2d");
+    if (scale) {
+      ctx.scale(scale, scale);
+    }
     ctx.drawWindow(aWindow,
                    0,
                    0,
