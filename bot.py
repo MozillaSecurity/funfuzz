@@ -324,7 +324,7 @@ def main():
             if not options.reuse_build and os.path.exists(buildDir):
                 shutil.rmtree(buildDir)
 
-            if remoteHost and lithResult == lithOps.LITH_FINISHED:
+            if remoteHost and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
                 recipients = []
                 subject = "Reduced " + testType + " fuzz testcase"
                 dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/"
