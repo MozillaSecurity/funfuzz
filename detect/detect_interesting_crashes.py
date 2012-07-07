@@ -55,7 +55,7 @@ def readIgnoreList(filename):
         for line in ignoreFile:
             line = line.rstrip()
             if line.startswith(TOO_MUCH_RECURSION_MAGIC):
-                ignoreList.append({"seenCount": 0, "needCount": 9, "theString": line[len(TOO_MUCH_RECURSION_MAGIC):]})
+                ignoreList.append({"seenCount": 0, "needCount": 20, "theString": line[len(TOO_MUCH_RECURSION_MAGIC):]})
             elif len(line) > 0 and not line.startswith("#"):
                 ignoreList.append({"seenCount": 0, "needCount": 1,  "theString": line})
 
