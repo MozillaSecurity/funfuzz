@@ -3628,7 +3628,7 @@ var builtinFunctions = ["(function(){})"];
     for (var i = 0; i < gns.length; ++i) {
       var gn = gns[i];
       // Assume that most uppercase names are constructors.
-      // Skip Worker in shell to avoid bug 746006, bug 746403 and bug 768214.
+      // Skip Worker in shell (removed in bug 771281).
       if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement" && !(jsshell && gn == "Worker")) {
         var g = glob[gn];
         if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
