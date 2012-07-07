@@ -237,6 +237,9 @@ def main():
                     "1340809470" in oldjobname or # Bug 769015
                     "1340801456" in oldjobname or # Bug 769015
                     "1340802472" in oldjobname or # Bug 769021
+                    "1339516108" in oldjobname or # Nasty OOM behavior
+                    "1338878206" in oldjobname or # Nasty OOM behavior
+                    "1338698829" in oldjobname or # Nasty OOM behavior
                     "1339959377" in oldjobname or # Bug 766075 (also copied to whenfixed)
                     "1339728406" in oldjobname or # Bug 766430 (nondeterministic crash)
                     "1340246538" in oldjobname):  # Bug 767273
