@@ -191,6 +191,17 @@ def main():
     runCommand(remoteHost, "mkdir -p " + relevantJobsDir)
     runCommand(remoteHost, "chmod og+rx " + relevantJobsDir)
 
+    if remoteHost:
+        # Log information about the machine.
+        print "Platform details: " + " ".join(platform.uname())
+        print "Python version: " + sys.version[:5]
+        print "Number of cores visible to OS: " +  str(cpuCount())
+        if os.name == 'posix':
+            # resource library is only applicable to Linux or Mac platforms.
+            import resource
+            print "Corefile size (soft limit, hard limit) is: " + \
+                    repr(resource.getrlimit(resource.RLIMIT_CORE))
+
     shouldLoop = True
     while shouldLoop:
         job = None
@@ -332,10 +343,6 @@ def main():
                 if options.runJsfunfuzz:
                     # Send jsfunfuzz emails to gkw
                     recipients.append("gkwong")
-                    # Return more information about host system, temporarily.
-                    dirRef = dirRef + "\n\n" + "Platform details: " + " ".join(platform.uname()) + "\n" + \
-                        "Python " + sys.version[:5] + "\n" + \
-                        "Number of cores visible to OS: " +  str(cpuCount()) + "\n\n"
                 else:
                     # Send domfuzz emails to Jesse
                     recipients.append("jruderman")
