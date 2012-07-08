@@ -45,7 +45,7 @@ def parseOptions():
     parser.set_defaults(
         disableCompareJIT = False,
         disableRndFlags = False,
-        disableStartFuzzing = False,
+        noStart = False,
         archType = '32',
         shellType = 'dbg,opt',
         shellflags = '',
@@ -60,7 +60,7 @@ def parseOptions():
                       help='Disable comparejit fuzzing.')
     parser.add_option('--disable-random-flags', dest='disableRndFlags', action='store_true',
                       help='Disable random flag fuzzing.')
-    parser.add_option('--disable-start-fuzzing', dest='disableStartFuzzing', action='store_true',
+    parser.add_option('--nostart', dest='noStart', action='store_true',
                       help='Compile shells only, do not start fuzzing.')
 
     parser.add_option('-a', '--set-archtype', dest='archType',
@@ -450,8 +450,8 @@ def startFuzzing(options, cmdList, path):
     '''
     Start fuzzing if appropriate.
     '''
-    if options.disableStartFuzzing:
-        print 'Exiting, --disable-start-fuzzing is set.'
+    if options.noStart:
+        print 'Exiting, --nostart is set.'
         sys.exit(0)
 
     # Commands to simulate bash's `tee`.
