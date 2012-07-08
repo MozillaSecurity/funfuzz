@@ -49,7 +49,7 @@ def many_timed_runs(targetTime, args):
                 print "Out of time!"
                 if len(os.listdir(tempDir)) == 0:
                     os.rmdir(tempDir)
-                return (None, lithOps.HAPPY, None)
+                return (lithOps.HAPPY, None)
 
             url = urls[iteration]
             prefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames) + nonBoolPrefs()
