@@ -3419,18 +3419,19 @@ function makeShapeyConstructor(d, b)
   var nStatements = rnd(11);
   for (var i = 0; i < nStatements; ++i) {
     var propName = rndElt(propNames);
+    var tprop = t + "[" + simpleSource(propName) + "]";
     if (rnd(5) == 0) {
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
     }
     switch(rnd(8)) {
-      case 0:  funText += "delete " + t + "." + propName + ";"; break;
+      case 0:  funText += "delete " + tprop + ";"; break;
       case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? simpleSource(propName) : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
       case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
-      case 3:  funText += t + "." + propName + " = " + makeExpr(d, bp)        + ";"; break;
-      case 4:  funText += t + "." + propName + " = " + makeFunction(d, bp)    + ";"; break;
+      case 3:  funText += tprop + " = " + makeExpr(d, bp)        + ";"; break;
+      case 4:  funText += tprop + " = " + makeFunction(d, bp)    + ";"; break;
       case 5:  funText += "for (var ytq" + uniqueVarName() + " in " + t + ") { }"; break;
       case 6:  funText += "Object." + rndElt(["preventExtensions","seal","freeze"]) + "(" + t + ");"; break;
-      default: funText += t + "." + propName + " = " + makeShapeyValue(d, bp) + ";"; break;
+      default: funText += tprop + " = " + makeShapeyValue(d, bp) + ";"; break;
     }
   }
   funText += "return " + t + "; }";
