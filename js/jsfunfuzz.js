@@ -2422,8 +2422,8 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", makeMixedTypeArray(d, b)); } },
     { w: 1,  fun: function(d, b) { return m("a") + ".length = " + rnd(ARRAY_SIZE) + ";"; } },
     { w: 8,  fun: function(d, b) { return assign(d, b, "v", m("at") + ".length"); } },
-    { w: 4,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
-    { w: 4,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "] = " + val(d, b) + ";"; } },
+    { w: 4,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "]" + " = " + val(d, b) + ";"; } },
+    { w: 4,  fun: function(d, b) { return val(d, b) + " = " + m("at") + "[" + rnd(ARRAY_SIZE) + "]" + ";"; } },
     { w: 4,  fun: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
     { w: 4,  fun: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
 
