@@ -21,13 +21,15 @@ import ximport
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import captureStdout, dateStr, isVM, macType, normExpUserPath, shellify, vdump
+from subprocesses import captureStdout, dateStr, isMac, isVM, macVer, normExpUserPath, shellify, vdump
 
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path3)
 from compileShell import autoconfRun, cfgJsBin, compileCopy, shellName
 
 verbose = False
+
+useClang = (isMac and macVer() >= [10, 7])
 
 # autoBisect uses temporary directory python APIs. On WinXP, these are located at
 # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
@@ -93,7 +95,6 @@ def main():
     # - (2) will tell you when the brokenness ended
     # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -e fd756976e52c 404.js
     # Alternative: (descendants(last good changeset)-descendants(first working changeset))
-    clang = platform.system() == 'Darwin'
     captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
     captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
@@ -103,7 +104,7 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c to tm merge that broke compilation
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(d56f08ec0225)-descendants(e41a37df3892))'], ignoreStderr=True, ignoreExitCode=True) # non-threadsafe build breakage - it might go back earlier than changeset rev d56f08ec0225
-    if clang:
+    if useClang:
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(780888b1548c)-descendants(ce10e78d030d))'], ignoreStderr=True, ignoreExitCode=True)
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True)
     if 'ionmonkey' in sourceDir:  # Can be removed when IonMonkey lands in mozilla-central.
@@ -111,7 +112,7 @@ def main():
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(300ac3d58291)-descendants(bc1833f2111e))'], ignoreStderr=True, ignoreExitCode=True) # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(53d0ad70087b)-descendants(73e8ca73e5bd))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(b83b72d7fb86)-descendants(45315f6ccb19))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
-        if clang:
+        if useClang:
             captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True)
 
     # Specify `hg bisect` ranges.
@@ -401,9 +402,6 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # in "descendants(x) - descendants(y)".
     # We don't deal with those at all, and --skip does not get out of such messes quickly.
 
-    (isMac, isSL, isLion) = macType()
-    clang = isMac
-
     profilejitBool = '-p' in flagsRequired
     methodjitBool = '-m' in flagsRequired
     methodjitAllBool = '-a' in flagsRequired
@@ -424,12 +422,12 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
     elif '--debugjit' in flagsRequired or '--methodjit' in flagsRequired or '--dump-bytecode' in flagsRequired:
         return 'b1923b866d6a' # 73054 on m-c, first rev that has long variants of many options
-    elif '-D' in flagsRequired and clang:
+    elif '-D' in flagsRequired and useClang:
         return 'ce10e78d030d' # 71141 on m-c, first rev that has the -D option and compiles under clang
     elif '-D' in flagsRequired:
         return 'e5b92c2bdd2d' # 70991 on m-c, first rev that has the -D option
-    elif isMac and isLion:
-        return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion
+    elif isMac and macVer() >= [10, 7]:
+        return 'd796fb18f555' # 64560 on m-c, first rev that can compile on Lion or greater
     elif methodjitAllBool:
         # This supercedes methodjitBool, -a only works with -m
         return 'f569d49576bb' # 62574 on m-c, first rev that has the -a option
@@ -444,9 +442,9 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif platform.system() == 'Windows':
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
-    elif isMac and isSL and archNum == "64":
+    elif isMac and [10, 6] <= macVer() < [10, 7] and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
-    elif (os.uname()[0] == 'Linux') or (isMac and isSL and archNum == "32"):
+    elif (os.uname()[0] == 'Linux') or (isMac and [10, 6] <= macVer() < [10, 7] and archNum == "32"):
         return "db4d22859940" # 24546 on m-c, imacros compilation change
     elif valgrindSupport:
         assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
@@ -519,7 +517,7 @@ def testBinary(shell, testFile, flagsRequired, valgSupport):
     if valgSupport:
         valgPrefixCmd = []
         valgPrefixCmd.append('valgrind')
-        if platform.system() == 'Darwin':
+        if isMac:
             valgPrefixCmd.append('--dsymutil=yes')
         valgPrefixCmd.append('--smc-check=all-non-file')
         valgPrefixCmd.append('--leak-check=full')

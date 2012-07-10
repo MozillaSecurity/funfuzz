@@ -17,7 +17,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
-from subprocesses import captureStdout, macType, normExpUserPath, vdump
+from subprocesses import captureStdout, isMac, macVer, normExpUserPath, vdump
 
 def getRepoHashAndId(repoDir):
     '''
@@ -75,7 +75,7 @@ def autoconfRun(cwd):
     '''
     Sniff platform and run different autoconf types:
     '''
-    if platform.system() == 'Darwin':
+    if isMac:
         subprocess.check_call(['autoconf213'], cwd=cwd)
     elif platform.system() == 'Linux':
         subprocess.check_call(['autoconf2.13'], cwd=cwd)
@@ -92,12 +92,12 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
-        # 32-bit shell on Mac OS X 10.6
-        if macType() == (True, True, False):
-            cfgEnvDt['CC'] = 'gcc-4.2 -arch i386'
-            cfgEnvDt['CXX'] = 'g++-4.2 -arch i386'
-            cfgEnvDt['HOST_CC'] = 'gcc-4.2'
-            cfgEnvDt['HOST_CXX'] = 'g++-4.2'
+        # 32-bit shell on Mac OS X 10.7 Lion and greater
+        if isMac and macVer() >= [10, 7]:
+            cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvDt['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvDt['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
             cfgEnvDt['RANLIB'] = 'ranlib'
             cfgEnvDt['AR'] = 'ar'
             cfgEnvDt['AS'] = '$CC'
@@ -107,12 +107,12 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i386-apple-darwin8.0.0')
-        # 32-bit shell on Mac OS X 10.7 Lion
-        elif macType() == (True, False, True):
-            cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
-            cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
-            cfgEnvDt['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
-            cfgEnvDt['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+        # 32-bit shell on Mac OS X 10.6
+        elif isMac and [10, 6] <= macVer() < [10, 7]:
+            cfgEnvDt['CC'] = 'gcc-4.2 -arch i386'
+            cfgEnvDt['CXX'] = 'g++-4.2 -arch i386'
+            cfgEnvDt['HOST_CC'] = 'gcc-4.2'
+            cfgEnvDt['HOST_CXX'] = 'g++-4.2'
             cfgEnvDt['RANLIB'] = 'ranlib'
             cfgEnvDt['AR'] = 'ar'
             cfgEnvDt['AS'] = '$CC'
@@ -141,8 +141,8 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
         else:
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
-    # 64-bit shell on Mac OS X 10.7 Lion
-    elif (archNum == '64') and (macType() == (True, False, True)):
+    # 64-bit shell on Mac OS X 10.7 Lion and greater
+    elif isMac and macVer() >= [10, 7] and archNum == '64':
         cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
         cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
         cfgEnvDt['AR'] = 'ar'
@@ -175,10 +175,10 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     cfgCmdList.append('--disable-tests')
 
     if os.name != 'nt':
-        if ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or macType()[0] == True:
+        if ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or isMac:
             cfgCmdList.append('--enable-valgrind')
             # ccache does not seem to work on Mac.
-            if macType()[0] == False:
+            if platform.system() != 'Darwin':
                 cfgCmdList.append('--with-ccache')
         # ccache is not applicable for Windows and non-Tegra Ubuntu ARM builds.
         elif os.uname()[1] == 'tegra-ubuntu':

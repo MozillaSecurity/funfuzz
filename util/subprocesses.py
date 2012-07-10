@@ -15,25 +15,18 @@ import time
 
 verbose = False
 
+isMac = (platform.system() == 'Darwin')
+
 ########################
 #  Platform Detection  #
 ########################
 
-def macType():
+def macVer():
     '''
     If system is a Mac, return the mac type.
     '''
-    assert platform.system() in ('Windows', 'Linux', 'Darwin')
-    isMac = isSL = amiLion = False
-    if platform.system() == 'Darwin':
-        isMac = True
-        # Script has only been tested on Snow Leopard and Lion.
-        assert 6 <= int(platform.mac_ver()[0].split('.')[1]) <= 7
-        isSL = isMac and platform.mac_ver()[0].split('.')[1] == '6' \
-            and platform.mac_ver()[0].split('.') >= ['10', '6']
-        amiLion = isMac and platform.mac_ver()[0].split('.')[1] == '7' \
-            and platform.mac_ver()[0].split('.') >= ['10', '7']
-    return (isMac, isSL, amiLion)
+    assert platform.system() == 'Darwin'
+    return [int(x) for x in platform.mac_ver()[0].split('.')]
 
 def isVM():
     '''
