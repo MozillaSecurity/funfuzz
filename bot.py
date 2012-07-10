@@ -242,6 +242,8 @@ def main():
                     "1338698829" in oldjobname or # Nasty OOM behavior
                     "1339959377" in oldjobname or # Bug 766075 (also copied to whenfixed)
                     "1339728406" in oldjobname or # Bug 766430 (nondeterministic crash)
+                    "1341133958" in oldjobname or # grr. bug 735081 or bug 735082.
+                    "1341815616" in oldjobname or # grr. bug 735081 or bug 735082.
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
