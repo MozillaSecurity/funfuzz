@@ -23,7 +23,7 @@ from inspectShell import archOfBinary, testDbgOrOpt
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, verbose, vdump
+from subprocesses import captureStdout, dateStr, isMac, isVM, normExpUserPath, verbose, vdump
 from fileIngredients import fileContains
 from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 
@@ -362,8 +362,7 @@ def localCompileFuzzJsShell(options):
     # Set different timeouts depending on machine.
     loopyTimeout = str(machineTypeDefaults(options.timeout))
     if options.enableVg:
-        if (platform.system() == 'Linux' or platform.system() == 'Darwin') \
-            and platform.uname()[4] != 'armv7l':
+        if (platform.system() == 'Linux' or isMac) and platform.uname()[4] != 'armv7l':
             loopyTimeout = '300'
         else:
             raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
@@ -473,7 +472,7 @@ class DownloadedJsShell:
 
         if options.archType == '32':
             self.pArchNum = '32'
-            if platform.system() == 'Darwin':
+            if isMac:
                 self.pArchName = 'macosx'
             elif platform.system() == 'Linux':
                 self.pArchName = 'linux'
@@ -481,7 +480,7 @@ class DownloadedJsShell:
                 self.pArchName = 'win32'
         elif options.archType == '64':
             self.pArchNum = '64'
-            if platform.system() == 'Darwin':
+            if isMac:
                 self.pArchName = 'macosx64'
             elif platform.system() == 'Linux':
                 self.pArchName = 'linux64'
@@ -527,8 +526,7 @@ def main():
 
         loopyTimeout = str(machineTypeDefaults(options.timeout))
         if options.enableVg:
-            if (platform.system() == 'Linux' or platform.system() == 'Darwin') \
-                and platform.uname()[4] != 'armv7l':
+            if (platform.system() == 'Linux' or isMac) and platform.uname()[4] != 'armv7l':
                 loopyTimeout = '300'
             else:
                 raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
