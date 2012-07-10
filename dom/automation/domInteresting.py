@@ -40,7 +40,7 @@ import detect_leaks
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import grabCrashLog
+from subprocesses import grabCrashLog, isMac
 import asanSymbolize
 
 # Levels of unhappiness.
@@ -264,7 +264,7 @@ class AmissLogHandler:
             self.printAndLog("%%% Known crash signature: " + msg)
             self.crashIsKnown = True
 
-        if platform.system() == "Darwin":
+        if isMac:
             # There are several [TMR] bugs listed in crashes.txt
             # Bug 507876 is a breakpad issue that means too-much-recursion crashes don't give me stack traces on Mac
             # (and Linux, but differently).
@@ -526,7 +526,7 @@ def rdfInit(args):
             signum = -status
             signame = getSignalName(signum, "unknown signal")
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
-            if platform.system() == "Darwin" and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
+            if isMac and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
                 # well, maybe the OS crash reporter picked it up.
                 crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, None)
                 if crashlog:
