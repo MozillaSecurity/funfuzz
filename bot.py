@@ -21,6 +21,7 @@ sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
 from countCpus import cpuCount
+from subprocesses import isWin
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -283,8 +284,7 @@ def main():
                     os.mkdir(buildDir)
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 if options.runJsfunfuzz:
-                    win = platform.system() in ("Microsoft", "Windows")
-                    shell = os.path.join(buildDir, "dist", "js.exe" if win else "js")
+                    shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
                     # Not using compareJIT: bug 751700, and it's not fully hooked up
                     # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
                     mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]

@@ -21,7 +21,8 @@ import ximport
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import captureStdout, dateStr, isMac, isVM, macVer, normExpUserPath, shellify, vdump
+from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, macVer, \
+    normExpUserPath, shellify, vdump
 
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path3)
@@ -44,7 +45,7 @@ assert isVM()[1] == False
 shellCacheDirStart = os.path.join('c:', os.sep) if isVM() == ('Windows', True) \
     else os.path.join('~', 'Desktop')
 # This particular machine has insufficient disk space on the main drive.
-if platform.system() == 'Linux' and os.path.exists(os.sep + 'hddbackup'):
+if isLinux and os.path.exists(os.sep + 'hddbackup'):
     shellCacheDirStart = os.path.join(os.sep + 'hddbackup' + os.sep)
 shellCacheDir = normExpUserPath(os.path.join(shellCacheDirStart, 'autobisect-cache'))
 if not os.path.exists(shellCacheDir):
@@ -446,15 +447,15 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     elif debugModeBool:
         # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
         return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
-    elif methodjitBool and platform.system() == 'Windows':
+    elif methodjitBool and isWin:
         return '9f2641871ce8' # 53544 on m-c, first rev that can run with pymake and -m
     elif methodjitBool:
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
-    elif platform.system() == 'Windows':
+    elif isWin:
         return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
     elif isMac and [10, 6] <= macVer() < [10, 7] and archNum == "64":
         return "1a44373ccaf6" # 32315 on m-c, config.guess change for snow leopard
-    elif (os.uname()[0] == 'Linux') or (isMac and [10, 6] <= macVer() < [10, 7] and archNum == "32"):
+    elif isLinux or (isMac and [10, 6] <= macVer() < [10, 7] and archNum == "32"):
         return "db4d22859940" # 24546 on m-c, imacros compilation change
     elif valgrindSupport:
         assert False  # This should no longer be reached since Ubuntu 11.04 has difficulties compiling earlier changesets.
@@ -509,10 +510,9 @@ def makeShell(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, c
     cfgJsBin(archNum, compileType, threadsafe, cfgPath, objdir)
 
     # Compile and copy the first binary.
-    # Only pymake was tested on Windows.
-    usePymake = True if platform.system() == 'Windows' else False
     try:
-        shell = compileCopy(archNum, compileType, currRev, usePymake, sourceDir, shellCacheDir, objdir, valgrindSupport)
+        # Only pymake was tested on Windows.
+        shell = compileCopy(archNum, compileType, currRev, isWin, sourceDir, shellCacheDir, objdir, valgrindSupport)
     finally:
         assert os.path.isdir(tempDir) is True
         vdump('Removing ' + tempDir)

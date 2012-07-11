@@ -40,7 +40,7 @@ import detect_leaks
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import grabCrashLog, isMac
+from subprocesses import grabCrashLog, isMac, isWin
 import asanSymbolize
 
 # Levels of unhappiness.
@@ -218,7 +218,7 @@ class AmissLogHandler:
         # jsfunfuzz needs this out of assertions.txt to try and get a testcase.
         newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
             not ("cx->isExceptionPending()" in msg) and \
-            not ("Tear-off objects remain in hashtable at shutdown" in msg and (self.expectedToLeak or (platform.system() in ("Microsoft", "Windows"))))
+            not ("Tear-off objects remain in hashtable at shutdown" in msg and (self.expectedToLeak or isWin))
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
         if newAssertion:
@@ -333,7 +333,7 @@ class FigureOutDirs:
             self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
             self.utilityDir = os.path.join(browserDir, "tests", "bin")
             self.symbolsDir = os.path.join(browserDir, "symbols")
-            possible_stackwalk_fn = "minidump_stackwalk.exe" if (platform.system() in ("Microsoft", "Windows")) else "minidump_stackwalk"
+            possible_stackwalk_fn = "minidump_stackwalk.exe" if isWin else "minidump_stackwalk"
             possible_stackwalk = os.path.join(browserDir, possible_stackwalk_fn)
             if (not os.environ.get('MINIDUMP_STACKWALK', None) and
                 not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
@@ -373,7 +373,7 @@ def findSrcDir(objDir):
 
 def deCygPath(p):
     """Convert a cygwin-style path to a native Windows path"""
-    if (platform.system() in ("Microsoft", "Windows")) and p.startswith("/c/"):
+    if isWin and p.startswith("/c/"):
         p = "c:\\" + p.replace("/", "\\")[3:]
     return p
 
@@ -521,7 +521,7 @@ def rdfInit(args):
             #alh.printAndLog("@@@ Valgrind complained via exit code")
             #lev = max(lev, DOM_VG_AMISS)
             pass
-        elif status < 0 and (platform.system() not in ("Microsoft", "Windows")):
+        elif status < 0 and os.name == 'posix':
             # The program was terminated by a signal, which usually indicates a crash.
             signum = -status
             signame = getSignalName(signum, "unknown signal")
@@ -547,7 +547,7 @@ def rdfInit(args):
                         alh.printAndLog("%%% Known crash (from mac crash reporter)")
         elif status == 1:
             alh.printAndLog("@@@ Exited with status 1 -- OOM?")
-        elif status != 0 and not ((platform.system() in ("Microsoft", "Windows")) and alh.sawFatalAssertion):
+        elif status != 0 and not (isWin and alh.sawFatalAssertion):
             alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
             lev = max(lev, DOM_ABNORMAL_EXIT)
 

@@ -17,7 +17,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
-from subprocesses import captureStdout, isMac, macVer, normExpUserPath, vdump
+from subprocesses import captureStdout, isLinux, isMac, isWin, macVer, normExpUserPath, vdump
 
 def getRepoHashAndId(repoDir):
     '''
@@ -77,9 +77,9 @@ def autoconfRun(cwd):
     '''
     if isMac:
         subprocess.check_call(['autoconf213'], cwd=cwd)
-    elif platform.system() == 'Linux':
+    elif isLinux:
         subprocess.check_call(['autoconf2.13'], cwd=cwd)
-    elif platform.system() == 'Windows':
+    elif isWin:
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
 
 def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
@@ -123,7 +123,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i386-apple-darwin8.0.0')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif (os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l'):
+        elif isLinux and (os.uname()[4] != 'armv7l'):
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvDt['CC'] = 'gcc -m32'
@@ -174,17 +174,6 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     cfgCmdList.append('--enable-more-deterministic')
     cfgCmdList.append('--disable-tests')
 
-    if os.name != 'nt':
-        if ((os.uname()[0] == "Linux") and (os.uname()[4] != 'armv7l')) or isMac:
-            cfgCmdList.append('--enable-valgrind')
-            # ccache does not seem to work on Mac.
-            if platform.system() != 'Darwin':
-                cfgCmdList.append('--with-ccache')
-        # ccache is not applicable for Windows and non-Tegra Ubuntu ARM builds.
-        elif os.uname()[1] == 'tegra-ubuntu':
-            cfgCmdList.append('--with-ccache')
-            cfgCmdList.append('--with-arch=armv7-a')
-
     if threadsafe:
         cfgCmdList.append('--enable-threadsafe')
         cfgCmdList.append('--with-system-nspr')
@@ -192,11 +181,21 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     # readline instead of editline.
     #cfgCmdList.append('--enable-readline')
 
-    if os.name == 'nt':
-        # Only tested to work for pymake.
+    if os.name == 'posix':
+        if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
+            cfgCmdList.append('--enable-valgrind')
+            if isLinux:
+                cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
+        # ccache is not applicable for non-Tegra Ubuntu ARM builds.
+        elif os.uname()[1] == 'tegra-ubuntu':
+            cfgCmdList.append('--with-ccache')
+            cfgCmdList.append('--with-arch=armv7-a')
+    else:
+        # Only tested to work for pymake in Windows.
         counter = 0
         for entry in cfgCmdList:
             if os.sep in entry:
+                assert isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
                 cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
             counter = counter + 1
 
@@ -213,9 +212,10 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     return out, envVarList, cfgEnvDt, cfgCmdList
 
 def shellName(archNum, compileType, extraID, vgSupport):
+    osName = 'windows' if isWin else platform.system().lower()
     sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
-                                 platform.system().lower()] if x)
-    ext = '.exe' if platform.system() == 'Windows' else ''
+                                 osName] if x)
+    ext = '.exe' if isWin else ''
     return sname + ext
 
 def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objDir, vgSupport):
@@ -225,7 +225,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
     # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
     jobs = (cpuCount() * 3) // 2
     compiledNamePath = normExpUserPath(
-        os.path.join(objDir, 'js' + ('.exe' if platform.system() == 'Windows' else '')))
+        os.path.join(objDir, 'js' + ('.exe' if isWin else '')))
     try:
         cmdList = []
         ignoreECode = False
@@ -236,7 +236,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
         else:
             cmdList = ['make', '-C', objDir, '-s']
             ignoreECode = True
-            if platform.system() != 'Windows':
+            if os.name == 'posix':
                 cmdList.append('-j' + str(jobs))  # Win needs pymake for multicore compiles.
         vdump('cmdList from compileCopy is: ' + ' '.join(cmdList))
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,

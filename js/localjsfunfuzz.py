@@ -23,7 +23,8 @@ from inspectShell import archOfBinary, testDbgOrOpt
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, dateStr, isMac, isVM, normExpUserPath, verbose, vdump
+from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, \
+    verbose, vdump
 from fileIngredients import fileContains
 from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 
@@ -51,7 +52,7 @@ def parseOptions():
         shellflags = '',
         srcRepo = '~/trees/mozilla-central',
         timeout = 10,
-        enablePymake = True if platform.system == 'Windows' else False,
+        enablePymake = True if isWin else False,
         enableTs = False,
         enableVg = False,
     )
@@ -192,16 +193,15 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
         output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
                                                             objdir)
     except Exception, e:
-        if platform.system() == 'Windows':
+        if isWin:
             print 'Temporary debug: configuration failed!'
             pdb.set_trace()
         # This exception message is returned from captureStdout in subprocesses.py
-        if platform.system() == 'Windows' and \
-                'Windows conftest.exe configuration permission problem' in repr(e):
+        if isWin and 'Windows conftest.exe configuration permission problem' in repr(e):
             print 'Trying once more because of "Permission denied" error...'
             output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
                                                                 objdir)
-        elif platform.system() == 'Linux':
+        elif isLinux:
             print 'Trying once more because Linux does not handle multiple compilations too well...'
             output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
                                                                 objdir)
@@ -279,7 +279,7 @@ def outputStrFromList(lst):
     Escapes backslashes in Windows, for commands that can then be copied and pasted into the shell.
     For all platforms, returns a string form with a space joining each element in the list.
     '''
-    return ' '.join(lst).replace('\\', '\\\\') if platform.system() == 'Windows' else ' '.join(lst)
+    return ' '.join(lst).replace('\\', '\\\\') if isWin else ' '.join(lst)
 
 def diagDump(fPath, cmdStr, aNum, cType, rName, eVarList, fEnvDt, cCmdList):
     '''
@@ -351,7 +351,7 @@ def localCompileFuzzJsShell(options):
     assert '32' in archList or '64' in archList
     # 32-bit and 64-bit cannot be fuzzed together in the same MozillaBuild batch script in Windows.
     assert not ('32' in archList and '64' in archList), '32 & 64-bit cannot be fuzzed together yet.'
-    if platform.system() == 'Windows':
+    if isWin:
         assert 'x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '32'
         assert 'x64' not in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.archType == '64'
     shellTypeList = options.shellType.split(',')
@@ -362,7 +362,7 @@ def localCompileFuzzJsShell(options):
     # Set different timeouts depending on machine.
     loopyTimeout = str(machineTypeDefaults(options.timeout))
     if options.enableVg:
-        if (platform.system() == 'Linux' or isMac) and platform.uname()[4] != 'armv7l':
+        if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
             loopyTimeout = '300'
         else:
             raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
@@ -474,17 +474,17 @@ class DownloadedJsShell:
             self.pArchNum = '32'
             if isMac:
                 self.pArchName = 'macosx'
-            elif platform.system() == 'Linux':
+            elif isLinux:
                 self.pArchName = 'linux'
-            elif platform.system() in ('Microsoft', 'Windows'):
+            elif isWin:
                 self.pArchName = 'win32'
         elif options.archType == '64':
             self.pArchNum = '64'
             if isMac:
                 self.pArchName = 'macosx64'
-            elif platform.system() == 'Linux':
+            elif isLinux:
                 self.pArchName = 'linux64'
-            elif platform.system() in ('Microsoft', 'Windows'):
+            elif isWin:
                 raise Exception('Windows 64-bit builds are not supported yet.')
         else:
             raise Exception('Only either one of these architectures can be specified: 32 or 64')
@@ -526,7 +526,7 @@ def main():
 
         loopyTimeout = str(machineTypeDefaults(options.timeout))
         if options.enableVg:
-            if (platform.system() == 'Linux' or isMac) and platform.uname()[4] != 'armv7l':
+            if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
                 loopyTimeout = '300'
             else:
                 raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')

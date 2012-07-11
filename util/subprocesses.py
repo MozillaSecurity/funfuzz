@@ -15,7 +15,10 @@ import time
 
 verbose = False
 
+isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
+# In Vista, Python 2.5.1 reports "Microsoft" - see http://bugs.python.org/issue1082
+isWin = (platform.system() in ('Microsoft', 'Windows'))
 
 ########################
 #  Platform Detection  #
@@ -42,7 +45,7 @@ def isVM():
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'fuzzing')))
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'trees')))
         vm = True
-    return (platform.system(), vm)
+    return (platform.system() if os.name == 'posix' else 'Windows', vm)
 
 #####################
 #  Shell Functions  #
@@ -82,7 +85,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'hg pull: option --rebase not recognized' not in stdout and \
           'no such option: -s' not in stdout:
-            if platform.system() == 'Windows' and 'Permission denied' in stdout and \
+            if isWin and 'Permission denied' in stdout and \
                     'configure: error: installation or configuration problem: ' + \
                     'C++ compiler cannot create executables.' in stdout:
                 pdb.set_trace()
@@ -90,13 +93,11 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             else:
                 raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
-        if not ((platform.system() == 'Windows' and \
-            # Ignore hg color mode throwing an error in console on Windows platforms.
-            'warning: failed to set color mode to win32' in stderr) or \
-            (isVM() == ('Linux', True) and \
-            # Ignore stderr warning when running a Linux VM on a Mac host:
-            # Not trusting file /mnt/hgfs/trees/mozilla-central/.hg/hgrc from untrusted user 501...
-            'hgrc from untrusted user 501' in stderr)):
+        # Ignore hg color mode throwing an error in console on Windows platforms.
+        # Ignore stderr warning when running a Linux VM on a Mac host:
+        # Not trusting file /mnt/hgfs/trees/mozilla-central/.hg/hgrc from untrusted user 501...
+        if not ((isWin and 'warning: failed to set color mode to win32' in stderr) or \
+                (isVM() == ('Linux', True) and 'hgrc from untrusted user 501' in stderr)):
             print 'Unexpected output on stderr from: '
             print '  ' + shellify(cmd)
             print stdout, stderr
@@ -184,7 +185,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
     if isMac:
         # Assuming you ran: mkdir -p /cores/
         coreFilename = "/cores/core." + str(crashedPID)
-    elif platform.system() == "Linux":
+    elif isLinux:
         isPidUsed = False
         if os.path.exists('/proc/sys/kernel/core_uses_pid'):
             with open('/proc/sys/kernel/core_uses_pid') as f:

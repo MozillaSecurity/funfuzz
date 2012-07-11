@@ -14,7 +14,7 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, vdump
+from subprocesses import captureStdout, isWin, vdump
 
 def archOfBinary(b):
     '''
@@ -22,7 +22,7 @@ def archOfBinary(b):
     '''
     unsplitFiletype = captureStdout(['file', b])[0]
     filetype = unsplitFiletype.split(':', 1)[1]
-    if platform.system() == 'Windows':
+    if isWin:
         assert 'PE executable for MS Windows (console)' in filetype
         return '32' if 'Intel 80386 32-bit' in filetype else '64'
     else:
