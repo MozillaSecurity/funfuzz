@@ -45,7 +45,7 @@ def isVM():
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'fuzzing')))
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'trees')))
         vm = True
-    return (platform.system() if os.name == 'posix' else 'Windows', vm)
+    return ('Windows' if isWin else platform.system(), vm)
 
 #####################
 #  Shell Functions  #
