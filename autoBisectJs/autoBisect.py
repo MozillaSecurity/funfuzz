@@ -141,8 +141,7 @@ def main():
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                print 'Skipped 20 times, stopping autoBisect.'
-                sys.exit(0)
+                raise Exception('Skipped 20 times, stopping autoBisect.')
         print label[0] + " (" + label[1] + ") ",
 
         if iterNum <= 0:
