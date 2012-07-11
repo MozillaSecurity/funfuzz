@@ -129,9 +129,20 @@ def main():
     iterNum = 1
     if paranoidBool:
         iterNum -= 2
+
+    skipCount = 0
     while currRev is not None:
         label = testRev(currRev)
         labels[currRev] = label
+        if label[0] == 'skip':
+            skipCount += 1
+            # If we use "skip", we tell hg bisect to do a linear search to get around the skipping.
+            # If the range is large, doing a bisect to find the start and endpoints of compilation
+            # bustage would be faster. 20 total skips being roughly the time that the pair of
+            # bisections would take.
+            if skipCount > 20:
+                print 'Skipped 20 times, stopping autoBisect.'
+                sys.exit(0)
         print label[0] + " (" + label[1] + ") ",
 
         if iterNum <= 0:
