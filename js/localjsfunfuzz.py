@@ -52,7 +52,9 @@ def parseOptions():
         shellflags = '',
         srcRepo = '~/trees/mozilla-central',
         timeout = 10,
-        enablePymake = True if isWin else False,
+        enablePymake = False,
+        # Pymake is broken for IonMonkey on Windows (bug 772742)
+        #enablePymake = True if isWin else False,
         enableTs = False,
         enableVg = False,
     )
