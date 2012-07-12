@@ -179,1331 +179,6 @@ function errorToString(e)
 }
 
 
-/***********************
- * AVOIDING KNOWN BUGS *
- ***********************/
-
-function whatToTestSpidermonkeyTrunk(code)
-{
-  // regexps can't match across lines, so replace whitespace with spaces.
-  var codeL = code.replace(/\s/g, " ");
-
-  return {
-
-    allowParse: true,
-
-    // Exclude things here if decompiling the function causes a crash.
-    allowDecompile: true,
-
-    // Exclude things here if decompiling returns something bogus that won't compile.
-    checkRecompiling: true
-      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
-      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
-      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
-      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
-      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
-      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
-      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
-      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
-      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
-      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
-      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
-      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
-      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
-      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
-      && !( codeL.match( /\{.*\:.*\(.*\,/ ))      // avoid bug 736747
-      ,
-
-    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: true
-      && !( codeL.match( /const.*if/ ))               // avoid bug 352985
-      && !( codeL.match( /if.*const/ ))               // avoid bug 352985
-      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
-      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
-      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895
-      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
-      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
-      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
-      && !( codeL.match( /\[.*\+/ ))        // constant folding bug 646599
-      && !( codeL.match( /\[.*\?/ ))        // constant folding bug 646599
-      && (code.indexOf("*") == -1)         // constant folding bug 539819
-      && (code.indexOf("/") == -1)         // constant folding bug 539819
-      && (code.indexOf("default") == -1)   // avoid bug 355509
-      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
-      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
-      // avoid bug 352085: keep operators that coerce to number (or integer)
-      // at constant-folding time (?) away from strings
-      &&
-           (
-             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
-             ||
-             (
-                  (code.indexOf("%")  == -1)
-               && (code.indexOf("/")  == -1)
-               && (code.indexOf("*")  == -1)
-               && (code.indexOf("-")  == -1)
-               && (code.indexOf(">>") == -1)
-               && (code.indexOf("<<") == -1)
-             )
-          )
-      ,
-
-    // Exclude things here if the decompilation doesn't match what the function actually does
-    checkDisassembly: true
-      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
-      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
-    ,
-
-    checkForExtraParens: true
-      && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
-      && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !codeL.match( /\?.*\=/)             // ignore bug 475893
-    ,
-
-    allowExec: unlikelyToHang(code)
-      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
-      && (jsshell || code.indexOf("nogeckoex") == -1)
-    ,
-
-    allowIter: true,
-
-    checkUneval: false // bug 539819
-      // exclusions won't be perfect, since functions can return things they don't
-      // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628
-    ,
-
-    // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
-    expectConsistentOutput: true
-       && (gcIsQuiet || code.indexOf("gc") == -1)
-       && code.indexOf("Date") == -1                // time marches on
-       && code.indexOf("random") == -1
-    ,
-
-    expectConsistentOutputAcrossIter: true
-       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
-    ,
-
-    expectConsistentOutputAcrossJITs: true
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
-       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
-       && code.indexOf("strict") == -1              // bug 743425
-       && code.indexOf("QName") == -1              // See bug 748568
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
-
-  };
-}
-
-function whatToTestSpidermonkeyMozilla10(code)
-{
-  // regexps can't match across lines, so replace whitespace with spaces.
-  var codeL = code.replace(/\s/g, " ");
-
-  return {
-
-    allowParse: true,
-
-    // Exclude things here if decompiling the function causes a crash.
-    allowDecompile: true,
-
-    // Exclude things here if decompiling returns something bogus that won't compile.
-    checkRecompiling: true
-      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197 (10 branch)
-      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506 (10 branch)
-      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921 (10 branch)
-      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921 (10 branch)
-      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (10 branch) (more rebracing stuff)
-      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255 (10 branch)
-      && !( code.match( /const.*arguments/ ))        // avoid bug 355480 (10 branch)
-      && !( code.match( /var.*arguments/ ))          // avoid bug 355480 (10 branch)
-      && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (10 branch)
-      && !( code.match( /let/ ))   // avoid bug 462309 (10 branch) :( :( :(
-      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (10 branch)
-      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (10 branch)
-      && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 (10 branch) *errors*
-      && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616 (10 branch)
-      && !( code.match( /\#.*=/ ))                 // avoid bug 568734 (10 branch)
-      ,
-
-    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: true
-      && !( code.match( /const.*if/ ))               // avoid bug 352985 (10 branch)
-      && !( code.match( /if.*const/ ))               // avoid bug 352985 (10 branch)
-      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285 (10 branch)
-      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285 (10 branch)
-      && !( code.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696 (10 branch)
-      && !( code.match( /\?.*\?/ ))                  // avoid bug 475895 (10 branch)
-      && !( code.match( /if.*function/ ))            // avoid bug 355980 (10 branch) *changes*
-      && !( code.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695 (10 branch), etc)
-      && !( code.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695 (10 branch), etc)
-      && !( code.match( /\[.*\+/ ))        // constant folding bug 646599 (10 branch)
-      && (code.indexOf("*") == -1)         // constant folding bug 539819 (10 branch)
-      && (code.indexOf("/") == -1)         // constant folding bug 539819 (10 branch)
-      && (code.indexOf("#") == -1)         // avoid bug 646600 (10 branch)
-      && (code.indexOf("default") == -1)   // avoid bug 355509 (10 branch)
-      && (code.indexOf("delete") == -1)    // avoid bug 352027 (10 branch), which won't be fixed for a while :(
-      && (code.indexOf("const") == -1)     // avoid bug 352985 (10 branch) and bug 355480 (10 branch) :(
-      && (code.indexOf("&&") == -1)        // ignore bug 461226 (10 branch) with a hatchet
-      && (code.indexOf("||") == -1)        // ignore bug 461226 (10 branch) with a hatchet
-      // at constant-folding time (?) away from strings
-      &&
-           (
-             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
-             ||
-             (
-                  (code.indexOf("%")  == -1)
-               && (code.indexOf("/")  == -1)
-               && (code.indexOf("*")  == -1)
-               && (code.indexOf("-")  == -1)
-               && (code.indexOf(">>") == -1)
-               && (code.indexOf("<<") == -1)
-             )
-          )
-      ,
-
-    // Exclude things here if the decompilation doesn't match what the function actually does
-    checkDisassembly: true
-      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 (10 branch) harder than above
-      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (10 branch)
-    ,
-
-    checkForExtraParens: true
-      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213 (10 branch), and unfortunately anything with genexps
-      && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
-      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !code.match( /\?.*\=/)             // ignore bug 475893 (10 branch)
-    ,
-
-    allowExec: unlikelyToHang(code)
-      && code.indexOf("<>") == -1 // avoid bug 334628 (10 branch), hopefully
-      && (jsshell || code.indexOf("nogeckoex") == -1)
-    ,
-
-    allowIter: true,
-
-    checkUneval: false // bug 539819 (10 branch)
-      // exclusions won't be perfect, since functions can return things they don't
-      // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (10 branch)
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (10 branch)
-    ,
-
-    expectConsistentOutput: true
-       && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
-       && code.indexOf("Date") == -1                // time marches on
-       && code.indexOf("random") == -1
-    ,
-
-    expectConsistentOutputAcrossIter: true
-       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
-    ,
-
-    expectConsistentOutputAcrossJITs: true
-       && code.indexOf("Error") == -1               // avoid bug 525518 (10 branch)
-       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (10 branch) (wontfix).
-       && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
-       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454 (10 branch)
-       && code.indexOf("options('strict')") == -1   // bug 621418 (10 branch), bug 621421 (10 branch)
-       && code.indexOf("use strict") == -1          // bug 622271 (10 branch)
-       && code.indexOf("++") == -1                  // bug 622265 (10 branch)
-       && code.indexOf("--") == -1                  // bug 622265 (10 branch)
-       && code.indexOf("instanceof") == -1          // bug 617949 (10 branch)
-       && !(code.match(/\S=/))                      // bug 622271 (10 branch) (+= etc)
-       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
-       && code.indexOf("strict") == -1              // bug 743425
-       && code.indexOf("QName") == -1              // See bug 748568
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
-
-  };
-}
-
-
-
-function whatToTestJavaScriptCore(code)
-{
-  return {
-
-    allowParse: true,
-
-    allowDecompile: true,
-
-    checkRecompiling: true,
-
-    checkForMismatch: true,
-
-    checkForExtraParens: false, // ?
-
-    allowExec: unlikelyToHang(code),
-
-    allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
-
-    checkUneval: false, // JavaScriptCore does not support |uneval|
-
-    expectConsistentOutput: false,
-    expectConsistentOutputAcrossIter: false,
-    expectConsistentOutputAcrossJITs: false
-
-  };
-}
-
-function whatToTestGeneric(code)
-{
-  return {
-    allowParse: true,
-    allowDecompile: true,
-    checkRecompiling: true,
-    checkForMismatch: true,
-    checkForExtraParens: false, // most js engines don't try to guarantee lack of extra parens
-    allowExec: unlikelyToHang(code),
-    allowIter: (typeof Iterator == "function"),
-    checkUneval: haveRealUneval,
-    expectConsistentOutput: false,
-    expectConsistentOutputAcrossIter: false,
-    expectConsistentOutputAcrossJITs: false
-  };
-}
-
-var whatToTest;
-if (engine == ENGINE_SPIDERMONKEY_TRUNK)
-  whatToTest = whatToTestSpidermonkeyTrunk;
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
-  whatToTest = whatToTestSpidermonkeyMozilla10;
-else if (engine == ENGINE_JAVASCRIPTCORE)
-  whatToTest = whatToTestJavaScriptCore;
-else
-  whatToTest = whatToTestGeneric;
-
-
-function unlikelyToHang(code)
-{
-  var codeL = code.replace(/\s/g, " ");
-
-  // Things that are likely to hang in all JavaScript engines
-  return true
-    && code.indexOf("infloop") == -1
-    && !( codeL.match( /const.*for/ )) // can be an infinite loop: function() { const x = 1; for each(x in ({a1:1})) dumpln(3); }
-    && !( codeL.match( /for.*const/ )) // can be an infinite loop: for each(x in ...); const x;
-    && !( codeL.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
-    && !( codeL.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
-    && !( codeL.match( /for.*for.*gc/ ))
-    ;
-}
-
-
-
-
-/*************************
- * DRIVING & BASIC TESTS *
- *************************/
-
-function start(glob)
-{
-  init(glob);
-
-  count = 0;
-
-  if (jsshell) {
-    // If another script specified a "maxRunTime" argument, use it; otherwise, run forever
-    var MAX_TOTAL_TIME = (glob.maxRunTime) || (Infinity);
-    var startTime = new Date();
-
-    do {
-      testOne();
-      var elapsed1 = new Date() - lastTime;
-      if (elapsed1 > 1000) {
-        print("That took " + elapsed1 + "ms!");
-      }
-      var lastTime = new Date();
-    } while(lastTime - startTime < MAX_TOTAL_TIME);
-  } else {
-    setTimeout(testStuffForAWhile, 200);
-  }
-}
-
-function testStuffForAWhile()
-{
-  for (var j = 0; j < 100; ++j)
-    testOne();
-
-  if (count % 10000 < 100)
-    printImportant("Iterations: " + count);
-
-  setTimeout(testStuffForAWhile, 30);
-}
-
-function testOne()
-{
-  var dumpEachSeed = false; // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
-  ++count;
-  // Split this string across two source strings to ensure that if a
-  // generated function manages to output the entire jsfunfuzz source,
-  // that output won't match the grep command.
-  var cookie = "/*F";
-  cookie += "RC*/"
-
-  // Sometimes it makes sense to start with simpler functions:
-  //var depth = (~~(count / 1000)) & 16;
-  var depth = 10;
-
-  if (dumpEachSeed) {
-    // More complicated, but results in a much shorter script, making SpiderMonkey happier.
-    var MTA = uneval(rnd.fuzzMT.export_mta());
-    var MTI = rnd.fuzzMT.export_mti();
-    if (MTA != rnd.lastDumpedMTA) {
-      dumpln(cookie + "rnd.fuzzMT.import_mta(" + MTA + ");");
-      rnd.lastDumpedMTA = MTA;
-    }
-    dumpln(cookie + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
-  }
-
-  var code = makeOv(depth);
-
-  if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
-    code = "tryRunning = spidermonkeyShellUseSandbox(" + rnd(4) + ");"
-    //print("Sane mode!")
-  }
-
-//  if (rnd(10) == 1) {
-//    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
-//    if (dp)
-//      code = dp;
-//  }
-  dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
-
-  tryItOut(code);
-}
-
-function fillShellSandbox(sandbox)
-{
-  var safeFuns = [
-    "print",
-    "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
-    "verifybarriers", "mjitChunkLimit", "gcPreserveCode",
-    "evalcx", "newGlobal", "evaluate",
-    "dumpln", "fillShellSandbox"
-  ];
-
-  for (var i = 0; i < safeFuns.length; ++i) {
-    var fn = safeFuns[i];
-    if (sandbox[fn]) {
-      //print("Target already has " + fn);
-    } else if (this[fn]) { // FIXME: strict mode compliance requires passing glob around
-      sandbox[fn] = this[fn].bind(this);
-    } else {
-      //print("Source is missing " + fn);
-    }
-  }
-
-  return sandbox;
-}
-
-function spidermonkeyShellUseSandbox(sandboxType)
-{
-  var primarySandbox;
-
-  switch (sandboxType) {
-    case 0:  primarySandbox = evalcx('');
-    case 1:  primarySandbox = evalcx('lazy');
-    case 2:  primarySandbox = newGlobal('same-compartment');
-    default: primarySandbox = newGlobal('new-compartment');
-  }
-
-  fillShellSandbox(primarySandbox);
-
-  return function(f, code, wtt) {
-    try {
-      evalcx(code, primarySandbox)
-    } catch(e) {
-      dumpln("Running in sandbox threw " + errorToString(e));
-    }
-  }
-}
-
-function failsToCompileInTry(code) {
-  // Why would this happen? One way is "let x, x"
-  try {
-    new Function(" try { " + code + " } catch(e) { }");
-    return false;
-  } catch(e) {
-    return true;
-  }
-}
-
-function tryItOut(code)
-{
-  // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
-  if (typeof gczeal == "function")
-    gczeal(0);
-
-  // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
-  if (count % 1000 == 0) {
-    dumpln("Paranoid GC (count=" + count + ")!");
-    realGC();
-  }
-
-  var wtt = whatToTest(code);
-
-  if (!wtt.allowParse)
-    return;
-
-  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
-
-  if (jsStrictMode)
-    code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
-
-  var f;
-  try {
-    f = new Function(code);
-  } catch(compileError) {
-    dumpln("Compiling threw: " + errorToString(compileError));
-  }
-
-  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
-    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
-        code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
-        code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      // FCM cookie
-      var cookie1 = "/*F";
-      var cookie2 = "CM*/";
-      var nCode = code;
-      // Avoid compile-time errors because those are no fun.
-      // But leave some things out of function(){} because some bugs are only detectable at top-level, and
-      // pure jsfunfuzz doesn't test top-level at all.
-      // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
-      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
-        nCode = "(function(){" + nCode + "})()"
-      dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
-    }
-  }
-
-  if (tryRunning != tryRunningDirectly) {
-    optionalTests(f, code, wtt);
-  }
-
-  if (wtt.allowExec && f) {
-    tryRunning(f, code, wtt);
-  }
-
-  if (verbose)
-    dumpln("Done trying out that function!");
-
-  dumpln("");
-}
-
-function optionalTests(f, code, wtt)
-{
-  if (count % 100 == 1) {
-    tryHalves(code);
-  }
-
-  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    try {
-      Reflect.parse(code);
-    } catch(e) {
-    }
-  }
-
-  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    if (wtt.allowExec && (typeof sandbox == "function")) {
-      f = null;
-      if (trySandboxEval(code, false)) {
-        dumpln("Trying it again to see if it's a 'real leak' (???)")
-        trySandboxEval(code, true);
-      }
-    }
-  }
-
-  if (count % 100 == 3 && f && typeof disassemble == "function") {
-    // It's hard to use the recursive disassembly in the comparator,
-    // but let's at least make sure the disassembler itself doesn't crash.
-    disassemble("-r", f);
-  }
-
-  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    simpleDVGTest(code);
-    tryEnsureSanity();
-  }
-
-  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
-    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
-    var fx = directEvalC("(function(){" + code + "});");
-    checkRoundTripDisassembly(fx, code, wtt);
-  }
-
-  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
-    nestingConsistencyTest(code);
-    compartmentConsistencyTest(code);
-  }
-
-  if (count % 10 == 7 && f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt);
-  }
-}
-
-function nestingConsistencyTest(code)
-{
-  // Inspired by bug 676343
-  // This only makes sense if |code| is an expression (or an expression followed by a semicolon). Oh well.
-  function nestExpr(e) { return "(function() { return " + code + "; })()"; }
-  var codeNestedOnce = nestExpr(code);
-  var codeNestedDeep = code;
-  var depth = (count % 7) + 14; // 16 might be special
-  for (var i = 0; i < depth; ++i) {
-    codeNestedDeep = nestExpr(codeNestedDeep);
-  }
-
-  // These are on the same line so that line numbers in stack traces will match.
-  var resultO = sandboxResult(codeNestedOnce, "same-compartment"); var resultD = sandboxResult(codeNestedDeep, "same-compartment");
-
-  //if (resultO != "" && resultO != "undefined" && resultO != "use strict")
-  //  print("NestTest: " + resultO);
-
-  if (resultO != resultD) {
-    foundABug("NestTest mismatch",
-      "resultO: " + resultO + "\n" +
-      "resultD: " + resultD);
-  }
-}
-
-function compartmentConsistencyTest(code)
-{
-  if ((code.indexOf("/") != -1 && code.indexOf(">") != -1) || code.indexOf("XML") != -1) {
-    return; // see bug 683361 comment 2 (XML can't be wrapped; luke says this is intentional even after that bug is fixed)
-  }
-
-  // Inspired by bug 683361
-  // These are on the same line so that line numbers in stack traces will match.
-  var resultS = sandboxResult(code, "same-compartment"); var resultN = sandboxResult(code, "new-compartment");
-
-  if (resultS != resultN) {
-    foundABug("CompartmentTest mismatch",
-      "resultO: " + resultS + "\n" +
-      "resultD: " + resultN);
-  }
-}
-
-// Hack to make line numbers be consistent, to make spidermonkey
-// disassemble() comparison testing easier (e.g. for round-trip testing)
-function directEvalC(s) { var c; /* evil closureizer */ return eval(s); } function newFun(s) { return new Function(s); }
-
-function tryRunningDirectly(f, code, wtt)
-{
-  if (count % 23 == 3) {
-    dumpln("Plain eval!");
-    try { eval(code); } catch(e) { }
-    tryEnsureSanity();
-    return;
-  }
-
-  if (count % 23 == 4) {
-    dumpln("About to recompile, using eval hack.")
-    f = directEvalC("(function(){" + code + "});");
-  }
-
-  try {
-    if (verbose)
-      dumpln("About to run it!");
-    var rv = f();
-    if (verbose)
-      dumpln("It ran!");
-    if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
-      // "checkRecompiling && checkForMismatch" to avoid confusion if we decompile a function returned by f()
-      testUneval(rv);
-    }
-    if (wtt.allowIter && rv && typeof rv == "object") {
-      tryIteration(rv);
-    }
-  } catch(runError) {
-    if(verbose)
-      dumpln("Running threw!  About to toString to error.");
-    var err = errorToString(runError);
-    dumpln("Running threw: " + err);
-    // bug 465908 and other e4x uneval nonsense make this show lots of false positives
-    // checkErrorMessage(err, code);
-  }
-
-  tryEnsureSanity();
-}
-
-
-// Store things now so we can restore sanity later.
-var realEval = eval;
-var realMath = Math;
-var realFunction = Function;
-var realGC = gc;
-var realUneval = uneval;
-var realToString = toString;
-var realToSource = this.toSource; // "this." because it only exists in spidermonkey
-
-
-function tryEnsureSanity()
-{
-  try {
-    // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
-    if (typeof gczeal == "function")
-      gczeal(0);
-  } catch(e) { }
-
-  // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
-  try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
-
-  if (!this) {
-    // Strict mode. Great.
-    return;
-  }
-
-  try {
-    // Try to get rid of any fake 'unwatch' functions.
-    delete this.unwatch;
-
-    // Restore important stuff that might have been broken as soon as possible :)
-    if ('unwatch' in this) {
-      this.unwatch("eval")
-      this.unwatch("Function")
-      this.unwatch("gc")
-      this.unwatch("uneval")
-      this.unwatch("toSource")
-      this.unwatch("toString")
-    }
-
-    if ('__defineSetter__' in this) {
-      // The only way to get rid of getters/setters is to delete the property.
-      if (!jsStrictMode)
-        delete this.eval;
-      delete this.Math;
-      delete this.Function;
-      delete this.gc;
-      delete this.uneval;
-      delete this.toSource;
-      delete this.toString;
-    }
-
-    this.Math = realMath;
-    this.eval = realEval;
-    this.Function = realFunction;
-    this.gc = realGC;
-    this.uneval = realUneval;
-    this.toSource = realToSource;
-    this.toString = realToString;
-  } catch(e) {
-    confused("tryEnsureSanity failed: " + errorToString(e));
-  }
-
-  // These can fail if the page creates a getter for "eval", for example.
-  if (this.eval != realEval)
-    confused("Fuzz script replaced |eval|");
-  if (Function != realFunction)
-    confused("Fuzz script replaced |Function|");
-}
-
-function tryIteration(rv)
-{
-  try {
-    if (!(Iterator(rv) === rv))
-      return; // not an iterator
-  }
-  catch(e) {
-    // Is it a bug that it's possible to end up here?  Probably not!
-    dumpln("Error while trying to determine whether it's an iterator!");
-    dumpln("The error was: " + e);
-    return;
-  }
-
-  dumpln("It's an iterator!");
-  try {
-    var iterCount = 0;
-    var iterValue;
-    // To keep Safari-compatibility, don't use "let", "each", etc.
-    for /* each */ ( /* let */ iterValue in rv)
-      ++iterCount;
-    dumpln("Iterating succeeded, iterCount == " + iterCount);
-  } catch (iterError) {
-    dumpln("Iterating threw!");
-    dumpln("Iterating threw: " + errorToString(iterError));
-  }
-}
-
-
-
-/***********************************
- * WHOLE-FUNCTION DECOMPILER TESTS *
- ***********************************/
-
-function tryRoundTripStuff(f, code, wtt)
-{
-  if (verbose)
-    dumpln("About to do the 'toString' round-trip test");
-
-  // Functions are prettier with line breaks, so test toString before uneval.
-  checkRoundTripToString(f, code, wtt);
-
-  if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkForExtraParens) {
-    testForExtraParens(f, code);
-  }
-
-  if (haveRealUneval) {
-    if (verbose)
-      dumpln("About to do the 'uneval' round-trip test");
-    checkRoundTripUneval(f, code, wtt);
-  }
-}
-
-// Function round-trip with implicit toString
-function checkRoundTripToString(f, code, wtt)
-{
-  var fs, g;
-  try {
-    fs = "" + f;
-  } catch(e) { reportRoundTripIssue("Round-trip with implicit toString: can't toString", code, null, null, errorToString(e)); return; }
-
-  checkForCookies(fs);
-
-  if (wtt.checkRecompiling) {
-    try {
-      g = eval("(" + fs + ")");
-      var gs = "" + g;
-      if (wtt.checkForMismatch && fs != gs) {
-        reportRoundTripIssue("Round-trip with implicit toString", code, fs, gs, "mismatch");
-        wtt.checkForMismatch = false;
-      }
-    } catch(e) {
-      reportRoundTripIssue("Round-trip with implicit toString: error", code, fs, gs, errorToString(e));
-    }
-  }
-}
-
-// Function round-trip with uneval
-function checkRoundTripUneval(f, code, wtt)
-{
-  var g, uf, ug;
-  try {
-    uf = uneval(f);
-  } catch(e) { reportRoundTripIssue("Round-trip with uneval: can't uneval", code, null, null, errorToString(e)); return; }
-
-  checkForCookies(uf);
-
-  if (wtt.checkRecompiling) {
-    try {
-      g = eval("(" + uf + ")");
-      ug = uneval(g);
-      if (wtt.checkForMismatch && ug != uf) {
-        reportRoundTripIssue("Round-trip with uneval: mismatch", code, uf, ug, "mismatch");
-        wtt.checkForMismatch = false;
-      }
-    } catch(e) { reportRoundTripIssue("Round-trip with uneval: error", code, uf, ug, errorToString(e)); }
-  }
-}
-
-function checkForCookies(code)
-{
-  // http://hg.mozilla.org/mozilla-central/annotate/d254c07f3301/js/src/jsopcode.cpp#l2563
-  // These are things that shouldn't appear in decompilations.
-  if (code.indexOf("/*EXCEPTION") != -1
-   || code.indexOf("/*RETSUB") != -1
-   || code.indexOf("/*FORELEM") != -1
-   || code.indexOf("/*WITH") != -1)
-    foundABug("A 'cookie' from jsopcode.cpp appeared in a decompilation!", code);
-}
-
-function reportRoundTripIssue(issue, code, fs, gs, e)
-{
-  if (e.indexOf("illegal XML character") != -1) {
-    dumpln("Ignoring bug 355674.");
-    return;
-  }
-
-  if (fs && gs && fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
-    dumpln("Ignoring quote mismatch (bug 346898 (wontfix)).");
-    return;
-  }
-
-  var details = "Code: " + uneval(code) + "\n\n" +
-                "fs: " + fs + "\n\n" +
-                "gs: " + gs + "\n\n" +
-                "error: " + e;
-
-  foundABug(issue, details);
-}
-
-
-/*************************************************
- * EXPRESSION DECOMPILATION & VALUE UNEVAL TESTS *
- *************************************************/
-
-
-function testUneval(o)
-{
-  // If it happens to return an object, especially an array or hash,
-  // let's test uneval.  Note that this is a different code path than decompiling
-  // an array literal within a function, although the two code paths often have
-  // similar bugs!
-
-  var uo, euo, ueuo;
-
-  uo = uneval(o);
-
-  if (uo == "({})") {
-    // ?
-    return;
-  }
-
-  if (testUnevalString(uo)) {
-    // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
-    uo = uo.replace(/\[native code\]/g, "");
-    if (uo.charAt(0) == "/")
-      return; // ignore bug 362582
-
-    try {
-      euo = eval(uo); // if this throws, something's wrong with uneval, probably
-    } catch(e) {
-      foundABug("The string returned by uneval failed to eval!", uo);
-      return;
-    }
-    ueuo = uneval(euo);
-    if (ueuo != uo) {
-      foundABug("Mismatch with uneval/eval on the function's return value!", uo + "\n" + ueuo);
-    }
-  } else {
-    dumpln("Skipping re-eval test");
-  }
-}
-
-
-function testUnevalString(uo)
-{
-  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
-
-  return true
-      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
-      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
-      &&  uo.indexOf("NaN") == -1                          // see bug 379521 (wontfix)
-      &&  uo.indexOf("Infinity") == -1                     // see bug 379521 (wontfix)
-      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
-      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
-      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
-      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
-      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
-  ;
-}
-
-
-function checkErrorMessage(err, code)
-{
-  // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
-  if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    checkErrorMessage2(err, "TypeError: ", " is not a function");
-    checkErrorMessage2(err, "TypeError: ", " is not a constructor");
-    checkErrorMessage2(err, "TypeError: ", " is undefined");
-  }
-
-  // These should probably be tested too:XML.ignoreComments
-  // XML filter is applied to non-XML value ...
-  // invalid 'instanceof' operand ...
-  // invalid 'in' operand ...
-  // missing argument 0 when calling function ...
-  // ... has invalid __iterator__ value ... (two of them!!)
-}
-
-function checkErrorMessage2(err, prefix, suffix)
-{
-  var P = prefix.length;
-  var S = suffix.length;
-  if (err.substr(0, P) == prefix) {
-    if (err.substr(-S, S) == suffix) {
-      var dvg = err.substr(11, err.length - P - S);
-      print("Testing an expression in a recent error message: " + dvg);
-
-      // These error messages can involve decompilation of expressions (DVG),
-      // but in some situations they can just be uneval of a value.  In those
-      // cases, we don't want to complain about known uneval bugs.
-      if (!testUnevalString(dvg)) {
-        print("Ignoring error message string because it looks like a known-bogus uneval");
-        return;
-      }
-
-
-      if (dvg == "") {
-        print("Ignoring E4X uneval bogosity");
-        // e.g. the error message from (<x/>.(false))()
-        // bug 465908, etc.
-        return;
-      }
-
-      try {
-        eval("(function() { return (" + dvg + "); })");
-      } catch(e) {
-        foundABug("DVG has apparently failed us", e);
-      }
-    }
-  }
-}
-
-
-
-
-/**************************
- * PARENTHESIZATION TESTS *
- **************************/
-
-
-// Returns an array of strings of length (code.length-2),
-// each having one pair of matching parens removed.
-// Assumes all parens in code are significant.  This assumption fails
-// for strings or regexps, but whatever.
-function deParen(code)
-{
-  // Get a list of locations of parens.
-  var parenPairs = []; // array of { left : int, right : int } (indices into code string)
-  var unmatched = []; // stack of indices into parenPairs
-
-  var i, c;
-
-  for (i = 0; i < code.length; ++i) {
-    c = code.charCodeAt(i);
-    if (c == 40) {
-      // left paren
-      unmatched.push(parenPairs.length);
-      parenPairs.push({ left: i });
-    } else if (c == 41) {
-      // right paren
-      if (unmatched.length == 0)
-        return []; // eep! unmatched rparen!
-      parenPairs[unmatched.pop()].right = i;
-    }
-  }
-
-  if (unmatched.length > 0)
-    return []; // eep! unmatched lparen!
-
-  var rs = [];
-
-  // Don't add spaces in place of the parens, because we don't
-  // want to detect things like (5).x as being unnecessary use
-  // of parens.
-
-  for (i = 0; i < parenPairs.length; ++i) {
-    var left = parenPairs[i].left, right = parenPairs[i].right;
-    rs.push(
-        code.substr(0, left)
-      + code.substr(left + 1, right - (left + 1))
-      + code.substr(right + 1)
-    );
-  }
-
-  return rs;
-}
-
-// print(uneval(deParen("for (i = 0; (false); ++i) { x(); }")));
-// print(uneval(deParen("[]")));
-
-function testForExtraParens(f, code)
-{
-  code = code.replace(/\n/g, " ").replace(/\r/g, " "); // regexps can't match across lines
-
-  var uf = "" + f;
-
-  // numbers get more parens than they need
-  if (uf.match(/\(\d/)) return;
-
-  if (uf.indexOf("(<") != -1) return; // bug 381204
-  if (uf.indexOf(".(") != -1) return; // bug 381207
-  if (code.indexOf("new") != -1) return; // "new" is weird. what can i say?
-  if (code.indexOf("let") != -1) return; // reasonable to overparenthesize "let" (see expclo#c33)
-  if (code.match(/\:.*function/)) return; // why?
-  if (uf.indexOf("(function") != -1) return; // expression closures over-parenthesize
-
-  if (code.match(/for.*yield/)) return; // why?
-  if (uf.indexOf("= (yield") != -1) return;
-  if (uf.indexOf(":(yield") != -1) return;
-  if (uf.indexOf(": (yield") != -1) return;
-  if (uf.indexOf(", (yield") != -1) return;
-  if (uf.indexOf("[(yield") != -1) return;
-  if (uf.indexOf("yield") != -1) return; // i give up on yield
-
-  // Sanity check
-  var euf = eval("(" + uf + ")");
-  var ueuf = "" + euf;
-  if (ueuf != uf) {
-    foundABug("Shouldn't the earlier round-trip test have caught this?", ueuf + "\n" + uf);
-  }
-
-  var dps = deParen(uf);
-  // skip the first, which is the function's formal params.
-
-  for (var i = 1; i < dps.length; ++i) {
-    var uf2 = dps[i];
-
-    try {
-      var euf2 = eval("(" + uf2 + ")");
-    } catch(e) { /* print("The latter did not compile.  That's fine."); */ continue; }
-
-    var ueuf2 = "" + euf2
-
-    if (ueuf2 == ueuf) {
-      foundABug("Unexpected match - extra parens?", uf + "\n\n" + uf2 + "\n\n" + "Both decompile as:\n" + ueuf);
-    }
-  }
-}
-
-
-/*********************************
- * SPIDERMONKEY DISASSEMBLY TEST *
- *********************************/
-
-// Finds decompiler bugs and bytecode inefficiencies by complaining when a round trip
-// through the decompiler changes the bytecode.
-function checkRoundTripDisassembly(f, code, wtt)
-{
-  if (code.indexOf("[@") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1 || code.match(/\[.*\*/)) {
-    dumpln("checkRoundTripDisassembly: ignoring bug 475859");
-    return;
-  }
-
-  var uf = uneval(f);
-
-  if (uf.indexOf("switch") != -1) {
-    dumpln("checkRoundTripDisassembly: ignoring bug 355509");
-    return;
-  }
-
-  if (code.indexOf("new") != code.lastIndexOf("new")) {
-    dumpln("checkRoundTripDisassembly: ignoring function with two 'new' operators (bug 475848)");
-    return;
-  }
-
-  if (code.match(/for.*\(.*in.*\).*if/)) {
-    print("checkRoundTripDisassembly: ignoring array comprehension with 'if' (bug 475882)");
-    return;
-  }
-
-  var df = disassemble(f);
-
-  if (df.indexOf("newline") != -1)
-    return;
-  if (df.indexOf("lineno") != -1)
-    return;
-
-  try {
-    var g = directEvalC(uf);
-  } catch(e) {
-    print("checkRoundTripDisassembly: ignoring stuff that should be caught by the uneval test");
-    return;
-  }
-
-  var dg = disassemble(g);
-
-  if (df == dg) {
-    // Happy!
-    return;
-  }
-
-  if (dg.indexOf("newline") != -1) {
-    // Really should just ignore these lines, instead of bailing...
-    return;
-  }
-
-  var dfl = df.split("\n");
-  var dgl = dg.split("\n");
-  for (var i = 0; i < dfl.length && i < dgl.length; ++i) {
-    if (dfl[i] != dgl[i]) {
-      if (dfl[i] == "00000:  arguments") {
-        // The substring 'arguments' disappeared from the function code.
-        // This can be a valid optimization.
-        // It will probably change the function prologue, along with local var
-        // numbering, without changing the function's behavior.
-        // See https://bugzilla.mozilla.org/show_bug.cgi?id=740259#c18
-        print("checkRoundTripDisassembly: ignoring loss of arguments");
-        return;
-      }
-      if (dfl[i] == "00000:  generator" || dfl[i] == "00005:  generator") {
-        print("checkRoundTripDisassembly: ignoring loss of generator (bug 350743)");
-        return;
-      }
-      if (dfl[i].indexOf("goto") != -1 && dgl[i].indexOf("stop") != -1 && uf.indexOf("switch") != -1) {
-        // Actually, this might just be bug 355509.
-        print("checkRoundTripDisassembly: ignoring extra 'goto' in switch (bug 475838)");
-        return;
-      }
-      if (dfl[i].indexOf("regexp null") != -1) {
-        print("checkRoundTripDisassembly: ignoring 475844 / regexp");
-        return;
-      }
-      if (dfl[i].indexOf("namedfunobj null") != -1 || dfl[i].indexOf("anonfunobj null") != -1) {
-        print("checkRoundTripDisassembly: ignoring 475844 / function");
-        return;
-      }
-      if (dfl[i].indexOf("string") != -1 && (dfl[i+1].indexOf("toxml") != -1 || dfl[i+1].indexOf("startxml") != -1)) {
-        print("checkRoundTripDisassembly: ignoring e4x-string mismatch (likely bug 355674)");
-        return;
-      }
-      if (dfl[i].indexOf("string") != -1 && df.indexOf("startxmlexpr") != -1) {
-        print("checkRoundTripDisassembly: ignoring complicated e4x-string mismatch (likely bug 355674)");
-        return;
-      }
-      if (dfl[i].indexOf("newinit") != -1 && dgl[i].indexOf("newarray 0") != -1) {
-        print("checkRoundTripDisassembly: ignoring array comprehension disappearance (bug 475847)");
-        return;
-      }
-      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") != -1 && dgl[i].indexOf("HEAVYWEIGHT") == -1) {
-        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854)");
-        return;
-      }
-      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") == -1 && dgl[i].indexOf("HEAVYWEIGHT") != -1) {
-        // The other direction
-        // var __proto__ hoisting, for example
-        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854 comment 1)");
-        return;
-      }
-      if (dfl[i].indexOf("pcdelta") != -1 && dgl[i].indexOf("pcdelta") != -1) {
-        print("checkRoundTripDisassembly: pcdelta changed, who cares? (bug 475908)");
-        return;
-      }
-
-      print("First line that does not match:");
-      print(dfl[i]);
-      print(dgl[i]);
-      print("");
-      break;
-    }
-  }
-
-  foundABug("Disassembly was not stable through decompilation",
-    "Original code:\n" + code + "\n\nOriginal function:\n" + uf + "\n" + df + "\n\nFunction from recompiling:\n" + dg);
-}
-
-
-
-/***********
- * SANDBOX *
- ***********/
-
-
-function sandboxResult(code, globalType)
-{
-  // Use sandbox to isolate side-effects.
-  var result;
-  var resultStr = "";
-  try {
-    // Using newGlobal("new-compartment"), rather than evalcx(''), to get
-    // shell functions. (see bug 647412 comment 2)
-    var sandbox = newGlobal(globalType);
-
-    result = evalcx(code, sandbox);
-    if (typeof result != "object") {
-      // Avoid cross-compartment excitement if it has a toString
-      resultStr = "" + result;
-    }
-  } catch(e) {
-    result = "Error: " + errorToString(e);
-  }
-  //print("resultStr: " + resultStr);
-  return resultStr;
-}
-
-
-/*********************
- * SPECIALIZED TESTS *
- *********************/
-
-function simpleDVGTest(code)
-{
-  var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
-
-  try {
-    eval(fullCode);
-  } catch(e) {
-    if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
-      foundABug("Wrong error message", e);
-    }
-  }
-}
-
-function trySandboxEval(code, isRetry)
-{
-  // (function(){})() wrapping allows "return" when it's allowed outside.
-  // The line breaks are to allow single-line comments within code ("//" and "<!--").
-
-  if (!sandbox) {
-    sandbox = evalcx("");
-  }
-
-  var rv = null;
-  try {
-    rv = evalcx("(function(){\n" + code + "\n})();", sandbox);
-  } catch(e) {
-    rv = "Error from sandbox: " + errorToString(e);
-  }
-
-  try {
-    if (typeof rv != "undefined")
-      dumpln(rv);
-  } catch(e) {
-    dumpln("Sandbox error printing: " + errorToString(e));
-  }
-  rv = null;
-
-  if (1 || count % 100 == 0) { // count % 100 *here* is sketchy.
-    dumpln("Done with this sandbox.");
-    sandbox = null;
-    gc();
-    var currentHeapCount = countHeap()
-    dumpln("countHeap: " + currentHeapCount);
-    if (currentHeapCount > maxHeapCount) {
-      if (maxHeapCount != 0)
-        dumpln("A new record by " + (currentHeapCount - maxHeapCount) + "!");
-      if (isRetry)
-        throw new Error("Found a leak!");
-      maxHeapCount = currentHeapCount;
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-function tryHalves(code)
-{
-  // See if there are any especially horrible bugs that appear when the parser has to start/stop in the middle of something. this is kinda evil.
-
-  // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)
-
-  var f, firstHalf, secondHalf;
-
-  try {
-
-    firstHalf = code.substr(0, code.length / 2);
-    if (verbose)
-      dumpln("First half: " + firstHalf);
-    f = new Function(firstHalf);
-    "" + f;
-  }
-  catch(e) {
-    if (verbose)
-      dumpln("First half compilation error: " + e);
-  }
-
-  try {
-    secondHalf = code.substr(code.length / 2, code.length);
-    if (verbose)
-      dumpln("Second half: " + secondHalf);
-    f = new Function(secondHalf);
-    "" + f;
-  }
-  catch(e) {
-    if (verbose)
-      dumpln("Second half compilation error: " + e);
-  }
-}
-
-
-
-
-
 /***************************
  * REPRODUCIBLE RANDOMNESS *
  ***************************/
@@ -1955,9 +630,9 @@ function stripSemicolon(c)
 
 
 
-/*********************************************
- * HOW TO GENERATE EACH PIECE OF THE GRAMMAR *
- *********************************************/
+/****************************
+ * GRAMMAR-BASED GENERATION *
+ ****************************/
 
 
 function makeOv(d, ignoredB)
@@ -4792,9 +3467,1318 @@ function makeReplacement(d, b)
 }
 
 
-/****************
- * MORE DRIVING *
- ****************/
+/***********************
+ * AVOIDING KNOWN BUGS *
+ ***********************/
+
+function whatToTestSpidermonkeyTrunk(code)
+{
+  // regexps can't match across lines, so replace whitespace with spaces.
+  var codeL = code.replace(/\s/g, " ");
+
+  return {
+
+    allowParse: true,
+
+    // Exclude things here if decompiling the function causes a crash.
+    allowDecompile: true,
+
+    // Exclude things here if decompiling returns something bogus that won't compile.
+    checkRecompiling: true
+      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
+      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
+      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
+      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
+      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
+      && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
+      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
+      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
+      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
+      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
+      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
+      && !( codeL.match( /\{.*\:.*\(.*\,/ ))      // avoid bug 736747
+      ,
+
+    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
+    checkForMismatch: true
+      && !( codeL.match( /const.*if/ ))               // avoid bug 352985
+      && !( codeL.match( /if.*const/ ))               // avoid bug 352985
+      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
+      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285
+      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
+      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895
+      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
+      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
+      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
+      && !( codeL.match( /\[.*\+/ ))        // constant folding bug 646599
+      && !( codeL.match( /\[.*\?/ ))        // constant folding bug 646599
+      && (code.indexOf("*") == -1)         // constant folding bug 539819
+      && (code.indexOf("/") == -1)         // constant folding bug 539819
+      && (code.indexOf("default") == -1)   // avoid bug 355509
+      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
+      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
+      // avoid bug 352085: keep operators that coerce to number (or integer)
+      // at constant-folding time (?) away from strings
+      &&
+           (
+             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
+             ||
+             (
+                  (code.indexOf("%")  == -1)
+               && (code.indexOf("/")  == -1)
+               && (code.indexOf("*")  == -1)
+               && (code.indexOf("-")  == -1)
+               && (code.indexOf(">>") == -1)
+               && (code.indexOf("<<") == -1)
+             )
+          )
+      ,
+
+    // Exclude things here if the decompilation doesn't match what the function actually does
+    checkDisassembly: true
+      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
+      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
+    ,
+
+    checkForExtraParens: true
+      && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
+      && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !codeL.match( /\?.*\=/)             // ignore bug 475893
+    ,
+
+    allowExec: unlikelyToHang(code)
+      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
+      && (jsshell || code.indexOf("nogeckoex") == -1)
+    ,
+
+    allowIter: true,
+
+    checkUneval: false // bug 539819
+      // exclusions won't be perfect, since functions can return things they don't
+      // appear to contain, e.g. with "return x;"
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628
+    ,
+
+    // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
+    expectConsistentOutput: true
+       && (gcIsQuiet || code.indexOf("gc") == -1)
+       && code.indexOf("Date") == -1                // time marches on
+       && code.indexOf("random") == -1
+    ,
+
+    expectConsistentOutputAcrossIter: true
+       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
+    ,
+
+    expectConsistentOutputAcrossJITs: true
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
+       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
+       && code.indexOf("strict") == -1              // bug 743425
+       && code.indexOf("QName") == -1              // See bug 748568
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
+
+  };
+}
+
+function whatToTestSpidermonkeyMozilla10(code)
+{
+  // regexps can't match across lines, so replace whitespace with spaces.
+  var codeL = code.replace(/\s/g, " ");
+
+  return {
+
+    allowParse: true,
+
+    // Exclude things here if decompiling the function causes a crash.
+    allowDecompile: true,
+
+    // Exclude things here if decompiling returns something bogus that won't compile.
+    checkRecompiling: true
+      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197 (10 branch)
+      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506 (10 branch)
+      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921 (10 branch)
+      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921 (10 branch)
+      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (10 branch) (more rebracing stuff)
+      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255 (10 branch)
+      && !( code.match( /const.*arguments/ ))        // avoid bug 355480 (10 branch)
+      && !( code.match( /var.*arguments/ ))          // avoid bug 355480 (10 branch)
+      && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (10 branch)
+      && !( code.match( /let/ ))   // avoid bug 462309 (10 branch) :( :( :(
+      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (10 branch)
+      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (10 branch)
+      && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 (10 branch) *errors*
+      && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616 (10 branch)
+      && !( code.match( /\#.*=/ ))                 // avoid bug 568734 (10 branch)
+      ,
+
+    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
+    checkForMismatch: true
+      && !( code.match( /const.*if/ ))               // avoid bug 352985 (10 branch)
+      && !( code.match( /if.*const/ ))               // avoid bug 352985 (10 branch)
+      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285 (10 branch)
+      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285 (10 branch)
+      && !( code.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696 (10 branch)
+      && !( code.match( /\?.*\?/ ))                  // avoid bug 475895 (10 branch)
+      && !( code.match( /if.*function/ ))            // avoid bug 355980 (10 branch) *changes*
+      && !( code.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695 (10 branch), etc)
+      && !( code.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695 (10 branch), etc)
+      && !( code.match( /\[.*\+/ ))        // constant folding bug 646599 (10 branch)
+      && (code.indexOf("*") == -1)         // constant folding bug 539819 (10 branch)
+      && (code.indexOf("/") == -1)         // constant folding bug 539819 (10 branch)
+      && (code.indexOf("#") == -1)         // avoid bug 646600 (10 branch)
+      && (code.indexOf("default") == -1)   // avoid bug 355509 (10 branch)
+      && (code.indexOf("delete") == -1)    // avoid bug 352027 (10 branch), which won't be fixed for a while :(
+      && (code.indexOf("const") == -1)     // avoid bug 352985 (10 branch) and bug 355480 (10 branch) :(
+      && (code.indexOf("&&") == -1)        // ignore bug 461226 (10 branch) with a hatchet
+      && (code.indexOf("||") == -1)        // ignore bug 461226 (10 branch) with a hatchet
+      // at constant-folding time (?) away from strings
+      &&
+           (
+             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
+             ||
+             (
+                  (code.indexOf("%")  == -1)
+               && (code.indexOf("/")  == -1)
+               && (code.indexOf("*")  == -1)
+               && (code.indexOf("-")  == -1)
+               && (code.indexOf(">>") == -1)
+               && (code.indexOf("<<") == -1)
+             )
+          )
+      ,
+
+    // Exclude things here if the decompilation doesn't match what the function actually does
+    checkDisassembly: true
+      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 (10 branch) harder than above
+      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (10 branch)
+    ,
+
+    checkForExtraParens: true
+      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213 (10 branch), and unfortunately anything with genexps
+      && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
+      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !code.match( /\?.*\=/)             // ignore bug 475893 (10 branch)
+    ,
+
+    allowExec: unlikelyToHang(code)
+      && code.indexOf("<>") == -1 // avoid bug 334628 (10 branch), hopefully
+      && (jsshell || code.indexOf("nogeckoex") == -1)
+    ,
+
+    allowIter: true,
+
+    checkUneval: false // bug 539819 (10 branch)
+      // exclusions won't be perfect, since functions can return things they don't
+      // appear to contain, e.g. with "return x;"
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (10 branch)
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (10 branch)
+    ,
+
+    expectConsistentOutput: true
+       && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
+       && code.indexOf("Date") == -1                // time marches on
+       && code.indexOf("random") == -1
+    ,
+
+    expectConsistentOutputAcrossIter: true
+       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
+    ,
+
+    expectConsistentOutputAcrossJITs: true
+       && code.indexOf("Error") == -1               // avoid bug 525518 (10 branch)
+       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (10 branch) (wontfix).
+       && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
+       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454 (10 branch)
+       && code.indexOf("options('strict')") == -1   // bug 621418 (10 branch), bug 621421 (10 branch)
+       && code.indexOf("use strict") == -1          // bug 622271 (10 branch)
+       && code.indexOf("++") == -1                  // bug 622265 (10 branch)
+       && code.indexOf("--") == -1                  // bug 622265 (10 branch)
+       && code.indexOf("instanceof") == -1          // bug 617949 (10 branch)
+       && !(code.match(/\S=/))                      // bug 622271 (10 branch) (+= etc)
+       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
+       && code.indexOf("strict") == -1              // bug 743425
+       && code.indexOf("QName") == -1              // See bug 748568
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
+
+  };
+}
+
+
+
+function whatToTestJavaScriptCore(code)
+{
+  return {
+
+    allowParse: true,
+
+    allowDecompile: true,
+
+    checkRecompiling: true,
+
+    checkForMismatch: true,
+
+    checkForExtraParens: false, // ?
+
+    allowExec: unlikelyToHang(code),
+
+    allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
+
+    checkUneval: false, // JavaScriptCore does not support |uneval|
+
+    expectConsistentOutput: false,
+    expectConsistentOutputAcrossIter: false,
+    expectConsistentOutputAcrossJITs: false
+
+  };
+}
+
+function whatToTestGeneric(code)
+{
+  return {
+    allowParse: true,
+    allowDecompile: true,
+    checkRecompiling: true,
+    checkForMismatch: true,
+    checkForExtraParens: false, // most js engines don't try to guarantee lack of extra parens
+    allowExec: unlikelyToHang(code),
+    allowIter: (typeof Iterator == "function"),
+    checkUneval: haveRealUneval,
+    expectConsistentOutput: false,
+    expectConsistentOutputAcrossIter: false,
+    expectConsistentOutputAcrossJITs: false
+  };
+}
+
+var whatToTest;
+if (engine == ENGINE_SPIDERMONKEY_TRUNK)
+  whatToTest = whatToTestSpidermonkeyTrunk;
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
+  whatToTest = whatToTestSpidermonkeyMozilla10;
+else if (engine == ENGINE_JAVASCRIPTCORE)
+  whatToTest = whatToTestJavaScriptCore;
+else
+  whatToTest = whatToTestGeneric;
+
+
+function unlikelyToHang(code)
+{
+  var codeL = code.replace(/\s/g, " ");
+
+  // Things that are likely to hang in all JavaScript engines
+  return true
+    && code.indexOf("infloop") == -1
+    && !( codeL.match( /const.*for/ )) // can be an infinite loop: function() { const x = 1; for each(x in ({a1:1})) dumpln(3); }
+    && !( codeL.match( /for.*const/ )) // can be an infinite loop: for each(x in ...); const x;
+    && !( codeL.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
+    && !( codeL.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
+    && !( codeL.match( /for.*for.*gc/ ))
+    ;
+}
+
+
+/*******************************
+ * EXECUTION CONSISTENCY TESTS *
+ *******************************/
+
+function sandboxResult(code, globalType)
+{
+  // Use sandbox to isolate side-effects.
+  var result;
+  var resultStr = "";
+  try {
+    // Using newGlobal("new-compartment"), rather than evalcx(''), to get
+    // shell functions. (see bug 647412 comment 2)
+    var sandbox = newGlobal(globalType);
+
+    result = evalcx(code, sandbox);
+    if (typeof result != "object") {
+      // Avoid cross-compartment excitement if it has a toString
+      resultStr = "" + result;
+    }
+  } catch(e) {
+    result = "Error: " + errorToString(e);
+  }
+  //print("resultStr: " + resultStr);
+  return resultStr;
+}
+
+function nestingConsistencyTest(code)
+{
+  // Inspired by bug 676343
+  // This only makes sense if |code| is an expression (or an expression followed by a semicolon). Oh well.
+  function nestExpr(e) { return "(function() { return " + code + "; })()"; }
+  var codeNestedOnce = nestExpr(code);
+  var codeNestedDeep = code;
+  var depth = (count % 7) + 14; // 16 might be special
+  for (var i = 0; i < depth; ++i) {
+    codeNestedDeep = nestExpr(codeNestedDeep);
+  }
+
+  // These are on the same line so that line numbers in stack traces will match.
+  var resultO = sandboxResult(codeNestedOnce, "same-compartment"); var resultD = sandboxResult(codeNestedDeep, "same-compartment");
+
+  //if (resultO != "" && resultO != "undefined" && resultO != "use strict")
+  //  print("NestTest: " + resultO);
+
+  if (resultO != resultD) {
+    foundABug("NestTest mismatch",
+      "resultO: " + resultO + "\n" +
+      "resultD: " + resultD);
+  }
+}
+
+function compartmentConsistencyTest(code)
+{
+  if ((code.indexOf("/") != -1 && code.indexOf(">") != -1) || code.indexOf("XML") != -1) {
+    return; // see bug 683361 comment 2 (XML can't be wrapped; luke says this is intentional even after that bug is fixed)
+  }
+
+  // Inspired by bug 683361
+  // These are on the same line so that line numbers in stack traces will match.
+  var resultS = sandboxResult(code, "same-compartment"); var resultN = sandboxResult(code, "new-compartment");
+
+  if (resultS != resultN) {
+    foundABug("CompartmentTest mismatch",
+      "resultO: " + resultS + "\n" +
+      "resultD: " + resultN);
+  }
+}
+
+
+/***********************************
+ * WHOLE-FUNCTION DECOMPILER TESTS *
+ ***********************************/
+
+function tryRoundTripStuff(f, code, wtt)
+{
+  if (verbose)
+    dumpln("About to do the 'toString' round-trip test");
+
+  // Functions are prettier with line breaks, so test toString before uneval.
+  checkRoundTripToString(f, code, wtt);
+
+  if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkForExtraParens) {
+    testForExtraParens(f, code);
+  }
+
+  if (haveRealUneval) {
+    if (verbose)
+      dumpln("About to do the 'uneval' round-trip test");
+    checkRoundTripUneval(f, code, wtt);
+  }
+}
+
+// Function round-trip with implicit toString
+function checkRoundTripToString(f, code, wtt)
+{
+  var fs, g;
+  try {
+    fs = "" + f;
+  } catch(e) { reportRoundTripIssue("Round-trip with implicit toString: can't toString", code, null, null, errorToString(e)); return; }
+
+  checkForCookies(fs);
+
+  if (wtt.checkRecompiling) {
+    try {
+      g = eval("(" + fs + ")");
+      var gs = "" + g;
+      if (wtt.checkForMismatch && fs != gs) {
+        reportRoundTripIssue("Round-trip with implicit toString", code, fs, gs, "mismatch");
+        wtt.checkForMismatch = false;
+      }
+    } catch(e) {
+      reportRoundTripIssue("Round-trip with implicit toString: error", code, fs, gs, errorToString(e));
+    }
+  }
+}
+
+// Function round-trip with uneval
+function checkRoundTripUneval(f, code, wtt)
+{
+  var g, uf, ug;
+  try {
+    uf = uneval(f);
+  } catch(e) { reportRoundTripIssue("Round-trip with uneval: can't uneval", code, null, null, errorToString(e)); return; }
+
+  checkForCookies(uf);
+
+  if (wtt.checkRecompiling) {
+    try {
+      g = eval("(" + uf + ")");
+      ug = uneval(g);
+      if (wtt.checkForMismatch && ug != uf) {
+        reportRoundTripIssue("Round-trip with uneval: mismatch", code, uf, ug, "mismatch");
+        wtt.checkForMismatch = false;
+      }
+    } catch(e) { reportRoundTripIssue("Round-trip with uneval: error", code, uf, ug, errorToString(e)); }
+  }
+}
+
+function checkForCookies(code)
+{
+  // http://hg.mozilla.org/mozilla-central/annotate/d254c07f3301/js/src/jsopcode.cpp#l2563
+  // These are things that shouldn't appear in decompilations.
+  if (code.indexOf("/*EXCEPTION") != -1
+   || code.indexOf("/*RETSUB") != -1
+   || code.indexOf("/*FORELEM") != -1
+   || code.indexOf("/*WITH") != -1)
+    foundABug("A 'cookie' from jsopcode.cpp appeared in a decompilation!", code);
+}
+
+function reportRoundTripIssue(issue, code, fs, gs, e)
+{
+  if (e.indexOf("illegal XML character") != -1) {
+    dumpln("Ignoring bug 355674.");
+    return;
+  }
+
+  if (fs && gs && fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
+    dumpln("Ignoring quote mismatch (bug 346898 (wontfix)).");
+    return;
+  }
+
+  var details = "Code: " + uneval(code) + "\n\n" +
+                "fs: " + fs + "\n\n" +
+                "gs: " + gs + "\n\n" +
+                "error: " + e;
+
+  foundABug(issue, details);
+}
+
+
+/*************************************************
+ * EXPRESSION DECOMPILATION & VALUE UNEVAL TESTS *
+ *************************************************/
+
+function testUneval(o)
+{
+  // If it happens to return an object, especially an array or hash,
+  // let's test uneval.  Note that this is a different code path than decompiling
+  // an array literal within a function, although the two code paths often have
+  // similar bugs!
+
+  var uo, euo, ueuo;
+
+  uo = uneval(o);
+
+  if (uo == "({})") {
+    // ?
+    return;
+  }
+
+  if (testUnevalString(uo)) {
+    // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
+    uo = uo.replace(/\[native code\]/g, "");
+    if (uo.charAt(0) == "/")
+      return; // ignore bug 362582
+
+    try {
+      euo = eval(uo); // if this throws, something's wrong with uneval, probably
+    } catch(e) {
+      foundABug("The string returned by uneval failed to eval!", uo);
+      return;
+    }
+    ueuo = uneval(euo);
+    if (ueuo != uo) {
+      foundABug("Mismatch with uneval/eval on the function's return value!", uo + "\n" + ueuo);
+    }
+  } else {
+    dumpln("Skipping re-eval test");
+  }
+}
+
+
+function testUnevalString(uo)
+{
+  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
+
+  return true
+      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
+      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
+      &&  uo.indexOf("NaN") == -1                          // see bug 379521 (wontfix)
+      &&  uo.indexOf("Infinity") == -1                     // see bug 379521 (wontfix)
+      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
+      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
+      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
+      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
+      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
+  ;
+}
+
+
+function checkErrorMessage(err, code)
+{
+  // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
+  if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    checkErrorMessage2(err, "TypeError: ", " is not a function");
+    checkErrorMessage2(err, "TypeError: ", " is not a constructor");
+    checkErrorMessage2(err, "TypeError: ", " is undefined");
+  }
+
+  // These should probably be tested too:XML.ignoreComments
+  // XML filter is applied to non-XML value ...
+  // invalid 'instanceof' operand ...
+  // invalid 'in' operand ...
+  // missing argument 0 when calling function ...
+  // ... has invalid __iterator__ value ... (two of them!!)
+}
+
+function checkErrorMessage2(err, prefix, suffix)
+{
+  var P = prefix.length;
+  var S = suffix.length;
+  if (err.substr(0, P) == prefix) {
+    if (err.substr(-S, S) == suffix) {
+      var dvg = err.substr(11, err.length - P - S);
+      print("Testing an expression in a recent error message: " + dvg);
+
+      // These error messages can involve decompilation of expressions (DVG),
+      // but in some situations they can just be uneval of a value.  In those
+      // cases, we don't want to complain about known uneval bugs.
+      if (!testUnevalString(dvg)) {
+        print("Ignoring error message string because it looks like a known-bogus uneval");
+        return;
+      }
+
+
+      if (dvg == "") {
+        print("Ignoring E4X uneval bogosity");
+        // e.g. the error message from (<x/>.(false))()
+        // bug 465908, etc.
+        return;
+      }
+
+      try {
+        eval("(function() { return (" + dvg + "); })");
+      } catch(e) {
+        foundABug("DVG has apparently failed us", e);
+      }
+    }
+  }
+}
+
+
+/**************************
+ * PARENTHESIZATION TESTS *
+ **************************/
+
+// Returns an array of strings of length (code.length-2),
+// each having one pair of matching parens removed.
+// Assumes all parens in code are significant.  This assumption fails
+// for strings or regexps, but whatever.
+function deParen(code)
+{
+  // Get a list of locations of parens.
+  var parenPairs = []; // array of { left : int, right : int } (indices into code string)
+  var unmatched = []; // stack of indices into parenPairs
+
+  var i, c;
+
+  for (i = 0; i < code.length; ++i) {
+    c = code.charCodeAt(i);
+    if (c == 40) {
+      // left paren
+      unmatched.push(parenPairs.length);
+      parenPairs.push({ left: i });
+    } else if (c == 41) {
+      // right paren
+      if (unmatched.length == 0)
+        return []; // eep! unmatched rparen!
+      parenPairs[unmatched.pop()].right = i;
+    }
+  }
+
+  if (unmatched.length > 0)
+    return []; // eep! unmatched lparen!
+
+  var rs = [];
+
+  // Don't add spaces in place of the parens, because we don't
+  // want to detect things like (5).x as being unnecessary use
+  // of parens.
+
+  for (i = 0; i < parenPairs.length; ++i) {
+    var left = parenPairs[i].left, right = parenPairs[i].right;
+    rs.push(
+        code.substr(0, left)
+      + code.substr(left + 1, right - (left + 1))
+      + code.substr(right + 1)
+    );
+  }
+
+  return rs;
+}
+
+// print(uneval(deParen("for (i = 0; (false); ++i) { x(); }")));
+// print(uneval(deParen("[]")));
+
+function testForExtraParens(f, code)
+{
+  code = code.replace(/\n/g, " ").replace(/\r/g, " "); // regexps can't match across lines
+
+  var uf = "" + f;
+
+  // numbers get more parens than they need
+  if (uf.match(/\(\d/)) return;
+
+  if (uf.indexOf("(<") != -1) return; // bug 381204
+  if (uf.indexOf(".(") != -1) return; // bug 381207
+  if (code.indexOf("new") != -1) return; // "new" is weird. what can i say?
+  if (code.indexOf("let") != -1) return; // reasonable to overparenthesize "let" (see expclo#c33)
+  if (code.match(/\:.*function/)) return; // why?
+  if (uf.indexOf("(function") != -1) return; // expression closures over-parenthesize
+
+  if (code.match(/for.*yield/)) return; // why?
+  if (uf.indexOf("= (yield") != -1) return;
+  if (uf.indexOf(":(yield") != -1) return;
+  if (uf.indexOf(": (yield") != -1) return;
+  if (uf.indexOf(", (yield") != -1) return;
+  if (uf.indexOf("[(yield") != -1) return;
+  if (uf.indexOf("yield") != -1) return; // i give up on yield
+
+  // Sanity check
+  var euf = eval("(" + uf + ")");
+  var ueuf = "" + euf;
+  if (ueuf != uf) {
+    foundABug("Shouldn't the earlier round-trip test have caught this?", ueuf + "\n" + uf);
+  }
+
+  var dps = deParen(uf);
+  // skip the first, which is the function's formal params.
+
+  for (var i = 1; i < dps.length; ++i) {
+    var uf2 = dps[i];
+
+    try {
+      var euf2 = eval("(" + uf2 + ")");
+    } catch(e) { /* print("The latter did not compile.  That's fine."); */ continue; }
+
+    var ueuf2 = "" + euf2
+
+    if (ueuf2 == ueuf) {
+      foundABug("Unexpected match - extra parens?", uf + "\n\n" + uf2 + "\n\n" + "Both decompile as:\n" + ueuf);
+    }
+  }
+}
+
+
+/*********************************
+ * SPIDERMONKEY DISASSEMBLY TEST *
+ *********************************/
+
+// Finds decompiler bugs and bytecode inefficiencies by complaining when a round trip
+// through the decompiler changes the bytecode.
+function checkRoundTripDisassembly(f, code, wtt)
+{
+  if (code.indexOf("[@") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1 || code.match(/\[.*\*/)) {
+    dumpln("checkRoundTripDisassembly: ignoring bug 475859");
+    return;
+  }
+
+  var uf = uneval(f);
+
+  if (uf.indexOf("switch") != -1) {
+    dumpln("checkRoundTripDisassembly: ignoring bug 355509");
+    return;
+  }
+
+  if (code.indexOf("new") != code.lastIndexOf("new")) {
+    dumpln("checkRoundTripDisassembly: ignoring function with two 'new' operators (bug 475848)");
+    return;
+  }
+
+  if (code.match(/for.*\(.*in.*\).*if/)) {
+    print("checkRoundTripDisassembly: ignoring array comprehension with 'if' (bug 475882)");
+    return;
+  }
+
+  var df = disassemble(f);
+
+  if (df.indexOf("newline") != -1)
+    return;
+  if (df.indexOf("lineno") != -1)
+    return;
+
+  try {
+    var g = directEvalC(uf);
+  } catch(e) {
+    print("checkRoundTripDisassembly: ignoring stuff that should be caught by the uneval test");
+    return;
+  }
+
+  var dg = disassemble(g);
+
+  if (df == dg) {
+    // Happy!
+    return;
+  }
+
+  if (dg.indexOf("newline") != -1) {
+    // Really should just ignore these lines, instead of bailing...
+    return;
+  }
+
+  var dfl = df.split("\n");
+  var dgl = dg.split("\n");
+  for (var i = 0; i < dfl.length && i < dgl.length; ++i) {
+    if (dfl[i] != dgl[i]) {
+      if (dfl[i] == "00000:  arguments") {
+        // The substring 'arguments' disappeared from the function code.
+        // This can be a valid optimization.
+        // It will probably change the function prologue, along with local var
+        // numbering, without changing the function's behavior.
+        // See https://bugzilla.mozilla.org/show_bug.cgi?id=740259#c18
+        print("checkRoundTripDisassembly: ignoring loss of arguments");
+        return;
+      }
+      if (dfl[i] == "00000:  generator" || dfl[i] == "00005:  generator") {
+        print("checkRoundTripDisassembly: ignoring loss of generator (bug 350743)");
+        return;
+      }
+      if (dfl[i].indexOf("goto") != -1 && dgl[i].indexOf("stop") != -1 && uf.indexOf("switch") != -1) {
+        // Actually, this might just be bug 355509.
+        print("checkRoundTripDisassembly: ignoring extra 'goto' in switch (bug 475838)");
+        return;
+      }
+      if (dfl[i].indexOf("regexp null") != -1) {
+        print("checkRoundTripDisassembly: ignoring 475844 / regexp");
+        return;
+      }
+      if (dfl[i].indexOf("namedfunobj null") != -1 || dfl[i].indexOf("anonfunobj null") != -1) {
+        print("checkRoundTripDisassembly: ignoring 475844 / function");
+        return;
+      }
+      if (dfl[i].indexOf("string") != -1 && (dfl[i+1].indexOf("toxml") != -1 || dfl[i+1].indexOf("startxml") != -1)) {
+        print("checkRoundTripDisassembly: ignoring e4x-string mismatch (likely bug 355674)");
+        return;
+      }
+      if (dfl[i].indexOf("string") != -1 && df.indexOf("startxmlexpr") != -1) {
+        print("checkRoundTripDisassembly: ignoring complicated e4x-string mismatch (likely bug 355674)");
+        return;
+      }
+      if (dfl[i].indexOf("newinit") != -1 && dgl[i].indexOf("newarray 0") != -1) {
+        print("checkRoundTripDisassembly: ignoring array comprehension disappearance (bug 475847)");
+        return;
+      }
+      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") != -1 && dgl[i].indexOf("HEAVYWEIGHT") == -1) {
+        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854)");
+        return;
+      }
+      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") == -1 && dgl[i].indexOf("HEAVYWEIGHT") != -1) {
+        // The other direction
+        // var __proto__ hoisting, for example
+        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854 comment 1)");
+        return;
+      }
+      if (dfl[i].indexOf("pcdelta") != -1 && dgl[i].indexOf("pcdelta") != -1) {
+        print("checkRoundTripDisassembly: pcdelta changed, who cares? (bug 475908)");
+        return;
+      }
+
+      print("First line that does not match:");
+      print(dfl[i]);
+      print(dgl[i]);
+      print("");
+      break;
+    }
+  }
+
+  foundABug("Disassembly was not stable through decompilation",
+    "Original code:\n" + code + "\n\nOriginal function:\n" + uf + "\n" + df + "\n\nFunction from recompiling:\n" + dg);
+}
+
+
+/********************
+ * MISC OTHER TESTS *
+ ********************/
+
+function simpleDVGTest(code)
+{
+  var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
+
+  try {
+    eval(fullCode);
+  } catch(e) {
+    if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
+      foundABug("Wrong error message", e);
+    }
+  }
+}
+
+function trySandboxEval(code, isRetry)
+{
+  // (function(){})() wrapping allows "return" when it's allowed outside.
+  // The line breaks are to allow single-line comments within code ("//" and "<!--").
+
+  if (!sandbox) {
+    sandbox = evalcx("");
+  }
+
+  var rv = null;
+  try {
+    rv = evalcx("(function(){\n" + code + "\n})();", sandbox);
+  } catch(e) {
+    rv = "Error from sandbox: " + errorToString(e);
+  }
+
+  try {
+    if (typeof rv != "undefined")
+      dumpln(rv);
+  } catch(e) {
+    dumpln("Sandbox error printing: " + errorToString(e));
+  }
+  rv = null;
+
+  if (1 || count % 100 == 0) { // count % 100 *here* is sketchy.
+    dumpln("Done with this sandbox.");
+    sandbox = null;
+    gc();
+    var currentHeapCount = countHeap()
+    dumpln("countHeap: " + currentHeapCount);
+    if (currentHeapCount > maxHeapCount) {
+      if (maxHeapCount != 0)
+        dumpln("A new record by " + (currentHeapCount - maxHeapCount) + "!");
+      if (isRetry)
+        throw new Error("Found a leak!");
+      maxHeapCount = currentHeapCount;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+function tryHalves(code)
+{
+  // See if there are any especially horrible bugs that appear when the parser has to start/stop in the middle of something. this is kinda evil.
+
+  // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)
+
+  var f, firstHalf, secondHalf;
+
+  try {
+
+    firstHalf = code.substr(0, code.length / 2);
+    if (verbose)
+      dumpln("First half: " + firstHalf);
+    f = new Function(firstHalf);
+    "" + f;
+  }
+  catch(e) {
+    if (verbose)
+      dumpln("First half compilation error: " + e);
+  }
+
+  try {
+    secondHalf = code.substr(code.length / 2, code.length);
+    if (verbose)
+      dumpln("Second half: " + secondHalf);
+    f = new Function(secondHalf);
+    "" + f;
+  }
+  catch(e) {
+    if (verbose)
+      dumpln("Second half compilation error: " + e);
+  }
+}
+
+
+/*************************
+ * DRIVING & BASIC TESTS *
+ *************************/
+
+function start(glob)
+{
+  init(glob);
+
+  count = 0;
+
+  if (jsshell) {
+    // If another script specified a "maxRunTime" argument, use it; otherwise, run forever
+    var MAX_TOTAL_TIME = (glob.maxRunTime) || (Infinity);
+    var startTime = new Date();
+
+    do {
+      testOne();
+      var elapsed1 = new Date() - lastTime;
+      if (elapsed1 > 1000) {
+        print("That took " + elapsed1 + "ms!");
+      }
+      var lastTime = new Date();
+    } while(lastTime - startTime < MAX_TOTAL_TIME);
+  } else {
+    setTimeout(testStuffForAWhile, 200);
+  }
+}
+
+function testStuffForAWhile()
+{
+  for (var j = 0; j < 100; ++j)
+    testOne();
+
+  if (count % 10000 < 100)
+    printImportant("Iterations: " + count);
+
+  setTimeout(testStuffForAWhile, 30);
+}
+
+function testOne()
+{
+  var dumpEachSeed = false; // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
+  ++count;
+  // Split this string across two source strings to ensure that if a
+  // generated function manages to output the entire jsfunfuzz source,
+  // that output won't match the grep command.
+  var cookie = "/*F";
+  cookie += "RC*/"
+
+  // Sometimes it makes sense to start with simpler functions:
+  //var depth = (~~(count / 1000)) & 16;
+  var depth = 10;
+
+  if (dumpEachSeed) {
+    // More complicated, but results in a much shorter script, making SpiderMonkey happier.
+    var MTA = uneval(rnd.fuzzMT.export_mta());
+    var MTI = rnd.fuzzMT.export_mti();
+    if (MTA != rnd.lastDumpedMTA) {
+      dumpln(cookie + "rnd.fuzzMT.import_mta(" + MTA + ");");
+      rnd.lastDumpedMTA = MTA;
+    }
+    dumpln(cookie + "rnd.fuzzMT.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
+  }
+
+  var code = makeOv(depth);
+
+  if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
+    code = "tryRunning = spidermonkeyShellUseSandbox(" + rnd(4) + ");"
+    //print("Sane mode!")
+  }
+
+//  if (rnd(10) == 1) {
+//    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
+//    if (dp)
+//      code = dp;
+//  }
+  dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
+
+  tryItOut(code);
+}
+
+function fillShellSandbox(sandbox)
+{
+  var safeFuns = [
+    "print",
+    "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
+    "verifybarriers", "mjitChunkLimit", "gcPreserveCode",
+    "evalcx", "newGlobal", "evaluate",
+    "dumpln", "fillShellSandbox"
+  ];
+
+  for (var i = 0; i < safeFuns.length; ++i) {
+    var fn = safeFuns[i];
+    if (sandbox[fn]) {
+      //print("Target already has " + fn);
+    } else if (this[fn]) { // FIXME: strict mode compliance requires passing glob around
+      sandbox[fn] = this[fn].bind(this);
+    } else {
+      //print("Source is missing " + fn);
+    }
+  }
+
+  return sandbox;
+}
+
+function spidermonkeyShellUseSandbox(sandboxType)
+{
+  var primarySandbox;
+
+  switch (sandboxType) {
+    case 0:  primarySandbox = evalcx('');
+    case 1:  primarySandbox = evalcx('lazy');
+    case 2:  primarySandbox = newGlobal('same-compartment');
+    default: primarySandbox = newGlobal('new-compartment');
+  }
+
+  fillShellSandbox(primarySandbox);
+
+  return function(f, code, wtt) {
+    try {
+      evalcx(code, primarySandbox)
+    } catch(e) {
+      dumpln("Running in sandbox threw " + errorToString(e));
+    }
+  }
+}
+
+function failsToCompileInTry(code) {
+  // Why would this happen? One way is "let x, x"
+  try {
+    new Function(" try { " + code + " } catch(e) { }");
+    return false;
+  } catch(e) {
+    return true;
+  }
+}
+
+function tryItOut(code)
+{
+  // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
+  if (typeof gczeal == "function")
+    gczeal(0);
+
+  // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
+  if (count % 1000 == 0) {
+    dumpln("Paranoid GC (count=" + count + ")!");
+    realGC();
+  }
+
+  var wtt = whatToTest(code);
+
+  if (!wtt.allowParse)
+    return;
+
+  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
+
+  if (jsStrictMode)
+    code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
+
+  var f;
+  try {
+    f = new Function(code);
+  } catch(compileError) {
+    dumpln("Compiling threw: " + errorToString(compileError));
+  }
+
+  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
+    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
+        code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
+        code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
+      // FCM cookie
+      var cookie1 = "/*F";
+      var cookie2 = "CM*/";
+      var nCode = code;
+      // Avoid compile-time errors because those are no fun.
+      // But leave some things out of function(){} because some bugs are only detectable at top-level, and
+      // pure jsfunfuzz doesn't test top-level at all.
+      // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
+      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
+        nCode = "(function(){" + nCode + "})()"
+      dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
+    }
+  }
+
+  if (tryRunning != tryRunningDirectly) {
+    optionalTests(f, code, wtt);
+  }
+
+  if (wtt.allowExec && f) {
+    tryRunning(f, code, wtt);
+  }
+
+  if (verbose)
+    dumpln("Done trying out that function!");
+
+  dumpln("");
+}
+
+function optionalTests(f, code, wtt)
+{
+  if (count % 100 == 1) {
+    tryHalves(code);
+  }
+
+  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    try {
+      Reflect.parse(code);
+    } catch(e) {
+    }
+  }
+
+  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    if (wtt.allowExec && (typeof sandbox == "function")) {
+      f = null;
+      if (trySandboxEval(code, false)) {
+        dumpln("Trying it again to see if it's a 'real leak' (???)")
+        trySandboxEval(code, true);
+      }
+    }
+  }
+
+  if (count % 100 == 3 && f && typeof disassemble == "function") {
+    // It's hard to use the recursive disassembly in the comparator,
+    // but let's at least make sure the disassembler itself doesn't crash.
+    disassemble("-r", f);
+  }
+
+  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    simpleDVGTest(code);
+    tryEnsureSanity();
+  }
+
+  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
+    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
+    var fx = directEvalC("(function(){" + code + "});");
+    checkRoundTripDisassembly(fx, code, wtt);
+  }
+
+  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
+    nestingConsistencyTest(code);
+    compartmentConsistencyTest(code);
+  }
+
+  if (count % 10 == 7 && f && wtt.allowDecompile) {
+    tryRoundTripStuff(f, code, wtt);
+  }
+}
+
+
+// Hack to make line numbers be consistent, to make spidermonkey
+// disassemble() comparison testing easier (e.g. for round-trip testing)
+function directEvalC(s) { var c; /* evil closureizer */ return eval(s); } function newFun(s) { return new Function(s); }
+
+function tryRunningDirectly(f, code, wtt)
+{
+  if (count % 23 == 3) {
+    dumpln("Plain eval!");
+    try { eval(code); } catch(e) { }
+    tryEnsureSanity();
+    return;
+  }
+
+  if (count % 23 == 4) {
+    dumpln("About to recompile, using eval hack.")
+    f = directEvalC("(function(){" + code + "});");
+  }
+
+  try {
+    if (verbose)
+      dumpln("About to run it!");
+    var rv = f();
+    if (verbose)
+      dumpln("It ran!");
+    if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
+      // "checkRecompiling && checkForMismatch" to avoid confusion if we decompile a function returned by f()
+      testUneval(rv);
+    }
+    if (wtt.allowIter && rv && typeof rv == "object") {
+      tryIteration(rv);
+    }
+  } catch(runError) {
+    if(verbose)
+      dumpln("Running threw!  About to toString to error.");
+    var err = errorToString(runError);
+    dumpln("Running threw: " + err);
+    // bug 465908 and other e4x uneval nonsense make this show lots of false positives
+    // checkErrorMessage(err, code);
+  }
+
+  tryEnsureSanity();
+}
+
+
+// Store things now so we can restore sanity later.
+var realEval = eval;
+var realMath = Math;
+var realFunction = Function;
+var realGC = gc;
+var realUneval = uneval;
+var realToString = toString;
+var realToSource = this.toSource; // "this." because it only exists in spidermonkey
+
+
+function tryEnsureSanity()
+{
+  try {
+    // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
+    if (typeof gczeal == "function")
+      gczeal(0);
+  } catch(e) { }
+
+  // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
+  try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
+
+  if (!this) {
+    // Strict mode. Great.
+    return;
+  }
+
+  try {
+    // Try to get rid of any fake 'unwatch' functions.
+    delete this.unwatch;
+
+    // Restore important stuff that might have been broken as soon as possible :)
+    if ('unwatch' in this) {
+      this.unwatch("eval")
+      this.unwatch("Function")
+      this.unwatch("gc")
+      this.unwatch("uneval")
+      this.unwatch("toSource")
+      this.unwatch("toString")
+    }
+
+    if ('__defineSetter__' in this) {
+      // The only way to get rid of getters/setters is to delete the property.
+      if (!jsStrictMode)
+        delete this.eval;
+      delete this.Math;
+      delete this.Function;
+      delete this.gc;
+      delete this.uneval;
+      delete this.toSource;
+      delete this.toString;
+    }
+
+    this.Math = realMath;
+    this.eval = realEval;
+    this.Function = realFunction;
+    this.gc = realGC;
+    this.uneval = realUneval;
+    this.toSource = realToSource;
+    this.toString = realToString;
+  } catch(e) {
+    confused("tryEnsureSanity failed: " + errorToString(e));
+  }
+
+  // These can fail if the page creates a getter for "eval", for example.
+  if (this.eval != realEval)
+    confused("Fuzz script replaced |eval|");
+  if (Function != realFunction)
+    confused("Fuzz script replaced |Function|");
+}
+
+function tryIteration(rv)
+{
+  try {
+    if (!(Iterator(rv) === rv))
+      return; // not an iterator
+  }
+  catch(e) {
+    // Is it a bug that it's possible to end up here?  Probably not!
+    dumpln("Error while trying to determine whether it's an iterator!");
+    dumpln("The error was: " + e);
+    return;
+  }
+
+  dumpln("It's an iterator!");
+  try {
+    var iterCount = 0;
+    var iterValue;
+    // To keep Safari-compatibility, don't use "let", "each", etc.
+    for /* each */ ( /* let */ iterValue in rv)
+      ++iterCount;
+    dumpln("Iterating succeeded, iterCount == " + iterCount);
+  } catch (iterError) {
+    dumpln("Iterating threw!");
+    dumpln("Iterating threw: " + errorToString(iterError));
+  }
+}
 
 var count = 0;
 var verbose = false;
