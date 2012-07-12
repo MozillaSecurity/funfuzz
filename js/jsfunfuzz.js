@@ -500,47 +500,6 @@ function unlikelyToHang(code)
  * DRIVING & BASIC TESTS *
  *************************/
 
-var allMakers = [];
-function totallyRandom(d, b) {
-  d = d + (rnd(5) - 2); // can increase!!
-
-  return (rndElt(allMakers))(d, b);
-}
-
-function init(glob)
-{
-  for (var f in glob)
-    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver")
-      allMakers.push(glob[f]);
-}
-
-/*
-function testEachMaker()
-{
-  for each (var f in allMakers) {
-    dumpln("");
-    dumpln(f.name);
-    dumpln("==========");
-    dumpln("");
-    for (var i = 0; i < 100; ++i) {
-      try {
-        var r = f(8, ["A", "B"]);
-        if (typeof r != "string")
-          throw ("Got a " + typeof r);
-        dumpln(r);
-      } catch(e) {
-        dumpln("");
-        dumpln(uneval(e));
-        dumpln(e.stack);
-        dumpln("");
-        throw "testEachMaker found a bug in jsfunfuzz";
-      }
-    }
-    dumpln("");
-  }
-}
-*/
-
 function start(glob)
 {
   init(glob);
@@ -662,11 +621,6 @@ function spidermonkeyShellUseSandbox(sandboxType)
       dumpln("Running in sandbox threw " + errorToString(e));
     }
   }
-}
-
-function makeOv(d, ignoredB)
-{
-  return maybeStrict() + makeStatement(d, ["x"]);
 }
 
 function failsToCompileInTry(code) {
@@ -2001,13 +1955,15 @@ function stripSemicolon(c)
 
 
 
+/*********************************************
+ * HOW TO GENERATE EACH PIECE OF THE GRAMMAR *
+ *********************************************/
 
-/*************************
- * HIGH-LEVEL GENERATION *
- *************************/
 
-
-var TOTALLY_RANDOM = 500;
+function makeOv(d, ignoredB)
+{
+  return maybeStrict() + makeStatement(d, ["x"]);
+}
 
 function makeStatement(d, b)
 {
@@ -4482,6 +4438,56 @@ function strTimes(s, n)
 }
 
 
+/*******************************
+ * RANDOMLY IGNORE THE GRAMMAR *
+ *******************************/
+
+var TOTALLY_RANDOM = 500;
+
+var allMakers = [];
+
+function totallyRandom(d, b) {
+  d = d + (rnd(5) - 2); // can increase!!
+
+  return (rndElt(allMakers))(d, b);
+}
+
+function init(glob)
+{
+  for (var f in glob)
+    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver")
+      allMakers.push(glob[f]);
+}
+
+
+/*
+function testEachMaker()
+{
+  for each (var f in allMakers) {
+    dumpln("");
+    dumpln(f.name);
+    dumpln("==========");
+    dumpln("");
+    for (var i = 0; i < 100; ++i) {
+      try {
+        var r = f(8, ["A", "B"]);
+        if (typeof r != "string")
+          throw ("Got a " + typeof r);
+        dumpln(r);
+      } catch(e) {
+        dumpln("");
+        dumpln(uneval(e));
+        dumpln(e.stack);
+        dumpln("");
+        throw "testEachMaker found a bug in jsfunfuzz";
+      }
+    }
+    dumpln("");
+  }
+}
+*/
+
+
 /*********************************
  * GENERATING REGEXPS AND INPUTS *
  *********************************/
@@ -4784,6 +4790,7 @@ function makeReplacement(d, b)
     default: return makeFunction(d, b);
   }
 }
+
 
 /****************
  * MORE DRIVING *
