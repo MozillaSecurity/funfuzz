@@ -130,6 +130,8 @@ javascript.options.gc_on_memory_pressure
 javascript.options.jit_hardening
 javascript.options.jitprofiling.chrome
 javascript.options.jitprofiling.content
+javascript.options.mem.gc_dynamic_heap_growth
+javascript.options.mem.gc_dynamic_mark_slice
 javascript.options.mem.gc_incremental
 javascript.options.mem.gc_per_compartment
 javascript.options.methodjit.chrome
