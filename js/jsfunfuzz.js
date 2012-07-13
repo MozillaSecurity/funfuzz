@@ -54,10 +54,10 @@ var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
 var jsshell = (typeof window == "undefined");
+var xpcshell = jsshell && (typeof Components == "object");
 var dump;
 var dumpln;
 var printImportant;
-var tryRunning = tryRunningDirectly;
 if (jsshell) {
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
@@ -71,7 +71,7 @@ if (jsshell) {
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
   } else if (typeof XPCNativeWrapper == "function") {
-    // e.g. xpcshell
+    // e.g. xpcshell or firefox
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof debug == "function") {
     engine = ENGINE_JAVASCRIPTCORE;
@@ -1862,47 +1862,18 @@ function makeGlobal(d, b)
   return gs;
 }
 
-// When in xpcshell,
-// * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
-// * Test interaction between sandboxes with same or different principals.
-function newSandbox(n)
-{
-  var t = (typeof n == "number") ? n : 1;
-  var s = Components.utils.Sandbox("http://x" + t + ".example.com/");
-
-  // Allow the sandbox to do a few things
-  s.newSandbox = newSandbox;
-  s.evalInSandbox = function(str, sbx) {
-    // Internal try..catch to work around bug 613142.
-    str = "try{"+str+"}catch(e){}";
-    return Components.utils.evalInSandbox(str, sbx);
-  };
-  s.print = function(str) { print(str); };
-
-  return s;
-}
-
-if ("Components" in this) {
+if (xpcshell) {
   exprMakers = exprMakers.concat([
-    function(d, b) { var n = rnd(4); return "newSandbox(" + n + ")"; },
-    function(d, b) { var n = rnd(4); return "s" + n + " = newSandbox(" + n + ")"; },
+    function(d, b) { var n = rnd(4); return "newGeckoSandbox(" + n + ")"; },
+    function(d, b) { var n = rnd(4); return "s" + n + " = newGeckoSandbox(" + n + ")"; },
     // Doesn't this need to be Components.utils.evalInSandbox? Oh well, we need to fix bug 613142 first.
-    function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", newSandbox(" + n + "))"; },
+    function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", newGeckoSandbox(" + n + "))"; },
     function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", s" + n + ")"; },
     function(d, b) { return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
     function(d, b) { return "(Components.classes ? quit() : gc()); }"; },
   ]);
-
-  var primarySandbox = newSandbox(0);
-  tryRunning = function(f, code, wtt) {
-    try {
-      // Internal try..catch to work around bug 613142.
-      Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
-    } catch(e) {
-      // It might not be safe to operate on |e|.
-    }
-  }
 }
+
 
 // In addition, can always use "undefined" or makeFunction
 // Forwarding proxy code based on http://wiki.ecmascript.org/doku.php?id=harmony:proxies "Example: a no-op forwarding proxy"
@@ -4311,6 +4282,9 @@ function simpleDVGTest(code)
   }
 }
 
+var maxHeapCount = 0;
+var sandbox = null;
+
 function trySandboxEval(code, isRetry)
 {
   // (function(){})() wrapping allows "return" when it's allowed outside.
@@ -4390,9 +4364,9 @@ function tryHalves(code)
 }
 
 
-/*************************
- * DRIVING & BASIC TESTS *
- *************************/
+/***********
+ * DRIVING *
+ ***********/
 
 function start(glob)
 {
@@ -4457,7 +4431,7 @@ function testOne()
   var code = makeOv(depth);
 
   if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
-    code = "tryRunning = spidermonkeyShellUseSandbox(" + rnd(4) + ");"
+    code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");"
     //print("Sane mode!")
   }
 
@@ -4470,6 +4444,23 @@ function testOne()
 
   tryItOut(code);
 }
+
+
+/*********************
+ * SANDBOXED RUNNING *
+ *********************/
+
+// We support three ways to run generated code:
+// * useGeckoSandbox(), which uses Components.utils.Sandbox.
+//    * In xpcshell, we always use this method, so we don't accidentally erase the hard drive.
+//
+// * useSpidermonkeyShellSandbox(), which uses evalcx() with newGlobal().
+//   * In spidermonkey shell, we often use this method, so we can do additional correctness tests.
+//
+// * tryRunningDirectly(), which uses eval() or new Function().
+//   * This creates the most... "interesting" testcases.
+
+var tryRunning = xpcshell ? useGeckoSandbox() : tryRunningDirectly;
 
 function fillShellSandbox(sandbox)
 {
@@ -4495,7 +4486,7 @@ function fillShellSandbox(sandbox)
   return sandbox;
 }
 
-function spidermonkeyShellUseSandbox(sandboxType)
+function useSpidermonkeyShellSandbox(sandboxType)
 {
   var primarySandbox;
 
@@ -4517,127 +4508,43 @@ function spidermonkeyShellUseSandbox(sandboxType)
   }
 }
 
-function failsToCompileInTry(code) {
-  // Why would this happen? One way is "let x, x"
-  try {
-    new Function(" try { " + code + " } catch(e) { }");
-    return false;
-  } catch(e) {
-    return true;
-  }
+// When in xpcshell,
+// * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
+// * Test interaction between sandboxes with same or different principals.
+function newGeckoSandbox(n)
+{
+  var t = (typeof n == "number") ? n : 1;
+  var s = Components.utils.Sandbox("http://x" + t + ".example.com/");
+
+  // Allow the sandbox to do a few things
+  s.newGeckoSandbox = newGeckoSandbox;
+  s.evalInSandbox = function(str, sbx) {
+    // Internal try..catch to work around bug 613142.
+    str = "try{"+str+"}catch(e){}";
+    return Components.utils.evalInSandbox(str, sbx);
+  };
+  s.print = function(str) { print(str); };
+
+  return s;
 }
 
-function tryItOut(code)
-{
-  // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
-  if (typeof gczeal == "function")
-    gczeal(0);
+function useGeckoSandbox() {
+  var primarySandbox = newGeckoSandbox(0);
 
-  // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
-  if (count % 1000 == 0) {
-    dumpln("Paranoid GC (count=" + count + ")!");
-    realGC();
-  }
-
-  var wtt = whatToTest(code);
-
-  if (!wtt.allowParse)
-    return;
-
-  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
-
-  if (jsStrictMode)
-    code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
-
-  var f;
-  try {
-    f = new Function(code);
-  } catch(compileError) {
-    dumpln("Compiling threw: " + errorToString(compileError));
-  }
-
-  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
-    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
-        code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
-        code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      // FCM cookie
-      var cookie1 = "/*F";
-      var cookie2 = "CM*/";
-      var nCode = code;
-      // Avoid compile-time errors because those are no fun.
-      // But leave some things out of function(){} because some bugs are only detectable at top-level, and
-      // pure jsfunfuzz doesn't test top-level at all.
-      // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
-      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
-        nCode = "(function(){" + nCode + "})()"
-      dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
-    }
-  }
-
-  if (tryRunning != tryRunningDirectly) {
-    optionalTests(f, code, wtt);
-  }
-
-  if (wtt.allowExec && f) {
-    tryRunning(f, code, wtt);
-  }
-
-  if (verbose)
-    dumpln("Done trying out that function!");
-
-  dumpln("");
-}
-
-function optionalTests(f, code, wtt)
-{
-  if (count % 100 == 1) {
-    tryHalves(code);
-  }
-
-  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+  return function(f, code, wtt) {
     try {
-      Reflect.parse(code);
+      // Internal try..catch to work around bug 613142.
+      Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
     } catch(e) {
+      // It might not be safe to operate on |e|.
     }
-  }
-
-  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    if (wtt.allowExec && (typeof sandbox == "function")) {
-      f = null;
-      if (trySandboxEval(code, false)) {
-        dumpln("Trying it again to see if it's a 'real leak' (???)")
-        trySandboxEval(code, true);
-      }
-    }
-  }
-
-  if (count % 100 == 3 && f && typeof disassemble == "function") {
-    // It's hard to use the recursive disassembly in the comparator,
-    // but let's at least make sure the disassembler itself doesn't crash.
-    disassemble("-r", f);
-  }
-
-  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    simpleDVGTest(code);
-    tryEnsureSanity();
-  }
-
-  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
-    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
-    var fx = directEvalC("(function(){" + code + "});");
-    checkRoundTripDisassembly(fx, code, wtt);
-  }
-
-  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
-    nestingConsistencyTest(code);
-    compartmentConsistencyTest(code);
-  }
-
-  if (count % 10 == 7 && f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt);
   }
 }
 
+
+/***********************
+ * UNSANDBOXED RUNNING *
+ ***********************/
 
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
@@ -4780,12 +4687,137 @@ function tryIteration(rv)
   }
 }
 
+
+/***************
+ * BASIC TESTS *
+ ***************/
+
+function failsToCompileInTry(code) {
+  // Why would this happen? One way is "let x, x"
+  try {
+    new Function(" try { " + code + " } catch(e) { }");
+    return false;
+  } catch(e) {
+    return true;
+  }
+}
+
+function tryItOut(code)
+{
+  // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
+  if (typeof gczeal == "function")
+    gczeal(0);
+
+  // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
+  if (count % 1000 == 0) {
+    dumpln("Paranoid GC (count=" + count + ")!");
+    realGC();
+  }
+
+  var wtt = whatToTest(code);
+
+  if (!wtt.allowParse)
+    return;
+
+  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
+
+  if (jsStrictMode)
+    code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
+
+  var f;
+  try {
+    f = new Function(code);
+  } catch(compileError) {
+    dumpln("Compiling threw: " + errorToString(compileError));
+  }
+
+  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
+    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
+        code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
+        code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
+      // FCM cookie
+      var cookie1 = "/*F";
+      var cookie2 = "CM*/";
+      var nCode = code;
+      // Avoid compile-time errors because those are no fun.
+      // But leave some things out of function(){} because some bugs are only detectable at top-level, and
+      // pure jsfunfuzz doesn't test top-level at all.
+      // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
+      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
+        nCode = "(function(){" + nCode + "})()"
+      dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
+    }
+  }
+
+  if (tryRunning != tryRunningDirectly) {
+    optionalTests(f, code, wtt);
+  }
+
+  if (wtt.allowExec && f) {
+    tryRunning(f, code, wtt);
+  }
+
+  if (verbose)
+    dumpln("Done trying out that function!");
+
+  dumpln("");
+}
+
+function optionalTests(f, code, wtt)
+{
+  if (count % 100 == 1) {
+    tryHalves(code);
+  }
+
+  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    try {
+      Reflect.parse(code);
+    } catch(e) {
+    }
+  }
+
+  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    if (wtt.allowExec && (typeof sandbox == "function")) {
+      f = null;
+      if (trySandboxEval(code, false)) {
+        dumpln("Trying it again to see if it's a 'real leak' (???)")
+        trySandboxEval(code, true);
+      }
+    }
+  }
+
+  if (count % 100 == 3 && f && typeof disassemble == "function") {
+    // It's hard to use the recursive disassembly in the comparator,
+    // but let's at least make sure the disassembler itself doesn't crash.
+    disassemble("-r", f);
+  }
+
+  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+    simpleDVGTest(code);
+    tryEnsureSanity();
+  }
+
+  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
+    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
+    var fx = directEvalC("(function(){" + code + "});");
+    checkRoundTripDisassembly(fx, code, wtt);
+  }
+
+  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
+    nestingConsistencyTest(code);
+    compartmentConsistencyTest(code);
+  }
+
+  if (count % 10 == 7 && f && wtt.allowDecompile) {
+    tryRoundTripStuff(f, code, wtt);
+  }
+}
+
+
 var count = 0;
 var verbose = false;
 
 
-var maxHeapCount = 0;
-var sandbox = null;
 // https://bugzilla.mozilla.org/show_bug.cgi?id=394853#c19
 //try { eval("/") } catch(e) { }
 // Remember the number of countHeap.
