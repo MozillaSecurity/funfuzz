@@ -147,6 +147,7 @@ javascript.options.xml.chrome
 keyword.enabled
 layers.acceleration.disabled
 layers.acceleration.force-enabled
+#layers.async-video.enabled # requires OMTC
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 layout.3d-transforms.enabled
 layout.css.report_errors
@@ -184,6 +185,7 @@ network.websocket.allowInsecureFromHTTPS
 network.websocket.auto-follow-http-redirects
 network.websocket.enabled
 network.websocket.extensions.stream-deflate
+nglayout.debug.widget_update_flashing
 nglayout.enable_drag_images
 notification.feature.enabled
 plugin.allow.asyncdrawing
@@ -228,10 +230,12 @@ toolkit.telemetry.enabled
 view_source.syntax_highlight
 view_source.wrap_long_lines
 viewmanager.do_doublebuffering
+webgl.default-no-alpha
 webgl.disable-extensions
 webgl.disabled
 webgl.force-enabled
 webgl.force_osmesa
 webgl.min_capability_mode
 webgl.prefer-native-gl
+webgl.prefer-16bpp
 xpinstall.whitelist.required
