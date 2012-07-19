@@ -302,7 +302,8 @@ class AmissLogHandler:
              msg.find(":: pageShowEventHandlers ::") == -1 and # bug 742139
              msg.find("nsIIOService.getProtocolHandler") == -1 and # bug 746878
              msg.find("tipElement is null") == -1 and # bug 746893
-             msg.find("aboutHome.js") == -1 # bug 615785
+             msg.find("aboutHome.js") == -1 and # bug 615785
+             msg.find("entries.nextFile is not a function") == -1 # bug 775719
             ):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
