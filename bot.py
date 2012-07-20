@@ -197,7 +197,7 @@ def main():
         print "Platform details: " + " ".join(platform.uname())
         print "Python version: " + sys.version[:5]
         print "Number of cores visible to OS: " +  str(cpuCount())
-        print 'Free space (MB): ' + str(getFreeSpace('/', 3))
+        print 'Free space (GB): ' + str(getFreeSpace('/', 3))
         if os.name == 'posix':
             # resource library is only applicable to Linux or Mac platforms.
             import resource
