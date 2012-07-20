@@ -21,7 +21,7 @@ sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
 from countCpus import cpuCount
-from subprocesses import isWin
+from subprocesses import getFreeSpace, isWin
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -197,6 +197,7 @@ def main():
         print "Platform details: " + " ".join(platform.uname())
         print "Python version: " + sys.version[:5]
         print "Number of cores visible to OS: " +  str(cpuCount())
+        print 'Free space (MB): ' + str(getFreeSpace('/', 2))
         if os.name == 'posix':
             # resource library is only applicable to Linux or Mac platforms.
             import resource

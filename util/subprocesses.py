@@ -6,6 +6,7 @@
 
 from __future__ import with_statement
 
+import ctypes
 import os
 import pdb  # needed for Windows debugging of intermittent conftest error.
 import platform
@@ -46,6 +47,21 @@ def isVM():
         assert not os.path.exists(normExpUserPath(os.path.join('~', 'trees')))
         vm = True
     return ('Windows' if isWin else platform.system(), vm)
+
+def getFreeSpace(folder, mulVar):
+    '''
+    Return folder/drive free space in bytes if mulVar is 0.
+    Adapted from http://stackoverflow.com/a/2372171
+    '''
+    assert mulVar >= 0
+    if platform.system() == 'Windows':
+        free_bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
+        retVal = float(free_bytes.value)
+    else:
+        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize) 
+
+    return retVal / (1024 ** mulVar)
 
 #####################
 #  Shell Functions  #
