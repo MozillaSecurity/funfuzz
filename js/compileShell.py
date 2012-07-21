@@ -108,6 +108,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
             cfgCmdList.append(os.path.normpath(configure))
             cfgCmdList.append('--target=i386-apple-darwin8.0.0')
         # 32-bit shell on Mac OS X 10.6
+        # FIXME: Note that Clang is now likely the default compiler on Macs.
         elif isMac and [10, 6] <= macVer() < [10, 7]:
             cfgEnvDt['CC'] = 'gcc-4.2 -arch i386'
             cfgEnvDt['CXX'] = 'g++-4.2 -arch i386'
