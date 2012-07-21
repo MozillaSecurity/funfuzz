@@ -345,7 +345,9 @@ def main():
                 recipients = []
                 subject = "Reduced " + testType + " fuzz testcase"
                 dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/"
-                body = dirRef + "\n\n" + summary[0:50000]
+                # FIXME: The if condition is present here because for no_longer_reproducible
+                # testcases, the -summary file is apparently absent, so this needs reconfirmation.
+                body = dirRef + "\n\n" + summary[0:50000] if summary else dirRef
                 if options.runJsfunfuzz:
                     # Send jsfunfuzz emails to gkw
                     recipients.append("gkwong")
