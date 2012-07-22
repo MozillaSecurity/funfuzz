@@ -3465,8 +3465,6 @@ function whatToTestSpidermonkeyTrunk(code)
       && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
       && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
       && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
-      && !( codeL.match( /\[.*\+/ ))        // constant folding bug 646599
-      && !( codeL.match( /\[.*\?/ ))        // constant folding bug 646599
       && (code.indexOf("*") == -1)         // constant folding bug 539819
       && (code.indexOf("/") == -1)         // constant folding bug 539819
       && (code.indexOf("default") == -1)   // avoid bug 355509
