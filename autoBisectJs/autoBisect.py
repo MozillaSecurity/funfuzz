@@ -430,6 +430,10 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
         return '4ceb3e9961e4' # See bug 683039: "Delay Ion compilation until a function is hot"
     elif ionBool:
         return '43b55878da46' # IonMonkey has not yet landed on m-c, approximate first stable rev w/ --ion -n.
+    # FIXME: Somehow test for --enable-root-analysis, or else when it becomes part of the default
+    # configuration, this will be the earliest usable changeset.
+    #elif ???:
+    #    return '7aba0b7a805f' # 98725 on m-c, first rev that has stable --enable-root-analysis builds
     elif typeInferBool and ('-D' in flagsRequired or '--dump-bytecode' in flagsRequired):
         return '0c5ed245a04f' # 75176 on m-c, merge that brought in -D from one side and -n from another
     elif typeInferBool:

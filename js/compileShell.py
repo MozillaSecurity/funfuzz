@@ -174,7 +174,8 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     # Fuzzing tweaks for more useful output, implemented in bug 706433
     cfgCmdList.append('--enable-more-deterministic')
     cfgCmdList.append('--disable-tests')
-    cfgCmdList.append('--enable-root-analysis') # See bug 773746
+    # See bug 773746. Enabling this breaks autoBisect for versions prior to 7aba0b7a805f
+    #cfgCmdList.append('--enable-root-analysis')
 
     if threadsafe:
         cfgCmdList.append('--enable-threadsafe')
