@@ -174,6 +174,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     # Fuzzing tweaks for more useful output, implemented in bug 706433
     cfgCmdList.append('--enable-more-deterministic')
     cfgCmdList.append('--disable-tests')
+    cfgCmdList.append('--enable-root-analysis') # See bug 773746
 
     if threadsafe:
         cfgCmdList.append('--enable-threadsafe')
