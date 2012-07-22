@@ -132,6 +132,8 @@ def main():
         iterNum -= 2
 
     skipCount = 0
+    blamedRev = None
+
     while currRev is not None:
         label = testRev(currRev)
         labels[currRev] = label
@@ -142,7 +144,8 @@ def main():
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                raise Exception('Skipped 20 times, stopping autoBisect.')
+                print 'Skipped 20 times, stopping autoBisect.'
+                break
         print label[0] + " (" + label[1] + ") ",
 
         if iterNum <= 0:
