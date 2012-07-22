@@ -67,7 +67,10 @@ def randomFlagSet(shell):
             args.append("--ion-eager")
         if chance(.2):
             args.append("--ion-gvn=" + random.choice(["off", "pessimistic", "optimistic"]))
-        # Bug 755194
+        # --ion-regalloc=greedy crashes jsfunfuzz before it gets very far.
+        # Try again once bug 776353, bug 776359, and bug 776361 are fixed.
+        # Found those bugs despite jsfunfuzz bustage by adding to compareJIT:
+        #   combos.append(["--ion-eager", "--ion-regalloc=greedy"])
         #if chance(.2):
         #    args.append("--ion-regalloc=" + random.choice(["greedy", "lsra"]))
         if chance(.2):
