@@ -80,7 +80,9 @@ def randomFlagSet(shell):
             args.append("--ion-osr=off")
 
     #if chance(.05):
-    #    args.append("--execute=verifybarriers()")
+    #    args.append("--execute=verifyprebarriers()")
+    #if chance(.05):
+    #    args.append("--execute=verifypostbarriers()")
 
     if chance(.05):
         args.append("-D") # aka --dump-bytecode

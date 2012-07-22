@@ -75,13 +75,14 @@ function makeDOMFuzzHelper(aWindow) {
 
       MP: sendMemoryPressureNotification.bind(this),
 
-      deterministicgc:  function(a)       { Components.utils.getJSTestingFunctions().deterministicgc(a); },
-      schedulegc:       function(a, b)    { Components.utils.getJSTestingFunctions().schedulegc(a,b); },
-      gczeal:           function(a, b)    { Components.utils.getJSTestingFunctions().gczeal(a, b); },
-      gcslice:          function(a)       { Components.utils.getJSTestingFunctions().gcslice(a); },
-      verifybarriers:   function()        { Components.utils.getJSTestingFunctions().verifybarriers(); },
-      mjitChunkLimit:   function(a)       { Components.utils.getJSTestingFunctions().mjitChunkLimit(a); },
-      terminate:        function()        { Components.utils.getJSTestingFunctions().terminate(); },
+      deterministicgc:    function(a)       { Components.utils.getJSTestingFunctions().deterministicgc(a); },
+      schedulegc:         function(a, b)    { Components.utils.getJSTestingFunctions().schedulegc(a,b); },
+      gczeal:             function(a, b)    { Components.utils.getJSTestingFunctions().gczeal(a, b); },
+      gcslice:            function(a)       { Components.utils.getJSTestingFunctions().gcslice(a); },
+      verifyprebarriers:  function()        { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
+      verifypostbarriers: function()        { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
+      mjitChunkLimit:     function(a)       { Components.utils.getJSTestingFunctions().mjitChunkLimit(a); },
+      terminate:          function()        { Components.utils.getJSTestingFunctions().terminate(); },
 
       forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
 
@@ -137,7 +138,8 @@ function makeDOMFuzzHelper(aWindow) {
         schedulegc: 'r',
         gczeal: 'r',
         gcslice: 'r',
-        verifybarriers: 'r',
+        verifyprebarriers: 'r',
+        verifypostbarriers: 'r',
         mjitChunkLimit: 'r',
         terminate: 'r',
       }

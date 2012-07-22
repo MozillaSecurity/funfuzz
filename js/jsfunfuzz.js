@@ -63,7 +63,7 @@ if (jsshell) {
   printImportant = function(s) { dumpln("***"); dumpln(s); }
   if (typeof line2pc == "function") {
 
-    if (typeof verifybarriers == "function") {
+    if (typeof verifybarriers == "function" || typeof verifyprebarriers == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
     } else if (typeof snarf == "function") {
       engine = ENGINE_SPIDERMONKEY_MOZILLA10;
@@ -1788,7 +1788,8 @@ var exprMakers =
   // Verify write barriers. These functions are effective in pairs.
   // The first call sets up the start barrier, the second call sets up the end barrier.
   // Nothing happens when there is only one call.
-  function(d, b) { return "verifybarriers()"; },
+  function(d, b) { return "verifyprebarriers()"; },
+  function(d, b) { return "verifypostbarriers()"; },
 
   // Invoke an incremental garbage collection slice.
   function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
@@ -4446,7 +4447,7 @@ function fillShellSandbox(sandbox)
   var safeFuns = [
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
-    "verifybarriers", "mjitChunkLimit", "gcPreserveCode",
+    "verifyprebarriers", "verifypostbarriers", "mjitChunkLimit", "gcPreserveCode",
     "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox"
   ];
