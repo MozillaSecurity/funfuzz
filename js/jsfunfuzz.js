@@ -3435,7 +3435,7 @@ function whatToTestSpidermonkeyTrunk(code)
     allowDecompile: true,
 
     // Exclude things here if decompiling returns something bogus that won't compile.
-    checkRecompiling: true
+    checkRecompiling: false
       && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
       && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
       && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
@@ -3455,7 +3455,7 @@ function whatToTestSpidermonkeyTrunk(code)
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: true
+    checkForMismatch: false
       && !( codeL.match( /const.*if/ ))               // avoid bug 352985
       && !( codeL.match( /if.*const/ ))               // avoid bug 352985
       && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
@@ -3490,12 +3490,12 @@ function whatToTestSpidermonkeyTrunk(code)
       ,
 
     // Exclude things here if the decompilation doesn't match what the function actually does
-    checkDisassembly: true
+    checkDisassembly: false
       && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
       && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
     ,
 
-    checkForExtraParens: true
+    checkForExtraParens: false
       && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
       && !codeL.match( /\?.*\=/)             // ignore bug 475893
