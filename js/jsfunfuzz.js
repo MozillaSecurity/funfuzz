@@ -2120,33 +2120,12 @@ function makeBoolean(d, b)
 function makeZealLevel()
 {
   // gczeal is really slow, so only turn it on very occasionally.
-  if (rnd(25))
-    // This sets gczeal to 0, 24-in-25 times. (96%)
+  if (rnd(15)) {
     return "0";
-  // If gczeal not 0, (4%)
-  if (rnd(5) == 0) {
-    // Do this 1-in-5 times.
-    var rndNumber = rnd(3);
-    if (rndNumber == 0) {
-      // gczeal(1) is useful almost only for embedders.
-      return "1";  // do this 1-in-15 times. (6.67% of 4% = 0.2668%)
-    } else if (rndNumber == 1) {
-      // gczeal(3) activates when frame is shown in the browser, not really useful for shell.
-      return "3";  // do this 1-in-15 times. (6.67% of 4% = 0.2668%)
-    } else {
-      // gczeal(5) tests write barriers when a frame is shown in the browser, not useful for shell.
-      return "5";  // do this 1-in-15 times. (6.67% of 4% = 0.2668%)
-    }
-  } else {
-    // Do this 4-in-5 times.
-    if (rnd(2) == 0) {
-      // gczeal(2) is the main gczeal number, do this 2-in-5 times. (40% of 4% = 1.6%)
-      return "2";
-    } else {
-      // gczeal(4) tests write barriers, also do this 2-in-5 times. (40% of 4% = 1.6%)
-      return "4";
-    }
   }
+
+  // http://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp#604
+  return "" + rnd(13);
 }
 
 if (haveE4X) {
