@@ -59,7 +59,7 @@ def getFreeSpace(folder, mulVar):
         ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
         retVal = float(free_bytes.value)
     else:
-        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize) 
+        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)
 
     return retVal / (1024 ** mulVar)
 
@@ -226,6 +226,8 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
         if useLogFiles:
             os.rename(coreFilename, logPrefix + "-core")
             subprocess.call(["gzip", logPrefix + "-core"])
+            # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
+            subprocess.check_call(['chmod', 'og+r', logPrefix + "-core"])
             return logPrefix + "-crash.txt"
         else:
             print "I don't know what to do with a core file when logPrefix is null"
