@@ -227,7 +227,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
             os.rename(coreFilename, logPrefix + "-core")
             subprocess.call(["gzip", logPrefix + "-core"])
             # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-            subprocess.check_call(['chmod', 'og+r', logPrefix + "-core"])
+            subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
             return logPrefix + "-crash.txt"
         else:
             print "I don't know what to do with a core file when logPrefix is null"
