@@ -131,6 +131,20 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             print stderr
     return stdout.rstrip(), p.returncode
 
+def createWtmpDir(tmpDirBase):
+    '''Create wtmp<number> directory, incrementing the number if one is already found.'''
+    i = 1
+    while True:
+        tmpDirWithNum = 'wtmp' + str(i)
+        tmpDir = os.path.join(tmpDirBase, tmpDirWithNum)
+        try:
+            os.mkdir(tmpDir)  # To avoid race conditions, we use try/except instead of exists/create
+            break
+        except OSError, e:
+            i += 1
+    vdump(tmpDirWithNum + os.sep)  # Even if not verbose, wtmp<num> is also dumped: wtmp1/w1: NORMAL
+    return tmpDirWithNum
+
 def dateStr():
     '''
     Equivalent of: assert subprocess.check_output(['Date'])[:-1] == currDateTime
@@ -291,20 +305,6 @@ def vdump(inp):
     '''
     if verbose:
         print 'DEBUG -', inp
-
-def createWtmpDir(tmpDirBase):
-    '''Create wtmp<number> directory, incrementing the number if one is already found.'''
-    i = 1
-    while True:
-        tmpDirWithNum = 'wtmp' + str(i)
-        tmpDir = os.path.join(tmpDirBase, tmpDirWithNum)
-        try:
-            os.mkdir(tmpDir)  # To avoid race conditions, we use try/except instead of exists/create
-            break
-        except OSError, e:
-            i += 1
-    vdump(tmpDirWithNum + os.sep)  # Even if not verbose, wtmp<num> is also dumped: wtmp1/w1: NORMAL
-    return tmpDirWithNum
 
 if __name__ == '__main__':
     pass
