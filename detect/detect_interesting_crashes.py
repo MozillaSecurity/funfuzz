@@ -26,7 +26,7 @@ def amiss(knownPath, crashLogFilename, verbose, msg):
             return True
         else:
             if verbose:
-                print "@ Known crash: " + ", ".join(igmatch)
+                print "@ Known crash: " + ", ".join(igmatch[0:5])
             return False
     else:
         if platform.mac_ver()[0].startswith("10.4") and msg.find("SIGABRT") != -1:
