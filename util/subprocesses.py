@@ -101,10 +101,10 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'hg pull: option --rebase not recognized' not in stdout and \
           'no such option: -s' not in stdout:
-            if isWin and 'Permission denied' in stdout and \
+            pdb.set_trace()
+            if isWin and stderr and 'Permission denied' in stderr and \
                     'configure: error: installation or configuration problem: ' + \
-                    'C++ compiler cannot create executables.' in stdout:
-                pdb.set_trace()
+                    'C++ compiler cannot create executables.' in stderr:
                 raise Exception('Windows conftest.exe configuration permission problem')
             else:
                 raise Exception('Nonzero exit code')
