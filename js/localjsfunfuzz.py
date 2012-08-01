@@ -141,7 +141,7 @@ def mkFullPath(hgHash, hgNum, pDir, repo, start):
     Creates the fuzzing directory in the start path.
     '''
     appendStr = '-' + hgHash + '-' + hgNum
-    if pDir is not None:
+    if pDir:
         appendStr += '-patched'
     path = mkdtemp(appendStr + os.sep,
                        os.path.join('jsfunfuzz-' + repo + '-'), start)
@@ -345,7 +345,7 @@ def localCompileFuzzJsShell(options):
     '''
     Compiles and readies a js shell for fuzzing.
     '''
-    patchDir = normExpUserPath(options.patchdir) if options.patchdir is not None else None
+    patchDir = normExpUserPath(options.patchdir) if options.patchdir else None
 
     archList = options.archType.split(',')
     assert '32' in archList or '64' in archList
@@ -383,19 +383,19 @@ def localCompileFuzzJsShell(options):
     # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
     assert captureStdout(['hg', 'qapp'], currWorkingDir=srcRepo)[0] == ''
 
-    if patchDir is not None:
+    if patchDir:
         # Assumes mq extension is enabled in Mercurial config.
         # Series file should be optional if only one patch is needed.
         assert not os.path.isdir(patchDir), 'Support for multiple patches has not yet been added.'
-        if os.path.isfile(patchDir):
-            p1name = patchHgRepoUsingMq(patchDir, srcRepo)
+        assert os.path.isfile(patchDir)
+        p1name = patchHgRepoUsingMq(patchDir, srcRepo)
 
     fullPath = mkFullPath(localOrigHgHash, localOrigHgNum, patchDir, repoName, intendedDir)
 
     # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
     compilePath = copyJsSrcDirs(fullPath, srcRepo)
 
-    if patchDir is not None:
+    if patchDir:
         # Remove the patches from the codebase if they were applied.
         assert not os.path.isdir(patchDir), 'Support for multiple patches has not yet been added.'
         assert p1name != ''
