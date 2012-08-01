@@ -247,6 +247,9 @@ def genJsCliFlagList(noCompareJIT, noRndFlags, enableDbg, setV, shFlags, srcRepo
     elif enableDbg:
         shFlags.append('-d')
 
+    # E4X needs the following line, jorendorff suggests. It should be removed when E4X is removed.
+    shFlags.append(['-e', '\'options("allow_xml");\''])
+
     return loopFList, shFlags
 
 def genShellCmd(lfList, lTimeout, repoKnDir, shName, shFlags):
