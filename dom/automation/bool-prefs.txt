@@ -149,6 +149,8 @@ layers.acceleration.disabled
 layers.acceleration.force-enabled
 #layers.async-video.enabled # requires OMTC
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
+#layers.offmainthreadcomposition.animate-opacity
+#layers.offmainthreadcomposition.animate-transform
 layout.3d-transforms.enabled
 layout.css.report_errors
 layout.css.visited_links_enabled
@@ -164,6 +166,7 @@ media.ogg.enabled
 media.opus.enabled
 media.wave.enabled
 media.webm.enabled
+media.navigator.enabled
 network.auth.use-sspi
 network.IDN_show_punycode
 network.dns.disableIPv6
