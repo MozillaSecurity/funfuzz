@@ -141,7 +141,7 @@ javascript.options.methodjit_always
 #javascript.options.pccounts.content # bug 723409
 javascript.options.tracejit.chrome
 javascript.options.tracejit.content
-#javascript.options.typeinference # bug 745483
+javascript.options.typeinference
 javascript.options.xml.content
 javascript.options.xml.chrome
 keyword.enabled
