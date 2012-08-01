@@ -250,13 +250,12 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
             vdump('cmdList from compileCopy is: ' + ' '.join(cmdList))
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
                                 currWorkingDir=objDir)[0]
-    except Exception:
+    except Exception, e:
         # Sometimes a non-zero error can be returned during the make process, but eventually a
         # shell still gets compiled.
         if os.path.exists(compiledNamePath):
             print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
         else:
-            print out
             raise Exception("`make` did not result in a js shell, '" + repr(e) + "' thrown.")
 
     if not os.path.exists(compiledNamePath):
