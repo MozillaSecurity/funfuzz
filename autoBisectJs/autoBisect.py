@@ -115,6 +115,7 @@ def main():
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(53d0ad70087b)-descendants(73e8ca73e5bd))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(b83b72d7fb86)-descendants(45315f6ccb19))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(23a84dbb258f)-descendants(08187a7ea897))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(b46621aba6fd)-descendants(3da9a96f6c3f))'], ignoreStderr=True, ignoreExitCode=True) # (this range can replace the one above when IonMonkey merges to m-c) build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
         if useClang:
             captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True)
 
