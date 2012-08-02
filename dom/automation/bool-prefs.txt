@@ -228,6 +228,8 @@ signed.applets.codebase_principal_support
 signon.autofillForms
 signon.autologin.proxy
 signon.rememberSignons
+svg.display-lists.hit-testing.enabled
+svg.display-lists.painting.enabled
 svg.smil.enabled
 toolkit.telemetry.enabled
 view_source.syntax_highlight
