@@ -105,6 +105,7 @@ def main():
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c to tm merge that broke compilation
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(d56f08ec0225)-descendants(e41a37df3892))'], ignoreStderr=True, ignoreExitCode=True) # non-threadsafe build breakage - it might go back earlier than changeset rev d56f08ec0225
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(ae22e27106b3)-descendants(785e4e86798b))'], ignoreStderr=True, ignoreExitCode=True) # build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
     if useClang:
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(780888b1548c)-descendants(ce10e78d030d))'], ignoreStderr=True, ignoreExitCode=True)
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True)
