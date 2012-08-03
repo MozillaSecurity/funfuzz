@@ -10,7 +10,7 @@ from inspectShell import archOfBinary, testDbgOrOpt, testJsShellOrXpcshell
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, 'lithium', 'lithium.py'))
-autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autoBisectJs', 'autoBisect.py'))
+autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))
 shellBeautificationpy = os.path.join(p0, 'shellBeautification.py')
 
 path2 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
