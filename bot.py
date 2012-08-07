@@ -246,6 +246,7 @@ def main():
                     "1339728406" in oldjobname or # Bug 766430 (nondeterministic crash)
                     "1341133958" in oldjobname or # grr. bug 735081 or bug 735082.
                     "1341815616" in oldjobname or # grr. bug 735081 or bug 735082.
+                    "1344134705" in oldjobname or # Bug 780790 (plus mysterious bad local stack walking)
                     "1340246538" in oldjobname):  # Bug 767273
                     # These testcases cause random crashes, or rely on internal blacklists.
                     print "Skipping retesting of " + job
