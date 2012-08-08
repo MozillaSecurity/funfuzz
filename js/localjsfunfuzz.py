@@ -7,7 +7,6 @@
 from __future__ import with_statement
 
 import os
-import pdb  # needed for Windows debugging of intermittent conftest error.
 import platform
 import shutil
 import subprocess
@@ -193,9 +192,6 @@ def cfgCompileCopy(cPath, aNum, cType, threadsafety, rName, setPymake, src, fPat
         output, envVarList, cfgEnvDt, cfgCmdList = cfgJsBin(aNum, cType, threadsafety, cfgPath,
                                                             objdir)
     except Exception, e:
-        if isWin:
-            print 'Temporary debug: configuration failed!'
-            pdb.set_trace()
         # This exception message is returned from captureStdout in subprocesses.py
         if isWin and 'Windows conftest.exe configuration permission problem' in repr(e):
             print 'Trying once more because of "Permission denied" error...'
