@@ -266,21 +266,6 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
 def normExpUserPath(p):
     return os.path.normpath(os.path.expanduser(p))
 
-def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                   cwd=os.getcwdu(), env=os.environ, vb=False):
-    '''
-    Calculates how long a captureStdout command takes and prints it. Returns the stdout and return
-    value that captureStdout passes on.
-    '''
-    print 'Running `%s` now..' % shellify(command)
-    startTime = time.time()
-    stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
-                                      combineStderr=combineStderr, ignoreExitCode=ignoreExitCode,
-                                      currWorkingDir=cwd, env=env, verbosity=vb)
-    endTime = time.time()
-    print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
-    return stdOutput, retVal
-
 def shellify(cmd):
     """Try to convert an arguments array to an equivalent string that can be pasted into a shell."""
     okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
@@ -296,6 +281,21 @@ def shellify(cmd):
             vdump("Sorry, shellify doesn't know how to escape " + item)
             return repr(cmd)
     return ' '.join(ssc)
+
+def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
+                   cwd=os.getcwdu(), env=os.environ, vb=False):
+    '''
+    Calculates how long a captureStdout command takes and prints it. Returns the stdout and return
+    value that captureStdout passes on.
+    '''
+    print 'Running `%s` now..' % shellify(command)
+    startTime = time.time()
+    stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
+                                      combineStderr=combineStderr, ignoreExitCode=ignoreExitCode,
+                                      currWorkingDir=cwd, env=env, verbosity=vb)
+    endTime = time.time()
+    print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
+    return stdOutput, retVal
 
 def vdump(inp):
     '''
