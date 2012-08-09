@@ -83,7 +83,7 @@ browser.zoom.full
 browser.zoom.siteSpecific
 browser.zoom.updateBackgroundTabs
 converter.html2txt.structs
-device.motion.enabled
+device.sensors.enabled
 dom.disable_image_src_set
 dom.enable_performance
 dom.event.clipboardevents.enabled
