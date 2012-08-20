@@ -88,12 +88,12 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             # would be more efficient to run lithium on one or the other, but meh
             print "compareJIT found a more serious bug:"
             print "  " + shellify(command)
-            print "  " + jsInteresting.summaryString(issues, r)
+            print "  " + jsInteresting.summaryString(issues, lev, r.elapsedtime)
             return lev
         elif lev != jsInteresting.JS_FINE:
-            print "compareJIT is not comparing output, because the shell exited strangely (%d):" % lev
+            print "compareJIT is not comparing output, because the shell exited strangely:"
             print "  " + shellify(command)
-            print "  " + jsInteresting.summaryString(issues, r)
+            print "  " + jsInteresting.summaryString(issues, lev, r.elapsedtime)
             jsInteresting.deleteLogs(prefix)
             if i > 0:
                 continue

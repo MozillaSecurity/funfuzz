@@ -25,13 +25,16 @@ from subprocesses import vdump, shellify
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
+JS_LEVELS = 10
+JS_LEVEL_NAMES = ["fine", "known crash", "timed out", "abnormal", "jsfunfuzz did not finish", "jsfunfuzz decided to exit", "overall mismatch", "valgrind error", "malloc error", "new assert/crash"]
+assert len(JS_LEVEL_NAMES) == JS_LEVELS
 (  JS_FINE,
    JS_KNOWN_CRASH, JS_TIMED_OUT,                          # frustrates understanding of stdout; not even worth reducing
    JS_ABNORMAL_EXIT,                                      # frustrates understanding of stdout; can mean several things
    JS_DID_NOT_FINISH, JS_DECIDED_TO_EXIT,                 # specific to jsfunfuzz
    JS_OVERALL_MISMATCH,                                   # specific to comparejit (set in compareJIT.py)
    JS_VG_AMISS, JS_MALLOC_ERROR, JS_NEW_ASSERT_OR_CRASH   # stuff really going wrong
-) = range(10)
+) = range(JS_LEVELS)
 
 
 VALGRIND_ERROR_EXIT_CODE = 77
@@ -137,12 +140,12 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
           logPrefix + '-summary.txt')
 
     if not quiet:
-        print logPrefix + ": " + summaryString(issues, runinfo)
+        print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
     return lev
 
-def summaryString(issues, runinfo):
-    amissStr = ("") if (len(issues) == 0) else ("*" + repr(issues) + " ")
-    return "%s%s (%.1f seconds)" % (amissStr, runinfo.msg, runinfo.elapsedtime)
+def summaryString(issues, level, elapsedtime):
+    amissDetails = ("") if (len(issues) == 0) else (" | " + repr(issues) + " ")
+    return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 def truncateFile(fn, maxSize):
     if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
