@@ -29,12 +29,8 @@ def amiss(knownPath, crashLogFilename, verbose, msg):
                 print "@ Known crash: " + ", ".join(igmatch[0:5])
             return False
     else:
-        if platform.mac_ver()[0].startswith("10.4") and msg.find("SIGABRT") != -1:
-            # Tiger doesn't create crash logs for aborts.  No cause for alarm.
-            return False
-        else:
-            print "Unknown crash (crash log is missing)"
-            return True
+        print "Unknown crash (crash log is missing)"
+        return True
 
 TOO_MUCH_RECURSION_MAGIC = "[TMR] "
 
