@@ -1790,6 +1790,8 @@ var exprMakers =
   // Nothing happens when there is only one call.
   function(d, b) { return "verifyprebarriers()"; },
   function(d, b) { return "verifypostbarriers()"; },
+  function(d, b) { return "validategc(false)"; },
+  function(d, b) { return "validategc(true)"; },
 
   // Invoke an incremental garbage collection slice.
   function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, rnd.rndReal() * 32)) + ")"; },
