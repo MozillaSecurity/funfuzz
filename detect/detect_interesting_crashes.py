@@ -4,7 +4,7 @@ from __future__ import with_statement
 import os, sys, platform, signal
 ready = False
 
-def amiss(knownPath, crashLogFilename, verbose, msg):
+def amiss(knownPath, crashLogFilename, verbose):
     if not ready:
         readIgnoreLists(knownPath)
 

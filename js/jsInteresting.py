@@ -79,7 +79,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
         # Ignore the crash log, since we've already seen a new assertion failure.
         pass
     elif sta == timedRun.CRASHED:
-        if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash.txt", True, runinfo.msg):
+        if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash.txt", True):
             issues.append("unknown crash")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         else:

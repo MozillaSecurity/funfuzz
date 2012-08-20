@@ -538,7 +538,7 @@ def rdfInit(args):
                         alh.printAndLog("%%% Busted crash report (from mac crash reporter)")
                     elif alh.crashIsKnown:
                         alh.printAndLog("%%% Ignoring crash report (from mac crash reporter)")
-                    elif detect_interesting_crashes.amiss(knownPath, crashlog, True, signame):
+                    elif detect_interesting_crashes.amiss(knownPath, crashlog, True):
                         alh.printAndLog("@@@ New crash (from mac crash reporter)")
                         if logPrefix:
                             shutil.copyfile(crashlog, logPrefix + "-crash.txt")
