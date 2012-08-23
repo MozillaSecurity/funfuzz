@@ -2128,7 +2128,7 @@ function makeZealLevel()
   }
 
   // http://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp#604
-  return "" + rnd(13);
+  return "" + rnd(14);
 }
 
 if (haveE4X) {
