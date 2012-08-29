@@ -45,7 +45,7 @@ DOMFuzzHelperObserver.prototype = {
     } else if (!this.isFrameScriptLoaded && aTopic == "chrome-document-global-created") {
 
       var messageManager = Cc["@mozilla.org/globalmessagemanager;1"].
-                               getService(Ci.nsIChromeFrameMessageManager);
+                               getService(Ci.nsIMessageListenerManager || Ci.nsIChromeFrameMessageManager);
 
       // Register for any messages our API needs us to handle
       messageManager.addMessageListener("DOMFuzzHelper.quitApplication", this);
