@@ -239,7 +239,7 @@ webgl.default-no-alpha
 webgl.disable-extensions
 webgl.disabled
 webgl.force-enabled
-webgl.force-layers-readback
+# webgl.force-layers-readback # Bug 786857
 webgl.force_osmesa
 webgl.min_capability_mode
 webgl.prefer-native-gl
