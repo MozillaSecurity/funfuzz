@@ -1,5 +1,5 @@
 default:
-	zip -r domfuzz.xpi . -x Makefile -x domfuzz.xpi
+	zip -r domFuzzLite3.xpi . -x Makefile -x domFuzzLite3.xpi
 
 clean:
-	rm domfuzz.xpi
+	rm domFuzzLite3.xpi
