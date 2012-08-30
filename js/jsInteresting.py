@@ -26,7 +26,7 @@ from subprocesses import vdump, shellify
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
 JS_LEVELS = 10
-JS_LEVEL_NAMES = ["fine", "known crash", "timed out", "abnormal", "jsfunfuzz did not finish", "jsfunfuzz decided to exit", "overall mismatch", "valgrind error", "malloc error", "new assert/crash"]
+JS_LEVEL_NAMES = ["fine", "known crash", "timed out", "abnormal", "jsfunfuzz did not finish", "jsfunfuzz decided to exit", "overall mismatch", "valgrind error", "malloc error", "new assert or crash"]
 assert len(JS_LEVEL_NAMES) == JS_LEVELS
 (  JS_FINE,
    JS_KNOWN_CRASH, JS_TIMED_OUT,                          # frustrates understanding of stdout; not even worth reducing
