@@ -292,7 +292,6 @@ class AmissLogHandler:
             (msg.find("chrome://browser/") != -1 or msg.find("resource:///components") != -1) and
              msg.find("nsIWebProgress.DOMWindow") == -1 and # bug 732593
              msg.find("installStatus is null") == -1 and # bug 693237
-             msg.find("overlay is null") == -1 and # bug 693238
              msg.find("aTab is null") == -1 and # bug 693239
              msg.find("too much recursion") == -1 and # bug 732665
              msg.find("nsIWebContentHandlerRegistrar::registerProtocolHandler") == -1 and # bug 732692, bug 693270
