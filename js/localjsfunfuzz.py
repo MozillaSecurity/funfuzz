@@ -22,8 +22,8 @@ from inspectShell import archOfBinary, testDbgOrOpt
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, \
-    verbose, vdump
+from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, macVer, \
+    normExpUserPath, verbose, vdump
 from fileIngredients import fileContains
 from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 
@@ -361,6 +361,8 @@ def localCompileFuzzJsShell(options):
     # Set different timeouts depending on machine.
     loopyTimeout = str(machineTypeDefaults(options.timeout))
     if options.enableVg:
+        if isMac:
+            assert macVer() <= [10, 7], 'Valgrind on Mac is yet well supported on 10.8.x and above.'
         if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
             loopyTimeout = '300'
         else:
