@@ -112,13 +112,16 @@ def basicFlagSets(shell):
             [],
             ['-m'],
             ['-m', '-a'],
-            ['-m', '-a', '-d'],
-            ['-n'],
-            ['-m', '-n'],
-            ['-m', '-n', '-a'],
-            ['-m', '-n', '-a', '-d'],
-            ['-m', '-n', '-d']
+            ['-m', '-a', '-d']
         ]
+        if shellSupportsFlag(shell, '-n'):
+            sets.extend([
+                ['-n'],
+                ['-m', '-n'],
+                ['-m', '-n', '-a'],
+                ['-m', '-n', '-a', '-d'],
+                ['-m', '-n', '-d']
+            ])
         if shellSupportsFlag(shell, "--ion"):
             sets += [["--ion"] + set for set in sets]
         return sets
