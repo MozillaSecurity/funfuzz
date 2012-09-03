@@ -18,30 +18,26 @@ def ignoreChangesets(hgPrefix, sourceDir):
     captureStdout(hgPrefix + ['bisect', '-r'])
 
     # Skip some busted revisions.
+    # All numbers in the range excluding boundaries should be broken for some reason.
     # It might make sense to avoid (or note) these in checkBlameParents.
     # 1. descendants(eae8350841be) - descendants(f3e58c264932) [partial]
-    # Note: The following instructions are untested.
     # To add to the list of descendant revsets:
     # - Then take one of the revs that fails, say fd756976e52c
     # - 404.js does not need to exist, but assuming tip / default works,
     # - (1) will tell you when the brokenness started
-    # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -s fd756976e52c 404.js
+    # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -s default -e fd756976e52c 404.js
     # - (2) will tell you when the brokenness ended
-    # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -e fd756976e52c 404.js
-    # Alternative: (descendants(last good changeset)-descendants(first working changeset))
-    captureStdout(hgPrefix + ['bisect', '--skip', 'eae8350841be'])
-    captureStdout(hgPrefix + ['bisect', '--skip', 'e5958cd4a135'])
-    captureStdout(hgPrefix + ['bisect', '--skip', 'd575f16c7f55']) # an ill-timed merge into the jaegermonkey repository!
-    captureStdout(hgPrefix + ['bisect', '--skip', '0d5d2ceb9436'])
-    captureStdout(hgPrefix + ['bisect', '--skip', 'e6496cd735a6'])
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(8de0a7fef2c0)-descendants(d43e89d8a20b))'], ignoreStderr=True, ignoreExitCode=True) # early jaeger
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # a large backout
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c to tm merge that broke compilation
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(d56f08ec0225)-descendants(e41a37df3892))'], ignoreStderr=True, ignoreExitCode=True) # non-threadsafe build breakage - it might go back earlier than changeset rev d56f08ec0225
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(ae22e27106b3)-descendants(785e4e86798b))'], ignoreStderr=True, ignoreExitCode=True) # build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
+    # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -s fd756976e52c -e default 404.js
+    # Explanation: (descendants(last good changeset)-descendants(first working changeset))
+    # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(ae22e27106b3)-descendants(785e4e86798b))'], ignoreStderr=True, ignoreExitCode=True) # m-c 100867 - 101115: build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(0c55d7a26512)-descendants(e41a37df3892))'], ignoreStderr=True, ignoreExitCode=True) # m-c 84165 - 84288: non-threadsafe build breakage
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # m-c 60172 - 60206: a large backout
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(be9979b4c10b)-descendants(9f892a5a80fa))'], ignoreStderr=True, ignoreExitCode=True) # m-c 52501 - 53538: jm brokenness
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(c12c8651c10d)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c 28446 - 28540: m-c to tm merge that broke compilation
     if isMac and macVer() >= [10, 7]:
-        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(780888b1548c)-descendants(ce10e78d030d))'], ignoreStderr=True, ignoreExitCode=True)
-        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True)
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True) # m-c 91541 - 91573: clang bustage
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(780888b1548c)-descendants(ce10e78d030d))'], ignoreStderr=True, ignoreExitCode=True) # m-c 70985 - 71141: clang bustage
     if 'ionmonkey' in sourceDir:  # Can be removed when IonMonkey lands in mozilla-central.
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(150159ee5c26)-descendants(fed610aff637))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(300ac3d58291)-descendants(bc1833f2111e))'], ignoreStderr=True, ignoreExitCode=True) # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
@@ -50,8 +46,7 @@ def ignoreChangesets(hgPrefix, sourceDir):
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(23a84dbb258f)-descendants(08187a7ea897))'], ignoreStderr=True, ignoreExitCode=True) # broken ionmonkey
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(b46621aba6fd)-descendants(3da9a96f6c3f))'], ignoreStderr=True, ignoreExitCode=True) # (this range can replace the one above when IonMonkey merges to m-c) build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
         if isMac and macVer() >= [10, 7]:
-            captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True)
-            captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(7dcb2b6162e5)-descendants(c4dc1640324c))'], ignoreStderr=True, ignoreExitCode=True)
+            captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(28be8df0deb7)-descendants(14d9f14b129e))'], ignoreStderr=True, ignoreExitCode=True) # im 72447 - 88354: clang bustage
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
