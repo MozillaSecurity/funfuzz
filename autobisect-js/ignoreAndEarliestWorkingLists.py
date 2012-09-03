@@ -51,6 +51,7 @@ def ignoreChangesets(hgPrefix, sourceDir):
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(b46621aba6fd)-descendants(3da9a96f6c3f))'], ignoreStderr=True, ignoreExitCode=True) # (this range can replace the one above when IonMonkey merges to m-c) build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
         if isMac and macVer() >= [10, 7]:
             captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996e96b4dbcf)-descendants(1902eff5df2a))'], ignoreStderr=True, ignoreExitCode=True)
+            captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(7dcb2b6162e5)-descendants(c4dc1640324c))'], ignoreStderr=True, ignoreExitCode=True)
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
