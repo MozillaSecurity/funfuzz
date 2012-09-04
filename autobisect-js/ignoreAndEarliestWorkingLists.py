@@ -27,7 +27,8 @@ def ignoreChangesets(hgPrefix, sourceDir):
     # Explanation: (descendants(last good changeset)-descendants(first working changeset))
     # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(ae22e27106b3)-descendants(785e4e86798b))'], ignoreStderr=True, ignoreExitCode=True) # m-c 100867 - 101115: build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
-    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(0c55d7a26512)-descendants(e41a37df3892))'], ignoreStderr=True, ignoreExitCode=True) # m-c 84165 - 84288: non-threadsafe build breakage
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(996cc657dfba)-descendants(e41a37df3892))'], ignoreStderr=True, ignoreExitCode=True) # m-c 84164 - 84288: non-threadsafe build breakage
+    captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(30ffa45f9a63)-descendants(fff3dc9478ce))'], ignoreStderr=True, ignoreExitCode=True) # m-c 76465 - 76514: js shell was broken after a gc patch
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(a6c636740fb9)-descendants(ca11457ed5fe))'], ignoreStderr=True, ignoreExitCode=True) # m-c 60172 - 60206: a large backout
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(be9979b4c10b)-descendants(9f892a5a80fa))'], ignoreStderr=True, ignoreExitCode=True) # m-c 52501 - 53538: jm brokenness
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(ff250122fa99)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c 28197 - 28540: m-c to tm merge that broke compilation
