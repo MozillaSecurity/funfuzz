@@ -225,8 +225,11 @@ def internalTestAndLabel(filename, flagsRequired, valgrindSupport, stdoutOutput,
                 return ('bad', 'Negative exit code ' + str(exitCode))
         elif exitCode == 0:
             return ('good', 'Exit code 0')
-        elif exitCode == 2 and (stdoutStderr.find('usage: js [') != -1) and (stdoutOutput != ''):
-            return ('good', 'Exit code 2 - js shell quits because it does not support a given CLI parameter')
+        elif (exitCode == 1 or exitCode == 2) and \
+                (stdoutStderr.find('usage: js [') != -1 or \
+                 stdoutStderr.find('Error: Invalid short option:') != -1) and \
+                (stdoutOutput != ''):
+            return ('good', 'Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter')
         elif 3 <= exitCode <= 6:
             return ('good', 'Acceptable exit code ' + str(exitCode))
         elif watchExitCode != None:
