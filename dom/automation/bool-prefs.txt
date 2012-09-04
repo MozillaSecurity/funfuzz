@@ -89,6 +89,7 @@ dom.enable_performance
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
+dom.identity.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
@@ -231,6 +232,7 @@ signon.rememberSignons
 svg.display-lists.hit-testing.enabled
 svg.display-lists.painting.enabled
 svg.smil.enabled
+toolkit.identity.debug
 toolkit.telemetry.enabled
 view_source.syntax_highlight
 view_source.wrap_long_lines
