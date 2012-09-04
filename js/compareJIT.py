@@ -43,7 +43,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout,
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
         (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, targetTime)
-        print infilename
+        print "Retesting " + infilename + " after running Lithium:"
         print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
         return (lithResult, lithDetails)
     else:
@@ -86,14 +86,12 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             continue
         elif lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
-            print "compareJIT found a more serious bug:"
+            print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT found a more serious bug"], lev, r.elapsedtime)
             print "  " + shellify(command)
-            print "  " + jsInteresting.summaryString(issues, lev, r.elapsedtime)
             return lev
         elif lev != jsInteresting.JS_FINE:
-            print "compareJIT is not comparing output, because the shell exited strangely:"
+            print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT is not comparing output, because the shell exited strangely"], lev, r.elapsedtime)
             print "  " + shellify(command)
-            print "  " + jsInteresting.summaryString(issues, lev, r.elapsedtime)
             jsInteresting.deleteLogs(prefix)
             if i > 0:
                 continue
@@ -114,16 +112,14 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 #print "Ignoring DVG difference (bug 755813?)"
                 jsInteresting.deleteLogs(prefix)
             elif r.err != r0.err:
-                print infilename
-                print "Mismatch on stderr"
+                print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
                 showDifferences(prefix0 + "-err.txt", prefix + "-err.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             elif r.out != r0.out:
-                print infilename
-                print "Mismatch on stdout"
+                print infilename + " | " + jsInteresting.summaryString(["Mismatch on stdout"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
                 showDifferences(prefix0 + "-out.txt", prefix + "-out.txt", showDetailedDiffs)
