@@ -362,7 +362,7 @@ def localCompileFuzzJsShell(options):
     loopyTimeout = str(machineTypeDefaults(options.timeout))
     if options.enableVg:
         if isMac:
-            assert macVer() <= [10, 7], 'Valgrind on Mac is yet well supported on 10.8.x and above.'
+            assert macVer() < [10, 8], 'Valgrind on Mac is yet well supported on 10.8.x and above.'
         if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
             loopyTimeout = '300'
         else:
