@@ -281,6 +281,7 @@ class AmissLogHandler:
             if msg.endswith(".dmp has no thread list"):
                 self.printAndLog("%%% This crash report is totally busted. Giving up.")
                 self.crashIsKnown = True
+            self.crashIsKnown = True # Bug 787302
 
         if ("quitApplication" in msg or
             "fuzzerWhenDeep" in msg or # Bug 732665
