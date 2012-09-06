@@ -75,6 +75,8 @@ def randomFlagSet(shell):
             args.append("--ion-inlining=off")
         if chance(.2):
             args.append("--ion-osr=off")
+        if chance(.2):
+            args.append("--ion-limit-script-size")
 
     #if chance(.05):
     #    args.append("--execute=verifyprebarriers()")
