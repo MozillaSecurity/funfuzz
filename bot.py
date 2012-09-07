@@ -254,7 +254,12 @@ def main():
                 else:
                     reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                     print "reduced filename: " + reducedFn
-                    lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
+                    buildDir = "build"
+                    localBuildDir = "/Users/jruderman/builds/mozilla-central-debug/"
+                    if os.path.exists(localBuildDir):
+                        # Ugly hack: work around bug 787302 by retesting with local builds on Mac
+                        buildDir = localBuildDir
+                    lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildDir, reducedFn]
                     logPrefix = job + "retest"
                     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
             else:
