@@ -176,7 +176,7 @@ def checkBlameParents(blamedRev, blamedGoodOrBad, labels, testRev, startRepo, en
         print "The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca)
         label = testRev(ca)
         print label[0] + " (" + label[1] + ") "
-        print "Try setting -s to %s, and -e to %s, and re-run autoBisect." % (ca, parents[0])
+        #print "Try setting -s to %s, and -e to %s, and re-run autoBisect." % (ca, parents[0])
 
 def makeTestRev(shellCacheDir, sourceDir, archNum, compileType, valgrindSupport, testAndLabel, compilationFailedLabel):
     def testRev(rev):
