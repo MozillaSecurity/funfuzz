@@ -72,7 +72,7 @@ def parseOptions():
     parser.add_option('-f', '--set-shellflags', dest='shellflags',
                       # This is not set to %default because of the upcoming revamp of --random-flags
                       help='Sets the flags for the shell. Defaults to [-m, -a, -n, [-d if debug]].')
-    parser.add_option('-r', '--set-src-repo', dest='srcRepo',
+    parser.add_option('-R', '--set-src-repo', dest='srcRepo',
                       help='Sets the source repository. Defaults to "%default".')
     parser.add_option('-t', '--set-loop-timeout', type='int', dest='timeout',
                       help='Sets the timeout for loopjsfunfuzz.py. ' + \
