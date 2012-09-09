@@ -168,6 +168,7 @@ media.ogg.enabled
 media.opus.enabled
 media.wave.enabled
 media.webm.enabled
+media.webaudio.enabled
 media.navigator.enabled
 network.auth.use-sspi
 network.IDN_show_punycode
