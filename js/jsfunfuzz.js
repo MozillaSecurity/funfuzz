@@ -3524,6 +3524,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossIter: true
        && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
+       && code.indexOf("gcPreserveCode") == -1      // See bug 789647 - mjitChunkLimit breaks with Error: Can't change chunk limit after gcPreserveCode()
     ,
 
     expectConsistentOutputAcrossJITs: true
