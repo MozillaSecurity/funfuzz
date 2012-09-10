@@ -78,7 +78,7 @@ def runCommand(remoteHost, cmd):
 
 def grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
     while True:
-        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(remoteHost, "ls -1 " + relevantJobsDir).split("\n") )
+        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(remoteHost, "ls -1 -r " + relevantJobsDir).split("\n") )
         if len(jobs) > 0:
             oldNameOnServer = jobs[0]
             shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
