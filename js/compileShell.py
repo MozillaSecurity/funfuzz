@@ -92,8 +92,9 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
-        # 32-bit shell on Mac OS X 10.7 Lion and greater
-        if isMac and macVer() >= [10, 7]:
+        # 32-bit shell on Mac OS X 10.6 Snow Leopard and greater, install Xcode 4 for SL.
+        if isMac:
+            assert macVer() >= [10, 6]  # We no longer support Leopard 10.5 and prior.
             cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
             cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
             cfgEnvDt['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
@@ -106,23 +107,8 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
             cfgEnvDt['CROSS_COMPILE'] = '1'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(configure))
-            cfgCmdList.append('--target=i386-apple-darwin8.0.0')
-        # 32-bit shell on Mac OS X 10.6
-        # FIXME: Note that Clang is now likely the default compiler on Macs.
-        elif isMac and [10, 6] <= macVer() < [10, 7]:
-            cfgEnvDt['CC'] = 'gcc-4.2 -arch i386'
-            cfgEnvDt['CXX'] = 'g++-4.2 -arch i386'
-            cfgEnvDt['HOST_CC'] = 'gcc-4.2'
-            cfgEnvDt['HOST_CXX'] = 'g++-4.2'
-            cfgEnvDt['RANLIB'] = 'ranlib'
-            cfgEnvDt['AR'] = 'ar'
-            cfgEnvDt['AS'] = '$CC'
-            cfgEnvDt['LD'] = 'ld'
-            cfgEnvDt['STRIP'] = 'strip -x -S'
-            cfgEnvDt['CROSS_COMPILE'] = '1'
-            cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(configure))
-            cfgCmdList.append('--target=i386-apple-darwin8.0.0')
+            cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
+            cfgCmdList.append('--enable-macos-target=10.5')
         # 32-bit shell on 32/64-bit x86 Linux
         elif isLinux and (os.uname()[4] != 'armv7l'):
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
@@ -149,7 +135,7 @@ def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
         cfgEnvDt['AR'] = 'ar'
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))
-        cfgCmdList.append('--target=x86_64-apple-darwin11.2.0')
+        cfgCmdList.append('--target=x86_64-apple-darwin11.4.0')  # Lion 10.7.4
     elif isWin and archNum == '64':
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(configure))
