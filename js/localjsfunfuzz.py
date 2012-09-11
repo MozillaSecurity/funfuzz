@@ -215,9 +215,7 @@ def knownBugsDir(srcRepo, repoName):
     # Define the corresponding known-bugs directories.
     global path0
     mcKnDir = os.path.abspath(os.path.join(path0, os.pardir, 'known', 'mozilla-central'))
-    if repoName == 'ionmonkey':
-        return normExpUserPath(os.path.join(mcKnDir, 'ionmonkey'))
-    elif repoName == 'mozilla-esr10':
+    if repoName == 'mozilla-esr10':
         return os.path.abspath(
             normExpUserPath(os.path.join(path0, os.pardir, 'known', 'mozilla-esr10')))
     elif repoName != 'mozilla-central':
