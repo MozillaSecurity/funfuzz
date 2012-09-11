@@ -173,7 +173,7 @@ class AmissLogHandler:
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
         if self.crashProcessor == "asan":
-            msgLF = asanSymbolize.symbolize_addr2line(msgLF)
+            msgLF = asanSymbolize.symbolize(msgLF)
             self.asanDump += msgLF # FIXME this should not be necessary. Maybe this all needs to move to automation.py, like the fix*stack calls.
         msg = msgLF.rstrip("\n")
         if len(self.fullLogHead) < 100000:
