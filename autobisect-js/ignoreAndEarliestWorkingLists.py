@@ -33,7 +33,7 @@ def ignoreChangesets(hgPrefix, sourceDir):
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(be9979b4c10b)-descendants(9f892a5a80fa))'], ignoreStderr=True, ignoreExitCode=True) # m-c 52501 - 53538: jm brokenness
     captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(ff250122fa99)-descendants(723d44ef6eed))'], ignoreStderr=True, ignoreExitCode=True) # m-c 28197 - 28540: m-c to tm merge that broke compilation
     if isMac and macVer() >= [10, 7]:
-        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(e4c82a6b298c)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True) # m-c 91541 - 91573: clang bustage
+        captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(21106c79a43d)-descendants(036194408a50))'], ignoreStderr=True, ignoreExitCode=True) # m-c 91540 - 91573: clang bustage
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(780888b1548c)-descendants(ce10e78d030d))'], ignoreStderr=True, ignoreExitCode=True) # m-c 70985 - 71141: clang bustage
     if 'ionmonkey' in sourceDir:  # Can be removed when IonMonkey lands in mozilla-central - im numbers may need to be changed.
         captureStdout(hgPrefix + ['bisect', '--skip', '(descendants(150159ee5c26)-descendants(fed610aff637))'], ignoreStderr=True, ignoreExitCode=True) # im 91138 - 91258: broken ionmonkey
