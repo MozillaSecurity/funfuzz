@@ -270,7 +270,7 @@ def parseOpts():
         mcRepoDirStart = '~'
     mcRepoDir = normExpUserPath(os.path.join(mcRepoDirStart, 'trees', 'mozilla-central'))
     # Define the repository (working directory) in which to bisect.
-    parser.add_option('-d', '--dir',
+    parser.add_option('-R', '--repoDir',
                       dest='dir',
                       default=mcRepoDir,
                       help='Source code directory. Defaults to "%default"')
