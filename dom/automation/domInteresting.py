@@ -161,7 +161,6 @@ class AmissLogHandler:
         self.sawFatalAssertion = False
         self.fuzzerComplained = False
         self.crashProcessor = None
-        self.asanDump = ""
         self.crashBoringBits = False
         self.crashMightBeTooMuchRecursion = False
         self.crashIsKnown = False
@@ -174,7 +173,6 @@ class AmissLogHandler:
         msgLF = stripBeeps(msgLF)
         if self.crashProcessor == "asan":
             msgLF = asanSymbolize.symbolize(msgLF)
-            self.asanDump += msgLF # FIXME this should not be necessary. Maybe this all needs to move to automation.py, like the fix*stack calls.
         msg = msgLF.rstrip("\n")
         if len(self.fullLogHead) < 100000:
             self.fullLogHead.append(msgLF)
@@ -305,6 +303,8 @@ class AmissLogHandler:
             ):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
+
+        return msgLF
     def printAndLog(self, msg):
         print "$ " + msg
         self.fullLogHead.append(msg + "\n")
@@ -481,14 +481,12 @@ def rdfInit(args):
         while True:
             line = runbrowser.stdout.readline()
             if line != '':
-                print line.rstrip("\n")
-                alh.processLine(line)
+                line = alh.processLine(line)
+                print line,
                 if line.startswith(statusLinePrefix):
                     status = int(line[len(statusLinePrefix):])
             else:
                 break
-
-        print alh.asanDump,
 
         lev = DOM_FINE
 
