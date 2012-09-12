@@ -18,7 +18,7 @@ repos = []
 # Add your repository here.
 repos.append('fuzzing')
 # Spidermonkey friends
-repos.append('ionmonkey')
+#repos.append('ionmonkey')
 #repos.append('jaegermonkey')
 #repos.append('larch')
 # Official repository branches
@@ -32,12 +32,9 @@ repos.append('mozilla-esr10')
 # Others
 repos.append('v8')
 # Miscellaneous tools
-repos.append('buildbot-configs')
-repos.append('mozmill-tests')
+#repos.append('buildbot-configs')
+#repos.append('mozmill-tests')
 repos.append('valgrind')
-# Soon-to-be obsolete
-repos.append('mozilla-1.9.2')
-repos.append('comm-1.9.2')
 
 def typeOfRepo(r):
     '''
