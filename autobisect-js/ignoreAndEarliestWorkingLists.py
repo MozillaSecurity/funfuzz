@@ -28,6 +28,7 @@ def ignoreChangesets(hgPre):
         captureStdout(hgPre + ['bisect', '--skip',
                 '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'],
             ignoreStderr=True, ignoreExitCode=True)
+
     skipCsets('b46621aba6fd', '3da9a96f6c3f') # m-c 106605 - 106624: im, zlib, --enable-det breakage
     skipCsets('23a84dbb258f', '08187a7ea897') # m-c 106581 - 106603: broken im
     skipCsets('b83b72d7fb86', '45315f6ccb19') # m-c 106499 - 106505: broken im
