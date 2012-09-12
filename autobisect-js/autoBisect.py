@@ -80,7 +80,8 @@ def main():
         subprocess.call(hgPrefix + ['purge', '--all'])
 
     labels = {}
-    ignoreChangesets(hgPrefix, sourceDir)
+    captureStdout(hgPrefix + ['bisect', '-r'])
+    ignoreChangesets(hgPrefix)
 
     # Specify `hg bisect` ranges.
     if paranoidBool:
