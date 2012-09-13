@@ -19,8 +19,8 @@ def fileContainsStr(f, s, verbose=True):
     with open(f, 'rb') as g:
         for line in g:
             if line.find(s) != -1:
-                if verbose:
-                    print line.rstrip()
+                if verbose and s != '':
+                    print '[Found string in: "' + line.rstrip() + '"]',
                 return True
     return False
 
@@ -34,7 +34,7 @@ def fileContainsRegex(f, regex, verbose=True):
         foundRegex = regex.search(g.read())
         if foundRegex:
             matchedStr = foundRegex.group()
-            if verbose:
-                print matchedStr
+            if verbose and matchedStr != '':
+                print '[Found string in: "' + matchedStr + '"]',
             found = True
     return found, matchedStr
