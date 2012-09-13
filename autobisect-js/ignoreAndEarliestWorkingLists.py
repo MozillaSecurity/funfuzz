@@ -41,8 +41,6 @@ def ignoreChangesets(hgPre):
     skipCsets('a6c636740fb9', 'ca11457ed5fe') # m-c 60172 - 60206: a large backout
     skipCsets('be9979b4c10b', '9f892a5a80fa') # m-c 52501 - 53538: jm brokenness
     skipCsets('ff250122fa99', '723d44ef6eed') # m-c 28197 - 28540: broken m-c to tm merge
-    if isMac and macVer() >= [10, 7]:
-        skipCsets('28be8df0deb7', '14d9f14b129e') # m-c 72447 - 105867: clang bustage
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
@@ -59,6 +57,8 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # These should be in descending order, or bisection will break at earlier changesets.
     if '--no-ti' in flagsRequired or '--no-ion' in flagsRequired or '--no-jm' in flagsRequired:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
+    elif isMac and macVer() >= [10, 7]:
+        return '14d9f14b129e' # 105867 on m-c, first rev with IonMonkey that compiles well on Mac under Clang
     elif ionBool:
         return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n.
     elif '--ion-eager' in flagsRequired:
@@ -67,8 +67,6 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # configuration, this will be the earliest usable changeset.
     #elif ???:
     #    return '7aba0b7a805f' # 98725 on m-c, first rev that has stable --enable-root-analysis builds
-    elif isMac and macVer() >= [10, 7]:
-        return '2046a1f46d40' # 87022 on m-c, first rev that compiles well on Mac under Clang
     elif typeInferBool and ('-D' in flagsRequired or '--dump-bytecode' in flagsRequired):
         return '0c5ed245a04f' # 75176 on m-c, merge that brought in -D from one side and -n from another
     elif typeInferBool:
