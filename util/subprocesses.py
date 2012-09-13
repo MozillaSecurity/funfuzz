@@ -225,7 +225,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
         gdbCommandFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gdb-quick.txt")
         assert os.path.exists(gdbCommandFile)
         gdbArgs = ["gdb", "-n", "-batch", "-x", gdbCommandFile, progfullname, coreFilename]
-        print " ".join(gdbArgs)
+        vdump(" ".join(gdbArgs))
         child = subprocess.call(
             gdbArgs,
             stdin =  None,
