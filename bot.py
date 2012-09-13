@@ -165,7 +165,7 @@ def parseOpts():
         # when we are trying to refer to a directory on another computer.
         options.basedir = "/" + options.basedir.split("/msys/")[1]
 
-    if not options.runJsfunfuzz and not options.retestAll and random.choice([True, False]):
+    if not options.runJsfunfuzz and not options.retestAll and True:
         print "Randomly fuzzing JS!"
         options.runJsfunfuzz = True
 

@@ -10,11 +10,12 @@ import os
 import platform
 import subprocess
 import sys
+from copy import deepcopy
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, isWin, vdump
+from subprocesses import captureStdout, isWin, isLinux, vdump
 
 def archOfBinary(b):
     '''
@@ -43,8 +44,11 @@ def shellSupports(shell, args):
     cmdList = [shell] + args
 
     vdump(' '.join(cmdList))
+    if isLinux:
+        cfgEnvDt = deepcopy(os.environ)
+        cfgEnvDt['LD_LIBRARY_PATH'] = 'build' + os.sep + 'dist'
     out, retCode = captureStdout(cmdList, ignoreStderr=True, combineStderr=True,
-                                 ignoreExitCode=True)
+                                 ignoreExitCode=True, env=cfgEnvDt)
     vdump('The return code is: ' + str(retCode))
 
     if retCode == 0:
