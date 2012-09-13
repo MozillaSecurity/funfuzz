@@ -44,8 +44,8 @@ def shellSupports(shell, args):
     cmdList = [shell] + args
 
     vdump(' '.join(cmdList))
+    cfgEnvDt = deepcopy(os.environ)
     if isLinux:
-        cfgEnvDt = deepcopy(os.environ)
         cfgEnvDt['LD_LIBRARY_PATH'] = 'build' + os.sep + 'dist'
     out, retCode = captureStdout(cmdList, ignoreStderr=True, combineStderr=True,
                                  ignoreExitCode=True, env=cfgEnvDt)
