@@ -212,6 +212,7 @@ def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objD
     This function compiles and copies a binary.
     '''
     # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
+    # Change to cpu * 5 // 4 once we have moved to quad cores, we are still using too many threads.
     jobs = (cpuCount() * 3) // 2
     compiledNamePath = normExpUserPath(
         os.path.join(objDir, 'js' + ('.exe' if isWin else '')))
