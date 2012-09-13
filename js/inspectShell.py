@@ -46,7 +46,7 @@ def shellSupports(shell, args):
     vdump(' '.join(cmdList))
     cfgEnvDt = deepcopy(os.environ)
     if isLinux:
-        cfgEnvDt['LD_LIBRARY_PATH'] = 'build' + os.sep + 'dist'
+        cfgEnvDt['LD_LIBRARY_PATH'] = os.path.dirname(os.path.abspath(shell))
     out, retCode = captureStdout(cmdList, ignoreStderr=True, combineStderr=True,
                                  ignoreExitCode=True, env=cfgEnvDt)
     vdump('The return code is: ' + str(retCode))
