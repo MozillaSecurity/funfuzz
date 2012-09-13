@@ -28,7 +28,7 @@ repos.append('comm-central')
 repos.append('mozilla-aurora')
 repos.append('mozilla-beta')
 repos.append('mozilla-release')
-repos.append('mozilla-esr10')
+#repos.append('mozilla-esr10')
 # Others
 repos.append('v8')
 # Miscellaneous tools
