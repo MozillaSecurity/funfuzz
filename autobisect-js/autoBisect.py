@@ -14,7 +14,7 @@ import tempfile
 from optparse import OptionParser
 from types import *
 
-from ignoreAndEarliestWorkingLists import earliestKnownWorkingRev, ignoreChangesets
+from ignoreAndEarliestWorkingLists import earliestKnownWorkingRev, knownBrokenRanges
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
@@ -81,7 +81,7 @@ def main():
 
     labels = {}
     captureStdout(hgPrefix + ['bisect', '-r'])
-    ignoreChangesets(hgPrefix)
+    captureStdout(hgPrefix + ['bisect', '--skip', " + ".join(knownBrokenRanges())])
 
     # Specify `hg bisect` ranges.
     if paranoidBool:

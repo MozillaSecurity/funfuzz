@@ -12,9 +12,9 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import captureStdout, isLinux, isMac, isWin, macVer
 
-def ignoreChangesets(hgPre):
-    '''Ignores specified changesets that are known to be broken, during hg bisection.'''
-    # Skip some large runs of busted revisions.
+def knownBrokenRanges():
+    '''Returns a list of revsets corresponding to known-busted revisions'''
+
     # To add to the list:
     # - (1) will tell you when the brokenness started
     # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -e FAILINGREV 404.js
@@ -52,9 +52,7 @@ def ignoreChangesets(hgPre):
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
         ])
 
-    captureStdout(hgPre + ['bisect', '--skip', " + ".join(skips)],
-        ignoreStderr=True, ignoreExitCode=True)
-
+    return skips
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
