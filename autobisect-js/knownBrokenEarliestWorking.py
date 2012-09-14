@@ -53,52 +53,41 @@ def knownBrokenRanges():
 
     return skips
 
-def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
+def earliestKnownWorkingRev(options):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
-
-    profilejitBool = '-p' in flagsRequired
-    methodjitBool = '-m' in flagsRequired
-    methodjitAllBool = '-a' in flagsRequired
-    typeInferBool = '-n' in flagsRequired
-    debugModeBool = '-d' in flagsRequired
-    ionBool = '--ion' in flagsRequired
-
     assert (not isMac) or (macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
+    fList = options.flagsReqList
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    if '--no-ti' in flagsRequired or '--no-ion' in flagsRequired or '--no-jm' in flagsRequired:
+    if options.raSupport:  # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds
+        return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
+    elif '--no-ti' in fList or '--no-ion' in fList or '--no-jm' in fList:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
-    elif ionBool:
-        return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n.
-    elif '--ion-eager' in flagsRequired:
-        return '4ceb3e9961e4' # 105173 on m-c, See bug 683039: "Delay Ion compilation until a function is hot"
-    # FIXME: Somehow test for --enable-root-analysis, or else when it becomes part of the default
-    # configuration, this will be the earliest usable changeset.
-    #elif ???:
-    #    return '7aba0b7a805f' # 98725 on m-c, first rev that has stable --enable-root-analysis builds
+    elif '--ion' in fList:
+        return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
+    elif '--ion-eager' in fList:  # See bug 683039 - Delay Ion compilation until a function is hot
+        return '4ceb3e9961e4' # 105173 on m-c
     elif isMac and macVer() >= [10, 7]:
         return '2046a1f46d40' # 87022 on m-c, first rev that compiles well on Mac under Clang
-    elif typeInferBool and ('-D' in flagsRequired or '--dump-bytecode' in flagsRequired):
-        return '0c5ed245a04f' # 75176 on m-c, merge that brought in -D from one side and -n from another
-    elif typeInferBool:
+    elif '-n' in fList and ('-D' in fList or '--dump-bytecode' in fList):
+        return '0c5ed245a04f' # 75176 on m-c, merge brings in -D from one side and -n from another
+    elif '-n' in fList:
         return '228e319574f9' # 74704 on m-c, first rev that has the -n option
-    elif '--debugjit' in flagsRequired or '--methodjit' in flagsRequired or '--dump-bytecode' in flagsRequired:
+    elif '--debugjit' in fList or '--methodjit' in fList or '--dump-bytecode' in fList:
         return 'b1923b866d6a' # 73054 on m-c, first rev that has long variants of many options
-    elif '-D' in flagsRequired:
+    elif '-D' in fList:
         return 'e5b92c2bdd2d' # 70991 on m-c, first rev that has the -D option
-    elif methodjitAllBool:
-        # This supercedes methodjitBool, -a only works with -m
+    elif '-a' in fList:  # -a only works with -m
         return 'f569d49576bb' # 62574 on m-c, first rev that has the -a option
-    elif profilejitBool:
+    elif '-p' in fList:
         return '339457364540' # 56551 on m-c, first rev that has the -p option
-    elif debugModeBool:
-        # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
+    elif '-d' in fList:  # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
         return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
-    elif methodjitBool and isWin:
+    elif isWin and '-m' in fList:
         return '9f2641871ce8' # 53544 on m-c, first rev that can run with pymake and -m
-    elif methodjitBool:
+    elif '-m' in fList:
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif isWin:
-        return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows with most recent set of instructions
+        return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows
     else:  # Only Linux should end up here
         return "db4d22859940" # 24546 on m-c, imacros compilation change

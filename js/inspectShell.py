@@ -17,11 +17,9 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import captureStdout, isWin, isLinux, vdump
 
-def archOfBinary(b):
-    '''
-    This function tests if a binary is 32-bit or 64-bit.
-    '''
-    unsplitFiletype = captureStdout(['file', b])[0]
+def archOfBinary(binary):
+    '''This function tests if a binary is 32-bit or 64-bit.'''
+    unsplitFiletype = captureStdout(['file', binary])[0]
     filetype = unsplitFiletype.split(':', 1)[1]
     if isWin:
         assert 'PE executable for MS Windows (console)' in filetype
@@ -62,20 +60,27 @@ def shellSupports(shell, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
-def testJsShellOrXpcshell(sname):
-    '''
-    This function tests if a binary is a js shell or xpcshell.
-    '''
-    if shellSupports(sname, ['-e', 'Components']):
-        return 'xpcshell'
-    else:
-        return 'jsShell'
+def testJsShellOrXpcshell(s):
+    '''This function tests if a binary is a js shell or xpcshell.'''
+    return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
 
-def testDbgOrOpt(jsShellName):
-    '''
-    This function tests if a binary is a debug or optimized shell.
-    '''
-    if shellSupports(jsShellName, ['-e', 'disassemble()']):
-        return 'dbg'
-    else:
-        return 'opt'
+def testDbgOrOpt(s):
+    '''This function tests if a binary is a debug or optimized shell.'''
+    return 'dbg' if shellSupports(s, ['-e', 'disassemble()']) else 'opt'
+
+def testIsThreadsafe(s):
+    '''This function tests if a binary is compiled with --enable-threadsafe.'''
+    return bool(captureStdout([s, '-e',
+                    '\'c = getBuildConfiguration(); print(c["threadsafe"]);\''])[0])
+
+def testWithRootAnalysis(s):
+    '''This function tests if a binary is compiled with root analysis enabled.'''
+    return bool(captureStdout([s, '-e',
+                    '\'c = getBuildConfiguration(); print(c["rooting-analysis"]);\''])[0])
+
+def verifyBinary(sh, options):
+    '''Verifies that the binary is compiled as intended.'''
+    assert archOfBinary(sh.getShellFuzzingPath()) == sh.getArch()
+    assert testDbgOrOpt(sh.getShellFuzzingPath()) == sh.getCompileType()
+    assert testIsThreadsafe(sh.getShellFuzzingPath()) == (True if options.isThreadsafe else False)
+    assert testWithRootAnalysis(sh.getShellFuzzingPath()) == (True if options.raSupport else False)

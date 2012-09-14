@@ -11,10 +11,11 @@ import subprocess
 import sys
 import re
 import tempfile
+from copy import deepcopy
 from optparse import OptionParser
 from types import *
 
-from ignoreAndEarliestWorkingLists import earliestKnownWorkingRev, knownBrokenRanges
+from knownBrokenEarliestWorking import earliestKnownWorkingRev, knownBrokenRanges
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
@@ -28,7 +29,8 @@ from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, ma
 
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path3)
-from compileShell import autoconfRun, cfgJsBin, compileCopy, shellName
+from compileShell import autoconfRun
+from countCpus import cpuCount
 
 verbose = False
 
@@ -523,6 +525,177 @@ def bisectLabel(hgLabel, currRev, startRepo, endRepo, ignoreResult):
 
 def firstLine(s):
     return s.split('\n')[0]
+
+def cfgJsBin(archNum, compileType, threadsafe, configure, objdir):
+    '''
+    This function configures a js binary depending on the parameters.
+    '''
+    cfgCmdList = []
+    cfgEnvDt = deepcopy(os.environ)
+    origCfgEnvDt = deepcopy(os.environ)
+    # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
+    # do not worry if build-dep does not work, also be sure to apt-get zip as well.
+    if (archNum == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
+        # 32-bit shell on Mac OS X 10.6 Snow Leopard and greater, install Xcode 4 for SL.
+        if isMac:
+            assert macVer() >= [10, 6]  # We no longer support Leopard 10.5 and prior.
+            cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
+            cfgEnvDt['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvDt['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvDt['RANLIB'] = 'ranlib'
+            cfgEnvDt['AR'] = 'ar'
+            cfgEnvDt['AS'] = '$CC'
+            cfgEnvDt['LD'] = 'ld'
+            cfgEnvDt['STRIP'] = 'strip -x -S'
+            cfgEnvDt['CROSS_COMPILE'] = '1'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+            cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
+            cfgCmdList.append('--enable-macos-target=10.5')
+        # 32-bit shell on 32/64-bit x86 Linux
+        elif isLinux and (os.uname()[4] != 'armv7l'):
+            # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
+            cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
+            cfgEnvDt['CC'] = 'gcc -m32'
+            cfgEnvDt['CXX'] = 'g++ -m32'
+            cfgEnvDt['AR'] = 'ar'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+            cfgCmdList.append('--target=i686-pc-linux')
+        # 32-bit shell on ARM (non-tegra ubuntu)
+        elif os.uname()[4] == 'armv7l':
+            cfgEnvDt['CC'] = '/opt/cs2007q3/bin/gcc'
+            cfgEnvDt['CXX'] = '/opt/cs2007q3/bin/g++'
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+        else:
+            cfgCmdList.append('sh')
+            cfgCmdList.append(os.path.normpath(configure))
+    # 64-bit shell on Mac OS X 10.7 Lion and greater
+    elif isMac and macVer() >= [10, 7] and archNum == '64':
+        cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvDt['AR'] = 'ar'
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
+        cfgCmdList.append('--target=x86_64-apple-darwin11.4.0')  # Lion 10.7.4
+    elif isWin and archNum == '64':
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
+        cfgCmdList.append('--host=x86_64-pc-mingw32')
+        cfgCmdList.append('--target=x86_64-pc-mingw32')
+    else:
+        cfgCmdList.append('sh')
+        cfgCmdList.append(os.path.normpath(configure))
+
+    if compileType == 'dbg':
+        cfgCmdList.append('--disable-optimize')
+        cfgCmdList.append('--enable-debug')
+    elif compileType == 'opt':
+        cfgCmdList.append('--enable-optimize')
+        cfgCmdList.append('--disable-debug')
+        cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
+        cfgCmdList.append('--enable-gczeal')
+        cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
+
+    cfgCmdList.append('--enable-methodjit')  # Enabled by default now, but useful for autoBisect
+    cfgCmdList.append('--enable-type-inference') # Enabled by default now, but useful for autoBisect
+    # Fuzzing tweaks for more useful output, implemented in bug 706433
+    cfgCmdList.append('--enable-more-deterministic')
+    cfgCmdList.append('--disable-tests')
+    # See bug 773746. Enabling this breaks autoBisect for versions prior to 7aba0b7a805f
+    #cfgCmdList.append('--enable-root-analysis')
+
+    if threadsafe:
+        cfgCmdList.append('--enable-threadsafe')
+        cfgCmdList.append('--with-system-nspr')
+    # Works-around "../editline/libeditline.a: No such file or directory" build errors by using
+    # readline instead of editline.
+    #cfgCmdList.append('--enable-readline')
+
+    if os.name == 'posix':
+        if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
+            cfgCmdList.append('--enable-valgrind')
+            if isLinux:
+                cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
+        # ccache is not applicable for non-Tegra Ubuntu ARM builds.
+        elif os.uname()[1] == 'tegra-ubuntu':
+            cfgCmdList.append('--with-ccache')
+            cfgCmdList.append('--with-arch=armv7-a')
+    else:
+        # Only tested to work for pymake in Windows.
+        counter = 0
+        for entry in cfgCmdList:
+            if os.sep in entry:
+                assert isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
+                cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
+            counter = counter + 1
+
+    # Print whatever we added to the environment
+    envVarList = []
+    for envVar in set(cfgEnvDt.keys()) - set(origCfgEnvDt.keys()):
+        strToBeAppended = envVar + '="' + cfgEnvDt[envVar] + '"' \
+            if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
+        envVarList.append(strToBeAppended)
+    vdump('Environment variables added are: ' + ' '.join(envVarList))
+
+    out = captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=objdir, env=cfgEnvDt)
+
+    return out, envVarList, cfgEnvDt, cfgCmdList
+
+def shellName(archNum, compileType, extraID, vgSupport):
+    osName = 'windows' if isWin else platform.system().lower()
+    sname = '-'.join(x for x in ['js', compileType, archNum, "vg" if vgSupport else "", extraID,
+                                 osName] if x)
+    ext = '.exe' if isWin else ''
+    return sname + ext
+
+def compileCopy(archNum, compileType, extraID, usePymake, repoDir, destDir, objDir, vgSupport):
+    '''
+    This function compiles and copies a binary.
+    '''
+    # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
+    jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
+    compiledNamePath = normExpUserPath(
+        os.path.join(objDir, 'js' + ('.exe' if isWin else '')))
+    try:
+        cmdList = []
+        ignoreECode = False
+        if usePymake:
+            cmdList = ['python', '-OO',
+                     os.path.normpath(os.path.join(repoDir, 'build', 'pymake', 'make.py')),
+                     '-j' + str(jobs), '-s']
+        else:
+            cmdList = ['make', '-C', objDir, '-s']
+            ignoreECode = True
+            if os.name == 'posix':
+                cmdList.append('-j' + str(jobs))  # Win needs pymake for multicore compiles.
+        vdump('cmdList from compileCopy is: ' + ' '.join(cmdList))
+        out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+                            currWorkingDir=objDir)[0]
+        if usePymake and 'no such option: -s' in out:  # Retry only for this situation.
+            cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
+            print 'Trying once more without -s...'
+            vdump('cmdList from compileCopy is: ' + ' '.join(cmdList))
+            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+                                currWorkingDir=objDir)[0]
+    except Exception, e:
+        # Sometimes a non-zero error can be returned during the make process, but eventually a
+        # shell still gets compiled.
+        if os.path.exists(compiledNamePath):
+            print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
+        else:
+            raise Exception("`make` did not result in a js shell, '" + repr(e) + "' thrown.")
+
+    if not os.path.exists(compiledNamePath):
+        print out
+        raise Exception("`make` did not result in a js shell, no exception thrown.")
+    else:
+        newNamePath = normExpUserPath(
+            os.path.join(destDir, shellName(archNum, compileType, extraID, vgSupport)))
+        shutil.copy2(compiledNamePath, newNamePath)
+        return newNamePath
 
 def lockedMain():
     """Prevent running two instances of autoBisect at once, because we don't want to confuse hg."""

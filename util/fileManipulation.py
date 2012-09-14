@@ -6,6 +6,10 @@
 
 from __future__ import with_statement
 
+def firstLine(s):
+    '''Returns the first line of any series of text with / without line breaks.'''
+    return s.split('\n')[0]
+
 def fuzzDice(filename):
     '''Returns the lines of the file, except for the one line containing DICE'''
     before = []

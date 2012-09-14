@@ -297,11 +297,9 @@ def mozPlatform(arch):
         raise Exception("The arch passed to mozPlatform must be '64', '32', or None")
 
 def defaultBuildType(options):
-    '''
-    For Firefox, returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug
-    For the js shell, returns FIXME.
-    '''
-    return options.repoName + '-' + mozPlatform(options.arch) + ('-debug' if options.compileType == 'dbg' else '')
+    '''Returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug.'''
+    return options.repoName + '-' + mozPlatform(options.arch) + \
+        ('-debug' if options.compileType == 'dbg' else '')
 
 def main():
     options = parseOptions()

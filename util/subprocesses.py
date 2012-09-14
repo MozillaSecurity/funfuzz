@@ -268,19 +268,22 @@ def normExpUserPath(p):
 
 def shellify(cmd):
     """Try to convert an arguments array to an equivalent string that can be pasted into a shell."""
-    okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@]*$""")
-    okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\(\) ]*$""")
+    okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
+    okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
     ssc = []
-    for i in xrange(len(cmd)):
-        item = cmd[i]
-        if okUnquotedRE.match(item):
-            ssc.append(item)
-        elif okQuotedRE.match(item):
-            ssc.append('"' + item + '"')
-        else:
-            vdump("Sorry, shellify doesn't know how to escape " + item)
-            return repr(cmd)
-    return ' '.join(ssc)
+    try:
+        for i in xrange(len(cmd)):
+            item = cmd[i]
+            if okUnquotedRE.match(item):
+                ssc.append(item)
+            elif okQuotedRE.match(item):
+                ssc.append('"' + item + '"')
+            else:
+                raise Exception('Sorry, shellify does not know how to escape: ' + item)
+        return ' '.join(ssc)
+    except Exception as e:
+        print repr(e)
+        return 'Trying anyway: ' + ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                    cwd=os.getcwdu(), env=os.environ, vb=False):
@@ -296,6 +299,16 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     endTime = time.time()
     print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return stdOutput, retVal
+
+class Unbuffered:
+    '''From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u.'''
+    def __init__(self, stream):
+        self.stream = stream
+    def write(self, data):
+        self.stream.write(data)
+        self.stream.flush()
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
 
 def vdump(inp):
     '''

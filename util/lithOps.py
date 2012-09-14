@@ -11,13 +11,24 @@ import shutil
 import subprocess
 from tempfile import mkdtemp
 
-from subprocesses import shellify
+from subprocesses import normExpUserPath, shellify
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
 
 # Status returns for runLithium and many_timed_runs (in loopdomfuzz.py, etc.)
-(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO, LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
+(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,
+ LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
+
+def knownBugsDir(rName):
+    '''Defines and returns the known-bugs directory.'''
+    mcKnDir = normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-central'))
+    if rName == 'mozilla-esr10':
+        return normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-esr10'))
+    elif rName != 'mozilla-central':
+        # XXX: mozilla-aurora, mozilla-beta and mozilla-release should have their known-bugs lists.
+        vdump('Known bugs for the ' + rName + ' repository does not exist. Using m-c one instead.')
+    return mcKnDir
 
 def runLithium(lithArgs, logPrefix, targetTime):
     """

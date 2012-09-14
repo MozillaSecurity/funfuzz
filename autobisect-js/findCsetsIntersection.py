@@ -10,7 +10,7 @@ import os
 import sys
 from optparse import OptionParser
 
-from ignoreAndEarliestWorkingLists import knownBrokenRanges
+from knownBrokenEarliestWorking import knownBrokenRanges
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
