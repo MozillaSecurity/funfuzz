@@ -22,7 +22,7 @@ def ignoreChangesets(hgPre):
     # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -s FAILINGREV 404.js
     # (404.js does not need to exist)
 
-    # XXX It might make sense to avoid (or note) these in checkBlameParents.
+    # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
 
