@@ -14,33 +14,46 @@ from subprocesses import captureStdout, isLinux, isMac, isWin, macVer
 
 def ignoreChangesets(hgPre):
     '''Ignores specified changesets that are known to be broken, during hg bisection.'''
-    # Skip some busted revisions. It might make sense to avoid (or note) these in checkBlameParents.
-    # All numbers in the range excluding boundaries should be broken for some reason.
-    # To add to the list, 404.js does not need to exist, WORKINGREV can be default / tip:
+    # Skip some large runs of busted revisions.
+    # To add to the list:
     # - (1) will tell you when the brokenness started
-    # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -s WORKINGREV -e FAILINGREV 404.js
+    # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -e FAILINGREV 404.js
     # - (2) will tell you when the brokenness ended
-    # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -s FAILINGREV -e WORKINGREV 404.js
-    # Explanation: (descendants(last good changeset)-descendants(first working changeset))
-    # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
-    def skipCsets(lastGood, firstWorking):
-        '''Skips the changesets present in the range.'''
-        captureStdout(hgPre + ['bisect', '--skip',
-                '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'],
-            ignoreStderr=True, ignoreExitCode=True)
+    # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -s FAILINGREV 404.js
+    # (404.js does not need to exist)
 
-    skipCsets('b46621aba6fd', '3da9a96f6c3f') # m-c 106605 - 106624: im, zlib, --enable-det breakage
-    skipCsets('23a84dbb258f', '08187a7ea897') # m-c 106581 - 106603: broken im
-    skipCsets('b83b72d7fb86', '45315f6ccb19') # m-c 106499 - 106505: broken im
-    skipCsets('53d0ad70087b', '73e8ca73e5bd') # m-c 106383 - 106457: broken im
-    skipCsets('300ac3d58291', 'bc1833f2111e') # m-c 106120 - 106123: im flags rejiggered
-    skipCsets('150159ee5c26', 'fed610aff637') # m-c 106007 - 106032: broken im
-    skipCsets('ae22e27106b3', '785e4e86798b') # m-c 100867 - 101115: zlib, --enable-det breakage
-    skipCsets('996cc657dfba', 'e41a37df3892') # m-c 84164 - 84288: non-threadsafe build breakage
-    skipCsets('30ffa45f9a63', 'fff3dc9478ce') # m-c 76465 - 76514: build broken after a gc patch
-    skipCsets('a6c636740fb9', 'ca11457ed5fe') # m-c 60172 - 60206: a large backout
-    skipCsets('be9979b4c10b', '9f892a5a80fa') # m-c 52501 - 53538: jm brokenness
-    skipCsets('ff250122fa99', '723d44ef6eed') # m-c 28197 - 28540: broken m-c to tm merge
+    # XXX It might make sense to avoid (or note) these in checkBlameParents.
+
+    # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
+
+    def hgrange(lastGood, firstWorking):
+        return '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'
+
+    skips = [
+        hgrange('be9979b4c10b', '9f892a5a80fa'), # m-c 52501 - 53538: jm brokenness
+        hgrange('30ffa45f9a63', 'fff3dc9478ce'), # m-c 76465 - 76514: build broken after a gc patch
+        hgrange('c12c8651c10d', '723d44ef6eed'), # m-c to tm merge that broke compilation
+        hgrange('996cc657dfba', 'e41a37df3892'), # non-threadsafe build breakage - it might go back earlier than changeset rev d56f08ec0225
+        hgrange('ae22e27106b3', '785e4e86798b'), # build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
+        hgrange('150159ee5c26', 'fed610aff637'), # broken ionmonkey
+        hgrange('300ac3d58291', 'bc1833f2111e'), # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
+        hgrange('53d0ad70087b', '73e8ca73e5bd'), # broken ionmonkey
+        hgrange('b83b72d7fb86', '45315f6ccb19'), # broken ionmonkey
+        hgrange('23a84dbb258f', '08187a7ea897'), # broken ionmonkey
+        hgrange('b46621aba6fd', '3da9a96f6c3f'), # broken ionmonkey build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
+    ]
+
+    if isMac and macVer() >= [10, 7]:
+        skips.extend([
+            hgrange('780888b1548c', 'ce10e78d030d'), # clang
+            hgrange('e4c82a6b298c', '036194408a50'), # clang
+            hgrange('996e96b4dbcf', '1902eff5df2a'), # broken ionmonkey
+            hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
+        ])
+
+    captureStdout(hgPre + ['bisect', '--skip', " + ".join(skips)],
+        ignoreStderr=True, ignoreExitCode=True)
+
 
 def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     """Returns the oldest version of the shell that can run jsfunfuzz."""
@@ -57,8 +70,6 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # These should be in descending order, or bisection will break at earlier changesets.
     if '--no-ti' in flagsRequired or '--no-ion' in flagsRequired or '--no-jm' in flagsRequired:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
-    elif isMac and macVer() >= [10, 7]:
-        return '14d9f14b129e' # 105867 on m-c, first rev with IonMonkey that compiles well on Mac under Clang
     elif ionBool:
         return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n.
     elif '--ion-eager' in flagsRequired:
@@ -67,6 +78,8 @@ def earliestKnownWorkingRev(flagsRequired, archNum, valgrindSupport):
     # configuration, this will be the earliest usable changeset.
     #elif ???:
     #    return '7aba0b7a805f' # 98725 on m-c, first rev that has stable --enable-root-analysis builds
+    elif isMac and macVer() >= [10, 7]:
+        return '2046a1f46d40' # 87022 on m-c, first rev that compiles well on Mac under Clang
     elif typeInferBool and ('-D' in flagsRequired or '--dump-bytecode' in flagsRequired):
         return '0c5ed245a04f' # 75176 on m-c, merge that brought in -D from one side and -n from another
     elif typeInferBool:
