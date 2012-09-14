@@ -33,14 +33,13 @@ def knownBrokenRanges():
         hgrange('be9979b4c10b', '9f892a5a80fa'), # m-c 52501 - 53538: jm brokenness
         hgrange('30ffa45f9a63', 'fff3dc9478ce'), # m-c 76465 - 76514: build broken after a gc patch
         hgrange('c12c8651c10d', '723d44ef6eed'), # m-c to tm merge that broke compilation
-        hgrange('996cc657dfba', 'e41a37df3892'), # non-threadsafe build breakage - it might go back earlier than changeset rev d56f08ec0225
-        hgrange('ae22e27106b3', '785e4e86798b'), # build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
+        hgrange('996cc657dfba', 'e41a37df3892'), # non-threadsafe build breakage
+        hgrange('ae22e27106b3', '785e4e86798b'), # --enable-more-deterministic and Win zlib breakage
         hgrange('150159ee5c26', 'fed610aff637'), # broken ionmonkey
-        hgrange('300ac3d58291', 'bc1833f2111e'), # ionmonkey flags were changed, then later readded but enabled by default to ensure compatibility
+        hgrange('300ac3d58291', 'bc1833f2111e'), # ion flags changed to ensure compatibility
         hgrange('53d0ad70087b', '73e8ca73e5bd'), # broken ionmonkey
         hgrange('b83b72d7fb86', '45315f6ccb19'), # broken ionmonkey
         hgrange('23a84dbb258f', '08187a7ea897'), # broken ionmonkey
-        hgrange('b46621aba6fd', '3da9a96f6c3f'), # broken ionmonkey build breakage involving --enable-more-deterministic, zlib breakage (and fix) in Windows builds in the middle of this changeset as well
     ]
 
     if isMac and macVer() >= [10, 7]:
