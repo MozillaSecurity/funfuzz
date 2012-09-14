@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# This file scans the revsets in ignoreAndEarliestWorkingLists and looks for overlaps.
+
 import os
 import sys
 from optparse import OptionParser
@@ -24,6 +26,7 @@ def parseOptions():
     return options.rDir
 
 def countCsets(revset, rdir):
+    '''Counts the number of changesets in the revsets by outputting ones and counting them.'''
     listCmd = ['hg', 'log', '-r', revset, '--template=1']
     rangeIntersectionOnes = captureStdout(listCmd, currWorkingDir=rdir)
     assert rangeIntersectionOnes[1] == 0
