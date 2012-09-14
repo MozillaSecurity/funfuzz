@@ -49,6 +49,7 @@ def ignoreChangesets(hgPre):
             hgrange('e4c82a6b298c', '036194408a50'), # clang
             hgrange('996e96b4dbcf', '1902eff5df2a'), # broken ionmonkey
             hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
+            hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
         ])
 
     captureStdout(hgPre + ['bisect', '--skip', " + ".join(skips)],
