@@ -3433,74 +3433,6 @@ function whatToTestSpidermonkeyTrunk(code)
 
     allowParse: true,
 
-    // Exclude things here if decompiling the function causes a crash.
-    allowDecompile: true,
-
-    // Exclude things here if decompiling returns something bogus that won't compile.
-    checkRecompiling: false
-      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
-      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
-      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
-      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
-      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
-      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
-      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
-      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
-      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
-      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
-      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
-      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
-      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
-      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
-      && !( codeL.match( /\{.*\:.*\(.*\,/ ))      // avoid bug 736747
-      ,
-
-    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: false
-      && !( codeL.match( /const.*if/ ))               // avoid bug 352985
-      && !( codeL.match( /if.*const/ ))               // avoid bug 352985
-      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
-      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
-      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895
-      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
-      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
-      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
-      && (code.indexOf("*") == -1)         // constant folding bug 539819
-      && (code.indexOf("/") == -1)         // constant folding bug 539819
-      && (code.indexOf("default") == -1)   // avoid bug 355509
-      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
-      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
-      // avoid bug 352085: keep operators that coerce to number (or integer)
-      // at constant-folding time (?) away from strings
-      &&
-           (
-             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
-             ||
-             (
-                  (code.indexOf("%")  == -1)
-               && (code.indexOf("/")  == -1)
-               && (code.indexOf("*")  == -1)
-               && (code.indexOf("-")  == -1)
-               && (code.indexOf(">>") == -1)
-               && (code.indexOf("<<") == -1)
-             )
-          )
-      ,
-
-    // Exclude things here if the decompilation doesn't match what the function actually does
-    checkDisassembly: false
-      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
-      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
-    ,
-
-    checkForExtraParens: false
-      && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
-      && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !codeL.match( /\?.*\=/)             // ignore bug 475893
-    ,
-
     allowExec: unlikelyToHang(code)
       && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
@@ -3545,77 +3477,6 @@ function whatToTestSpidermonkeyMozilla10(code)
   return {
 
     allowParse: true,
-
-    // Exclude things here if decompiling the function causes a crash.
-    allowDecompile: true,
-
-    // Exclude things here if decompiling returns something bogus that won't compile.
-    checkRecompiling: true
-      && !( code.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197 (10 branch)
-      && !( code.match( /arguments.*\:\:/ ))       // avoid bug 355506 (10 branch)
-      && !( code.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921 (10 branch)
-      && !( code.match( /\:.*for.*\(.*let.*\)/ ))  // avoid bug 352921 (10 branch)
-      && !( code.match( /for.*let.*\).*function/ )) // avoid bug 352735 (10 branch) (more rebracing stuff)
-      && !( code.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255 (10 branch)
-      && !( code.match( /const.*arguments/ ))        // avoid bug 355480 (10 branch)
-      && !( code.match( /var.*arguments/ ))          // avoid bug 355480 (10 branch)
-      && !( code.match( /let.*arguments/ ))          // avoid bug 355480 (10 branch)
-      && !( code.match( /let/ ))   // avoid bug 462309 (10 branch) :( :( :(
-      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (10 branch)
-      && !( code.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (10 branch)
-      && !( code.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 (10 branch) *errors*
-      && !( code.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616 (10 branch)
-      && !( code.match( /\#.*=/ ))                 // avoid bug 568734 (10 branch)
-      ,
-
-    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
-    checkForMismatch: true
-      && !( code.match( /const.*if/ ))               // avoid bug 352985 (10 branch)
-      && !( code.match( /if.*const/ ))               // avoid bug 352985 (10 branch)
-      && !( code.match( /with.*try.*function/ ))     // avoid bug 418285 (10 branch)
-      && !( code.match( /if.*try.*function/ ))       // avoid bug 418285 (10 branch)
-      && !( code.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696 (10 branch)
-      && !( code.match( /\?.*\?/ ))                  // avoid bug 475895 (10 branch)
-      && !( code.match( /if.*function/ ))            // avoid bug 355980 (10 branch) *changes*
-      && !( code.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695 (10 branch), etc)
-      && !( code.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695 (10 branch), etc)
-      && !( code.match( /\[.*\+/ ))        // constant folding bug 646599 (10 branch)
-      && (code.indexOf("*") == -1)         // constant folding bug 539819 (10 branch)
-      && (code.indexOf("/") == -1)         // constant folding bug 539819 (10 branch)
-      && (code.indexOf("#") == -1)         // avoid bug 646600 (10 branch)
-      && (code.indexOf("default") == -1)   // avoid bug 355509 (10 branch)
-      && (code.indexOf("delete") == -1)    // avoid bug 352027 (10 branch), which won't be fixed for a while :(
-      && (code.indexOf("const") == -1)     // avoid bug 352985 (10 branch) and bug 355480 (10 branch) :(
-      && (code.indexOf("&&") == -1)        // ignore bug 461226 (10 branch) with a hatchet
-      && (code.indexOf("||") == -1)        // ignore bug 461226 (10 branch) with a hatchet
-      // at constant-folding time (?) away from strings
-      &&
-           (
-             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
-             ||
-             (
-                  (code.indexOf("%")  == -1)
-               && (code.indexOf("/")  == -1)
-               && (code.indexOf("*")  == -1)
-               && (code.indexOf("-")  == -1)
-               && (code.indexOf(">>") == -1)
-               && (code.indexOf("<<") == -1)
-             )
-          )
-      ,
-
-    // Exclude things here if the decompilation doesn't match what the function actually does
-    checkDisassembly: true
-      && !( code.match( /\@.*\:\:/ ))   // avoid bug 381197 (10 branch) harder than above
-      && !( code.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (10 branch)
-    ,
-
-    checkForExtraParens: true
-      && !code.match( /\(.*for.*\(.*in.*\).*\)/ )  // ignore bug 381213 (10 branch), and unfortunately anything with genexps
-      && !code.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
-      && !code.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !code.match( /\?.*\=/)             // ignore bug 475893 (10 branch)
-    ,
 
     allowExec: unlikelyToHang(code)
       && code.indexOf("<>") == -1 // avoid bug 334628 (10 branch), hopefully
@@ -3668,21 +3529,9 @@ function whatToTestJavaScriptCore(code)
   return {
 
     allowParse: true,
-
-    allowDecompile: true,
-
-    checkRecompiling: true,
-
-    checkForMismatch: true,
-
-    checkForExtraParens: false, // ?
-
     allowExec: unlikelyToHang(code),
-
     allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
-
     checkUneval: false, // JavaScriptCore does not support |uneval|
-
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
@@ -3694,10 +3543,6 @@ function whatToTestGeneric(code)
 {
   return {
     allowParse: true,
-    allowDecompile: true,
-    checkRecompiling: true,
-    checkForMismatch: true,
-    checkForExtraParens: false, // most js engines don't try to guarantee lack of extra parens
     allowExec: unlikelyToHang(code),
     allowIter: (typeof Iterator == "function"),
     checkUneval: haveRealUneval,
@@ -3803,107 +3648,6 @@ function compartmentConsistencyTest(code)
 }
 
 
-/***********************************
- * WHOLE-FUNCTION DECOMPILER TESTS *
- ***********************************/
-
-function tryRoundTripStuff(f, code, wtt)
-{
-  if (verbose)
-    dumpln("About to do the 'toString' round-trip test");
-
-  // Functions are prettier with line breaks, so test toString before uneval.
-  checkRoundTripToString(f, code, wtt);
-
-  if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkForExtraParens) {
-    testForExtraParens(f, code);
-  }
-
-  if (haveRealUneval) {
-    if (verbose)
-      dumpln("About to do the 'uneval' round-trip test");
-    checkRoundTripUneval(f, code, wtt);
-  }
-}
-
-// Function round-trip with implicit toString
-function checkRoundTripToString(f, code, wtt)
-{
-  var fs, g;
-  try {
-    fs = "" + f;
-  } catch(e) { reportRoundTripIssue("Round-trip with implicit toString: can't toString", code, null, null, errorToString(e)); return; }
-
-  checkForCookies(fs);
-
-  if (wtt.checkRecompiling) {
-    try {
-      g = eval("(" + fs + ")");
-      var gs = "" + g;
-      if (wtt.checkForMismatch && fs != gs) {
-        reportRoundTripIssue("Round-trip with implicit toString", code, fs, gs, "mismatch");
-        wtt.checkForMismatch = false;
-      }
-    } catch(e) {
-      reportRoundTripIssue("Round-trip with implicit toString: error", code, fs, gs, errorToString(e));
-    }
-  }
-}
-
-// Function round-trip with uneval
-function checkRoundTripUneval(f, code, wtt)
-{
-  var g, uf, ug;
-  try {
-    uf = uneval(f);
-  } catch(e) { reportRoundTripIssue("Round-trip with uneval: can't uneval", code, null, null, errorToString(e)); return; }
-
-  checkForCookies(uf);
-
-  if (wtt.checkRecompiling) {
-    try {
-      g = eval("(" + uf + ")");
-      ug = uneval(g);
-      if (wtt.checkForMismatch && ug != uf) {
-        reportRoundTripIssue("Round-trip with uneval: mismatch", code, uf, ug, "mismatch");
-        wtt.checkForMismatch = false;
-      }
-    } catch(e) { reportRoundTripIssue("Round-trip with uneval: error", code, uf, ug, errorToString(e)); }
-  }
-}
-
-function checkForCookies(code)
-{
-  // http://hg.mozilla.org/mozilla-central/annotate/d254c07f3301/js/src/jsopcode.cpp#l2563
-  // These are things that shouldn't appear in decompilations.
-  if (code.indexOf("/*EXCEPTION") != -1
-   || code.indexOf("/*RETSUB") != -1
-   || code.indexOf("/*FORELEM") != -1
-   || code.indexOf("/*WITH") != -1)
-    foundABug("A 'cookie' from jsopcode.cpp appeared in a decompilation!", code);
-}
-
-function reportRoundTripIssue(issue, code, fs, gs, e)
-{
-  if (e.indexOf("illegal XML character") != -1) {
-    dumpln("Ignoring bug 355674.");
-    return;
-  }
-
-  if (fs && gs && fs.replace(/'/g, "\"") == gs.replace(/'/g, "\"")) {
-    dumpln("Ignoring quote mismatch (bug 346898 (wontfix)).");
-    return;
-  }
-
-  var details = "Code: " + uneval(code) + "\n\n" +
-                "fs: " + fs + "\n\n" +
-                "gs: " + gs + "\n\n" +
-                "error: " + e;
-
-  foundABug(issue, details);
-}
-
-
 /*************************************************
  * EXPRESSION DECOMPILATION & VALUE UNEVAL TESTS *
  *************************************************/
@@ -3951,7 +3695,7 @@ function testUnevalString(uo)
   var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
 
   return true
-      &&  uo.indexOf("[native code]") == -1                // ignore bug 384756
+      &&  uo.indexOf("[native code]") == -1                // this can happen
       && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
       &&  uo.indexOf("NaN") == -1                          // see bug 379521 (wontfix)
       &&  uo.indexOf("Infinity") == -1                     // see bug 379521 (wontfix)
@@ -4013,236 +3757,6 @@ function checkErrorMessage2(err, prefix, suffix)
       }
     }
   }
-}
-
-
-/**************************
- * PARENTHESIZATION TESTS *
- **************************/
-
-// Returns an array of strings of length (code.length-2),
-// each having one pair of matching parens removed.
-// Assumes all parens in code are significant.  This assumption fails
-// for strings or regexps, but whatever.
-function deParen(code)
-{
-  // Get a list of locations of parens.
-  var parenPairs = []; // array of { left : int, right : int } (indices into code string)
-  var unmatched = []; // stack of indices into parenPairs
-
-  var i, c;
-
-  for (i = 0; i < code.length; ++i) {
-    c = code.charCodeAt(i);
-    if (c == 40) {
-      // left paren
-      unmatched.push(parenPairs.length);
-      parenPairs.push({ left: i });
-    } else if (c == 41) {
-      // right paren
-      if (unmatched.length == 0)
-        return []; // eep! unmatched rparen!
-      parenPairs[unmatched.pop()].right = i;
-    }
-  }
-
-  if (unmatched.length > 0)
-    return []; // eep! unmatched lparen!
-
-  var rs = [];
-
-  // Don't add spaces in place of the parens, because we don't
-  // want to detect things like (5).x as being unnecessary use
-  // of parens.
-
-  for (i = 0; i < parenPairs.length; ++i) {
-    var left = parenPairs[i].left, right = parenPairs[i].right;
-    rs.push(
-        code.substr(0, left)
-      + code.substr(left + 1, right - (left + 1))
-      + code.substr(right + 1)
-    );
-  }
-
-  return rs;
-}
-
-// print(uneval(deParen("for (i = 0; (false); ++i) { x(); }")));
-// print(uneval(deParen("[]")));
-
-function testForExtraParens(f, code)
-{
-  code = code.replace(/\n/g, " ").replace(/\r/g, " "); // regexps can't match across lines
-
-  var uf = "" + f;
-
-  // numbers get more parens than they need
-  if (uf.match(/\(\d/)) return;
-
-  if (uf.indexOf("(<") != -1) return; // bug 381204
-  if (uf.indexOf(".(") != -1) return; // bug 381207
-  if (code.indexOf("new") != -1) return; // "new" is weird. what can i say?
-  if (code.indexOf("let") != -1) return; // reasonable to overparenthesize "let" (see expclo#c33)
-  if (code.match(/\:.*function/)) return; // why?
-  if (uf.indexOf("(function") != -1) return; // expression closures over-parenthesize
-
-  if (code.match(/for.*yield/)) return; // why?
-  if (uf.indexOf("= (yield") != -1) return;
-  if (uf.indexOf(":(yield") != -1) return;
-  if (uf.indexOf(": (yield") != -1) return;
-  if (uf.indexOf(", (yield") != -1) return;
-  if (uf.indexOf("[(yield") != -1) return;
-  if (uf.indexOf("yield") != -1) return; // i give up on yield
-
-  // Sanity check
-  var euf = eval("(" + uf + ")");
-  var ueuf = "" + euf;
-  if (ueuf != uf) {
-    foundABug("Shouldn't the earlier round-trip test have caught this?", ueuf + "\n" + uf);
-  }
-
-  var dps = deParen(uf);
-  // skip the first, which is the function's formal params.
-
-  for (var i = 1; i < dps.length; ++i) {
-    var uf2 = dps[i];
-
-    try {
-      var euf2 = eval("(" + uf2 + ")");
-    } catch(e) { /* print("The latter did not compile.  That's fine."); */ continue; }
-
-    var ueuf2 = "" + euf2
-
-    if (ueuf2 == ueuf) {
-      foundABug("Unexpected match - extra parens?", uf + "\n\n" + uf2 + "\n\n" + "Both decompile as:\n" + ueuf);
-    }
-  }
-}
-
-
-/*********************************
- * SPIDERMONKEY DISASSEMBLY TEST *
- *********************************/
-
-// Finds decompiler bugs and bytecode inefficiencies by complaining when a round trip
-// through the decompiler changes the bytecode.
-function checkRoundTripDisassembly(f, code, wtt)
-{
-  if (code.indexOf("[@") != -1 || code.indexOf("*::") != -1 || code.indexOf("::*") != -1 || code.match(/\[.*\*/)) {
-    dumpln("checkRoundTripDisassembly: ignoring bug 475859");
-    return;
-  }
-
-  var uf = uneval(f);
-
-  if (uf.indexOf("switch") != -1) {
-    dumpln("checkRoundTripDisassembly: ignoring bug 355509");
-    return;
-  }
-
-  if (code.indexOf("new") != code.lastIndexOf("new")) {
-    dumpln("checkRoundTripDisassembly: ignoring function with two 'new' operators (bug 475848)");
-    return;
-  }
-
-  if (code.match(/for.*\(.*in.*\).*if/)) {
-    print("checkRoundTripDisassembly: ignoring array comprehension with 'if' (bug 475882)");
-    return;
-  }
-
-  var df = disassemble(f);
-
-  if (df.indexOf("newline") != -1)
-    return;
-  if (df.indexOf("lineno") != -1)
-    return;
-
-  try {
-    var g = directEvalC(uf);
-  } catch(e) {
-    print("checkRoundTripDisassembly: ignoring stuff that should be caught by the uneval test");
-    return;
-  }
-
-  var dg = disassemble(g);
-
-  if (df == dg) {
-    // Happy!
-    return;
-  }
-
-  if (dg.indexOf("newline") != -1) {
-    // Really should just ignore these lines, instead of bailing...
-    return;
-  }
-
-  var dfl = df.split("\n");
-  var dgl = dg.split("\n");
-  for (var i = 0; i < dfl.length && i < dgl.length; ++i) {
-    if (dfl[i] != dgl[i]) {
-      if (dfl[i] == "00000:  arguments") {
-        // The substring 'arguments' disappeared from the function code.
-        // This can be a valid optimization.
-        // It will probably change the function prologue, along with local var
-        // numbering, without changing the function's behavior.
-        // See https://bugzilla.mozilla.org/show_bug.cgi?id=740259#c18
-        print("checkRoundTripDisassembly: ignoring loss of arguments");
-        return;
-      }
-      if (dfl[i] == "00000:  generator" || dfl[i] == "00005:  generator") {
-        print("checkRoundTripDisassembly: ignoring loss of generator (bug 350743)");
-        return;
-      }
-      if (dfl[i].indexOf("goto") != -1 && dgl[i].indexOf("stop") != -1 && uf.indexOf("switch") != -1) {
-        // Actually, this might just be bug 355509.
-        print("checkRoundTripDisassembly: ignoring extra 'goto' in switch (bug 475838)");
-        return;
-      }
-      if (dfl[i].indexOf("regexp null") != -1) {
-        print("checkRoundTripDisassembly: ignoring 475844 / regexp");
-        return;
-      }
-      if (dfl[i].indexOf("namedfunobj null") != -1 || dfl[i].indexOf("anonfunobj null") != -1) {
-        print("checkRoundTripDisassembly: ignoring 475844 / function");
-        return;
-      }
-      if (dfl[i].indexOf("string") != -1 && (dfl[i+1].indexOf("toxml") != -1 || dfl[i+1].indexOf("startxml") != -1)) {
-        print("checkRoundTripDisassembly: ignoring e4x-string mismatch (likely bug 355674)");
-        return;
-      }
-      if (dfl[i].indexOf("string") != -1 && df.indexOf("startxmlexpr") != -1) {
-        print("checkRoundTripDisassembly: ignoring complicated e4x-string mismatch (likely bug 355674)");
-        return;
-      }
-      if (dfl[i].indexOf("newinit") != -1 && dgl[i].indexOf("newarray 0") != -1) {
-        print("checkRoundTripDisassembly: ignoring array comprehension disappearance (bug 475847)");
-        return;
-      }
-      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") != -1 && dgl[i].indexOf("HEAVYWEIGHT") == -1) {
-        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854)");
-        return;
-      }
-      if (i == 0 && dfl[i].indexOf("HEAVYWEIGHT") == -1 && dgl[i].indexOf("HEAVYWEIGHT") != -1) {
-        // The other direction
-        // var __proto__ hoisting, for example
-        print("checkRoundTripDisassembly: ignoring unnecessarily HEAVYWEIGHT function (bug 475854 comment 1)");
-        return;
-      }
-      if (dfl[i].indexOf("pcdelta") != -1 && dgl[i].indexOf("pcdelta") != -1) {
-        print("checkRoundTripDisassembly: pcdelta changed, who cares? (bug 475908)");
-        return;
-      }
-
-      print("First line that does not match:");
-      print(dfl[i]);
-      print(dgl[i]);
-      print("");
-      break;
-    }
-  }
-
-  foundABug("Disassembly was not stable through decompilation",
-    "Original code:\n" + code + "\n\nOriginal function:\n" + uf + "\n" + df + "\n\nFunction from recompiling:\n" + dg);
 }
 
 
@@ -4778,19 +4292,9 @@ function optionalTests(f, code, wtt)
     tryEnsureSanity();
   }
 
-  if (count % 100 == 5 && f && typeof disassemble == "function" && wtt.allowDecompile && wtt.allowExec && wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkDisassembly) {
-    // "}" can "escape", allowing code to *execute* that we only intended to compile.  Hence the allowExec check.
-    var fx = directEvalC("(function(){" + code + "});");
-    checkRoundTripDisassembly(fx, code, wtt);
-  }
-
   if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
     nestingConsistencyTest(code);
     compartmentConsistencyTest(code);
-  }
-
-  if (count % 10 == 7 && f && wtt.allowDecompile) {
-    tryRoundTripStuff(f, code, wtt);
   }
 }
 
