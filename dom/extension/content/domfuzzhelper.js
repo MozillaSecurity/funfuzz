@@ -110,6 +110,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       resizeTo: safeResizeTo(aWindow),
 
+      reftestFilesDirectory: reftestFilesDirectory.bind(this),
+
       __exposedProps__: {
         'toString': 'r',
         'quitApplication': 'r',
@@ -142,6 +144,7 @@ function makeDOMFuzzHelper(aWindow) {
         verifypostbarriers: 'r',
         mjitChunkLimit: 'r',
         terminate: 'r',
+        reftestFilesDirectory: 'r'
       }
   };
 };
@@ -403,17 +406,9 @@ function reftestList()
 
 function cssPropertyDatabase()
 {
-  var fn = sendSyncMessage('DOMFuzzHelper.getBinDirectory', {})[0];
   var f = Components.classes["@mozilla.org/file/local;1"]
                     .createInstance(Components.interfaces.nsILocalFile);
-  f.initWithPath(fn);
-  while (f.leafName != "dist") {
-    f = f.parent;
-  }
-  f = f.parent;
-  f.append("tests");
-  f.append("reftest");
-  f.append("tests");
+  f.initWithPath(reftestFilesDirectory());
   f.append("layout");
   f.append("style");
   f.append("test");
@@ -425,6 +420,14 @@ function cssPropertyDatabase()
 /**********************
  * FILESYSTEM HELPERS *
  **********************/
+
+function reftestFilesDirectory()
+{
+  var env = Components.classes["@mozilla.org/process/environment;1"].
+            getService(Components.interfaces.nsIEnvironment);
+  var reftestFilesDir = env.get("REFTEST_FILES_DIR");
+  return reftestFilesDir;
+}
 
 function profileDirectory()
 {

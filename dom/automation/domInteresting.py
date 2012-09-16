@@ -418,6 +418,7 @@ def rdfInit(args):
         runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
 
     env = os.environ.copy()
+    env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
     if dirs.stackwalk:
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
     runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
