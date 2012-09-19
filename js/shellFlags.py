@@ -90,9 +90,6 @@ def randomFlagSet(shell):
         # jorendorff suggests the following line for E4X. It should be removed when E4X is removed.
         args.extend(['-e', '\'options("allow_xml");\''])
 
-    if shellSupportsFlag(shell, "--gc-zeal=0") and chance(.05):
-        args.append("--gc-zeal=" + random.choice(["1", "2"]) + "," + str(random.randint(1, 100)) + "," + random.choice(["0", "1"]))
-
     return args
 
 
