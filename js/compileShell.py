@@ -39,6 +39,7 @@ class CompiledShell(object):
             os.mkdir(self.cacheDir)
         assert os.path.isdir(self.cacheDir)
     def setArch(self, arch):
+        assert arch == '32' or arch == '64'
         self.arch = arch
     def getArch(self):
         return self.arch
@@ -47,6 +48,7 @@ class CompiledShell(object):
     def getCacheDir(self):
         return self.cacheDir
     def setCompileType(self, compileType):
+        assert compileType == 'dbg' or compileType == 'opt'
         self.compileType = compileType
     def getCompileType(self):
         return self.compileType
@@ -105,6 +107,8 @@ class CompiledShell(object):
         if self.repoDir == None:
             raise Exception('First setRepoDir, repository directory is not yet set.')
         return getRepoNameFromHgrc(os.path.join(self.repoDir, '.hg', 'hgrc'))
+    def getShellCachePath(self):
+        return normExpUserPath(os.path.join(self.cacheDir, self.shellName))
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getObjdir(), 'js' + ('.exe' if isWin else '')))
     def getShellFuzzingPath(self):

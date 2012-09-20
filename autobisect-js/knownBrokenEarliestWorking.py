@@ -59,7 +59,8 @@ def earliestKnownWorkingRev(options):
     fList = options.flagsReqList
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    if options.raSupport:  # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds
+    # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds
+    if options.raSupport or options.isThreadsafe:  # Threadsafety result is wrong prior to this rev
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
     elif '--no-ti' in fList or '--no-ion' in fList or '--no-jm' in fList:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
