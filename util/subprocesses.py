@@ -271,19 +271,16 @@ def shellify(cmd):
     okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
     okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
     ssc = []
-    try:
-        for i in xrange(len(cmd)):
-            item = cmd[i]
-            if okUnquotedRE.match(item):
-                ssc.append(item)
-            elif okQuotedRE.match(item):
-                ssc.append('"' + item + '"')
-            else:
-                raise Exception('Sorry, shellify does not know how to escape: ' + item)
-        return ' '.join(ssc)
-    except Exception as e:
-        print repr(e)
-        return 'Trying anyway: ' + ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
+    for i in xrange(len(cmd)):
+        item = cmd[i]
+        if okUnquotedRE.match(item):
+            ssc.append(item)
+        elif okQuotedRE.match(item):
+            ssc.append('"' + item + '"')
+        else:
+            return 'Regex not matched, but trying to shellify anyway: ' + \
+                        ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
+    return ' '.join(ssc)
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                    cwd=os.getcwdu(), env=os.environ, vb=False):

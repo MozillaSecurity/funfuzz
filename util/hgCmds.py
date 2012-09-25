@@ -36,7 +36,7 @@ def getMcRepoDir():
     else:
         baseDir = '~'
     mcRepoDir = normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
-    assert getRepoNameFromHgrc(os.path.join(mcRepoDir, '.hg', 'hgrc')) == 'mozilla-central'
+    assert getRepoNameFromHgrc(mcRepoDir) == 'mozilla-central'
     return baseDir, mcRepoDir
 
 def getRepoHashAndId(repoDir, repoRev='parents() and default'):
@@ -69,16 +69,17 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     vdump('Finished getting the hash and local id number of the repository.')
     return hgIdChangesetHash, hgIdLocalNum, onDefault
 
-def getRepoNameFromHgrc(hgrcpath):
+def getRepoNameFromHgrc(repoDir):
     '''Looks in the hgrc file in the .hg directory of the repository and returns the name.'''
+    hgrcpath = os.path.join(repoDir, '.hg', 'hgrc')
     assert os.path.isfile(hgrcpath)
     hgCfg = SafeConfigParser()
     hgCfg.read(hgrcpath)
     # Not all default entries in [paths] end with "/".
     return [i for i in hgCfg.get('paths', 'default').split('/') if i][-1]
 
-def isAncestor(a, b):
-    return findCommonAncestor(a, b) == a
+def isAncestor(repoDir, a, b):
+    return findCommonAncestor(repoDir, a, b) == a
 
 def patchHgRepoUsingMq(patchLoc, workingDir=os.getcwdu()):
     # We may have passed in the patch with or without the full directory.

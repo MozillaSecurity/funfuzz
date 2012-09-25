@@ -72,18 +72,22 @@ def testIsThreadsafe(s):
     '''This function tests if a binary is compiled with --enable-threadsafe.'''
     result = captureStdout([s, '-e', 'print(getBuildConfiguration()["threadsafe"])'])[0]
     # There were some changesets which had getBuildConfiguration() but with no threadsafe attribute
+    # and there were older changesets which did not have getBuildConfiguration() at all.
     if result not in locals():
         result = 'undef'
     return result
 
 def testWithRootAnalysis(s):
     '''This function tests if a binary is compiled with root analysis enabled.'''
-    return bool(captureStdout([s, '-e', 'print(getBuildConfiguration()["rooting-analysis"])'])[0])
+    result = captureStdout([s, '-e', 'print(getBuildConfiguration()["rooting-analysis"])'])[0]
+    # There were some changesets which did not have getBuildConfiguration() at all.
+    if result not in locals():
+        result = 'undef'
+    return result
 
 def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
     assert archOfBinary(sh.getShellFuzzingPath()) == sh.getArch()
     assert testDbgOrOpt(sh.getShellFuzzingPath()) == sh.getCompileType()
-    assert testIsThreadsafe(sh.getShellFuzzingPath()) == \
-        ('undef' or (True if options.isThreadsafe else False))
-    assert testWithRootAnalysis(sh.getShellFuzzingPath()) == (True if options.raSupport else False)
+    assert testIsThreadsafe(sh.getShellFuzzingPath()) == ('undef' or options.isThreadsafe)
+    assert testWithRootAnalysis(sh.getShellFuzzingPath()) == ('undef' or options.enableRootAnalysis)

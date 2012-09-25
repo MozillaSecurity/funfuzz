@@ -91,7 +91,7 @@ class CompiledShell(object):
         return ['hg', '-R', self.repoDir]
     def setName(self, options):
         sname = '-'.join(x for x in ['js', self.compileType, self.arch,
-                                     'ra' if options.raSupport else '', self.hgHash,
+                                     'ra' if options.enableRootAnalysis else '', self.hgHash,
                                      'windows' if isWin else platform.system().lower()] if x)
         self.shellName = sname + '.exe' if isWin else sname
     def getName(self):
@@ -106,7 +106,7 @@ class CompiledShell(object):
     def getRepoName(self):
         if self.repoDir == None:
             raise Exception('First setRepoDir, repository directory is not yet set.')
-        return getRepoNameFromHgrc(os.path.join(self.repoDir, '.hg', 'hgrc'))
+        return getRepoNameFromHgrc(self.repoDir)
     def getShellCachePath(self):
         return normExpUserPath(os.path.join(self.cacheDir, self.shellName))
     def getShellCompiledPath(self):
@@ -124,7 +124,7 @@ def autoconfRun(cwd):
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
 
 def cfgCompileCopy(shell, options):
-    '''Configures, compiles and copies a js shell according to parameters and returns shell name.'''
+    '''Configures, compiles and copies a js shell according to required parameters.'''
     autoconfRun(shell.getCompilePathJsSrc())
     try:
         os.mkdir(shell.getObjdir())
@@ -143,7 +143,7 @@ def cfgCompileCopy(shell, options):
     compileCopy(shell, options)
 
 def cfgJsBin(shell, options):
-    '''This function configures a js binary according to specified parameters.'''
+    '''This function configures a js binary according to required parameters.'''
     cfgCmdList = []
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
@@ -219,7 +219,7 @@ def cfgJsBin(shell, options):
     # Fuzzing tweaks for more useful output, implemented in bug 706433
     cfgCmdList.append('--enable-more-deterministic')
     cfgCmdList.append('--disable-tests')
-    if options.raSupport:
+    if options.enableRootAnalysis:
         cfgCmdList.append('--enable-root-analysis')
     if options.isThreadsafe:
         cfgCmdList.append('--enable-threadsafe')

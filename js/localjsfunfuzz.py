@@ -24,7 +24,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from downloadBuild import defaultBuildType, downloadBuild, downloadLatestBuild, mozPlatform
-from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
+from hgCmds import getRepoHashAndId, patchHgRepoUsingMq
 from lithOps import knownBugsDir
 from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, vdump
 
@@ -50,8 +50,8 @@ def parseOptions():
         timeout = 10,
         enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
-        raSupport = False,
-        useVg = False,
+        enableRootAnalysis = False,
+        testWithVg = False,
     )
 
     parser.add_option('--disable-comparejit', dest='disableCompareJit', action='store_true',
@@ -84,14 +84,14 @@ def parseOptions():
                            'supported.')
     parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
                       help='Enable pymake. Defaults to "%default" on the current platform.')
-    parser.add_option('--enable-root-analysis', dest='raSupport', action='store_true',
+    parser.add_option('--enable-root-analysis', dest='enableRootAnalysis', action='store_true',
                       help='Enable root analysis support. Defaults to "%default".')
     parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
                       help='Enable compilation and fuzzing of threadsafe js shell. ' + \
                            'NSPR should first be installed, see: ' + \
                            'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
                            'Defaults to "%default".')
-    parser.add_option('--use-valgrind', dest='useVg', action='store_true',
+    parser.add_option('--test-with-valgrind', dest='testWithVg', action='store_true',
                       help='Fuzz with valgrind. ' + \
                            'compareJIT will then be disabled due to speed issues. ' + \
                            'Defaults to "%default".')
@@ -106,14 +106,15 @@ def parseOptions():
         options.patchDir = normExpUserPath(options.patchDir)
 
     if isWin:
-        assert 'x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.arch == '32'
-        assert 'x64' not in os.environ['MOZ_TOOLS'].split(os.sep)[-1] or options.arch == '64'
+        assert ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) == (options.arch == '64')
     assert 'dbg' in options.compileType or 'opt' in options.compileType
 
     # Set different timeouts depending on machine.
     options.loopyTimeout = str(machineTimeoutDefaults(options.timeout))
-    if options.useVg:
-        if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
+    if options.testWithVg:
+        # FIXME: Change this to whitelist Pandaboard ES board when we actually verify this.
+        #if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
+        if isLinux or isMac:
             options.loopyTimeout = '300'
         else:
             raise Exception('Valgrind is only supported on non-ARMv7l Linux or Mac OS X machines.')
@@ -177,11 +178,11 @@ def envDump(shell, log):
                 ' shell:\n\n')
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')
-        f.write(' '.join(shell.getEnvAdded()) + '\n\n')
+        f.write(repr(shell.getEnvAdded()) + '\n\n')
         f.write('Configuration command was:\n')
-        f.write(' '.join(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write(repr(shell.getCfgCmdExclEnv()) + '\n\n')
         f.write('Full configuration command with needed environment variables is:\n')
-        f.write(' '.join(shell.getEnvAdded()) + ' '.join(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write(repr(shell.getEnvAdded()) + repr(shell.getCfgCmdExclEnv()) + '\n\n')
 
 def cmdDump(shell, log):
     '''Dump commands to file.'''
@@ -225,13 +226,14 @@ def localCompileFuzzJsShell(options):
         myShell.setCompileType('opt')
         myOtherShell.setCompileType('dbg')
 
-    appendStr = '-' + myShell.getHgHash() + '-' + myShell.getHgNum()
+    appendStr = ''
     if options.patchDir:
         appendStr += '-patched'
     # FIXME: Remove myShell.getCompileType() once we randomly fuzz between the two at the same time.
     fullPath = mkdtemp(appendStr + os.sep, os.path.join(
         'jsfunfuzz-' + myShell.getCompileType() + '-' + myShell.getArch() + '-' + \
-        myShell.getRepoName() + '-'), myShell.getCacheDirBase())
+        myShell.getRepoName() + '-' + myShell.getHgNum() + '-' + \
+        myShell.getHgHash() + '-'), myShell.getCacheDirBase())
     myShell.setFuzzingPath(fullPath)
     myOtherShell.setFuzzingPath(fullPath)
     assert os.path.exists(myShell.getFuzzingPath())
@@ -271,7 +273,7 @@ def localCompileFuzzJsShell(options):
     cmdList = ['python', '-u']
     cmdList.append(normExpUserPath(os.path.join(path0, 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + myShell.getRepoDir())
-    if options.useVg:
+    if options.testWithVg:
         cmdList.append('--valgrind')
     if not options.disableCompareJit:
         cmdList.append('--comparejit')
@@ -284,9 +286,8 @@ def localCompileFuzzJsShell(options):
     # Write log files describing configuration parameters used during compilation.
     localLog = normExpUserPath(os.path.join(myShell.getFuzzingPath(), 'log-localjsfunfuzz.txt'))
     envDump(myShell, localLog)
-    cmdDump(myShell, localLog)
     envDump(myOtherShell, localLog)  # Also dump information about the other shell
-    cmdDump(myOtherShell, localLog)
+    cmdDump(myShell, localLog)
 
     with open(localLog, 'rb') as f:
         for line in f:
@@ -315,8 +316,10 @@ def main():
             shutil.copy2(analysisPath, startDir)
 
         loopyTimeout = str(machineTimeoutDefaults(options.timeout))
-        if options.useVg:
-            if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
+        if options.testWithVg:
+            # FIXME: Change this to whitelist Pandaboard ES board when we actually verify this.
+            #if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
+            if isLinux or isMac:
                 loopyTimeout = '300'
             else:
                 raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
