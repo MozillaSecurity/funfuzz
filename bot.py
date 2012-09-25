@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-# bot.py runs domfuzz or lithium as needed, for a limited amount of time, storing jobs using ssh.
+# bot.py runs domfuzz, jsfunfuzz, or Lithium for a limited amount of time.
+# It stores jobs using ssh, using directory 'mv' for synchronization.
 
 from __future__ import with_statement
 
@@ -33,8 +34,6 @@ devnull = open(os.devnull, "w")
 
 targetTime = 15*60 # for build machines, use 15 minutes (15*60)
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
-
-# Uses directory name 'mv' for synchronization.
 
 # Possible ssh options:
 #   -oStrictHostKeyChecking=no
