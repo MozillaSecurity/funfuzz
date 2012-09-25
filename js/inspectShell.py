@@ -12,6 +12,8 @@ import subprocess
 import sys
 from copy import deepcopy
 
+from shellFlags import shellSupports
+
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
@@ -33,32 +35,6 @@ def archOfBinary(binary):
         if '64-bit' in filetype:
             assert '32-bit' not in filetype
             return '64'
-
-def shellSupports(shell, args):
-    '''
-    This function returns True if the shell likes the args.
-    You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
-    '''
-    cmdList = [shell] + args
-
-    vdump(' '.join(cmdList))
-    cfgEnvDt = deepcopy(os.environ)
-    if isLinux:
-        cfgEnvDt['LD_LIBRARY_PATH'] = os.path.dirname(os.path.abspath(shell))
-    out, retCode = captureStdout(cmdList, ignoreStderr=True, combineStderr=True,
-                                 ignoreExitCode=True, env=cfgEnvDt)
-    vdump('The return code is: ' + str(retCode))
-
-    if retCode == 0:
-        return True
-    elif 1 <= retCode <= 3:
-        # Exit codes 1 through 3 are all plausible "non-support":
-        #   * "Usage error" is 1 in new js shell, 2 in old js shell, 2 in xpcshell.
-        #   * "Script threw an error" is 3 in most shells, but 1 in some versions (see bug 751425).
-        # Since we want autoBisect to support all shell versions, allow all these exit codes.
-        return False
-    else:
-        raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
 def testJsShellOrXpcshell(s):
     '''This function tests if a binary is a js shell or xpcshell.'''
