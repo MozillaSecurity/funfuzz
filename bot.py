@@ -338,27 +338,7 @@ def main():
                 os.mkdir(buildDir)
                 buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
 
-            # not really "oldjobname", but this is how i get newjobname to be what i want below
-            # avoid putting underscores in this part, because those get split on
-            oldjobname = uuid.uuid1().hex
-            job = options.tempDir + localSep + oldjobname + localSep
-            os.mkdir(job)
-
-            if options.runJsfunfuzz:
-                shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
-                # Not using compareJIT: bug 751700, and it's not fully hooked up
-                # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
-                mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
-                (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
-            else:
-                # FIXME: support Valgrind
-                (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildDir])
-
-            if lithResult == lithOps.HAPPY:
-                print "Happy happy! No bugs found!"
-            else:
-                writeTinyFile(job + "preferred-build.txt", buildSrc)
-                uploadJob(options, lithResult, lithDetails, job, oldjobname)
+            multiFuzzUntilBug(options, buildDir, buildSrc)
 
     # Remove build directory
     if not options.reuse_build and os.path.exists(buildDir):
@@ -367,6 +347,45 @@ def main():
     # Remove the main temp dir, which should be empty at this point
     os.rmdir(options.tempDir)
 
+def multiFuzzUntilBug(options, buildDir, buildSrc):
+    if sys.version_info < (2, 6):
+        # The multiprocessing module was added in Python 2.6
+        fuzzUntilBug(options, buildDir, 0)
+    else:
+        from multiprocessing import Process
+        ps = []
+        # Fork a bunch of processes
+        for i in xrange(cpuCount()):
+            p = Process(target=fuzzUntilBug, args=(options, buildDir, buildSrc, i + 1), name="Fuzzing process " + str(i + 1))
+            p.start()
+            ps.append(p)
+        # Wait for them all to finish
+        for p in ps:
+            p.join()
+        print "All children have joined!"
+
+def fuzzUntilBug(options, buildDir, buildSrc, i):
+    # not really "oldjobname", but this is how i get newjobname to be what i want below
+    # avoid putting underscores in this part, because those get split on
+    oldjobname = uuid.uuid1(clock_seq = i).hex
+    job = options.tempDir + localSep + oldjobname + localSep
+    os.mkdir(job)
+
+    if options.runJsfunfuzz:
+        shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
+        # Not using compareJIT: bug 751700, and it's not fully hooked up
+        # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
+        mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
+        (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
+    else:
+        # FIXME: support Valgrind
+        (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildDir])
+
+    if lithResult == lithOps.HAPPY:
+        print "Happy happy! No bugs found!"
+    else:
+        writeTinyFile(job + "preferred-build.txt", buildSrc)
+        uploadJob(options, lithResult, lithDetails, job, oldjobname)
 
 if __name__ == "__main__":
     main()
