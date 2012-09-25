@@ -98,7 +98,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
         jsunhappyOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
         iteration += 1
-        logPrefix = wtmpDir + os.sep + "w" + str(iteration)
+        logPrefix = os.path.join(wtmpDir, "w" + str(iteration))
 
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
