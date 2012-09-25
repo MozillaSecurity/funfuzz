@@ -23,7 +23,7 @@ import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 from compileShell import CompiledShell, makeTestRev
-from inspectShell import testBinary
+from inspectShell import constructVgCmdList, testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatform
@@ -111,7 +111,7 @@ def parseOpts():
                       help="Interpret the final arguments as an interestingness test.")
 
     # Define parameters to be tested.
-    parser.add_option('-m', '--parameters', dest='parameters',
+    parser.add_option('-p', '--parameters', dest='parameters',
                       help='Define the testing parameters, e.g. -p "-a --ion-eager testcase.js".')
 
     parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
@@ -121,11 +121,9 @@ def parseOpts():
                            'NSPR should first be installed, see: ' + \
                            'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
                            'Defaults to "%default".')
-    # Build shells with --enable-root-analysis.
     parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
                       action='store_true',
-                      help='Enable root analysis support. Defaults to "%default".')
-    # Test with Valgrind.
+                      help='Build shells with --enable-root-analysis. Defaults to "%default".')
     parser.add_option('--test-with-valgrind', dest='testWithVg',
                       action='store_true',
                       help='Test with Valgrind enabled. Defaults to "%default".')
@@ -138,7 +136,6 @@ def parseOpts():
     (options, args) = parser.parse_args()
 
     assert 'dbg' in options.compileType or 'opt' in options.compileType
-    assert ',' not in options.parameters, 'Commas are not supported in parameters.'
     options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
 
@@ -148,8 +145,15 @@ def parseOpts():
     if options.startRepo is None:
         options.startRepo = earliestKnownWorkingRev(options)
 
-    options.testAndLabel = externalTestAndLabel(options, args) if options.useInterestingnessTests \
-        else internalTestAndLabel(options)
+    if options.useInterestingnessTests:
+        if len(args) < 1:
+            print 'args are: ' + args
+            parser.error('Not enough arguments.')
+        options.testAndLabel = externalTestAndLabel(options, args)
+    else:
+        if len(args) >= 1:
+            parser.error('Too many arguments.')
+        options.testAndLabel = internalTestAndLabel(options)
 
     return options
 
