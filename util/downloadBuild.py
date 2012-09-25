@@ -13,8 +13,6 @@ from HTMLParser import HTMLParser
 from optparse import OptionParser
 from subprocesses import captureStdout, normExpUserPath, shellify, vdump
 
-devnull = open(os.devnull, "w")
-
 # Use curl/wget rather than urllib because urllib can't check certs.
 useCurl = False
 
