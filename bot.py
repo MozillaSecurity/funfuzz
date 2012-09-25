@@ -259,23 +259,18 @@ def main():
             print "Corefile size (soft limit, hard limit) is: " + \
                     repr(resource.getrlimit(resource.RLIMIT_CORE))
 
-    shouldLoop = True
-    while shouldLoop:
-        job = None
-        oldjobname = None
-        takenNameOnServer = None
-        lithResult = None
-        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-        buildDir = 'build'
-        #if options.remote_host:
-        #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+    # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
+    buildDir = 'build'
+    #if options.remote_host:
+    #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        if os.path.exists(options.tempDir):
-            shutil.rmtree(options.tempDir)
-        os.mkdir(options.tempDir)
+    if os.path.exists(options.tempDir):
+        shutil.rmtree(options.tempDir)
+    os.mkdir(options.tempDir)
 
-        if options.retestAll:
-            print "Retesting time!"
+    if options.retestAll:
+        print "Retesting time!"
+        while True:
             (job, oldjobname, takenNameOnServer) = grabJob(options, "_reduced")
             if job:
                 if ("1339201819" in oldjobname or # Bug 763126
@@ -314,64 +309,63 @@ def main():
                     uploadJob(options, lithResult, lithDetails, job, oldjobname)
                     runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
             else:
-                shouldLoop = False
+                break
+    else:
+        (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
+        if job:
+            print "Reduction time!"
+            if not options.reuse_build:
+                preferredBuild = readTinyFile(job + "preferred-build.txt")
+                if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=options.runJsfunfuzz):
+                    print "Preferred build for this reduction was missing, grabbing latest build"
+                    downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
+            lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
+            logPrefix = job + "reduce" + timestamp()
+            (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+            uploadJob(options, lithResult, lithDetails, job, oldjobname)
+            runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
+
         else:
-            shouldLoop = False
-            (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
-            if job:
-                print "Reduction time!"
-                if not options.reuse_build:
-                    preferredBuild = readTinyFile(job + "preferred-build.txt")
-                    if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=options.runJsfunfuzz):
-                        print "Preferred build for this reduction was missing, grabbing latest build"
-                        downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
-                lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-                logPrefix = job + "reduce" + timestamp()
-                (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
-                uploadJob(options, lithResult, lithDetails, job, oldjobname)
-                runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
-
+            print "Fuzz time!"
+            #if options.remote_host:
+            #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+            if options.reuse_build and os.path.exists(buildDir):
+                buildSrc = buildDir
             else:
-                print "Fuzz time!"
-                #if options.remote_host:
-                #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-                if options.reuse_build and os.path.exists(buildDir):
-                    buildSrc = buildDir
-                else:
-                    if os.path.exists(buildDir):
-                        print "Deleting old build..."
-                        shutil.rmtree(buildDir)
-                    os.mkdir(buildDir)
-                    buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
+                if os.path.exists(buildDir):
+                    print "Deleting old build..."
+                    shutil.rmtree(buildDir)
+                os.mkdir(buildDir)
+                buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
 
-                # not really "oldjobname", but this is how i get newjobname to be what i want below
-                # avoid putting underscores in this part, because those get split on
-                oldjobname = uuid.uuid1().hex
-                job = options.tempDir + localSep + oldjobname + localSep
-                os.mkdir(job)
+            # not really "oldjobname", but this is how i get newjobname to be what i want below
+            # avoid putting underscores in this part, because those get split on
+            oldjobname = uuid.uuid1().hex
+            job = options.tempDir + localSep + oldjobname + localSep
+            os.mkdir(job)
 
-                if options.runJsfunfuzz:
-                    shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
-                    # Not using compareJIT: bug 751700, and it's not fully hooked up
-                    # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
-                    mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
-                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
-                else:
-                    # FIXME: support Valgrind
-                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildDir])
+            if options.runJsfunfuzz:
+                shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
+                # Not using compareJIT: bug 751700, and it's not fully hooked up
+                # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
+                mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
+                (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
+            else:
+                # FIXME: support Valgrind
+                (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildDir])
 
-                if lithResult == lithOps.HAPPY:
-                    print "Happy happy! No bugs found!"
-                else:
-                    writeTinyFile(job + "preferred-build.txt", buildSrc)
-                    uploadJob(options, lithResult, lithDetails, job, oldjobname)
+            if lithResult == lithOps.HAPPY:
+                print "Happy happy! No bugs found!"
+            else:
+                writeTinyFile(job + "preferred-build.txt", buildSrc)
+                uploadJob(options, lithResult, lithDetails, job, oldjobname)
 
-        # Remove build directory
-        if not options.reuse_build and os.path.exists(buildDir):
-            shutil.rmtree(buildDir)
+    # Remove build directory
+    if not options.reuse_build and os.path.exists(buildDir):
+        shutil.rmtree(buildDir)
 
-        # Remove the main temp dir, which should be empty at this point
-        os.rmdir(options.tempDir)
+    # Remove the main temp dir, which should be empty at this point
+    os.rmdir(options.tempDir)
 
 
 if __name__ == "__main__":
