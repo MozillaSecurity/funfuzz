@@ -193,14 +193,10 @@ def cmdDump(shell, log):
         f.write('|  DATE: %s\n' % dateStr())
         f.write('========================================================\n\n')
 
-class LocalCompiledShell(CompiledShell):
-    def __init__(self):
-        super(LocalCompiledShell, self).__init__()
-
 def localCompileFuzzJsShell(options):
     '''Compiles and readies a js shell for fuzzing.'''
     print dateStr()
-    myShell = LocalCompiledShell()
+    myShell = CompiledShell()
     myShell.setRepoDir(options.repoDir)
     localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(myShell.getRepoDir())
     myShell.setHgHash(localOrigHgHash)
@@ -234,11 +230,11 @@ def localCompileFuzzJsShell(options):
         'jsfunfuzz-' + myShell.getCompileType() + '-' + myShell.getArch() + '-' + \
         myShell.getRepoName() + '-' + myShell.getHgNum() + '-' + \
         myShell.getHgHash() + '-'), myShell.getCacheDirBase())
-    myShell.setFuzzingPath(fullPath)
-    myOtherShell.setFuzzingPath(fullPath)
-    assert os.path.exists(myShell.getFuzzingPath())
-    assert os.path.exists(myOtherShell.getFuzzingPath())
-    vdump('Full fuzzing path is: ' + myShell.getFuzzingPath())
+    myShell.setBaseTempDir(fullPath)
+    myOtherShell.setBaseTempDir(fullPath)
+    assert os.path.exists(myShell.getBaseTempDir())
+    assert os.path.exists(myOtherShell.getBaseTempDir())
+    vdump('Full fuzzing path is: ' + myShell.getBaseTempDir())
 
     # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
     copyJsSrcDirs(myShell)
@@ -281,10 +277,10 @@ def localCompileFuzzJsShell(options):
         cmdList.append('--random-flags')
     cmdList.append(options.loopyTimeout)
     cmdList.append(knownBugsDir(myShell.getRepoName()))
-    cmdList.append(myShell.getShellFuzzingPath())
+    cmdList.append(myShell.getShellBaseTempDir())
 
     # Write log files describing configuration parameters used during compilation.
-    localLog = normExpUserPath(os.path.join(myShell.getFuzzingPath(), 'log-localjsfunfuzz.txt'))
+    localLog = normExpUserPath(os.path.join(myShell.getBaseTempDir(), 'log-localjsfunfuzz.txt'))
     envDump(myShell, localLog)
     envDump(myOtherShell, localLog)  # Also dump information about the other shell
     cmdDump(myShell, localLog)
@@ -304,7 +300,7 @@ def main():
 
     if options.useTinderShell is None:
         fuzzShell, cList = localCompileFuzzJsShell(options)
-        startDir = fuzzShell.getFuzzingPath()
+        startDir = fuzzShell.getBaseTempDir()
     else:
         assert False, 'Downloaded js shells do not yet work with the new APIs.'
         odjs = DownloadedJsShell(options)

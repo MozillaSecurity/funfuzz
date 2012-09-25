@@ -319,7 +319,7 @@ def externalTestAndLabel(options, interestingness):
 def makeTestRev(shell, options):
     '''Calls recursive function testRev to keep compiling and testing changesets until it stops.'''
     def testRev(rev):
-        shell.setFuzzingPath(mkdtemp(prefix="abtmp-" + rev + "-"))
+        shell.setBaseTempDir(mkdtemp(prefix="abtmp-" + rev + "-"))
         shell.setHgHash(rev)
         shell.setName(options)
         cachedNoShell = shell.getShellCachePath() + ".busted"
@@ -338,7 +338,7 @@ def makeTestRev(shell, options):
                 cfgCompileCopy(shell, options)
                 compileCopy(shell, options)
                 verifyBinary(shell, options)
-                copy2(shell.getShellFuzzingPath(), shell.getShellCachePath())
+                copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
             except Exception, e:
                 open(cachedNoShell, 'w').close()
                 return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')

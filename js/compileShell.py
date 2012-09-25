@@ -17,7 +17,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
-from hgCmds import getRepoNameFromHgrc
+from hgCmds import getRepoHashAndId, getRepoNameFromHgrc
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
 class CompiledShell(object):
@@ -43,6 +43,10 @@ class CompiledShell(object):
         self.arch = arch
     def getArch(self):
         return self.arch
+    def setBaseTempDir(self, baseTempDir):
+        self.baseTempDir = baseTempDir
+    def getBaseTempDir(self):
+        return self.baseTempDir
     def getCacheDirBase(self):
         return self.cacheDirBase
     def getCacheDir(self):
@@ -64,21 +68,17 @@ class CompiledShell(object):
         self.fullEnv = fullEnv
     def getEnvFull(self):
         return self.fullEnv
-    def setFuzzingPath(self, fuzzPath):
-        self.fuzzPath = fuzzPath
-    def getFuzzingPath(self):
-        return self.fuzzPath
     def getCfgPath(self):
         self.cfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
         assert os.path.isfile(self.cfgFile)
         return self.cfgFile
     def getCompilePath(self):
-        return normExpUserPath(os.path.join(self.fuzzPath, 'compilePath'))
+        return normExpUserPath(os.path.join(self.baseTempDir, 'compilePath'))
     def getCompilePathJsSrc(self):
-        self.cPathJsSrc = normExpUserPath(os.path.join(self.fuzzPath, 'compilePath', 'js', 'src'))
+        self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTempDir, 'compilePath', 'js', 'src'))
         return self.cPathJsSrc
-    def setHgHash(self, hashId):
-        self.hgHash = hashId
+    def setHgHash(self, hgHash):
+        self.hgHash = hgHash
     def getHgHash(self):
         return self.hgHash
     def setHgNum(self, hashNum):
@@ -97,7 +97,7 @@ class CompiledShell(object):
     def getName(self):
         return self.shellName
     def getObjdir(self):
-        return normExpUserPath(os.path.join(self.fuzzPath, 'compilePath', 'js', 'src',
+        return normExpUserPath(os.path.join(self.baseTempDir, 'compilePath', 'js', 'src',
                                               self.compileType + '-objdir'))
     def setRepoDir(self, repoDir):
         self.repoDir = repoDir
@@ -111,8 +111,8 @@ class CompiledShell(object):
         return normExpUserPath(os.path.join(self.cacheDir, self.shellName))
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getObjdir(), 'js' + ('.exe' if isWin else '')))
-    def getShellFuzzingPath(self):
-        return normExpUserPath(os.path.join(self.fuzzPath, self.shellName))
+    def getShellBaseTempDir(self):
+        return normExpUserPath(os.path.join(self.baseTempDir, self.shellName))
 
 def autoconfRun(cwd):
     '''Run autoconf binaries corresponding to the platform.'''
@@ -261,7 +261,7 @@ def cfgJsBin(shell, options):
 
 def copyJsSrcDirs(shell):
     '''Copies required js source directories from the shell repoDir to the shell fuzzing path.'''
-    cPath = normExpUserPath(os.path.join(shell.getFuzzingPath(), 'compilePath', 'js', 'src'))
+    cPath = normExpUserPath(os.path.join(shell.getBaseTempDir(), 'compilePath', 'js', 'src'))
     origJsSrc = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'src'))
     try:
         vdump('Copying the js source tree, which is located at ' + origJsSrc)
@@ -320,8 +320,8 @@ def compileCopy(shell, options):
 
     if os.path.exists(shell.getShellCompiledPath()):
         shell.setName(options)
-        shutil.copy2(shell.getShellCompiledPath(), shell.getShellFuzzingPath())
-        assert os.path.isfile(shell.getShellFuzzingPath())
+        shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDir())
+        assert os.path.isfile(shell.getShellBaseTempDir())
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
