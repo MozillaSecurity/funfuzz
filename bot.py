@@ -96,7 +96,7 @@ def grabJob(options, desiredJobType):
             return (None, None, None)
 
 
-def uploadJob(lithResult, lithDetails, job, oldjobname):
+def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     statePostfix = ({
       lithOps.NO_REPRO_AT_ALL: "_no_repro",
       lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
@@ -311,7 +311,7 @@ def main():
                     lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
                     logPrefix = job + "retest"
                     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
-                    uploadJob(lithResult, lithDetails, job, oldjobname)
+                    uploadJob(options, lithResult, lithDetails, job, oldjobname)
                     runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
             else:
                 shouldLoop = False
@@ -328,7 +328,7 @@ def main():
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
                 (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
-                uploadJob(lithResult, lithDetails, job, oldjobname)
+                uploadJob(options, lithResult, lithDetails, job, oldjobname)
                 runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
 
             else:
@@ -364,7 +364,7 @@ def main():
                     print "Happy happy! No bugs found!"
                 else:
                     writeTinyFile(job + "preferred-build.txt", buildSrc)
-                    uploadJob(lithResult, lithDetails, job, oldjobname)
+                    uploadJob(options, lithResult, lithDetails, job, oldjobname)
 
         # Remove build directory
         if not options.reuse_build and os.path.exists(buildDir):
