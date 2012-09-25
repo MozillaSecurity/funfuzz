@@ -74,7 +74,7 @@ def runCommand(remoteHost, cmd):
     return out
 
 
-def grabJob(options, remoteSep, desiredJobType):
+def grabJob(options, desiredJobType):
     while True:
         jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(options.remote_host, "ls -1 -r " + options.relevantJobsDir).split("\n") )
         if len(jobs) > 0:
@@ -83,7 +83,7 @@ def grabJob(options, remoteSep, desiredJobType):
             takenNameOnServer = options.relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
             if tryCommand(options.remote_host, "mv " + options.relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
-                jobWithPostfix = copyFiles(options.remote_host, options.remote_prefix + takenNameOnServer + remoteSep, options.tempDir + localSep)
+                jobWithPostfix = copyFiles(options.remote_host, options.remote_prefix + takenNameOnServer + options.remoteSep, options.tempDir + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part after the "_"
                 job = options.tempDir + localSep + oldjobname + localSep
                 os.rename(jobWithPostfix, job) # so lithium gets the same filename as before
@@ -122,7 +122,7 @@ def uploadJob(lithResult, lithDetails, job, oldjobname):
     print "Uploading as: " + newjobname
     newjobnameTmp = newjobname + ".uploading"
     os.rename(job, newjobnameTmp)
-    copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + remoteSep)
+    copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + options.remoteSep)
     runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
     shutil.rmtree(newjobnameTmp)
 
@@ -222,6 +222,8 @@ def parseOpts():
     # options.remote_prefix is used as a prefix for options.baseDir when using scp
     options.remote_prefix = (options.remote_host + ":") if options.remote_host else ""
 
+    options.remoteSep = "/" if options.remote_host else localSep
+
     if not options.runJsfunfuzz and not options.retestAll and not options.reuse_build and random.choice([True, False]):
         print "Randomly fuzzing JS!"
         options.runJsfunfuzz = True
@@ -229,18 +231,17 @@ def parseOpts():
     options.testType = "js" if options.runJsfunfuzz else "dom"
     options.buildType = downloadBuild.defaultBuildType(options)
     options.relevantJobsDirName = options.testType + "-" + (options.buildType if not options.retestAll else "all")
-    options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + remoteSep
+    options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
 
     if options.retestAll:
         options.reuse_build = True
 
+    assert options.baseDir.endswith(options.remoteSep)
     return options
 
 def main():
     options = parseOpts()
 
-    remoteSep = "/" if options.remote_host else localSep
-    assert options.baseDir.endswith(remoteSep)
     runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
     runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
     runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
@@ -275,7 +276,7 @@ def main():
 
         if options.retestAll:
             print "Retesting time!"
-            (job, oldjobname, takenNameOnServer) = grabJob(options, remoteSep, "_reduced")
+            (job, oldjobname, takenNameOnServer) = grabJob(options, "_reduced")
             if job:
                 if ("1339201819" in oldjobname or # Bug 763126
                     "1338835174" in oldjobname or # Bug 763126
@@ -316,7 +317,7 @@ def main():
                 shouldLoop = False
         else:
             shouldLoop = False
-            (job, oldjobname, takenNameOnServer) = grabJob(options, remoteSep, "_needsreduction")
+            (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
             if job:
                 print "Reduction time!"
                 if not options.reuse_build:
