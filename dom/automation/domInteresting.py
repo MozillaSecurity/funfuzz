@@ -406,7 +406,11 @@ def rdfInit(args):
     browserDir = args[0]
     dirs = FigureOutDirs(getFullPath(browserDir))
 
-    options.argURL = args[1] if len(args) > 1 else "" # used by standalone (optional) and lithium but not loopdomfuzz
+    # Standalone domInteresting:  Optional. Load this URL or file (rather than the Bugzilla front page)
+    # loopdomfuzz:                Optional. Test (and possibly splice/reduce) only this URL, rather than looping (but note the prefs file isn't maintained)
+    # Lithium:                    Required. Reduce this file.
+    options.argURL = args[1] if len(args) > 1 else ""
+
     options.browserDir = browserDir # used by loopdomfuzz
 
     profileDir = mkdtemp(prefix="domfuzz-rdf-profile")

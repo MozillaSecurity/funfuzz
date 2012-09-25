@@ -26,31 +26,33 @@ import lithOps
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
 fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
 
-maxIterations = 300000
 
 # If targetTime is None, this loops forever.
 # If targetTime is a number, tries not to run for more than targetTime seconds.
 #   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
 def many_timed_runs(targetTime, tempDir, args):
     startTime = time.time()
+    iteration = 0
 
     levelAndLines, deleteProfile, options = domInteresting.rdfInit(args)
     try:
         browserDir = options.browserDir
 
         reftestFilesDir = domInteresting.FigureOutDirs(browserDir).reftestFilesDir
-        urls = getURLs(os.path.abspath(reftestFilesDir))
+        reftestURLs = getURLs(os.path.abspath(reftestFilesDir))
         with open(os.path.join(p0, "bool-prefs.txt")) as f:
             boolPrefNames = filter(lambda s: len(s) and s[0] != "#", f)
 
-        for iteration in xrange(0, maxIterations):
+        while True:
             if targetTime and time.time() > startTime + targetTime:
                 print "Out of time!"
                 if len(os.listdir(tempDir)) == 0:
                     os.rmdir(tempDir)
                 return (lithOps.HAPPY, None)
 
-            url = urls[iteration]
+            iteration += 1
+
+            url = options.argURL or (random.choice(reftestURLs) + randomHash())
             prefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames) + nonBoolPrefs()
 
             logPrefix = os.path.join(tempDir, "q" + str(iteration))
@@ -84,6 +86,9 @@ def many_timed_runs(targetTime, tempDir, args):
                 print ""
                 if targetTime:
                     return (lithresult, lithdetails)
+
+            if options.argURL:
+                break
     finally:
         deleteProfile()
 
@@ -140,7 +145,6 @@ def createReproFile(lines, logPrefix):
 
 def getURLs(reftestFilesDir):
     URLs = []
-    fullURLs = []
 
     with open(os.path.join(p0, urlListFilename)) as urlfile:
         for line in urlfile:
@@ -152,11 +156,7 @@ def getURLs(reftestFilesDir):
                 else:
                     URLs.append(line.rstrip())
 
-    for iteration in range(0, maxIterations):
-        u = random.choice(URLs) + randomHash()
-        fullURLs.append(u)
-
-    return fullURLs
+    return URLs
 
 def randomHash():
     metaSeed = random.randint(1, 10000)
