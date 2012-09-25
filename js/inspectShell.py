@@ -75,34 +75,38 @@ def testBinary(shellPath, args):
     vdump('The exit code is: ' + str(rCode))
     return out, rCode
 
-def testJsShellOrXpcshell(s):
-    '''This function tests if a binary is a js shell or xpcshell.'''
-    return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
-
 def testDbgOrOpt(s):
     '''This function tests if a binary is a debug or optimized shell.'''
     return 'dbg' if shellSupports(s, ['-e', 'disassemble()']) else 'opt'
 
-def testIsThreadsafe(s):
-    '''This function tests if a binary is compiled with --enable-threadsafe.'''
-    result = captureStdout([s, '-e', 'print(getBuildConfiguration()["threadsafe"])'])[0]
-    # There were some changesets which had getBuildConfiguration() but with no threadsafe attribute
-    # and there were older changesets which did not have getBuildConfiguration() at all.
-    if result not in locals():
-        result = 'undef'
-    return result
+def testGetBuildConfiguration(s):
+    '''This function tests if a binary supports getBuildConfiguration().'''
+    return shellSupports(s, ['-e', 'getBuildConfiguration()'])
 
-def testWithRootAnalysis(s):
-    '''This function tests if a binary is compiled with root analysis enabled.'''
-    result = captureStdout([s, '-e', 'print(getBuildConfiguration()["rooting-analysis"])'])[0]
-    # There were some changesets which did not have getBuildConfiguration() at all.
-    if result not in locals():
-        result = 'undef'
-    return result
+def testGetBuildConfigurationWithThreadsafe(s):
+    '''
+    This function tests if a binary supports getBuildConfiguration() with threadsafe.
+    See bug 791146 - getBuildConfiguration() returns the wrong value for gczeal and threadsafe
+    '''
+    return captureStdout([s, '-e',
+        'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'])[0].find('true') != -1
+
+def testJsShellOrXpcshell(s):
+    '''This function tests if a binary is a js shell or xpcshell.'''
+    return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
+
+def testWithSpecifiedParams(s, parameter):
+    '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
+    return captureStdout([s, '-e',
+        'print(getBuildConfiguration()["' + parameter + '"])'])[0].find('true') != -1
 
 def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
-    assert archOfBinary(sh.getShellFuzzingPath()) == sh.getArch()
-    assert testDbgOrOpt(sh.getShellFuzzingPath()) == sh.getCompileType()
-    assert testIsThreadsafe(sh.getShellFuzzingPath()) == ('undef' or options.isThreadsafe)
-    assert testWithRootAnalysis(sh.getShellFuzzingPath()) == ('undef' or options.enableRootAnalysis)
+    assert archOfBinary(sh.getShellBaseTempDir()) == sh.getArch()
+    assert testDbgOrOpt(sh.getShellBaseTempDir()) == sh.getCompileType()
+    if testGetBuildConfiguration(sh.getShellBaseTempDir()):
+        if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDir()):
+            assert testWithSpecifiedParams(sh.getShellBaseTempDir(), 'threadsafe') == \
+                options.isThreadsafe
+        assert testWithSpecifiedParams(sh.getShellBaseTempDir(), 'rooting-analysis') == \
+            options.enableRootAnalysis

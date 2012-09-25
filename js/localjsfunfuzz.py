@@ -17,8 +17,7 @@ from optparse import OptionParser
 from tempfile import mkdtemp
 
 from compileShell import CompiledShell, cfgCompileCopy, copyJsSrcDirs
-from inspectShell import archOfBinary, testDbgOrOpt, testIsThreadsafe, testWithRootAnalysis, \
-    verifyBinary
+from inspectShell import archOfBinary, testDbgOrOpt, testWithSpecifiedParams, verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
