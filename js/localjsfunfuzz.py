@@ -233,7 +233,7 @@ def localCompileFuzzJsShell(options):
     myOtherShell.setBaseTempDir(fullPath)
     assert os.path.exists(myShell.getBaseTempDir())
     assert os.path.exists(myOtherShell.getBaseTempDir())
-    vdump('Full fuzzing path is: ' + myShell.getBaseTempDir())
+    vdump('Base temporary directory is: ' + myShell.getBaseTempDir())
 
     # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
     copyJsSrcDirs(myShell)
