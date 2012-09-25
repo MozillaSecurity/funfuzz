@@ -96,6 +96,55 @@ def grabJob(options, remoteSep, desiredJobType):
             return (None, None, None)
 
 
+def uploadJob(lithResult, lithDetails, job, oldjobname):
+    statePostfix = ({
+      lithOps.NO_REPRO_AT_ALL: "_no_repro",
+      lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
+      lithOps.LITH_NO_REPRO: "_no_longer_reproducible",
+      lithOps.LITH_FINISHED: "_reduced",
+      lithOps.LITH_RETESTED_STILL_INTERESTING: "_retested",
+      lithOps.LITH_PLEASE_CONTINUE: "_needsreduction",
+      lithOps.LITH_BUSTED: "_sad"
+    })[lithResult]
+
+    if lithResult == lithOps.LITH_PLEASE_CONTINUE:
+        writeTinyFile(job + "lithium-command.txt", lithDetails)
+
+    if lithResult == lithOps.LITH_FINISHED:
+        # lithDetails should be a string like "11 lines"
+        statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
+        summaryFile = job + filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
+        with open(summaryFile) as f:
+            summary = f.read()
+
+    #print "oldjobname: " + oldjobname
+    newjobname = oldjobname + statePostfix
+    print "Uploading as: " + newjobname
+    newjobnameTmp = newjobname + ".uploading"
+    os.rename(job, newjobnameTmp)
+    copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + remoteSep)
+    runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
+    shutil.rmtree(newjobnameTmp)
+
+    if options.remote_host and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
+        recipients = []
+        subject = "Reduced " + options.testType + " fuzz testcase"
+        dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
+        # FIXME: The if condition is present here because for no_longer_reproducible
+        # testcases, the -summary file is apparently absent, so this needs reconfirmation.
+        body = dirRef + "\n\n" + summary[0:50000] if summary else dirRef
+        if options.runJsfunfuzz:
+            # Send jsfunfuzz emails to gkw
+            recipients.append("gkwong")
+        else:
+            # Send domfuzz emails to Jesse
+            recipients.append("jruderman")
+        print "Sending email..."
+        for recipient in recipients:
+            sendEmail(subject, body, recipient)
+        print "Email sent!"
+
+
 def readTinyFile(fn):
     with open(fn) as f:
         text = f.read()
@@ -261,6 +310,7 @@ def main():
                     lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
                     logPrefix = job + "retest"
                     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+                    uploadJob(lithResult, lithDetails, job, oldjobname)
                     runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
             else:
                 shouldLoop = False
@@ -277,6 +327,7 @@ def main():
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
                 (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+                uploadJob(lithResult, lithDetails, job, oldjobname)
                 runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
 
             else:
@@ -312,54 +363,7 @@ def main():
                     print "Happy happy! No bugs found!"
                 else:
                     writeTinyFile(job + "preferred-build.txt", buildSrc)
-
-        if lithResult != lithOps.HAPPY:
-            statePostfix = ({
-              lithOps.NO_REPRO_AT_ALL: "_no_repro",
-              lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
-              lithOps.LITH_NO_REPRO: "_no_longer_reproducible",
-              lithOps.LITH_FINISHED: "_reduced",
-              lithOps.LITH_RETESTED_STILL_INTERESTING: "_retested",
-              lithOps.LITH_PLEASE_CONTINUE: "_needsreduction",
-              lithOps.LITH_BUSTED: "_sad"
-            })[lithResult]
-
-            if lithResult == lithOps.LITH_PLEASE_CONTINUE:
-                writeTinyFile(job + "lithium-command.txt", lithDetails)
-
-            if lithResult == lithOps.LITH_FINISHED:
-                # lithDetails should be a string like "11 lines"
-                statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
-                summaryFile = job + filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
-                with open(summaryFile) as f:
-                    summary = f.read()
-
-            #print "oldjobname: " + oldjobname
-            newjobname = oldjobname + statePostfix
-            print "Uploading as: " + newjobname
-            newjobnameTmp = newjobname + ".uploading"
-            os.rename(job, newjobnameTmp)
-            copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + remoteSep)
-            runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
-            shutil.rmtree(newjobnameTmp)
-
-            if options.remote_host and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
-                recipients = []
-                subject = "Reduced " + options.testType + " fuzz testcase"
-                dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
-                # FIXME: The if condition is present here because for no_longer_reproducible
-                # testcases, the -summary file is apparently absent, so this needs reconfirmation.
-                body = dirRef + "\n\n" + summary[0:50000] if summary else dirRef
-                if options.runJsfunfuzz:
-                    # Send jsfunfuzz emails to gkw
-                    recipients.append("gkwong")
-                else:
-                    # Send domfuzz emails to Jesse
-                    recipients.append("jruderman")
-                print "Sending email..."
-                for recipient in recipients:
-                    sendEmail(subject, body, recipient)
-                print "Email sent!"
+                    uploadJob(lithResult, lithDetails, job, oldjobname)
 
         # Remove build directory
         if not options.reuse_build and os.path.exists(buildDir):
