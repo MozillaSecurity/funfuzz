@@ -97,7 +97,7 @@ def testJsShellOrXpcshell(s):
     '''This function tests if a binary is a js shell or xpcshell.'''
     return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
 
-def testWithSpecifiedParams(s, parameter):
+def queryBuildConfiguration(s, parameter):
     '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
     return captureStdout([s, '-e',
         'print(getBuildConfiguration()["' + parameter + '"])'])[0].find('true') != -1
@@ -108,7 +108,7 @@ def verifyBinary(sh, options):
     assert testDbgOrOpt(sh.getShellBaseTempDir()) == sh.getCompileType()
     if testGetBuildConfiguration(sh.getShellBaseTempDir()):
         if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDir()):
-            assert testWithSpecifiedParams(sh.getShellBaseTempDir(), 'threadsafe') == \
+            assert queryBuildConfiguration(sh.getShellBaseTempDir(), 'threadsafe') == \
                 options.isThreadsafe
-        assert testWithSpecifiedParams(sh.getShellBaseTempDir(), 'rooting-analysis') == \
+        assert queryBuildConfiguration(sh.getShellBaseTempDir(), 'rooting-analysis') == \
             options.enableRootAnalysis
