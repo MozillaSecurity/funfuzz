@@ -44,11 +44,6 @@ def sanityChecks():
     # within the VM. It should work when running manually though.
     assert isVM()[1] == False
 
-class AutoBisectJsCompiledShell(CompiledShell):
-    def __init__(self):
-        sanityChecks()
-        super(AutoBisectJsCompiledShell, self).__init__()
-
 def parseOpts():
     usage = 'Usage: %prog [options] filename'
     parser = OptionParser(usage)
@@ -64,14 +59,12 @@ def parseOpts():
         output = '',
         watchExitCode = None,
         useInterestingnessTests = False,
-        flagsRequired = '',
-        extraArgs = '',
-        testFile = '',
+        parameters = '',
         compilationFailedLabel = 'skip',
         enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
-        raSupport = False,
-        useVg = False,
+        enableRootAnalysis = False,
+        testWithVg = False,
     )
 
     # Define the repository (working directory) in which to bisect.
@@ -91,7 +84,7 @@ def parseOpts():
                            'earliest revision known to work at all.')
     parser.add_option('-e', '--endRev', dest='endRepo',
                       help='Initial bad revision (usually the latest). Defaults to "%default".')
-    parser.add_option('-p', '--testInitialRevs', dest='testInitialRevs',
+    parser.add_option('-t', '--testInitialRevs', dest='testInitialRevs',
                       action='store_true',
                       help='Test the -s and -e revisions to ensure they are correctly marked.' + \
                            ' (rather than automatically treating them as -g and -b).')
@@ -117,14 +110,9 @@ def parseOpts():
                       action="store_true",
                       help="Interpret the final arguments as an interestingness test.")
 
-    # Define parameters to be passed to the binary.
-    parser.add_option('-l', '--flags', dest='flagsRequired',
-                      help='Define the space-separated flags required to reproduce the bug, ' + \
-                           'e.g. "-m -j". Defaults to "%default",')
-    parser.add_option('-x', '--extraArgs', dest='extraArgs',
-                      help='Arguments to first be loaded before testing the testcase.')
-    parser.add_option('-f', '--file', dest='testFile',
-                      help='File to be tested.')
+    # Define parameters to be tested.
+    parser.add_option('-m', '--parameters', dest='parameters',
+                      help='Define the testing parameters, e.g. -p "-a --ion-eager testcase.js".')
 
     parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
                       help='Enable pymake. Defaults to "%default" on the current platform.')
@@ -133,57 +121,42 @@ def parseOpts():
                            'NSPR should first be installed, see: ' + \
                            'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
                            'Defaults to "%default".')
-    # Enable root analysis support.
-    parser.add_option('--enable-root-analysis', dest='raSupport',
+    # Build shells with --enable-root-analysis.
+    parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
                       action='store_true',
                       help='Enable root analysis support. Defaults to "%default".')
-    # Enable valgrind support.
-    parser.add_option('-v', '--enable-valgrind', dest='useVg',
+    # Test with Valgrind.
+    parser.add_option('--test-with-valgrind', dest='testWithVg',
                       action='store_true',
-                      help='Enable valgrind support. Defaults to "%default".')
+                      help='Test with Valgrind enabled. Defaults to "%default".')
 
-    # This is used to help discover changeset revsets which fail to compile.
-    parser.add_option('-m', '--compilationFailedLabel', dest='compilationFailedLabel',
+    # See knownBrokenRanges in knownBrokenEarliestWorking.py
+    parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
                       help='Define way to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
 
     (options, args) = parser.parse_args()
 
     assert 'dbg' in options.compileType or 'opt' in options.compileType
-    options.testFile = normExpUserPath(options.testFile)
-    assert os.path.isfile(options.testFile), options.testFile + ' is not a file.'
-    assert ',' not in options.extraArgs, 'Commas are not supported in the extra arguments.'
-    options.extraArgsList = [normExpUserPath(x) for x in options.extraArgs.split(' ') if x]
-
+    assert ',' not in options.parameters, 'Commas are not supported in parameters.'
+    options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
-    assert ',' not in options.flagsRequired, 'Commas are not in the list of flags.'
-    options.flagsReqList = [x for x in options.flagsRequired.split(' ') if x]
-    assert ',' not in options.extraArgs, 'Commas are not in the list of extra arguments.'
-    options.extraArgsList = [x for x in options.extraArgs.split(' ') if x]
 
     options.repoDir = normExpUserPath(options.repoDir)
-    assert getRepoNameFromHgrc(os.path.join(options.repoDir, '.hg', 'hgrc')) != '', \
-        'Not a valid Mercurial repository!'
+    assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
 
     if options.startRepo is None:
         options.startRepo = earliestKnownWorkingRev(options)
 
-    if options.useInterestingnessTests:
-        if len(args) < 1:
-            print 'args are: ' + args
-            parser.error('Not enough arguments.')
-        options.testAndLabel = externalTestAndLabel(options, args)
-    else:
-        if len(args) >= 1:
-            parser.error('Too many arguments.')
-        options.testAndLabel = internalTestAndLabel(options)
+    options.testAndLabel = externalTestAndLabel(options, args) if options.useInterestingnessTests \
+        else internalTestAndLabel(options)
 
-    return options, args
+    return options
 
 def findBlamedCset(myShell):
     print dateStr()
 
-    options, args = parseOpts()
+    options = parseOpts()
     myShell.setRepoDir(options.repoDir)
     hgPrefix = myShell.getHgPrefix()
 
@@ -211,11 +184,10 @@ def findBlamedCset(myShell):
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
         currRev = getCsetHashFromBisectMsg(firstLine(
-                    subprocess.check_call(hgPrefix + ['bisect', '-U', '-b', eRepo])))
+            captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
     myShell.setArch('64' if '64' in mozPlatform(options.arch) else '32')
     myShell.setCompileType(options.compileType)
-    myShell.setHgHash(eRepo)
 
     testRev = makeTestRev(myShell, options)
 
@@ -246,13 +218,13 @@ def findBlamedCset(myShell):
         else:
             print "Bisecting for the n-th round where n is", iterNum, "and 2^n is", \
                     str(2**iterNum), "...",
-        (currRev, blamedGoodOrBad, blamedRev, sRepo, eRepo) = \
-            bisectLabel(myShell, options, label[0], sRepo, eRepo)
+        (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
+            bisectLabel(myShell, options, label[0], currRev, sRepo, eRepo)
 
         if options.testInitialRevs:
             options.testInitialRevs = False
             assert currRev is None
-            currRev = sRepo  # Test most recent rev first, then test earliest possible rev
+            currRev = sRepo  # If options.testInitialRevs is set, test earliest possible rev next.
 
         iterNum += 1
         endTime = time.time()
@@ -308,7 +280,7 @@ def internalTestAndLabel(options):
 def constructVgCmdList(options):
     '''Constructs default parameters needed to run valgrind with.'''
     vgCmdList = []
-    if options.useVg:
+    if options.testWithVg:
         vgCmdList.append('valgrind')
         if isMac:
             vgCmdList.append('--dsymutil=yes')
@@ -318,8 +290,7 @@ def constructVgCmdList(options):
 
 def testBinary(shell, options):
     '''Tests the given shell without using interestingness tests.'''
-    testCmd = [shell.getShellCachePath()] + options.flagsReqList + options.extraArgsList + \
-                [options.testFile]
+    testCmd = [shell.getShellCachePath()] + options.paramList
     testCmd = constructVgCmdList(options) + testCmd
     vdump('The testing command is: ' + shellify(testCmd))
 
@@ -335,8 +306,7 @@ def externalTestAndLabel(options, interestingness):
 
     def inner(shell):
         conditionArgs = conditionArgPrefix + constructVgCmdList(options) + \
-                            [shell.getShellCachePath()] + options.flagsReqList + \
-                            options.extraArgsList + [options.testFile]
+                            [shell.getShellCachePath()] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
@@ -386,9 +356,12 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
         testedLastMinute = False
         if labels.get(p) is None:
             print ""
-            print "Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p
-            if not isAncestor(startRepo, p) and not isAncestor(endRepo, p):
-                print "We did not test rev %s because it is not a descendant of either %s or %s." % (p, startRepo, endRepo)
+            print "Oops! We didn't test rev %s, a parent of the blamed revision! " + \
+                "Let's do that now." % p
+            if not isAncestor(shell.getRepoDir(), startRepo, p) and \
+                    not isAncestor(shell.getRepoDir(), endRepo, p):
+                print 'We did not test rev %s because it is not a descendant of either ' + \
+                    '%s or %s.' % (p, startRepo, endRepo)
             label = testRev(p)
             labels[p] = label
             print label[0] + " (" + label[1] + ") "
@@ -404,7 +377,8 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
             assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
     if len(parents) == 2 and bisectLied:
         print ""
-        print "Perhaps we should expand the search to include the common ancestor of the blamed changeset's parents."
+        print "Perhaps we should expand the search to include the common ancestor of the " + \
+            "blamed changeset's parents."
         ca = findCommonAncestor(shell.getRepoDir(), parents[0], parents[1])
         print "The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca)
         label = testRev(ca)
@@ -422,11 +396,10 @@ def sanitizeCsetMsg(msg):
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
-def bisectLabel(shell, options, hgLabel, startRepo, endRepo):
+def bisectLabel(shell, options, hgLabel, currRev, startRepo, endRepo):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
-    outputResult = captureStdout(shell.getHgPrefix() + ['bisect', '-U', '--' + hgLabel,
-                                                        shell.getHgHash()])[0]
+    outputResult = captureStdout(shell.getHgPrefix() + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match\
@@ -441,7 +414,7 @@ def bisectLabel(shell, options, hgLabel, startRepo, endRepo):
         print(sanitizeCsetMsg(outputResult) + '\n')
         blamedGoodOrBad = m.group(1)
         blamedRev = getCsetHashFromBisectMsg(outputLines[1])
-        return None, blamedGoodOrBad, blamedRev, startRepo, endRepo
+        return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
 
     if options.testInitialRevs:
         return None, None, None, startRepo, endRepo
@@ -449,25 +422,26 @@ def bisectLabel(shell, options, hgLabel, startRepo, endRepo):
     # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
     vdump(outputLines[0])
 
-    shell.setHgHash(getCsetHashFromBisectMsg(outputLines[0]))
-    if shell.getHgHash() is None:
+    currRev = getCsetHashFromBisectMsg(outputLines[0])
+    if currRev is None:
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
     start = startRepo
     end = endRepo
     if hgLabel == 'bad':
-        end = shell.getHgHash()
+        end = currRev
     elif hgLabel == 'good':
-        start = shell.getHgHash()
+        start = currRev
     elif hgLabel == 'skip':
         pass
 
-    return shell.getHgHash(), None, None, start, end
+    return None, None, currRev, start, end
 
 def main():
     '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
-    shell = AutoBisectJsCompiledShell()
+    shell = CompiledShell()
+    sanityChecks()
     lockDir = os.path.join(shell.getCacheDir(), 'autoBisectJs-lock')
     try:
         os.mkdir(lockDir)
