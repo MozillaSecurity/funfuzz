@@ -74,23 +74,23 @@ def runCommand(remoteHost, cmd):
     return out
 
 
-def grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, desiredJobType, tempDir):
+def grabJob(options, remoteSep, desiredJobType):
     while True:
-        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(remoteHost, "ls -1 -r " + relevantJobsDir).split("\n") )
+        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(options.remote_host, "ls -1 -r " + options.relevantJobsDir).split("\n") )
         if len(jobs) > 0:
             oldNameOnServer = jobs[0]
             shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
-            takenNameOnServer = relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
-            if tryCommand(remoteHost, "mv " + relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
+            takenNameOnServer = options.relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
+            if tryCommand(options.remote_host, "mv " + options.relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
-                jobWithPostfix = copyFiles(remoteHost, remotePrefix + takenNameOnServer + remoteSep, tempDir + localSep)
+                jobWithPostfix = copyFiles(options.remote_host, options.remote_prefix + takenNameOnServer + remoteSep, options.tempDir + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part after the "_"
-                job = tempDir + localSep + oldjobname + localSep
+                job = options.tempDir + localSep + oldjobname + localSep
                 os.rename(jobWithPostfix, job) # so lithium gets the same filename as before
                 print repr((job, oldjobname, takenNameOnServer))
                 return (job, oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
-                print "Raced to grab " + relevantJobsDir + oldNameOnServer + ", trying again"
+                print "Raced to grab " + options.relevantJobsDir + oldNameOnServer + ", trying again"
                 continue
         else:
             return (None, None, None)
@@ -133,7 +133,7 @@ def parseOpts():
     parser = OptionParser()
     parser.set_defaults(
         remote_host = None,
-        basedir = os.path.expanduser("~") + localSep + "fuzzingjobs" + localSep,
+        baseDir = os.path.expanduser("~") + localSep + "fuzzingjobs" + localSep,
         repoName = 'mozilla-central',
         compileType = 'dbg',
         runJsfunfuzz = False,
@@ -146,7 +146,7 @@ def parseOpts():
         help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
     parser.add_option("--target-time", dest="targetTime", type='int',
         help="Nominal amount of time to run, in seconds")
-    parser.add_option("--basedir", dest="basedir",
+    parser.add_option("--basedir", dest="baseDir",
         help="Base directory on remote machine to store fuzzing data")
     parser.add_option("--tempdir", dest="tempDir",
         help="Temporary directory for fuzzing. Will be blown away and re-created. Should be a name that can be reused.")
@@ -165,14 +165,21 @@ def parseOpts():
         help='Fuzz jsfunfuzz instead of DOM fuzzer. Defaults to "%default".')
     options, args = parser.parse_args()
 
-    if options.remote_host and "/msys/" in options.basedir:
+    if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
         # when we are trying to refer to a directory on another computer.
-        options.basedir = "/" + options.basedir.split("/msys/")[1]
+        options.baseDir = "/" + options.baseDir.split("/msys/")[1]
+
+    # options.remote_prefix is used as a prefix for options.baseDir when using scp
+    options.remote_prefix = (options.remote_host + ":") if options.remote_host else ""
 
     if not options.runJsfunfuzz and not options.retestAll and not options.reuse_build and random.choice([True, False]):
         print "Randomly fuzzing JS!"
         options.runJsfunfuzz = True
+
+    options.testType = "js" if options.runJsfunfuzz else "dom"
+    options.relevantJobsDirName = options.testType + "-" + (buildType if not options.retestAll else "all")
+    options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + remoteSep
 
     if options.retestAll:
         options.reuse_build = True
@@ -183,21 +190,14 @@ def main():
     options = parseOpts()
 
     buildType = downloadBuild.defaultBuildType(options)
-    remoteHost = options.remote_host
-    remoteBase = options.basedir
-    # remotePrefix is used as a prefix for remoteBase when using scp
-    remotePrefix = (remoteHost + ":") if remoteHost else ""
-    remoteSep = "/" if remoteHost else localSep
-    assert remoteBase.endswith(remoteSep)
-    testType = "js" if options.runJsfunfuzz else "dom"
-    relevantJobsDirName = testType + "-" + (buildType if not options.retestAll else "all")
-    relevantJobsDir = remoteBase + relevantJobsDirName + remoteSep
-    runCommand(remoteHost, "mkdir -p " + remoteBase) # don't want this created recursively, because "mkdir -p" is weird with modes
-    runCommand(remoteHost, "chmod og+rx " + remoteBase)
-    runCommand(remoteHost, "mkdir -p " + relevantJobsDir)
-    runCommand(remoteHost, "chmod og+rx " + relevantJobsDir)
+    remoteSep = "/" if options.remote_host else localSep
+    assert options.baseDir.endswith(remoteSep)
+    runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
+    runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
+    runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
+    runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
 
-    if remoteHost:
+    if options.remote_host:
         # Log information about the machine.
         print "Platform details: " + " ".join(platform.uname())
         print "Python version: " + sys.version[:5]
@@ -217,7 +217,7 @@ def main():
         lithResult = None
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         buildDir = 'build'
-        #if remoteHost:
+        #if options.remote_host:
         #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
         if os.path.exists(options.tempDir):
@@ -226,7 +226,7 @@ def main():
 
         if options.retestAll:
             print "Retesting time!"
-            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_reduced", options.tempDir)
+            (job, oldjobname, takenNameOnServer) = grabJob(options, remoteSep, "_reduced")
             if job:
                 if ("1339201819" in oldjobname or # Bug 763126
                     "1338835174" in oldjobname or # Bug 763126
@@ -265,7 +265,7 @@ def main():
                 shouldLoop = False
         else:
             shouldLoop = False
-            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_needsreduction", options.tempDir)
+            (job, oldjobname, takenNameOnServer) = grabJob(options, remoteSep, "_needsreduction")
             if job:
                 print "Reduction time!"
                 if not options.reuse_build:
@@ -279,7 +279,7 @@ def main():
 
             else:
                 print "Fuzz time!"
-                #if remoteHost:
+                #if options.remote_host:
                 #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
                 if options.reuse_build and os.path.exists(buildDir):
                     buildSrc = buildDir
@@ -337,18 +337,18 @@ def main():
             print "Uploading as: " + newjobname
             newjobnameTmp = newjobname + ".uploading"
             os.rename(job, newjobnameTmp)
-            copyFiles(remoteHost, newjobnameTmp + localSep, remotePrefix + relevantJobsDir + remoteSep)
-            runCommand(remoteHost, "mv " + relevantJobsDir + newjobnameTmp + " " + relevantJobsDir + newjobname)
+            copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + remoteSep)
+            runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
             shutil.rmtree(newjobnameTmp)
 
             # Remove the old *_taken directory from the server
             if takenNameOnServer:
-                runCommand(remoteHost, "rm -rf " + takenNameOnServer)
+                runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
 
-            if remoteHost and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
+            if options.remote_host and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
                 recipients = []
-                subject = "Reduced " + testType + " fuzz testcase"
-                dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + relevantJobsDirName + "/" + newjobname + "/"
+                subject = "Reduced " + options.testType + " fuzz testcase"
+                dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
                 # FIXME: The if condition is present here because for no_longer_reproducible
                 # testcases, the -summary file is apparently absent, so this needs reconfirmation.
                 body = dirRef + "\n\n" + summary[0:50000] if summary else dirRef
