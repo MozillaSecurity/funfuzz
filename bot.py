@@ -32,7 +32,6 @@ import loopjsfunfuzz
 
 devnull = open(os.devnull, "w")
 
-targetTime = 15*60 # for build machines, use 15 minutes (15*60)
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
 # Possible ssh options:
@@ -137,11 +136,14 @@ def parseOpts():
         repoName = 'mozilla-central',
         compileType = 'dbg',
         runJsfunfuzz = False,
+        targetTime = 15*60       # 15 minutes
     )
     parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
         help="Use the existing 'build' directory.")
     parser.add_option("--remote-host", dest="remote_host",
         help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
+    parser.add_option("--target-time", dest="targetTime", type='int',
+        help="Nominal amount of time to run, in seconds")
     parser.add_option("--basedir", dest="basedir",
         help="Base directory on remote machine to store fuzzing data")
     parser.add_option("--retest-all", dest="retestAll", action="store_true",
@@ -260,7 +262,7 @@ def main():
                         buildDir = localBuildDir
                     lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildDir, reducedFn]
                     logPrefix = job + "retest"
-                    (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                    (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
             else:
                 shouldLoop = False
         else:
@@ -275,7 +277,7 @@ def main():
                         downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
-                (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime)
+                (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
 
             else:
                 print "Fuzz time!"
@@ -296,9 +298,9 @@ def main():
                     # Not using compareJIT: bug 751700, and it's not fully hooked up
                     # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
                     mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
-                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(targetTime, tempDir, mtrArgs)
+                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, tempDir, mtrArgs)
                 else:
-                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, tempDir, [buildDir]) # xxx support --valgrind
+                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, tempDir, [buildDir]) # xxx support --valgrind
                 if lithResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
