@@ -13,6 +13,7 @@ import socket
 import subprocess
 import sys
 import time
+import uuid
 
 from optparse import OptionParser
 
@@ -74,7 +75,7 @@ def runCommand(remoteHost, cmd):
     return out
 
 
-def grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, desiredJobType):
+def grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, desiredJobType, tempDir):
     while True:
         jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(remoteHost, "ls -1 -r " + relevantJobsDir).split("\n") )
         if len(jobs) > 0:
@@ -83,11 +84,12 @@ def grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, desiredJobType
             takenNameOnServer = relevantJobsDir + oldNameOnServer.split("_")[0] + "_taken_by_" + shortHost + "_at_" + timestamp()
             if tryCommand(remoteHost, "mv " + relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
-                job = copyFiles(remoteHost, remotePrefix + takenNameOnServer + remoteSep, "." + localSep)
-                oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part that will be redundant
-                os.rename(job, "wtmp1") # so lithium gets the same filename as before
-                print repr(("wtmp1/", oldjobname, takenNameOnServer))
-                return ("wtmp1/", oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
+                jobWithPostfix = copyFiles(remoteHost, remotePrefix + takenNameOnServer + remoteSep, tempDir + localSep)
+                oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part after the "_"
+                job = tempDir + localSep + oldjobname + localSep
+                os.rename(jobWithPostfix, job) # so lithium gets the same filename as before
+                print repr((job, oldjobname, takenNameOnServer))
+                return (job, oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
                 print "Raced to grab " + relevantJobsDir + oldNameOnServer + ", trying again"
                 continue
@@ -136,7 +138,8 @@ def parseOpts():
         repoName = 'mozilla-central',
         compileType = 'dbg',
         runJsfunfuzz = False,
-        targetTime = 15*60       # 15 minutes
+        targetTime = 15*60,       # 15 minutes
+        tempDir = "fuzztemp"
     )
     parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
         help="Use the existing 'build' directory.")
@@ -146,6 +149,8 @@ def parseOpts():
         help="Nominal amount of time to run, in seconds")
     parser.add_option("--basedir", dest="basedir",
         help="Base directory on remote machine to store fuzzing data")
+    parser.add_option("--tempdir", dest="tempDir",
+        help="Temporary directory for fuzzing. Will be blown away and re-created. Should be a name that can be reused.")
     parser.add_option("--retest-all", dest="retestAll", action="store_true",
         help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
     parser.add_option('--repotype', dest='repoName',
@@ -216,14 +221,13 @@ def main():
         #if remoteHost:
         #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        # FIXME: Put 'wtmp1' somewhere nicer, like ~/fuzztemp/. Make it possible to parallelize.
-        if os.path.exists("wtmp1"):
-            print "wtmp1 shouldn't exist now. killing it."
-            shutil.rmtree("wtmp1")
+        if os.path.exists(options.tempDir):
+            shutil.rmtree(options.tempDir)
+        os.mkdir(options.tempDir)
 
         if options.retestAll:
             print "Retesting time!"
-            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_reduced")
+            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_reduced", options.tempDir)
             if job:
                 if ("1339201819" in oldjobname or # Bug 763126
                     "1338835174" in oldjobname or # Bug 763126
@@ -267,7 +271,7 @@ def main():
                 shouldLoop = False
         else:
             shouldLoop = False
-            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_needsreduction")
+            (job, oldjobname, takenNameOnServer) = grabJob(remoteHost, remotePrefix, remoteSep, relevantJobsDir, "_needsreduction", options.tempDir)
             if job:
                 print "Reduction time!"
                 if not options.reuse_build:
@@ -291,26 +295,26 @@ def main():
                         shutil.rmtree(buildDir)
                     os.mkdir(buildDir)
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
-                os.mkdir("wtmp1")
-                tempDir = "wtmp1"
+
+                # not really "oldjobname", but this is how i get newjobname to be what i want below
+                # avoid putting underscores in this part, because those get split on
+                oldjobname = uuid.uuid1().hex
+                job = options.tempDir + localSep + oldjobname + localSep
+                os.mkdir(job)
+
                 if options.runJsfunfuzz:
                     shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
                     # Not using compareJIT: bug 751700, and it's not fully hooked up
                     # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
                     mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
-                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, tempDir, mtrArgs)
+                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
                 else:
-                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, tempDir, [buildDir]) # xxx support --valgrind
+                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildDir]) # xxx support --valgrind
+
                 if lithResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
-                    job = tempDir + localSep
                     writeTinyFile(job + "preferred-build.txt", buildSrc)
-                    # not really "oldjobname", but this is how i get newjobname to be what i want below
-                    # avoid putting underscores in this part, because those get split on
-                    oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
-                    os.rename(tempDir, oldjobname)
-                    job = oldjobname + localSep
 
         if lithResult != lithOps.HAPPY:
             statePostfix = ({
@@ -349,6 +353,9 @@ def main():
             # Remove build directory
             if not options.reuse_build and os.path.exists(buildDir):
                 shutil.rmtree(buildDir)
+
+            # Remove the main temp dir, which should be empty at this point
+            os.rmdir(options.tempDir)
 
             if remoteHost and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
                 recipients = []
