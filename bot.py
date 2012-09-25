@@ -350,7 +350,7 @@ def main():
 def multiFuzzUntilBug(options, buildDir, buildSrc):
     if sys.version_info < (2, 6):
         # The multiprocessing module was added in Python 2.6
-        fuzzUntilBug(options, buildDir, 0)
+        fuzzUntilBug(options, buildDir, buildSrc, 0)
     else:
         from multiprocessing import Process
         ps = []
