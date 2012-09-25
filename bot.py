@@ -355,14 +355,16 @@ def multiFuzzUntilBug(options, buildDir, buildSrc):
         from multiprocessing import Process
         ps = []
         # Fork a bunch of processes
-        for i in xrange(cpuCount()):
+        numProcesses = cpuCount()
+        print "Forking %d children..." % numProcesses
+        for i in xrange(numProcesses):
             p = Process(target=fuzzUntilBug, args=(options, buildDir, buildSrc, i + 1), name="Fuzzing process " + str(i + 1))
             p.start()
             ps.append(p)
         # Wait for them all to finish
         for p in ps:
             p.join()
-        print "All children have joined!"
+        print "All %d children have finished!" % numProcesses
 
 def fuzzUntilBug(options, buildDir, buildSrc, i):
     # not really "oldjobname", but this is how i get newjobname to be what i want below
