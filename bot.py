@@ -345,13 +345,6 @@ def main():
             if takenNameOnServer:
                 runCommand(remoteHost, "rm -rf " + takenNameOnServer)
 
-            # Remove build directory
-            if not options.reuse_build and os.path.exists(buildDir):
-                shutil.rmtree(buildDir)
-
-            # Remove the main temp dir, which should be empty at this point
-            os.rmdir(options.tempDir)
-
             if remoteHost and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
                 recipients = []
                 subject = "Reduced " + testType + " fuzz testcase"
@@ -369,6 +362,14 @@ def main():
                 for recipient in recipients:
                     sendEmail(subject, body, recipient)
                 print "Email sent!"
+
+        # Remove build directory
+        if not options.reuse_build and os.path.exists(buildDir):
+            shutil.rmtree(buildDir)
+
+        # Remove the main temp dir, which should be empty at this point
+        os.rmdir(options.tempDir)
+
 
 if __name__ == "__main__":
     main()
