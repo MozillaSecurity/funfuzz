@@ -23,6 +23,7 @@ import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 from compileShell import CompiledShell, makeTestRev
+from inspectShell import testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatform
@@ -245,7 +246,7 @@ def findBlamedCset(myShell):
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
     def inner(shell):
-        (stdoutStderr, exitCode) = testBinary(shell, options)
+        (stdoutStderr, exitCode) = testBinary(shell.getShellCachePath(), options.paramList)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
@@ -275,27 +276,6 @@ def internalTestAndLabel(options):
         else:
             return ('bad', 'Unknown exit code ' + str(exitCode))
     return inner
-
-def constructVgCmdList(options):
-    '''Constructs default parameters needed to run valgrind with.'''
-    vgCmdList = []
-    if options.testWithVg:
-        vgCmdList.append('valgrind')
-        if isMac:
-            vgCmdList.append('--dsymutil=yes')
-        vgCmdList.append('--smc-check=all-non-file')
-        vgCmdList.append('--leak-check=full')
-    return vgCmdList
-
-def testBinary(shell, options):
-    '''Tests the given shell without using interestingness tests.'''
-    testCmd = [shell.getShellCachePath()] + options.paramList
-    testCmd = constructVgCmdList(options) + testCmd
-    vdump('The testing command is: ' + shellify(testCmd))
-
-    out, rCode = captureStdout(testCmd, combineStderr=True, ignoreStderr=True, ignoreExitCode=True)
-    vdump('The exit code is: ' + str(rCode))
-    return out, rCode
 
 def externalTestAndLabel(options, interestingness):
     '''Make use of interestingness scripts to decide whether the changeset is good or bad.'''

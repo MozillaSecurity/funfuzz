@@ -4,6 +4,8 @@ import random
 import os
 import subprocess
 
+from inspectShell import shellSupports
+
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
     # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
@@ -132,32 +134,6 @@ def basicFlagSets(shellPath):
 # Consider adding a function (for compareJIT reduction) that takes a flag set
 # and returns all its (meaningful) subsets.
 
-
-def shellSupports(shellPath, args):
-    '''
-    This function returns True if the shell likes the args.
-    You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
-    '''
-    cmdList = [shellPath] + args
-
-    vdump(' '.join(cmdList))
-    cfgEnvDt = deepcopy(os.environ)
-    if isLinux:
-        cfgEnvDt['LD_LIBRARY_PATH'] = os.path.dirname(os.path.abspath(shellPath))
-    out, retCode = captureStdout(cmdList, ignoreStderr=True, combineStderr=True,
-                                 ignoreExitCode=True, env=cfgEnvDt)
-    vdump('The return code is: ' + str(retCode))
-
-    if retCode == 0:
-        return True
-    elif 1 <= retCode <= 3:
-        # Exit codes 1 through 3 are all plausible "non-support":
-        #   * "Usage error" is 1 in new js shell, 2 in old js shell, 2 in xpcshell.
-        #   * "Script threw an error" is 3 in most shells, but 1 in some versions (see bug 751425).
-        # Since we want autoBisect to support all shell versions, allow all these exit codes.
-        return False
-    else:
-        raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
 def testRandomFlags():
     import sys
