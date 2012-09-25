@@ -15,7 +15,7 @@ from copy import deepcopy
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, isWin, isLinux, shellify, vdump
+from subprocesses import captureStdout, isLinux, isMac, isWin, shellify, vdump
 
 def archOfBinary(binary):
     '''This function tests if a binary is 32-bit or 64-bit.'''
@@ -34,10 +34,10 @@ def archOfBinary(binary):
             assert '32-bit' not in filetype
             return '64'
 
-def constructVgCmdList(options):
+def constructVgCmdList(withVg):
     '''Constructs default parameters needed to run valgrind with.'''
     vgCmdList = []
-    if options.testWithVg:
+    if withVg:
         vgCmdList.append('valgrind')
         if isMac:
             vgCmdList.append('--dsymutil=yes')

@@ -288,7 +288,7 @@ def externalTestAndLabel(options, interestingness):
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
 
     def inner(shell):
-        conditionArgs = conditionArgPrefix + constructVgCmdList(options) + \
+        conditionArgs = conditionArgPrefix + constructVgCmdList(options.testWithVg) + \
                             [shell.getShellCachePath()] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
