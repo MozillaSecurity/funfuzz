@@ -31,8 +31,6 @@ path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import loopjsfunfuzz
 
-devnull = open(os.devnull, "w")
-
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
 # Possible ssh options:
@@ -50,7 +48,8 @@ def copyFiles(remoteHost, srcDir, destParent):
     if remoteHost == None:
         subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
     else:
-        subprocess.check_call(["scp", "-p", "-r", srcDir, destParent], stdout=devnull)
+        with open(os.devnull, "w") as devnull:
+            subprocess.check_call(["scp", "-p", "-r", srcDir, destParent], stdout=devnull)
     srcDirLeaf = srcDir.split("/" if "/" in srcDir else "\\")[-2]
     return destParent + srcDirLeaf + destParent[-1]
 
