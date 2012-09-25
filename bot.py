@@ -261,6 +261,7 @@ def main():
                     lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
                     logPrefix = job + "retest"
                     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+                    runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
             else:
                 shouldLoop = False
         else:
@@ -276,6 +277,7 @@ def main():
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
                 (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+                runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
 
             else:
                 print "Fuzz time!"
@@ -340,10 +342,6 @@ def main():
             copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + remoteSep)
             runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
             shutil.rmtree(newjobnameTmp)
-
-            # Remove the old *_taken directory from the server
-            if takenNameOnServer:
-                runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
 
             if options.remote_host and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
                 recipients = []
