@@ -46,6 +46,8 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
             "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
             "--gen-suppressions=all",
             "--leak-check=full",
+            "--show-possibly-lost=no",
+            "--num-callers=50",
             "--smc-check=all-non-file"  # Added by default because IonMonkey turns JITs on by default.
           ] +
             valgrindSuppressions(knownPath) +

@@ -443,6 +443,7 @@ def rdfInit(args):
           "--gen-suppressions=all" + " " +
           "--child-silent-after-fork=yes" + " " + # First part of the workaround for bug 658840
     #      "--leak-check=full" + " " +
+    #      "--show-possibly-lost=no" + " " +
           "--smc-check=all-non-file" + " " +
     #      "--track-origins=yes" + " " +
     #      "--num-callers=50" + " " +

@@ -43,6 +43,8 @@ def constructVgCmdList(withVg):
             vgCmdList.append('--dsymutil=yes')
         vgCmdList.append('--smc-check=all-non-file')
         vgCmdList.append('--leak-check=full')
+        vgCmdList.append('--show-possibly-lost=no')
+        vgCmdList.append('--num-callers=50')
     return vgCmdList
 
 def shellSupports(shellPath, args):
