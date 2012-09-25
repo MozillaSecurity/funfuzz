@@ -227,7 +227,8 @@ def parseOpts():
         options.runJsfunfuzz = True
 
     options.testType = "js" if options.runJsfunfuzz else "dom"
-    options.relevantJobsDirName = options.testType + "-" + (buildType if not options.retestAll else "all")
+    options.buildType = downloadBuild.defaultBuildType(options)
+    options.relevantJobsDirName = options.testType + "-" + (options.buildType if not options.retestAll else "all")
     options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + remoteSep
 
     if options.retestAll:
@@ -238,7 +239,6 @@ def parseOpts():
 def main():
     options = parseOpts()
 
-    buildType = downloadBuild.defaultBuildType(options)
     remoteSep = "/" if options.remote_host else localSep
     assert options.baseDir.endswith(remoteSep)
     runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
@@ -323,7 +323,7 @@ def main():
                     preferredBuild = readTinyFile(job + "preferred-build.txt")
                     if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=options.runJsfunfuzz):
                         print "Preferred build for this reduction was missing, grabbing latest build"
-                        downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
+                        downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 logPrefix = job + "reduce" + timestamp()
                 (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
@@ -341,7 +341,7 @@ def main():
                         print "Deleting old build..."
                         shutil.rmtree(buildDir)
                     os.mkdir(buildDir)
-                    buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
+                    buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
 
                 # not really "oldjobname", but this is how i get newjobname to be what i want below
                 # avoid putting underscores in this part, because those get split on
