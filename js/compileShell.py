@@ -6,12 +6,15 @@
 
 import os
 import platform
-import subprocess
 import shutil
+import subprocess
 import sys
 
 from copy import deepcopy
+from tempfile import mkdtemp
 from traceback import format_exc
+
+from inspectShell import verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -325,6 +328,37 @@ def compileCopy(shell, options):
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
+
+def makeTestRev(shell, options):
+    '''Calls recursive function testRev to keep compiling and testing changesets until it stops.'''
+    def testRev(rev):
+        shell.setBaseTempDir(mkdtemp(prefix="abtmp-" + rev + "-"))
+        shell.setHgHash(rev)
+        shell.setName(options)
+        cachedNoShell = shell.getShellCachePath() + ".busted"
+
+        print "Rev " + rev + ":",
+        if os.path.exists(shell.getShellCachePath()):
+            print "Found cached shell...   ",
+        elif os.path.exists(cachedNoShell):
+            return (options.compilationFailedLabel, 'compilation failed (cached)')
+        else:
+            print "Updating...",
+            captureStdout(shell.getHgPrefix() + ['update', '-r', rev], ignoreStderr=True)
+            try:
+                print "Compiling...",
+                copyJsSrcDirs(shell)
+                cfgCompileCopy(shell, options)
+                compileCopy(shell, options)
+                verifyBinary(shell, options)
+                shutil.copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
+            except Exception, e:
+                open(cachedNoShell, 'w').close()
+                return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
+
+        print "Testing...",
+        return options.testAndLabel(shell)
+    return testRev
 
 if __name__ == '__main__':
     pass

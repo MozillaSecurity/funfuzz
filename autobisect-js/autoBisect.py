@@ -22,8 +22,7 @@ sys.path.append(path1)
 import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
-from compileShell import CompiledShell, cfgCompileCopy, copyJsSrcDirs, compileCopy
-from inspectShell import verifyBinary
+from compileShell import CompiledShell, makeTestRev
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatform
@@ -315,37 +314,6 @@ def externalTestAndLabel(options, interestingness):
         else:
             return ('good', 'not interesting')
     return inner
-
-def makeTestRev(shell, options):
-    '''Calls recursive function testRev to keep compiling and testing changesets until it stops.'''
-    def testRev(rev):
-        shell.setBaseTempDir(mkdtemp(prefix="abtmp-" + rev + "-"))
-        shell.setHgHash(rev)
-        shell.setName(options)
-        cachedNoShell = shell.getShellCachePath() + ".busted"
-
-        print "Rev " + rev + ":",
-        if os.path.exists(shell.getShellCachePath()):
-            print "Found cached shell...   ",
-        elif os.path.exists(cachedNoShell):
-            return (options.compilationFailedLabel, 'compilation failed (cached)')
-        else:
-            print "Updating...",
-            captureStdout(shell.getHgPrefix() + ['update', '-r', rev], ignoreStderr=True)
-            try:
-                print "Compiling...",
-                copyJsSrcDirs(shell)
-                cfgCompileCopy(shell, options)
-                compileCopy(shell, options)
-                verifyBinary(shell, options)
-                copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
-            except Exception, e:
-                open(cachedNoShell, 'w').close()
-                return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
-
-        print "Testing...",
-        return options.testAndLabel(shell)
-    return testRev
 
 def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """Ensure we actually tested the parents of the blamed revision."""
