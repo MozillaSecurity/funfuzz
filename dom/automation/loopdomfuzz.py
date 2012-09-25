@@ -31,8 +31,7 @@ maxIterations = 300000
 # If targetTime is None, this loops forever.
 # If targetTime is a number, tries not to run for more than targetTime seconds.
 #   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
-def many_timed_runs(targetTime, args):
-    tempDir = createWtmpDir(os.getcwdu())
+def many_timed_runs(targetTime, tempDir, args):
     startTime = time.time()
 
     levelAndLines, deleteProfile, options = domInteresting.rdfInit(args)
@@ -200,4 +199,4 @@ def nonBoolPrefs():
     return p
 
 if __name__ == "__main__":
-    many_timed_runs(None, sys.argv[1:])
+    many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:])

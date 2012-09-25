@@ -70,10 +70,9 @@ def showtail(filename):
     print
     print
 
-def many_timed_runs(targetTime, args):
+def many_timed_runs(targetTime, wtmpDir, args):
     options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
-    wtmpDir = createWtmpDir(os.getcwdu())
     startTime = time.time()
 
     iteration = 0
@@ -151,4 +150,4 @@ def many_timed_runs(targetTime, args):
             jsInteresting.deleteLogs(logPrefix)
 
 if __name__ == "__main__":
-    many_timed_runs(None, sys.argv[1:])
+    many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:])

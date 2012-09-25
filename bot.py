@@ -290,23 +290,25 @@ def main():
                         shutil.rmtree(buildDir)
                     os.mkdir(buildDir)
                     buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=options.runJsfunfuzz)
+                os.mkdir("wtmp1")
+                tempDir = "wtmp1"
                 if options.runJsfunfuzz:
                     shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
                     # Not using compareJIT: bug 751700, and it's not fully hooked up
                     # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
                     mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
-                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(targetTime, mtrArgs)
+                    (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(targetTime, tempDir, mtrArgs)
                 else:
-                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, [buildDir]) # xxx support --valgrind
+                    (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(targetTime, tempDir, [buildDir]) # xxx support --valgrind
                 if lithResult == lithOps.HAPPY:
                     print "Happy happy! No bugs found!"
                 else:
-                    job = "wtmp1" + localSep
+                    job = tempDir + localSep
                     writeTinyFile(job + "preferred-build.txt", buildSrc)
                     # not really "oldjobname", but this is how i get newjobname to be what i want below
                     # avoid putting underscores in this part, because those get split on
                     oldjobname = "foundat" + timestamp() #+ "-" + str(random.randint(0, 1000000))
-                    os.rename("wtmp1", oldjobname)
+                    os.rename(tempDir, oldjobname)
                     job = oldjobname + localSep
 
         if lithResult != lithOps.HAPPY:
