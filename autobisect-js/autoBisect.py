@@ -115,6 +115,11 @@ def parseOpts():
     parser.add_option('-p', '--parameters', dest='parameters',
                       help='Define the testing parameters, e.g. -p "-a --ion-eager testcase.js".')
 
+    # See knownBrokenRanges in knownBrokenEarliestWorking.py
+    parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
+                      help='Define way to treat revisions that fail to compile. ' + \
+                            '(bad, good, or skip) Defaults to "%default"')
+
     parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
                       help='Enable pymake. Defaults to "%default" on the current platform.')
     parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
@@ -128,11 +133,6 @@ def parseOpts():
     parser.add_option('--test-with-valgrind', dest='testWithVg',
                       action='store_true',
                       help='Test with Valgrind enabled. Defaults to "%default".')
-
-    # See knownBrokenRanges in knownBrokenEarliestWorking.py
-    parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
-                      help='Define way to treat revisions that fail to compile. ' + \
-                            '(bad, good, or skip) Defaults to "%default"')
 
     (options, args) = parser.parse_args()
 
