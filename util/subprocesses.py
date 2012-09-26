@@ -88,8 +88,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
     if not ignoreExitCode and p.returncode != 0:
         # Potential problem area: Note that having a non-zero exit code does not mean that the
         # operation did not succeed, for example when compiling a shell. A non-zero exit code can
-        # appear even though a shell compiled successfully. This issue has been bypassed in the
-        # makeShell function in autoBisect.
+        # appear even though a shell compiled successfully.
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'no such option: -s' not in stdout:
             print 'Nonzero exit code from: '
