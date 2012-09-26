@@ -14,17 +14,14 @@ from subprocesses import captureStdout, isLinux, isMac, isWin, macVer
 
 def knownBrokenRanges():
     '''Returns a list of revsets corresponding to known-busted revisions'''
-
+    # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
-    # - (1) autoBisect.py --compilation-failed-label=bad -p -a32 -e FAILINGREV 404.js
+    # - (1) autoBisect.py --compilation-failed-label=bad -e FAILINGREV
     # - (2) will tell you when the brokenness ended
-    # - (2) autoBisect.py --compilation-failed-label=bad -p -a32 -s FAILINGREV 404.js
-    # (404.js does not need to exist)
+    # - (2) autoBisect.py --compilation-failed-label=bad -s FAILINGREV
 
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
-
-    # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
 
     def hgrange(lastGood, firstWorking):
         return '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'
@@ -60,7 +57,7 @@ def earliestKnownWorkingRev(options):
 
     # These should be in descending order, or bisection will break at earlier changesets.
     # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds
-    if options.enableRootAnalysis or options.isThreadsafe:  # Threadsafety result is wrong prior to this rev
+    if options.enableRootAnalysis or options.isThreadsafe: # Threadsafe result wrong before this rev
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
     elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
