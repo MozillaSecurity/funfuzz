@@ -17,9 +17,9 @@ def knownBrokenRanges():
     # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
-    # - (1) autoBisect.py --compilation-failed-label=bad -e FAILINGREV
+    # - (1) autoBisect.py --compilationFailedLabel=bad -e FAILINGREV
     # - (2) will tell you when the brokenness ended
-    # - (2) autoBisect.py --compilation-failed-label=bad -s FAILINGREV
+    # - (2) autoBisect.py --compilationFailedLabel=bad -s FAILINGREV
 
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
