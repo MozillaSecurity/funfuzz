@@ -126,14 +126,14 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
     shutil.rmtree(newjobnameTmp)
 
-    if options.remote_host and (lithResult == lithOps.LITH_FINISHED or options.runJsfunfuzz):
+    if options.remote_host and (lithResult == lithOps.LITH_FINISHED or (options.testType == 'js')):
         recipients = []
         subject = "Reduced " + options.testType + " fuzz testcase"
         dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
         # FIXME: The if condition is present here because for no_longer_reproducible
         # testcases, the -summary file is apparently absent, so this needs reconfirmation.
         body = dirRef + "\n\n" + summary[0:50000] if summary else dirRef
-        if options.runJsfunfuzz:
+        if options.testType == 'js':
             # Send jsfunfuzz emails to gkw
             recipients.append("gkwong")
         else:
@@ -185,13 +185,13 @@ def parseOpts():
         baseDir = os.path.expanduser("~") + localSep + "fuzzingjobs" + localSep,
         repoName = 'mozilla-central',
         compileType = 'dbg',
-        runJsfunfuzz = False,
         targetTime = 15*60,       # 15 minutes
-        tempDir = "fuzztemp"
+        tempDir = "fuzztemp",
+        testType = "auto",
     )
 
-    parser.add_option('-j', '--jsfunfuzz', dest='runJsfunfuzz', action='store_true',
-        help='Fuzz jsfunfuzz instead of DOM fuzzer. Defaults to "%default".')
+    parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
+        help='Test type: "js", "dom", or "auto" (which is usually random).')
 
     parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
         help="Use the existing 'build' directory.")
@@ -229,11 +229,13 @@ def parseOpts():
 
     options.remoteSep = "/" if options.remote_host else localSep
 
-    if not options.runJsfunfuzz and not options.retestAll and not options.reuse_build and random.choice([True, False]):
-        print "Randomly fuzzing JS!"
-        options.runJsfunfuzz = True
+    if options.testType == 'auto':
+        if options.retestAll or options.reuse_build:
+            options.testType = 'dom'
+        else:
+            options.testType = random.choice(['js', 'dom'])
+            print "Randomly fuzzing: " + options.testType
 
-    options.testType = "js" if options.runJsfunfuzz else "dom"
     options.buildType = downloadBuild.defaultBuildType(options)
     options.relevantJobsDirName = options.testType + "-" + (options.buildType if not options.retestAll else "all")
     options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
@@ -321,9 +323,9 @@ def main():
             print "Reduction time!"
             if not options.reuse_build:
                 preferredBuild = readTinyFile(job + "preferred-build.txt")
-                if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=options.runJsfunfuzz):
+                if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=(options.testType == 'js')):
                     print "Preferred build for this reduction was missing, grabbing latest build"
-                    downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
+                    downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
             lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
             logPrefix = job + "reduce" + timestamp()
             (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
@@ -341,7 +343,7 @@ def main():
                     print "Deleting old build..."
                     shutil.rmtree(buildDir)
                 os.mkdir(buildDir)
-                buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=options.runJsfunfuzz)
+                buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
 
             multiFuzzUntilBug(options, buildDir, buildSrc)
 
@@ -378,7 +380,7 @@ def fuzzUntilBug(options, buildDir, buildSrc, i):
     job = options.tempDir + localSep + oldjobname + localSep
     os.mkdir(job)
 
-    if options.runJsfunfuzz:
+    if options.testType == 'js':
         shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
         # Not using compareJIT: bug 751700, and it's not fully hooked up
         # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
