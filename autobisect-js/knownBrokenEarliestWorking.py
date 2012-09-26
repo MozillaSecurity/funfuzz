@@ -37,6 +37,7 @@ def knownBrokenRanges():
         hgrange('53d0ad70087b', '73e8ca73e5bd'), # broken ionmonkey
         hgrange('b83b72d7fb86', '45315f6ccb19'), # broken ionmonkey
         hgrange('23a84dbb258f', '08187a7ea897'), # broken ionmonkey
+        hgrange('4804d288adae', '9049a4c5c61a'), # broken ionmonkey
     ]
 
     if isMac and macVer() >= [10, 7]:
