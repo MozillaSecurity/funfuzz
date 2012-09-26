@@ -189,18 +189,15 @@ def parseOpts():
         targetTime = 15*60,       # 15 minutes
         tempDir = "fuzztemp"
     )
+
+    parser.add_option('-j', '--jsfunfuzz', dest='runJsfunfuzz', action='store_true',
+        help='Fuzz jsfunfuzz instead of DOM fuzzer. Defaults to "%default".')
+
     parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
         help="Use the existing 'build' directory.")
-    parser.add_option("--remote-host", dest="remote_host",
-        help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
-    parser.add_option("--target-time", dest="targetTime", type='int',
-        help="Nominal amount of time to run, in seconds")
-    parser.add_option("--basedir", dest="baseDir",
-        help="Base directory on remote machine to store fuzzing data")
-    parser.add_option("--tempdir", dest="tempDir",
-        help="Temporary directory for fuzzing. Will be blown away and re-created. Should be a name that can be reused.")
     parser.add_option("--retest-all", dest="retestAll", action="store_true",
         help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
+
     parser.add_option('--repotype', dest='repoName',
         help='Sets the repository to be fuzzed. Defaults to "%default".')
     parser.add_option('--compiletype', dest='compileType',
@@ -210,8 +207,16 @@ def parseOpts():
                       type='choice',
                       choices=['32', '64'],
                       help='Test architecture. Only accepts "32" or "64"')
-    parser.add_option('-j', '--jsfunfuzz', dest='runJsfunfuzz', action='store_true',
-        help='Fuzz jsfunfuzz instead of DOM fuzzer. Defaults to "%default".')
+
+    parser.add_option("--remote-host", dest="remote_host",
+        help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
+    parser.add_option("--basedir", dest="baseDir",
+        help="Base directory on remote machine to store fuzzing data")
+    parser.add_option("--target-time", dest="targetTime", type='int',
+        help="Nominal amount of time to run, in seconds")
+    parser.add_option("--tempdir", dest="tempDir",
+        help="Temporary directory for fuzzing. Will be blown away and re-created. Should be a name that can be reused.")
+
     options, args = parser.parse_args()
 
     if options.remote_host and "/msys/" in options.baseDir:
