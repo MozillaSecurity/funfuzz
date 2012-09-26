@@ -54,7 +54,7 @@ def parseOpts():
         repoDir = getMcRepoDir()[1],
         resetRepoFirst = False,
         endRepo = 'default',
-        testInitialRevs = False,
+        testInitialRevs = True,
         compileType = 'dbg',
         output = '',
         watchExitCode = None,
@@ -84,10 +84,10 @@ def parseOpts():
                            'earliest revision known to work at all.')
     parser.add_option('-e', '--endRev', dest='endRepo',
                       help='Initial bad revision (usually the latest). Defaults to "%default".')
-    parser.add_option('-t', '--testInitialRevs', dest='testInitialRevs',
-                      action='store_true',
-                      help='Test the -s and -e revisions to ensure they are correctly marked.' + \
-                           ' (rather than automatically treating them as -g and -b).')
+    parser.add_option('-k', '--skipInitialRevs', dest='testInitialRevs',
+                      action='store_false',
+                      help='Skip testing the -s and -e revisions and automatically trust them ' + \
+                           'as -g and -b).')
 
     # Define the type of build to test.
     parser.add_option('-a', '--arch', dest='arch',
