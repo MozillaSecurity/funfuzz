@@ -26,7 +26,7 @@ from compileShell import CompiledShell, makeTestRev
 from inspectShell import constructVgCmdList, testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
-from downloadBuild import mozPlatform
+from downloadBuild import mozPlatformDetails
 from fileManipulation import firstLine
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getMcRepoDir, getRepoHashAndId, \
     getRepoNameFromHgrc, isAncestor
@@ -55,11 +55,12 @@ def parseOpts():
         resetRepoFirst = False,
         endRepo = 'default',
         testInitialRevs = True,
+        arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
         output = '',
         watchExitCode = None,
         useInterestingnessTests = False,
-        parameters = '',
+        parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel = 'skip',
         enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
@@ -190,7 +191,7 @@ def findBlamedCset(myShell):
         currRev = getCsetHashFromBisectMsg(firstLine(
             captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
-    myShell.setArch('64' if '64' in mozPlatform(options.arch) else '32')
+    myShell.setArch(options.arch)
     myShell.setCompileType(options.compileType)
 
     testRev = makeTestRev(myShell, options)
