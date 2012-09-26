@@ -25,7 +25,8 @@ sys.path.append(path1)
 from downloadBuild import defaultBuildType, downloadBuild, downloadLatestBuild, mozPlatform
 from hgCmds import getRepoHashAndId, patchHgRepoUsingMq
 from lithOps import knownBugsDir
-from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, vdump
+from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, \
+    shellify, vdump
 
 def machineTimeoutDefaults(timeout):
     '''Sets different defaults depending on the machine type.'''
@@ -177,11 +178,11 @@ def envDump(shell, log):
                 ' shell:\n\n')
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')
-        f.write(repr(shell.getEnvAdded()) + '\n\n')
+        f.write(shellify(shell.getEnvAdded()) + '\n\n')
         f.write('Configuration command was:\n')
-        f.write(repr(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write(shellify(shell.getCfgCmdExclEnv()) + '\n\n')
         f.write('Full configuration command with needed environment variables is:\n')
-        f.write(repr(shell.getEnvAdded()) + repr(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
 def cmdDump(shell, log):
     '''Dump commands to file.'''
