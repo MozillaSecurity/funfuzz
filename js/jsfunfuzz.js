@@ -111,6 +111,7 @@ if (haveE4X)
 // this should be set to the highest such X.
 var HOTLOOP = 60;
 function loopCount() { return rnd(rnd(HOTLOOP * 3)); }
+function loopModulo() { return (rnd(2) ? rnd(rnd(HOTLOOP * 2)) : rnd(5)) + 2; }
 
 function simpleSource(s)
 {
@@ -713,7 +714,7 @@ function makeBranchUnstableLoop(d, b)
 {
   var reps = loopCount();
   var v = uniqueVarName();
-  var mod = rnd(HOTLOOP * 2) + 2;
+  var mod = loopModulo();
   var target = rnd(mod);
   return "/*bLoop*/" + forLoopHead(d, b, v, reps) + " { " +
     "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
@@ -820,15 +821,15 @@ var statementMakers = weighted([
   { w: 2, fun: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
 
   // Conditionals, perhaps with 'else if' / 'else'
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
 
   // A tricky pair of if/else cases.
   // In the SECOND case, braces must be preserved to keep the final "else" associated with the first "if".
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeExpr(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); } },
+  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); } },
 
   // Expression statements
   { w: 5, fun: function(d, b) { return cat([makeExpr(d, b), ";"]); } },
@@ -1159,6 +1160,7 @@ var makeEvilCallback;
     { w: 2,  fun: function(d, b) { return assign(d, b, "v", rndElt(["4", "4.2", "NaN", "0", "-0", "Infinity", "-Infinity"])); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "v", "new Number(" + rndElt(["4", "4.2", "NaN", "0", "-0", "Infinity", "-Infinity"]) + ")"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "v", "new Number(" + m() + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "v", makeBoolean(d, b)); } },
     { w: 2,  fun: function(d, b) { return assign(d, b, "v", rndElt(["undefined", "null", "true", "false"])); } },
 
     // evil things we can do to any object property
@@ -2116,8 +2118,12 @@ function makePropertyDescriptor(d, b)
 function makeBoolean(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  if (rnd(10) == 0) return makeExpr(d - 2, b);
-  return rndElt(["true", "false"]);
+  switch(rnd(4)) {
+    case 0:   return "true";
+    case 1:   return "false";
+    case 2:   return makeExpr(d - 2, b);
+    default:  var m = loopModulo(); return "(" + rndElt(b) + " % " + m + rndElt([" == ", " != "]) + rnd(m) + ")";
+  }
 }
 
 function makeZealLevel()
