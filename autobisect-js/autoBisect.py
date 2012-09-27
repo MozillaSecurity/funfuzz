@@ -377,6 +377,8 @@ def bisectLabel(shell, options, hgLabel, currRev, startRepo, endRepo):
 
     currRev = getCsetHashFromBisectMsg(outputLines[0])
     if currRev is None:
+        print 'Resetting to default revision...'
+        subprocess.check_call(hgPrefix + ['up', '-C', 'default'])
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
