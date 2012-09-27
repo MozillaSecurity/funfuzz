@@ -37,6 +37,7 @@ def runLithium(lithArgs, logPrefix, targetTime):
     """
     deletableLithTemp = None
     if targetTime:
+        # FIXME: this could be based on whether bot.py has a remoteHost
         # loopdomfuzz.py or loopjsfuzz.py is being used by bot.py
         deletableLithTemp = mkdtemp(prefix="fuzzbot-lithium")
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs

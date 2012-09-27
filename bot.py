@@ -188,13 +188,14 @@ def parseOpts():
         targetTime = 15*60,       # 15 minutes
         tempDir = "fuzztemp",
         testType = "auto",
+        existingBuildDir = None,
     )
 
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
         help='Test type: "js", "dom", or "auto" (which is usually random).')
 
-    parser.add_option("--reuse-build", dest="reuse_build", default=False, action="store_true",
-        help="Use the existing 'build' directory.")
+    parser.add_option("--build", dest="existingBuildDir",
+        help="Use an existing build directory.")
     parser.add_option("--retest-all", dest="retestAll", action="store_true",
         help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
 
@@ -230,18 +231,18 @@ def parseOpts():
     options.remoteSep = "/" if options.remote_host else localSep
 
     if options.testType == 'auto':
-        if options.retestAll or options.reuse_build:
+        if options.retestAll or options.existingBuildDir:
             options.testType = 'dom'
         else:
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
 
-    options.buildType = downloadBuild.defaultBuildType(options)
+    options.buildType = 'local-build' if options.existingBuildDir else downloadBuild.defaultBuildType(options)
     options.relevantJobsDirName = options.testType + "-" + (options.buildType if not options.retestAll else "all")
     options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
 
     if options.retestAll:
-        options.reuse_build = True
+        options.existingBuildDir = True
 
     assert options.baseDir.endswith(options.remoteSep)
     return options
@@ -267,7 +268,7 @@ def main():
                     repr(resource.getrlimit(resource.RLIMIT_CORE))
 
     # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-    buildDir = 'build'
+    buildDir = options.existingBuildDir or 'build'
     #if options.remote_host:
     #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
@@ -310,7 +311,7 @@ def main():
                 else:
                     reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
                     print "reduced filename: " + reducedFn
-                    lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, "build", reducedFn]
+                    lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildDir, reducedFn]
                     logPrefix = job + "retest"
                     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
                     uploadJob(options, lithResult, lithDetails, job, oldjobname)
@@ -321,7 +322,7 @@ def main():
         (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
         if job:
             print "Reduction time!"
-            if not options.reuse_build:
+            if not options.existingBuildDir:
                 preferredBuild = readTinyFile(job + "preferred-build.txt")
                 if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=(options.testType == 'js')):
                     print "Preferred build for this reduction was missing, grabbing latest build"
@@ -336,7 +337,8 @@ def main():
             print "Fuzz time!"
             #if options.remote_host:
             #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-            if options.reuse_build and os.path.exists(buildDir):
+            if options.existingBuildDir:
+                assert os.path.exists(buildDir)
                 buildSrc = buildDir
             else:
                 if os.path.exists(buildDir):
@@ -348,7 +350,7 @@ def main():
             multiFuzzUntilBug(options, buildDir, buildSrc)
 
     # Remove build directory
-    if not options.reuse_build and os.path.exists(buildDir):
+    if not options.existingBuildDir and os.path.exists(buildDir):
         shutil.rmtree(buildDir)
 
     # Remove the main temp dir, which should be empty at this point
@@ -363,6 +365,9 @@ def multiFuzzUntilBug(options, buildDir, buildSrc):
         ps = []
         # Fork a bunch of processes
         numProcesses = cpuCount()
+        if "-asan" in buildDir:
+            # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
+            numProcesses = max(numProcesses // 2, 1)
         print "Forking %d children..." % numProcesses
         for i in xrange(numProcesses):
             p = Process(target=fuzzUntilBug, args=(options, buildDir, buildSrc, i + 1), name="Fuzzing process " + str(i + 1))
