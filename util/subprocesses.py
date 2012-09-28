@@ -153,8 +153,7 @@ def dateStr():
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     '''Finds the required crash log in the given crash reporter directory.'''
-    assert platform.system() == 'Darwin'
-    isLeopard = platform.mac_ver()[0].startswith("10.5")
+    assert platform.system() == 'Darwin' and platform.macVer() >= [10, 6]
     reportDirList = [os.path.expanduser('~'), '/']
     for baseDir in reportDirList:
         # Sometimes the crash reports end up in the root directory.
@@ -162,8 +161,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
         #     defaults write com.apple.CrashReporter DialogType <value>
         # is none, instead of server, or some other option.
         # See http://en.wikipedia.org/wiki/Crash_Reporter_%28Mac_OS_X%29
-        reportDir = os.path.join(baseDir, 'Library/Logs/CrashReporter/') if isLeopard \
-            else os.path.join(baseDir, 'Library/Logs/DiagnosticReports/')
+        reportDir = os.path.join(baseDir, 'Library/Logs/DiagnosticReports/')
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
         try:
