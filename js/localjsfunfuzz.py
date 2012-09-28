@@ -158,7 +158,7 @@ class DownloadedJsShell:
         return path
     def downloadShell(self, sDir):
         remoteTinderJsUrlStart = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
-        tinderJsType = filter(None, self.repo) + '-' + self.pArchName + \
+        tinderJsType = [x for x in self.repo if x] + '-' + self.pArchName + \
             '-debug' if 'dbg' in self.cType else ''
         if self.shellVer == 'latest':
             downloadLatestBuild(tinderJsType, getJsShell=True, workingDir=sDir)

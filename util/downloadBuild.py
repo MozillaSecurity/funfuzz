@@ -132,7 +132,7 @@ def undmg(fn, dest, mountpoint):
         captureStdout(['hdiutil', 'detach', mountpoint, '-force'])
     captureStdout(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
     try:
-        apps = filter(lambda s: s.endswith('.app'), os.listdir(mountpoint))
+        apps = [x for x in os.listdir(mountpoint) if x.endswith('app')]
         assert len(apps) == 1
         shutil.copytree(mountpoint + '/' + apps[0], dest + '/' + apps[0])
     finally:
@@ -257,7 +257,7 @@ def downloadLatestBuild(buildType, workingDir, getJsShell=False):
     buildsHttpDir = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/' + \
                     buildType + '/'
     buildsRawList = httpDirList(buildsHttpDir)
-    buildsSubDirList = filter(isNumericSubDir, buildsRawList)
+    buildsSubDirList = [x for x in buildsRawList if isNumericSubDir(x)]
     builds = [c[:-1] for c in buildsSubDirList]
     for b in reversed(builds):  # Try downloading the latest build first.
         fullb = buildsHttpDir + b + '/'

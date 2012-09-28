@@ -170,8 +170,8 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
             # Maybe this is the first crash ever on this computer, and the dir does not yet exist.
             crashLogs = []
         # Firefox sometimes still runs as firefox-bin, at least on Mac (likely bug 658850)
-        crashLogs = filter(
-            lambda s: (s.startswith(progname + "_") or s.startswith(progname + "-bin_")), crashLogs)
+        crashLogs = [x for x in crashLogs
+                     if (x.startswith(progname + '_') or x.startswith(progname + '-bin_'))]
         crashLogs.sort(reverse=True)
         for fn in crashLogs:
             fullfn = os.path.join(reportDir, fn)
