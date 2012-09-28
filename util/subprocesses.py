@@ -79,12 +79,15 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         else:
             cmd.append(str(el))
     assert cmd != []
-    p = subprocess.Popen(cmd,
-        stdin = subprocess.PIPE,
-        stdout = subprocess.PIPE,
-        stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE,
-        cwd=currWorkingDir, env=env)
-    (stdout, stderr) = p.communicate()
+    try:
+        p = subprocess.Popen(cmd,
+            stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE,
+            cwd=currWorkingDir, env=env)
+        (stdout, stderr) = p.communicate()
+    except OSError, e:
+        raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
     if not ignoreExitCode and p.returncode != 0:
         # Potential problem area: Note that having a non-zero exit code does not mean that the
         # operation did not succeed, for example when compiling a shell. A non-zero exit code can
