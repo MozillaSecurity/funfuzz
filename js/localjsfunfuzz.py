@@ -184,9 +184,11 @@ def envDump(shell, log):
         f.write('Full configuration command with needed environment variables is:\n')
         f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
-def cmdDump(shell, log):
+def cmdDump(shell, cmdList, log):
     '''Dump commands to file.'''
     with open(log, 'ab') as f:
+        f.write('Command to be run is:\n')
+        f.write(shellify(cmdList) + '\n')
         f.write('========================================================\n')
         f.write('|  Fuzzing %s %s %s js shell builds\n' %
                      (shell.getArch() + '-bit', shell.getCompileType(), shell.getRepoName() ))
@@ -283,7 +285,7 @@ def localCompileFuzzJsShell(options):
     localLog = normExpUserPath(os.path.join(myShell.getBaseTempDir(), 'log-localjsfunfuzz.txt'))
     envDump(myShell, localLog)
     envDump(myOtherShell, localLog)  # Also dump information about the other shell
-    cmdDump(myShell, localLog)
+    cmdDump(myShell, cmdList, localLog)
 
     with open(localLog, 'rb') as f:
         for line in f:
