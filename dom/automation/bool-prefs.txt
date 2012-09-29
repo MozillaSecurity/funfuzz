@@ -147,8 +147,8 @@ javascript.options.typeinference
 javascript.options.xml.content
 javascript.options.xml.chrome
 keyword.enabled
-layers.acceleration.disabled
-layers.acceleration.force-enabled
+#layers.acceleration.disabled # Bug 795646
+#layers.acceleration.force-enabled # Bug 795646
 #layers.async-video.enabled # requires OMTC
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 #layers.offmainthreadcomposition.animate-opacity
