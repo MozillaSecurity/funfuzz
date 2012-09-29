@@ -348,6 +348,7 @@ class FigureOutDirs:
             self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
             self.symbolsDir = os.path.join(browserDir, "dist", "crashreporter-symbols")
         else:
+            print "browserDir: " + repr(browserDir)
             raise Exception("browserDir should be an objdir for a local build, or a Tinderbox build downloaded with downloadBuild.py")
 
         #if not os.path.exists(self.appDir):
