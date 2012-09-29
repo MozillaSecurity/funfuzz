@@ -233,7 +233,7 @@ def localCompileFuzzJsShell(options):
     fullPath = mkdtemp(appendStr + os.sep, os.path.join(
         'jsfunfuzz-' + myShell.getCompileType() + '-' + myShell.getArch() + '-' + \
         myShell.getRepoName() + '-' + myShell.getHgNum() + '-' + \
-        myShell.getHgHash() + '-'), myShell.getCacheDirBase())
+        myShell.getHgHash() + '-'), normExpUserPath(os.path.join('~', 'Desktop')))
     myShell.setBaseTempDir(fullPath)
     myOtherShell.setBaseTempDir(fullPath)
     assert os.path.exists(myShell.getBaseTempDir())
