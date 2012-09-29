@@ -32,7 +32,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
     """
 
     valgrindSupport = "--valgrind" in itest
-    valgrindX = ["--enable-valgrind"] if valgrindSupport else []
+    valgrindX = ["--test-with-valgrind"] if valgrindSupport else []
 
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix + "-1-lines", targetTime)
