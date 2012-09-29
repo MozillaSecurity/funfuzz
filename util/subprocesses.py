@@ -156,7 +156,7 @@ def dateStr():
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     '''Finds the required crash log in the given crash reporter directory.'''
-    assert platform.system() == 'Darwin' and platform.macVer() >= [10, 6]
+    assert platform.system() == 'Darwin' and macVer() >= [10, 6]
     reportDirList = [os.path.expanduser('~'), '/']
     for baseDir in reportDirList:
         # Sometimes the crash reports end up in the root directory.
