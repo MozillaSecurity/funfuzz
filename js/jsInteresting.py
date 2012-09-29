@@ -69,6 +69,9 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     if valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
         issues.append("valgrind reported an error")
         lev = max(lev, JS_VG_AMISS)
+        valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
+    else:
+        valgrindErrorPrefix = None
 
     with open(logPrefix + "-err.txt", "rb") as err:
         for line in err:
@@ -79,6 +82,8 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
                 # FIXME: detect_assertions.scanLine should return more info: assert(fatal: bool, known: bool) | none
                 sawAssertion = True
                 lev = max(lev, JS_KNOWN_CRASH)
+            if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
+                issues.append(line.rstrip())
 
     if sawAssertion:
         # Ignore the crash log, since we've already seen a new assertion failure.
