@@ -245,6 +245,7 @@ def parseOpts():
     assert options.baseDir.endswith(options.remoteSep)
     return options
 
+
 def main():
     options = parseOpts()
 
@@ -280,31 +281,7 @@ def main():
         while True:
             (job, oldjobname, takenNameOnServer) = grabJob(options, "_reduced")
             if job:
-                if ("1339201819" in oldjobname or # Bug 763126
-                    "1338835174" in oldjobname or # Bug 763126
-                    "1339379020" in oldjobname or # Bug 763560
-                    "1339573949" in oldjobname or # Bug 767279
-                    "1339589159" in oldjobname or # Bug 765109
-                    "1339599262" in oldjobname or # lol mv
-                    "1341082845" in oldjobname or # hang that should have been ignored
-                    "1340073462" in oldjobname or # Bug 767233
-                    "1338621034" in oldjobname or # Bug 761422
-                    "1340814313" in oldjobname or # Bug 769015
-                    "1340815388" in oldjobname or # Bug 769015
-                    "1340808789" in oldjobname or # Bug 769015
-                    "1340809470" in oldjobname or # Bug 769015
-                    "1340801456" in oldjobname or # Bug 769015
-                    "1340802472" in oldjobname or # Bug 769021
-                    "1339516108" in oldjobname or # Nasty OOM behavior
-                    "1338878206" in oldjobname or # Nasty OOM behavior
-                    "1338698829" in oldjobname or # Nasty OOM behavior
-                    "1339959377" in oldjobname or # Bug 766075 (also copied to whenfixed)
-                    "1339728406" in oldjobname or # Bug 766430 (nondeterministic crash)
-                    "1341133958" in oldjobname or # grr. bug 735081 or bug 735082.
-                    "1341815616" in oldjobname or # grr. bug 735081 or bug 735082.
-                    "1344134705" in oldjobname or # Bug 780790 (plus mysterious bad local stack walking)
-                    "1340246538" in oldjobname):  # Bug 767273
-                    # These testcases cause random crashes, or rely on internal blacklists.
+                if skipJobNamed(oldjobname):
                     print "Skipping retesting of " + job
                     (lithResult, lithDetails) = (lithOps.LITH_NO_REPRO, "Skipping retest")
                 else:
@@ -341,6 +318,36 @@ def main():
 
     # Remove the main temp dir, which should be empty at this point
     os.rmdir(options.tempDir)
+
+
+def skipJobNamed(j):
+    # These testcases cause random crashes, or rely on internal blacklists.
+
+    return (
+        "1339201819" in j or # Bug 763126
+        "1338835174" in j or # Bug 763126
+        "1339379020" in j or # Bug 763560
+        "1339573949" in j or # Bug 767279
+        "1339589159" in j or # Bug 765109
+        "1339599262" in j or # lol mv
+        "1341082845" in j or # hang that should have been ignored
+        "1340073462" in j or # Bug 767233
+        "1338621034" in j or # Bug 761422
+        "1340814313" in j or # Bug 769015
+        "1340815388" in j or # Bug 769015
+        "1340808789" in j or # Bug 769015
+        "1340809470" in j or # Bug 769015
+        "1340801456" in j or # Bug 769015
+        "1340802472" in j or # Bug 769021
+        "1339516108" in j or # Nasty OOM behavior
+        "1338878206" in j or # Nasty OOM behavior
+        "1338698829" in j or # Nasty OOM behavior
+        "1339959377" in j or # Bug 766075 (also copied to whenfixed)
+        "1339728406" in j or # Bug 766430 (nondeterministic crash)
+        "1341133958" in j or # grr. bug 735081 or bug 735082.
+        "1341815616" in j or # grr. bug 735081 or bug 735082.
+        "1344134705" in j or # Bug 780790 (plus mysterious bad local stack walking)
+        "1340246538" in j)   # Bug 767273
 
 
 def ensureBuild(options, buildDir, preferredBuild):
