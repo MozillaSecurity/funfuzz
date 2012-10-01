@@ -45,7 +45,7 @@ def sanityChecks():
     assert isVM()[1] == False
 
 def parseOpts():
-    usage = 'Usage: %prog [options] filename'
+    usage = 'Usage: %prog [options]'
     parser = OptionParser(usage)
     # http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
