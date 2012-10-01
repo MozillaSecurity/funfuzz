@@ -189,6 +189,7 @@ def parseOpts():
         tempDir = "fuzztemp",
         testType = "auto",
         existingBuildDir = None,
+        retestBuildType = None,
     )
 
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
@@ -196,8 +197,8 @@ def parseOpts():
 
     parser.add_option("--build", dest="existingBuildDir",
         help="Use an existing build directory.")
-    parser.add_option("--retest-all", dest="retestAll", action="store_true",
-        help="Instead of fuzzing or reducing, take reduced testcases and retest them.")
+    parser.add_option("--retest", dest="retestBuildType",
+        help="Instead of fuzzing or reducing, take reduced testcases and retest them. Takes a build type (e.g. 'local-build' or 'all')")
 
     parser.add_option('--repotype', dest='repoName',
         help='Sets the repository to be fuzzed. Defaults to "%default".')
@@ -231,18 +232,15 @@ def parseOpts():
     options.remoteSep = "/" if options.remote_host else localSep
 
     if options.testType == 'auto':
-        if options.retestAll or options.existingBuildDir:
+        if options.retestBuildType or options.existingBuildDir:
             options.testType = 'dom'
         else:
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
 
     options.buildType = 'local-build' if options.existingBuildDir else downloadBuild.defaultBuildType(options)
-    options.relevantJobsDirName = options.testType + "-" + (options.buildType if not options.retestAll else "all")
+    options.relevantJobsDirName = options.testType + "-" + (options.retestBuildType or options.buildType)
     options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
-
-    if options.retestAll:
-        options.existingBuildDir = True
 
     assert options.baseDir.endswith(options.remoteSep)
     return options
@@ -276,8 +274,9 @@ def main():
         shutil.rmtree(options.tempDir)
     os.mkdir(options.tempDir)
 
-    if options.retestAll:
+    if options.retestBuildType:
         print "Retesting time!"
+        ensureBuild(options, buildDir, None)
         while True:
             (job, oldjobname, takenNameOnServer) = grabJob(options, "_reduced")
             if job:
@@ -322,11 +321,7 @@ def main():
         (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
         if job:
             print "Reduction time!"
-            if not options.existingBuildDir:
-                preferredBuild = readTinyFile(job + "preferred-build.txt")
-                if not downloadBuild.downloadBuild(preferredBuild, './', jsShell=(options.testType == 'js')):
-                    print "Preferred build for this reduction was missing, grabbing latest build"
-                    downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
+            ensureBuild(options, buildDir, readTinyFile(job + "preferred-build.txt"))
             lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
             logPrefix = job + "reduce" + timestamp()
             (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
@@ -337,16 +332,7 @@ def main():
             print "Fuzz time!"
             #if options.remote_host:
             #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-            if options.existingBuildDir:
-                assert os.path.exists(buildDir)
-                buildSrc = buildDir
-            else:
-                if os.path.exists(buildDir):
-                    print "Deleting old build..."
-                    shutil.rmtree(buildDir)
-                os.mkdir(buildDir)
-                buildSrc = downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
-
+            buildSrc = ensureBuild(options, buildDir, None)
             multiFuzzUntilBug(options, buildDir, buildSrc)
 
     # Remove build directory
@@ -355,6 +341,21 @@ def main():
 
     # Remove the main temp dir, which should be empty at this point
     os.rmdir(options.tempDir)
+
+
+def ensureBuild(options, buildDir, preferredBuild):
+    '''Returns a string indicating the source of the build we got.'''
+    if options.existingBuildDir:
+        assert os.path.exists(buildDir)
+        return buildDir
+    if preferredBuild:
+        gotPreferred = downloadBuild.downloadBuild(preferredBuild, './', jsShell=(options.testType == 'js'))
+        if gotPreferred:
+            return gotPreferred # is this the right type?
+        else:
+            print "Preferred build for this reduction was missing, grabbing latest build"
+    return downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
+
 
 def multiFuzzUntilBug(options, buildDir, buildSrc):
     if sys.version_info < (2, 6):

@@ -151,6 +151,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     # Create build folder and a download subfolder.
     buildDir = os.path.abspath(normExpUserPath(os.path.join(targetDir, 'build')))
     if os.path.exists(buildDir):
+        print "Deleting old build..."
         shutil.rmtree(buildDir)
     os.mkdir(buildDir)
     downloadFolder = os.path.join(buildDir, 'download')
