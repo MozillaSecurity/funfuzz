@@ -385,9 +385,9 @@ def grabExtraPrefs(p):
         hyphen = basename.find("-")
         if hyphen != -1:
             prefsFile = os.path.join(os.path.dirname(p), basename[0:hyphen] + "-prefs.txt")
-            print "Looking for prefsFile: " + prefsFile
+            #print "Looking for prefsFile: " + prefsFile
             if os.path.exists(prefsFile):
-                print "Found prefs.txt"
+                #print "Found prefs.txt"
                 with open(prefsFile) as f:
                     return f.read()
     return ""
@@ -456,7 +456,7 @@ def rdfInit(args):
             print "Deleting Firefox profile in " + profileDir
             shutil.rmtree(profileDir)
 
-    def levelAndLines(url, logPrefix=None, extraPrefs=""):
+    def levelAndLines(url, logPrefix=None, extraPrefs="", quiet=False):
         """Run Firefox using the profile created above, detecting bugs and stuff."""
 
         writePrefs(profileDir, extraPrefs)
@@ -465,6 +465,7 @@ def rdfInit(args):
         if os.path.exists(localstoreRDF):
             os.remove(localstoreRDF)
 
+        assert logPrefix # :(
         leakLogFile = logPrefix + "-leaks.txt"
 
         runbrowser = subprocess.Popen(
@@ -491,7 +492,8 @@ def rdfInit(args):
             line = runbrowser.stdout.readline()
             if line != '':
                 line = alh.processLine(line)
-                print line,
+                if not quiet:
+                    print line,
                 if line.startswith(statusLinePrefix):
                     status = int(line[len(statusLinePrefix):])
             else:
@@ -577,7 +579,7 @@ def rdfInit(args):
             with open(logPrefix + "-summary.txt", "w") as summaryLogFile:
                 summaryLogFile.writelines(alh.summaryLog)
 
-        print("DOMFUZZ INFO | domInteresting.py | Running for fuzzage, level " + str(lev) + ".")
+        print("DOMFUZZ INFO | domInteresting.py | " + str(lev))
 
         FRClines = alh.FRClines
 

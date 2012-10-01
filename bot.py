@@ -14,6 +14,7 @@ import subprocess
 import sys
 import time
 import uuid
+import tempfile
 
 from optparse import OptionParser
 
@@ -27,6 +28,7 @@ from subprocesses import getFreeSpace, isWin
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
+import domInteresting
 path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import loopjsfunfuzz
@@ -102,7 +104,6 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
       lithOps.NO_REPRO_EXCEPT_BY_URL: "_repro_url_only",
       lithOps.LITH_NO_REPRO: "_no_longer_reproducible",
       lithOps.LITH_FINISHED: "_reduced",
-      lithOps.LITH_RETESTED_STILL_INTERESTING: "_retested",
       lithOps.LITH_PLEASE_CONTINUE: "_needsreduction",
       lithOps.LITH_BUSTED: "_sad"
     })[lithResult]
@@ -189,7 +190,7 @@ def parseOpts():
         tempDir = "fuzztemp",
         testType = "auto",
         existingBuildDir = None,
-        retestBuildType = None,
+        retestRoot = None,
     )
 
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
@@ -197,8 +198,8 @@ def parseOpts():
 
     parser.add_option("--build", dest="existingBuildDir",
         help="Use an existing build directory.")
-    parser.add_option("--retest", dest="retestBuildType",
-        help="Instead of fuzzing or reducing, take reduced testcases and retest them. Takes a build type (e.g. 'local-build' or 'all')")
+    parser.add_option("--retest", dest="retestRoot",
+        help="Instead of fuzzing or reducing, take reduced testcases and retest them. Pass a directory such as ~/fuzzingjobs/ or an rsync'ed ~/fuzz-results/.")
 
     parser.add_option('--repotype', dest='repoName',
         help='Sets the repository to be fuzzed. Defaults to "%default".')
@@ -232,14 +233,14 @@ def parseOpts():
     options.remoteSep = "/" if options.remote_host else localSep
 
     if options.testType == 'auto':
-        if options.retestBuildType or options.existingBuildDir:
+        if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
         else:
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
 
     options.buildType = 'local-build' if options.existingBuildDir else downloadBuild.defaultBuildType(options)
-    options.relevantJobsDirName = options.testType + "-" + (options.retestBuildType or options.buildType)
+    options.relevantJobsDirName = options.testType + "-" + options.buildType
     options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
 
     assert options.baseDir.endswith(options.remoteSep)
@@ -275,25 +276,10 @@ def main():
         shutil.rmtree(options.tempDir)
     os.mkdir(options.tempDir)
 
-    if options.retestBuildType:
+    if options.retestRoot:
         print "Retesting time!"
         ensureBuild(options, buildDir, None)
-        while True:
-            (job, oldjobname, takenNameOnServer) = grabJob(options, "_reduced")
-            if job:
-                if skipJobNamed(oldjobname):
-                    print "Skipping retesting of " + job
-                    (lithResult, lithDetails) = (lithOps.LITH_NO_REPRO, "Skipping retest")
-                else:
-                    reducedFn = job + filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0]
-                    print "reduced filename: " + reducedFn
-                    lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildDir, reducedFn]
-                    logPrefix = job + "retest"
-                    (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
-                    uploadJob(options, lithResult, lithDetails, job, oldjobname)
-                    runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
-            else:
-                break
+        retestAll(options, buildDir)
     else:
         (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
         if job:
@@ -319,6 +305,66 @@ def main():
     # Remove the main temp dir, which should be empty at this point
     os.rmdir(options.tempDir)
 
+
+def retestAll(options, buildDir):
+    '''
+    Retest all testcases in options.retestRoot, starting with the newest,
+    without modifying that subtree (because it might be rsync'ed).
+    '''
+
+    assert options.testType == "dom"
+
+    testcases = []
+
+    # Find testcases to retest
+    for jobTypeDir in (os.path.join(options.retestRoot, x) for x in os.listdir(options.retestRoot) if x.startswith(options.testType + "-")):
+        for job in (os.path.join(jobTypeDir, x) for x in os.listdir(jobTypeDir) if "_reduced" in x and not skipJobNamed(x)):
+            testcase = os.path.join(job, filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0])
+            testcases.append({'testcase': testcase, 'mtime': os.stat(testcase).st_mtime})
+
+    # Sort so the newest testcases are first
+    print "Reteseting " + str(len(testcases)) + " testcases..."
+    testcases.sort(key=lambda t: t['mtime'], reverse=True)
+
+    i = 0
+    levelAndLines, deleteProfile, domInterestingOptions = domInteresting.rdfInit([buildDir])
+    tempDir = tempfile.mkdtemp("retesting")
+
+    # Retest all the things!
+    for t in testcases:
+        testcase = t['testcase']
+        print testcase
+        i += 1
+        logPrefix = os.path.join(tempDir, str(i))
+        extraPrefs = domInteresting.grabExtraPrefs(testcase)
+        level, lines = levelAndLines(testcase, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=True)
+
+        #if level > domInteresting.DOM_FINE:
+        #    print "Reproduced: " + testcase
+        #    with open(logPrefix + "-summary.txt") as f:
+        #        for line in f:
+        #            print line,
+
+        # Would it be easier to do it this way?
+
+        #with open(os.devnull, "w") as devnull:
+        #    p = subprocess.Popen([loopdomfuzz.domInterestingpy, "mozilla-central/obj-firefox-asan-debug/", testcase], stdout=devnull, stderr=subprocess.STDOUT)
+        #    if p.wait() > 0:
+        #        print "Still reproduces: " + testcase
+
+        # Ideally we'd use something like "lithium-command.txt" to get the right --valgrind args, etc...
+        # (but we don't want the --min-level option)
+
+        # Or this way?
+
+        #lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildDir, testcase]
+        #
+        #(lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+        #if lithResult == lithOps.LITH_RETESTED_STILL_INTERESTING:
+        #   print "Reproduced: " + testcase
+
+    deleteProfile()
+    shutil.rmtree(tempDir)
 
 def skipJobNamed(j):
     # These testcases cause random crashes, or rely on internal blacklists.
