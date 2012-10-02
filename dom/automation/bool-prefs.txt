@@ -95,7 +95,7 @@ dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
 #dom.ipc.plugins.java.enabled # (bug 559432: see bug 718233, my dup)
 dom.new_bindings
-dom.experimental_bindings
+#dom.experimental_bindings # bug 796410
 dom.network.enabled
 dom.network.metered
 dom.send_after_paint_to_content
