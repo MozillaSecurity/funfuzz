@@ -112,6 +112,8 @@ function makeDOMFuzzHelper(aWindow) {
 
       reftestFilesDirectory: reftestFilesDirectory.bind(this),
 
+      trustedKeyEvent: trustedKeyEvent(aWindow),
+
       __exposedProps__: {
         'toString': 'r',
         'quitApplication': 'r',
@@ -144,7 +146,8 @@ function makeDOMFuzzHelper(aWindow) {
         verifypostbarriers: 'r',
         mjitChunkLimit: 'r',
         terminate: 'r',
-        reftestFilesDirectory: 'r'
+        reftestFilesDirectory: 'r',
+        trustedKeyEvent: 'r',
       }
   };
 };
@@ -153,6 +156,23 @@ function makeDOMFuzzHelper(aWindow) {
 /***********************************************
  * MISC PRIVILEGED FUNCTIONS - CONTENT PROCESS *
  ***********************************************/
+
+function trustedKeyEvent(window)
+{
+  return function(targetElement, type, ctrl, alt, shift, meta, keyCode, charCode) {
+    // Check that window matches targetElement.ownerDocument? Nah.
+    try {
+      var event = targetElement.ownerDocument.createEvent("KeyboardEvent");
+      event.initKeyEvent("key" + type, true, true, null, ctrl, alt, shift, meta, keyCode, charCode);
+      targetElement.dispatchEvent(event);
+    } catch(e) {
+      dumpln("Error thrown while trying to make an event?");
+      dumpln(e);
+    }
+  };
+}
+
+
 
 function runSoon(f)
 {
