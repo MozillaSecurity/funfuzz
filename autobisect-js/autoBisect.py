@@ -310,19 +310,19 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
         if labels.get(p) is None:
             print ""
             print "Oops! We didn't test rev %s, a parent of the blamed revision! " + \
-                "Let's do that now." % p
+                "Let's do that now." % str(p)
             if not isAncestor(shell.getRepoDir(), startRepo, p) and \
                     not isAncestor(shell.getRepoDir(), endRepo, p):
                 print 'We did not test rev %s because it is not a descendant of either ' + \
-                    '%s or %s.' % (p, startRepo, endRepo)
+                    '%s or %s.' % (str(p), startRepo, endRepo)
             label = testRev(p)
             labels[p] = label
             print label[0] + " (" + label[1] + ") "
             testedLastMinute = True
         if labels[p][0] == "skip":
-            print "Parent rev %s was marked as 'skip', so the regression window includes it."
+            print "Parent rev %s was marked as 'skip', so the regression window includes it." % str(p)
         elif labels[p][0] == blamedGoodOrBad:
-            print "Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad)
+            print "Bisect lied to us! Parent rev %s was also %s!" % (str(p), blamedGoodOrBad)
             bisectLied = True
         else:
             if verbose or testedLastMinute:
