@@ -370,6 +370,7 @@ def skipJobNamed(j):
     # These testcases cause random crashes, or rely on internal blacklists.
 
     return (
+        "b826f91e0c8511e280083c0754725936" in j or # Bug 797065
         "1339201819" in j or # Bug 763126
         "1338835174" in j or # Bug 763126
         "1339379020" in j or # Bug 763560
