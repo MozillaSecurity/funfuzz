@@ -124,6 +124,7 @@ gfx.use_text_smoothing_setting
 gfx.prefer-mesa-llvmpipe
 #gfx.textures.poweroftwo.force-enabled # bug 750590
 gfx.xrender.enabled
+image.high_quality_downscaling.enabled
 image.mem.decodeondraw
 image.mem.discardable
 intl.locale.matchOS
