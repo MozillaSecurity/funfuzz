@@ -216,7 +216,7 @@ class AmissLogHandler:
                 self.expectedToHang = True
 
         # It might be sensible to push more of this logic into detect_assertions...
-        # cx->isExceptionPending() assertion is here because of bug 709954 and maybe bug 632239
+        # cx->isExceptionPending() assertion is here because of bug 709954
         # jsfunfuzz needs this out of assertions.txt to try and get a testcase.
         newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
             not ("cx->isExceptionPending()" in msg) and \
