@@ -34,14 +34,15 @@ def archOfBinary(binary):
             assert '32-bit' not in filetype
             return '64'
 
-def constructVgCmdList(withVg):
+def constructVgCmdList(errorCode=77):
     '''Constructs default parameters needed to run valgrind with.'''
     vgCmdList = []
-    if withVg:
         vgCmdList.append('valgrind')
         if isMac:
             vgCmdList.append('--dsymutil=yes')
+    vgCmdList.append('--error-exitcode=' + str(errorCode))
         vgCmdList.append('--smc-check=all-non-file')
+    vgCmdList.append('--gen-suppressions=all')
         vgCmdList.append('--leak-check=full')
         vgCmdList.append('--show-possibly-lost=no')
         vgCmdList.append('--num-callers=50')
@@ -52,7 +53,7 @@ def shellSupports(shellPath, args):
     This function returns True if the shell likes the args.
     You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
     '''
-    output, retCode = testBinary(shellPath, args)
+    output, retCode = testBinary(shellPath, args, False)
     if retCode == 0:
         return True
     elif 1 <= retCode <= 3:
@@ -64,9 +65,9 @@ def shellSupports(shellPath, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
-def testBinary(shellPath, args):
+def testBinary(shellPath, args, useValgrind):
     '''Tests the given shell with the given args.'''
-    testCmd = [shellPath] + args
+    testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     vdump('The testing command is: ' + shellify(testCmd))
 
     cfgEnvDt = deepcopy(os.environ)

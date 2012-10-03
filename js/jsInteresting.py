@@ -7,6 +7,7 @@ import sys
 
 from optparse import OptionParser
 
+from inspectShell import constructVgCmdList
 p0 = os.path.dirname(os.path.abspath(__file__))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
 sys.path.append(p1)
@@ -41,19 +42,10 @@ VALGRIND_ERROR_EXIT_CODE = 77
 
 def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     if valgrind:
-        runthis = ([
-            "valgrind",
-            "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE),
-            "--gen-suppressions=all",
-            "--leak-check=full",
-            "--show-possibly-lost=no",
-            "--num-callers=50",
-            "--smc-check=all-non-file"  # Added by default because IonMonkey turns JITs on by default.
-          ] +
+        runthis = (
+            constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
             valgrindSuppressions(knownPath) +
-            (["--dsymutil=yes"] if sys.platform=='darwin' else []) +
           runthis)
-        #print " ".join(runthis)
 
     runinfo = timedRun.timed_run(runthis, timeout, logPrefix)
     sta = runinfo.sta

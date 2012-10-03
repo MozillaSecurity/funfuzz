@@ -251,7 +251,8 @@ def findBlamedCset(myShell):
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
     def inner(shell):
-        (stdoutStderr, exitCode) = testBinary(shell.getShellCachePath(), options.paramList)
+        (stdoutStderr, exitCode) = testBinary(shell.getShellCachePath(), options.paramList,
+                                              options.testWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
@@ -289,7 +290,7 @@ def externalTestAndLabel(options, interestingness):
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
 
     def inner(shell):
-        conditionArgs = conditionArgPrefix + constructVgCmdList(options.testWithVg) + \
+        conditionArgs = conditionArgPrefix + (constructVgCmdList() if options.testWithVg else []) +\
                             [shell.getShellCachePath()] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
