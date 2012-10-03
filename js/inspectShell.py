@@ -37,15 +37,15 @@ def archOfBinary(binary):
 def constructVgCmdList(errorCode=77):
     '''Constructs default parameters needed to run valgrind with.'''
     vgCmdList = []
-        vgCmdList.append('valgrind')
-        if isMac:
-            vgCmdList.append('--dsymutil=yes')
+    vgCmdList.append('valgrind')
+    if isMac:
+        vgCmdList.append('--dsymutil=yes')
     vgCmdList.append('--error-exitcode=' + str(errorCode))
-        vgCmdList.append('--smc-check=all-non-file')
+    vgCmdList.append('--smc-check=all-non-file')
     vgCmdList.append('--gen-suppressions=all')
-        vgCmdList.append('--leak-check=full')
-        vgCmdList.append('--show-possibly-lost=no')
-        vgCmdList.append('--num-callers=50')
+    vgCmdList.append('--leak-check=full')
+    vgCmdList.append('--show-possibly-lost=no')
+    vgCmdList.append('--num-callers=50')
     return vgCmdList
 
 def shellSupports(shellPath, args):
