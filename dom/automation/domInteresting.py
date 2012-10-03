@@ -534,25 +534,37 @@ def rdfInit(args):
             signum = -status
             signame = getSignalName(signum, "unknown signal")
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
-            if isMac and signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
-                # well, maybe the OS crash reporter picked it up.
-                crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, None)
+            if signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
+                # Well, maybe we have a core file or log from the Mac crash reporter.
+                crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, logPrefix)
                 if crashlog:
                     with open(crashlog) as f:
                         crashText = f.read()
-                    print crashText
-                    if not (" main + " in crashText or " XRE_main + " in crashText or " exit + " in crashText):
+                    if not quiet:
+                        print "== " + crashlog + " =="
+                        print crashText
+                        print "== " + crashlog + " =="
+                    if "Reading symbols for shared libraries" in crashText:
+                        crashProcessor = "gdb"
+                        expectAfterFunctionName = " ("
+                    else:
+                        crashProcessor = "mac crash reporter"
+                        expectAfterFunctionName = " + "
+                    processedCorrectly = False
+                    for j in ["main", "XRE_main", "exit"]:
+                        if (" " + j + expectAfterFunctionName) in crashText:
+                            processedCorrectly = True
+                            break
+                    if not processedCorrectly:
                         # e.g. this build only has breakpad symbols, not native symbols
-                        alh.printAndLog("%%% Busted crash report (from mac crash reporter)")
+                        alh.printAndLog("%%% Busted crash report (from " + crashProcessor + ")")
                     elif alh.crashIsKnown:
-                        alh.printAndLog("%%% Ignoring crash report (from mac crash reporter)")
+                        alh.printAndLog("%%% Ignoring crash report (from " + crashProcessor + ")")
                     elif detect_interesting_crashes.amiss(knownPath, crashlog, True):
-                        alh.printAndLog("@@@ New crash (from mac crash reporter)")
-                        if logPrefix:
-                            shutil.copyfile(crashlog, logPrefix + "-crash.txt")
+                        alh.printAndLog("@@@ New crash (from " + crashProcessor + ")")
                         lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
                     else:
-                        alh.printAndLog("%%% Known crash (from mac crash reporter)")
+                        alh.printAndLog("%%% Known crash (from " + crashProcessor + ")")
         elif status == 1:
             alh.printAndLog("@@@ Exited with status 1 -- OOM?")
         elif status != 0 and not (isWin and alh.sawFatalAssertion):

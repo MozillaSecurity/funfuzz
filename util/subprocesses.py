@@ -211,7 +211,9 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
     # On Mac and Linux, look for a core file.
     coreFilename = None
     if isMac:
-        # Assuming you ran: mkdir -p /cores/
+        # Core files will be generated if you do:
+        #   mkdir -p /cores/
+        #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
         coreFilename = "/cores/core." + str(crashedPID)
     elif isLinux:
         isPidUsed = False
