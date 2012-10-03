@@ -155,6 +155,7 @@ layers.acceleration.force-enabled
 #layers.offmainthreadcomposition.animate-opacity
 #layers.offmainthreadcomposition.animate-transform
 layout.3d-transforms.enabled
+layout.css.flexbox.enabled
 layout.css.report_errors
 layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
