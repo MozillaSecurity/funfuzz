@@ -31,9 +31,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
        (If it's not prepared to accept engineFlags, engineFlags must be empty.)
     """
 
-    valgrindSupport = "--valgrind" in itest
-    valgrindX = ["--test-with-valgrind"] if valgrindSupport else []
-
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
     (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix + "-1-lines", targetTime)
 
@@ -158,7 +155,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
         # on 'delete' being a keyword argument in NamedTemporaryFile(). The testing functions in
         # inspectShell in general need at least Python 2.6 because of this.
         if sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
-            autobisectCmd = [sys.executable, autobisectpy] + valgrindX + ["-R", bisectRepo, "-i", "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), '-p', ' '.join(engineFlags + [infilename])] + itest
+            autobisectCmd = [sys.executable, autobisectpy] + ["-R", bisectRepo, "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), "-p", ' '.join(engineFlags + [infilename]), "-i"] + itest
             print shellify(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
