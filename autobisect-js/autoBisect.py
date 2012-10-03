@@ -320,7 +320,8 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
             print label[0] + " (" + label[1] + ") "
             testedLastMinute = True
         if labels[p][0] == "skip":
-            print "Parent rev %s was marked as 'skip', so the regression window includes it." % str(p)
+            print "Parent rev %s was marked as 'skip', so the regression window includes it." % \
+                    str(p)
         elif labels[p][0] == blamedGoodOrBad:
             print "Bisect lied to us! Parent rev %s was also %s!" % (str(p), blamedGoodOrBad)
             bisectLied = True
