@@ -352,7 +352,11 @@ def makeTestRev(shell, options):
                 verifyBinary(shell, options)
                 shutil.copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
             except Exception, e:
-                open(cachedNoShell, 'w').close()
+                cachedNoShellFile = open(cachedNoShell, 'w')
+                cachedNoShellFile.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
+                cachedNoShellFile.write("Backtrace:\n")
+                cachedNoShellFile.write(format_exc() + "\n");
+                cachedNoShellFile.close()
                 return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
 
         print "Testing...",
