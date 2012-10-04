@@ -315,6 +315,7 @@ def knownChromeFailure(msg):
         "nsIIOService.getProtocolHandler" in msg or # bug 746878
         "tipElement is null" in msg or # bug 746893
         ("browser.js" in msg and "NS_ERROR_FAILURE: Failure" in msg) or # Bug 797677
+        ("browser.js" in msg and "overlayText is null" in msg) or # Bug 797945
         False
     )
 
