@@ -310,12 +310,12 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
         testedLastMinute = False
         if labels.get(p) is None:
             print ""
-            print "Oops! We didn't test rev %s, a parent of the blamed revision! " + \
-                "Let's do that now." % str(p)
+            print ("Oops! We didn't test rev %s, a parent of the blamed revision! " + \
+                "Let's do that now.") % str(p)
             if not isAncestor(shell.getRepoDir(), startRepo, p) and \
                     not isAncestor(shell.getRepoDir(), endRepo, p):
-                print 'We did not test rev %s because it is not a descendant of either ' + \
-                    '%s or %s.' % (str(p), startRepo, endRepo)
+                print ('We did not test rev %s because it is not a descendant of either ' + \
+                    '%s or %s.') % (str(p), startRepo, endRepo)
             label = testRev(p)
             labels[p] = label
             print label[0] + " (" + label[1] + ") "
