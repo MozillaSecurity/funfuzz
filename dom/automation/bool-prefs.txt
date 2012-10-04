@@ -201,6 +201,7 @@ notification.feature.enabled
 plugin.allow.asyncdrawing
 plugin.expose_full_path
 plugin.override_internal_types
+plugins.click_to_play
 plugins.hide_infobar_for_carbon_failure_plugin
 plugins.hide_infobar_for_missing_plugin
 plugins.hide_infobar_for_outdated_plugin
