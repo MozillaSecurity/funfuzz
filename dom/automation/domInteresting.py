@@ -290,19 +290,9 @@ class AmissLogHandler:
             ):
             self.expectChromeFailure = True
         if (not self.expectChromeFailure and
-            (msg.find("uncaught exception") != -1 or msg.find("JavaScript error") != -1 or msg.find("JavaScript Error") != -1) and
-            (msg.find("chrome://browser/") != -1 or msg.find("resource:///components") != -1) and
-             msg.find("nsIWebProgress.DOMWindow") == -1 and # bug 732593
-             msg.find("installStatus is null") == -1 and # bug 693237
-             msg.find("aTab is null") == -1 and # bug 693239
-             msg.find("too much recursion") == -1 and # bug 732665
-             msg.find("nsIWebContentHandlerRegistrar::registerProtocolHandler") == -1 and # bug 732692, bug 693270
-             msg.find("nsIWebContentHandlerRegistrar::registerContentHandler") == -1 and # bug 732692, bug 693270
-             msg.find("iconStatus is null") == -1 and # bug 733305
-             msg.find("prompt aborted by user") == -1 and # thrown intentionally in nsPrompter.js
-             msg.find("nsIIOService.getProtocolHandler") == -1 and # bug 746878
-             msg.find("tipElement is null") == -1 # bug 746893
-            ):
+            ("uncaught exception" in msg or "JavaScript error" in msg or "JavaScript Error" in msg) and
+            ("chrome://browser/" in msg or "resource:///components" in msg) and
+            not knownChromeFailure(msg)):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
 
@@ -311,6 +301,22 @@ class AmissLogHandler:
         print "$ " + msg
         self.fullLogHead.append(msg + "\n")
         self.summaryLog.append(msg + "\n")
+
+def knownChromeFailure(msg):
+    return (
+        "nsIWebProgress.DOMWindow" in msg or # bug 732593
+        "installStatus is null" in msg or # bug 693237
+        "aTab is null" in msg or # bug 693239
+        "too much recursion" in msg or # bug 732665
+        "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
+        "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
+        "iconStatus is null" in msg or # bug 733305
+        "prompt aborted by user" in msg or # thrown intentionally in nsPrompter.js
+        "nsIIOService.getProtocolHandler" in msg or # bug 746878
+        "tipElement is null" in msg or # bug 746893
+        ("browser.js" in msg and "NS_ERROR_FAILURE: Failure" in msg) or # Bug 797677
+        False
+    )
 
 def stripBeeps(s):
     """Strip BEL characters, in order to make copy-paste happier and avoid triggering text/plain binary-sniffing in web browsers."""
