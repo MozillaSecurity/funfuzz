@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import with_statement
+
 import os
 import platform
 import shutil
@@ -352,11 +354,10 @@ def makeTestRev(shell, options):
                 verifyBinary(shell, options)
                 shutil.copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
             except Exception, e:
-                cachedNoShellFile = open(cachedNoShell, 'w')
-                cachedNoShellFile.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
-                cachedNoShellFile.write("Backtrace:\n")
-                cachedNoShellFile.write(format_exc() + "\n");
-                cachedNoShellFile.close()
+                with open(cachedNoShell, 'wb') as f:
+                    f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
+                    f.write("Backtrace:\n")
+                    f.write(format_exc() + "\n");
                 return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
 
         print "Testing...",
