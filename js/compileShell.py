@@ -349,7 +349,6 @@ def makeTestRev(shell, options):
                 print "Compiling...",
                 copyJsSrcDirs(shell)
                 cfgCompileCopy(shell, options)
-                compileCopy(shell, options)
                 verifyBinary(shell, options)
                 shutil.copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
             except Exception, e:
