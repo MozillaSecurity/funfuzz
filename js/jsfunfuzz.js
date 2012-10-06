@@ -3469,7 +3469,9 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
        && code.indexOf("lazy") == -1                // bug 743423, bug 743424
        && code.indexOf("strict") == -1              // bug 743425
-       && code.indexOf("QName") == -1              // See bug 748568
+       && code.indexOf("QName") == -1               // See bug 748568
+       && code.indexOf("__proto__") == -1           // bug 798670
+       && code.indexOf("defineProperty") == -1      // bug 798668
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
