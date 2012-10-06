@@ -399,6 +399,9 @@ def grabExtraPrefs(p):
                     return f.read()
     return ""
 
+def removeIfExists(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
 
 def rdfInit(args):
     """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
@@ -469,8 +472,7 @@ def rdfInit(args):
         writePrefs(profileDir, extraPrefs)
 
         localstoreRDF = os.path.join(profileDir, "localstore.rdf")
-        if os.path.exists(localstoreRDF):
-            os.remove(localstoreRDF)
+        removeIfExists(localstoreRDF)
 
         assert logPrefix # :(
         leakLogFile = logPrefix + "-leaks.txt"
@@ -597,6 +599,10 @@ def rdfInit(args):
             subprocess.call(["gzip", logPrefix + "-output.txt"])
             with open(logPrefix + "-summary.txt", "w") as summaryLogFile:
                 summaryLogFile.writelines(alh.summaryLog)
+
+        if (lev == DOM_FINE) and logPrefix:
+            removeIfExists(logPrefix + "-core.gz")
+            removeIfExists(logPrefix + "-crash.txt")
 
         print("DOMFUZZ INFO | domInteresting.py | " + str(lev))
 
