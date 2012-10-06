@@ -11,7 +11,7 @@ import shutil
 import subprocess
 from tempfile import mkdtemp
 
-from subprocesses import normExpUserPath, shellify
+from subprocesses import normExpUserPath, shellify, vdump
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
