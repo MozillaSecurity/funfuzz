@@ -50,8 +50,6 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout,
         return (lithOps.HAPPY, None)
 
 
-dvgRE = re.compile("TypeError\: .* is .*")
-
 def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
     combos = shellFlags.basicFlagSets(jsEngine)
 
@@ -107,9 +105,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 jsInteresting.deleteLogs(prefix)
             elif "can't convert" in r0.out or "can't convert" in r.out: # Bug 735316
                 #print "Ignoring DVG difference (bug 735316?)"
-                jsInteresting.deleteLogs(prefix)
-            elif dvgRE.search(r0.out) and dvgRE.search(r.out): # Bug 755813
-                #print "Ignoring DVG difference (bug 755813?)"
                 jsInteresting.deleteLogs(prefix)
             elif r.err != r0.err:
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
