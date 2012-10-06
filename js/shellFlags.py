@@ -96,8 +96,8 @@ def randomFlagSet(shellPath):
 
 def basicFlagSets(shellPath):
     if shellSupportsFlag(shellPath, "--no-ion"):
-        # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
         return [
+            # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
             [],
             ['--no-jm'],
             ['--ion-gvn=off', '--ion-licm=off'],
@@ -108,7 +108,9 @@ def basicFlagSets(shellPath):
             ['--no-ion'],
             ['--no-ion', '-a'],
             ['--no-ion', '-a', '-d'],
-            ['--no-ion', '-d']
+            ['--no-ion', '-d'],
+            # Plus a special bonus
+            ['--ion-eager']
         ]
     else:
         sets = [
