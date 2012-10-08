@@ -50,6 +50,7 @@ def parseOptions():
         timeout = 10,
         enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
+        enableMoreDeterministic = False,
         enableRootAnalysis = False,
         testWithVg = False,
     )
@@ -84,6 +85,11 @@ def parseOptions():
                            'supported.')
     parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
                       help='Enable pymake. Defaults to "%default" on the current platform.')
+    parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
+                      action='store_true',
+                      help='Build shells with --enable-more-deterministic. ' + \
+                           'Defaults to True if compareJIT fuzzing is enabled. ' + \
+                           'Otherwise, defaults to "%default".')
     parser.add_option('--enable-root-analysis', dest='enableRootAnalysis', action='store_true',
                       help='Enable root analysis support. Defaults to "%default".')
     parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
@@ -118,6 +124,9 @@ def parseOptions():
             options.loopyTimeout = '300'
         else:
             raise Exception('Valgrind is only supported on non-ARMv7l Linux or Mac OS X machines.')
+
+    if not options.disableCompareJit:
+        options.enableMoreDeterministic = True
 
     return options
 

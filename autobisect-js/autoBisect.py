@@ -64,6 +64,7 @@ def parseOpts():
         compilationFailedLabel = 'skip',
         enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
+        enableMoreDeterministic = False,
         enableRootAnalysis = False,
         testWithVg = False,
     )
@@ -127,6 +128,9 @@ def parseOpts():
                            'NSPR should first be installed, see: ' + \
                            'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
                            'Defaults to "%default".')
+    parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
+                      action='store_true',
+                      help='Build shells with --enable-more-deterministic. Defaults to "%default".')
     parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
                       action='store_true',
                       help='Build shells with --enable-root-analysis. Defaults to "%default".')

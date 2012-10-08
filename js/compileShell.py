@@ -221,9 +221,10 @@ def cfgJsBin(shell, options):
 
     cfgCmdList.append('--enable-methodjit')  # Enabled by default now, but useful for autoBisect
     cfgCmdList.append('--enable-type-inference') # Enabled by default now, but useful for autoBisect
-    # Fuzzing tweaks for more useful output, implemented in bug 706433
-    cfgCmdList.append('--enable-more-deterministic')
     cfgCmdList.append('--disable-tests')
+    if options.enableMoreDeterministic:
+        # Fuzzing tweaks for more useful output, implemented in bug 706433
+        cfgCmdList.append('--enable-more-deterministic')
     if options.enableRootAnalysis:
         cfgCmdList.append('--enable-root-analysis')
     if options.isThreadsafe:
