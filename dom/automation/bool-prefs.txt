@@ -175,6 +175,7 @@ media.wave.enabled
 media.webm.enabled
 media.webaudio.enabled
 media.navigator.enabled
+media.navigator.permission.disabled
 media.peerconnection.enabled
 network.auth.use-sspi
 network.IDN_show_punycode
