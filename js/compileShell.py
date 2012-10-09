@@ -25,6 +25,8 @@ from countCpus import cpuCount
 from hgCmds import getRepoNameFromHgrc
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
+CLANG_PARAMS = ' -Qunused-arguments -fcolor-diagnostics'
+
 class CompiledShell(object):
     def __init__(self):
         # Sets the default shell cache directory depending on the machine.
@@ -100,6 +102,8 @@ class CompiledShell(object):
             specialParamList.append('dm')
         if options.enableRootAnalysis:
             specialParamList.append('ra')
+        if options.buildWithAsan:
+            specialParamList.append('asan')
         specialParam = '-'.join(specialParamList)
         sname = '-'.join(x for x in ['js', self.compileType, self.arch,
                                      specialParam, self.hgHash,
@@ -133,6 +137,27 @@ def autoconfRun(cwd):
     elif isWin:
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
 
+def cfgAsanParams(currEnv, options):
+    '''Configures parameters that Asan needs.'''
+    # https://developer.mozilla.org/en-US/docs/Building_Firefox_with_Address_Sanitizer#Manual_Build
+    vdump('Assumed LLVM SVN version is: 163716')
+
+    llvmRoot = normExpUserPath(options.llvmRootSrcDir)
+    # FIXME: It would be friendlier to show instructions (or even offer to set up LLVM for the user,
+    # with the right LLVM revision and build options). See MDN article on Firefox and Asan above.
+    assert os.path.isdir(llvmRoot)
+    currEnv['LLVM_ROOT'] = llvmRoot
+
+    ccClang = os.path.join(llvmRoot, 'build', 'Release+Asserts', 'bin', 'clang')
+    assert os.path.isfile(ccClang)
+    currEnv['CC'] = ccClang + ' -faddress-sanitizer -Dxmalloc=myxmalloc'
+
+    cxxClang = os.path.join(llvmRoot, 'build', 'Release+Asserts', 'bin', 'clang++')
+    assert os.path.isfile(cxxClang)
+    currEnv['CXX'] = cxxClang + ' -faddress-sanitizer -Dxmalloc=myxmalloc'
+
+    return currEnv
+
 def cfgCompileCopy(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     autoconfRun(shell.getCompilePathJsSrc())
@@ -164,10 +189,14 @@ def cfgJsBin(shell, options):
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
-            cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics -arch i386'
-            cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics -arch i386'
-            cfgEnvDt['HOST_CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
-            cfgEnvDt['HOST_CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+            cfgEnvDt['CC'] = 'clang'
+            cfgEnvDt['CXX'] = 'clang++'
+            if options.buildWithAsan:
+                cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
+            cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
+            cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
+            cfgEnvDt['HOST_CC'] = cfgEnvDt['HOST_CC'] + CLANG_PARAMS
+            cfgEnvDt['HOST_CXX'] = cfgEnvDt['HOST_CXX'] + CLANG_PARAMS
             cfgEnvDt['RANLIB'] = 'ranlib'
             cfgEnvDt['AR'] = 'ar'
             cfgEnvDt['AS'] = '$CC'
@@ -178,16 +207,25 @@ def cfgJsBin(shell, options):
             cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
             cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
             cfgCmdList.append('--enable-macos-target=10.5')
+            if options.buildWithAsan:
+                cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on 32/64-bit x86 Linux
         elif isLinux and os.uname()[4] != 'armv7l':
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvDt['CC'] = 'gcc -m32'
             cfgEnvDt['CXX'] = 'g++ -m32'
+            # We might still be using GCC on Linux 32-bit, don't use clang unless Asan is specified
+            if options.buildWithAsan:
+                cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
+                cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
+                cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
             cfgEnvDt['AR'] = 'ar'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
             cfgCmdList.append('--target=i686-pc-linux')
+            if options.buildWithAsan:
+                cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on ARM (non-tegra ubuntu)
         elif os.uname()[4] == 'armv7l':
             assert False, 'These old configuration parameters were for the old Tegra 250 board.'
@@ -200,20 +238,39 @@ def cfgJsBin(shell, options):
             cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
     elif isMac and macVer() >= [10, 7] and shell.getArch() == '64':
-        cfgEnvDt['CC'] = 'clang -Qunused-arguments -fcolor-diagnostics'
-        cfgEnvDt['CXX'] = 'clang++ -Qunused-arguments -fcolor-diagnostics'
+        cfgEnvDt['CC'] = 'clang'
+        cfgEnvDt['CXX'] = 'clang++'
+        if options.buildWithAsan:
+            cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
+        cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
+        cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgEnvDt['AR'] = 'ar'
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
         cfgCmdList.append('--target=x86_64-apple-darwin11.4.0')  # Lion 10.7.4
+        if options.buildWithAsan:
+            cfgCmdList.append('--enable-address-sanitizer')
+
     elif isWin and shell.getArch() == '64':
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
         cfgCmdList.append('--host=x86_64-pc-mingw32')
         cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
+        # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
+        if options.buildWithAsan:
+            cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
+            cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
+            cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+        if options.buildWithAsan:
+            cfgCmdList.append('--enable-address-sanitizer')
+
+    if options.buildWithAsan:
+        assert 'clang' in cfgEnvDt['CC']
+        assert 'clang++' in cfgEnvDt['CXX']
+        assert not options.testWithVg
 
     if shell.getCompileType() == 'dbg':
         cfgCmdList.append('--disable-optimize')
@@ -239,7 +296,10 @@ def cfgJsBin(shell, options):
 
     if os.name == 'posix':
         if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
-            cfgCmdList.append('--enable-valgrind')
+            # If Asan is not enabled, shells are compiled with --enable-valgrind but not tested
+            # with Valgrind by default.
+            if not options.buildWithAsan:
+                cfgCmdList.append('--enable-valgrind')
             if isLinux:
                 cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
         # ccache is not applicable for non-Tegra Ubuntu ARM builds.

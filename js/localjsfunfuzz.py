@@ -28,14 +28,17 @@ from lithOps import knownBugsDir
 from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpUserPath, shellify, \
     vdump
 
-def machineTimeoutDefaults(timeout):
-    '''Sets different defaults depending on the machine type.'''
-    if platform.uname()[1] == 'tegra-ubuntu':
-        return '180'
+def machineTimeoutDefaults(options):
+    '''Sets different defaults depending on the machine type or debugger used.'''
+    # FIXME: Set defaults for Pandaboard ES w/ & w/o Valgrind.
+    if options.testWithVg:
+        return 300
+    elif platform.uname()[1] == 'tegra-ubuntu':
+        return 180
     elif platform.uname()[4] == 'armv7l':
-        return '600'
+        return 600
     else:
-        return timeout
+        return 10  # If no timeout preference is specified, use 10 seconds.
 
 def parseOptions():
     usage = 'Usage: %prog [options]'
@@ -47,8 +50,10 @@ def parseOptions():
         noStart = False,
         compileType = 'dbg,opt',
         repoDir = getMcRepoDir()[1],
-        timeout = 10,
+        timeout = 0,
         isThreadsafe = False,
+        buildWithAsan = False,
+        llvmRootSrcDir = normExpUserPath('~/llvm'),
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
         testWithVg = False,
@@ -71,10 +76,8 @@ def parseOptions():
                       help='Sets the source repository. Defaults to "%default".')
     parser.add_option('-t', '--timeout', type='int', dest='timeout',
                       help='Sets the timeout for loopjsfunfuzz.py. ' + \
-                           'Defaults to "180" seconds for tegra-ubuntu machines. ' + \
-                           'Defaults to "300" seconds when Valgrind is turned on. ' + \
-                           'Defaults to "600" seconds for arm7l machines. ' + \
-                           'Defaults to "%default" seconds for all other machines.')
+                           'Defaults to taking into account the speed of the computer and ' + \
+                           'debugger (if any).')
 
     parser.add_option('-p', '--set-patchDir', dest='patchDir',
                       #help='Define the path to a single patch or to a directory containing mq ' + \
@@ -82,6 +85,11 @@ def parseOptions():
                       #     'of the patches, the first patch required at the bottom of the list.')
                       help='Define the path to a single patch. Multiple patches are not yet ' + \
                            'supported.')
+
+    parser.add_option('--build-with-asan', dest='buildWithAsan', action='store_true',
+                      help='Fuzz builds with AddressSanitizer support. Defaults to "%default".')
+    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
+                      help='Specify the LLVM root source dir. Defaults to "%default".')
     parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
                       action='store_true',
                       help='Build shells with --enable-more-deterministic. ' + \
@@ -112,15 +120,9 @@ def parseOptions():
         assert ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) == (options.arch == '64')
     assert 'dbg' in options.compileType or 'opt' in options.compileType
 
-    # Set different timeouts depending on machine.
-    options.loopyTimeout = str(machineTimeoutDefaults(options.timeout))
-    if options.testWithVg:
-        # FIXME: Change this to whitelist Pandaboard ES board when we actually verify this.
-        #if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
-        if isLinux or isMac:
-            options.loopyTimeout = '300'
-        else:
-            raise Exception('Valgrind is only supported on non-ARMv7l Linux or Mac OS X machines.')
+    assert not (options.testWithVg and options.buildWithAsan)
+
+    options.timeout = options.timeout or machineTimeoutDefaults(options.testWithVg)
 
     if not options.disableCompareJit:
         options.enableMoreDeterministic = True
@@ -287,7 +289,7 @@ def localCompileFuzzJsShell(options):
         cmdList.append('--comparejit')
     if not options.disableRndFlags:
         cmdList.append('--random-flags')
-    cmdList.append(options.loopyTimeout)
+    cmdList.append(str(options.timeout))
     cmdList.append(knownBugsDir(myShell.getRepoName()))
     cmdList.append(myShell.getShellBaseTempDirWithName())
 
