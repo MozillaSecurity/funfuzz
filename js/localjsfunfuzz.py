@@ -23,7 +23,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from downloadBuild import defaultBuildType, downloadBuild, downloadLatestBuild, mozPlatform
-from hgCmds import getRepoHashAndId, patchHgRepoUsingMq
+from hgCmds import getMcRepoDir, getRepoHashAndId, patchHgRepoUsingMq
 from lithOps import knownBugsDir
 from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, \
     shellify, vdump
@@ -46,7 +46,7 @@ def parseOptions():
         disableRndFlags = False,
         noStart = False,
         compileType = 'dbg,opt',
-        repoDir = '~/trees/mozilla-central',
+        repoDir = getMcRepoDir()[1],
         timeout = 10,
         enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
