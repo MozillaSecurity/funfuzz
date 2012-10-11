@@ -82,11 +82,9 @@ def earliestKnownWorkingRev(options):
         return '339457364540' # 56551 on m-c, first rev that has the -p option
     elif '-d' in flags:  # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
         return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
-    elif isWin and '-m' in flags:
-        return '9f2641871ce8' # 53544 on m-c, first rev that can run with pymake and -m
     elif '-m' in flags:
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
     elif isWin:
-        return 'ea59b927d99f' # 46436 on m-c, first rev that can run pymake on Windows
+        return 'ceef8a5c3ca1' # 35725 on m-c, first rev that can build with Visual Studio 2010
     else:  # Only Linux should end up here
         return "db4d22859940" # 24546 on m-c, imacros compilation change

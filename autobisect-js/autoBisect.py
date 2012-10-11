@@ -62,7 +62,6 @@ def parseOpts():
         useInterestingnessTests = False,
         parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel = 'skip',
-        enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
@@ -121,8 +120,6 @@ def parseOpts():
                       help='Define way to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
 
-    parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
-                      help='Enable pymake. Defaults to "%default" on the current platform.')
     parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
                       help='Enable compilation and fuzzing of threadsafe js shell. ' + \
                            'NSPR should first be installed, see: ' + \

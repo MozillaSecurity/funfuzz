@@ -241,7 +241,6 @@ def cfgJsBin(shell, options):
             cfgCmdList.append('--with-ccache')
             cfgCmdList.append('--with-arch=armv7-a')
     else:
-        # Only tested to work for pymake in Windows.
         # FIXME: Replace this with shellify.
         counter = 0
         for entry in cfgCmdList:
@@ -300,22 +299,13 @@ def compileCopy(shell, options):
     # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
     jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
     try:
-        cmdList = []
-        ignoreECode = False
-        if options.enablePymake:
-            cmdList = ['python', '-OO', normExpUserPath(os.path.join(shell.getRepoDir(),
-                                            'build', 'pymake', 'make.py')), '-j' + str(jobs), '-s']
-        else:
-            cmdList = ['make', '-C', shell.getObjdir(), '-s']
-            ignoreECode = True
-            if os.name == 'posix':
-                cmdList.append('-j' + str(jobs))  # Win needs pymake for multicore compiles.
-        out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+        cmdList = ['make', '-C', shell.getObjdir(), '-j' + str(jobs), '-s']
+        out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                             currWorkingDir=shell.getObjdir())[0]
-        if options.enablePymake and 'no such option: -s' in out:  # Retry only for this situation.
+        if 'no such option: -s' in out:  # Retry only for this situation.
             cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
             print 'Trying once more without -s...'
-            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=ignoreECode,
+            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                                 currWorkingDir=shell.getObjdir())[0]
     except Exception, e:
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.

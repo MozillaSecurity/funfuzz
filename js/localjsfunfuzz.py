@@ -48,7 +48,6 @@ def parseOptions():
         compileType = 'dbg,opt',
         repoDir = getMcRepoDir()[1],
         timeout = 10,
-        enablePymake = True if isWin else False,  # pymake is now default on Windows
         isThreadsafe = False,
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
@@ -83,8 +82,6 @@ def parseOptions():
                       #     'of the patches, the first patch required at the bottom of the list.')
                       help='Define the path to a single patch. Multiple patches are not yet ' + \
                            'supported.')
-    parser.add_option('--enable-pymake', dest='enablePymake', action='store_true',
-                      help='Enable pymake. Defaults to "%default" on the current platform.')
     parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
                       action='store_true',
                       help='Build shells with --enable-more-deterministic. ' + \
