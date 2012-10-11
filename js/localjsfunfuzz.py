@@ -25,8 +25,8 @@ sys.path.append(path1)
 from downloadBuild import defaultBuildType, downloadBuild, downloadLatestBuild, mozPlatform
 from hgCmds import getMcRepoDir, getRepoHashAndId, patchHgRepoUsingMq
 from lithOps import knownBugsDir
-from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, isVM, normExpUserPath, \
-    shellify, vdump
+from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpUserPath, shellify, \
+    vdump
 
 def machineTimeoutDefaults(timeout):
     '''Sets different defaults depending on the machine type.'''
