@@ -864,7 +864,10 @@ var statementMakers = weighted([
   // ES5 strict mode
   { w: 1, fun: function(d, b) { return '"use strict"; ' + makeStatement(d - 1, b); } },
 
-  // Spidermonkey strict warnings
+  // Spidermonkey: global ES5 strict mode
+  { w: 40, fun: function(d, b) { return "(void options('strict_mode'));" } },
+
+  // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
   { w: 1, fun: function(d, b) { return "(void options('strict'));" } },
 
   // Spidermonkey controls for E4X support
