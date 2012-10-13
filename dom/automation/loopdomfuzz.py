@@ -128,6 +128,13 @@ def createReproFile(lines, logPrefix):
         fuzzstartjs = g.readlines()
     [jbefore, jafter] = fuzzSplice(os.path.join(fuzzersDir, fuzzerJS))
     fuzzlines = linesWith(lines, "FRCA")
+    if len(fuzzlines) < 3:
+        fuzzlines = [
+            "// Startup crash?\n",
+            "var fuzzSettings = [42,0,42,42,3000,0];\n",
+            "var fuzzCommands = [];\n",
+            "// DDBEGIN\n"
+        ]
     quittage = [
       "// DDEND\n",
       "fuzzCommands.push({origCount: 8888, rest: true, timeout: 3000});\n",
