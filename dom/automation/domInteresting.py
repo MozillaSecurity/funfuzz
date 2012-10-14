@@ -307,6 +307,7 @@ def knownChromeFailure(msg):
         "nsIWebProgress.DOMWindow" in msg or # bug 732593
         "installStatus is null" in msg or # bug 693237
         "aTab is null" in msg or # bug 693239
+        "browser is null" in msg or # bug 693239?
         "too much recursion" in msg or # bug 732665
         "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
         "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
