@@ -8,6 +8,7 @@ from __future__ import with_statement
 
 import ctypes
 import os
+import shutil
 import platform
 import re
 import subprocess
@@ -163,14 +164,15 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
         # This possibly happens when the value of <value>:
         #     defaults write com.apple.CrashReporter DialogType <value>
         # is none, instead of server, or some other option.
+        # It also happens when ssh'd into a computer.
+        # And maybe when the computer is under heavy load.	
         # See http://en.wikipedia.org/wiki/Crash_Reporter_%28Mac_OS_X%29
         reportDir = os.path.join(baseDir, 'Library/Logs/DiagnosticReports/')
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
-        try:
+        if os.path.exists(reportDir):
             crashLogs = os.listdir(reportDir)
-        except (OSError, IOError), e:
-            # Maybe this is the first crash ever on this computer, and the dir does not yet exist.
+        else:
             crashLogs = []
         # Firefox sometimes still runs as firefox-bin, at least on Mac (likely bug 658850)
         crashLogs = [x for x in crashLogs
@@ -183,7 +185,10 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                     firstLine = c.readline()
                 if firstLine.rstrip().endswith("[" + str(crashedPID) + "]"):
                     if useLogFiles:
-                        os.rename(fullfn, logPrefix + "-crash.txt")
+                        # Copy, don't rename, because we might not have permissions
+                        # (especially for the system rather than user crash log directory)
+                        # Use copyfile, as we do not want to copy the permissions metadata over
+                        shutil.copyfile(fullfn, logPrefix + "-crash.txt")
                         captureStdout(["chmod", "og+r", logPrefix + "-crash.txt"])
                         return logPrefix + "-crash.txt"
                     else:
