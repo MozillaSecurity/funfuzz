@@ -3472,6 +3472,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
        && code.indexOf("lazy") == -1                // bug 743423, bug 743424
        && code.indexOf("strict") == -1              // bug 743425
+       // The following line is E4X-only, which will be removed by bug 788293
        && code.indexOf("QName") == -1               // See bug 748568
        && code.indexOf("__proto__") == -1           // bug 798670
        && code.indexOf("defineProperty") == -1      // bug 798668
