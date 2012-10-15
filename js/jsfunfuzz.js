@@ -3475,6 +3475,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("QName") == -1               // See bug 748568
        && code.indexOf("__proto__") == -1           // bug 798670
        && code.indexOf("defineProperty") == -1      // bug 798668
+       && code.indexOf("instanceof") == -1          // bug 799785
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
