@@ -325,7 +325,6 @@ def compileCopy(shell, options):
 def makeTestRev(shell, options):
     '''Calls recursive function testRev to keep compiling and testing changesets until it stops.'''
     def testRev(rev):
-        shell.setBaseTempDir(mkdtemp(prefix="abtmp-" + rev + "-"))
         shell.setHgHash(rev)
         shell.setName(options)
         cachedNoShell = shell.getShellCachePath() + ".busted"
@@ -337,6 +336,7 @@ def makeTestRev(shell, options):
             return (options.compilationFailedLabel, 'compilation failed (cached)')
         else:
             print "Updating...",
+            shell.setBaseTempDir(mkdtemp(prefix="abtmp-" + rev + "-"))
             captureStdout(shell.getHgPrefix() + ['update', '-r', rev], ignoreStderr=True)
             try:
                 print "Compiling...",
