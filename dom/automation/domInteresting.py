@@ -311,7 +311,6 @@ def knownChromeFailure(msg):
         "too much recursion" in msg or # bug 732665
         "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
         "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
-        "iconStatus is null" in msg or # bug 733305
         "prompt aborted by user" in msg or # thrown intentionally in nsPrompter.js
         "nsIIOService.getProtocolHandler" in msg or # bug 746878
         "tipElement is null" in msg or # bug 746893
