@@ -371,6 +371,7 @@ def skipJobNamed(j):
 
     return (
         "b826f91e0c8511e280083c0754725936" in j or # Bug 797065
+        "e9a41a6b16c311e280033c0754725936" in j or # Bug 801914, in its manifestation as a "hang"
         "1339201819" in j or # Bug 763126
         "1338835174" in j or # Bug 763126
         "1339379020" in j or # Bug 763560
