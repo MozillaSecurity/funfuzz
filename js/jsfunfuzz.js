@@ -1779,6 +1779,7 @@ var exprMakers =
 
   // Force garbage collection (global or specific compartment)
   function(d, b) { return "gc()"; },
+  function(d, b) { return "gc('compartment')"; },
   function(d, b) { return "gc(" + makeExpr(d, b) + ")"; },
 
   // Force garbage collection "soon"

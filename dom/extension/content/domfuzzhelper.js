@@ -67,7 +67,7 @@ function makeDOMFuzzHelper(aWindow) {
 
       enableAccessibility: enableAccessibility.bind(this),
 
-      GC: function() { Cu.forceGC(); },
+      forceGC: function() { Cu.forceGC(); },
 
       CC: cycleCollect(aWindow),
 
@@ -75,14 +75,17 @@ function makeDOMFuzzHelper(aWindow) {
 
       MP: sendMemoryPressureNotification.bind(this),
 
-      deterministicgc:    function(a)       { Components.utils.getJSTestingFunctions().deterministicgc(a); },
-      schedulegc:         function(a, b)    { Components.utils.getJSTestingFunctions().schedulegc(a,b); },
-      gczeal:             function(a, b)    { Components.utils.getJSTestingFunctions().gczeal(a, b); },
-      gcslice:            function(a)       { Components.utils.getJSTestingFunctions().gcslice(a); },
-      verifyprebarriers:  function()        { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
-      verifypostbarriers: function()        { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
-      mjitChunkLimit:     function(a)       { Components.utils.getJSTestingFunctions().mjitChunkLimit(a); },
-      terminate:          function()        { Components.utils.getJSTestingFunctions().terminate(); },
+      // Using the apply/arguments pattern because some of these functions (GC, gcslice) vary their behavior based on the number of arguments
+      GC:                 function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
+      deterministicgc:    function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
+      schedulegc:         function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
+      selectforgc:        function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
+      gczeal:             function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
+      gcslice:            function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
+      verifyprebarriers:  function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
+      verifypostbarriers: function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
+      mjitChunkLimit:     function() { Components.utils.getJSTestingFunctions().mjitChunkLimit.apply(this, arguments); },
+      terminate:          function() { Components.utils.getJSTestingFunctions().terminate(); },
 
       forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
 
@@ -122,6 +125,7 @@ function makeDOMFuzzHelper(aWindow) {
         'quitWithLeakCheck': 'r',
         'runSoon': 'r',
         'enableAccessibility': 'r',
+        'forceGC': 'r',
         'GC': 'r',
         'CC': 'r',
         'CCLog': 'r',
@@ -140,6 +144,7 @@ function makeDOMFuzzHelper(aWindow) {
         'resizeTo': 'r',
         deterministicgc: 'r',
         schedulegc: 'r',
+        selectforgc: 'r',
         gczeal: 'r',
         gcslice: 'r',
         verifyprebarriers: 'r',
