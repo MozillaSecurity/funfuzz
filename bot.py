@@ -337,7 +337,8 @@ def retestAll(options, buildDir):
         i += 1
         logPrefix = os.path.join(tempDir, str(i))
         extraPrefs = domInteresting.grabExtraPrefs(testcase)
-        level, lines = levelAndLines(testcase, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=True)
+        testcaseURL = loopdomfuzz.asFileURL(testcase)
+        level, lines = levelAndLines(testcaseURL, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=True)
 
         #if level > domInteresting.DOM_FINE:
         #    print "Reproduced: " + testcase

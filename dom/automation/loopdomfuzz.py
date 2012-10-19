@@ -159,11 +159,14 @@ def getURLs(reftestFilesDir):
                 if urlListFilename == "urls-reftests":
                     localPath = os.path.join(reftestFilesDir, line.rstrip())
                     # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
-                    URLs.append("file:" + urllib.pathname2url(localPath))
+                    URLs.append(asFileURL(localPath))
                 else:
                     URLs.append(line.rstrip())
 
     return URLs
+
+def asFileURL(localPath):
+    return "file:" + urllib.pathname2url(localPath)
 
 def randomHash():
     metaSeed = random.randint(1, 10000)
