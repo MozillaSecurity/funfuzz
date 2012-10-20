@@ -299,7 +299,7 @@ def main():
             multiFuzzUntilBug(options, buildDir, buildSrc)
 
     # Remove build directory
-    if not options.existingBuildDir and os.path.exists(buildDir):
+    if not (options.retestRoot or options.existingBuildDir) and os.path.exists(buildDir):
         shutil.rmtree(buildDir)
 
     # Remove the main temp dir, which should be empty at this point
