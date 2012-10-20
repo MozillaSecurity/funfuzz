@@ -374,6 +374,8 @@ def skipJobNamed(j):
         "b826f91e0c8511e280083c0754725936" in j or # Bug 797065
         "e9a41a6b16c311e280033c0754725936" in j or # Bug 801914, in its manifestation as a "hang"
         "623986e119f511e280063c0754724cee" in j or # A fixed bug in the fuzzer
+        "1344266896" in j or # bug 798829, bug 802982, bug 798323
+        "1345481534" in j or # bug 798829, bug 802982, bug 798323
         "1339201819" in j or # Bug 763126
         "1338835174" in j or # Bug 763126
         "1339379020" in j or # Bug 763560
