@@ -376,6 +376,7 @@ def skipJobNamed(j):
         "623986e119f511e280063c0754724cee" in j or # A fixed bug in the fuzzer
         "27fed8d11a9111e280053c0754725891" in j or # Another fixed bug in the fuzzer
         "d18c1bc21ab611e28007406c8f39f8b7" in j or # Ditto
+        "1343538581" in j or # probably a nasty variant of bug 728632
         "1344266896" in j or # bug 798829, bug 802982, bug 798323
         "1345481534" in j or # bug 798829, bug 802982, bug 798323
         "1339201819" in j or # Bug 763126
