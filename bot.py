@@ -376,6 +376,21 @@ def skipJobNamed(j):
         "623986e119f511e280063c0754724cee" in j or # A fixed bug in the fuzzer
         "27fed8d11a9111e280053c0754725891" in j or # Another fixed bug in the fuzzer
         "d18c1bc21ab611e28007406c8f39f8b7" in j or # Ditto
+        "91b3a56810ac11e280053c0754724fc3" in j or # makeCommand threw an exception
+        "e441bd47108511e280083c07547257fa" in j or # makeCommand threw an exception
+        "951f93f3103f11e280023c07547257ed" in j or # makeCommand threw an exception
+        "c4f5c9d4103011e280083c07547237b0" in j or # makeCommand threw an exception
+        "63f907230ffc11e280043c075472548a" in j or # makeCommand threw an exception
+        "2d406fc70ff811e280083c07547237b0" in j or # makeCommand threw an exception
+        "5f30be210fee11e280063c07547237b0" in j or # makeCommand threw an exception
+        "913531bd0fe911e280063c075472877d" in j or # makeCommand threw an exception
+        "274db34f0fe611e280063c07547237b0" in j or # makeCommand threw an exception
+        "274d72bd0fe611e280043c07547237b0" in j or # makeCommand threw an exception
+        "ccd24e300fe411e280043c07547257fa" in j or # makeCommand threw an exception
+        "ccd2ccb50fe411e280073c07547257fa" in j or # makeCommand threw an exception
+        "5d9762170fe311e280043c07547286ad" in j or # makeCommand threw an exception
+        "e03fa4f30fdf11e280023c07547237b0" in j or # makeCommand threw an exception
+        "e03fd1730fdf11e280033c07547237b0" in j or # makeCommand threw an exception
         "1343538581" in j or # probably a nasty variant of bug 728632
         "1344266896" in j or # bug 798829, bug 802982, bug 798323
         "1345481534" in j or # bug 798829, bug 802982, bug 798323
