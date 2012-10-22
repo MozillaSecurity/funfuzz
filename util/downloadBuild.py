@@ -201,9 +201,9 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 os.rename(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
                 stackwalkUrl = \
-            'http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk' \
+            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk' \
             if remotefn.endswith('.linux-i686.tar.bz2') else \
-            'http://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
+            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
                 downloadURL(stackwalkUrl, stackwalk)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
@@ -219,7 +219,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 for filename in ['minidump_stackwalk.exe', 'cyggcc_s-1.dll',
                                  'cygstdc++-6.dll', 'cygwin1.dll']:
                     remoteURL = \
-            'http://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s' % filename
+            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s' % filename
                     localfile = os.path.join(buildDir, filename)
                     downloadURL(remoteURL, localfile)
                 gotApp = True
@@ -232,7 +232,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
 
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
                 stackwalkUrl = \
-            'http://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk'
+            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk'
                 downloadURL(stackwalkUrl, stackwalk)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
