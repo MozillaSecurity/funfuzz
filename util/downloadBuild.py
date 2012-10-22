@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement
+
 import os
 import platform
 import re
@@ -156,6 +158,9 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     os.mkdir(buildDir)
     downloadFolder = os.path.join(buildDir, 'download')
     os.mkdir(downloadFolder)
+
+    with open(os.path.join(downloadFolder, "source-url.txt"), "w") as f:
+        f.writelines([httpDir])
 
     # Hack #1 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work is to:
     # Call this directory "dist".
