@@ -17,7 +17,8 @@ def fileContains(f, s, isRegex, vb=True):
 
 def fileContainsStr(f, s, verbose=True):
     with open(f, 'rb') as g:
-        for line in g:
+        gContents = [l.strip() for l in g.read().splitlines() if l.strip()]
+        for line in gContents:
             if line.find(s) != -1:
                 if verbose and s != '':
                     print '[Found string in: "' + line.rstrip() + '"]',
