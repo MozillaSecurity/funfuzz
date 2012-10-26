@@ -157,6 +157,8 @@ def parseOpts():
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
+    assert len(sys.argv) > 1, 'No arguments specified.'
+
     return options
 
 def findBlamedCset(myShell):
