@@ -127,6 +127,7 @@ content/canvas/crashtests/746813-1.html
 content/canvas/crashtests/767337-1.html
 content/canvas/crashtests/780392-1.html
 content/canvas/crashtests/794463-1.html
+content/canvas/crashtests/802926-1.html
 content/canvas/crashtests/texImage2D.html
 content/canvas/test/reftest/webgl-clear-test.html
 content/canvas/test/reftest/webgl-color-alpha-test.html
@@ -183,6 +184,12 @@ content/html/content/crashtests/682460.html
 content/html/content/crashtests/68912-1.html
 content/html/content/crashtests/738744.xhtml
 content/html/content/crashtests/741250.xhtml
+content/html/content/crashtests/795221-1.html
+content/html/content/crashtests/795221-2.html
+content/html/content/crashtests/795221-3.html
+content/html/content/crashtests/795221-4.html
+content/html/content/crashtests/795221-5.xml
+content/html/content/crashtests/798802-1.html
 content/html/content/reftests/41464-1-ref.html
 content/html/content/reftests/41464-1a.html
 content/html/content/reftests/41464-1b.html
@@ -288,6 +295,7 @@ content/media/test/crashtests/495794-1.html
 content/media/test/crashtests/576612-1.html
 content/media/test/crashtests/691096-1.html
 content/media/test/crashtests/752784-1.html
+content/media/test/crashtests/789075-1.html
 content/media/test/crashtests/795892-1.html
 content/smil/crashtests/483584-1.svg
 content/smil/crashtests/483584-2.svg
@@ -421,6 +429,8 @@ content/test/reftest/bug592366-2.html
 content/test/reftest/bug592366-2.xhtml
 content/test/reftest/bug592366-ref.html
 content/test/reftest/bug592366-ref.xhtml
+content/test/reftest/bug798068-ref.xhtml
+content/test/reftest/bug798068.xhtml
 content/test/reftest/optiontext-ref.html
 content/test/reftest/optiontext.html
 content/test/reftest/xml-stylesheet/css_relative_href.xml
@@ -438,6 +448,7 @@ content/test/reftest/xml-stylesheet/xslt_selflink_dtd_id.xml
 content/test/reftest/xml-stylesheet/xslt_selflink_empty_href.xml
 content/test/reftest/xml-stylesheet/xslt_selflink_relative_href.xml
 content/xml/content/crashtest/453278.html
+content/xml/content/crashtest/803586.xhtml
 content/xml/document/crashtests/136896-1.xml
 content/xml/document/crashtests/185285-1.xml
 content/xml/document/crashtests/382636-1.xml
@@ -624,6 +635,7 @@ editor/libeditor/html/crashtests/767169.html
 editor/libeditor/html/crashtests/768748.html
 editor/libeditor/html/crashtests/769008-1.html
 editor/libeditor/html/crashtests/769967.xhtml
+editor/libeditor/html/crashtests/793866.html
 editor/libeditor/text/crashtests/403965-1.xhtml
 editor/libeditor/text/crashtests/580151-1.xhtml
 editor/reftests/338427-1-ref.html
@@ -863,6 +875,7 @@ image/test/crashtests/delaytest.html
 image/test/crashtests/invalid-icc-profile.jpg
 image/test/crashtests/invalid-size-second-frame.gif
 image/test/crashtests/invalid-size.gif
+image/test/crashtests/ownerdiscard.html
 intl/lwbrk/src/crashtests/416721.html
 intl/uconv/crashtests/563618.html
 js/xpconnect/crashtests/117307-1.html
@@ -1672,6 +1685,11 @@ layout/generic/crashtests/737313-1.html
 layout/generic/crashtests/737313-2.html
 layout/generic/crashtests/737313-3.html
 layout/generic/crashtests/762764-1.html
+layout/generic/crashtests/786740-1.html
+layout/generic/crashtests/798020-1.html
+layout/generic/crashtests/798235-1.html
+layout/generic/crashtests/799207-1.html
+layout/generic/crashtests/799207-2.html
 layout/generic/crashtests/first-letter-638937-2.html
 layout/generic/crashtests/first-letter-638937.html
 layout/generic/crashtests/text-overflow-bug666751-1.html
@@ -2272,6 +2290,7 @@ layout/reftests/bidi/704837-1-ref.html
 layout/reftests/bidi/704837-1.html
 layout/reftests/bidi/712600-1-ref.html
 layout/reftests/bidi/712600-1.html
+layout/reftests/bidi/712600-2-dyn.html
 layout/reftests/bidi/712600-2-ref.html
 layout/reftests/bidi/712600-2.html
 layout/reftests/bidi/712600-3-ref.html
@@ -2298,6 +2317,7 @@ layout/reftests/bidi/746987-3-ref.html
 layout/reftests/bidi/746987-3.html
 layout/reftests/bidi/746987-4-ref.html
 layout/reftests/bidi/746987-4.html
+layout/reftests/bidi/779003-1-dynamic.html
 layout/reftests/bidi/779003-1-ref.html
 layout/reftests/bidi/779003-1.html
 layout/reftests/bidi/83958-1-ref.html
@@ -2628,6 +2648,13 @@ layout/reftests/box-shadow/tableboxshadow-tdshadow-ref.html
 layout/reftests/box-shadow/tableboxshadow-tdshadow.html
 layout/reftests/box-shadow/tableboxshadow-trshadow-ref.html
 layout/reftests/box-shadow/tableboxshadow-trshadow.html
+layout/reftests/box-sizing/intrinsic-1-ref.html
+layout/reftests/box-sizing/intrinsic-1a.html
+layout/reftests/box-sizing/intrinsic-1b.html
+layout/reftests/box-sizing/intrinsic-1c.html
+layout/reftests/box-sizing/intrinsic-1d.html
+layout/reftests/box-sizing/intrinsic-1e.html
+layout/reftests/box-sizing/intrinsic-1f.html
 layout/reftests/box/flexbox-abspos-container-1-ref.html
 layout/reftests/box/flexbox-abspos-container-1a.html
 layout/reftests/box/flexbox-abspos-container-1b.html
@@ -5036,6 +5063,11 @@ layout/reftests/bugs/599113-1-ref.html
 layout/reftests/bugs/599113-1.html
 layout/reftests/bugs/599476-ref.html
 layout/reftests/bugs/599476.html
+layout/reftests/bugs/599882-1-ref.html
+layout/reftests/bugs/599882-1a.html
+layout/reftests/bugs/599882-1b.html
+layout/reftests/bugs/599882-2-ref.html
+layout/reftests/bugs/599882-2.html
 layout/reftests/bugs/600045-1-ref.html
 layout/reftests/bugs/600045-1.html
 layout/reftests/bugs/600803-1-ref.html
@@ -5266,6 +5298,16 @@ layout/reftests/bugs/776265-2a.html
 layout/reftests/bugs/776265-2b.html
 layout/reftests/bugs/776265-2c.html
 layout/reftests/bugs/776265-2d.html
+layout/reftests/bugs/787947-1-ref.html
+layout/reftests/bugs/787947-1.html
+layout/reftests/bugs/797797-1-ref.html
+layout/reftests/bugs/797797-1.html
+layout/reftests/bugs/797797-2-ref.html
+layout/reftests/bugs/797797-2.html
+layout/reftests/bugs/801994-1-ref.html
+layout/reftests/bugs/801994-1.html
+layout/reftests/bugs/804323-1-ref.html
+layout/reftests/bugs/804323-1.html
 layout/reftests/bugs/81947-1.html
 layout/reftests/bugs/81947-ref.html
 layout/reftests/bugs/84400-1-ref.html
@@ -5362,6 +5404,8 @@ layout/reftests/canvas/text-big-stroke.html
 layout/reftests/canvas/text-blank.html
 layout/reftests/canvas/text-context-state-ref.html
 layout/reftests/canvas/text-context-state-test.html
+layout/reftests/canvas/text-emoji-notref.html
+layout/reftests/canvas/text-emoji.html
 layout/reftests/canvas/text-font-inherit.html
 layout/reftests/canvas/text-font-lang-notref.html
 layout/reftests/canvas/text-font-lang.html
@@ -6643,6 +6687,10 @@ layout/reftests/css-valuesandunits/unit-rem-ref2-root-fontsize.html
 layout/reftests/css-valuesandunits/unit-rem-root-fontsize.html
 layout/reftests/css-valuesandunits/unit-rem-root-width.html
 layout/reftests/css-valuesandunits/unit-rem.svg
+layout/reftests/css-valuesandunits/unit-vh-vw-ref.html
+layout/reftests/css-valuesandunits/unit-vh-vw-zoom-ref.html
+layout/reftests/css-valuesandunits/unit-vh-vw-zoom.html
+layout/reftests/css-valuesandunits/unit-vh-vw.html
 layout/reftests/cssom/computed-style-cross-window-ref.html
 layout/reftests/cssom/computed-style-cross-window.html
 layout/reftests/cssom/inline-style-null-ref.html
@@ -6818,8 +6866,11 @@ layout/reftests/flexbox/flexbox-align-self-baseline-horiz-2-ref.xhtml
 layout/reftests/flexbox/flexbox-align-self-baseline-horiz-2.xhtml
 layout/reftests/flexbox/flexbox-align-self-baseline-horiz-3-ref.xhtml
 layout/reftests/flexbox/flexbox-align-self-baseline-horiz-3.xhtml
+layout/reftests/flexbox/flexbox-align-self-baseline-horiz-4-ref.xhtml
+layout/reftests/flexbox/flexbox-align-self-baseline-horiz-4.xhtml
+layout/reftests/flexbox/flexbox-align-self-horiz-1-block.xhtml
 layout/reftests/flexbox/flexbox-align-self-horiz-1-ref.xhtml
-layout/reftests/flexbox/flexbox-align-self-horiz-1.xhtml
+layout/reftests/flexbox/flexbox-align-self-horiz-1-table.xhtml
 layout/reftests/flexbox/flexbox-align-self-horiz-2-ref.xhtml
 layout/reftests/flexbox/flexbox-align-self-horiz-2.xhtml
 layout/reftests/flexbox/flexbox-align-self-horiz-3-ref.xhtml
@@ -7011,8 +7062,12 @@ layout/reftests/flexbox/flexbox-resizeviewport-1-ref.xhtml
 layout/reftests/flexbox/flexbox-resizeviewport-1.xhtml
 layout/reftests/flexbox/flexbox-sizing-horiz-1-ref.xhtml
 layout/reftests/flexbox/flexbox-sizing-horiz-1.xhtml
+layout/reftests/flexbox/flexbox-sizing-horiz-2-ref.xhtml
+layout/reftests/flexbox/flexbox-sizing-horiz-2.xhtml
 layout/reftests/flexbox/flexbox-sizing-vert-1-ref.xhtml
 layout/reftests/flexbox/flexbox-sizing-vert-1.xhtml
+layout/reftests/flexbox/flexbox-sizing-vert-2-ref.xhtml
+layout/reftests/flexbox/flexbox-sizing-vert-2.xhtml
 layout/reftests/flexbox/flexbox-table-fixup-1-ref.xhtml
 layout/reftests/flexbox/flexbox-table-fixup-1a.xhtml
 layout/reftests/flexbox/flexbox-table-fixup-1b.xhtml
@@ -7296,6 +7351,8 @@ layout/reftests/font-inflation/intrinsic-min-1-ref.html
 layout/reftests/font-inflation/intrinsic-min-1.html
 layout/reftests/font-inflation/list-1-ref.html
 layout/reftests/font-inflation/list-1.html
+layout/reftests/font-inflation/maxRatio-1-ref.html
+layout/reftests/font-inflation/maxRatio-1.html
 layout/reftests/font-inflation/min-width-passes-1-ref.html
 layout/reftests/font-inflation/min-width-passes-1.html
 layout/reftests/font-inflation/preformatted-text-ref.html
@@ -9436,6 +9493,7 @@ layout/reftests/svg/clipPath-basic-02.svg
 layout/reftests/svg/clipPath-basic-03.svg
 layout/reftests/svg/clipPath-basic-04.svg
 layout/reftests/svg/clipPath-basic-05.svg
+layout/reftests/svg/clipPath-basic-06.svg
 layout/reftests/svg/clipPath-winding-01.svg
 layout/reftests/svg/conditions-01.svg
 layout/reftests/svg/conditions-02.svg
@@ -9475,6 +9533,8 @@ layout/reftests/svg/dynamic-conditions-12.svg
 layout/reftests/svg/dynamic-conditions-13.svg
 layout/reftests/svg/dynamic-feFlood-01.svg
 layout/reftests/svg/dynamic-feImage-01.svg
+layout/reftests/svg/dynamic-fill-01-ref.svg
+layout/reftests/svg/dynamic-fill-01.svg
 layout/reftests/svg/dynamic-filter-contents-01-ref.svg
 layout/reftests/svg/dynamic-filter-contents-01a.svg
 layout/reftests/svg/dynamic-filter-contents-01b.svg
@@ -10626,6 +10686,8 @@ layout/reftests/svg/text-gradient-01.svg
 layout/reftests/svg/text-gradient-02-ref.svg
 layout/reftests/svg/text-gradient-02.svg
 layout/reftests/svg/text-gradient-03.svg
+layout/reftests/svg/text-gradient-04-ref.svg
+layout/reftests/svg/text-gradient-04.svg
 layout/reftests/svg/text-in-link-01-ref.svg
 layout/reftests/svg/text-in-link-01.svg
 layout/reftests/svg/text-in-link-02-ref.svg
@@ -11773,6 +11835,10 @@ layout/reftests/text/auto-hyphenation-uk-1-ref.html
 layout/reftests/text/auto-hyphenation-uk-1.html
 layout/reftests/text/cgj-01-ref.html
 layout/reftests/text/cgj-01.html
+layout/reftests/text/emoji-01-notref.html
+layout/reftests/text/emoji-01.html
+layout/reftests/text/emoji-02-notref.html
+layout/reftests/text/emoji-02.html
 layout/reftests/text/fallback-01-ref.xhtml
 layout/reftests/text/fallback-01.xhtml
 layout/reftests/text/font-selection-by-lang-01-ref.html
@@ -11785,6 +11851,10 @@ layout/reftests/text/font-size-adjust-01-ref.html
 layout/reftests/text/font-size-adjust-01.html
 layout/reftests/text/font-size-adjust-02-ref.html
 layout/reftests/text/font-size-adjust-02.html
+layout/reftests/text/glyph-decomposition-graphite-ref.html
+layout/reftests/text/glyph-decomposition-graphite.html
+layout/reftests/text/glyph-decomposition-opentype-ref.html
+layout/reftests/text/glyph-decomposition-opentype.html
 layout/reftests/text/graphite-05-badlang.html
 layout/reftests/text/graphite-05-fail.html
 layout/reftests/text/graphite-05-feat.html
@@ -12517,6 +12587,7 @@ layout/svg/crashtests/767056-1.svg
 layout/svg/crashtests/768351.svg
 layout/svg/crashtests/780963-1.html
 layout/svg/crashtests/790072.svg
+layout/svg/crashtests/791826-1.svg
 layout/svg/crashtests/extref-test-1.xhtml
 layout/tables/crashtests/110523-1.html
 layout/tables/crashtests/138725-1.html
@@ -12714,6 +12785,8 @@ parser/htmlparser/tests/reftest/bug582940-1-ref.html
 parser/htmlparser/tests/reftest/bug582940-1.html
 parser/htmlparser/tests/reftest/bug592656-1-ref.html
 parser/htmlparser/tests/reftest/bug592656-1.html
+parser/htmlparser/tests/reftest/bug599320-1-ref.html
+parser/htmlparser/tests/reftest/bug599320-1.html
 parser/htmlparser/tests/reftest/bug608373-1-ref.html
 parser/htmlparser/tests/reftest/bug608373-1.html
 parser/htmlparser/tests/reftest/bug659763-1-ref.html
