@@ -269,6 +269,8 @@ def internalTestAndLabel(options):
             if (options.watchExitCode != None and 128 - exitCode == options.watchExitCode):
                 return ('bad', 'Specified-bad exit code ' + str(exitCode) + \
                         ' (after converting to signal)')
+            elif (stdoutStderr.find(options.output) == -1) and (options.output != ''):
+                return ('good', 'Bad output, but not the specified one')
             else:
                 return ('bad', 'Negative exit code ' + str(exitCode))
         elif exitCode == 0:
