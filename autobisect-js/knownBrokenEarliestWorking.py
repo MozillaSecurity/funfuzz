@@ -78,13 +78,13 @@ def earliestKnownWorkingRev(options):
         return 'e5b92c2bdd2d' # 70991 on m-c, first rev that has the -D option
     elif '-a' in flags:  # -a only works with -m
         return 'f569d49576bb' # 62574 on m-c, first rev that has the -a option
+    elif isLinux:
+        return 'e8753473cdff' # 61217 on m-c, first rev that compiles properly on Ubuntu 12.10.
     elif '-p' in flags:
         return '339457364540' # 56551 on m-c, first rev that has the -p option
     elif '-d' in flags:  # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
         return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
     elif '-m' in flags:
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
-    elif isWin:
+    else: # Only Windows should end up here
         return 'ceef8a5c3ca1' # 35725 on m-c, first rev that can build with Visual Studio 2010
-    else:  # Only Linux should end up here
-        return "db4d22859940" # 24546 on m-c, imacros compilation change
