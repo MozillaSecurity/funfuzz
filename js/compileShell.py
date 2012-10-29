@@ -95,8 +95,14 @@ class CompiledShell(object):
             raise Exception('First setRepoDir, repository directory is not yet set.')
         return ['hg', '-R', self.repoDir]
     def setName(self, options):
+        if options.enableRootAnalysis:
+            specialParam = 'ra'
+        elif options.enableMoreDeterministic:
+            specialParam = 'dm'
+        else:
+            specialParam = ''
         sname = '-'.join(x for x in ['js', self.compileType, self.arch,
-                                     'ra' if options.enableRootAnalysis else '', self.hgHash,
+                                     specialParam, self.hgHash,
                                      'windows' if isWin else platform.system().lower()] if x)
         self.shellName = sname + '.exe' if isWin else sname
     def getName(self):
