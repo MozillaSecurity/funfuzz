@@ -50,7 +50,7 @@ def parseOptions():
         timeout = 10,
         isThreadsafe = False,
         enableMoreDeterministic = False,
-        enableRootAnalysis = True,  # Temporarily switching to True to see what bugs we can find.
+        enableRootAnalysis = False,
         testWithVg = False,
     )
 
