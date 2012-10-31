@@ -157,7 +157,8 @@ def parseOpts():
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
-    assert len(sys.argv) > 1, 'No arguments specified.'
+    if len(sys.argv) < 2:
+        print "Note: since no arguments were specified, we're just ensuring the shell does not crash on startup/shutdown."
 
     return options
 
