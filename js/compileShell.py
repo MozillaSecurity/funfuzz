@@ -95,12 +95,12 @@ class CompiledShell(object):
             raise Exception('First setRepoDir, repository directory is not yet set.')
         return ['hg', '-R', self.repoDir]
     def setName(self, options):
+        specialParamList = []
         if options.enableMoreDeterministic:
-            specialParam = 'dm'
-        elif options.enableRootAnalysis:
-            specialParam = 'ra'
-        else:
-            specialParam = ''
+            specialParamList.append('dm')
+        if options.enableRootAnalysis:
+            specialParamList.append('ra')
+        specialParam = '-'.join(specialParamList)
         sname = '-'.join(x for x in ['js', self.compileType, self.arch,
                                      specialParam, self.hgHash,
                                      'windows' if isWin else platform.system().lower()] if x)
