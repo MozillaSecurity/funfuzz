@@ -406,7 +406,7 @@ def main():
     lockDir = os.path.join(shell.getCacheDir(), 'autoBisectJs-lock')
     try:
         os.mkdir(lockDir)
-    except OSError, e:
+    except OSError:
         print "autoBisect is already running"
         return
     try:
