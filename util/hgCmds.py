@@ -9,6 +9,7 @@ import re
 import sys
 import subprocess
 from ConfigParser import SafeConfigParser
+from traceback import format_exc
 
 from subprocesses import captureStdout, isVM, normExpUserPath, vdump
 
