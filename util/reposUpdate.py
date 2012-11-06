@@ -10,7 +10,6 @@
 # SVN directory is located only in ../../* if repositories are in ../../trees/*.
 
 import os
-import subprocess
 import sys
 from subprocesses import dateStr, timeSubprocess
 
