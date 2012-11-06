@@ -22,7 +22,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
-from hgCmds import getRepoHashAndId, getRepoNameFromHgrc
+from hgCmds import getRepoNameFromHgrc
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
 class CompiledShell(object):
@@ -263,8 +263,7 @@ def cfgJsBin(shell, options):
         envVarList.append(strToBeAppended)
     assert os.path.isdir(shell.getObjdir())
     vdump('Command to be run is: ' + ' '.join(envVarList) + ' '.join(cfgCmdList))
-    out = captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getObjdir(),
-                        env=cfgEnvDt)
+    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getObjdir(), env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
     shell.setEnvFull(cfgEnvDt)
