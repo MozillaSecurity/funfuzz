@@ -141,7 +141,7 @@ def createWtmpDir(tmpDirBase):
         try:
             os.mkdir(tmpDir)  # To avoid race conditions, we use try/except instead of exists/create
             break
-        except OSError, e:
+        except OSError:
             i += 1
     vdump(tmpDirWithNum + os.sep)  # Even if not verbose, wtmp<num> is also dumped: wtmp1/w1: NORMAL
     return tmpDirWithNum
@@ -165,7 +165,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
         #     defaults write com.apple.CrashReporter DialogType <value>
         # is none, instead of server, or some other option.
         # It also happens when ssh'd into a computer.
-        # And maybe when the computer is under heavy load.	
+        # And maybe when the computer is under heavy load.
         # See http://en.wikipedia.org/wiki/Crash_Reporter_%28Mac_OS_X%29
         reportDir = os.path.join(baseDir, 'Library/Logs/DiagnosticReports/')
         # Find a crash log for the right process name and pid, preferring
@@ -195,7 +195,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                         return fullfn
                         #return open(fullfn).read()
 
-            except (OSError, IOError), e:
+            except (OSError, IOError):
                 # Maybe the log was rotated out between when we got the list
                 # of files and when we tried to open this file.  If so, it's
                 # clearly not The One.
@@ -233,7 +233,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
         assert os.path.exists(gdbCommandFile)
         gdbArgs = ["gdb", "-n", "-batch", "-x", gdbCommandFile, progfullname, coreFilename]
         vdump(" ".join(gdbArgs))
-        child = subprocess.call(
+        subprocess.call(
             gdbArgs,
             stdin =  None,
             stderr = subprocess.STDOUT,
