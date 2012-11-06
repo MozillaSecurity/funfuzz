@@ -11,7 +11,6 @@ import sys
 import time
 
 from optparse import OptionParser
-from shutil import copy2
 from tempfile import mkdtemp
 
 from knownBrokenEarliestWorking import knownBrokenRanges, earliestKnownWorkingRev
@@ -30,8 +29,7 @@ from downloadBuild import mozPlatformDetails
 from fileManipulation import firstLine
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getMcRepoDir, getRepoHashAndId, \
     getRepoNameFromHgrc, isAncestor
-from subprocesses import captureStdout, dateStr, isLinux, isMac, isVM, isWin, normExpUserPath, \
-    shellify, Unbuffered, verbose, vdump
+from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, Unbuffered, verbose, vdump
 
 def sanityChecks():
     # autoBisect uses temporary directory python APIs. On WinXP, these are located at
