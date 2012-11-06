@@ -10,7 +10,7 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, isLinux, isMac, isWin, macVer
+from subprocesses import isLinux, isMac, macVer
 
 def knownBrokenRanges():
     '''Returns a list of revsets corresponding to known-busted revisions'''
