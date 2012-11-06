@@ -7,8 +7,6 @@
 from __future__ import with_statement
 
 import os
-import platform
-import subprocess
 import sys
 from copy import deepcopy
 
