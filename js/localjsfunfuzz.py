@@ -22,7 +22,7 @@ from inspectShell import archOfBinary, testDbgOrOpt, verifyBinary
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from downloadBuild import defaultBuildType, downloadBuild, downloadLatestBuild, mozPlatform
+from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 from hgCmds import getMcRepoDir, getRepoHashAndId, patchHgRepoUsingMq
 from lithOps import knownBugsDir
 from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpUserPath, shellify, \
