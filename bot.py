@@ -392,6 +392,7 @@ def skipJobNamed(j):
         "e03fa4f30fdf11e280023c07547237b0" in j or # makeCommand threw an exception
         "e03fd1730fdf11e280033c07547237b0" in j or # makeCommand threw an exception
         "9918e5351c1911e280023c075472528a" in j or # bug 804083
+        "2dfb799c2eb511e280033c075472500f" in j or # bug 812641
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1343538581" in j or # probably a nasty variant of bug 728632
         "1344266896" in j or # bug 798829, bug 802982, bug 798323
