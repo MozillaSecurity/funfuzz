@@ -16,9 +16,8 @@ SIZE medium. when known to leak, allowed to entrain unknown objects.
   LEAK nsDNSPrefetch                   # Bug 463724
   LEAK nsDNSAsyncRequest               # Bug 463724
   LEAK nsHostResolver                  # Bug 463724
-  LEAK StartupCacheListener            # Bug 601341
   LEAK imgRequest                      # Bug 614149
-  LEAK nsNPAPIPluginInstance           # Goddamn Java
+  LEAK nsNPAPIPluginInstance           # Java
   LEAK nsLocalFile                     # Intermittent, but frequent, at least in the range 2011-08-20 to 2011-09-14
 
 SIZE tiny. objects that should never entrain others. (last group is also the default for unknown objects)
