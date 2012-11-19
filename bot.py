@@ -131,9 +131,9 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
         recipients = []
         subject = "Reduced " + options.testType + " fuzz testcase"
         dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
-        # FIXME: The if condition is present here because for no_longer_reproducible
-        # testcases, the -summary file is apparently absent, so this needs reconfirmation.
-        body = dirRef + "\n\n" + summary[0:50000] if summary else dirRef
+        # no_longer_reproducible crashes do not have a summary file,
+        # so check if summary is an actual local variable with a value.
+        body = dirRef + "\n\n" + summary[0:50000] if 'summary' in locals() else dirRef
         if options.testType == 'js':
             # Send jsfunfuzz emails to gkw
             recipients.append("gkwong")
