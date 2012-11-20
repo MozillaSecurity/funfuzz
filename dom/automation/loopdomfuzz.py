@@ -169,7 +169,7 @@ def asFileURL(localPath):
     return "file:" + urllib.pathname2url(localPath)
 
 def randomHash():
-    metaSeed = random.randint(1, 10000)
+    metaSeed = random.randint(0, 2**32 - 1)
     metaInterval = 2 ** random.randint(0, 12) - 1
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5 + int(metaInterval / 10)
     metaMax = 3000
