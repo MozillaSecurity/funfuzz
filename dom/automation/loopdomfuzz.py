@@ -170,9 +170,28 @@ def asFileURL(localPath):
 
 def randomHash():
     metaSeed = random.randint(0, 2**32 - 1)
-    metaInterval = 2 ** random.randint(0, 12) - 1
+    metaInterval = 2 ** (random.randint(0, 3) * random.randint(0, 4)) - 1  # Up to 4096ms, but usually faster
     metaPer = random.randint(0, 15) * random.randint(0, 15) + 5 + int(metaInterval / 10)
-    metaMax = 3000
+
+    # metaMax controls how many [generated js functions] each browser instance will run
+    # (but fuzz-finish-auto also enforces a time limit)
+    #
+    # Want it small:
+    #   Deterministic repro from seed (because of time limit) (but how often do we actually repro-from-seed? and this is fixable)
+    #   Limit on how much work Lithium has (but how much time do we spend in Lithium, compared to fuzzing?)
+    #   Waste less time in huge GCs (especially with fuzzMultiDoc)
+    #   Small variations on initial reftests are often the most interesting
+    #   Less chance for the fuzzer to tie itself in exponential knots, and hang unexpectedly (e.g. repeated cloneNode)
+    #
+    # Want it large
+    #   Depth is more important as we scale
+    #   Depth is important to fuzzerRandomJS
+    #   Waste less time in startup, shutdown
+    #   Waste less time parsing breakpad symbol files (!)
+    #   Waste less time waiting for hanging testcases (?)
+
+    metaMax = 30000
+
     return "#squarefree-af," + fuzzerJS + "," + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
 
 def afterColon(s):
