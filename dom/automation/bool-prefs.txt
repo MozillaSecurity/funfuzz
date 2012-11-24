@@ -165,6 +165,7 @@ layout.css.flexbox.enabled
 layout.css.report_errors
 layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
+layers.force-active
 layout.frame_rate.precise
 layout.frames.force_resizability
 layout.gpu-scaling.enabled
