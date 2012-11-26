@@ -183,6 +183,7 @@ media.webaudio.enabled
 media.navigator.enabled
 media.navigator.permission.disabled
 media.peerconnection.enabled
+memory.free_dirty_pages
 network.auth.use-sspi
 network.IDN_show_punycode
 network.dns.disableIPv6
