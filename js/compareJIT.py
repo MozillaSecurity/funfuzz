@@ -99,7 +99,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         if i == 0:
             (r0, prefix0) = (r, prefix)
         else:
-            if "js_ReportOverRecursed called" in r.err and "js_ReportOverRecursed called" in r0.err:
+            if "js_ReportOverRecursed called" in r.err or "js_ReportOverRecursed called" in r0.err:
                 #print "Ignoring js_ReportOverRecursed difference"
                 # delete extra files
                 jsInteresting.deleteLogs(prefix)
