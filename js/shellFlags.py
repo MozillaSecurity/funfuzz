@@ -95,10 +95,14 @@ def randomFlagSet(shellPath):
 
 
 def basicFlagSets(shellPath):
+    '''
+    compareJIT uses these combinations of flags (as well as the original set of flags) when run
+    through Lithium and autoBisect.
+    '''
     if shellSupportsFlag(shellPath, "--no-ion"):
         return [
             # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
-            [],
+            [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
             ['--no-jm'],
             ['--ion-gvn=off', '--ion-licm=off'],
             ['--no-ion', '--no-jm', '--no-ti'],
