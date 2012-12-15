@@ -2133,11 +2133,7 @@ function makeObjLiteralPart(d, b)
 
   switch(rnd(8))
   {
-    // Old-style literal getter/setter
-    //case 0: return cat([makeObjLiteralName(d, b), " getter: ", makeFunction(d, b)]);
-    //case 1: return cat([makeObjLiteralName(d, b), " setter: ", makeFunction(d, b)]);
-
-    // New-style literal getter/setter
+    // Literal getter/setter
     // Surprisingly, string literals, integer literals, and float literals are also good!
     // (See https://bugzilla.mozilla.org/show_bug.cgi?id=520696.)
     case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
