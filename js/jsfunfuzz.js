@@ -102,6 +102,8 @@ if (typeof gc == "undefined")
   this.gc = function(){};
 var gcIsQuiet = !(gc()); // see bug 706433
 
+// Without options("allow_xml"), this will be false when jsfunfuzz is starting.
+// Oh well, E4X is going away soon enough.
 var haveE4X = (typeof XML == "function");
 if (haveE4X)
   XML.ignoreComments = false; // to make uneval saner -- see bug 465908
