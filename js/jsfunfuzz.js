@@ -883,7 +883,7 @@ var statementMakers = weighted([
 
   { w: 20, fun: makeRegexUseBlock },
 
-  // Discover properties to add to the specialProperties list
+  // Discover properties to add to the allPropertyNames list
   //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
   //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
@@ -1539,34 +1539,17 @@ if (haveE4X)
   rightUnaryOps = rightUnaryOps.concat([".*", ".@foo", ".@*"]);
 
 
-
 var specialProperties = [
-  "x", "y",
   "__iterator__", "__count__",
   "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
-  "length",
-  // Typed arrays
-  "buffer", "byteLength", "byteOffset",
-  // E4X
-  "ignoreComments", "ignoreProcessingInstructions", "ignoreWhitespace",
-  "prettyPrinting", "prettyIndent",
-  // arguments object
   "arguments", "caller", "callee",
-  // Math object
-  "E", "PI",
   "0", "1",
-]
-
-function makeSpecialProperty(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-  return rndElt(specialProperties);
-}
+];
 
 // This makes it easier for fuzz-generated code to mess with the fuzzer. Will I regret it?
+/*
 function addPropertyName(p)
 {
   p = "" + p;
@@ -1576,9 +1559,10 @@ function addPropertyName(p)
       p != "parent" && // unsafe spidermonkey shell function, see bug 619064
       true) {
     print("Adding: " + p);
-    specialProperties.push(p);
+    allPropertyNames.push(p);
   }
 }
+*/
 
 function makeNamespacePrefix(d, b)
 {
@@ -1589,12 +1573,6 @@ function makeNamespacePrefix(d, b)
     default: return "";
   }
 }
-
-
-// An incomplete list of builtin methods for various data types.
-var objectMethods = [
-  "sort"
-];
 
 
 var exprMakers =
@@ -1609,18 +1587,11 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
 
-  // Special properties: we love to set them!
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeExpr(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeFunction(d, b)]); },
-  function(d, b) { return cat([makeId(d, b),   ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeExpr(d, b)]); },
-  function(d, b) { return cat([makeId(d, b),   ".", makeNamespacePrefix(d, b), makeSpecialProperty(d, b), " = ", makeFunction(d, b)]); },
-
   // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods)]); },
-  function(d, b) { var id = makeId(d, b); return cat(["/*UUV1*/", "(", id, ".", rndElt(objectMethods), " = ", makeFunction(d, b), ")"]); },
-  function(d, b) { var id = makeId(d, b); return cat(["/*UUV2*/", "(", id, ".", rndElt(objectMethods), " = ", id, ".", rndElt(objectMethods), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods), "(", makeActualArgList(d, b), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(allMethodNames)]); },
+  function(d, b) { var id = makeId(d, b); return cat(["/*UUV1*/", "(", id, ".", rndElt(allMethodNames), " = ", makeFunction(d, b), ")"]); },
+  function(d, b) { var id = makeId(d, b); return cat(["/*UUV2*/", "(", id, ".", rndElt(allMethodNames), " = ", id, ".", rndElt(allMethodNames), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(allMethodNames), "(", makeActualArgList(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), "valueOf", "(", uneval("number"), ")"]); },
 
   // Binary operators
@@ -1662,9 +1633,12 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b),  ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
 
   // Property access / index into array
-  function(d, b) { return cat([     "arguments",         "[", makePropertyName(d, b), "]"]); },
-  function(d, b) { return cat([     makeExpr(d, b),      "[", makePropertyName(d, b), "]"]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), ")", "[", makePropertyName(d, b), "]"]); },
+  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
+  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]", " = ", makeExpr(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]", " = ", makeFunction(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   "[", makePropertyName(d, b), "]", " = ", makeExpr(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   "[", makePropertyName(d, b), "]", " = ", makeFunction(d, b)]); },
+  function(d, b) { return cat(["arguments",    "[", makePropertyName(d, b), "]"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
   function(d, b) { return cat(["[", makeExpr(d, b), "]"]); },
@@ -2024,19 +1998,19 @@ function makeShapeyConstructor(d, b)
   var nPropNames = rnd(6) + 1;
   var propNames = [];
   for (var i = 0; i < nPropNames; ++i) {
-    propNames[i] = rnd(5) ? makeId(d, b) : makeSpecialProperty(d, b);
+    propNames[i] = makePropertyName(d, b);
   }
 
   var nStatements = rnd(11);
   for (var i = 0; i < nStatements; ++i) {
     var propName = rndElt(propNames);
-    var tprop = t + "[" + simpleSource(propName) + "]";
+    var tprop = t + "[" + propName + "]";
     if (rnd(5) == 0) {
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
     }
     switch(rnd(8)) {
       case 0:  funText += "delete " + tprop + ";"; break;
-      case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? simpleSource(propName) : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
+      case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? propName : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
       case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
       case 3:  funText += tprop + " = " + makeExpr(d, bp)        + ";"; break;
       case 4:  funText += tprop + " = " + makeFunction(d, bp)    + ";"; break;
@@ -2057,9 +2031,9 @@ var propertyNameMakers = weighted([
   { w: 1,  fun: function(d, b) { return maybeNeg() + rnd(20); } },
   { w: 1,  fun: function(d, b) { return '"' + maybeNeg() + rnd(20) + '"'; } },
   { w: 1,  fun: function(d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
-  { w: 1,  fun: function(d, b) { return simpleSource(makeSpecialProperty(d - 1, b)); } },
+  { w: 5,  fun: function(d, b) { return simpleSource(rndElt(specialProperties)); } },
   { w: 1,  fun: function(d, b) { return simpleSource(makeId(d - 1, b)); } },
-  { w: 1,  fun: function(d, b) { return simpleSource(rndElt(objectMethods)); } },
+  { w: 5,  fun: function(d, b) { return simpleSource(rndElt(allMethodNames)); } },
 ]);
 
 function maybeNeg() { return rnd(5) ? "" : "-"; }
@@ -2150,11 +2124,6 @@ if (haveE4X) {
 }
 
 
-var constructors = [
-  "Error"
-];
-
-
 function makeObjLiteralPart(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
@@ -2191,29 +2160,63 @@ function makeObjLiteralName(d, b)
   {
     case 0:  return simpleSource(makeNumber(d, b)); // a quoted number
     case 1:  return makeNumber(d, b);
-    case 2:  return makeSpecialProperty(d, b);
+    case 2:  return rndElt(allPropertyNames);
+    case 3:  return rndElt(specialProperties);
     default: return makeId(d, b);
   }
 }
 
-var builtinFunctions = ["(function(){})"];
 
-// XXX grab getters/setters too (e.g. Debugger.prototype.enabled, but mysteriously not Array.prototype.length)
-(function exploreBuiltins(glob) {
+/**********************
+ * EXAMINING BUILTINS *
+ **********************/
+
+/*
+        It might be more interesting to use Object.getOwnPropertyDescriptor to find out if
+        a thing is exposed as a getter (like Debugger.prototype.enabled).  But there are exceptions:
+
+        <Jesse> why is Array.prototype.length not a getter? http://pastebin.mozilla.org/1990723
+        <jorendorff> backward compatibility
+        <jorendorff> ES3 already allowed programs to create objects with arbitrary __proto__
+        <jorendorff> .length was specified to work as a data property; accessor properties inherit differently, especially when setting
+        <jorendorff> maybe only when setting, come to think of it
+        <jorendorff> I guess it could've been made an accessor property without breaking anything important. I didn't realize it at the time.
+*/
+
+var constructors = []; // "Array"
+var builtinFunctions = []; // "Array.prototype.sort"
+var allMethodNames = []; // "sort"
+var allPropertyNames = []; // "length"
+var builtinObjects = []; // { name: "Array.prototype", properties: ["sort", "length", ...] }
+
+
+(function exploreBuiltins(glob, debugMode) {
 
   function exploreDeeper(a, an)
   {
     if (!a)
       return;
     var hns = Object.getOwnPropertyNames(a);
+    var builtinObjectItem = { name: an, properties: ["_"] };
+    builtinObjects.push(builtinObjectItem);
     for (var j = 0; j < hns.length; ++j) {
       var hn = hns[j];
-      if (hn == "constructor")
-        continue;
-      objectMethods.push(hn);
-      try { var h = a[hn]; } catch(e) { h = null; }
-      if (typeof h == "function") {
-        builtinFunctions.push(an + "." + hn);
+      allPropertyNames.push(hn);
+      builtinObjectItem.properties.push(hn);
+      fullName = an + "." + hn;
+
+      try {
+        var h = a[hn];
+      } catch(e) {
+        if (debugMode) {
+          dumpln("Threw: " + fullName);
+        }
+        h = null;
+      }
+
+      if (typeof h == "function" && hn != "constructor") {
+        allMethodNames.push(hn);
+        builtinFunctions.push(fullName);
       }
     }
   }
@@ -2237,17 +2240,30 @@ var builtinFunctions = ["(function(){})"];
     }
   }
 
+  // Temporarily enable XML so we see "XML", "QName", etc.
+  try { options("allow_xml"); } catch(e) { }
   exploreConstructors();
+  try { options("allow_xml"); } catch(e) { }
+
   exploreDeeper(Math, "Math");
   exploreDeeper(JSON, "JSON");
   exploreDeeper(Proxy, "Proxy");
 
-})(this);
+  if (debugMode) {
+    for (let x of constructors) print("^^^^^ " + x);
+    for (let x of builtinFunctions) print("===== " + x);
+    for (let x of allMethodNames) print("!!!!! " + x);
+    for (let x of allPropertyNames) print("&&&&& " + x);
+    for (let x of builtinObjects) print("##### " + uneval(x));
+    quit();
+  }
 
-//for (let g of builtinFunctions) print(g);
-//print(builtinFunctions.length);
-//print(objectMethods)
+})(this, false);
 
+
+/********
+ * .... *
+ ********/
 
 function makeFunction(d, b)
 {
@@ -2331,7 +2347,7 @@ var functionMakers = [
   function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")" },
 
   // Methods with known names
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(objectMethods)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(allMethodNames)]); },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
@@ -2639,7 +2655,7 @@ function makeId(d, b)
   case 14:
     return "x::" + makeId(d, b);
   case 15: case 16:
-    return makeNamespacePrefix(d - 1, b) + makeSpecialProperty(d - 1, b);
+    return makeNamespacePrefix(d - 1, b) + makeObjLiteralName(d - 1, b);
   case 17: case 18:
     return makeNamespacePrefix(d - 1, b) + makeId(d - 1, b);
   case 19:
@@ -2721,12 +2737,10 @@ var lvalueMakers = [
   function(d, b) { return "(" + makeDestructuringLValue(d, b) + ")"; },
 
   // Properties
-  function(d, b) { return cat([makeId(d, b), ".", makeId(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   ".", makeId(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), ".", makeId(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), "[", "'", makeId(d, b), "'", "]"]); },
-
-  // Special properties
-  function(d, b) { return cat([makeId(d, b), ".", makeSpecialProperty(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),   "[", makePropertyName(d, b), "]"]); },
+  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
 
   // Certain functions can act as lvalues!  See JS_HAS_LVALUE_RETURN in js engine source.
   function(d, b) { return cat([makeId(d, b), "(", makeExpr(d, b), ")"]); },
