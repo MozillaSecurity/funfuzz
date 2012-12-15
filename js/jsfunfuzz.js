@@ -1040,6 +1040,7 @@ var makeEvilCallback;
       s += "a" + i + " = []; ";
       s += "o" + i + " = {}; ";
       s += "s" + i + " = ''; ";
+      s += "r" + i + " = /x/; ";
       s += "g" + i + " = " + makeGlobal(d, b) + "; ";
       s += "f" + i + " = function(){}; ";
       s += "m" + i + " = new WeakMap; ";
@@ -1140,6 +1141,13 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "f", "Proxy.createFunction(" + m("h") + ", " + m("f") + ", " + m("f") + ")"); } },
 
     // r: regexp
+    // The separate regex code is better at matching strings with regexps, but this is better at reusing the objects.
+    // See https://bugzilla.mozilla.org/show_bug.cgi?id=808245 for why it is important to reuse regexp objects.
+    { w: 1,  fun: function(d, b) { return assign(d, b, "r", makeRegex(d, b)); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "a", m("r") + ".exec(" + m("s") + ")"); } },
+    { w: 3,  fun: function(d, b) { return makeRegexUseBlock(d, b, m("r")); } },
+    { w: 3,  fun: function(d, b) { return makeRegexUseBlock(d, b, m("r"), m("s")); } },
+    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("r") + "." + rndElt(builtinObjects["RegExp.prototype"])); } },
 
     // g: global or sandbox
     { w: 1,  fun: function(d, b) { return assign(d, b, "g", makeGlobal(d, b)); } },
@@ -2194,7 +2202,7 @@ var constructors = []; // "Array"
 var builtinFunctions = []; // "Array.prototype.sort"
 var allMethodNames = []; // "sort"
 var allPropertyNames = []; // "length"
-var builtinObjects = []; // { name: "Array.prototype", properties: ["sort", "length", ...] }
+var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
 
 (function exploreBuiltins(glob, debugMode) {
@@ -2204,12 +2212,11 @@ var builtinObjects = []; // { name: "Array.prototype", properties: ["sort", "len
     if (!a)
       return;
     var hns = Object.getOwnPropertyNames(a);
-    var builtinObjectItem = { name: an, properties: ["_"] };
-    builtinObjects.push(builtinObjectItem);
+    var propertyNames = [];
     for (var j = 0; j < hns.length; ++j) {
       var hn = hns[j];
+      propertyNames.push(hn);
       allPropertyNames.push(hn);
-      builtinObjectItem.properties.push(hn);
       fullName = an + "." + hn;
 
       try {
@@ -2226,6 +2233,7 @@ var builtinObjects = []; // { name: "Array.prototype", properties: ["sort", "len
         builtinFunctions.push(fullName);
       }
     }
+    builtinObjects[an] = propertyNames;
   }
 
   function exploreConstructors()
@@ -2261,7 +2269,7 @@ var builtinObjects = []; // { name: "Array.prototype", properties: ["sort", "len
     for (let x of builtinFunctions) print("===== " + x);
     for (let x of allMethodNames) print("!!!!! " + x);
     for (let x of allPropertyNames) print("&&&&& " + x);
-    for (let x of builtinObjects) print("##### " + uneval(x));
+    print(uneval(builtinObjects));
     quit();
   }
 
@@ -3392,14 +3400,14 @@ function toRegexSource(rexpat)
     "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
 }
 
-function makeRegexUseBlock(d, b)
+function makeRegexUseBlock(d, b, rexExpr, strExpr)
 {
   var rexpair = regexPattern(10, false);
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
 
-  var rexExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
-  var strExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : simpleSource(str);
+  if (!rexExpr) rexExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
+  if (!strExpr) strExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : simpleSource(str);
 
   var bv = b.concat(["s", "r"]);
 
