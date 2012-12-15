@@ -6,6 +6,7 @@
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -300,9 +301,11 @@ def externalTestAndLabel(options, interestingness):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
         if conditionScript.interesting(conditionArgs, tempPrefix + shell.getHgHash()):
-            return ('bad', 'interesting')
+            innerResult = ('bad', 'interesting')
         else:
-            return ('good', 'not interesting')
+            innerResult = ('good', 'not interesting')
+        shutil.rmtree(tempPrefix + shell.getHgHash())
+        return innerResult
     return inner
 
 def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):

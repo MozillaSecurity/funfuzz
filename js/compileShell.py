@@ -353,10 +353,13 @@ def makeTestRev(shell, options):
                     f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
                     f.write("Backtrace:\n")
                     f.write(format_exc() + "\n");
+                shutil.rmtree(shell.getBaseTempDir())
                 return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
 
         print "Testing...",
-        return options.testAndLabel(shell)
+        testAndLabelResult = options.testAndLabel(shell)
+        shutil.rmtree(shell.getBaseTempDir())
+        return testAndLabelResult
     return testRev
 
 if __name__ == '__main__':
