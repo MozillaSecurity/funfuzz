@@ -2114,6 +2114,7 @@ function makeZealLevel()
   }
 
   // http://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp#604
+  // ./js -e "help(gczeal)"
   return "" + rnd(14);
 }
 
