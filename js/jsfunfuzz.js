@@ -1818,6 +1818,9 @@ var exprMakers =
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
   makeRegexUseExpr,
+
+  function(d, b) { return rndElt(builtinProperties); },
+  function(d, b) { return rndElt(builtinObjectNames); },
 ];
 
 var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
@@ -2200,10 +2203,12 @@ function makeObjLiteralName(d, b)
 
 var constructors = []; // "Array"
 var builtinFunctions = []; // "Array.prototype.sort"
+var builtinProperties = []; // "Array.prototype.length"
 var allMethodNames = []; // "sort"
 var allPropertyNames = []; // "length"
-var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
+var builtinObjectNames = []; // "Array", "Array.prototype", ... (indexes into the builtinObjects)
+var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
 (function exploreBuiltins(glob, debugMode) {
 
@@ -2217,7 +2222,9 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
       var hn = hns[j];
       propertyNames.push(hn);
       allPropertyNames.push(hn);
+
       fullName = an + "." + hn;
+      builtinProperties.push(fullName);
 
       try {
         var h = a[hn];
@@ -2234,6 +2241,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
       }
     }
     builtinObjects[an] = propertyNames;
+    builtinObjectNames.push(an);
   }
 
   function exploreConstructors()
@@ -2266,6 +2274,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
   if (debugMode) {
     for (let x of constructors) print("^^^^^ " + x);
+    for (let x of builtinProperties) print("***** " + x);
     for (let x of builtinFunctions) print("===== " + x);
     for (let x of allMethodNames) print("!!!!! " + x);
     for (let x of allPropertyNames) print("&&&&& " + x);
