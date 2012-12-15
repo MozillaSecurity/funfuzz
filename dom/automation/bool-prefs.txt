@@ -264,6 +264,7 @@ webgl.disabled
 webgl.force-enabled
 webgl.force-layers-readback
 webgl.force_osmesa
+webgl.lose-context-on-heap-minimize
 webgl.min_capability_mode
 webgl.prefer-native-gl
 webgl.prefer-16bpp
