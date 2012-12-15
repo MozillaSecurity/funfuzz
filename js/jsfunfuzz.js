@@ -1547,6 +1547,7 @@ var specialProperties = [
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
+  "toString", "toSource", "valueOf",
   "0", "1",
 ];
 
@@ -2139,17 +2140,24 @@ function makeObjLiteralPart(d, b)
     case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
     case 3: return cat([" set ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
 
-/*
-    case 3: return cat(["toString: ", makeFunction(d, b), "}", ")"]);
-    case 4: return cat(["toString: function() { return this; } }", ")"]); }, // bwahaha
-    case 5: return cat(["toString: function() { return " + makeExpr(d, b) + "; } }", ")"]); },
-    case 6: return cat(["valueOf: ", makeFunction(d, b), "}", ")"]); },
-    case 7: return cat(["valueOf: function() { return " + makeExpr(d, b) + "; } }", ")"]); },
-*/
+    case 4: return "/*toXFun*/" + cat([rndElt(["toString", "toSource", "valueOf"]), ": ", makeToXFunction(d - 1, b)]);
 
     default: return cat([makeObjLiteralName(d, b), ": ", makeExpr(d, b)]);
   }
 }
+
+function makeToXFunction(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  switch(rnd(4)) {
+    case 0:  return "function() { return " + makeExpr(d, b) + "; }";
+    case 1:  return "function() { return this; }";
+    case 2:  return makeEvilCallback(d, b);
+    default: return makeFunction(d, b);
+  }
+}
+
 
 function makeObjLiteralName(d, b)
 {
