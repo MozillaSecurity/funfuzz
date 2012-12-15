@@ -196,6 +196,7 @@ network.http.pipelining.ssl
 network.http.prompt-temp-redirect
 network.http.proxy.keep-alive
 network.http.proxy.pipelining
+network.http.rendering-critical-requests-prioritization
 network.http.sendSecureXSiteReferrer
 network.http.use-cache
 network.prefetch-next
