@@ -1156,6 +1156,11 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", { global: " + m("g") + ", fileName: " + rndElt(["'evaluate.js'", "null"]) + ", lineNumber: 42, newContext: " + makeBoolean(d, b) + ", compileAndGo: " + makeBoolean(d, b) + ", noScriptRval: " + makeBoolean(d, b) + ", catchTermination: " + makeBoolean(d, b) + " })"); } },
     { w: 3,  fun: function(d, b) { return "schedulegc(" + m("g") + ");" } },
 
+    // Mix builtins between globals
+    { w: 3,  fun: function(d, b) { return "/*MXX1*/" + assign(d, b, "o", m("g") + "." + rndElt(builtinProperties)); } },
+    { w: 3,  fun: function(d, b) { return "/*MXX2*/" + m("g") + "." + rndElt(builtinProperties) + " = " + m() + ";"; } },
+    { w: 3,  fun: function(d, b) { var prop = rndElt(builtinProperties); return "/*MXX3*/" + m("g") + "." + prop + " = " + m("g") + "." + prop + ";"; } },
+
     // f: function (?)
     // Could probably do better with args / b
     { w: 1,  fun: function(d, b) { return assign(d, b, "f", makeEvilCallback(d, b)); } },
@@ -2203,7 +2208,7 @@ function makeObjLiteralName(d, b)
 
 var constructors = []; // "Array"
 var builtinFunctions = []; // "Array.prototype.sort"
-var builtinProperties = []; // "Array.prototype.length"
+var builtinProperties = []; // "Array", "Array.prototype", "Array.prototype.length"
 var allMethodNames = []; // "sort"
 var allPropertyNames = []; // "length"
 
@@ -2255,6 +2260,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
         var g = glob[gn];
         if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
           constructors.push(gn);
+          builtinProperties.push(gn);
           builtinFunctions.push(gn);
           exploreDeeper(g, gn);
           exploreDeeper(g.prototype, gn + ".prototype");
