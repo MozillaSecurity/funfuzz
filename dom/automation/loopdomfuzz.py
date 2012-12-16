@@ -223,7 +223,7 @@ def nonBoolPrefs():
         p += ['user_pref("permissions.default.image", ' + random.choice(["1", "2", "3"]) + ');\n']
         p += ['user_pref("accessibility.force_disabled", ' + random.choice(["-1", "0", "1"]) + ');\n']
         p += ['user_pref("gfx.font_rendering.harfbuzz.scripts", ' + random.choice(["-1", str(random.randrange(0, 0x80))]) + ');\n'] # gfx/thebes/gfxUnicodeProperties.h ShapingType bitfield
-        p += ['user_pref("layout.css.devPixelsPerPx", ' + random.choice(["-1", "1", "2"]) + ');\n']
+        p += ['user_pref("layout.css.devPixelsPerPx", ' + random.choice(["'-1.0'", "'1.0'", "'2.0'"]) + ');\n']
         p += ['user_pref("gfx.hidpi.enabled", ' + random.choice(["0", "1", "2"]) + ');\n']
     if random.random() > 0.9:
         p += ['user_pref("intl.uidirection.en", "rtl");\n']
