@@ -244,7 +244,7 @@ class AmissLogHandler:
             self.timedOut = True
             self.crashIsKnown = True
 
-        if msg == "PROCESS-CRASH | automation.py | application crashed (minidump found)":
+        if msg.startswith("PROCESS-CRASH | automation.py | application crashed ["):
             print "We have a crash on our hands!"
             self.crashProcessor = "minidump_stackwalk"
         if "ERROR: AddressSanitizer" in msg:
