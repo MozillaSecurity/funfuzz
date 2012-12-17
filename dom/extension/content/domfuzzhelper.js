@@ -24,7 +24,10 @@ DOMFuzzHelperManager.prototype = {
   handleEvent: function handleEvent(aEvent) {
     var window = aEvent.target.defaultView;
     window.wrappedJSObject.fuzzPriv = makeDOMFuzzHelper(window);
-    window.addEventListener("load", maybeInjectScript, false);
+
+    // "DOMWindowCreated" is too early to inject <script> elements (there is no document.documentElement)
+    // "load" is too late to trigger some bugs (see bug 790252 comment 5)
+    window.addEventListener("DOMContentLoaded", maybeInjectScript, false);
   }
 };
 
@@ -550,7 +553,7 @@ function maybeInjectScript(event)
   + readFile(indir(dir, "fuzz-finish-auto.js")) + "\n"
   + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
   + "fuzzSettings = [" + r.slice(2).join(",") + "];\n"
-  + "setTimeout(fuzzOnload, 400);\n";
+  + "fuzzOnload();\n";
 
   var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
 
