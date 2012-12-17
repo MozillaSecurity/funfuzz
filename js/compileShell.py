@@ -335,7 +335,8 @@ def makeTestRev(shell, options):
 
         print "Rev " + rev + ":",
         if os.path.exists(shell.getShellCachePath()):
-            print "Found cached shell...   ",
+            print "Found cached shell...   Testing...",
+            return options.testAndLabel(shell)
         elif os.path.exists(cachedNoShell):
             return (options.compilationFailedLabel, 'compilation failed (cached)')
         else:
@@ -348,6 +349,10 @@ def makeTestRev(shell, options):
                 cfgCompileCopy(shell, options)
                 verifyBinary(shell, options)
                 shutil.copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
+                print "Testing...",
+                testAndLabelResult = options.testAndLabel(shell)
+                shutil.rmtree(shell.getBaseTempDir())
+                return testAndLabelResult
             except Exception, e:
                 with open(cachedNoShell, 'wb') as f:
                     f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
@@ -355,11 +360,6 @@ def makeTestRev(shell, options):
                     f.write(format_exc() + "\n");
                 shutil.rmtree(shell.getBaseTempDir())
                 return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
-
-        print "Testing...",
-        testAndLabelResult = options.testAndLabel(shell)
-        shutil.rmtree(shell.getBaseTempDir())
-        return testAndLabelResult
     return testRev
 
 if __name__ == '__main__':
