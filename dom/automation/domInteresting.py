@@ -173,6 +173,7 @@ class AmissLogHandler:
         self.expectChromeFailure = False
         self.sawChromeFailure = False
         detect_interesting_crashes.resetCounts()
+        self.crashSignature = ""
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
         if self.crashProcessor == "asan":
@@ -244,9 +245,10 @@ class AmissLogHandler:
             self.timedOut = True
             self.crashIsKnown = True
 
-        if msg.startswith("PROCESS-CRASH | automation.py | application crashed ["):
+        if msg.startswith("PROCESS-CRASH | automation.py | application crashed"):
             print "We have a crash on our hands!"
             self.crashProcessor = "minidump_stackwalk"
+            self.crashSignature = msg[len("PROCESS-CRASH | automation.py | application crashed") : ]
         if "ERROR: AddressSanitizer" in msg:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
@@ -529,9 +531,9 @@ def rdfInit(args):
                 lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
         elif alh.crashProcessor:
             if alh.crashIsKnown:
-                alh.printAndLog("%%% Known crash (from " + alh.crashProcessor + ")")
+                alh.printAndLog("%%% Known crash (from " + alh.crashProcessor + ")" + alh.crashSignature)
             else:
-                alh.printAndLog("@@@ New crash (from " + alh.crashProcessor + ")")
+                alh.printAndLog("@@@ New crash (from " + alh.crashProcessor + ")" + alh.crashSignature)
                 lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
         elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
             # Disabled due to leaks in the glxtest process that Firefox forks on Linux.
