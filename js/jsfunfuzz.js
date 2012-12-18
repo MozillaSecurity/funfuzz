@@ -1199,6 +1199,7 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
     { w: 2,  fun: function(d, b) { return m() + ".__iterator__ = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1,  fun: function(d, b) { return m() + " = " + m() + ";"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = " + m("g") + ".objectEmulatingUndefined();"; } },
     { w: 1,  fun: function(d, b) { return m() + " = wrap(" + val(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
     { w: 10, fun: function(d, b) { return "gc();"; } },
@@ -1823,6 +1824,7 @@ var exprMakers =
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
   makeRegexUseExpr,
+  makeShapeyValue,
 
   function(d, b) { return rndElt(builtinProperties); },
   function(d, b) { return rndElt(builtinObjectNames); },
@@ -2391,6 +2393,7 @@ var functionMakers = [
   function(d, b) { return "encodeURI" },
   function(d, b) { return "encodeURIComponent" },
   function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
+  function(d, b) { return "objectEmulatingUndefined" }, // spidermonkey shell object like the browser's document.all
   function(d, b) { return "XPCNativeWrapper" },
   function(d, b) { return "XPCSafeJSObjectWrapper" },
   function(d, b) { return makeProxyHandlerFactory(d, b); },
@@ -3081,8 +3084,9 @@ function makeShapeyValue(d, b)
     [ "new String('')", "new String('q')" ],
 
     // Fun stuff
-    [ "function(){}"],
-    ["{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments", "arguments.caller", "arguments.callee" ],
+    [ "function(){}" ],
+    [ "{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments", "arguments.caller", "arguments.callee" ],
+    [ "objectEmulatingUndefined()" ],
 
     // Actual variables (slightly dangerous)
     [ b.length ? rndElt(b) : "x" ]
