@@ -304,7 +304,8 @@ def externalTestAndLabel(options, interestingness):
             innerResult = ('bad', 'interesting')
         else:
             innerResult = ('good', 'not interesting')
-        shutil.rmtree(tempPrefix + shell.getHgHash())
+        if os.path.isdir(tempPrefix + shell.getHgHash()):
+            shutil.rmtree(tempPrefix + shell.getHgHash())
         return innerResult
     return inner
 
