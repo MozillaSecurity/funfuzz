@@ -163,6 +163,7 @@ layers.acceleration.force-enabled
 layout.3d-transforms.enabled
 layers.composer2d.enabled
 layout.css.flexbox.enabled
+layout.css.masking.enabled
 layout.css.report_errors
 layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
