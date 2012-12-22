@@ -124,6 +124,7 @@ def writePrefs(profileDir, extraPrefs):
   user_pref("lightweightThemes.update.enabled", false);
   user_pref("browser.microsummary.enabled", false);
   user_pref("toolkit.telemetry.server", "");
+  user_pref("plugins.update.url", "");
 
   // Looking up the system proxy settings can cause problems (see bug 794174, see bug 793016)
   user_pref("network.proxy.type", 0);
