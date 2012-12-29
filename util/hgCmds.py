@@ -5,6 +5,7 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+import platform
 import re
 import sys
 import subprocess
@@ -34,6 +35,8 @@ def getMcRepoDir():
         baseDir = os.path.join('z:', os.sep)
     elif isVM() == ('Linux', True):  # Self-selected presets in custom VMs
         baseDir = os.path.join('/', 'mnt', 'hgfs')
+    elif platform.uname()[2] == 'XP':  # WinXP contains spaces in the user directory
+        baseDir = os.path.join('c:\\')
     else:
         baseDir = '~'
     mcRepoDir = normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
