@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -154,7 +155,9 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
         # We cannot test that it is not xpcshell with Python 2.5 since testJsShellOrXpcshell relies
         # on 'delete' being a keyword argument in NamedTemporaryFile(). The testing functions in
         # inspectShell in general need at least Python 2.6 because of this.
-        if sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
+        if platform.uname()[2] == 'XP':
+            print 'Not pinpointing to exact changeset since autoBisect does not work well in WinXP.'
+        elif sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
             if '-dm-' in jsEngine:
                 extraParam = '--enable-more-deterministic'
             elif '-ra-' in jsEngine:
