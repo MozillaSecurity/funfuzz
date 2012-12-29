@@ -39,6 +39,8 @@ def isVM():
     vm = False
     # In VMware, shared folders are in z:, and we copy from the shared folders to avoid having
     # another copy of the repository in the VM.
+    # FIXME: This is not entirely true. If there are source trees in the VM itself, and not reliant
+    # on shared folders with the host system, isVM()[1] returns False too.
     if ((platform.uname()[2] == 'XP' or platform.uname()[2] == '7') \
             and os.path.exists(os.path.join('z:', os.sep, 'fuzzing'))) or \
         platform.uname()[0] == 'Linux' \
