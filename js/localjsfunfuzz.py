@@ -235,11 +235,13 @@ def localCompileFuzzJsShell(options):
     appendStr = ''
     if options.patchDir:
         appendStr += '-patched'
+    fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else \
+        normExpUserPath(os.path.join('~', 'Desktop'))  # WinXP has spaces in the user directory.
     # FIXME: Remove myShell.getCompileType() once we randomly fuzz between the two at the same time.
     fullPath = mkdtemp(appendStr + os.sep, os.path.join(
         'jsfunfuzz-' + myShell.getCompileType() + '-' + myShell.getArch() + '-' + \
         myShell.getRepoName() + '-' + myShell.getHgNum() + '-' + \
-        myShell.getHgHash() + '-'), normExpUserPath(os.path.join('~', 'Desktop')))
+        myShell.getHgHash() + '-'), fuzzResultsDirStart)
     myShell.setBaseTempDir(fullPath)
     myOtherShell.setBaseTempDir(fullPath)
     assert os.path.exists(myShell.getBaseTempDir())
