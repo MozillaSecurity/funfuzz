@@ -56,7 +56,7 @@ def randomFlagSet(shellPath):
             args.append("-n")
 
     if jaeger:
-        if chance(.4):
+        if chance(.5):
             args.append("-a") # aka --always-mjit
         if chance(.2):
             args.append("-d") # aka --debugjit
@@ -64,7 +64,7 @@ def randomFlagSet(shellPath):
             args.append("--execute=mjitChunkLimit(" + str(random.randint(5, 100)) + ")")
 
     if ion:
-        if chance(.4):
+        if chance(.6):
             args.append("--ion-eager")
         if chance(.2):
             args.append("--ion-gvn=" + random.choice(["off", "pessimistic", "optimistic"]))
