@@ -158,18 +158,18 @@ keyword.enabled
 layers.acceleration.disabled
 layers.acceleration.force-enabled
 #layers.async-video.enabled # requires OMTC
+layers.composer2d.enabled
+layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 #layers.offmainthreadcomposition.animate-opacity
 #layers.offmainthreadcomposition.animate-transform
 layout.3d-transforms.enabled
-layers.composer2d.enabled
 layout.css.flexbox.enabled
 layout.css.masking.enabled
 layout.css.report_errors
 layout.css.supports-rule.enabled
 layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
-layers.force-active
 layout.frame_rate.precise
 layout.frames.force_resizability
 layout.gpu-scaling.enabled
