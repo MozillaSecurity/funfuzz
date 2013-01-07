@@ -263,7 +263,7 @@ toolkit.telemetry.enabled
 view_source.syntax_highlight
 view_source.wrap_long_lines
 viewmanager.do_doublebuffering
-webgl.can-lose-context-in-foreground
+# webgl.can-lose-context-in-foreground # this refers to "foreground processes", at least for now (bug 827217)
 webgl.default-no-alpha
 webgl.disable-extensions
 webgl.disabled
