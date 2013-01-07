@@ -104,6 +104,7 @@ dom.placeholder.show_on_focus
 dom.send_after_paint_to_content
 dom.server-events.enabled
 dom.storage.enabled
+dom.undo_manager.enabled
 dom.workers.enabled
 editor.use_css
 editor.use_custom_colors
