@@ -583,7 +583,7 @@ def rdfInit(args):
                     else:
                         alh.printAndLog("%%% Known crash (from " + crashProcessor + ")")
         elif status == 1:
-            alh.printAndLog("@@@ Exited with status 1 -- OOM?")
+            alh.printAndLog("%%% Exited with status 1 -- OOM or plugin crash?")
         elif status != 0 and not (isWin and alh.sawFatalAssertion):
             alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
             lev = max(lev, DOM_ABNORMAL_EXIT)
