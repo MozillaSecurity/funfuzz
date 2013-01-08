@@ -3523,7 +3523,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("strict") == -1              // bug 743425
        // The following line is E4X-only, which will be removed by bug 788293
        && code.indexOf("QName") == -1               // See bug 748568
-       && code.indexOf("__proto__") == -1           // bug 798670
+       && code.indexOf("__proto__") == -1           // bug 827659
        && code.indexOf("defineProperty") == -1      // bug 798668
        && code.indexOf("instanceof") == -1          // bug 799785
        && code.indexOf("getPropertyDescriptor") == -1  // bug 803332
