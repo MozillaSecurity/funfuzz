@@ -396,6 +396,16 @@ def skipJobNamed(j):
         "cdf14c542bc711e280073c07547237b0" in j or # bug 812826
         "fa568f1c3b2511e280023c07547257fa" in j or # bug 827541
         "4a050411418911e280053c075472596f" in j or # bug 827541
+        "5fadf559581b11e280083c07547257c3" in j or # bogus 'hang'
+        "d4a1851457ff11e280023c07547257fa" in j or # bogus 'hang'
+        "03f44bcf546811e280030030489f8067" in j or # bogus 'hang'
+        "86d15cc7544c11e280023c0754724fc3" in j or # bogus 'hang'
+        "e8ce34d453bf11e280083c07547257ed" in j or # bogus 'hang'
+        "5ffa51574dfc11e280013c07547286ad" in j or # bogus 'hang'
+        "0188e0c54cd011e280083c07547257ed" in j or # bogus 'hang'
+        "6b6b1f474cca11e280033c0754724fc3" in j or # bogus 'hang'
+        "ffb0660a4a8611e280023c075472596f" in j or # bogus 'hang'
+        "e9dcc991488811e280023c0754724cee" in j or # bogus 'hang'
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1343538581" in j or # probably a nasty variant of bug 728632
         "1344266896" in j or # bug 798829, bug 802982, bug 798323
