@@ -16,3 +16,5 @@ langfuzz/LangFuzz/grammar/output
 langfuzz/LangDDMin/target
 langfuzz/target
 langfuzz/LangFuzz/src/test/resources
+peach/Logs
+peach/FruitFarm
