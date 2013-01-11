@@ -160,7 +160,7 @@ def cfgJsBin(shell, options):
     origCfgEnvDt = deepcopy(os.environ)
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
-    if (shell.getArch() == '32') and (os.name == 'posix') and (os.uname()[1] != 'tegra-ubuntu'):
+    if shell.getArch() == '32' and os.name == 'posix' and os.uname()[1] != 'tegra-ubuntu':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
@@ -179,7 +179,7 @@ def cfgJsBin(shell, options):
             cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
             cfgCmdList.append('--enable-macos-target=10.5')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif isLinux and (os.uname()[4] != 'armv7l'):
+        elif isLinux and os.uname()[4] != 'armv7l':
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvDt['CC'] = 'gcc -m32'
