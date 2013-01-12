@@ -407,6 +407,7 @@ def skipJobNamed(j):
         "ffb0660a4a8611e280023c075472596f" in j or # bogus 'hang'
         "e9dcc991488811e280023c0754724cee" in j or # bogus 'hang'
         "e4d3876651a411e280053c075472877d" in j or # leak bug 829817
+        "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1343538581" in j or # probably a nasty variant of bug 728632
         "1344266896" in j or # bug 798829, bug 802982, bug 798323
