@@ -3492,7 +3492,7 @@ function whatToTestSpidermonkeyTrunk(code)
     allowParse: true,
 
     allowExec: unlikelyToHang(code)
-      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
+      && code.indexOf("<>")       == -1 // avoid e4x bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
     ,
 
@@ -3501,8 +3501,8 @@ function whatToTestSpidermonkeyTrunk(code)
     checkUneval: false // bug 539819
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid e4x bug 379525
+      && (code.indexOf("<>") == -1)                            // avoid e4x bug 334628
     ,
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
@@ -3518,17 +3518,12 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
-       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
        && code.indexOf("strict") == -1              // bug 743425
        // The following line is E4X-only, which will be removed by bug 788293
        && code.indexOf("QName") == -1               // See bug 748568
-       && code.indexOf("defineProperty") == -1      // bug 798668
-       && code.indexOf("instanceof") == -1          // bug 799785
        && code.indexOf("getPropertyDescriptor") == -1  // bug 803332
        && code.indexOf("length") == -1              // bug 821931
        && code.indexOf("forEach") == -1             // bug 825379
-       && code.indexOf("byteLength") == -1          // bug 825382
        && code.indexOf("some") == -1                // bug 826031
        && code.indexOf("toString") == -1            // bug 826124
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
