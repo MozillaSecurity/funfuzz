@@ -213,9 +213,6 @@ class AmissLogHandler:
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
                 print "Ignoring memory leaks (bug 622315)" # testcase in comment 2
                 self.expectedToLeak = True
-            if msg.find("QueryInterface needed") != -1:
-                print "Ignoring memory leaks (bug 827654)"
-                self.expectedToLeak = True
             if self.nsassertionCount == 100:
                 print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
