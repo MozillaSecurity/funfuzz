@@ -256,6 +256,7 @@ signon.rememberSignons
 stagefright.disabled
 #stagefright.force-enabled # i don't know what this does
 svg.display-lists.hit-testing.enabled
+svg.paint-order.enabled
 svg.smil.enabled
 toolkit.identity.debug
 toolkit.telemetry.enabled
