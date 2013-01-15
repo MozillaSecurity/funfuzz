@@ -164,7 +164,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
                 extraParam = '--enable-root-analysis'
             else:
                 extraParam = ''
-            autobisectCmd = [sys.executable, autobisectpy] + ["-R", bisectRepo, "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), extraParam, "-p", ' '.join(engineFlags + [infilename]), "-i"] + itest
+            autobisectCmd = [sys.executable, autobisectpy] + ["-R", bisectRepo, "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), extraParam, "-p", "'" + ' '.join(engineFlags + [infilename]) + "'", "-i"] + itest
             print shellify(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
