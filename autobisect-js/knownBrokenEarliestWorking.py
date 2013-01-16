@@ -78,7 +78,7 @@ def earliestKnownWorkingRev(options):
     elif '-D' in flags:
         return 'e5b92c2bdd2d' # 70991 on m-c, first rev that has the -D option
     elif '-a' in flags:  # -a only works with -m
-        return 'f569d49576bb' # 62574 on m-c, first rev that has the -a option
+        return '11d72b25348d' # 64558 on m-c, first rev that has the -a option
     elif isLinux:
         return 'e8753473cdff' # 61217 on m-c, first rev that compiles properly on Ubuntu 12.10.
     elif '-p' in flags:
