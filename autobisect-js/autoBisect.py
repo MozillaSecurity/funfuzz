@@ -278,6 +278,8 @@ def internalTestAndLabel(options):
             return ('good', 'Exit code 0')
         elif (exitCode == 1 or exitCode == 2) and (options.output != '') and \
                 (stdoutStderr.find('usage: js [') != -1 or \
+                 stdoutStderr.find('Error: Short option followed by junk') != -1 or \
+                 stdoutStderr.find('Error: Invalid long option:') != -1 or \
                  stdoutStderr.find('Error: Invalid short option:') != -1):
             return ('good', 'Exit code 1 or 2 - js shell quits ' + \
                             'because it does not support a given CLI parameter')
