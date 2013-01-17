@@ -277,7 +277,8 @@ def copyJsSrcDirs(shell):
         if sys.version_info >= (2, 6):
             shutil.copytree(origJsSrc, shell.getCompilePathJsSrc(),
                             ignore=shutil.ignore_patterns(
-                                'jit-test', 'tests', 'trace-test', 'xpconnect'))
+                                'jit-test', 'jsapi-tests', 'tests', 'trace-test', 'v8',
+                                'xpconnect'))
         else:
             # Remove once Python 2.5.x is no longer used.
             shutil.copytree(origJsSrc, shell.getCompilePathJsSrc())
