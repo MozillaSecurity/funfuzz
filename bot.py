@@ -222,6 +222,9 @@ def parseOpts():
 
     options, args = parser.parse_args()
 
+    if len(args) > 0:
+        print "Warning: bot.py does not use positional arguments"
+
     if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
         # when we are trying to refer to a directory on another computer.
