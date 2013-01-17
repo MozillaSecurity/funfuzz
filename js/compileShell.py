@@ -108,8 +108,7 @@ class CompiledShell(object):
     def getName(self):
         return self.shellName
     def getObjdir(self):
-        return normExpUserPath(os.path.join(self.baseTempDir, 'compilePath', 'js', 'src',
-                                              self.compileType + '-objdir'))
+        return normExpUserPath(os.path.join(self.cPathJsSrc, self.compileType + '-objdir'))
     def setRepoDir(self, repoDir):
         self.repoDir = repoDir
     def getRepoDir(self):
