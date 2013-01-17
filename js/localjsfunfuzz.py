@@ -215,7 +215,7 @@ def localCompileFuzzJsShell(options):
     # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
     assert captureStdout(['hg', '-R', myShell.getRepoDir(), 'qapp'])[0] == ''
 
-    if options.patchDir:
+    if options.patchDir:  # Note that only JS patches are supported, not NSPR.
         # Assume mq extension enabled. Series file should be optional if only one patch is needed.
         assert not os.path.isdir(options.patchDir), \
             'Support for multiple patches has not yet been added.'
