@@ -157,6 +157,7 @@ def cfgJsBin(shell, options):
     cfgCmdList = []
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
+    cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if shell.getArch() == '32' and os.name == 'posix' and os.uname()[1] != 'tegra-ubuntu':
@@ -285,16 +286,37 @@ def copyJsSrcDirs(shell):
     except OSError:
         raise Exception('Do the js source directory or the destination exist?')
 
-    # 91a8d742c509 introduced a mfbt directory on the same level as the js/ directory.
+    # m-c changeset 119049:d2cce982a7c8 requires the build/ directory to be present.
+    vEnvDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'build'))
+    if os.path.isdir(vEnvDir):
+        shutil.copytree(vEnvDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'build'))
+    # m-c changeset 119049:d2cce982a7c8 requires the config/ directory to be present.
+    mcCfgDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'config'))
+    if os.path.isdir(mcCfgDir):
+        shutil.copytree(mcCfgDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'config'))
+    # m-c changeset 119049:d2cce982a7c8 requires the python/ directory to be present.
+    pyDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'python'))
+    if os.path.isdir(pyDir):
+        shutil.copytree(pyDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'python'))
+    # m-c changeset 119049:d2cce982a7c8 requires the testing/mozbase/ directory to be present.
+    mzBaseDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'testing', 'mozbase'))
+    if os.path.isdir(mzBaseDir):
+        shutil.copytree(mzBaseDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'testing', 'mozbase'))
+
+    # m-c changeset 78556:b9c673621e1e requires the js/public/ directory to be present.
+    jsPubDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'public'))
+    if os.path.isdir(jsPubDir):
+        shutil.copytree(jsPubDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, 'public'))
+
+    # m-c changeset 64572:91a8d742c509 requires the mfbt/ directory to be present.
     mfbtDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'mfbt'))
     if os.path.isdir(mfbtDir):
         shutil.copytree(mfbtDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
                                               'mfbt'))
-
-    # b9c673621e1e introduced a public directory on the same level as the js/src directory.
-    jsPubDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'public'))
-    if os.path.isdir(jsPubDir):
-        shutil.copytree(jsPubDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, 'public'))
 
     assert os.path.isdir(shell.getCompilePathJsSrc())
 
