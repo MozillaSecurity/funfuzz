@@ -317,7 +317,7 @@ def makeTestRev(shell, options):
                 print "Compiling...",
                 cfgCompileCopy(shell, options)
                 verifyBinary(shell, options)
-                shutil.copy2(shell.getShellBaseTempDirWithName(), shell.getShellCachePath())
+                shutil.copy2(shell.getShellCompiledPath(), shell.getShellCachePath())
                 print "Testing...",
                 testAndLabelResult = options.testAndLabel(shell)
                 shutil.rmtree(shell.getBaseTempDir())
