@@ -106,13 +106,13 @@ def queryBuildConfiguration(s, parameter):
 
 def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
-    assert archOfBinary(sh.getShellBaseTempDir()) == sh.getArch()
-    assert testDbgOrOpt(sh.getShellBaseTempDir()) == sh.getCompileType()
-    if testGetBuildConfiguration(sh.getShellBaseTempDir()):
-        if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDir()):
-            assert queryBuildConfiguration(sh.getShellBaseTempDir(), 'threadsafe') == \
+    assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.getArch()
+    assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.getCompileType()
+    if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
+        if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
+            assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'threadsafe') == \
                 options.isThreadsafe
-        assert queryBuildConfiguration(sh.getShellBaseTempDir(), 'more-deterministic') == \
+        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \
             options.enableMoreDeterministic
-        assert queryBuildConfiguration(sh.getShellBaseTempDir(), 'rooting-analysis') == \
+        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
             options.enableRootAnalysis

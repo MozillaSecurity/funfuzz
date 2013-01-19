@@ -116,7 +116,7 @@ class CompiledShell(object):
         return normExpUserPath(os.path.join(self.cacheDir, self.shellName))
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getObjdir(), 'js' + ('.exe' if isWin else '')))
-    def getShellBaseTempDir(self):
+    def getShellBaseTempDirWithName(self):
         return normExpUserPath(os.path.join(self.baseTempDir, self.shellName))
 
 def autoconfRun(cwd):
@@ -290,8 +290,8 @@ def compileCopy(shell, options):
 
     if os.path.exists(shell.getShellCompiledPath()):
         shell.setName(options)
-        shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDir())
-        assert os.path.isfile(shell.getShellBaseTempDir())
+        shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
+        assert os.path.isfile(shell.getShellBaseTempDirWithName())
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
@@ -317,7 +317,7 @@ def makeTestRev(shell, options):
                 print "Compiling...",
                 cfgCompileCopy(shell, options)
                 verifyBinary(shell, options)
-                shutil.copy2(shell.getShellBaseTempDir(), shell.getShellCachePath())
+                shutil.copy2(shell.getShellBaseTempDirWithName(), shell.getShellCachePath())
                 print "Testing...",
                 testAndLabelResult = options.testAndLabel(shell)
                 shutil.rmtree(shell.getBaseTempDir())

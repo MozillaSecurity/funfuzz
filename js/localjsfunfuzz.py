@@ -286,7 +286,7 @@ def localCompileFuzzJsShell(options):
         cmdList.append('--random-flags')
     cmdList.append(options.loopyTimeout)
     cmdList.append(knownBugsDir(myShell.getRepoName()))
-    cmdList.append(myShell.getShellBaseTempDir())
+    cmdList.append(myShell.getShellBaseTempDirWithName())
 
     # Write log files describing configuration parameters used during compilation.
     localLog = normExpUserPath(os.path.join(myShell.getBaseTempDir(), 'log-localjsfunfuzz.txt'))
