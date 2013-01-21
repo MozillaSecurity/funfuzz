@@ -3578,7 +3578,6 @@ function whatToTestSpidermonkeyMozilla10(code)
        && code.indexOf("--") == -1                  // bug 622265 (10 branch)
        && code.indexOf("instanceof") == -1          // bug 617949 (10 branch)
        && !(code.match(/\S=/))                      // bug 622271 (10 branch) (+= etc)
-       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
        && code.indexOf("strict") == -1              // bug 743425
        && code.indexOf("QName") == -1              // See bug 748568
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
