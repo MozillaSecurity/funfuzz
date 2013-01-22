@@ -59,6 +59,18 @@ def earliestKnownWorkingRev(options):
 
     # These should be in descending order, or bisection will break at earlier changesets.
     # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds
+    #
+    # m-c Python packager changes
+    # 6b280e155484 is thus the latest version that can reliably work on all platforms without
+    # copying the source files out, i.e. by configuring and compiling in the destination objdir.
+    # Thus, consider not copying source files out only when 6b280e155484 at least becomes the
+    # minimum changeset that can reliably compile.
+    # 119351 - https://hg.mozilla.org/mozilla-central/rev/6b280e155484 works
+    # 119350 - https://hg.mozilla.org/mozilla-central/rev/204b95febb13 does not work due to:
+    #   "IndexError: list index out of range" error
+    # 119349 - https://hg.mozilla.org/mozilla-central/rev/ab31d2237244 does not work due to:
+    #   "ImportError: No module named buildconfig" error
+
     if options.enableRootAnalysis or options.isThreadsafe: # Threadsafe result wrong before this rev
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
     elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
