@@ -262,7 +262,7 @@ def cfgJsBin(shell, options):
             if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
         envVarList.append(strToBeAppended)
     assert os.path.isdir(shell.getObjdir())
-    vdump('Command to be run is: ' + ' '.join(envVarList) + ' '.join(cfgCmdList))
+    vdump('Command to be run is: ' + ' '.join(envVarList) + ' ' + ' '.join(cfgCmdList))
     captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getObjdir(), env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
