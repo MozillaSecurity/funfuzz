@@ -16,7 +16,7 @@ from copy import deepcopy
 from optparse import OptionParser
 from tempfile import mkdtemp
 
-from compileShell import CompiledShell, cfgCompileCopy
+from compileShell import CompiledShell, cfgCompileCopy, copyJsSrcDirs
 from inspectShell import archOfBinary, testDbgOrOpt, verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
@@ -247,6 +247,9 @@ def localCompileFuzzJsShell(options):
     assert os.path.exists(myShell.getBaseTempDir())
     assert os.path.exists(myOtherShell.getBaseTempDir())
     vdump('Base temporary directory is: ' + myShell.getBaseTempDir())
+
+    # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
+    copyJsSrcDirs(myShell)
 
     if options.patchDir:
         # Remove the patches from the codebase if they were applied.

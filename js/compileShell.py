@@ -74,9 +74,14 @@ class CompiledShell(object):
     def getEnvFull(self):
         return self.fullEnv
     def getCfgPath(self):
-        self.cfgFile = normExpUserPath(os.path.join(self.repoDir, 'js', 'src', 'configure'))
+        self.cfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
         assert os.path.isfile(self.cfgFile)
         return self.cfgFile
+    def getCompilePath(self):
+        return normExpUserPath(os.path.join(self.baseTempDir, 'compilePath'))
+    def getCompilePathJsSrc(self):
+        self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTempDir, 'compilePath', 'js', 'src'))
+        return self.cPathJsSrc
     def setHgHash(self, hgHash):
         self.hgHash = hgHash
     def getHgHash(self):
@@ -103,7 +108,7 @@ class CompiledShell(object):
     def getName(self):
         return self.shellName
     def getObjdir(self):
-        return normExpUserPath(os.path.join(self.baseTempDir, self.compileType + '-objdir'))
+        return normExpUserPath(os.path.join(self.cPathJsSrc, self.compileType + '-objdir'))
     def setRepoDir(self, repoDir):
         self.repoDir = repoDir
     def getRepoDir(self):
@@ -130,9 +135,7 @@ def autoconfRun(cwd):
 
 def cfgCompileCopy(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
-    assert captureStdout(['hg', 'status', '--quiet'], currWorkingDir=shell.getRepoDir())[0] == '', \
-        'Source repository is not clean before compilation.'
-    autoconfRun(normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'src')))
+    autoconfRun(shell.getCompilePathJsSrc())
     try:
         os.mkdir(shell.getObjdir())
     except OSError:
@@ -148,15 +151,13 @@ def cfgCompileCopy(shell, options):
             print repr(e)
             raise Exception('Configuration of the js binary failed.')
     compileCopy(shell, options)
-    assert captureStdout(['hg', 'status', '--quiet'], currWorkingDir=shell.getRepoDir())[0] == '', \
-        'Source repository is not clean after compilation.'
 
 def cfgJsBin(shell, options):
     '''This function configures a js binary according to required parameters.'''
     cfgCmdList = []
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
-    cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getRepoDir()  # Required by m-c 119049:d2cce982a7c8
+    cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
     if shell.getArch() == '32' and os.name == 'posix' and os.uname()[1] != 'tegra-ubuntu':
@@ -268,6 +269,57 @@ def cfgJsBin(shell, options):
     shell.setEnvFull(cfgEnvDt)
     shell.setCfgCmdExclEnv(cfgCmdList)
 
+def copyJsSrcDirs(shell):
+    '''Copies required js source directories from the shell repoDir to the shell fuzzing path.'''
+    origJsSrc = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'src'))
+    try:
+        vdump('Copying the js source tree, which is located at ' + origJsSrc)
+        if sys.version_info >= (2, 6):
+            shutil.copytree(origJsSrc, shell.getCompilePathJsSrc(),
+                            ignore=shutil.ignore_patterns(
+                                'jit-test', 'jsapi-tests', 'tests', 'trace-test', 'v8',
+                                'xpconnect'))
+        else:
+            # Remove once Python 2.5.x is no longer used.
+            shutil.copytree(origJsSrc, shell.getCompilePathJsSrc())
+        vdump('Finished copying the js tree')
+    except OSError:
+        raise Exception('Do the js source directory or the destination exist?')
+
+    # m-c changeset 119049:d2cce982a7c8 requires the build/ directory to be present.
+    vEnvDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'build'))
+    if os.path.isdir(vEnvDir):
+        shutil.copytree(vEnvDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'build'))
+    # m-c changeset 119049:d2cce982a7c8 requires the config/ directory to be present.
+    mcCfgDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'config'))
+    if os.path.isdir(mcCfgDir):
+        shutil.copytree(mcCfgDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'config'))
+    # m-c changeset 119049:d2cce982a7c8 requires the python/ directory to be present.
+    pyDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'python'))
+    if os.path.isdir(pyDir):
+        shutil.copytree(pyDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'python'))
+    # m-c changeset 119049:d2cce982a7c8 requires the testing/mozbase/ directory to be present.
+    mzBaseDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'testing', 'mozbase'))
+    if os.path.isdir(mzBaseDir):
+        shutil.copytree(mzBaseDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'testing', 'mozbase'))
+
+    # m-c changeset 78556:b9c673621e1e requires the js/public/ directory to be present.
+    jsPubDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'public'))
+    if os.path.isdir(jsPubDir):
+        shutil.copytree(jsPubDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, 'public'))
+
+    # m-c changeset 64572:91a8d742c509 requires the mfbt/ directory to be present.
+    mfbtDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'mfbt'))
+    if os.path.isdir(mfbtDir):
+        shutil.copytree(mfbtDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                              'mfbt'))
+
+    assert os.path.isdir(shell.getCompilePathJsSrc())
+
 def compileCopy(shell, options):
     '''This function compiles and copies a binary.'''
     # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
@@ -315,6 +367,7 @@ def makeTestRev(shell, options):
             captureStdout(shell.getHgPrefix() + ['update', '-r', rev], ignoreStderr=True)
             try:
                 print "Compiling...",
+                copyJsSrcDirs(shell)
                 cfgCompileCopy(shell, options)
                 verifyBinary(shell, options)
                 shutil.copy2(shell.getShellCompiledPath(), shell.getShellCachePath())
