@@ -52,10 +52,12 @@ def knownBrokenRanges():
 
     return skips
 
-def earliestKnownWorkingRev(options):
-    """Returns the oldest version of the shell that can run jsfunfuzz."""
+def earliestKnownWorkingRev(options, flags):
+    '''
+    Returns the oldest version of the shell that can run jsfunfuzz and which supports all the flags
+    listed in |flags|.
+    '''
     assert (not isMac) or (macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
-    flags = options.paramList
 
     # These should be in descending order, or bisection will break at earlier changesets.
     # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds

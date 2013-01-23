@@ -144,18 +144,23 @@ def parseOpts():
     options.repoDir = normExpUserPath(options.repoDir)
     assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
 
-    if options.startRepo is None:
-        options.startRepo = earliestKnownWorkingRev(options)
+    extraFlags = []
 
     if options.useInterestingnessTests:
         if len(args) < 1:
             print 'args are: ' + args
             parser.error('Not enough arguments.')
+        for a in args:
+            if a.startswith("--flags="):
+                extraFlags = a[8:].split(' ')
         options.testAndLabel = externalTestAndLabel(options, args)
     else:
         if len(args) >= 1:
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
+
+    if options.startRepo is None:
+        options.startRepo = earliestKnownWorkingRev(options, options.paramList + extraFlags)
 
     if len(sys.argv) < 2:
         print "Note: since no arguments were specified, we're just ensuring the shell does not crash on startup/shutdown."
