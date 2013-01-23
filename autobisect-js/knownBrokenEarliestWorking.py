@@ -73,7 +73,8 @@ def earliestKnownWorkingRev(options, flags):
     # 119349 - https://hg.mozilla.org/mozilla-central/rev/ab31d2237244 does not work due to:
     #   "ImportError: No module named buildconfig" error
     # Note: One could bypass the 119349 error by fully removing the m-c repo, then re-cloning
-    #   everytime a build is requested this way, aka a full clobber build.
+    #   everytime a build is requested this way, aka a full clobber build. We should investigate
+    #   to see what files get left behind that requires a full clobber.
 
     if options.enableRootAnalysis or options.isThreadsafe: # Threadsafe result wrong before this rev
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
