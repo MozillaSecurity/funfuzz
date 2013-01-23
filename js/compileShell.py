@@ -286,6 +286,8 @@ def copyJsSrcDirs(shell):
     except OSError:
         raise Exception('Do the js source directory or the destination exist?')
 
+    # Do not stop copying source files out until 119351:6b280e155484 is at least the minimum
+    #  version required to build on all platforms.
     # m-c changeset 119049:d2cce982a7c8 requires the build/ directory to be present.
     vEnvDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'build'))
     if os.path.isdir(vEnvDir):
