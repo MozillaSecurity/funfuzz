@@ -122,7 +122,7 @@ def parseOptions():
 
     assert not (options.testWithVg and options.buildWithAsan)
 
-    options.timeout = options.timeout or machineTimeoutDefaults(options.testWithVg)
+    options.timeout = options.timeout or machineTimeoutDefaults(options)
 
     if not options.disableCompareJit:
         options.enableMoreDeterministic = True
