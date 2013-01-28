@@ -41,6 +41,10 @@ class CompiledShell(object):
             self.cacheDirBase = os.path.join(os.sep + 'hddbackup')
         else:
             self.cacheDirBase = normExpUserPath(os.path.join('~', 'Desktop'))
+            # If ~/Desktop is not present, create it. ~/Desktop might not be present with
+            # CLI/server versions of Linux.
+            if not os.path.exists(self.cacheDirBase):
+                os.mkdir(self.cacheDirBase)
         self.cacheDir = os.path.join(self.cacheDirBase, 'autobisect-cache')
         if not os.path.exists(self.cacheDir):
             os.mkdir(self.cacheDir)
