@@ -63,6 +63,8 @@ def parseOpts():
         parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel = 'skip',
         isThreadsafe = False,
+        buildWithAsan = False,
+        llvmRootSrcDir = normExpUserPath('~/llvm'),
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
         testWithVg = False,
@@ -125,6 +127,10 @@ def parseOpts():
                            'NSPR should first be installed, see: ' + \
                            'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
                            'Defaults to "%default".')
+    parser.add_option('--build-with-asan', dest='buildWithAsan', action='store_true',
+                      help='Fuzz builds with AddressSanitizer support. Defaults to "%default".')
+    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
+                      help='Specify the LLVM root source dir. Defaults to "%default".')
     parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
                       action='store_true',
                       help='Build shells with --enable-more-deterministic. Defaults to "%default".')
