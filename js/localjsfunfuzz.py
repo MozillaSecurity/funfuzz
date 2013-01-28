@@ -106,9 +106,6 @@ def parseOptions():
                       help='Fuzz with valgrind. ' + \
                            'compareJIT will then be disabled due to speed issues. ' + \
                            'Defaults to "%default".')
-    parser.add_option('-u', '--enable-tinderboxShell', action='store_true', dest='useTinderShell',
-                      help='Use tinderbox js shells instead of compiling your own. ' + \
-                           'Defaults to %default.')
 
     options, args = parser.parse_args()
 
@@ -128,58 +125,6 @@ def parseOptions():
         options.enableMoreDeterministic = True
 
     return options
-
-class DownloadedJsShell:
-    def __init__(self, options):
-        if options.compileType == 'dbg,opt' or options.compileType == 'dbg':
-            self.cType = 'dbg'  # 'dbg,opt' is the default setting for options.compileType
-            if 'dbg' in options.compileType:
-                print 'Setting to debug only even though opt is specified by default. ' + \
-                      'Overwrite this by specifying the shell type explicitly.'
-        elif options.compileType == 'opt':
-            self.cType = 'opt'
-
-        if options.arch == '32':
-            self.pArchNum = '32'
-            if isMac:
-                self.pArchName = 'macosx'
-            elif isLinux:
-                self.pArchName = 'linux'
-            elif isWin:
-                self.pArchName = 'win32'
-        elif options.arch == '64':
-            self.pArchNum = '64'
-            if isMac:
-                self.pArchName = 'macosx64'
-            elif isLinux:
-                self.pArchName = 'linux64'
-            elif isWin:
-                raise Exception('Windows 64-bit builds are not supported yet.')
-        else:
-            raise Exception('Only either one of these architectures can be specified: 32 or 64')
-        self.repoDir = options.repoDir
-        self.repo = self.options.repoDir.split('/')[-1]
-        self.shellVer = options.useTinderShell
-    def mkFuzzDir(self, startDir):
-        path = mkdtemp('', os.path.join('tinderjsfunfuzz-'), startDir)
-        assert os.path.exists(path)
-        return path
-    def downloadShell(self, sDir):
-        remoteTinderJsUrlStart = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
-        # Revert filter change here, we're not sure what's going on, but this code should not be hit
-        # anyway, needs a rewrite.
-        tinderJsType = filter(None, self.repo) + '-' + self.pArchName + \
-            '-debug' if 'dbg' in self.cType else ''
-        if self.shellVer == 'latest':
-            downloadLatestBuild(tinderJsType, getJsShell=True, workingDir=sDir)
-        elif remoteTinderJsUrlStart in self.shellVer:
-            downloadBuild(self.shellVer, cwd=sDir, jsShell=True, wantSymbols=False)
-        else:
-            raise Exception('Please specify either "latest" or ' + \
-                            'the URL of the tinderbox build to be used.' + \
-                            'e.g. FIXME')
-        self.shellName = os.path.abspath(normExpUserPath(os.path.join(sDir, 'build', 'dist', 'js')))
-        assert os.path.exists(self.shellName)
 
 def envDump(shell, log):
     '''Dumps environment to file.'''
@@ -312,49 +257,8 @@ def localCompileFuzzJsShell(options):
 def main():
     options = parseOptions()
 
-    if options.useTinderShell is None:
-        fuzzShell, cList = localCompileFuzzJsShell(options)
-        startDir = fuzzShell.getBaseTempDir()
-    else:
-        assert False, 'Downloaded js shells do not yet work with the new APIs.'
-        odjs = DownloadedJsShell(options)
-        startDir = odjs.mkFuzzDir(CompiledShell().getBaseDir())
-        odjs.downloadShell(startDir)
-
-        analysisPath = os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))
-        if os.path.exists(analysisPath):
-            shutil.copy2(analysisPath, startDir)
-
-        loopyTimeout = str(machineTimeoutDefaults(options.timeout))
-        if options.testWithVg:
-            # FIXME: Change this to whitelist Pandaboard ES board when we actually verify this.
-            #if (isLinux or isMac) and platform.uname()[4] != 'armv7l':
-            if isLinux or isMac:
-                loopyTimeout = '300'
-            else:
-                raise Exception('Valgrind is only supported on Linux or Mac OS X machines.')
-
-        lst = genJsCliFlagList(options)
-
-        cList = genShellCmd(lst, loopyTimeout,
-                            knownBugsDir(odjs.options.repoDir, odjs.repo), odjs.shellName, shFlagList)
-
-        assert archOfBinary(odjs.shellName) == odjs.pArchNum  # 32-bit or 64-bit verification test.
-        assert testDbgOrOpt(odjs.shellName) == odjs.cType
-
-        localLog = normExpUserPath(os.path.join(startDir, 'log-localjsfunfuzz.txt'))
-        with open(localLog, 'wb') as f:
-            f.writelines('Command to be run is:\n')
-            f.writelines(shellify(cList) + '\n')
-            f.writelines('========================================================\n')
-            f.writelines('|  Fuzzing %s %s %s js shell builds\n' % (odjs.pArchNum + '-bit',
-                                                                    odjs.cType, odjs.repo ))
-            f.writelines('|  DATE: %s\n' % dateStr())
-            f.writelines('========================================================\n')
-
-        with open(localLog, 'rb') as f:
-            for line in f:
-                print line,
+    fuzzShell, cList = localCompileFuzzJsShell(options)
+    startDir = fuzzShell.getBaseTempDir()
 
     if options.noStart:
         print 'Exiting, --nostart is set.'
