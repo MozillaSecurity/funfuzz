@@ -70,7 +70,7 @@ def parseOpts():
         testWithVg = False,
     )
 
-    # Define the repository (working directory) in which to bisect.
+    # Specify the repository (working directory) in which to bisect.
     parser.add_option('-R', '--repoDir', dest='repoDir',
                       help='Source code directory. Defaults to "%default".')
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
@@ -79,20 +79,18 @@ def parseOpts():
                            'Equivalent to first executing `hg update -C default`. ' + \
                            'Defaults to "%default".')
 
-    # Define the revisions between which to bisect. If you want to find out when a problem
-    # *went away*, give -s the later revision and -e an earlier revision, or use -p
-    # (in which case the order doesn't matter).
+    # Specify the revisions between which to bisect.
     parser.add_option('-s', '--startRev', dest='startRepo',
-                      help='Initial good revision (usually the earliest). Defaults to the ' + \
+                      help='Earliest changeset to consider (usually a "good" cset). Defaults to the ' + \
                            'earliest revision known to work at all.')
     parser.add_option('-e', '--endRev', dest='endRepo',
-                      help='Initial bad revision (usually the latest). Defaults to "%default".')
+                      help='Latest changeset to consider (usually a "bad" cset). Defaults to the head of the main branch, "default".')
     parser.add_option('-k', '--skipInitialRevs', dest='testInitialRevs',
                       action='store_false',
                       help='Skip testing the -s and -e revisions and automatically trust them ' + \
-                           'as -g and -b).')
+                           'as -g and -b.')
 
-    # Define the type of build to test.
+    # Specify the type of build to test.
     parser.add_option('-a', '--arch', dest='arch',
                       type='choice', choices=['32', '64'],
                       help='Test computer architecture. Only accepts "32" or "64".')
@@ -100,7 +98,8 @@ def parseOpts():
                       type='choice', choices=['dbg', 'opt'],
                       help='js shell compile type. Defaults to "%default"')
 
-    # Define specific type of failure to look for (optional).
+    # Specify the type of failure to look for.
+    # (Optional -- by default, internalTestAndLabel will look for exit codes that indicate a crash or assert.)
     parser.add_option('-o', '--output', dest='output',
                       help='Stdout or stderr output to be observed. Defaults to "%default". ' + \
                            'For assertions, set to "ssertion fail"')
@@ -113,13 +112,14 @@ def parseOpts():
                       action="store_true",
                       help="Interpret the final arguments as an interestingness test.")
 
-    # Define parameters to be tested.
+    # Specify parameters for the js shell.
     parser.add_option('-p', '--parameters', dest='parameters',
-                      help='Define the testing parameters, e.g. -p "-a --ion-eager testcase.js".')
+                      help='Specify parameters for the js shell, e.g. -p "-a --ion-eager testcase.js".')
 
-    # See knownBrokenRanges in knownBrokenEarliestWorking.py
+    # Specify how to treat revisions that fail to compile.
+    # (You might want to add these to knownBrokenRanges in knownBrokenEarliestWorking.py.)
     parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
-                      help='Define way to treat revisions that fail to compile. ' + \
+                      help='Specify how to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
 
     parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
