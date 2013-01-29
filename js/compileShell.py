@@ -162,7 +162,7 @@ def cfgAsanParams(currEnv, options):
 
     return currEnv
 
-def cfgCompileCopy(shell, options):
+def cfgJsCompileCopy(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     autoconfRun(shell.getCompilePathJsSrc())
     try:
@@ -434,7 +434,7 @@ def makeTestRev(shell, options):
             try:
                 print "Compiling...",
                 copyJsSrcDirs(shell)
-                cfgCompileCopy(shell, options)
+                cfgJsCompileCopy(shell, options)
                 verifyBinary(shell, options)
                 shutil.copy2(shell.getShellBaseTempDirWithName(), shell.getShellCachePath())
                 print "Testing...",

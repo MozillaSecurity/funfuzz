@@ -16,7 +16,7 @@ from copy import deepcopy
 from optparse import OptionParser
 from tempfile import mkdtemp
 
-from compileShell import CompiledShell, cfgCompileCopy, copyJsSrcDirs
+from compileShell import CompiledShell, cfgJsCompileCopy, copyJsSrcDirs
 from inspectShell import archOfBinary, testDbgOrOpt, verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
@@ -213,11 +213,11 @@ def localCompileFuzzJsShell(options):
     assert captureStdout(['hg', '-R', myShell.getRepoDir(), 'qapp'])[0] == ''
 
     # Compile the shell to be fuzzed and verify it.
-    cfgCompileCopy(myShell, options)
+    cfgJsCompileCopy(myShell, options)
     verifyBinary(myShell, options)
 
     # Compile the other shell for archival purposes and verify it.
-    cfgCompileCopy(myOtherShell, options)
+    cfgJsCompileCopy(myOtherShell, options)
     verifyBinary(myOtherShell, options)
 
     analysisPath = os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))
