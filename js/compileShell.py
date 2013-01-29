@@ -334,7 +334,7 @@ def cfgJsBin(shell, options):
     shell.setCfgCmdExclEnv(cfgCmdList)
 
 def copyJsSrcDirs(shell):
-    '''Copies required js source directories from the shell repoDir to the shell fuzzing path.'''
+    '''Copies required js source directories from the repoDir to the shell fuzzing path.'''
     origJsSrc = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'src'))
     try:
         vdump('Copying the js source tree, which is located at ' + origJsSrc)
