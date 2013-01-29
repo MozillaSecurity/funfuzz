@@ -179,7 +179,7 @@ def cfgJsCompileCopy(shell, options):
         else:
             print repr(e)
             raise Exception('Configuration of the js binary failed.')
-    compileCopy(shell, options)
+    compileJsCopy(shell, options)
 
 def cfgJsBin(shell, options):
     '''This function configures a js binary according to required parameters.'''
@@ -386,7 +386,7 @@ def copyJsSrcDirs(shell):
 
     assert os.path.isdir(shell.getCompilePathJsSrc())
 
-def compileCopy(shell, options):
+def compileJsCopy(shell, options):
     '''This function compiles and copies a binary.'''
     # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
     jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
