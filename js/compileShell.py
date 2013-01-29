@@ -168,7 +168,7 @@ def cfgJsCompileCopy(shell, options):
     try:
         os.mkdir(shell.getJsObjdir())
     except OSError:
-        raise Exception('Unable to create objdir.')
+        raise Exception('Unable to create js objdir.')
     try:
         cfgJsBin(shell, options)
     except Exception, e:
