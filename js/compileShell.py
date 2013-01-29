@@ -348,7 +348,7 @@ def copyJsSrcDirs(shell):
             shutil.copytree(origJsSrc, shell.getCompilePathJsSrc())
         vdump('Finished copying the js tree')
     except OSError:
-        raise Exception('Do the js source directory or the destination exist?')
+        raise Exception('Does the js source directory or the destination exist?')
 
     # Do not stop copying source files out until 119351:6b280e155484 is at least the minimum
     #  version required to build on all platforms.
