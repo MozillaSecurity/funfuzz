@@ -17,9 +17,7 @@ repos = []
 # Add your repository here.
 repos.append('fuzzing')
 # Spidermonkey friends
-#repos.append('ionmonkey')
-#repos.append('jaegermonkey')
-#repos.append('larch')
+repos.append('ionmonkey')
 # Official repository branches
 repos.append('mozilla-inbound')
 repos.append('mozilla-central')
@@ -27,11 +25,14 @@ repos.append('comm-central')
 repos.append('mozilla-aurora')
 repos.append('mozilla-beta')
 repos.append('mozilla-release')
-#repos.append('mozilla-esr10')
+repos.append('mozilla-esr10')
+repos.append('mozilla-esr17')
 # Others
 repos.append('v8')
 # Miscellaneous tools
-#repos.append('buildbot-configs')
+repos.append('buildbot-configs')
+repos.append('buildbot')
+repos.append('build-tools')
 #repos.append('mozmill-tests')
 repos.append('valgrind')
 
