@@ -115,7 +115,7 @@ class CompiledShell(object):
         self.shellName = sname + '.exe' if isWin else sname
     def getName(self):
         return self.shellName
-    def getObjdir(self):
+    def getJsObjdir(self):
         return normExpUserPath(os.path.join(self.cPathJsSrc, self.compileType + '-objdir'))
     def setRepoDir(self, repoDir):
         self.repoDir = repoDir
@@ -128,7 +128,7 @@ class CompiledShell(object):
     def getShellCachePath(self):
         return normExpUserPath(os.path.join(self.cacheDir, self.shellName))
     def getShellCompiledPath(self):
-        return normExpUserPath(os.path.join(self.getObjdir(), 'js' + ('.exe' if isWin else '')))
+        return normExpUserPath(os.path.join(self.getJsObjdir(), 'js' + ('.exe' if isWin else '')))
     def getShellBaseTempDirWithName(self):
         return normExpUserPath(os.path.join(self.baseTmpDir, self.shellName))
 
@@ -166,7 +166,7 @@ def cfgCompileCopy(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     autoconfRun(shell.getCompilePathJsSrc())
     try:
-        os.mkdir(shell.getObjdir())
+        os.mkdir(shell.getJsObjdir())
     except OSError:
         raise Exception('Unable to create objdir.')
     try:
@@ -325,9 +325,9 @@ def cfgJsBin(shell, options):
         strToBeAppended = envVar + '="' + cfgEnvDt[envVar] + '"' \
             if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
         envVarList.append(strToBeAppended)
-    assert os.path.isdir(shell.getObjdir())
+    assert os.path.isdir(shell.getJsObjdir())
     vdump('Command to be run is: ' + ' '.join(envVarList) + ' ' + ' '.join(cfgCmdList))
-    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getObjdir(), env=cfgEnvDt)
+    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getJsObjdir(), env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
     shell.setEnvFull(cfgEnvDt)
@@ -391,14 +391,14 @@ def compileCopy(shell, options):
     # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
     jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
     try:
-        cmdList = ['make', '-C', shell.getObjdir(), '-j' + str(jobs), '-s']
+        cmdList = ['make', '-C', shell.getJsObjdir(), '-j' + str(jobs), '-s']
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                            currWorkingDir=shell.getObjdir())[0]
+                            currWorkingDir=shell.getJsObjdir())[0]
         if 'no such option: -s' in out:  # Retry only for this situation.
             cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
             print 'Trying once more without -s...'
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                                currWorkingDir=shell.getObjdir())[0]
+                                currWorkingDir=shell.getJsObjdir())[0]
     except Exception, e:
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
