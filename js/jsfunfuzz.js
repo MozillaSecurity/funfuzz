@@ -50,6 +50,7 @@ var jsStrictMode = false;
 var ENGINE_UNKNOWN = 0;
 var ENGINE_SPIDERMONKEY_TRUNK = 1;
 var ENGINE_SPIDERMONKEY_MOZILLA10 = 2;
+var ENGINE_SPIDERMONKEY_MOZILLA17 = 3;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
@@ -63,8 +64,10 @@ if (jsshell) {
   printImportant = function(s) { dumpln("***"); dumpln(s); }
   if (typeof line2pc == "function") {
 
-    if (typeof verifybarriers == "function" || typeof verifyprebarriers == "function") {
+    if (typeof gcstate == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
+    } else if (typeof verifyprebarriers == "function") {
+      engine = ENGINE_SPIDERMONKEY_MOZILLA17;
     } else if (typeof snarf == "function") {
       engine = ENGINE_SPIDERMONKEY_MOZILLA10;
     }
@@ -145,6 +148,8 @@ if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   printImportant("Targeting SpiderMonkey / Gecko (trunk).");
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA17)
+  printImportant("Targeting SpiderMonkey / Gecko (ESR 17 branch).");
 else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
   printImportant("Targeting SpiderMonkey / Gecko (10 branch).");
 else if (engine == ENGINE_JAVASCRIPTCORE)
@@ -3533,6 +3538,118 @@ function whatToTestSpidermonkeyTrunk(code)
   };
 }
 
+function whatToTestSpidermonkeyMozilla17(code)
+{
+  // regexps can't match across lines, so replace whitespace with spaces.
+  var codeL = code.replace(/\s/g, " ");
+
+  return {
+
+    allowParse: true,
+
+    // Exclude things here if decompiling the function causes a crash.
+    allowDecompile: true,
+
+    // Exclude things here if decompiling returns something bogus that won't compile.
+    checkRecompiling: false
+      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
+      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
+      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
+      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
+      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
+      && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
+      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
+      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
+      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
+      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
+      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
+      && !( codeL.match( /\{.*\:.*\(.*\,/ ))      // avoid bug 736747
+      ,
+
+    // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
+    checkForMismatch: false
+      && !( codeL.match( /const.*if/ ))               // avoid bug 352985
+      && !( codeL.match( /if.*const/ ))               // avoid bug 352985
+      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
+      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285
+      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
+      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895
+      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
+      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
+      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
+      && (code.indexOf("*") == -1)         // constant folding bug 539819
+      && (code.indexOf("/") == -1)         // constant folding bug 539819
+      && (code.indexOf("default") == -1)   // avoid bug 355509
+      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
+      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
+      // avoid bug 352085: keep operators that coerce to number (or integer)
+      // at constant-folding time (?) away from strings
+      &&
+           (
+             (code.indexOf("\"") == -1 && code.indexOf("\'") == -1)
+             ||
+             (
+                  (code.indexOf("%")  == -1)
+               && (code.indexOf("/")  == -1)
+               && (code.indexOf("*")  == -1)
+               && (code.indexOf("-")  == -1)
+               && (code.indexOf(">>") == -1)
+               && (code.indexOf("<<") == -1)
+             )
+          )
+      ,
+
+    // Exclude things here if the decompilation doesn't match what the function actually does
+    checkDisassembly: false
+      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
+      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
+    ,
+
+    checkForExtraParens: false
+      && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
+      && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
+      && !codeL.match( /\?.*\=/)             // ignore bug 475893
+    ,
+
+    allowExec: unlikelyToHang(code)
+      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
+      && (jsshell || code.indexOf("nogeckoex") == -1)
+    ,
+
+    allowIter: true,
+
+    checkUneval: false // bug 539819
+      // exclusions won't be perfect, since functions can return things they don't
+      // appear to contain, e.g. with "return x;"
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628
+    ,
+
+    // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
+    expectConsistentOutput: true
+       && (gcIsQuiet || code.indexOf("gc") == -1)
+       && code.indexOf("Date") == -1                // time marches on
+       && code.indexOf("random") == -1
+    ,
+
+    expectConsistentOutputAcrossIter: true
+       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
+    ,
+
+    expectConsistentOutputAcrossJITs: true
+       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
+       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
+       && code.indexOf("strict") == -1              // bug 743425
+       && code.indexOf("QName") == -1              // See bug 748568
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
+
+  };
+}
+
 function whatToTestSpidermonkeyMozilla10(code)
 {
   // regexps can't match across lines, so replace whitespace with spaces.
@@ -3618,6 +3735,8 @@ function whatToTestGeneric(code)
 var whatToTest;
 if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA17)
+  whatToTest = whatToTestSpidermonkeyMozilla17;
 else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
   whatToTest = whatToTestSpidermonkeyMozilla10;
 else if (engine == ENGINE_JAVASCRIPTCORE)
