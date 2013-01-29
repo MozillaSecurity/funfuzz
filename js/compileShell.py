@@ -54,10 +54,10 @@ class CompiledShell(object):
         self.arch = arch
     def getArch(self):
         return self.arch
-    def setBaseTempDir(self, baseTempDir):
-        self.baseTempDir = baseTempDir
+    def setBaseTempDir(self, baseTmpDir):
+        self.baseTmpDir = baseTmpDir
     def getBaseTempDir(self):
-        return self.baseTempDir
+        return self.baseTmpDir
     def getCacheDirBase(self):
         return self.cacheDirBase
     def getCacheDir(self):
@@ -84,9 +84,9 @@ class CompiledShell(object):
         assert os.path.isfile(self.cfgFile)
         return self.cfgFile
     def getCompilePath(self):
-        return normExpUserPath(os.path.join(self.baseTempDir, 'compilePath'))
+        return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath'))
     def getCompilePathJsSrc(self):
-        self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTempDir, 'compilePath', 'js', 'src'))
+        self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
         return self.cPathJsSrc
     def setHgHash(self, hgHash):
         self.hgHash = hgHash
@@ -130,7 +130,7 @@ class CompiledShell(object):
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getObjdir(), 'js' + ('.exe' if isWin else '')))
     def getShellBaseTempDirWithName(self):
-        return normExpUserPath(os.path.join(self.baseTempDir, self.shellName))
+        return normExpUserPath(os.path.join(self.baseTmpDir, self.shellName))
 
 def autoconfRun(cwd):
     '''Run autoconf binaries corresponding to the platform.'''
