@@ -3503,7 +3503,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     allowIter: true,
 
-    checkUneval: false // bug 539819
+    checkUneval: true
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
       && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid e4x bug 379525
