@@ -3552,41 +3552,41 @@ function whatToTestSpidermonkeyMozilla17(code)
 
     // Exclude things here if decompiling returns something bogus that won't compile.
     checkRecompiling: false
-      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197
-      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506
-      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921
-      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (more rebracing stuff)
-      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255
-      && !( codeL.match( /let/ ))   // avoid bug 462309 :( :( :(
-      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010
-      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010
-      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 *errors*
-      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616
-      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (can create invalid character classes from valid ones) (including space char \u3000!)
-      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (can create invalid character classes from valid ones)
-      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582
-      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582
-      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747
-      && !( codeL.match( /\{.*\:.*\(.*\,/ ))      // avoid bug 736747
+      && !( codeL.match( /\..*\@.*(this|null|false|true).*\:\:/ ))  // avoid bug 381197 (17 branch)
+      && !( codeL.match( /arguments.*\:\:/ ))       // avoid bug 355506 (17 branch)
+      && !( codeL.match( /\:.*for.*\(.*var.*\)/ ))  // avoid bug 352921 (17 branch)
+      && !( codeL.match( /for.*let.*\).*function/ )) // avoid bug 352735 (17 branch) (more rebracing stuff)
+      && !( codeL.match( /for.*\(.*\(.*in.*;.*;.*\)/ )) // avoid bug 353255 (17 branch)
+      && !( codeL.match( /let/ ))   // avoid bug 462309 (17 branch) :( :( :(
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("const") != -1)    // avoid bug 492010 (17 branch)
+      && !( codeL.match( /\{.*\}.*\=.*/ ) && code.indexOf("function") != -1) // avoid bug 492010 (17 branch)
+      && !( codeL.match( /if.*function/ ) && code.indexOf("const") != -1)        // avoid bug 355980 (17 branch) *errors*
+      && !( codeL.match( /switch.*default.*xml.*namespace/ ))  // avoid bug 566616 (17 branch)
+      && !( code.match(/\/.*[\u0000\u0080-\uffff]/)) // avoid bug 375641 (17 branch) (can create invalid character classes from valid ones) (including space char \u3000!)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\u") != -1) // avoid bug 375641 (17 branch) (can create invalid character classes from valid ones)
+      && !( code.indexOf("/") != -1 && code.indexOf("\\r") != -1) // avoid bug 362582 (17 branch)
+      && !( code.indexOf("/") != -1 && code.indexOf("0") != -1) // avoid bug 362582 (17 branch)
+      && !( codeL.match( /\{.*\:.*yield/ ))       // avoid bug 736747 (17 branch)
+      && !( codeL.match( /\{.*\:.*\(.*\,/ ))      // avoid bug 736747 (17 branch)
       ,
 
     // Exclude things here if decompiling returns something incorrect or non-canonical, but that will compile.
     checkForMismatch: false
-      && !( codeL.match( /const.*if/ ))               // avoid bug 352985
-      && !( codeL.match( /if.*const/ ))               // avoid bug 352985
-      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285
-      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285
-      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696
-      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895
-      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 *changes*
-      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695, etc)
-      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695, etc)
-      && (code.indexOf("*") == -1)         // constant folding bug 539819
-      && (code.indexOf("/") == -1)         // constant folding bug 539819
-      && (code.indexOf("default") == -1)   // avoid bug 355509
-      && (code.indexOf("delete") == -1)    // avoid bug 352027, which won't be fixed for a while :(
-      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985
-      // avoid bug 352085: keep operators that coerce to number (or integer)
+      && !( codeL.match( /const.*if/ ))               // avoid bug 352985 (17 branch)
+      && !( codeL.match( /if.*const/ ))               // avoid bug 352985 (17 branch)
+      && !( codeL.match( /with.*try.*function/ ))     // avoid bug 418285 (17 branch)
+      && !( codeL.match( /if.*try.*function/ ))       // avoid bug 418285 (17 branch)
+      && !( codeL.match( /\{.*\}.*=.*\[.*\]/ ))       // avoid bug 646696 (17 branch)
+      && !( codeL.match( /\?.*\?/ ))                  // avoid bug 475895 (17 branch)
+      && !( codeL.match( /if.*function/ ))            // avoid bug 355980 (17 branch) *changes*
+      && !( codeL.match( /\(.*\).*\(.*\)/ ))          // parenthesized callee expression (bug 646695 (17 branch), etc)
+      && !( codeL.match( /new.*\(.*\)/ ))             // parenthesized callee expression (bug 646695 (17 branch), etc)
+      && (code.indexOf("*") == -1)         // constant folding bug 539819 (17 branch)
+      && (code.indexOf("/") == -1)         // constant folding bug 539819 (17 branch)
+      && (code.indexOf("default") == -1)   // avoid bug 355509 (17 branch)
+      && (code.indexOf("delete") == -1)    // avoid bug 352027 (17 branch), which won't be fixed for a while :(
+      && (code.indexOf("const") == -1 || !codeL.match(/if.*=/)) // avoid bug 352985 (17 branch)
+      // avoid bug 352085 (17 branch): keep operators that coerce to number (or integer)
       // at constant-folding time (?) away from strings
       &&
            (
@@ -3605,28 +3605,28 @@ function whatToTestSpidermonkeyMozilla17(code)
 
     // Exclude things here if the decompilation doesn't match what the function actually does
     checkDisassembly: false
-      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 harder than above
-      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985
+      && !( codeL.match( /\@.*\:\:/ ))   // avoid bug 381197 (17 branch) harder than above
+      && !( codeL.match( /for.*in.*for.*in/ ))   // avoid bug 475985 (17 branch)
     ,
 
     checkForExtraParens: false
       && !codeL.match( /if.*\(.*=.*\)/)      // ignore extra parens added to avoid strict warning
       && !codeL.match( /while.*\(.*=.*\)/)   // ignore extra parens added to avoid strict warning
-      && !codeL.match( /\?.*\=/)             // ignore bug 475893
+      && !codeL.match( /\?.*\=/)             // ignore bug 475893 (17 branch)
     ,
 
     allowExec: unlikelyToHang(code)
-      && code.indexOf("<>")       == -1 // avoid bug 334628, hopefully
+      && code.indexOf("<>")       == -1 // avoid bug 334628 (17 branch), hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
     ,
 
     allowIter: true,
 
-    checkUneval: false // bug 539819
+    checkUneval: false // bug 539819 (17 branch)
       // exclusions won't be perfect, since functions can return things they don't
       // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628
+      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (17 branch)
+      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (17 branch)
     ,
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
@@ -3642,9 +3642,9 @@ function whatToTestSpidermonkeyMozilla17(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
-       && code.indexOf("lazy") == -1                // bug 743423, bug 743424
-       && code.indexOf("strict") == -1              // bug 743425
-       && code.indexOf("QName") == -1              // See bug 748568
+       && code.indexOf("lazy") == -1                // bug 743423 (17 branch), bug 743424 (17 branch)
+       && code.indexOf("strict") == -1              // bug 743425 (17 branch)
+       && code.indexOf("QName") == -1              // See bug 748568 (17 branch)
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
