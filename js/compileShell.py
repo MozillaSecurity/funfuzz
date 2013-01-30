@@ -53,10 +53,10 @@ class CompiledShell(object):
         self.fullEnv = fullEnv
     def getEnvFull(self):
         return self.fullEnv
-    def getCfgPath(self):
-        self.cfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
-        assert os.path.isfile(self.cfgFile)
-        return self.cfgFile
+    def getJsCfgPath(self):
+        self.jsCfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
+        assert os.path.isfile(self.jsCfgFile)
+        return self.jsCfgFile
     def getCompilePath(self):
         return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath'))
     def getCompilePathJsSrc(self):
@@ -181,7 +181,7 @@ def cfgJsBin(shell, options):
             cfgEnvDt['STRIP'] = 'strip -x -S'
             cfgEnvDt['CROSS_COMPILE'] = '1'
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
             cfgCmdList.append('--enable-macos-target=10.5')
             if options.buildWithAsan:
@@ -199,7 +199,7 @@ def cfgJsBin(shell, options):
                 cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
             cfgEnvDt['AR'] = 'ar'
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i686-pc-linux')
             if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
@@ -209,10 +209,10 @@ def cfgJsBin(shell, options):
             cfgEnvDt['CC'] = '/opt/cs2007q3/bin/gcc'
             cfgEnvDt['CXX'] = '/opt/cs2007q3/bin/g++'
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         else:
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
     elif isMac and macVer() >= [10, 7] and options.arch == '64':
         cfgEnvDt['CC'] = 'clang'
@@ -223,14 +223,14 @@ def cfgJsBin(shell, options):
         cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgEnvDt['AR'] = 'ar'
         cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         cfgCmdList.append('--target=x86_64-apple-darwin11.4.0')  # Lion 10.7.4
         if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
     elif isWin and options.arch == '64':
         cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         cfgCmdList.append('--host=x86_64-pc-mingw32')
         cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
@@ -240,7 +240,7 @@ def cfgJsBin(shell, options):
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
             cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
