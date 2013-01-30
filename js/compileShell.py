@@ -181,8 +181,8 @@ def cfgJsCompileCopy(shell, options):
             print 'Trying once more...'
             cfgJsBin(shell, options)
         else:
-            print repr(e)
-            raise Exception('Configuration of the js binary failed.')
+            print 'Configuration of the js binary failed.'
+            raise
     compileJsCopy(shell, options)
 
 def cfgJsBin(shell, options):
@@ -408,7 +408,8 @@ def compileJsCopy(shell, options):
         if os.path.exists(shell.getShellCompiledPath()):
             print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
         else:
-            raise Exception("`make` did not result in a js shell, '" + repr(e) + "' thrown.")
+            print "`make` did not result in a js shell:"
+            raise
 
     if os.path.exists(shell.getShellCompiledPath()):
         shell.setName(options)
