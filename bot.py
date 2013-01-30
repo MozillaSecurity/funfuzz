@@ -446,7 +446,7 @@ def skipJobNamed(j):
 def ensureBuild(options, buildDir, preferredBuild):
     '''Returns a string indicating the source of the build we got.'''
     if options.existingBuildDir:
-        assert os.path.exists(buildDir)
+        assert os.path.isdir(buildDir)
         return buildDir
     if preferredBuild:
         gotPreferred = downloadBuild.downloadBuild(preferredBuild, './', jsShell=(options.testType == 'js'))
