@@ -2634,27 +2634,29 @@ function makeFormalArgList(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  var nArgs = rnd(3);
+  var argList = [];
 
-  if (nArgs == 0)
-    return "";
+  var nArgs = rnd(5) ? rnd(3) : rnd(100);
+  for (var i = 0; i < nArgs; ++i) {
+    argList.push(makeFormalArg(d - i, b));
+  }
 
-  var argList = makeFormalArg(d, b)
+  if (rnd(5) == 0) {
+    // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/rest_parameters
+    argList.push("..." + makeId(d, b));
+  }
 
-  for (var i = 1; i < nArgs; ++i)
-    argList += ", " + makeFormalArg(d - i, b);
-
-  return argList;
+  return argList.join(", ");
 }
 
 function makeFormalArg(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(4) == 1)
+  if (rnd(8) == 1)
     return makeDestructuringLValue(d, b);
 
-  return makeId(d, b);
+  return makeId(d, b) + (rnd(5) ? "" : " = " + makeExpr(d, b));
 }
 
 
