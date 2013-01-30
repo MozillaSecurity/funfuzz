@@ -3528,8 +3528,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("QName") == -1               // See bug 748568
        && code.indexOf("getPropertyDescriptor") == -1  // bug 803332
        && code.indexOf("length") == -1              // bug 821931
-       && code.indexOf("forEach") == -1             // bug 825379
-       && code.indexOf("some") == -1                // bug 825379
        && code.indexOf("toString") == -1            // bug 826124
        && code.indexOf("encodeURI") == -1           // bug 831092
        && code.indexOf("__noSuchMethod__") == -1    // bug 831092
