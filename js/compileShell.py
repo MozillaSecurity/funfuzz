@@ -27,28 +27,8 @@ from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, nor
 
 CLANG_PARAMS = ' -Qunused-arguments -fcolor-diagnostics'
 
+
 class CompiledShell(object):
-    def __init__(self):
-        # Sets the default shell cache directory depending on the machine.
-        if isVM() == ('Windows', True):
-            # FIXME: Add an assertion that isVM() is a WinXP VM, and not Vista/Win7/Win8.
-            # Set to root directory of Windows VM since we only test WinXP in a VM.
-            # This might fail on a Vista or Win7 VM due to lack of permissions.
-            # It would be good to get this machine-specific hack out of the shared file, eventually.
-            self.cacheDirBase = os.path.join('c:', os.sep)
-        # This particular machine has insufficient disk space on the main drive.
-        elif isLinux and os.path.exists(os.sep + 'hddbackup'):
-            self.cacheDirBase = os.path.join(os.sep + 'hddbackup')
-        else:
-            self.cacheDirBase = normExpUserPath(os.path.join('~', 'Desktop'))
-            # If ~/Desktop is not present, create it. ~/Desktop might not be present with
-            # CLI/server versions of Linux.
-            if not os.path.exists(self.cacheDirBase):
-                os.mkdir(self.cacheDirBase)
-        self.cacheDir = os.path.join(self.cacheDirBase, 'autobisect-cache')
-        if not os.path.exists(self.cacheDir):
-            os.mkdir(self.cacheDir)
-        assert os.path.isdir(self.cacheDir)
     def setArch(self, arch):
         assert arch == '32' or arch == '64'
         self.arch = arch
@@ -58,10 +38,6 @@ class CompiledShell(object):
         self.baseTmpDir = baseTmpDir
     def getBaseTempDir(self):
         return self.baseTmpDir
-    def getCacheDirBase(self):
-        return self.cacheDirBase
-    def getCacheDir(self):
-        return self.cacheDir
     def setCompileType(self, compileType):
         assert compileType == 'dbg' or compileType == 'opt'
         self.compileType = compileType
@@ -126,11 +102,39 @@ class CompiledShell(object):
             raise Exception('First setRepoDir, repository directory is not yet set.')
         return getRepoNameFromHgrc(self.repoDir)
     def getShellCachePath(self):
-        return normExpUserPath(os.path.join(self.cacheDir, self.shellName))
+        return normExpUserPath(os.path.join(ensureCacheDir(), self.shellName))
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getJsObjdir(), 'js' + ('.exe' if isWin else '')))
     def getShellBaseTempDirWithName(self):
         return normExpUserPath(os.path.join(self.baseTmpDir, self.shellName))
+
+
+def ensureCacheDir():
+    '''Returns a cache directory for compiled shells to live in, creating one if needed'''
+
+    if isVM() == ('Windows', True):
+        # FIXME: Add an assertion that isVM() is a WinXP VM, and not Vista/Win7/Win8.
+        # Set to root directory of Windows VM since we only test WinXP in a VM.
+        # This might fail on a Vista or Win7 VM due to lack of permissions.
+        # It would be good to get this machine-specific hack out of the shared file, eventually.
+        cacheDirBase = os.path.join('c:', os.sep)
+    # This particular machine has insufficient disk space on the main drive.
+    elif isLinux and os.path.exists(os.sep + 'hddbackup'):
+        cacheDirBase = os.path.join(os.sep + 'hddbackup')
+    else:
+        cacheDirBase = normExpUserPath(os.path.join('~', 'Desktop'))
+        # If ~/Desktop is not present, create it. ~/Desktop might not be present with
+        # CLI/server versions of Linux.
+        ensureDir(cacheDirBase)
+    cacheDir = os.path.join(cacheDirBase, 'autobisect-cache')
+    ensureDir(cacheDir)
+    return cacheDir
+
+def ensureDir(dir):
+    '''Creates a directory, if it does not already exist'''
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+    assert os.path.isdir(dir)
 
 def autoconfRun(cwd):
     '''Run autoconf binaries corresponding to the platform.'''

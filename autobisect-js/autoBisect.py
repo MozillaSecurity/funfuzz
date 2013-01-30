@@ -23,7 +23,7 @@ sys.path.append(path1)
 import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
-from compileShell import CompiledShell, makeTestRev
+from compileShell import CompiledShell, makeTestRev, ensureCacheDir
 from inspectShell import constructVgCmdList, testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
@@ -173,10 +173,11 @@ def parseOpts():
 
     return options
 
-def findBlamedCset(myShell):
+def findBlamedCset():
     print dateStr()
 
     options = parseOpts()
+    myShell = CompiledShell()
     myShell.setRepoDir(options.repoDir)
     hgPrefix = myShell.getHgPrefix()
 
@@ -419,16 +420,15 @@ def bisectLabel(shell, options, hgLabel, currRev, startRepo, endRepo):
 
 def main():
     '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
-    shell = CompiledShell()
     sanityChecks()
-    lockDir = os.path.join(shell.getCacheDir(), 'autoBisectJs-lock')
+    lockDir = os.path.join(ensureCacheDir(), 'autoBisectJs-lock')
     try:
         os.mkdir(lockDir)
     except OSError:
         print "autoBisect is already running"
         return
     try:
-        findBlamedCset(shell)
+        findBlamedCset()
     finally:
         os.rmdir(lockDir)
 
