@@ -247,7 +247,6 @@ def cfgJsBin(shell, options):
     if options.buildWithAsan:
         assert 'clang' in cfgEnvDt['CC']
         assert 'clang++' in cfgEnvDt['CXX']
-        assert not options.testWithVg
 
     if options.compileType == 'dbg':
         cfgCmdList.append('--disable-optimize')
