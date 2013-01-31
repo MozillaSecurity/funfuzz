@@ -886,10 +886,18 @@ var statementMakers = weighted([
   // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
   { w: 1, fun: function(d, b) { return "(void options('strict'));" } },
 
+  // Spidermonkey: versions
+  { w: 1, fun: function(d, b) { return "(void version(" + rndElt([170, 180, 185]) + "));" } },
+
   // Spidermonkey controls for E4X support
   { w: 1, fun: function(d, b) { return rnd(100) ? ";" : "(void options('allow_xml'));" } },
   { w: 1, fun: function(d, b) { return rnd(100) ? ";" : "(void options('moar_xml'));" } },
   { w: 1, fun: function(d, b) { return rnd(100) ? ";" : "(void options('xml'));" } }, // old name for moar_xml
+
+  // More special Spidermonkey shell functions
+  // { w: 1, fun: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
+  { w: 1, fun: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))" } },
+  { w: 1, fun: function(d, b) { return "intern(" + makeExpr(d, b) + ")" } },
 
   // Blocks of statements related to typed arrays
   { w: 8, fun: makeTypedArrayStatements },
@@ -1220,6 +1228,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m() + " = " + m() + ";"; } },
     { w: 1,  fun: function(d, b) { return m() + " = " + m("g") + ".objectEmulatingUndefined();"; } },
     { w: 1,  fun: function(d, b) { return m() + " = wrap(" + val(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = wrapWithProto(" + val(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
     { w: 10, fun: function(d, b) { return "gc();"; } },
     { w: 10, fun: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
@@ -2418,6 +2427,7 @@ var functionMakers = [
   function(d, b) { return "encodeURI" },
   function(d, b) { return "encodeURIComponent" },
   function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
+  function(d, b) { return "wrapWithProto" }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return "objectEmulatingUndefined" }, // spidermonkey shell object like the browser's document.all
   function(d, b) { return "XPCNativeWrapper" },
   function(d, b) { return "XPCSafeJSObjectWrapper" },
@@ -3538,6 +3548,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("Date") == -1                // time marches on
        && code.indexOf("random") == -1
+       && code.indexOf("dumpObject") == -1          // shows heap addresses
     ,
 
     expectConsistentOutputAcrossIter: true
