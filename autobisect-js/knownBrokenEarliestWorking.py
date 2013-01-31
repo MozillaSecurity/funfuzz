@@ -60,7 +60,6 @@ def earliestKnownWorkingRev(options, flags):
     assert (not isMac) or (macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    # See 7aba0b7a805f, 98725 on m-c, for first stable root analysis builds
     #
     # m-c Python packager changes
     # 6b280e155484 is thus the latest version that can reliably work on all platforms without
@@ -79,6 +78,8 @@ def earliestKnownWorkingRev(options, flags):
     # that we check the output of "hg status --quiet"
     # (See fuzzing repo revision ec77c645e97d and nearby for when we tried this in Jan 2013)
 
+    #if options.buildWithAsan:
+    #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
     if isMac:
         return 'd97862fb8e6d' # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
     elif options.enableRootAnalysis or options.isThreadsafe:
