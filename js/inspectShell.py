@@ -106,8 +106,8 @@ def queryBuildConfiguration(s, parameter):
 
 def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
-    assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.getArch()
-    assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.getCompileType()
+    assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.buildOptions.arch
+    assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.buildOptions.compileType
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
         if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
             assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'threadsafe') == \

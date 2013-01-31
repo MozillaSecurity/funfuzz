@@ -23,7 +23,7 @@ def tempdir(path):
     os.mkdir(path)
     return "--tempdir=" + path
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, targetTime, alsoRunChar=True, alsoReduceEntireFile=False):
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, alsoRunChar=True, alsoReduceEntireFile=False):
     """
        Run Lithium and autobisect.
 
@@ -158,13 +158,13 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
         if platform.uname()[2] == 'XP':
             print 'Not pinpointing to exact changeset since autoBisect does not work well in WinXP.'
         elif sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
-            if '-dm-' in jsEngine:
-                extraParam = '--enable-more-deterministic'
-            elif '-ra-' in jsEngine:
-                extraParam = '--enable-root-analysis'
-            else:
-                extraParam = ''
-            autobisectCmd = [sys.executable, autobisectpy] + ["-R", bisectRepo, "-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine), extraParam, "-p", "'" + ' '.join(engineFlags + [infilename]) + "'", "-i"] + itest
+            autobisectCmd = (
+                [sys.executable, autobisectpy] +
+                ["-R", bisectRepo] +
+                (["-b", buildOptionsStr] if (buildOptionsStr is not None) else guessBuildOptions(jsEngine)) +
+                ["-p", ' '.join(engineFlags + [infilename])] +
+                ["-i"] + itest
+            )
             print shellify(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
@@ -172,3 +172,12 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, ta
             print 'Not pinpointing to exact changeset, please use a Python version >= 2.6.'
 
     return (lithResult, lithDetails)
+
+def guessBuildOptions(jsEngine):
+    # It might be more accurate to use [./js -e "print(JSON.stringify(getBuildConfiguration()))"] or something in inspectShell.py
+    opts = ["-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)]
+    if '-dm-' in jsEngine:
+        opts.append('--enable-more-deterministic')
+    elif '-ra-' in jsEngine:
+        opts.append('--enable-root-analysis')
+    return ' '.join(opts)

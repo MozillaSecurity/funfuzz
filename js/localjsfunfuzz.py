@@ -18,6 +18,7 @@ from tempfile import mkdtemp
 
 from compileShell import CompiledShell, cfgJsCompileCopy, copyJsSrcDirs
 from inspectShell import archOfBinary, testDbgOrOpt, verifyBinary
+import buildOptions
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -31,7 +32,7 @@ from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpU
 def machineTimeoutDefaults(options):
     '''Sets different defaults depending on the machine type or debugger used.'''
     # FIXME: Set defaults for Pandaboard ES w/ & w/o Valgrind.
-    if options.testWithVg:
+    if options.buildOptions.runWithVg:
         return 300
     elif platform.uname()[1] == 'tegra-ubuntu':
         return 180
@@ -48,15 +49,9 @@ def parseOptions():
         disableCompareJit = False,
         disableRndFlags = False,
         noStart = False,
-        compileType = 'dbg,opt',
         repoDir = getMcRepoDir()[1],
         timeout = 0,
-        isThreadsafe = False,
-        buildWithAsan = False,
-        llvmRootSrcDir = normExpUserPath('~/llvm'),
-        enableMoreDeterministic = False,
-        enableRootAnalysis = False,
-        testWithVg = False,
+        buildOptions = ""
     )
 
     parser.add_option('--disable-comparejit', dest='disableCompareJit', action='store_true',
@@ -66,14 +61,15 @@ def parseOptions():
     parser.add_option('--nostart', dest='noStart', action='store_true',
                       help='Compile shells only, do not start fuzzing.')
 
-    parser.add_option('-a', '--arch', dest='arch', type='choice', choices=('32', '64'),
-                      help='Sets the shell architecture to be fuzzed. Can only be "32" or "64".')
-    parser.add_option('-c', '--compileType', dest='compileType',
-                      # FIXME: This should be improved. Seems like a hackish way.
-                      help='Sets the shell type to be fuzzed. Defaults to "dbg". Note that both ' + \
-                           'debug and opt will be compiled by default for easy future testing.')
     parser.add_option('-R', '--repoDir', dest='repoDir',
                       help='Sets the source repository. Defaults to "%default".')
+
+    # Specify how the shell will be built.
+    # See buildOptions.py for details.
+    parser.add_option('-b', '--build',
+                      dest='buildOptions',
+                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+
     parser.add_option('-t', '--timeout', type='int', dest='timeout',
                       help='Sets the timeout for loopjsfunfuzz.py. ' + \
                            'Defaults to taking into account the speed of the computer and ' + \
@@ -86,56 +82,36 @@ def parseOptions():
                       help='Define the path to a single patch. Multiple patches are not yet ' + \
                            'supported.')
 
-    parser.add_option('--build-with-asan', dest='buildWithAsan', action='store_true',
-                      help='Fuzz builds with AddressSanitizer support. Defaults to "%default".')
-    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
-                      help='Specify the LLVM root source dir. Defaults to "%default".')
-    parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
-                      action='store_true',
-                      help='Build shells with --enable-more-deterministic. ' + \
-                           'Defaults to True if compareJIT fuzzing is enabled. ' + \
-                           'Otherwise, defaults to "%default".')
-    parser.add_option('--enable-root-analysis', dest='enableRootAnalysis', action='store_true',
-                      help='Enable root analysis support. Defaults to "%default".')
-    parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
-                      help='Enable compilation and fuzzing of threadsafe js shell. ' + \
-                           'NSPR should first be installed, see: ' + \
-                           'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
-                           'Defaults to "%default".')
-    parser.add_option('--test-with-valgrind', dest='testWithVg', action='store_true',
-                      help='Fuzz with valgrind. ' + \
-                           'compareJIT will then be disabled due to speed issues. ' + \
-                           'Defaults to "%default".')
-
     options, args = parser.parse_args()
 
     options.repoDir = normExpUserPath(options.repoDir)
     if options.patchDir:
         options.patchDir = normExpUserPath(options.patchDir)
 
-    if isWin:
-        assert ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) == (options.arch == '64')
-    assert 'dbg' in options.compileType or 'opt' in options.compileType
+    if not options.disableCompareJit:
+        options.buildOptions += " --enable-more-deterministic"
 
-    assert not (options.testWithVg and options.buildWithAsan)
+    options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
 
     options.timeout = options.timeout or machineTimeoutDefaults(options)
-
-    if not options.disableCompareJit:
-        options.enableMoreDeterministic = True
 
     return options
 
 def envDump(shell, log):
     '''Dumps environment to file.'''
     with open(log, 'ab') as f:
-        f.write('Information about ' + shell.getArch() + '-bit ' + shell.getCompileType() + \
-                ' shell:\n\n')
+        f.write('Information about shell:\n\n')
+
+        f.write('Create another shell like this one:\n')
+        f.write(shellify(["python", "-u", os.path.join(path0, "compileShell.py"), "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgList]) + "\n\n")
+
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')
         f.write(shellify(shell.getEnvAdded()) + '\n\n')
+
         f.write('Configuration command was:\n')
         f.write(shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+
         f.write('Full configuration command with needed environment variables is:\n')
         f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
@@ -145,55 +121,36 @@ def cmdDump(shell, cmdList, log):
         f.write('Command to be run is:\n')
         f.write(shellify(cmdList) + '\n')
         f.write('========================================================\n')
-        f.write('|  Fuzzing %s %s %s js shell builds\n' %
-                     (shell.getArch() + '-bit', shell.getCompileType(), shell.getRepoName() ))
+        f.write('|  Fuzzing %s js shell builds\n' %
+                     (shell.getRepoName() ))
         f.write('|  DATE: %s\n' % dateStr())
         f.write('========================================================\n\n')
 
 def localCompileFuzzJsShell(options):
     '''Compiles and readies a js shell for fuzzing.'''
     print dateStr()
-    myShell = CompiledShell()
-    myShell.setRepoDir(options.repoDir)
-    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(myShell.getRepoDir())
-    myShell.setHgHash(localOrigHgHash)
-    myShell.setHgNum(localOrigHgNum)
+    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.repoDir)
 
     # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
-    assert captureStdout(['hg', '-R', myShell.getRepoDir(), 'qapp'])[0] == ''
+    assert captureStdout(['hg', '-R', options.repoDir, 'qapp'])[0] == ''
 
     if options.patchDir:  # Note that only JS patches are supported, not NSPR.
         # Assume mq extension enabled. Series file should be optional if only one patch is needed.
         assert not os.path.isdir(options.patchDir), \
             'Support for multiple patches has not yet been added.'
         assert os.path.isfile(options.patchDir)
-        p1name = patchHgRepoUsingMq(options.patchDir, myShell.getRepoDir())
-
-    myShell.setArch('64' if '64' in mozPlatform(options.arch) else '32')
-    myOtherShell = deepcopy(myShell)
-    # Default to compiling debug first.
-    if 'dbg' in options.compileType:
-        myShell.setCompileType('dbg')
-        myOtherShell.setCompileType('opt')
-    else:
-        myShell.setCompileType('opt')
-        myOtherShell.setCompileType('dbg')
+        p1name = patchHgRepoUsingMq(options.patchDir, options.repoDir)
 
     appendStr = ''
     if options.patchDir:
         appendStr += '-patched'
     fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else \
         normExpUserPath(os.path.join('~', 'Desktop'))  # WinXP has spaces in the user directory.
-    # FIXME: Remove myShell.getCompileType() once we randomly fuzz between the two at the same time.
-    fullPath = mkdtemp(appendStr + os.sep, os.path.join(
-        'jsfunfuzz-' + myShell.getCompileType() + '-' + myShell.getArch() + '-' + \
-        myShell.getRepoName() + '-' + myShell.getHgNum() + '-' + \
-        myShell.getHgHash() + '-'), fuzzResultsDirStart)
-    myShell.setBaseTempDir(fullPath)
-    myOtherShell.setBaseTempDir(fullPath)
-    assert os.path.exists(myShell.getBaseTempDir())
-    assert os.path.exists(myOtherShell.getBaseTempDir())
-    vdump('Base temporary directory is: ' + myShell.getBaseTempDir())
+    buildIdentifier = "jsfunfuzz-" + localOrigHgNum + "-" + localOrigHgHash
+    fullPath = mkdtemp(appendStr + os.sep, buildOptions.computeShellName(options.buildOptions, buildIdentifier), fuzzResultsDirStart)
+    vdump('Base temporary directory is: ' + fullPath)
+
+    myShell = CompiledShell(options.buildOptions, options.repoDir, localOrigHgHash, fullPath)
 
     # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
     copyJsSrcDirs(myShell)
@@ -213,22 +170,19 @@ def localCompileFuzzJsShell(options):
     assert captureStdout(['hg', '-R', myShell.getRepoDir(), 'qapp'])[0] == ''
 
     # Compile the shell to be fuzzed and verify it.
-    cfgJsCompileCopy(myShell, options)
-    verifyBinary(myShell, options)
-
-    # Compile the other shell for archival purposes and verify it.
-    cfgJsCompileCopy(myOtherShell, options)
-    verifyBinary(myOtherShell, options)
+    cfgJsCompileCopy(myShell, options.buildOptions)
+    verifyBinary(myShell, options.buildOptions)
 
     analysisPath = os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))
     if os.path.exists(analysisPath):
         shutil.copy2(analysisPath, fullPath)
 
-    # Construct the command to be run.
+    # Construct a command-line for running loopjsfunfuzz.py
     cmdList = ['python', '-u']
     cmdList.append(normExpUserPath(os.path.join(path0, 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + myShell.getRepoDir())
-    if options.testWithVg:
+    cmdList += ["--build", options.buildOptions.inputArgList]
+    if options.buildOptions.runWithVg:
         cmdList.append('--valgrind')
     if not options.disableCompareJit:
         cmdList.append('--comparejit')
@@ -241,7 +195,6 @@ def localCompileFuzzJsShell(options):
     # Write log files describing configuration parameters used during compilation.
     localLog = normExpUserPath(os.path.join(myShell.getBaseTempDir(), 'log-localjsfunfuzz.txt'))
     envDump(myShell, localLog)
-    envDump(myOtherShell, localLog)  # Also dump information about the other shell
     cmdDump(myShell, cmdList, localLog)
 
     with open(localLog, 'rb') as f:

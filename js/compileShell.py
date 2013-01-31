@@ -15,34 +15,32 @@ import sys
 from copy import deepcopy
 from tempfile import mkdtemp
 from traceback import format_exc
+from optparse import OptionParser
 
+import buildOptions
 from inspectShell import verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
-from hgCmds import getRepoNameFromHgrc
+from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments -fcolor-diagnostics'
 
 
+
 class CompiledShell(object):
-    def setArch(self, arch):
-        assert arch == '32' or arch == '64'
-        self.arch = arch
-    def getArch(self):
-        return self.arch
-    def setBaseTempDir(self, baseTmpDir):
+    def __init__(self, buildOpts, repoDir, hgHash, baseTmpDir):
+        self.shellName = buildOptions.computeShellName(buildOpts, hgHash) + ('.exe' if isWin else '')
+        self.repoDir = repoDir
+        self.hgHash = hgHash
+        self.buildOptions = buildOpts
         self.baseTmpDir = baseTmpDir
+        assert os.path.isdir(baseTmpDir)
     def getBaseTempDir(self):
         return self.baseTmpDir
-    def setCompileType(self, compileType):
-        assert compileType == 'dbg' or compileType == 'opt'
-        self.compileType = compileType
-    def getCompileType(self):
-        return self.compileType
     def setCfgCmdExclEnv(self, cfg):
         self.cfg = cfg
     def getCfgCmdExclEnv(self):
@@ -64,42 +62,13 @@ class CompiledShell(object):
     def getCompilePathJsSrc(self):
         self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
         return self.cPathJsSrc
-    def setHgHash(self, hgHash):
-        self.hgHash = hgHash
     def getHgHash(self):
         return self.hgHash
-    def setHgNum(self, hashNum):
-        self.hashNum = hashNum
-    def getHgNum(self):
-        return self.hashNum
-    def getHgPrefix(self):
-        if self.repoDir == None:
-            raise Exception('First setRepoDir, repository directory is not yet set.')
-        return ['hg', '-R', self.repoDir]
-    def setName(self, options):
-        specialParamList = []
-        if options.enableMoreDeterministic:
-            specialParamList.append('dm')
-        if options.enableRootAnalysis:
-            specialParamList.append('ra')
-        if options.buildWithAsan:
-            specialParamList.append('asan')
-        specialParam = '-'.join(specialParamList)
-        sname = '-'.join(x for x in ['js', self.compileType, self.arch,
-                                     specialParam, self.hgHash,
-                                     'windows' if isWin else platform.system().lower()] if x)
-        self.shellName = sname + '.exe' if isWin else sname
-    def getName(self):
-        return self.shellName
     def getJsObjdir(self):
-        return normExpUserPath(os.path.join(self.cPathJsSrc, self.compileType + '-objdir'))
-    def setRepoDir(self, repoDir):
-        self.repoDir = repoDir
+        return normExpUserPath(os.path.join(self.cPathJsSrc, self.buildOptions.compileType + '-objdir'))
     def getRepoDir(self):
         return self.repoDir
     def getRepoName(self):
-        if self.repoDir == None:
-            raise Exception('First setRepoDir, repository directory is not yet set.')
         return getRepoNameFromHgrc(self.repoDir)
     def getShellCachePath(self):
         return normExpUserPath(os.path.join(ensureCacheDir(), self.shellName))
@@ -193,7 +162,7 @@ def cfgJsBin(shell, options):
     cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
     # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
     # do not worry if build-dep does not work, also be sure to apt-get zip as well.
-    if shell.getArch() == '32' and os.name == 'posix' and os.uname()[1] != 'tegra-ubuntu':
+    if options.arch == '32' and os.name == 'posix' and os.uname()[1] != 'tegra-ubuntu':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
@@ -245,7 +214,7 @@ def cfgJsBin(shell, options):
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
-    elif isMac and macVer() >= [10, 7] and shell.getArch() == '64':
+    elif isMac and macVer() >= [10, 7] and options.arch == '64':
         cfgEnvDt['CC'] = 'clang'
         cfgEnvDt['CXX'] = 'clang++'
         if options.buildWithAsan:
@@ -259,7 +228,7 @@ def cfgJsBin(shell, options):
         if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
-    elif isWin and shell.getArch() == '64':
+    elif isWin and options.arch == '64':
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getCfgPath()))
         cfgCmdList.append('--host=x86_64-pc-mingw32')
@@ -280,10 +249,10 @@ def cfgJsBin(shell, options):
         assert 'clang++' in cfgEnvDt['CXX']
         assert not options.testWithVg
 
-    if shell.getCompileType() == 'dbg':
+    if options.compileType == 'dbg':
         cfgCmdList.append('--disable-optimize')
         cfgCmdList.append('--enable-debug')
-    elif shell.getCompileType() == 'opt':
+    else:
         cfgCmdList.append('--enable-optimize')
         cfgCmdList.append('--disable-debug')
         cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
@@ -301,15 +270,12 @@ def cfgJsBin(shell, options):
     if options.isThreadsafe:
         cfgCmdList.append('--enable-threadsafe')
         cfgCmdList.append('--with-system-nspr')
+    if options.buildWithVg:
+        cfgCmdList.append('--enable-valgrind')
 
     if os.name == 'posix':
         if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
-            # If Asan is not enabled, shells are compiled with --enable-valgrind but not tested
-            # with Valgrind by default.
-            if not options.buildWithAsan:
-                cfgCmdList.append('--enable-valgrind')
-            if isLinux:
-                cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
+            cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
         # ccache is not applicable for non-Tegra Ubuntu ARM builds.
         elif os.uname()[1] == 'tegra-ubuntu':
             cfgCmdList.append('--with-ccache')
@@ -412,48 +378,79 @@ def compileJsCopy(shell, options):
             raise
 
     if os.path.exists(shell.getShellCompiledPath()):
-        shell.setName(options)
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
 
-def makeTestRev(shell, options):
-    '''Calls recursive function testRev to keep compiling and testing changesets until it stops.'''
+def compileStandalone(compiledShell):
+    """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
+
+    try:
+        copyJsSrcDirs(compiledShell)
+        cfgJsCompileCopy(compiledShell, compiledShell.buildOptions)
+        verifyBinary(compiledShell, compiledShell.buildOptions)
+        shutil.copy2(compiledShell.getShellBaseTempDirWithName(), compiledShell.getShellCachePath())
+    finally:
+        shutil.rmtree(compiledShell.getBaseTempDir())
+
+def makeTestRev(options):
     def testRev(rev):
-        shell.setHgHash(rev)
-        shell.setName(options)
+        shell = CompiledShell(options.buildOptions, options.repoDir, rev, mkdtemp(prefix="abtmp-" + rev + "-"))
         cachedNoShell = shell.getShellCachePath() + ".busted"
 
         print "Rev " + rev + ":",
         if os.path.exists(shell.getShellCachePath()):
             print "Found cached shell...   Testing...",
-            return options.testAndLabel(shell)
+            return options.testAndLabel(shell.getShellCachePath(), rev)
         elif os.path.exists(cachedNoShell):
             return (options.compilationFailedLabel, 'compilation failed (cached)')
         else:
             print "Updating...",
-            shell.setBaseTempDir(mkdtemp(prefix="abtmp-" + rev + "-"))
-            captureStdout(shell.getHgPrefix() + ['update', '-r', rev], ignoreStderr=True)
+            captureStdout(["hg", "-R", options.repoDir] + ['update', '-r', rev], ignoreStderr=True)
             try:
                 print "Compiling...",
-                copyJsSrcDirs(shell)
-                cfgJsCompileCopy(shell, options)
-                verifyBinary(shell, options)
-                shutil.copy2(shell.getShellBaseTempDirWithName(), shell.getShellCachePath())
-                print "Testing...",
-                testAndLabelResult = options.testAndLabel(shell)
-                shutil.rmtree(shell.getBaseTempDir())
-                return testAndLabelResult
+                compileStandalone(shell)
             except Exception, e:
                 with open(cachedNoShell, 'wb') as f:
                     f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
                     f.write("Backtrace:\n")
                     f.write(format_exc() + "\n");
-                shutil.rmtree(shell.getBaseTempDir())
-                return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ')')
+                return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ') (details in ' + cachedNoShell + ')')
+            print "Testing...",
+            return options.testAndLabel(shell.getShellCachePath(), rev)
     return testRev
 
+
+def main():
+    """Build a shell and place it in the autoBisect cache."""
+
+    usage = 'Usage: %prog [options]'
+    parser = OptionParser(usage)
+    parser.disable_interspersed_args()
+
+    parser.set_defaults(
+        repoDir = getMcRepoDir()[1],
+        buildOptions = "",
+    )
+
+    # Specify how the shell will be built.
+    # See buildOptions.py for details.
+    parser.add_option('-b', '--build',
+                      dest='buildOptions',
+                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+
+    # Specify the repository (working directory) in which to bisect.
+    parser.add_option('-R', '--repoDir', dest='repoDir',
+                      help='Source code directory. Defaults to "%default".')
+
+    (options, args) = parser.parse_args()
+    options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.repoDir)
+    shell = CompiledShell(options.buildOptions, options.repoDir, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
+    compileStandalone(shell)
+    print shell.getShellCachePath()
+
 if __name__ == '__main__':
-    pass
+    main()

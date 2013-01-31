@@ -43,6 +43,10 @@ def parseOpts(args):
                       action = "store", dest = "repo",
                       default = os.path.expanduser("~/trees/mozilla-central/"),
                       help = "The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
+    parser.add_option("--build",
+                      action = "store", dest = "buildOptionsStr",
+                      help = "The build options, for bisection",
+                      default = None) # if you run loopjsfunfuzz.py directly without a --build, pinpoint will try to guess
     parser.add_option("--valgrind",
                       action = "store_true", dest = "valgrind",
                       default = False,
@@ -124,7 +128,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
             alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
             alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
             (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                          options.repo, targetTime, alsoRunChar=alsoRunChar,
+                                                          options.repo, options.buildOptionsStr, targetTime, alsoRunChar=alsoRunChar,
                                                           alsoReduceEntireFile=alsoReduceEntireFile)
             if targetTime:
                 return (lithResult, lithDetails)
@@ -141,7 +145,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
                 (lithResult, lithDetails) = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                                                   logPrefix + "-cj", options.knownPath, options.repo,
-                                                                  options.timeout, targetTime)
+                                                                  options.buildOptionsStr, options.timeout, targetTime)
                 if lithResult == lithOps.HAPPY:
                     os.remove(jitcomparefilename)
                 if targetTime and lithResult != lithOps.HAPPY:

@@ -37,12 +37,12 @@ def ignoreMallocScribble(e):
         return e
 
 # For use by loopjsfunfuzz.py
-def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, timeout, targetTime):
+def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOptionsStr, timeout, targetTime):
     lev = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", knownPath, timeout, False, True)
 
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
-        (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, targetTime)
+        (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime)
         print "Retesting " + infilename + " after running Lithium:"
         print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
         return (lithResult, lithDetails)

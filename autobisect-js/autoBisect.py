@@ -27,8 +27,8 @@ from compileShell import CompiledShell, makeTestRev, ensureCacheDir
 from inspectShell import constructVgCmdList, testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
-from downloadBuild import mozPlatformDetails
 from fileManipulation import firstLine
+import buildOptions
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getMcRepoDir, getRepoHashAndId, \
     getRepoNameFromHgrc, isAncestor
 from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, Unbuffered, verbose, vdump
@@ -53,22 +53,22 @@ def parseOpts():
     parser.set_defaults(
         repoDir = getMcRepoDir()[1],
         resetRepoFirst = False,
+        startRepo = None,
         endRepo = 'default',
         testInitialRevs = True,
-        arch = '64' if mozPlatformDetails()[2] else '32',
-        compileType = 'dbg',
         output = '',
         watchExitCode = None,
         useInterestingnessTests = False,
         parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel = 'skip',
-        isThreadsafe = False,
-        buildWithAsan = False,
-        llvmRootSrcDir = normExpUserPath('~/llvm'),
-        enableMoreDeterministic = False,
-        enableRootAnalysis = False,
-        testWithVg = False,
+        buildOptions = "",
     )
+
+    # Specify how the shell will be built.
+    # See buildOptions.py for details.
+    parser.add_option('-b', '--build',
+                      dest='buildOptions',
+                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
 
     # Specify the repository (working directory) in which to bisect.
     parser.add_option('-R', '--repoDir', dest='repoDir',
@@ -89,14 +89,6 @@ def parseOpts():
                       action='store_false',
                       help='Skip testing the -s and -e revisions and automatically trust them ' + \
                            'as -g and -b.')
-
-    # Specify the type of build to test.
-    parser.add_option('-a', '--arch', dest='arch',
-                      type='choice', choices=['32', '64'],
-                      help='Test computer architecture. Only accepts "32" or "64".')
-    parser.add_option('-c', '--compileType', dest='compileType',
-                      type='choice', choices=['dbg', 'opt'],
-                      help='js shell compile type. Defaults to "%default"')
 
     # Specify the type of failure to look for.
     # (Optional -- by default, internalTestAndLabel will look for exit codes that indicate a crash or assert.)
@@ -122,28 +114,9 @@ def parseOpts():
                       help='Specify how to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
 
-    parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
-                      help='Enable compilation and fuzzing of threadsafe js shell. ' + \
-                           'NSPR should first be installed, see: ' + \
-                           'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
-                           'Defaults to "%default".')
-    parser.add_option('--build-with-asan', dest='buildWithAsan', action='store_true',
-                      help='Fuzz builds with AddressSanitizer support. Defaults to "%default".')
-    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
-                      help='Specify the LLVM root source dir. Defaults to "%default".')
-    parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
-                      action='store_true',
-                      help='Build shells with --enable-more-deterministic. Defaults to "%default".')
-    parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
-                      action='store_true',
-                      help='Build shells with --enable-root-analysis. Defaults to "%default".')
-    parser.add_option('--test-with-valgrind', dest='testWithVg',
-                      action='store_true',
-                      help='Test with Valgrind enabled. Defaults to "%default".')
-
     (options, args) = parser.parse_args()
+    options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
 
-    assert 'dbg' in options.compileType or 'opt' in options.compileType
     options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
 
@@ -166,7 +139,7 @@ def parseOpts():
         options.testAndLabel = internalTestAndLabel(options)
 
     if options.startRepo is None:
-        options.startRepo = earliestKnownWorkingRev(options, options.paramList + extraFlags)
+        options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags)
 
     if len(sys.argv) < 2:
         print "Note: since no arguments were specified, we're just ensuring the shell does not crash on startup/shutdown."
@@ -177,13 +150,12 @@ def findBlamedCset():
     print dateStr()
 
     options = parseOpts()
-    myShell = CompiledShell()
-    myShell.setRepoDir(options.repoDir)
-    hgPrefix = myShell.getHgPrefix()
+
+    hgPrefix = ['hg', '-R', options.repoDir]
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
-    realStartRepo = sRepo = getRepoHashAndId(myShell.getRepoDir(), repoRev=options.startRepo)[0]
-    realEndRepo = eRepo = getRepoHashAndId(myShell.getRepoDir(), repoRev=options.endRepo)[0]
+    realStartRepo = sRepo = getRepoHashAndId(options.repoDir, repoRev=options.startRepo)[0]
+    realEndRepo = eRepo = getRepoHashAndId(options.repoDir, repoRev=options.endRepo)[0]
     vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
@@ -207,10 +179,7 @@ def findBlamedCset():
         currRev = getCsetHashFromBisectMsg(firstLine(
             captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
-    myShell.setArch(options.arch)
-    myShell.setCompileType(options.compileType)
-
-    testRev = makeTestRev(myShell, options)
+    testRev = makeTestRev(options)
 
     iterNum = 1
     if options.testInitialRevs:
@@ -240,7 +209,7 @@ def findBlamedCset():
             print "Bisecting for the n-th round where n is", iterNum, "and 2^n is", \
                     str(2**iterNum), "...",
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
-            bisectLabel(myShell, options, label[0], currRev, sRepo, eRepo)
+            bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
         if options.testInitialRevs:
             options.testInitialRevs = False
@@ -253,7 +222,7 @@ def findBlamedCset():
         print 'This iteration took %.3f seconds to run.' % oneRunTime
 
     if blamedRev is not None:
-        checkBlameParents(myShell, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
+        checkBlameParents(options.repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
     vdump("Resetting bisect")
@@ -266,9 +235,9 @@ def findBlamedCset():
 
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
-    def inner(shell):
-        (stdoutStderr, exitCode) = testBinary(shell.getShellCachePath(), options.paramList,
-                                              options.testWithVg)
+    def inner(shellFilename, _hgHash):
+        (stdoutStderr, exitCode) = testBinary(shellFilename, options.paramList,
+                                              options.buildOptions.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
@@ -309,24 +278,24 @@ def externalTestAndLabel(options, interestingness):
     conditionArgPrefix = interestingness[1:]
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
 
-    def inner(shell):
-        conditionArgs = conditionArgPrefix + (constructVgCmdList() if options.testWithVg else []) +\
-                            [shell.getShellCachePath()] + options.paramList
+    def inner(shellFilename, hgHash):
+        conditionArgs = conditionArgPrefix + (constructVgCmdList() if options.buildOptions.runWithVg else []) +\
+                            [shellFilename] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
-        if conditionScript.interesting(conditionArgs, tempPrefix + shell.getHgHash()):
+        if conditionScript.interesting(conditionArgs, tempPrefix + hgHash):
             innerResult = ('bad', 'interesting')
         else:
             innerResult = ('good', 'not interesting')
-        if os.path.isdir(tempPrefix + shell.getHgHash()):
-            shutil.rmtree(tempPrefix + shell.getHgHash())
+        if os.path.isdir(tempPrefix + hgHash):
+            shutil.rmtree(tempPrefix + hgHash)
         return innerResult
     return inner
 
-def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
+def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """Ensure we actually tested the parents of the blamed revision."""
-    parents = captureStdout(shell.getHgPrefix() + ["parent", '--template={node|short},',
+    parents = captureStdout(["hg", "-R", repoDir] + ["parent", '--template={node|short},',
                                                    "-r", blamedRev])[0].split(",")[:-1]
     bisectLied = False
     for p in parents:
@@ -335,8 +304,8 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
             print ""
             print ("Oops! We didn't test rev %s, a parent of the blamed revision! " + \
                 "Let's do that now.") % str(p)
-            if not isAncestor(shell.getRepoDir(), startRepo, p) and \
-                    not isAncestor(shell.getRepoDir(), endRepo, p):
+            if not isAncestor(repoDir, startRepo, p) and \
+                    not isAncestor(repoDir, endRepo, p):
                 print ('We did not test rev %s because it is not a descendant of either ' + \
                     '%s or %s.') % (str(p), startRepo, endRepo)
             label = testRev(p)
@@ -357,7 +326,7 @@ def checkBlameParents(shell, blamedRev, blamedGoodOrBad, labels, testRev, startR
         print ""
         print "Perhaps we should expand the search to include the common ancestor of the " + \
             "blamed changeset's parents."
-        ca = findCommonAncestor(shell.getRepoDir(), parents[0], parents[1])
+        ca = findCommonAncestor(repoDir, parents[0], parents[1])
         print "The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca)
         label = testRev(ca)
         print label[0] + " (" + label[1] + ") "
@@ -374,10 +343,10 @@ def sanitizeCsetMsg(msg):
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
-def bisectLabel(shell, options, hgLabel, currRev, startRepo, endRepo):
+def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
-    outputResult = captureStdout(shell.getHgPrefix() + ['bisect', '-U', '--' + hgLabel, currRev])[0]
+    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match\
@@ -403,7 +372,7 @@ def bisectLabel(shell, options, hgLabel, currRev, startRepo, endRepo):
     currRev = getCsetHashFromBisectMsg(outputLines[0])
     if currRev is None:
         print 'Resetting to default revision...'
-        subprocess.check_call(shell.getHgPrefix() + ['up', '-C', 'default'])
+        subprocess.check_call(hgPrefix + ['up', '-C', 'default'])
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
