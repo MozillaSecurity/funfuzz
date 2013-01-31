@@ -736,6 +736,15 @@ function makeTypeUnstableLoop(d, b) {
   return "/*tLoop*/for each (let " + v + " in " + a + ") { " + makeStatement(d - 2, bv) + " }";
 }
 
+
+function makeFunOnCallChain(d, b) {
+  var s = "arguments.callee";
+  while (rnd(2))
+    s += ".caller";
+  return s;
+}
+
+
 function weighted(wa)
 {
   var a = [];
@@ -1069,24 +1078,29 @@ var makeEvilCallback;
     { w: 4,  fun: function(d, b) { return val(d, b) + " = " + m("at") + "[" + rnd(ARRAY_SIZE) + "]" + ";"; } },
     { w: 4,  fun: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
     { w: 4,  fun: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "a", makeFunOnCallChain(d, b) + ".arguments"); } }, // a read-only arguments object
+    { w: 1,  fun: function(d, b) { return assign(d, b, "a", "arguments"); } }, // a read-write arguments object
 
+    // Array pokage
+    { w: 3,  fun: function(d, b) { return m("a") + "[0] = " + makeExpr(d, b); } },
+    { w: 3,  fun: function(d, b) { return m("a") + "[1] = " + makeExpr(d, b); } },
     // Array mutators
-    { w: 5,  fun: function(d, b) { return m("a") + ".push(" + val(d, b) + ");"; } },
-    { w: 5,  fun: function(d, b) { return m("a") + ".pop();"; } },
-    { w: 5,  fun: function(d, b) { return m("a") + ".unshift(" + val(d, b) + ");"; } },
-    { w: 5,  fun: function(d, b) { return m("a") + ".shift();"; } },
-    { w: 3,  fun: function(d, b) { return m("a") + ".reverse();"; } },
-    { w: 3,  fun: function(d, b) { return m("a") + ".sort(" + makeEvilCallback(d, b) + ");"; } },
-    { w: 1,  fun: function(d, b) { return m("a") + ".splice(" + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + rnd(ARRAY_SIZE) + ");" ; } }, // should also add new elements...
+    { w: 5,  fun: function(d, b) { return "Array.prototype.push.call("    + m("a") + ", " + val(d, b) + ");"; } },
+    { w: 5,  fun: function(d, b) { return "Array.prototype.pop.call("     + m("a") + ");"; } },
+    { w: 5,  fun: function(d, b) { return "Array.prototype.unshift.call(" + m("a") + ", " + val(d, b) + ");"; } },
+    { w: 5,  fun: function(d, b) { return "Array.prototype.shift.call("   + m("a") + ");"; } },
+    { w: 3,  fun: function(d, b) { return "Array.prototype.reverse.call(" + m("a") + ");"; } },
+    { w: 3,  fun: function(d, b) { return "Array.prototype.sort.call("    + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return "Array.prototype.splice.call("  + m("a") + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + rnd(ARRAY_SIZE) + ");" ; } }, // should also add new elements...
     // Array accessors
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", m("a") + ".join('')"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", m("a") + ".join(', ')"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", m("a") + ".concat(" + m("a") + ")"); } }, // can actually take multiple array or non-arrays...
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", m("a") + ".slice(" + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ")"); } },
     // Array iterators
-    { w: 3,  fun: function(d, b) { return m("a") + "." + rndElt(["filter", "forEach", "every", "map", "some"]) + "(" + makeEvilCallback(d, b) + ");"; } },
-    { w: 3,  fun: function(d, b) { return m("a") + "." + rndElt(["reduce, reduceRight"]) + "(" + makeEvilCallback(d, b) + ");"; } },
-    { w: 3,  fun: function(d, b) { return m("a") + "." + rndElt(["reduce, reduceRight"]) + "(" + makeEvilCallback(d, b) + ", " + m() + ");"; } },
+    { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["filter", "forEach", "every", "map", "some"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
+    { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
+    { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ", " + m() + ");"; } },
 
     // o: Object
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "{}"); } },
@@ -1833,6 +1847,10 @@ var exprMakers =
 
   function(d, b) { return rndElt(builtinProperties); },
   function(d, b) { return rndElt(builtinObjectNames); },
+
+  function(d, b) { return makeFunOnCallChain(d, b) + ".arguments"; }, // read-only arguments object
+  function(d, b) { "arguments"; }, // read-write arguments object
+  function(d, b) { return "arguments[" + rnd(2) + "] = " + makeExpr(d, b); },
 ];
 
 var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
@@ -2349,6 +2367,8 @@ function makeFunctionBody(d, b)
 
 var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
+
+  makeFunOnCallChain,
 
   // Functions and expression closures
   function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
