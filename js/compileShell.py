@@ -32,13 +32,12 @@ CLANG_PARAMS = ' -Qunused-arguments -fcolor-diagnostics'
 
 
 class CompiledShell(object):
-    def __init__(self, buildOpts, repoDir, hgHash, baseTmpDir):
+    def __init__(self, buildOpts, hgHash, baseTmpDir):
         self.shellName = buildOptions.computeShellName(buildOpts, hgHash) + ('.exe' if isWin else '')
-        self.repoDir = repoDir
         self.hgHash = hgHash
         self.buildOptions = buildOpts
         self.baseTmpDir = baseTmpDir
-        assert os.path.isdir(baseTmpDir)
+        assert os.path.isdir(self.baseTmpDir)
     def getBaseTempDir(self):
         return self.baseTmpDir
     def setCfgCmdExclEnv(self, cfg):
@@ -67,9 +66,9 @@ class CompiledShell(object):
     def getJsObjdir(self):
         return normExpUserPath(os.path.join(self.cPathJsSrc, self.buildOptions.compileType + '-objdir'))
     def getRepoDir(self):
-        return self.repoDir
+        return self.buildOptions.repoDir
     def getRepoName(self):
-        return getRepoNameFromHgrc(self.repoDir)
+        return getRepoNameFromHgrc(self.buildOptions.repoDir)
     def getShellCachePath(self):
         return normExpUserPath(os.path.join(ensureCacheDir(), self.shellName))
     def getShellCompiledPath(self):
@@ -396,7 +395,7 @@ def compileStandalone(compiledShell):
 
 def makeTestRev(options):
     def testRev(rev):
-        shell = CompiledShell(options.buildOptions, options.repoDir, rev, mkdtemp(prefix="abtmp-" + rev + "-"))
+        shell = CompiledShell(options.buildOptions, rev, mkdtemp(prefix="abtmp-" + rev + "-"))
         cachedNoShell = shell.getShellCachePath() + ".busted"
 
         print "Rev " + rev + ":",
@@ -407,7 +406,7 @@ def makeTestRev(options):
             return (options.compilationFailedLabel, 'compilation failed (cached)')
         else:
             print "Updating...",
-            captureStdout(["hg", "-R", options.repoDir] + ['update', '-r', rev], ignoreStderr=True)
+            captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev], ignoreStderr=True)
             try:
                 print "Compiling...",
                 compileStandalone(shell)
@@ -446,8 +445,8 @@ def main():
 
     (options, args) = parser.parse_args()
     options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.repoDir)
-    shell = CompiledShell(options.buildOptions, options.repoDir, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
+    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
+    shell = CompiledShell(options.buildOptions, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
     compileStandalone(shell)
     print shell.getShellCachePath()
 

@@ -29,8 +29,7 @@ path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from fileManipulation import firstLine
 import buildOptions
-from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getMcRepoDir, getRepoHashAndId, \
-    getRepoNameFromHgrc, isAncestor
+from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor
 from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, Unbuffered, verbose, vdump
 
 def sanityChecks():
@@ -51,7 +50,6 @@ def parseOpts():
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        repoDir = getMcRepoDir()[1],
         resetRepoFirst = False,
         startRepo = None,
         endRepo = 'default',
@@ -70,9 +68,6 @@ def parseOpts():
                       dest='buildOptions',
                       help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
 
-    # Specify the repository (working directory) in which to bisect.
-    parser.add_option('-R', '--repoDir', dest='repoDir',
-                      help='Source code directory. Defaults to "%default".')
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
                       help='First reset to default tip overwriting all local changes. ' + \
@@ -120,9 +115,6 @@ def parseOpts():
     options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
 
-    options.repoDir = normExpUserPath(options.repoDir)
-    assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
-
     extraFlags = []
 
     if options.useInterestingnessTests:
@@ -151,11 +143,11 @@ def findBlamedCset():
 
     options = parseOpts()
 
-    hgPrefix = ['hg', '-R', options.repoDir]
+    hgPrefix = ['hg', '-R', options.buildOptions.repoDir]
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
-    realStartRepo = sRepo = getRepoHashAndId(options.repoDir, repoRev=options.startRepo)[0]
-    realEndRepo = eRepo = getRepoHashAndId(options.repoDir, repoRev=options.endRepo)[0]
+    realStartRepo = sRepo = getRepoHashAndId(options.buildOptions.repoDir, repoRev=options.startRepo)[0]
+    realEndRepo = eRepo = getRepoHashAndId(options.buildOptions.repoDir, repoRev=options.endRepo)[0]
     vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
@@ -222,7 +214,7 @@ def findBlamedCset():
         print 'This iteration took %.3f seconds to run.' % oneRunTime
 
     if blamedRev is not None:
-        checkBlameParents(options.repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
+        checkBlameParents(options.buildOptions.repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
     vdump("Resetting bisect")

@@ -24,7 +24,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
-from hgCmds import getMcRepoDir, getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
+from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from lithOps import knownBugsDir
 from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpUserPath, shellify, \
     vdump
@@ -49,7 +49,6 @@ def parseOptions():
         disableCompareJit = False,
         disableRndFlags = False,
         noStart = False,
-        repoDir = getMcRepoDir()[1],
         timeout = 0,
         buildOptions = ""
     )
@@ -60,9 +59,6 @@ def parseOptions():
                       help='Disable random flag fuzzing.')
     parser.add_option('--nostart', dest='noStart', action='store_true',
                       help='Compile shells only, do not start fuzzing.')
-
-    parser.add_option('-R', '--repoDir', dest='repoDir',
-                      help='Sets the source repository. Defaults to "%default".')
 
     # Specify how the shell will be built.
     # See buildOptions.py for details.
@@ -84,7 +80,6 @@ def parseOptions():
 
     options, args = parser.parse_args()
 
-    options.repoDir = normExpUserPath(options.repoDir)
     if options.patchDir:
         options.patchDir = normExpUserPath(options.patchDir)
 
@@ -129,31 +124,31 @@ def cmdDump(shell, cmdList, log):
 def localCompileFuzzJsShell(options):
     '''Compiles and readies a js shell for fuzzing.'''
     print dateStr()
-    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.repoDir)
+    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
 
     # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
-    assert captureStdout(['hg', '-R', options.repoDir, 'qapp'])[0] == ''
+    assert captureStdout(['hg', '-R', options.buildOptions.repoDir, 'qapp'])[0] == ''
 
     if options.patchDir:  # Note that only JS patches are supported, not NSPR.
         # Assume mq extension enabled. Series file should be optional if only one patch is needed.
         assert not os.path.isdir(options.patchDir), \
             'Support for multiple patches has not yet been added.'
         assert os.path.isfile(options.patchDir)
-        p1name = patchHgRepoUsingMq(options.patchDir, options.repoDir)
+        p1name = patchHgRepoUsingMq(options.patchDir, options.buildOptions.repoDir)
 
     appendStr = ''
     if options.patchDir:
         appendStr += '-patched'
     fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else \
         normExpUserPath(os.path.join('~', 'Desktop'))  # WinXP has spaces in the user directory.
-    buildIdentifier = getRepoNameFromHgrc(options.repoDir) + '-' + localOrigHgNum + "-" + \
+    buildIdentifier = getRepoNameFromHgrc(options.buildOptions.repoDir) + '-' + localOrigHgNum + "-" + \
         localOrigHgHash
     fullPath = mkdtemp(appendStr + os.sep,
                        buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
                        fuzzResultsDirStart)
     vdump('Base temporary directory is: ' + fullPath)
 
-    myShell = CompiledShell(options.buildOptions, options.repoDir, localOrigHgHash, fullPath)
+    myShell = CompiledShell(options.buildOptions, localOrigHgHash, fullPath)
 
     # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
     copyJsSrcDirs(myShell)

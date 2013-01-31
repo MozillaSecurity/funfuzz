@@ -11,6 +11,7 @@ path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
 from subprocesses import isWin, isMac, isLinux, normExpUserPath
+from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
 def parseShellOptions(inputArgList):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
@@ -21,6 +22,7 @@ def parseShellOptions(inputArgList):
     parser.disable_interspersed_args()
 
     parser.set_defaults(
+        repoDir = getMcRepoDir()[1],
         arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
         isThreadsafe = False,
@@ -31,6 +33,9 @@ def parseShellOptions(inputArgList):
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
     )
+
+    parser.add_option('-R', '--repoDir', dest='repoDir',
+                      help='Sets the source repository. Defaults to "%default".')
 
     # Basic spidermonkey options
     parser.add_option('-a', '--arch', dest='arch',
@@ -67,6 +72,10 @@ def parseShellOptions(inputArgList):
                       help='Build shells with --enable-root-analysis. Defaults to "%default".')
 
     (options, args) = parser.parse_args(inputArgList.split())
+
+    options.repoDir = normExpUserPath(options.repoDir)
+    assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
+
     options.inputArgList = inputArgList
     assert len(args) == 0
 
