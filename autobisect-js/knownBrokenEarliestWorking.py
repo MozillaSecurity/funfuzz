@@ -79,14 +79,14 @@ def earliestKnownWorkingRev(options, flags):
     # that we check the output of "hg status --quiet"
     # (See fuzzing repo revision ec77c645e97d and nearby for when we tried this in Jan 2013)
 
-    if options.enableRootAnalysis or options.isThreadsafe: # Threadsafe result wrong before this rev
+    if options.enableRootAnalysis or options.isThreadsafe:
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
     elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
     elif '--ion' in flags:
         return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
-    elif '--ion-eager' in flags:  # See bug 683039 - Delay Ion compilation until a function is hot
-        return '4ceb3e9961e4' # 105173 on m-c
+    elif '--ion-eager' in flags:
+        return '4ceb3e9961e4' # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
     elif isMac and options.buildWithVg:
         return '3e4e9e518bef' # 99784 on m-c, fixed an issue with the combination of ccache + clang + valgrind
     elif isMac and macVer() >= [10, 7]:
