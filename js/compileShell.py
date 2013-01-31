@@ -166,8 +166,8 @@ def cfgJsBin(shell, options):
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
-            cfgEnvDt['CC'] = 'clang'
-            cfgEnvDt['CXX'] = 'clang++'
+            cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang'
+            cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++'
             if options.buildWithAsan:
                 cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
