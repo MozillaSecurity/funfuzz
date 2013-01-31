@@ -99,6 +99,6 @@ def computeShellName(options, extraIdentifier):
     if options.isThreadsafe:
         specialParamList.append('ts')
     specialParam = '-'.join(specialParamList)
-    return '-'.join(x for x in ['js', options.compileType, options.arch,
-                                specialParam, extraIdentifier,
-                                'windows' if isWin else platform.system().lower()] if x)
+    return '-'.join(x for x in ['js', options.compileType, options.arch, specialParam,
+                                'windows' if isWin else platform.system().lower(),
+                                extraIdentifier] if x)

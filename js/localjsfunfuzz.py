@@ -24,7 +24,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
-from hgCmds import getMcRepoDir, getRepoHashAndId, patchHgRepoUsingMq
+from hgCmds import getMcRepoDir, getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from lithOps import knownBugsDir
 from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpUserPath, shellify, \
     vdump
@@ -146,8 +146,11 @@ def localCompileFuzzJsShell(options):
         appendStr += '-patched'
     fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else \
         normExpUserPath(os.path.join('~', 'Desktop'))  # WinXP has spaces in the user directory.
-    buildIdentifier = "jsfunfuzz-" + localOrigHgNum + "-" + localOrigHgHash
-    fullPath = mkdtemp(appendStr + os.sep, buildOptions.computeShellName(options.buildOptions, buildIdentifier), fuzzResultsDirStart)
+    buildIdentifier = getRepoNameFromHgrc(options.repoDir) + '-' + localOrigHgNum + "-" + \
+        localOrigHgHash
+    fullPath = mkdtemp(appendStr + os.sep,
+                       buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
+                       fuzzResultsDirStart)
     vdump('Base temporary directory is: ' + fullPath)
 
     myShell = CompiledShell(options.buildOptions, options.repoDir, localOrigHgHash, fullPath)
