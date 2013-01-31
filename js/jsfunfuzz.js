@@ -4112,7 +4112,7 @@ function testOne()
   cookie += "RC*/"
 
   // Sometimes it makes sense to start with simpler functions:
-  //var depth = (~~(count / 1000)) & 16;
+  //var depth = ((count / 1000) | 0) & 16;
   var depth = 10;
 
   if (dumpEachSeed) {
