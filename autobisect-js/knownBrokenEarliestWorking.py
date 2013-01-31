@@ -87,6 +87,8 @@ def earliestKnownWorkingRev(options, flags):
         return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
     elif '--ion-eager' in flags:  # See bug 683039 - Delay Ion compilation until a function is hot
         return '4ceb3e9961e4' # 105173 on m-c
+    elif isMac and options.buildWithVg:
+        return '3e4e9e518bef' # 99784 on m-c, fixed an issue with the combination of ccache + clang + valgrind
     elif isMac and macVer() >= [10, 7]:
         return '2046a1f46d40' # 87022 on m-c, first rev that compiles well on Mac under Clang
     elif '-n' in flags and ('-D' in flags or '--dump-bytecode' in flags):
