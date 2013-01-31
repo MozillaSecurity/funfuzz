@@ -79,7 +79,9 @@ def earliestKnownWorkingRev(options, flags):
     # that we check the output of "hg status --quiet"
     # (See fuzzing repo revision ec77c645e97d and nearby for when we tried this in Jan 2013)
 
-    if options.enableRootAnalysis or options.isThreadsafe:
+    if isMac:
+        return 'd97862fb8e6d' # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
+    elif options.enableRootAnalysis or options.isThreadsafe:
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
     elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
@@ -87,10 +89,6 @@ def earliestKnownWorkingRev(options, flags):
         return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
     elif '--ion-eager' in flags:
         return '4ceb3e9961e4' # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
-    elif isMac and options.buildWithVg:
-        return '3e4e9e518bef' # 99784 on m-c, fixed an issue with the combination of ccache + clang + valgrind
-    elif isMac and macVer() >= [10, 7]:
-        return '2046a1f46d40' # 87022 on m-c, first rev that compiles well on Mac under Clang
     elif '-n' in flags and ('-D' in flags or '--dump-bytecode' in flags):
         return '0c5ed245a04f' # 75176 on m-c, merge brings in -D from one side and -n from another
     elif '-n' in flags:
