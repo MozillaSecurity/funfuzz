@@ -2977,6 +2977,7 @@ function makeCrazyToken()
   // a few operators
   "!", "@", "%", "^", "*", "|", ":", "?", "'", "\"", ",", ".", "/",
   "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=",
+  "...",
 
   // most real keywords plus a few reserved keywords
   " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
