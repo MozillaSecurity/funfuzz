@@ -60,7 +60,7 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
             print 'Aborting...'
             sys.exit(0)
         elif updateDefault == 'd':
-            subprocess.check_call(['hg', '-R', repoDir, 'up', 'default'])
+            subprocess.check_call(['hg', '-R', repoDir, 'update', 'default'])
             onDefault = True
         elif updateDefault == 'u':
             hgLogTmplList = ['hg', '-R', repoDir, 'log', '-r', 'parents()', '--template',

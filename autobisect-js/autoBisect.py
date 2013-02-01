@@ -152,7 +152,7 @@ def findBlamedCset():
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
-        subprocess.check_call(hgPrefix + ['up', '-C', 'default'])
+        subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
          # Throws exit code 255 if purge extension is not enabled in .hgrc:
         subprocess.check_call(hgPrefix + ['purge', '--all'])
 
@@ -221,7 +221,7 @@ def findBlamedCset():
     subprocess.check_call(hgPrefix + ['bisect', '-U', '-r'])
 
     vdump("Resetting working directory")
-    captureStdout(hgPrefix + ['up', '-r', 'default'], ignoreStderr=True)
+    captureStdout(hgPrefix + ['update', '-r', 'default'], ignoreStderr=True)
 
     print dateStr()
 
@@ -364,7 +364,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     currRev = getCsetHashFromBisectMsg(outputLines[0])
     if currRev is None:
         print 'Resetting to default revision...'
-        subprocess.check_call(hgPrefix + ['up', '-C', 'default'])
+        subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
