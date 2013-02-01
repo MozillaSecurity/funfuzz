@@ -105,12 +105,6 @@ if (typeof gc == "undefined")
   this.gc = function(){};
 var gcIsQuiet = !(gc()); // see bug 706433
 
-// Without options("allow_xml"), this will be false when jsfunfuzz is starting.
-// Oh well, E4X is going away soon enough.
-var haveE4X = (typeof XML == "function");
-if (haveE4X)
-  XML.ignoreComments = false; // to make uneval saner -- see bug 465908
-
 // If the JavaScript engine being tested has heuristics like
 //   "recompile any loop that is run more than X times"
 // this should be set to the highest such X.
@@ -815,9 +809,8 @@ var statementMakers = weighted([
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
-  // The first form could be an infinite loop because of "for (x.y in x)" with e4x.
   // The last form is specific to JavaScript 1.7 (only).
-  { w: 1, fun: function(d, b) {                       return "/*infloop*/" +         cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, fun: function(d, b) {                                               return cat([maybeLabel(), "for", "(", rndElt(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, fun: function(d, b) { var v = makeNewId(d, b);                      return cat([maybeLabel(), "for", "(", rndElt(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   { w: 1, fun: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", rndElt(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
 
@@ -869,9 +862,6 @@ var statementMakers = weighted([
   //{ w: 1, fun: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
   { w: 1, fun: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
 
-  // E4X "default xml namespace"
-  { w: 1, fun: function(d, b) { return cat(["default ", "xml ", "namespace ", " = ", makeExpr(d, b), ";"]); } },
-
   { w: 1, fun: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
@@ -888,11 +878,6 @@ var statementMakers = weighted([
 
   // Spidermonkey: versions
   { w: 1, fun: function(d, b) { return "(void version(" + rndElt([170, 180, 185]) + "));" } },
-
-  // Spidermonkey controls for E4X support
-  { w: 1, fun: function(d, b) { return rnd(100) ? ";" : "(void options('allow_xml'));" } },
-  { w: 1, fun: function(d, b) { return rnd(100) ? ";" : "(void options('moar_xml'));" } },
-  { w: 1, fun: function(d, b) { return rnd(100) ? ";" : "(void options('xml'));" } }, // old name for moar_xml
 
   // More special Spidermonkey shell functions
   // { w: 1, fun: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
@@ -1553,19 +1538,7 @@ var binaryOps = [
   // Long-standing JavaScript operators, roughly in order from http://www.codehouse.com/javascript/precedence/
   " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", " < ", " > ", " <= ", " >= ", " instanceof ", " in ", " == ", " != ", " === ", " !== ",
   " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>= ", " &= ", " ^= ", " |= ", " , ",
-
-  // . is special, so test it as a group of right-unary ops, a special exprMaker for property access, and a special exprMaker for the xml filtering predicate operator
-  // " . ",
 ];
-
-if (haveE4X) {
-  binaryOps = binaryOps.concat([
-  // Binary operators added by E4X
-  " :: ", " .. ", " @ ",
-  // Frequent combinations of E4X things (and "*" namespace, which isn't produced by this fuzzer otherwise)
-  " .@ ", " .@*:: ", " .@x:: ",
-  ]);
-}
 
 var leftUnaryOps = [
   "--", "++",
@@ -1578,9 +1551,6 @@ var leftUnaryOps = [
 var rightUnaryOps = [
   "++", "--",
 ];
-
-if (haveE4X)
-  rightUnaryOps = rightUnaryOps.concat([".*", ".@foo", ".@*"]);
 
 
 var specialProperties = [
@@ -2169,14 +2139,6 @@ function makeZealLevel()
   return "" + rnd(14);
 }
 
-if (haveE4X) {
-  exprMakers = exprMakers.concat([
-    // XML filtering predicate operator!  It isn't lexed specially; there can be a space between the dot and the lparen.
-    function(d, b) { return cat([makeId(d, b),  ".", "(", makeExpr(d, b), ")"]); },
-    function(d, b) { return cat([makeE4X(d, b),  ".", "(", makeExpr(d, b), ")"]); },
-  ]);
-}
-
 
 function makeObjLiteralPart(d, b)
 {
@@ -2303,10 +2265,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
     }
   }
 
-  // Temporarily enable XML so we see "XML", "QName", etc.
-  try { options("allow_xml"); } catch(e) { }
   exploreConstructors();
-  try { options("allow_xml"); } catch(e) { }
 
   exploreDeeper(Math, "Math");
   exploreDeeper(JSON, "JSON");
@@ -2717,7 +2676,7 @@ function makeId(d, b)
   case 8: case 9: case 10:
     // some keywords that can be used as identifiers in some contexts (e.g. variables, function names, argument names)
     // but that's annoying, and some of these cause lots of syntax errors.
-    return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each", "xml", "namespace"]);
+    return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each"]);
   case 11:
     return "function::" + makeId(d, b);
   case 12: case 13:
@@ -2943,16 +2902,6 @@ function randomUnitStringLiteral()
   return s;
 }
 
-if (haveE4X) {
-  // E4X literals
-  termMakers = termMakers.concat([
-  function(d, b) { return rndElt([ "<x/>", "<y><z/></y>"]); },
-  function(d, b) { return rndElt([ "@foo" /* makes sense in filtering predicates, at least... */, "*", "*::*"]); },
-  function(d, b) { return makeE4X(d, b) }, // xml
-  function(d, b) { return cat(["<", ">", makeE4X(d, b), "<", "/", ">"]); }, // xml list
-  ]);
-}
-
 
 function maybeMakeTerm(d, b)
 {
@@ -3012,65 +2961,6 @@ function makeCrazyToken()
   ]);
 }
 
-
-function makeE4X(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-  if (d <= 0)
-    return cat(["<", "x", ">", "<", "y", "/", ">", "<", "/", "x", ">"]);
-
-  d = d - 1;
-
-  var y = [
-    function(d, b) { return '<employee id="1"><name>Joe</name><age>20</age></employee>' },
-    function(d, b) { return cat(["<", ">", makeSubE4X(d, b), "<", "/", ">"]); }, // xml list
-
-    function(d, b) { return cat(["<", ">", makeExpr(d, b), "<", "/", ">"]); }, // bogus or text
-    function(d, b) { return cat(["<", "zzz", ">", makeExpr(d, b), "<", "/", "zzz", ">"]); }, // bogus or text
-
-    // mimic parts of this example at a time, from the e4x spec: <x><{tagname} {attributename}={attributevalue+attributevalue}>{content}</{tagname}></x>;
-
-    function(d, b) { var tagId = makeId(d, b); return cat(["<", "{", tagId, "}", ">", makeSubE4X(d, b), "<", "/", "{", tagId, "}", ">"]); },
-    function(d, b) { var attrId = makeId(d, b); var attrValExpr = makeExpr(d, b); return cat(["<", "yyy", " ", "{", attrId, "}", "=", "{", attrValExpr, "}", " ", "/", ">"]); },
-    function(d, b) { var contentId = makeId(d, b); return cat(["<", "yyy", ">", "{", contentId, "}", "<", "/", "yyy", ">"]); },
-
-    // namespace stuff
-    function(d, b) { var contentId = makeId(d, b); return cat(['<', 'bbb', ' ', 'xmlns', '=', '"', makeExpr(d, b), '"', '>', makeSubE4X(d, b), '<', '/', 'bbb', '>']); },
-    function(d, b) { var contentId = makeId(d, b); return cat(['<', 'bbb', ' ', 'xmlns', ':', 'ccc', '=', '"', makeExpr(d, b), '"', '>', '<', 'ccc', ':', 'eee', '>', '<', '/', 'ccc', ':', 'eee', '>', '<', '/', 'bbb', '>']); },
-
-    function(d, b) { return makeExpr(d, b); },
-
-    function(d, b) { return makeSubE4X(d, b); }, // naked cdata things, etc.
-  ]
-
-  return (rndElt(y))(d, b);
-}
-
-function makeSubE4X(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-// Bug 380431
-//  if (rnd(8) == 0)
-//    return "<" + "!" + "[" + "CDATA[" + makeExpr(depth - 1) + "]" + "]" + ">"
-
-  if (d < -2)
-    return "";
-
-  var y = [
-    function(d, b) { return cat(["<", "ccc", ":", "ddd", ">", makeSubE4X(d - 1, b), "<", "/", "ccc", ":", "ddd", ">"]); },
-    function(d, b) { return makeE4X(d, b) + makeSubE4X(d - 1, b); },
-    function(d, b) { return "yyy"; },
-    function(d, b) { return cat(["<", "!", "--", "yy", "--", ">"]); }, // XML comment
-// Bug 380431
-//    function(depth) { return cat(["<", "!", "[", "CDATA", "[", "zz", "]", "]", ">"]); }, // XML cdata section
-    function(d, b) { return " "; },
-    function(d, b) { return ""; },
-  ];
-
-  return (rndElt(y))(d, b);
-}
 
 function makeShapeyValue(d, b)
 {

@@ -96,10 +96,6 @@ def randomFlagSet(shellPath):
     if chance(.05):
         args.append("-D") # aka --dump-bytecode
 
-    if chance(.2):
-        # jorendorff suggests the following line for E4X. It should be removed when E4X is removed.
-        args.extend(['-e', '\'options("allow_xml");\''])
-
     return args
 
 
