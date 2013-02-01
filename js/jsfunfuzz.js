@@ -3812,57 +3812,6 @@ function testUnevalString(uo)
 }
 
 
-function checkErrorMessage(err, code)
-{
-  // Checking to make sure DVG is behaving (and not, say, playing with uninitialized memory)
-  if (engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    checkErrorMessage2(err, "TypeError: ", " is not a function");
-    checkErrorMessage2(err, "TypeError: ", " is not a constructor");
-    checkErrorMessage2(err, "TypeError: ", " is undefined");
-  }
-
-  // These should probably be tested too:XML.ignoreComments
-  // XML filter is applied to non-XML value ...
-  // invalid 'instanceof' operand ...
-  // invalid 'in' operand ...
-  // missing argument 0 when calling function ...
-  // ... has invalid __iterator__ value ... (two of them!!)
-}
-
-function checkErrorMessage2(err, prefix, suffix)
-{
-  var P = prefix.length;
-  var S = suffix.length;
-  if (err.substr(0, P) == prefix) {
-    if (err.substr(-S, S) == suffix) {
-      var dvg = err.substr(11, err.length - P - S);
-      print("Testing an expression in a recent error message: " + dvg);
-
-      // These error messages can involve decompilation of expressions (DVG),
-      // but in some situations they can just be uneval of a value.  In those
-      // cases, we don't want to complain about known uneval bugs.
-      if (!testUnevalString(dvg)) {
-        print("Ignoring error message string because it looks like a known-bogus uneval");
-        return;
-      }
-
-
-      if (dvg == "") {
-        print("Ignoring E4X uneval bogosity");
-        // e.g. the error message from (<x/>.(false))()
-        // bug 465908, etc.
-        return;
-      }
-
-      try {
-        eval("(function() { return (" + dvg + "); })");
-      } catch(e) {
-        foundABug("DVG has apparently failed us", e);
-      }
-    }
-  }
-}
-
 
 /********************
  * MISC OTHER TESTS *
@@ -4181,8 +4130,6 @@ function tryRunningDirectly(f, code, wtt)
       dumpln("Running threw!  About to toString to error.");
     var err = errorToString(runError);
     dumpln("Running threw: " + err);
-    // bug 465908 and other e4x uneval nonsense make this show lots of false positives
-    // checkErrorMessage(err, code);
   }
 
   tryEnsureSanity();
