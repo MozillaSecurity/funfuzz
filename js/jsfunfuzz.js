@@ -3475,11 +3475,7 @@ function whatToTestSpidermonkeyMozilla17(code)
 
     allowIter: true,
 
-    checkUneval: false // bug 539819 (17 branch)
-      // exclusions won't be perfect, since functions can return things they don't
-      // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (17 branch)
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (17 branch)
+    checkUneval: false // may be confused by the decompiler (17 branch)
     ,
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
@@ -3519,11 +3515,7 @@ function whatToTestSpidermonkeyMozilla10(code)
 
     allowIter: true,
 
-    checkUneval: false // bug 539819 (10 branch)
-      // exclusions won't be perfect, since functions can return things they don't
-      // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid bug 379525 (10 branch)
-      && (code.indexOf("<>") == -1)                            // avoid bug 334628 (10 branch)
+    checkUneval: false // may be confused by the decompiler (10 branch)
     ,
 
     expectConsistentOutput: true
@@ -3683,9 +3675,9 @@ function compartmentConsistencyTest(code)
 }
 
 
-/*************************************************
- * EXPRESSION DECOMPILATION & VALUE UNEVAL TESTS *
- *************************************************/
+/****************
+ * UNEVAL TESTS *
+ ****************/
 
 function testUneval(o)
 {
@@ -4049,8 +4041,7 @@ function tryRunningDirectly(f, code, wtt)
     var rv = f();
     if (verbose)
       dumpln("It ran!");
-    if (wtt.checkRecompiling && wtt.checkForMismatch && wtt.checkUneval && rv && typeof rv == "object") {
-      // "checkRecompiling && checkForMismatch" to avoid confusion if we decompile a function returned by f()
+    if (wtt.checkUneval && rv && typeof rv == "object") {
       testUneval(rv);
     }
     if (wtt.allowIter && rv && typeof rv == "object") {
