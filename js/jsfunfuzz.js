@@ -3425,13 +3425,6 @@ function whatToTestSpidermonkeyTrunk(code)
 
     allowIter: true,
 
-    checkUneval: true
-      // exclusions won't be perfect, since functions can return things they don't
-      // appear to contain, e.g. with "return x;"
-      && (code.indexOf("<") == -1 || code.indexOf(".") == -1)  // avoid e4x bug 379525
-      && (code.indexOf("<>") == -1)                            // avoid e4x bug 334628
-    ,
-
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
@@ -3475,9 +3468,6 @@ function whatToTestSpidermonkeyMozilla17(code)
 
     allowIter: true,
 
-    checkUneval: false // may be confused by the decompiler (17 branch)
-    ,
-
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
@@ -3514,9 +3504,6 @@ function whatToTestSpidermonkeyMozilla10(code)
     ,
 
     allowIter: true,
-
-    checkUneval: false // may be confused by the decompiler (10 branch)
-    ,
 
     expectConsistentOutput: true
        && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
@@ -3556,7 +3543,6 @@ function whatToTestJavaScriptCore(code)
     allowParse: true,
     allowExec: unlikelyToHang(code),
     allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
-    checkUneval: false, // JavaScriptCore does not support |uneval|
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
@@ -3570,7 +3556,6 @@ function whatToTestGeneric(code)
     allowParse: true,
     allowExec: unlikelyToHang(code),
     allowIter: (typeof Iterator == "function"),
-    checkUneval: haveRealUneval,
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
@@ -3672,66 +3657,6 @@ function compartmentConsistencyTest(code)
       "resultO: " + resultS + "\n" +
       "resultD: " + resultN);
   }
-}
-
-
-/****************
- * UNEVAL TESTS *
- ****************/
-
-function testUneval(o)
-{
-  // If it happens to return an object, especially an array or hash,
-  // let's test uneval.  Note that this is a different code path than decompiling
-  // an array literal within a function, although the two code paths often have
-  // similar bugs!
-
-  var uo, euo, ueuo;
-
-  uo = uneval(o);
-
-  if (uo == "({})") {
-    // ?
-    return;
-  }
-
-  if (testUnevalString(uo)) {
-    // count=946; tryItOut("return (({ set x x (x) { yield  /x/g  } , x setter: ({}).hasOwnProperty }));");
-    uo = uo.replace(/\[native code\]/g, "");
-    if (uo.charAt(0) == "/")
-      return; // ignore bug 362582
-
-    try {
-      euo = eval(uo); // if this throws, something's wrong with uneval, probably
-    } catch(e) {
-      foundABug("The string returned by uneval failed to eval!", uo);
-      return;
-    }
-    ueuo = uneval(euo);
-    if (ueuo != uo) {
-      foundABug("Mismatch with uneval/eval on the function's return value!", uo + "\n" + ueuo);
-    }
-  } else {
-    dumpln("Skipping re-eval test");
-  }
-}
-
-
-function testUnevalString(uo)
-{
-  var uowlb = uo.replace(/\n/g, " ").replace(/\r/g, " ");
-
-  return true
-      &&  uo.indexOf("[native code]") == -1                // this can happen
-      && (uo.indexOf("{") == -1 || uo.indexOf(":") == -1)  // ignore bug 379525 hard (ugh!)
-      &&  uo.indexOf("NaN") == -1                          // see bug 379521 (wontfix)
-      &&  uo.indexOf("Infinity") == -1                     // see bug 379521 (wontfix)
-      &&  uo.indexOf(",]") == -1                           // avoid  bug 334628 / bug 379525?
-      &&  uo.indexOf("[function") == -1                    // avoid  bug 380379?
-      &&  uo.indexOf("[(function") == -1                   // avoid  bug 380379?
-      && !uowlb.match(/new.*Error/)                        // ignore bug 380578
-      && !uowlb.match(/<.*\/.*>.*<.*\/.*>/)                // ignore bug 334628
-  ;
 }
 
 
@@ -4041,9 +3966,6 @@ function tryRunningDirectly(f, code, wtt)
     var rv = f();
     if (verbose)
       dumpln("It ran!");
-    if (wtt.checkUneval && rv && typeof rv == "object") {
-      testUneval(rv);
-    }
     if (wtt.allowIter && rv && typeof rv == "object") {
       tryIteration(rv);
     }
