@@ -24,7 +24,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
-from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir
+from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments -fcolor-diagnostics'
@@ -407,6 +407,7 @@ def makeTestRev(options):
         else:
             print "Updating...",
             captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev], ignoreStderr=True)
+            destroyPyc(options.buildOptions.repoDir)
             try:
                 print "Compiling...",
                 compileStandalone(shell)

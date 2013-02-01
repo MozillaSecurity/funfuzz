@@ -29,7 +29,7 @@ path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from fileManipulation import firstLine
 import buildOptions
-from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor
+from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor, destroyPyc
 from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, Unbuffered, verbose, vdump
 
 def sanityChecks():
@@ -222,6 +222,7 @@ def findBlamedCset():
 
     vdump("Resetting working directory")
     captureStdout(hgPrefix + ['update', '-r', 'default'], ignoreStderr=True)
+    destroyPyc(options.buildOptions.repoDir)
 
     print dateStr()
 
@@ -365,6 +366,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     if currRev is None:
         print 'Resetting to default revision...'
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
+        destroyPyc(options.buildOptions.repoDir)
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.

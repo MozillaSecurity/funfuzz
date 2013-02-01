@@ -74,8 +74,6 @@ def earliestKnownWorkingRev(options, flags):
     # Note: One could bypass the 119349 error by fully removing the m-c repo, then re-cloning
     #   everytime a build is requested this way, aka a full clobber build. We should investigate
     #   to see what files get left behind that requires a full clobber.
-    # We may need to add something like "hg purge --all --include=*.pyc" at the same points
-    # that we check the output of "hg status --quiet"
     # (See fuzzing repo revision ec77c645e97d and nearby for when we tried this in Jan 2013)
 
     #if options.buildWithAsan:
