@@ -1311,7 +1311,7 @@ function makeSwitchBody(d, b)
         haveDefault = true;
       }
       else {
-        // cases with numbers (integers?) have special optimizations that affect order when decompiling,
+        // cases with numbers (integers?) have special optimizations,
         // so be sure to test those well in addition to testing complicated expressions.
         output += "case " + (rnd(2) ? rnd(10) : makeExpr(d, b)) + ": ";
       }
@@ -2696,7 +2696,6 @@ function makeId(d, b)
   return rndElt(["a", "b", "c", "d", "e", "w", "x", "y", "z",
                  "window", "eval", "\u3056", "NaN",
 //                 "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
-                 "functional", // perhaps decompiler code looks for "function"?
                   ]);
 
   // window is a const (in the browser), so some attempts to redeclare it will cause errors
