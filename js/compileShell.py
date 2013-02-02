@@ -27,8 +27,7 @@ from countCpus import cpuCount
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
-CLANG_PARAMS = ' -Qunused-arguments -fcolor-diagnostics'
-
+CLANG_PARAMS = ' -Qunused-arguments'
 
 
 class CompiledShell(object):
