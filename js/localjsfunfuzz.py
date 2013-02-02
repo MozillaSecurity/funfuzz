@@ -111,7 +111,7 @@ def envDump(shell, log):
         f.write('cd ' + os.path.join(shell.getCompilePathJsSrc(), newTmpDir) + ' && ' + \
             shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + ' && ' + \
             ' '.join(['make', '-j' + str(jobs), '-s']) + ' && ' + \
-            'cp js' + ' ' + os.path.join('..', '..', '..', '..', 'tmpJs-' + rndNum) + ' && ' + \
+            'cp js' + ' ' + os.path.join('..', '..', '..', '..', 'otherJs-' + rndNum) + ' && ' + \
             'cd ' + os.path.join('..', '..', '..', '..') + \
             '\n\n')
 
