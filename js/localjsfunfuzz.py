@@ -8,6 +8,7 @@ from __future__ import with_statement
 
 import os
 import platform
+import random
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,7 @@ import buildOptions
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
+from countCpus import cpuCount
 from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from lithOps import knownBugsDir
@@ -97,8 +99,21 @@ def envDump(shell, log):
     with open(log, 'ab') as f:
         f.write('Information about shell:\n\n')
 
-        f.write('Create another shell like this one:\n')
-        f.write(shellify(["python", "-u", os.path.join(path0, "compileShell.py"), "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgList]) + "\n\n")
+        f.write('Create another shell in autobisect-cache like this one:\n')
+        f.write(shellify(["python", "-u", os.path.join(path0, "compileShell.py"),
+            "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgList]) + "\n\n")
+
+        jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3 # From compileShell.py
+        rndNum = str(random.random()).split('.')[1][-5:]
+        newTmpDir = 'objdir-' + rndNum
+        f.write('Create another shell from compilePath sources like this one, and copy here:\n')
+        f.write('mkdir ' + os.path.join(shell.getCompilePathJsSrc(), newTmpDir) + ';\n')
+        f.write('cd ' + os.path.join(shell.getCompilePathJsSrc(), newTmpDir) + ' && ' + \
+            shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + ' && ' + \
+            ' '.join(['make', '-j' + str(jobs), '-s']) + ' && ' + \
+            'cp js' + ' ' + os.path.join('..', '..', '..', '..', 'tmpJs-' + rndNum) + ' && ' + \
+            'cd ' + os.path.join('..', '..', '..', '..') + \
+            '\n\n')
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')
