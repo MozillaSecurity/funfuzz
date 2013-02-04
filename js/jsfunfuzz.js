@@ -3419,7 +3419,6 @@ function whatToTestSpidermonkeyTrunk(code)
     allowParse: true,
 
     allowExec: unlikelyToHang(code)
-      && code.indexOf("<>")       == -1 // avoid e4x bug 334628, hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
     ,
 
@@ -3440,8 +3439,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("strict") == -1              // bug 743425
-       // The following line is E4X-only, which will be removed by bug 788293
-       && code.indexOf("QName") == -1               // See bug 748568
+       && code.indexOf("QName") == -1               // See bug 748568 (E4X-only)
        && code.indexOf("getPropertyDescriptor") == -1  // bug 803332
        && code.indexOf("length") == -1              // bug 821931
        && code.indexOf("toString") == -1            // bug 826124
