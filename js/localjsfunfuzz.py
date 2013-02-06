@@ -105,14 +105,18 @@ def envDump(shell, log):
 
         jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3 # From compileShell.py
         rndNum = str(random.random()).split('.')[1][-5:]
-        newTmpDir = 'objdir-' + rndNum
+        newTmpDir = os.path.join(shell.getCompilePathJsSrc(), 'objdir-' + rndNum)
+        newTmpDir = shellify(newTmpDir) if isWin else newTmpDir
+        finalBinName = os.path.join(shell.getBaseTempDir(), 'otherJs-' + rndNum)
+        finalBinName = shellify(finalBinName + '.exe') if isWin else finalBinName
         f.write('Create another shell from compilePath sources like this one, and copy here:\n')
-        f.write('mkdir ' + os.path.join(shell.getCompilePathJsSrc(), newTmpDir) + ';\n')
-        f.write('cd ' + os.path.join(shell.getCompilePathJsSrc(), newTmpDir) + ' && ' + \
+        f.write('mkdir ' + newTmpDir + ';\n')
+        f.write('cd ' + newTmpDir + ' && ' + \
             shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + ' && ' + \
             ' '.join(['make', '-j' + str(jobs), '-s']) + ' && ' + \
-            'cp js' + ' ' + os.path.join('..', '..', '..', '..', 'otherJs-' + rndNum) + ' && ' + \
-            'cd ' + os.path.join('..', '..', '..', '..') + \
+            'cp js' + ('.exe ' if isWin else ' ') + finalBinName + ' && ' + \
+            'cd ' + shell.getBaseTempDir() + ' && ' + 'echo' + ' && ' + \
+            'echo "Finished compiling the required shell from the compilePath source."' + \
             '\n\n')
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
