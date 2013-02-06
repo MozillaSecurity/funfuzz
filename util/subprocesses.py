@@ -287,8 +287,8 @@ def shellify(cmd):
         elif okQuotedRE.match(item):
             ssc.append('"' + item + '"')
         else:
-            return 'Regex not matched, but trying to shellify anyway: ' + \
-                        ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
+            vdump('Regex not matched, but trying to shellify anyway:')
+            return ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
     return ' '.join(ssc)
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
