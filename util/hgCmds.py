@@ -14,6 +14,17 @@ from traceback import format_exc
 
 from subprocesses import captureStdout, isVM, normExpUserPath, vdump
 
+def destroyPyc(repoDir):
+    # This is roughly equivalent to ['hg', 'purge', '--all', '--include=**.pyc'])
+    # but doesn't run into purge's issues (incompatbility with -R, requiring an hg extension)
+    for root, dirs, files in os.walk(repoDir):
+        for fn in files:
+            if fn.endswith(".pyc"):
+                os.remove(os.path.join(root, fn))
+        if '.hg' in dirs:
+            # Don't visit .hg dir
+            dirs.remove('.hg')
+
 def findCommonAncestor(repoDir, a, b):
     return captureStdout(['hg', '-R', repoDir, 'log', '-r', 'ancestor(' + a + ',' + b + ')',
                           '--template={node|short}'])[0]
@@ -107,14 +118,3 @@ def patchHgRepoUsingMq(patchLoc, workingDir=os.getcwdu()):
             subprocess.check_call(['hg', '-R', workingDir, 'purge'])
         raise Exception(format_exc())
     return pname
-
-def destroyPyc(repoDir):
-    # This is roughly equivalent to ['hg', 'purge', '--all', '--include=**.pyc'])
-    # but doesn't run into purge's issues (incompatbility with -R, requiring an hg extension)
-    for root, dirs, files in os.walk(repoDir):
-        for fn in files:
-            if fn.endswith(".pyc"):
-                os.remove(os.path.join(root, fn))
-        if '.hg' in dirs:
-            # Don't visit .hg dir
-            dirs.remove('.hg')
