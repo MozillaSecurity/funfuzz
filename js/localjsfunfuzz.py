@@ -106,9 +106,9 @@ def envDump(shell, log):
         jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3 # From compileShell.py
         rndNum = str(random.random()).split('.')[1][-5:]
         newTmpDir = os.path.join(shell.getCompilePathJsSrc(), 'objdir-' + rndNum)
-        newTmpDir = shellify(newTmpDir) if isWin else newTmpDir
+        newTmpDir = newTmpDir.replace('\\', '\\\\') if isWin else newTmpDir
         finalBinName = os.path.join(shell.getBaseTempDir(), 'otherJs-' + rndNum)
-        finalBinName = shellify(finalBinName + '.exe') if isWin else finalBinName
+        finalBinName = (finalBinName + '.exe').replace('\\', '\\\\') if isWin else finalBinName
         f.write('Create another shell from compilePath sources like this one, and copy here:\n')
         f.write('mkdir ' + newTmpDir + ';\n')
         f.write('cd ' + newTmpDir + ' && ' + \
