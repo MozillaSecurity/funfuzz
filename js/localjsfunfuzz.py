@@ -114,8 +114,9 @@ def envDump(shell, log):
         f.write('cd ' + newTmpDir + ' && ' + \
             shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + ' && ' + \
             ' '.join(['make', '-j' + str(jobs), '-s']) + ' && ' + \
-            'cp js' + ('.exe ' if isWin else ' ') + finalBinName + ' && ' + \
-            'cd ' + shell.getBaseTempDir() + ' && ' + 'echo' + ' && ' + \
+            'cp js' + ('.exe ' if isWin else ' ') + finalBinName + ' && ' + 'cd ' + \
+            (shell.getBaseTempDir().replace('\\', '\\\\') if isWin else shell.getBaseTempDir()) + \
+            ' && ' + 'echo' + ' && ' + \
             'echo "Finished compiling the required shell from the compilePath source."' + \
             '\n\n')
 
