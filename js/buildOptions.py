@@ -13,7 +13,7 @@ from downloadBuild import mozPlatformDetails
 from subprocesses import isWin, isMac, isLinux, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
-def parseShellOptions(inputArgList):
+def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
 
     usage = 'Usage: %prog [options]'
@@ -71,12 +71,12 @@ def parseShellOptions(inputArgList):
                       action='store_true',
                       help='Build shells with --enable-root-analysis. Defaults to "%default".')
 
-    (options, args) = parser.parse_args(inputArgList.split())
+    (options, args) = parser.parse_args(inputArgs.split())
 
     options.repoDir = normExpUserPath(options.repoDir)
     assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
 
-    options.inputArgList = inputArgList
+    options.inputArgs = inputArgs
     assert len(args) == 0
 
     assert options.compileType in ['opt', 'dbg']

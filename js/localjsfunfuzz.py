@@ -101,7 +101,7 @@ def envDump(shell, log):
 
         f.write('Create another shell in autobisect-cache like this one:\n')
         f.write(shellify(["python", "-u", os.path.join(path0, "compileShell.py"),
-            "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgList]) + "\n\n")
+            "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgs]) + "\n\n")
 
         jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3 # From compileShell.py
         rndNum = str(random.random()).split('.')[1][-5:]
@@ -198,7 +198,7 @@ def localCompileFuzzJsShell(options):
     cmdList = ['python', '-u']
     cmdList.append(normExpUserPath(os.path.join(path0, 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + myShell.getRepoDir())
-    cmdList += ["--build", options.buildOptions.inputArgList]
+    cmdList += ["--build", options.buildOptions.inputArgs]
     if options.buildOptions.runWithVg:
         cmdList.append('--valgrind')
     if not options.disableCompareJit:
