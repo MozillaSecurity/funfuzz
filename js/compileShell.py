@@ -43,14 +43,6 @@ class CompiledShell(object):
         self.cfg = cfg
     def getCfgCmdExclEnv(self):
         return self.cfg
-    def setEnvAdded(self, addedEnv):
-        self.addedEnv = addedEnv
-    def getEnvAdded(self):
-        return self.addedEnv
-    def setEnvFull(self, fullEnv):
-        self.fullEnv = fullEnv
-    def getEnvFull(self):
-        return self.fullEnv
     def getJsCfgPath(self):
         self.jsCfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
         assert os.path.isfile(self.jsCfgFile)
@@ -60,6 +52,14 @@ class CompiledShell(object):
     def getCompilePathJsSrc(self):
         self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
         return self.cPathJsSrc
+    def setEnvAdded(self, addedEnv):
+        self.addedEnv = addedEnv
+    def getEnvAdded(self):
+        return self.addedEnv
+    def setEnvFull(self, fullEnv):
+        self.fullEnv = fullEnv
+    def getEnvFull(self):
+        return self.fullEnv
     def getHgHash(self):
         return self.hgHash
     def getJsObjdir(self):
