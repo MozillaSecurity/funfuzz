@@ -107,6 +107,7 @@ dom.server-events.enabled
 dom.storage.enabled
 dom.undo_manager.enabled
 dom.workers.enabled
+dom.xbl_scopes
 editor.use_css
 editor.use_custom_colors
 font.size.inflation.forceEnabled
