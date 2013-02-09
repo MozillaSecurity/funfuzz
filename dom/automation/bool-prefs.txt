@@ -90,6 +90,7 @@ dom.enable_performance
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
+dom.experimental_forms_range
 dom.identity.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
