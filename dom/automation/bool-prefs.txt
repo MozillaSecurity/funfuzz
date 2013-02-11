@@ -260,6 +260,7 @@ stagefright.disabled
 svg.display-lists.hit-testing.enabled
 svg.paint-order.enabled
 svg.smil.enabled
+svg.text.css-frames.enabled
 toolkit.identity.debug
 toolkit.telemetry.enabled
 view_source.syntax_highlight
