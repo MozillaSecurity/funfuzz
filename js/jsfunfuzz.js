@@ -1213,7 +1213,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m() + " = " + m() + ";"; } },
     { w: 1,  fun: function(d, b) { return m() + " = " + m("g") + ".objectEmulatingUndefined();"; } },
     { w: 1,  fun: function(d, b) { return m() + " = wrap(" + val(d, b) + ");"; } },
-    { w: 1,  fun: function(d, b) { return m() + " = wrapWithProto(" + val(d, b) + ");"; } },
+    { w: 1,  fun: function(d, b) { return m() + " = wrapWithProto(" + val(d, b) + ", " + val(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
     { w: 10, fun: function(d, b) { return "gc();"; } },
     { w: 10, fun: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
