@@ -16,7 +16,7 @@ from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
 
-    usage = 'Usage: %prog [options]'
+    usage = "Usage: Don't use this directly"
     parser = optparse.OptionParser(usage)
     # http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
     parser.disable_interspersed_args()
@@ -111,3 +111,8 @@ def computeShellName(options, extraIdentifier):
     return '-'.join(x for x in ['js', options.compileType, options.arch, specialParam,
                                 'windows' if isWin else platform.system().lower(),
                                 extraIdentifier] if x)
+
+if __name__ == "__main__":
+    print "Running this file directly doesn't do anything, but here's the help for our subparser:"
+    print
+    parseShellOptions("--help")
