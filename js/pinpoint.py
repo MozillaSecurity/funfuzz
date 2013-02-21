@@ -160,7 +160,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
         elif sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
             autobisectCmd = (
                 [sys.executable, autobisectpy] +
-                ["-R", bisectRepo] +
                 (["-b", buildOptionsStr] if (buildOptionsStr is not None) else guessBuildOptions(jsEngine)) +
                 ["-p", ' '.join(engineFlags + [infilename])] +
                 ["-i"] + itest
