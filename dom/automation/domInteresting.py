@@ -294,7 +294,7 @@ class AmissLogHandler:
             ):
             self.expectChromeFailure = True
         if (not self.expectChromeFailure and
-            ("uncaught exception" in msg or "JavaScript error" in msg or "JavaScript Error" in msg) and
+            ("uncaught exception" in msg or "JavaScript error" in msg or "JavaScript Error" in msg or "[Exception..." in msg) and
             ("chrome://browser/" in msg or "resource:///components" in msg) and
             not knownChromeFailure(msg)):
             self.printAndLog("@@@ " + msg)
