@@ -160,7 +160,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
         elif sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
             autobisectCmd = (
                 [sys.executable, autobisectpy] +
-                (["-b", buildOptionsStr] if (buildOptionsStr is not None) else guessBuildOptions(jsEngine)) +
+                ["-b", buildOptionsStr if (buildOptionsStr is not None) else guessBuildOptions(jsEngine)] +
                 ["-p", ' '.join(engineFlags + [infilename])] +
                 ["-i"] + itest
             )
@@ -174,9 +174,12 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
 
 def guessBuildOptions(jsEngine):
     # It might be more accurate to use [./js -e "print(JSON.stringify(getBuildConfiguration()))"] or something in inspectShell.py
+    # FIXME: -R is not specified here. Please be sure that the repository to be worked on is as intended.
+    # This function is only used when calling loopjsfunfuzz.py without --build
     opts = ["-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)]
     if '-dm-' in jsEngine:
         opts.append('--enable-more-deterministic')
     elif '-ra-' in jsEngine:
         opts.append('--enable-root-analysis')
+    # XXX: Add threadsafe detection
     return ' '.join(opts)
