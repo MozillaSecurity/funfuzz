@@ -23,8 +23,8 @@ lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py"
 def knownBugsDir(rName):
     '''Defines and returns the known-bugs directory.'''
     mcKnDir = normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-central'))
-    if rName == 'mozilla-esr10':
-        return normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-esr10'))
+    if rName == 'mozilla-esr17':
+        return normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-esr17'))
     elif rName != 'mozilla-central':
         # XXX: mozilla-aurora, mozilla-beta and mozilla-release should have their known-bugs lists.
         vdump('Known bugs for the ' + rName + ' repository does not exist. Using m-c one instead.')
