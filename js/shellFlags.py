@@ -38,6 +38,14 @@ def randomFlagSet(shellPath):
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
     infer = chance(.7)
 
+    if shellSupportsFlag(shellPath, '--no-baseline'):
+        # Baseline still compiles scripts eagerly by default, but in the future there will be the
+        # --baseline-eager flag. See bug 842258.
+        if chance(.3):
+            args.append('--no-baseline')
+        #if chance(.6):
+        #    args.append("--baseline-eager")
+
     if shellSupportsFlag(shellPath, "--no-ion"):
         # New js shell defaults jaeger, ion, and infer to on! See bug 724751.
         if not jaeger:
@@ -105,7 +113,7 @@ def basicFlagSets(shellPath):
     through Lithium and autoBisect.
     '''
     if shellSupportsFlag(shellPath, "--no-ion"):
-        return [
+        basicFlagList = [
             # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
             [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
             ['--no-jm'],
@@ -119,8 +127,15 @@ def basicFlagSets(shellPath):
             ['--no-ion', '-a', '-d'],
             ['--no-ion', '-d'],
             # Plus a special bonus
-            ['--ion-eager']
+            ['--ion-eager'],
         ]
+        if shellSupportsFlag(shellPath, "--no-baseline"):
+            basicFlagList.extend([
+                ['--no-baseline'],
+                ['--no-baseline', '--no-ti'],
+                # ['--baseline-eager'],
+            ])
+        return basicFlagList
     else:
         sets = [
             # ,m,am,amd,n,mn,amn,amdn,mdn
