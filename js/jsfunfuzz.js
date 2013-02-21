@@ -883,6 +883,7 @@ var statementMakers = weighted([
   // { w: 1, fun: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
   { w: 1, fun: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))" } },
   { w: 1, fun: function(d, b) { return "intern(" + makeExpr(d, b) + ")" } },
+  { w: 1, fun: function(d, b) { return "timeout(1800)"; } }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
 
   // Blocks of statements related to typed arrays
   { w: 8, fun: makeTypedArrayStatements },
