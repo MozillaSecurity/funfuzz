@@ -3440,7 +3440,6 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("strict") == -1              // bug 743425
-       && code.indexOf("QName") == -1               // See bug 748568 (E4X-only)
        && code.indexOf("getPropertyDescriptor") == -1  // bug 803332
        && code.indexOf("length") == -1              // bug 821931
        && code.indexOf("toString") == -1            // bug 826124
