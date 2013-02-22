@@ -49,7 +49,6 @@ var jsStrictMode = false;
 
 var ENGINE_UNKNOWN = 0;
 var ENGINE_SPIDERMONKEY_TRUNK = 1;
-var ENGINE_SPIDERMONKEY_MOZILLA10 = 2;
 var ENGINE_SPIDERMONKEY_MOZILLA17 = 3;
 var ENGINE_JAVASCRIPTCORE = 4;
 
@@ -68,8 +67,6 @@ if (jsshell) {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
     } else if (typeof verifyprebarriers == "function") {
       engine = ENGINE_SPIDERMONKEY_MOZILLA17;
-    } else if (typeof snarf == "function") {
-      engine = ENGINE_SPIDERMONKEY_MOZILLA10;
     }
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
@@ -144,8 +141,6 @@ else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   printImportant("Targeting SpiderMonkey / Gecko (trunk).");
 else if (engine == ENGINE_SPIDERMONKEY_MOZILLA17)
   printImportant("Targeting SpiderMonkey / Gecko (ESR 17 branch).");
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
-  printImportant("Targeting SpiderMonkey / Gecko (10 branch).");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
 
@@ -3487,53 +3482,6 @@ function whatToTestSpidermonkeyMozilla17(code)
   };
 }
 
-function whatToTestSpidermonkeyMozilla10(code)
-{
-  // regexps can't match across lines, so replace whitespace with spaces.
-  var codeL = code.replace(/\s/g, " ");
-
-  return {
-
-    allowParse: true,
-
-    allowExec: unlikelyToHang(code)
-      && code.indexOf("<>") == -1 // avoid bug 334628 (10 branch), hopefully
-      && (jsshell || code.indexOf("nogeckoex") == -1)
-    ,
-
-    allowIter: true,
-
-    expectConsistentOutput: true
-       && code.indexOf("gc") == -1                  // gc is noisy in spidermonkey
-       && code.indexOf("Date") == -1                // time marches on
-       && code.indexOf("random") == -1
-    ,
-
-    expectConsistentOutputAcrossIter: true
-       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
-    ,
-
-    expectConsistentOutputAcrossJITs: true
-       && code.indexOf("Error") == -1               // avoid bug 525518 (10 branch)
-       && code.indexOf("too_much_recursion") == -1  // recursion limits may differ (at least between execution modes). see bug 584594 (10 branch) (wontfix).
-       && code.indexOf(".(") == -1                  // recursion limits & e4x operator that can get itself into infinite-recursion
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey" exist only with -j
-       && code.indexOf("getPrototypeOf") == -1      // avoid bug 601454 (10 branch)
-       && code.indexOf("options('strict')") == -1   // bug 621418 (10 branch), bug 621421 (10 branch)
-       && code.indexOf("use strict") == -1          // bug 622271 (10 branch)
-       && code.indexOf("++") == -1                  // bug 622265 (10 branch)
-       && code.indexOf("--") == -1                  // bug 622265 (10 branch)
-       && code.indexOf("instanceof") == -1          // bug 617949 (10 branch)
-       && !(code.match(/\S=/))                      // bug 622271 (10 branch) (+= etc)
-       && code.indexOf("strict") == -1              // bug 743425
-       && code.indexOf("QName") == -1              // See bug 748568
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
-
-  };
-}
-
-
-
 function whatToTestJavaScriptCore(code)
 {
   return {
@@ -3565,8 +3513,6 @@ if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
 else if (engine == ENGINE_SPIDERMONKEY_MOZILLA17)
   whatToTest = whatToTestSpidermonkeyMozilla17;
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA10)
-  whatToTest = whatToTestSpidermonkeyMozilla10;
 else if (engine == ENGINE_JAVASCRIPTCORE)
   whatToTest = whatToTestJavaScriptCore;
 else
