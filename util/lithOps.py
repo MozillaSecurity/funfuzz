@@ -26,7 +26,7 @@ def knownBugsDir(rName):
     if rName == 'mozilla-esr17':
         return normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-esr17'))
     elif rName == 'ionmonkey':
-        return normExpUserPath(os.path.join(p0, os.pardir, 'known', 'ionmonkey'))
+        return normExpUserPath(os.path.join(p0, os.pardir, 'known', 'mozilla-central', 'ionmonkey'))
     elif rName != 'mozilla-central':
         # XXX: mozilla-aurora, mozilla-beta and mozilla-release should have their known-bugs lists.
         vdump('Known bugs for the ' + rName + ' repository does not exist. Using m-c one instead.')
