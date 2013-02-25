@@ -413,6 +413,7 @@ def skipJobNamed(j):
         "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
         "69ba529e3d1d11e28001406c8f39f411" in j or # a pain to reduce (bug 829841)
         "4174412e6a8211e28003406c8f39f898" in j or # Bug 837033
+        "b924fd7d7f7e11e280033c0754725060" in j or # Bug 845055
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
         "1343538581" in j or # probably a nasty variant of bug 728632
