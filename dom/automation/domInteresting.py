@@ -324,6 +324,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
+        ("pageInfo.js" in msg and "mimeType is null" in msg) or # Bug 845055
         "nsIFeedWriter::close" in msg or # Bug 813408
         False
     )
