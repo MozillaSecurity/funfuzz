@@ -294,8 +294,8 @@ def cfgJsBin(shell, options):
         strToBeAppended = envVar + '="' + cfgEnvDt[envVar] + '"' \
             if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
         envVarList.append(strToBeAppended)
-    assert os.path.isdir(shell.getJsObjdir())
     vdump('Command to be run is: ' + ' '.join(envVarList) + ' ' + ' '.join(cfgCmdList))
+    assert os.path.isdir(shell.getJsObjdir())
     captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getJsObjdir(), env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
