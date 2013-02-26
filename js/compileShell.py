@@ -28,6 +28,8 @@ from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyP
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
+# Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
+COMPILATION_JOBS = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
 
 
 class CompiledShell(object):
@@ -355,10 +357,8 @@ def copyJsSrcDirs(shell):
 
 def compileJsCopy(shell, options):
     '''This function compiles and copies a binary.'''
-    # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
-    jobs = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
     try:
-        cmdList = ['make', '-C', shell.getJsObjdir(), '-j' + str(jobs), '-s']
+        cmdList = ['make', '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                             currWorkingDir=shell.getJsObjdir())[0]
         if 'no such option: -s' in out:  # Retry only for this situation.
