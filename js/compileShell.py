@@ -49,11 +49,18 @@ class CompiledShell(object):
         self.jsCfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
         assert os.path.isfile(self.jsCfgFile)
         return self.jsCfgFile
+    def getNsprCfgPath(self):
+        self.nsprCfgFile = normExpUserPath(os.path.join(self.cPathNsprSrc, 'configure'))
+        assert os.path.isfile(self.nsprCfgFile)
+        return self.nsprCfgFile
     def getCompilePath(self):
         return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath'))
     def getCompilePathJsSrc(self):
         self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
         return self.cPathJsSrc
+    def getCompilePathNsprSrc(self):
+        self.cPathNsprSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'nsprpub'))
+        return self.cPathNsprSrc
     def setEnvAdded(self, addedEnv):
         self.addedEnv = addedEnv
     def getEnvAdded(self):
@@ -66,6 +73,8 @@ class CompiledShell(object):
         return self.hgHash
     def getJsObjdir(self):
         return normExpUserPath(os.path.join(self.cPathJsSrc, self.buildOptions.compileType + '-objdir'))
+    def getNsprObjdir(self):
+        return normExpUserPath(os.path.join(self.cPathNsprSrc, self.buildOptions.compileType + '-objdir'))
     def getRepoDir(self):
         return self.buildOptions.repoDir
     def getRepoName(self):
@@ -137,25 +146,27 @@ def cfgAsanParams(currEnv, options):
 
 def cfgJsCompileCopy(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
+    if options.isThreadsafe:
+        compileNspr(shell, options)
     autoconfRun(shell.getCompilePathJsSrc())
     try:
         os.mkdir(shell.getJsObjdir())
     except OSError:
         raise Exception('Unable to create js objdir.')
     try:
-        cfgJsBin(shell, options)
+        cfgBin(shell, options, 'js')
     except Exception, e:
-        # This exception message is returned from captureStdout via cfgJsBin.
+        # This exception message is returned from captureStdout via cfgBin.
         if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
             print 'Trying once more...'
-            cfgJsBin(shell, options)
+            cfgBin(shell, options, 'js')
         else:
             print 'Configuration of the js binary failed.'
             raise
     compileJsCopy(shell, options)
 
-def cfgJsBin(shell, options):
-    '''This function configures a js binary according to required parameters.'''
+def cfgBin(shell, options, binToBeCompiled):
+    '''This function configures a binary according to required parameters.'''
     cfgCmdList = []
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
@@ -181,7 +192,10 @@ def cfgJsBin(shell, options):
             cfgEnvDt['STRIP'] = 'strip -x -S'
             cfgEnvDt['CROSS_COMPILE'] = '1'
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+            if binToBeCompiled == 'nspr':
+                cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+            else:
+                cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
             cfgCmdList.append('--enable-macos-target=10.5')
             if options.buildWithAsan:
@@ -199,7 +213,10 @@ def cfgJsBin(shell, options):
                 cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
             cfgEnvDt['AR'] = 'ar'
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+            if binToBeCompiled == 'nspr':
+                cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+            else:
+                cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i686-pc-linux')
             if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
@@ -212,7 +229,10 @@ def cfgJsBin(shell, options):
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         else:
             cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+            if binToBeCompiled == 'nspr':
+                cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+            else:
+                cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
     elif isMac and macVer() >= [10, 7] and options.arch == '64':
         cfgEnvDt['CC'] = 'clang'
@@ -223,16 +243,28 @@ def cfgJsBin(shell, options):
         cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgEnvDt['AR'] = 'ar'
         cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        if binToBeCompiled == 'nspr':
+            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+            cfgCmdList.append('--enable-64bit')
+        else:
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         cfgCmdList.append('--target=x86_64-apple-darwin11.4.0')  # Lion 10.7.4
         if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
-    elif isWin and options.arch == '64':
+    elif isWin:
         cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        cfgCmdList.append('--host=x86_64-pc-mingw32')
-        cfgCmdList.append('--target=x86_64-pc-mingw32')
+        if binToBeCompiled == 'nspr':
+            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+            if options.arch == '32':
+                cfgCmdList.append('--enable-win32-target=WIN95')
+            else:
+                cfgCmdList.append('--enable-64bit')
+        else:
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        if options.arch == '64':
+            cfgCmdList.append('--host=x86_64-pc-mingw32')
+            cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if options.buildWithAsan:
@@ -240,7 +272,11 @@ def cfgJsBin(shell, options):
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
             cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgCmdList.append('sh')
-        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        if binToBeCompiled == 'nspr':
+            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+            cfgCmdList.append('--enable-64bit')
+        else:
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
@@ -254,32 +290,45 @@ def cfgJsBin(shell, options):
     else:
         cfgCmdList.append('--enable-optimize')
         cfgCmdList.append('--disable-debug')
+
+    if binToBeCompiled == 'nspr':
+        cfgCmdList.append('--prefix=' + \
+            normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+    else:
         cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
         cfgCmdList.append('--enable-gczeal')
         cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
+        cfgCmdList.append('--enable-methodjit')  # Enabled by default now, but useful for autoBisect
+        cfgCmdList.append('--enable-type-inference') # Enabled by default now, but useful for autoBisect
+        cfgCmdList.append('--disable-tests')
+        if options.enableMoreDeterministic:
+            # Fuzzing tweaks for more useful output, implemented in bug 706433
+            cfgCmdList.append('--enable-more-deterministic')
+        if options.enableRootAnalysis:
+            cfgCmdList.append('--enable-root-analysis')
+        if options.isThreadsafe:
+            cfgCmdList.append('--enable-threadsafe')
+            cfgCmdList.append('--with-nspr-prefix=' + \
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+            cfgCmdList.append('--with-nspr-cflags=-I' + \
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
+            cfgCmdList.append('--with-nspr-libs=' + ' '.join([
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')),
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libplds4.a')),
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libplc4.a'))
+                ]))
+        if options.buildWithVg:
+            cfgCmdList.append('--enable-valgrind')
 
-    cfgCmdList.append('--enable-methodjit')  # Enabled by default now, but useful for autoBisect
-    cfgCmdList.append('--enable-type-inference') # Enabled by default now, but useful for autoBisect
-    cfgCmdList.append('--disable-tests')
-    if options.enableMoreDeterministic:
-        # Fuzzing tweaks for more useful output, implemented in bug 706433
-        cfgCmdList.append('--enable-more-deterministic')
-    if options.enableRootAnalysis:
-        cfgCmdList.append('--enable-root-analysis')
-    if options.isThreadsafe:
-        cfgCmdList.append('--enable-threadsafe')
-        cfgCmdList.append('--with-system-nspr')
-    if options.buildWithVg:
-        cfgCmdList.append('--enable-valgrind')
+        if os.name == 'posix':
+            if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
+                cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
+            # ccache is not applicable for non-Tegra Ubuntu ARM builds.
+            elif os.uname()[1] == 'tegra-ubuntu':
+                cfgCmdList.append('--with-ccache')
+                cfgCmdList.append('--with-arch=armv7-a')
 
-    if os.name == 'posix':
-        if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
-            cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
-        # ccache is not applicable for non-Tegra Ubuntu ARM builds.
-        elif os.uname()[1] == 'tegra-ubuntu':
-            cfgCmdList.append('--with-ccache')
-            cfgCmdList.append('--with-arch=armv7-a')
-    else:
+    if os.name == 'nt':
         # FIXME: Replace this with shellify.
         counter = 0
         for entry in cfgCmdList:
@@ -295,8 +344,10 @@ def cfgJsBin(shell, options):
             if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
         envVarList.append(strToBeAppended)
     vdump('Command to be run is: ' + ' '.join(envVarList) + ' ' + ' '.join(cfgCmdList))
-    assert os.path.isdir(shell.getJsObjdir())
-    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=shell.getJsObjdir(), env=cfgEnvDt)
+
+    wDir = shell.getNsprObjdir() if binToBeCompiled == 'nspr' else shell.getJsObjdir()
+    assert os.path.isdir(wDir)
+    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
     shell.setEnvFull(cfgEnvDt)
@@ -380,6 +431,32 @@ def compileJsCopy(shell, options):
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
+
+def compileNspr(shell, options):
+    '''Compile a NSPR binary.'''
+    shutil.copytree(normExpUserPath(os.path.join(shell.getRepoDir(), 'nsprpub')),
+                    shell.getCompilePathNsprSrc())
+    autoconfRun(shell.getCompilePathNsprSrc())
+    try:
+        os.mkdir(shell.getNsprObjdir())
+    except OSError:
+        raise Exception('Unable to create NSPR objdir.')
+    cfgBin(shell, options, 'nspr')
+    nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
+    out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
+                        currWorkingDir=shell.getNsprObjdir())[0]
+    if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')):
+        print out
+        raise Exception("`make` did not result in a NSPR binary.")
+
+    assert os.path.isdir(normExpUserPath(os.path.join(
+        shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
+    assert os.path.isfile(normExpUserPath(os.path.join(
+        shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')))
+    assert os.path.isfile(normExpUserPath(os.path.join(
+        shell.getNsprObjdir(), 'dist', 'lib', 'libplc4.a')))
+    assert os.path.isfile(normExpUserPath(os.path.join(
+        shell.getNsprObjdir(), 'dist', 'lib', 'libplds4.a')))
 
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
