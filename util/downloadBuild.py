@@ -73,7 +73,7 @@ def parseOptions():
                       help='Sets the repository to be fuzzed. Defaults to "%default".')
     parser.add_option('-d', '--remotedir', dest='remoteDir',
                       help='Sets the remote directory from which the files are to be obtained ' + \
-                           'from. The default location is at "%default".')
+                           'from. The default is to grab the latest from mozilla-central.')
     parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
                       help='Sets the compile type to be fuzzed. Defaults to "%default".')
 
