@@ -31,6 +31,10 @@ CLANG_PARAMS = ' -Qunused-arguments'
 # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
 COMPILATION_JOBS = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
 
+LIBNSPR_NAME = 'libnspr4.' + ('lib' if os.name == 'nt' else 'a')
+LIBPLDS_NAME = 'libplds4.' + ('lib' if os.name == 'nt' else 'a')
+LIBPLC_NAME = 'libplc4.' + ('lib' if os.name == 'nt' else 'a')
+
 
 class CompiledShell(object):
     def __init__(self, buildOpts, hgHash, baseTmpDir):
@@ -315,9 +319,9 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--with-nspr-cflags=-I' + \
                 normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
             cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')),
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libplds4.a')),
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libplc4.a'))
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', LIBNSPR_NAME)),
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', LIBPLDS_NAME)),
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', LIBPLC_NAME))
                 ]))
         if options.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
@@ -447,18 +451,18 @@ def compileNspr(shell, options):
     nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
     out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
                         currWorkingDir=shell.getNsprObjdir())[0]
-    if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')):
+    if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', LIBNSPR_NAME)):
         print out
         raise Exception("`make` did not result in a NSPR binary.")
 
     assert os.path.isdir(normExpUserPath(os.path.join(
         shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
     assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')))
+        shell.getNsprObjdir(), 'dist', 'lib', LIBNSPR_NAME)))
     assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', 'libplc4.a')))
+        shell.getNsprObjdir(), 'dist', 'lib', LIBPLDS_NAME)))
     assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', 'libplds4.a')))
+        shell.getNsprObjdir(), 'dist', 'lib', LIBPLS_NAME)))
 
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
