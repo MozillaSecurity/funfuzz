@@ -285,7 +285,9 @@ def cfgBin(shell, options, binToBeCompiled):
         assert 'clang++' in cfgEnvDt['CXX']
 
     if options.compileType == 'dbg':
-        cfgCmdList.append('--disable-optimize')
+        # See https://hg.mozilla.org/mozilla-central/file/0a91da5f5eab/configure.in#l6894
+        # Debug builds are compiled with --enable-optimize because --disable-optimize is not present.
+        cfgCmdList.append('--enable-optimize')
         cfgCmdList.append('--enable-debug')
     else:
         cfgCmdList.append('--enable-optimize')
