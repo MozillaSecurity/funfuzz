@@ -88,6 +88,9 @@ def parseShellOptions(inputArgs):
         assert options.buildWithVg
         assert not options.buildWithAsan
 
+    if options.buildWithAsan:
+        assert not isWin, 'Asan is not yet supported on Windows.'
+
     if isWin:
         assert ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) == (options.arch == '64')
 
