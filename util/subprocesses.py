@@ -70,11 +70,17 @@ def getFreeSpace(folder, mulVar):
 #####################
 
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                  currWorkingDir=os.getcwdu(), env=os.environ, verbosity=False):
+                  currWorkingDir=os.getcwdu(), env='NOTSET', verbosity=False):
     '''
     Captures standard output, returns the output as a string, along with the return value.
     '''
-    vdump(shellify(inputCmd))
+    if env == 'NOTSET':
+        vdump(shellify(inputCmd))
+        env = os.environ
+    else:
+        # There is no way yet to only print the environment variables that were added by the harness
+        # We could dump all of os.environ but it is too much verbose output.
+        vdump('ENV_VARIABLES_WERE_ADDED_HERE ' + shellify(inputCmd))
     cmd = []
     for el in inputCmd:
         if (el.startswith('"') and el.endswith('"')):
