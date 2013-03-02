@@ -51,7 +51,7 @@ def shellSupports(shellPath, args):
     This function returns True if the shell likes the args.
     You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
     '''
-    output, retCode = testBinary(shellPath, args, False)
+    output, retCode = testBinary(shellPath, args, False, False)
     if retCode == 0:
         return True
     elif 1 <= retCode <= 3:
@@ -63,14 +63,13 @@ def shellSupports(shellPath, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
-def testBinary(shellPath, args, useValgrind):
+def testBinary(shellPath, args, useValgrind, threadsafeShell):
     '''Tests the given shell with the given args.'''
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     vdump('The testing command is: ' + shellify(testCmd))
 
     newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
-    # FIXME: Same awful hack to check if the shell is threadsafe
-    if os.path.basename(os.path.abspath(shellPath)).split('-')[3] == 'ts':
+    if threadsafeShell:
         nsprLibPath = normExpUserPath(os.path.join(
             os.path.dirname(os.path.abspath(shellPath)), 'compilePath', 'nsprpub',
                 # Awful hack to parse the name of the shell here, because we do not pass in the shell
@@ -100,7 +99,7 @@ def testGetBuildConfigurationWithThreadsafe(s):
     See bug 791146 - getBuildConfiguration() returns the wrong value for gczeal and threadsafe
     '''
     ans = testBinary(s,
-            ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False)[0]
+            ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False, False)[0]
     return ans.find('true') != -1
 
 def testJsShellOrXpcshell(s):
@@ -109,7 +108,8 @@ def testJsShellOrXpcshell(s):
 
 def queryBuildConfiguration(s, parameter):
     '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
-    ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'], False)[0]
+    ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'],
+                     False, False)[0]
     return ans.find('true') != -1
 
 def verifyBinary(sh, options):
