@@ -13,6 +13,7 @@ import platform
 import re
 import subprocess
 import time
+from copy import deepcopy
 
 verbose = False
 
@@ -21,6 +22,8 @@ isMac = (platform.system() == 'Darwin')
 # In Vista, Python 2.5.1 reports "Microsoft" - see http://bugs.python.org/issue1082
 isWin = (platform.system() in ('Microsoft', 'Windows'))
 isWin64 = ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) if os.name == 'nt' else False
+
+ENV_PATH_SEPARATOR = ';' if os.name == 'nt' else ':'
 
 ########################
 #  Platform Detection  #
@@ -69,6 +72,24 @@ def getFreeSpace(folder, mulVar):
 #####################
 #  Shell Functions  #
 #####################
+
+def envWithPath(path):
+    '''Appends the path to the appropriate library path on various platforms.'''
+    if isLinux:
+        libPath = 'LD_LIBRARY_PATH'
+    elif isMac:
+        libPath = 'DYLD_LIBRARY_PATH'
+    elif isWin:
+        libPath = 'PATH'
+
+    env = deepcopy(os.environ)
+    if libPath in env:
+        if path not in env[libPath]:
+            env[libPath] += ENV_PATH_SEPARATOR + path
+    else:
+        env[libPath] = path
+
+    return env
 
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                   currWorkingDir=os.getcwdu(), env='NOTSET', verbosity=False):

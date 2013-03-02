@@ -8,12 +8,12 @@ from __future__ import with_statement
 
 import os
 import sys
-from copy import deepcopy
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, isLinux, isMac, isWin, shellify, vdump
+from subprocesses import envWithPath, captureStdout, isLinux, isMac, isWin, normExpUserPath, \
+    shellify, vdump
 
 def archOfBinary(binary):
     '''This function tests if a binary is 32-bit or 64-bit.'''
@@ -68,11 +68,16 @@ def testBinary(shellPath, args, useValgrind):
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     vdump('The testing command is: ' + shellify(testCmd))
 
-    cfgEnvDt = deepcopy(os.environ)
-    if isLinux:
-        cfgEnvDt['LD_LIBRARY_PATH'] = os.path.dirname(os.path.abspath(shellPath))
+    newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
+    nsprLibPath = normExpUserPath(os.path.join(
+        os.path.dirname(os.path.abspath(shellPath)), 'compilePath', 'nsprpub',
+            # Awful hack to parse the name of the shell here, because we do not pass in the shell
+            # object, only the path to the shell, in these functions.
+            os.path.basename(os.path.abspath(shellPath)).split('-')[1] + '-objdir', 'dist', 'lib'))
+    assert os.path.isdir(nsprLibPath)
+    newEnv = envWithPath(nsprLibPath)
     out, rCode = captureStdout(testCmd, combineStderr=True, ignoreStderr=True, ignoreExitCode=True,
-                               env=cfgEnvDt)
+                               env=newEnv)
     vdump('The exit code is: ' + str(rCode))
     return out, rCode
 
@@ -92,8 +97,9 @@ def testGetBuildConfigurationWithThreadsafe(s):
     This function tests if a binary supports getBuildConfiguration() with threadsafe.
     See bug 791146 - getBuildConfiguration() returns the wrong value for gczeal and threadsafe
     '''
-    return captureStdout([s, '-e',
-        'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'])[0].find('true') != -1
+    ans = testBinary(s,
+            ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False)[0]
+    return ans.find('true') != -1
 
 def testJsShellOrXpcshell(s):
     '''This function tests if a binary is a js shell or xpcshell.'''
@@ -101,8 +107,8 @@ def testJsShellOrXpcshell(s):
 
 def queryBuildConfiguration(s, parameter):
     '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
-    return captureStdout([s, '-e',
-        'print(getBuildConfiguration()["' + parameter + '"])'])[0].find('true') != -1
+    ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'], False)[0]
+    return ans.find('true') != -1
 
 def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''

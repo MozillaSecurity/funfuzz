@@ -25,12 +25,34 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
-from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, \
-    shellify, vdump
+from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, isWin64, macVer, \
+    normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
 COMPILATION_JOBS = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
+
+if os.name == 'nt':
+    COMPILE_NSPR_LIB = 'libnspr4.lib' if isWin64 else 'nspr4.lib'
+    COMPILE_PLDS_LIB = 'libplds4.lib' if isWin64 else 'plds4.lib'
+    COMPILE_PLC_LIB = 'libplc4.lib' if isWin64 else 'plc4.lib'
+
+    RUN_NSPR_LIB = 'libnspr4.dll' if isWin64 else 'nspr4.dll'
+    RUN_PLDS_LIB = 'libplds4.dll' if isWin64 else 'plds4.dll'
+    RUN_PLC_LIB = 'libplc4.dll' if isWin64 else 'plc4.dll'
+else:
+    COMPILE_NSPR_LIB = 'libnspr4.a'
+    COMPILE_PLDS_LIB = 'libplds4.a'
+    COMPILE_PLC_LIB = 'libplc4.a'
+
+    if platform.system() == 'Darwin':
+        RUN_NSPR_LIB = 'libnspr4.dylib'
+        RUN_PLDS_LIB = 'libplds4.dylib'
+        RUN_PLC_LIB = 'libplc4.dylib'
+    elif (platform.system() == 'Linux'):
+        RUN_NSPR_LIB = 'libnspr4.so'
+        RUN_PLDS_LIB = 'libplds4.so'
+        RUN_PLC_LIB = 'libplc4.so'
 
 
 class CompiledShell(object):
@@ -316,9 +338,9 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--with-nspr-cflags=-I' + \
                 normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
             cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')),
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libplds4.a')),
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libplc4.a'))
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_NSPR_LIB)),
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLDS_LIB)),
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLC_LIB))
                 ]))
         if options.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
@@ -414,12 +436,12 @@ def compileJsCopy(shell, options):
     try:
         cmdList = ['make', '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                            currWorkingDir=shell.getJsObjdir())[0]
+                            currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         if 'no such option: -s' in out:  # Retry only for this situation.
             cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
             print 'Trying once more without -s...'
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                                currWorkingDir=shell.getJsObjdir())[0]
+                                currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception, e:
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
@@ -431,6 +453,19 @@ def compileJsCopy(shell, options):
     if os.path.exists(shell.getShellCompiledPath()):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
+        if options.isThreadsafe:
+            shutil.copy2(normExpUserPath(os.path.join(
+                shell.getNsprObjdir(), 'dist', 'lib', RUN_NSPR_LIB)), shell.getBaseTempDir())
+            assert os.path.isfile(
+                normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_NSPR_LIB)))
+            shutil.copy2(normExpUserPath(os.path.join(
+                shell.getNsprObjdir(), 'dist', 'lib', RUN_PLDS_LIB)), shell.getBaseTempDir())
+            assert os.path.isfile(
+                normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLDS_LIB)))
+            shutil.copy2(normExpUserPath(os.path.join(
+                shell.getNsprObjdir(), 'dist', 'lib', RUN_PLC_LIB)), shell.getBaseTempDir())
+            assert os.path.isfile(
+                normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLC_LIB)))
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
@@ -445,21 +480,23 @@ def compileNspr(shell, options):
     except OSError:
         raise Exception('Unable to create NSPR objdir.')
     cfgBin(shell, options, 'nspr')
-    nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
+    # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
+    nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j1', '-s']
+    #nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
     out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
-                        currWorkingDir=shell.getNsprObjdir())[0]
-    if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')):
+                        currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
+    if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_NSPR_LIB)):
         print out
         raise Exception("`make` did not result in a NSPR binary.")
 
     assert os.path.isdir(normExpUserPath(os.path.join(
         shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
     assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', 'libnspr4.a')))
+        shell.getNsprObjdir(), 'dist', 'lib', COMPILE_NSPR_LIB)))
     assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', 'libplc4.a')))
+        shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLDS_LIB)))
     assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', 'libplds4.a')))
+        shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLC_LIB)))
 
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
