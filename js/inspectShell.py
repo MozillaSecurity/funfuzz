@@ -69,13 +69,15 @@ def testBinary(shellPath, args, useValgrind):
     vdump('The testing command is: ' + shellify(testCmd))
 
     newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
-    nsprLibPath = normExpUserPath(os.path.join(
-        os.path.dirname(os.path.abspath(shellPath)), 'compilePath', 'nsprpub',
-            # Awful hack to parse the name of the shell here, because we do not pass in the shell
-            # object, only the path to the shell, in these functions.
-            os.path.basename(os.path.abspath(shellPath)).split('-')[1] + '-objdir', 'dist', 'lib'))
-    assert os.path.isdir(nsprLibPath)
-    newEnv = envWithPath(nsprLibPath)
+    # FIXME: Same awful hack to check if the shell is threadsafe
+    if os.path.basename(os.path.abspath(shellPath)).split('-')[3] == 'ts':
+        nsprLibPath = normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), 'compilePath', 'nsprpub',
+                # Awful hack to parse the name of the shell here, because we do not pass in the shell
+                # object, only the path to the shell, in these functions.
+                os.path.basename(os.path.abspath(shellPath)).split('-')[1] + '-objdir', 'dist', 'lib'))
+        assert os.path.isdir(nsprLibPath)
+        newEnv = envWithPath(nsprLibPath)
     out, rCode = captureStdout(testCmd, combineStderr=True, ignoreStderr=True, ignoreExitCode=True,
                                env=newEnv)
     vdump('The exit code is: ' + str(rCode))
