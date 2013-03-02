@@ -25,7 +25,8 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
-from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, vdump
+from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, \
+    shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
@@ -345,7 +346,7 @@ def cfgBin(shell, options, binToBeCompiled):
         strToBeAppended = envVar + '="' + cfgEnvDt[envVar] + '"' \
             if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
         envVarList.append(strToBeAppended)
-    vdump('Command to be run is: ' + ' '.join(envVarList) + ' ' + ' '.join(cfgCmdList))
+    vdump('Command to be run is: ' + shellify(envVarList) + ' ' + shellify(cfgCmdList))
 
     wDir = shell.getNsprObjdir() if binToBeCompiled == 'nspr' else shell.getJsObjdir()
     assert os.path.isdir(wDir)
