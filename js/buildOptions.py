@@ -10,7 +10,7 @@ from inspectShell import constructVgCmdList, testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
-from subprocesses import isWin, isMac, isLinux, normExpUserPath
+from subprocesses import isWin, isWin64, isMac, isLinux, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
 def parseShellOptions(inputArgs):
@@ -92,7 +92,7 @@ def parseShellOptions(inputArgs):
         assert not isWin, 'Asan is not yet supported on Windows.'
 
     if isWin:
-        assert ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) == (options.arch == '64')
+        assert isWin64 == (options.arch == '64')
 
     return options
 

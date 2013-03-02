@@ -20,6 +20,7 @@ isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
 # In Vista, Python 2.5.1 reports "Microsoft" - see http://bugs.python.org/issue1082
 isWin = (platform.system() in ('Microsoft', 'Windows'))
+isWin64 = ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
 
 ########################
 #  Platform Detection  #
