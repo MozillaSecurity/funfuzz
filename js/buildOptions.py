@@ -6,7 +6,6 @@ import platform
 path0 = os.path.dirname(os.path.abspath(__file__))
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
-from inspectShell import constructVgCmdList, testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
