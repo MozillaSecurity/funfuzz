@@ -414,6 +414,9 @@ def skipJobNamed(j):
         "69ba529e3d1d11e28001406c8f39f411" in j or # a pain to reduce (bug 829841)
         "4174412e6a8211e28003406c8f39f898" in j or # Bug 837033
         "b924fd7d7f7e11e280033c0754725060" in j or # Bug 845055
+        "a2b332e37fb911e280073c075472500f" in j or # Bug 847119
+        "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
+        "cf57b6ab703f11e280033c0754725808" in j or # a variant of bug 765780
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
         "1343538581" in j or # probably a nasty variant of bug 728632
