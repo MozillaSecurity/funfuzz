@@ -417,6 +417,9 @@ def skipJobNamed(j):
         "a2b332e37fb911e280073c075472500f" in j or # Bug 847119
         "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
         "cf57b6ab703f11e280033c0754725808" in j or # a variant of bug 765780
+        "4f62070079e411e280043c075472548a" in j or # Bug 842309
+        "b8dabe0079b911e280023c07547237b1" in j or # Bug 842309
+        "9dddf6dc6e0211e280033c0754724cb2" in j or # Fast quitApplication while opening the Style Editor causes a spurious leak
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
         "1343538581" in j or # probably a nasty variant of bug 728632
