@@ -48,6 +48,14 @@ def linesWith(lines, searchFor):
             matchingLines.append(line)
     return matchingLines
 
+def linesStartingWith(lines, searchFor):
+    '''Returns the lines from an array that start with a given string'''
+    matchingLines = []
+    for line in lines:
+        if line.startswith(searchFor):
+            matchingLines.append(line)
+    return matchingLines
+
 def writeLinesToFile(lines, filename):
     '''Writes lines to a given filename.'''
     with open(filename, 'wb') as f:

@@ -20,7 +20,7 @@ domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import shellify, createWtmpDir
-from fileManipulation import fuzzDice, fuzzSplice, linesWith, writeLinesToFile
+from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLinesToFile
 import lithOps
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
@@ -95,7 +95,7 @@ def many_timed_runs(targetTime, tempDir, args):
 # Stuffs "lines" into a fresh file, which Lithium should be able to reduce.
 # Returns the name of the repro file.
 def createReproFile(lines, logPrefix):
-    contentTypes = linesWith(lines, "FRCX Content type: ")
+    contentTypes = linesStartingWith(lines, "FRCX Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
 
     extDict = {
@@ -118,7 +118,7 @@ def createReproFile(lines, logPrefix):
 
     possibleDoctype = []
     if contentType == "text/html":
-        docTypes = linesWith(lines, "FRCX Doctype: ")
+        docTypes = linesStartingWith(lines, "FRCX Doctype: ")
         if len(docTypes) > 0:
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
 
@@ -127,7 +127,7 @@ def createReproFile(lines, logPrefix):
     with open(os.path.join(fuzzersDir, "fuzz-start.js")) as g:
         fuzzstartjs = g.readlines()
     [jbefore, jafter] = fuzzSplice(os.path.join(fuzzersDir, fuzzerJS))
-    fuzzlines = linesWith(lines, "FRCA")
+    fuzzlines = linesStartingWith(lines, "  /*FRCA")
     if len(fuzzlines) < 3:
         fuzzlines = [
             "// Startup crash?\n",
