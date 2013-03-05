@@ -39,7 +39,7 @@ def knownBrokenRanges():
         hgrange('23a84dbb258f', '08187a7ea897'), # broken ionmonkey
         hgrange('4804d288adae', '9049a4c5c61a'), # broken ionmonkey
         hgrange('0a8867dd72a4', 'a765d833483a'), # Rivertrail work broke non-threadsafe/nspr builds
-        hgrange('06fe741ec953', 'c8e06ab7a39d'), # broken spidermonkey
+        hgrange('7f1ecab23f6f', 'c8e06ab7a39d'), # broken spidermonkey
     ]
 
     if isMac and macVer() >= [10, 7]:
