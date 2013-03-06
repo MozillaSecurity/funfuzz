@@ -12,8 +12,33 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import envWithPath, captureStdout, isLinux, isMac, isWin, normExpUserPath, \
-    shellify, vdump
+from subprocesses import envWithPath, captureStdout, isLinux, isMac, isWin, isWin64, \
+    normExpUserPath, shellify, vdump
+
+if os.name == 'nt':
+    COMPILE_NSPR_LIB = 'libnspr4.lib' if isWin64 else 'nspr4.lib'
+    COMPILE_PLDS_LIB = 'libplds4.lib' if isWin64 else 'plds4.lib'
+    COMPILE_PLC_LIB = 'libplc4.lib' if isWin64 else 'plc4.lib'
+
+    RUN_NSPR_LIB = 'libnspr4.dll' if isWin64 else 'nspr4.dll'
+    RUN_PLDS_LIB = 'libplds4.dll' if isWin64 else 'plds4.dll'
+    RUN_PLC_LIB = 'libplc4.dll' if isWin64 else 'plc4.dll'
+else:
+    COMPILE_NSPR_LIB = 'libnspr4.a'
+    COMPILE_PLDS_LIB = 'libplds4.a'
+    COMPILE_PLC_LIB = 'libplc4.a'
+
+    if platform.system() == 'Darwin':
+        RUN_NSPR_LIB = 'libnspr4.dylib'
+        RUN_PLDS_LIB = 'libplds4.dylib'
+        RUN_PLC_LIB = 'libplc4.dylib'
+    elif (platform.system() == 'Linux'):
+        RUN_NSPR_LIB = 'libnspr4.so'
+        RUN_PLDS_LIB = 'libplds4.so'
+        RUN_PLC_LIB = 'libplc4.so'
+
+ALL_COMPILE_LIBS = (COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB)
+ALL_RUN_LIBS = (RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
 
 def archOfBinary(binary):
     '''This function tests if a binary is 32-bit or 64-bit.'''
@@ -70,13 +95,14 @@ def testBinary(shellPath, args, useValgrind, threadsafeShell):
 
     newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
     if threadsafeShell:
-        nsprLibPath = normExpUserPath(os.path.join(
-            os.path.dirname(os.path.abspath(shellPath)), 'compilePath', 'nsprpub',
-                # Awful hack to parse the name of the shell here, because we do not pass in the shell
-                # object, only the path to the shell, in these functions.
-                os.path.basename(os.path.abspath(shellPath)).split('-')[1] + '-objdir', 'dist', 'lib'))
-        assert os.path.isdir(nsprLibPath)
-        newEnv = envWithPath(nsprLibPath)
+        # The NSPR libraries needed to run threadsafe js shell should have already been be copied to
+        # the same destination as the shell.
+        assert os.path.isfile(normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), RUN_NSPR_LIB)))
+        assert os.path.isfile(normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), RUN_PLDS_LIB)))
+        assert os.path.isfile(normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), RUN_PLC_LIB)))
     out, rCode = captureStdout(testCmd, combineStderr=True, ignoreStderr=True, ignoreExitCode=True,
                                env=newEnv)
     vdump('The exit code is: ' + str(rCode))

@@ -18,6 +18,9 @@ from traceback import format_exc
 from optparse import OptionParser
 
 import buildOptions
+from inspectShell import ALL_COMPILE_LIBS, ALL_RUN_LIBS
+from inspectShell import COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB
+from inspectShell import RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB
 from inspectShell import verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
@@ -25,39 +28,17 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from countCpus import cpuCount
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
-from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, isWin64, macVer, \
-    normExpUserPath, shellify, vdump
+from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, \
+    shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 # Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
 COMPILATION_JOBS = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
 
-if os.name == 'nt':
-    COMPILE_NSPR_LIB = 'libnspr4.lib' if isWin64 else 'nspr4.lib'
-    COMPILE_PLDS_LIB = 'libplds4.lib' if isWin64 else 'plds4.lib'
-    COMPILE_PLC_LIB = 'libplc4.lib' if isWin64 else 'plc4.lib'
-
-    RUN_NSPR_LIB = 'libnspr4.dll' if isWin64 else 'nspr4.dll'
-    RUN_PLDS_LIB = 'libplds4.dll' if isWin64 else 'plds4.dll'
-    RUN_PLC_LIB = 'libplc4.dll' if isWin64 else 'plc4.dll'
-else:
-    COMPILE_NSPR_LIB = 'libnspr4.a'
-    COMPILE_PLDS_LIB = 'libplds4.a'
-    COMPILE_PLC_LIB = 'libplc4.a'
-
-    if platform.system() == 'Darwin':
-        RUN_NSPR_LIB = 'libnspr4.dylib'
-        RUN_PLDS_LIB = 'libplds4.dylib'
-        RUN_PLC_LIB = 'libplc4.dylib'
-    elif (platform.system() == 'Linux'):
-        RUN_NSPR_LIB = 'libnspr4.so'
-        RUN_PLDS_LIB = 'libplds4.so'
-        RUN_PLC_LIB = 'libplc4.so'
-
-
 class CompiledShell(object):
     def __init__(self, buildOpts, hgHash, baseTmpDir):
-        self.shellName = buildOptions.computeShellName(buildOpts, hgHash) + ('.exe' if isWin else '')
+        self.shellNameWithoutExt = buildOptions.computeShellName(buildOpts, hgHash)
+        self.shellNameWithExt = self.shellNameWithoutExt + ('.exe' if isWin else '')
         self.hgHash = hgHash
         self.buildOptions = buildOpts
         self.baseTmpDir = baseTmpDir
@@ -69,21 +50,19 @@ class CompiledShell(object):
     def getCfgCmdExclEnv(self):
         return self.cfg
     def getJsCfgPath(self):
-        self.jsCfgFile = normExpUserPath(os.path.join(self.cPathJsSrc, 'configure'))
+        self.jsCfgFile = normExpUserPath(os.path.join(self.getCompilePathJsSrc(), 'configure'))
         assert os.path.isfile(self.jsCfgFile)
         return self.jsCfgFile
     def getNsprCfgPath(self):
-        self.nsprCfgFile = normExpUserPath(os.path.join(self.cPathNsprSrc, 'configure'))
+        self.nsprCfgFile = normExpUserPath(os.path.join(self.getCompilePathNsprSrc(), 'configure'))
         assert os.path.isfile(self.nsprCfgFile)
         return self.nsprCfgFile
     def getCompilePath(self):
         return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath'))
     def getCompilePathJsSrc(self):
-        self.cPathJsSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
-        return self.cPathJsSrc
+        return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
     def getCompilePathNsprSrc(self):
-        self.cPathNsprSrc = normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'nsprpub'))
-        return self.cPathNsprSrc
+        return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'nsprpub'))
     def setEnvAdded(self, addedEnv):
         self.addedEnv = addedEnv
     def getEnvAdded(self):
@@ -95,19 +74,27 @@ class CompiledShell(object):
     def getHgHash(self):
         return self.hgHash
     def getJsObjdir(self):
-        return normExpUserPath(os.path.join(self.cPathJsSrc, self.buildOptions.compileType + '-objdir'))
+        return normExpUserPath(os.path.join(self.getCompilePathJsSrc(), self.buildOptions.compileType + '-objdir'))
     def getNsprObjdir(self):
-        return normExpUserPath(os.path.join(self.cPathNsprSrc, self.buildOptions.compileType + '-objdir'))
+        return normExpUserPath(os.path.join(self.getCompilePathNsprSrc(), self.buildOptions.compileType + '-objdir'))
     def getRepoDir(self):
         return self.buildOptions.repoDir
     def getRepoName(self):
         return getRepoNameFromHgrc(self.buildOptions.repoDir)
-    def getShellCachePath(self):
-        return normExpUserPath(os.path.join(ensureCacheDir(), self.shellName))
+    def getShellCacheDir(self):
+        return normExpUserPath(os.path.join(ensureCacheDir(), self.shellNameWithoutExt))
+    def getShellCacheFullPath(self):
+        return normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getJsObjdir(), 'js' + ('.exe' if isWin else '')))
+    def getShellCompiledRunLibsPath(self):
+        libsList = [
+            normExpUserPath(os.path.join(self.getNsprObjdir(), 'dist', 'lib', runLib)) \
+                for runLib in ALL_RUN_LIBS
+        ]
+        return libsList
     def getShellBaseTempDirWithName(self):
-        return normExpUserPath(os.path.join(self.baseTmpDir, self.shellName))
+        return normExpUserPath(os.path.join(self.baseTmpDir, self.shellNameWithExt))
 
 
 def ensureCacheDir():
@@ -338,9 +325,8 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--with-nspr-cflags=-I' + \
                 normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
             cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_NSPR_LIB)),
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLDS_LIB)),
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLC_LIB))
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)) \
+                    for compileLib in ALL_COMPILE_LIBS
                 ]))
         if options.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
@@ -454,18 +440,11 @@ def compileJsCopy(shell, options):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
         if options.isThreadsafe:
-            shutil.copy2(normExpUserPath(os.path.join(
-                shell.getNsprObjdir(), 'dist', 'lib', RUN_NSPR_LIB)), shell.getBaseTempDir())
-            assert os.path.isfile(
-                normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_NSPR_LIB)))
-            shutil.copy2(normExpUserPath(os.path.join(
-                shell.getNsprObjdir(), 'dist', 'lib', RUN_PLDS_LIB)), shell.getBaseTempDir())
-            assert os.path.isfile(
-                normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLDS_LIB)))
-            shutil.copy2(normExpUserPath(os.path.join(
-                shell.getNsprObjdir(), 'dist', 'lib', RUN_PLC_LIB)), shell.getBaseTempDir())
-            assert os.path.isfile(
-                normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLC_LIB)))
+            for runLib in shell.getShellCompiledRunLibsPath():
+                shutil.copy2(runLib, shell.getBaseTempDir())
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_NSPR_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLDS_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLC_LIB)))
     else:
         print out
         raise Exception("`make` did not result in a js shell, no exception thrown.")
@@ -485,18 +464,12 @@ def compileNspr(shell, options):
     #nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
     out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
                         currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
-    if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', COMPILE_NSPR_LIB)):
-        print out
-        raise Exception("`make` did not result in a NSPR binary.")
+    for compileLib in ALL_COMPILE_LIBS:
+        if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
+            print out
+            raise Exception("`make` did not result in a NSPR binary.")
 
-    assert os.path.isdir(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
-    assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', COMPILE_NSPR_LIB)))
-    assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLDS_LIB)))
-    assert os.path.isfile(normExpUserPath(os.path.join(
-        shell.getNsprObjdir(), 'dist', 'lib', COMPILE_PLC_LIB)))
+    assert os.path.isdir(normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
@@ -505,19 +478,34 @@ def compileStandalone(compiledShell):
         copyJsSrcDirs(compiledShell)
         cfgJsCompileCopy(compiledShell, compiledShell.buildOptions)
         verifyBinary(compiledShell, compiledShell.buildOptions)
-        shutil.copy2(compiledShell.getShellBaseTempDirWithName(), compiledShell.getShellCachePath())
+        assert not os.path.exists(compiledShell.getShellCacheDir()), \
+            'The cache dir of the shell should not exist.'
+        try:
+            os.mkdir(compiledShell.getShellCacheDir())
+        except OSError:
+            raise Exception('Unable to create shell cache directory.')
+        shutil.copy2(compiledShell.getShellBaseTempDirWithName(), compiledShell.getShellCacheFullPath())
+        if compiledShell.buildOptions.isThreadsafe:
+            for runLib in compiledShell.getShellCompiledRunLibsPath():
+                shutil.copy2(runLib, compiledShell.getShellCacheDir())
+            assert os.path.isfile(normExpUserPath(os.path.join(
+                compiledShell.getShellCacheDir(), RUN_NSPR_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(
+                compiledShell.getShellCacheDir(), RUN_PLDS_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(
+                compiledShell.getShellCacheDir(), RUN_PLC_LIB)))
     finally:
         shutil.rmtree(compiledShell.getBaseTempDir())
 
 def makeTestRev(options):
     def testRev(rev):
         shell = CompiledShell(options.buildOptions, rev, mkdtemp(prefix="abtmp-" + rev + "-"))
-        cachedNoShell = shell.getShellCachePath() + ".busted"
+        cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
         print "Rev " + rev + ":",
-        if os.path.exists(shell.getShellCachePath()):
+        if os.path.exists(shell.getShellCacheFullPath()):
             print "Found cached shell...   Testing...",
-            return options.testAndLabel(shell.getShellCachePath(), rev)
+            return options.testAndLabel(shell.getShellCacheFullPath(), rev)
         elif os.path.exists(cachedNoShell):
             return (options.compilationFailedLabel, 'compilation failed (cached)')
         else:
@@ -528,13 +516,19 @@ def makeTestRev(options):
                 print "Compiling...",
                 compileStandalone(shell)
             except Exception, e:
+                if not os.path.exists(normExpUserPath(shell.getShellCacheDir())):
+                    try:
+                        os.mkdir(shell.getShellCacheDir())
+                    except OSError:
+                        print 'Unable to create shell cache directory.'
+                        raise
                 with open(cachedNoShell, 'wb') as f:
                     f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
                     f.write("Backtrace:\n")
                     f.write(format_exc() + "\n");
                 return (options.compilationFailedLabel, 'compilation failed (' + str(e) + ') (details in ' + cachedNoShell + ')')
             print "Testing...",
-            return options.testAndLabel(shell.getShellCachePath(), rev)
+            return options.testAndLabel(shell.getShellCacheFullPath(), rev)
     return testRev
 
 
@@ -565,7 +559,7 @@ def main():
     localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
     shell = CompiledShell(options.buildOptions, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
     compileStandalone(shell)
-    print shell.getShellCachePath()
+    print shell.getShellCacheFullPath()
 
 if __name__ == '__main__':
     main()
