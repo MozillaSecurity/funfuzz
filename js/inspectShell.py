@@ -7,6 +7,7 @@
 from __future__ import with_statement
 
 import os
+import platform
 import sys
 
 path0 = os.path.dirname(os.path.abspath(__file__))
