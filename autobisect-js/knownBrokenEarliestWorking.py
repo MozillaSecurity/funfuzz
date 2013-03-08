@@ -12,7 +12,7 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import isLinux, isMac, macVer
 
-def knownBrokenRanges():
+def knownBrokenRanges(options):
     '''Returns a list of revsets corresponding to known-busted revisions'''
     # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
@@ -49,6 +49,11 @@ def knownBrokenRanges():
             hgrange('996e96b4dbcf', '1902eff5df2a'), # broken ionmonkey
             hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
+        ])
+
+    if options.enableRootAnalysis:
+        skips.extend([
+            hgrange('7b516748a65c', '72859dc0fefd'), # broken root analysis builds
         ])
 
     return skips

@@ -158,7 +158,7 @@ def findBlamedCset():
 
     # Reset bisect ranges and set skip ranges.
     captureStdout(hgPrefix + ['bisect', '-r'])
-    captureStdout(hgPrefix + ['bisect', '--skip', ' + '.join(knownBrokenRanges())])
+    captureStdout(hgPrefix + ['bisect', '--skip', ' + '.join(knownBrokenRanges(options.buildOptions))])
 
     labels = {}
     # Specify `hg bisect` ranges.

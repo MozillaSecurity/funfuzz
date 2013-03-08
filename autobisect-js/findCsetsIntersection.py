@@ -23,7 +23,7 @@ def parseOptions():
     options, args = parser.parse_args()
     assert options.rDir is not None
     assert os.path.isdir(normExpUserPath(options.rDir))
-    return options.rDir
+    return options
 
 def countCsets(revset, rdir):
     '''Counts the number of changesets in the revsets by outputting ones and counting them.'''
@@ -33,8 +33,9 @@ def countCsets(revset, rdir):
     return len(rangeIntersectionOnes[0])
 
 def main():
-    repoDir = parseOptions()
-    brokenRanges = knownBrokenRanges()
+    options = parseOptions()
+    repoDir = options.rDir
+    brokenRanges = knownBrokenRanges(options)
 
     cnt = 0
     for i in range(0, len(brokenRanges)):
