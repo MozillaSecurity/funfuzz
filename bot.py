@@ -422,6 +422,7 @@ def skipJobNamed(j):
         "9dddf6dc6e0211e280033c0754724cb2" in j or # Fast quitApplication while opening the Style Editor causes a spurious leak
         "d678c02183c711e280053c0754725808" in j or # Bug 847138
         "a93f1eee4b0511e280073c0754727aad" in j or # moz-column mess (moved)
+        "1347875474" in j or # bug 815241 ?
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
         "1343538581" in j or # probably a nasty variant of bug 728632
