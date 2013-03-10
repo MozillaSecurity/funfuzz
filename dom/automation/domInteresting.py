@@ -193,9 +193,8 @@ class AmissLogHandler:
             #print "self.theapp " + repr(self.theapp)
         if msg.find("FRC") != -1:
             self.FRClines.append(msgLF)
-        # Bug 847119
-        #if msg == "Not expected to hang":
-        #    self.expectedToHang = False
+        if msg == "Not expected to hang":
+            self.expectedToHang = False
         if msg == "Not expected to leak":
             self.expectedToLeak = False
         if msg == "Allowed to render inconsistently" or msg.find("nscoord_MAX") != -1 or msg.find("nscoord_MIN") != -1:
