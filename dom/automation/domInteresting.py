@@ -171,6 +171,7 @@ class AmissLogHandler:
         self.crashMightBeTooMuchRecursion = False
         self.crashIsKnown = False
         self.timedOut = False
+        self.goingDownHard = False
         self.sawValgrindComplaint = False
         self.expectChromeFailure = False
         self.sawChromeFailure = False
@@ -224,7 +225,7 @@ class AmissLogHandler:
         # It might be sensible to push more of this logic into detect_assertions...
         newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
             not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and \
-            not (self.timedOut and isWin) # a variant of bug 763182 with an injected crash
+            not (self.goingDownHard and isWin) # Bug 763182
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
         if newAssertion:
@@ -232,7 +233,7 @@ class AmissLogHandler:
             self.printAndLog("@@@ " + msg)
         if fatalAssertion:
             self.sawFatalAssertion = True
-            self.expectedToLeak = True # bug 763182
+            self.goingDownHard = True
             overlyGenericAssertion = ("You can't dereference a NULL" in msg)
             if not overlyGenericAssertion:
                 self.crashIsKnown = True
@@ -249,6 +250,7 @@ class AmissLogHandler:
         if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
            msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
             self.timedOut = True
+            self.goingDownHard = True
             self.crashIsKnown = True
 
         if msg.startswith("PROCESS-CRASH | automation.py | application crashed"):
