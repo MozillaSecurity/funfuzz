@@ -56,6 +56,11 @@ def knownBrokenRanges(options):
             hgrange('7b516748a65c', '72859dc0fefd'), # broken root analysis builds
         ])
 
+    if options.enableRootAnalysis and options.isThreadsafe and options.enableMoreDeterministic:
+        skips.extend([
+            hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
+        ])
+
     return skips
 
 def earliestKnownWorkingRev(options, flags):
