@@ -381,6 +381,12 @@ def copyJsSrcDirs(shell):
     except OSError:
         raise Exception('Does the js source directory or the destination exist?')
 
+    # m-c changeset 124569:082bdc8fcc2a uses parts of intl
+    unicodeDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'intl/icu/source/common/unicode'))
+    if os.path.isdir(unicodeDir):
+        shutil.copytree(unicodeDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
+                                                 'intl/icu/source/common/unicode'))
+
     # Do not stop copying source files out until 119351:6b280e155484 is at least the minimum
     #  version required to build on all platforms.
     # m-c changeset 119049:d2cce982a7c8 requires the build/ directory to be present.
