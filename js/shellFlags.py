@@ -3,8 +3,14 @@ from __future__ import with_statement
 import random
 import os
 import subprocess
+import sys
 
 from inspectShell import shellSupports
+
+path0 = os.path.dirname(os.path.abspath(__file__))
+path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+sys.path.append(path1)
+from countCpus import cpuCount
 
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
@@ -45,6 +51,13 @@ def randomFlagSet(shellPath):
             args.append('--no-baseline')
         #if chance(.6):
         #    args.append("--baseline-eager")
+
+    if cpuCount() > 1 and shellSupportsFlag(shellPath, '--ion-parallel-compile=on'):
+        # Turns on parallel compilation for threadsafe builds.
+        args.append("--ion-parallel-compile=on")
+        totalThreads = random.randint(2, (cpuCount() * 2))
+        if chance(.7):
+            args.append('--thread-count=' + str(totalThreads))
 
     if shellSupportsFlag(shellPath, "--no-ion"):
         # New js shell defaults jaeger, ion, and infer to on! See bug 724751.
