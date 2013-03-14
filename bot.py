@@ -423,6 +423,7 @@ def skipJobNamed(j):
         "d678c02183c711e280053c0754725808" in j or # Bug 847138
         "a93f1eee4b0511e280073c0754727aad" in j or # moz-column mess (moved)
         "2c75856688dd11e28008406c8f3e0352" in j or # gczeal 9 -- bug 815241?
+        "724d5e518c2611e28001406c8f39f8b7" in j or # fixed fuzzer bug
         "1347875474" in j or # gczeal 9 -- bug 815241?
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
