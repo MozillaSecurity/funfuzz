@@ -54,9 +54,9 @@ def randomFlagSet(shellPath):
 
     if cpuCount() > 1 and shellSupportsFlag(shellPath, '--ion-parallel-compile=on'):
         # Turns on parallel compilation for threadsafe builds.
-        args.append("--ion-parallel-compile=on")
-        totalThreads = random.randint(2, (cpuCount() * 2))
         if chance(.7):
+            args.append("--ion-parallel-compile=on")
+            totalThreads = random.randint(2, (cpuCount() * 2))
             args.append('--thread-count=' + str(totalThreads))
 
     if shellSupportsFlag(shellPath, "--no-ion"):
