@@ -51,6 +51,11 @@ def knownBrokenRanges(options):
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
         ])
 
+    if options.isThreadsafe:
+        skips.extend([
+            hgrange('57449cdf45ad', 'ca0d05c99758'), # broken threadsafe builds
+        ])
+
     if options.enableRootAnalysis:
         skips.extend([
             hgrange('7b516748a65c', '72859dc0fefd'), # broken root analysis builds
