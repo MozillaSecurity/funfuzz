@@ -579,8 +579,12 @@ def rdfInit(args):
                             processedCorrectly = True
                             break
                     if not processedCorrectly:
-                        # e.g. this build only has breakpad symbols, not native symbols
-                        alh.printAndLog("%%% Busted crash report (from " + crashProcessor + ")")
+                        # Lack of 'main' could mean:
+                        #   * This build only has breakpad symbols, not native symbols
+                        #   * This was a too-much-recursion crash
+                        # This code does not handle too-much-recursion crashes well.
+                        # But it only matters for the rare case of too-much-recursion crashes on Mac/Linux without breakpad.
+                        alh.printAndLog("%%% Busted or too-much-recursion crash report (from " + crashProcessor + ")")
                     elif alh.crashIsKnown:
                         alh.printAndLog("%%% Ignoring crash report (from " + crashProcessor + ")")
                     elif detect_interesting_crashes.amiss(knownPath, crashlog, True):
