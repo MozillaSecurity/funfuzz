@@ -40,6 +40,7 @@ def knownBrokenRanges(options):
         hgrange('4804d288adae', '9049a4c5c61a'), # broken ionmonkey
         hgrange('0a8867dd72a4', 'a765d833483a'), # Rivertrail work broke non-threadsafe/nspr builds
         hgrange('7f1ecab23f6f', 'c8e06ab7a39d'), # broken spidermonkey
+        hgrange('57449cdf45ad', 'ca0d05c99758'), # broken spidermonkey
     ]
 
     if isMac and macVer() >= [10, 7]:
@@ -49,11 +50,6 @@ def knownBrokenRanges(options):
             hgrange('996e96b4dbcf', '1902eff5df2a'), # broken ionmonkey
             hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
-        ])
-
-    if options.isThreadsafe:
-        skips.extend([
-            hgrange('57449cdf45ad', 'ca0d05c99758'), # broken threadsafe builds
         ])
 
     if options.enableRootAnalysis:
