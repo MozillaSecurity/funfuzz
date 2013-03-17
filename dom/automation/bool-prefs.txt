@@ -136,6 +136,7 @@ image.high_quality_downscaling.enabled
 image.mem.decodeondraw
 image.mem.discardable
 intl.locale.matchOS
+javascript.options.experimental_asmjs
 javascript.options.gc_on_memory_pressure
 javascript.options.ion.content
 javascript.options.ion.parallel_compilation
