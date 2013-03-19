@@ -374,7 +374,6 @@ def skipJobNamed(j):
     # These testcases cause random crashes, or rely on internal blacklists.
 
     return (
-        "b826f91e0c8511e280083c0754725936" in j or # Bug 797065
         "e9a41a6b16c311e280033c0754725936" in j or # Bug 801914, in its manifestation as a "hang"
         "623986e119f511e280063c0754724cee" in j or # A fixed bug in the fuzzer
         "27fed8d11a9111e280053c0754725891" in j or # Another fixed bug in the fuzzer
@@ -394,11 +393,8 @@ def skipJobNamed(j):
         "5d9762170fe311e280043c07547286ad" in j or # makeCommand threw an exception
         "e03fa4f30fdf11e280023c07547237b0" in j or # makeCommand threw an exception
         "e03fd1730fdf11e280033c07547237b0" in j or # makeCommand threw an exception
-        "9918e5351c1911e280023c075472528a" in j or # bug 804083
-        "2dfb799c2eb511e280033c075472500f" in j or # bug 812641
+        "9918e5351c1911e280023c075472528a" in j or # see bug 804083 (invalid)
         "cdf14c542bc711e280073c07547237b0" in j or # bug 812826
-        "fa568f1c3b2511e280023c07547257fa" in j or # bug 827541
-        "4a050411418911e280053c075472596f" in j or # bug 827541
         "5fadf559581b11e280083c07547257c3" in j or # bogus 'hang'
         "d4a1851457ff11e280023c07547257fa" in j or # bogus 'hang'
         "03f44bcf546811e280030030489f8067" in j or # bogus 'hang'
@@ -412,9 +408,6 @@ def skipJobNamed(j):
         "e4d3876651a411e280053c075472877d" in j or # leak bug 829817
         "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
         "69ba529e3d1d11e28001406c8f39f411" in j or # a pain to reduce (bug 829841)
-        "4174412e6a8211e28003406c8f39f898" in j or # Bug 837033
-        "b924fd7d7f7e11e280033c0754725060" in j or # Bug 845055
-        "a2b332e37fb911e280073c075472500f" in j or # Bug 847119
         "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
         "cf57b6ab703f11e280033c0754725808" in j or # a variant of bug 765780
         "4f62070079e411e280043c075472548a" in j or # Bug 842309
@@ -431,32 +424,19 @@ def skipJobNamed(j):
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
         "1343538581" in j or # probably a nasty variant of bug 728632
-        "1344266896" in j or # bug 798829, bug 802982, bug 798323
-        "1345481534" in j or # bug 798829, bug 802982, bug 798323
         "1339201819" in j or # Bug 763126
         "1338835174" in j or # Bug 763126
         "1339379020" in j or # Bug 763560
         "1339573949" in j or # Bug 767279
-        "1339589159" in j or # Bug 765109
         "1339599262" in j or # lol mv
         "1341082845" in j or # hang that should have been ignored
         "1340073462" in j or # Bug 767233
-        "1338621034" in j or # Bug 761422
-        "1340814313" in j or # Bug 769015
-        "1340815388" in j or # Bug 769015
-        "1340808789" in j or # Bug 769015
-        "1340809470" in j or # Bug 769015
-        "1340801456" in j or # Bug 769015
-        "1340802472" in j or # Bug 769021
         "1339516108" in j or # Nasty OOM behavior
         "1338878206" in j or # Nasty OOM behavior
         "1338698829" in j or # Nasty OOM behavior
-        "1339959377" in j or # Bug 766075 (also copied to whenfixed)
-        "1339728406" in j or # Bug 766430 (nondeterministic crash)
         "1341133958" in j or # grr. bug 735081 or bug 735082.
         "1341815616" in j or # grr. bug 735081 or bug 735082.
-        "1344134705" in j or # Bug 780790 (plus mysterious bad local stack walking)
-        "1340246538" in j)   # Bug 767273
+        False)
 
 
 def ensureBuild(options, buildDir, preferredBuild):
