@@ -217,6 +217,9 @@ def main():
     if options.noStart:
         print 'Exiting, --nostart is set.'
         sys.exit(0)
+    else:
+        assert os.path.exists('jsfunfuzz.js'),
+            'jsfunfuzz.js should be in the same location for the fuzzing harness to work.'
 
     # Commands to simulate bash's `tee`.
     tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=startDir)
