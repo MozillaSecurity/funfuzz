@@ -90,10 +90,14 @@ def earliestKnownWorkingRev(options, flags):
 
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
-    if isMac:
+    if '--thread-count=' in flags:
+        return 'b4fa8b1f279d' # 114005 on m-c, first rev that has the --thread-count=N option
+    elif isMac:
         return 'd97862fb8e6d' # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
     elif options.enableRootAnalysis or options.isThreadsafe:
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
+    elif '--ion-parallel-compile=' in flags:
+        return 'f42381e2760d' # 106714 on m-c, first rev that has the --ion-parallel-compile=[on|off] option
     elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
     elif '--ion' in flags:
