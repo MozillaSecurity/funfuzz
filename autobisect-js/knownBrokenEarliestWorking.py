@@ -85,8 +85,12 @@ def earliestKnownWorkingRev(options, flags):
     #   "ImportError: No module named buildconfig" error
     # Note: One could bypass the 119349 error by fully removing the m-c repo, then re-cloning
     #   everytime a build is requested this way, aka a full clobber build. We should investigate
-    #   to see what files get left behind that requires a full clobber.
+    #   to see what files get left behind that requires a full clobber. Destroying all .pyc files
+    #   might alleviate this.
     # (See fuzzing repo revision ec77c645e97d and nearby for when we tried this in Jan 2013)
+    # Moreover, it is more difficult to debug without copying source (e.g. if the dev needs to
+    # make some quick modifications in the compilePath directory), or if we need the compilePath
+    # sources for gdb to correctly grab line numbers for coredumps after the repo has been updated.
 
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
