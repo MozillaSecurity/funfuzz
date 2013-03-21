@@ -218,7 +218,7 @@ def main():
         print 'Exiting, --nostart is set.'
         sys.exit(0)
     else:
-        assert os.path.exists('jsfunfuzz.js'), \
+        assert os.path.exists(normExpUserPath(os.path.join(path0, 'jsfunfuzz.js'))), \
             'jsfunfuzz.js should be in the same location for the fuzzing harness to work.'
 
     # Commands to simulate bash's `tee`.
