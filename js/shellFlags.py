@@ -44,13 +44,13 @@ def randomFlagSet(shellPath):
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
     infer = chance(.7)
 
-    if shellSupportsFlag(shellPath, '--no-baseline'):
-        # Baseline still compiles scripts eagerly by default, but in the future there will be the
-        # --baseline-eager flag. See bug 842258.
+    # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
+    if shellSupportsFlag(shellPath, '--baseline-eager'):
         if chance(.3):
             args.append('--no-baseline')
-        #if chance(.6):
-        #    args.append("--baseline-eager")
+        # elif is important, as we want to call --baseline-eager only if --no-baseline is not set.
+        elif chance(.6):
+            args.append("--baseline-eager")
 
     if cpuCount() > 1 and shellSupportsFlag(shellPath, '--ion-parallel-compile=on'):
         # Turns on parallel compilation for threadsafe builds.
@@ -125,7 +125,28 @@ def basicFlagSets(shellPath):
     compareJIT uses these combinations of flags (as well as the original set of flags) when run
     through Lithium and autoBisect.
     '''
-    if shellSupportsFlag(shellPath, "--no-ion"):
+    if shellSupportsFlag(shellPath, "--baseline-eager"):
+        basicFlagList = [
+            # From http://hg.mozilla.org/projects/ionmonkey/annotate/280e5ed3f0b7/js/src/jit-test/jit_test.py#l140
+            [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
+            ['--no-baseline'],
+            ['--no-baseline', '--no-jm'],
+            ['--no-baseline', '--no-ion', '--no-jm', '--no-ti'],
+            ['--no-baseline', '--no-ion', '--no-ti'],
+            ['--no-baseline', '--no-ion', '--no-ti', '-a', '-d'],
+            ['--no-baseline', '--no-ion', '--no-jm'],
+            ['--no-baseline', '--no-ion'],
+            ['--no-baseline', '--no-ion', '-a'],
+            ['--no-baseline', '--no-ion', '-a', '-d'],
+            ['--no-baseline', '--no-ion', '-d'],
+            ['--no-baseline', '--ion-eager'],
+            ['--ion-eager'],
+            ['--baseline-eager'],
+            ['--baseline-eager', '--no-ion'], # See bug 848906 comment 1
+            ['--baseline-eager', '--no-ti'],
+        ]
+        return basicFlagList
+    elif shellSupportsFlag(shellPath, "--no-ion"):
         basicFlagList = [
             # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
             [], # Here, compareJIT uses no flags as the sole baseline when fuzzing

@@ -90,7 +90,11 @@ def earliestKnownWorkingRev(options, flags):
 
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
-    if '--thread-count=' in flags:
+    if '--baseline-eager' in flags:
+        return 'be125cabea26' # 123133 on m-c, first rev that has the --baseline-eager option
+    elif '--no-baseline' in flags:
+        return '1c0489e5a302' # 115046 on m-c, first rev that has the --no-baseline option
+    elif '--thread-count=' in flags:
         return 'b4fa8b1f279d' # 114005 on m-c, first rev that has the --thread-count=N option
     elif isMac:
         return 'd97862fb8e6d' # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
