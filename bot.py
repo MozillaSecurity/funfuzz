@@ -24,7 +24,7 @@ sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
 from countCpus import cpuCount
-from subprocesses import getFreeSpace, isWin
+from subprocesses import captureStdout, getFreeSpace, isWin
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -261,6 +261,7 @@ def main():
     if options.remote_host:
         # Log information about the machine.
         print "Platform details: " + " ".join(platform.uname())
+        print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
         print "Python version: " + sys.version[:5]
         print "Number of cores visible to OS: " +  str(cpuCount())
         print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
