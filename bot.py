@@ -326,7 +326,7 @@ def retestAll(options, buildDir):
             testcases.append({'testcase': testcase, 'mtime': os.stat(testcase).st_mtime})
 
     # Sort so the newest testcases are first
-    print "Reteseting " + str(len(testcases)) + " testcases..."
+    print "Retesting " + str(len(testcases)) + " testcases..."
     testcases.sort(key=lambda t: t['mtime'], reverse=True)
 
     i = 0
