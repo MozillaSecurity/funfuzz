@@ -253,11 +253,6 @@ def parseOpts():
 def main():
     options = parseOpts()
 
-    runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
-    runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
-    runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
-    runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
-
     if options.remote_host:
         # Log information about the machine.
         print "Platform details: " + " ".join(platform.uname())
@@ -270,6 +265,11 @@ def main():
             import resource
             print "Corefile size (soft limit, hard limit) is: " + \
                     repr(resource.getrlimit(resource.RLIMIT_CORE))
+
+    runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
+    runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
+    runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
+    runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
 
     # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
     buildDir = options.existingBuildDir or 'build'
