@@ -72,7 +72,7 @@ def parseShellOptions(inputArgs):
 
     (options, args) = parser.parse_args(inputArgs.split())
 
-    options.repoDir = normExpUserPath(options.repoDir)
+    options.repoDir = os.path.expanduser(normExpUserPath(options.repoDir))
     assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
 
     options.inputArgs = inputArgs
