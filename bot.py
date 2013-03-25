@@ -260,11 +260,15 @@ def main():
         print "Python version: " + sys.version[:5]
         print "Number of cores visible to OS: " +  str(cpuCount())
         print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
-        print 'The hgrc of this repository is:'
-        with open(os.path.join('.hg', 'hgrc'), 'rb') as f:
-            hgrcContentList = f.readlines()
-        for line in hgrcContentList:
-            print line,
+
+        hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
+        if os.path.isfile(hgrcLocation):
+            print 'The hgrc of this repository is:'
+            with open(hgrcLocation, 'rb') as f:
+                hgrcContentList = f.readlines()
+            for line in hgrcContentList:
+                print line,
+
         if os.name == 'posix':
             # resource library is only applicable to Linux or Mac platforms.
             import resource
