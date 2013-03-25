@@ -267,7 +267,7 @@ def main():
             with open(hgrcLocation, 'rb') as f:
                 hgrcContentList = f.readlines()
             for line in hgrcContentList:
-                print line,
+                print line.rstrip()
 
         if os.name == 'posix':
             # resource library is only applicable to Linux or Mac platforms.
