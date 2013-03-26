@@ -97,13 +97,18 @@ def earliestKnownWorkingRev(options, flags):
     # make some quick modifications in the compilePath directory), or if we need the compilePath
     # sources for gdb to correctly grab line numbers for coredumps after the repo has been updated.
 
+    # flags is a list of flags, and the option must exactly match.
+    for entry in flags:
+        # What comes after --thread-count= can be any number, so we look for the string instead.
+        threadCountFlag = ('--thread-count=' in entry)
+
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
     if '--baseline-eager' in flags:
         return 'be125cabea26' # 123133 on m-c, first rev that has the --baseline-eager option
     elif '--no-baseline' in flags:
         return '1c0489e5a302' # 115046 on m-c, first rev that has the --no-baseline option
-    elif '--thread-count=' in flags:
+    elif threadCountFlag:
         return 'b4fa8b1f279d' # 114005 on m-c, first rev that has the --thread-count=N option
     elif isMac:
         return 'd97862fb8e6d' # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
