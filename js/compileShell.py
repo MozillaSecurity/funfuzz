@@ -6,6 +6,7 @@
 
 from __future__ import with_statement
 
+import ctypes
 import os
 import platform
 import shutil
@@ -41,7 +42,15 @@ class CompiledShell(object):
         self.shellNameWithExt = self.shellNameWithoutExt + ('.exe' if isWin else '')
         self.hgHash = hgHash
         self.buildOptions = buildOpts
-        self.baseTmpDir = baseTmpDir
+        if os.name == 'nt':  # adapted from http://stackoverflow.com/a/3931799
+            winTmpDir = unicode(baseTmpDir)
+            GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
+            unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
+            GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
+            self.baseTmpDir = normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
+        else:
+            self.baseTmpDir = baseTmpDir
+        assert '~' not in self.baseTmpDir
         assert os.path.isdir(self.baseTmpDir)
     def getBaseTempDir(self):
         return self.baseTmpDir
