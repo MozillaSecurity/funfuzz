@@ -28,9 +28,10 @@ repos.append('mozilla-release')
 repos.append('mozilla-esr17')
 # B2G
 repos.append('b2g')
+repos.append('framework-orangutan')
 repos.append('gaia')
 repos.append('monkey-gaia')  # preferred name for gwagner's repo disabling phone calls and sms
-repos.append('orangutan')
+repos.append('orangfuzz')
 # Others
 repos.append('v8')
 # Miscellaneous tools
