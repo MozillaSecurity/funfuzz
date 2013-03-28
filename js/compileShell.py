@@ -493,12 +493,11 @@ def compileStandalone(compiledShell):
         copyJsSrcDirs(compiledShell)
         cfgJsCompileCopy(compiledShell, compiledShell.buildOptions)
         verifyBinary(compiledShell, compiledShell.buildOptions)
-        assert not os.path.exists(compiledShell.getShellCacheDir()), \
-            'The cache dir of the shell should not exist.'
-        try:
-            os.mkdir(compiledShell.getShellCacheDir())
-        except OSError:
-            raise Exception('Unable to create shell cache directory.')
+        if not os.path.exists(compiledShell.getShellCacheDir()):
+            try:
+                os.mkdir(compiledShell.getShellCacheDir())
+            except OSError:
+                raise Exception('Unable to create shell cache directory.')
         shutil.copy2(compiledShell.getShellBaseTempDirWithName(), compiledShell.getShellCacheFullPath())
         if compiledShell.buildOptions.isThreadsafe:
             for runLib in compiledShell.getShellCompiledRunLibsPath():
