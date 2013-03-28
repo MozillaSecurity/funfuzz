@@ -188,6 +188,7 @@ media.opus.enabled
 media.wave.enabled
 media.webm.enabled
 media.webaudio.enabled
+media.webspeech.recognition.enable
 media.navigator.enabled
 media.navigator.permission.disabled
 media.peerconnection.enabled
