@@ -24,7 +24,7 @@ sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
 from countCpus import cpuCount
-from subprocesses import captureStdout, getFreeSpace, isWin
+from subprocesses import captureStdout, getFreeSpace, isWin, isLinux
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -238,6 +238,8 @@ def parseOpts():
     if options.testType == 'auto':
         if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
+        elif isLinux: # Bug 855881
+            options.testType = 'js'
         else:
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
