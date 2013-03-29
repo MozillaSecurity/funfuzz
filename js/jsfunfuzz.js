@@ -1221,7 +1221,9 @@ var makeEvilCallback;
     { w: 10, fun: function(d, b) { return m() + " + '';"; } }, // toString
     { w: 10, fun: function(d, b) { return m("v") + " = (" + m() + " instanceof " + m() + ");"; } },
     { w: 10, fun: function(d, b) { return m("v") + " = Object.prototype.isPrototypeOf.call(" + m() + ", " + m() + ");"; } },
-    { w: 2,  fun: function(d, b) { return "Object." + rndElt(["preventExtensions", "seal", "freeze"]) + "(" + m() + ");"; } },
+    // Disable fuzzing preventExtensions until bug 855960 is fixed.
+    //{ w: 2,  fun: function(d, b) { return "Object." + rndElt(["preventExtensions", "seal", "freeze"]) + "(" + m() + ");"; } },
+    { w: 2,  fun: function(d, b) { return "Object." + rndElt(["seal", "freeze"]) + "(" + m() + ");"; } },
 
     // Be promiscuous with the rest of jsfunfuzz
     { w: 1,  fun: function(d, b) { return m() + " = x;"; } },
@@ -2037,7 +2039,9 @@ function makeShapeyConstructor(d, b)
       case 3:  funText += tprop + " = " + makeExpr(d, bp)        + ";"; break;
       case 4:  funText += tprop + " = " + makeFunction(d, bp)    + ";"; break;
       case 5:  funText += "for (var ytq" + uniqueVarName() + " in " + t + ") { }"; break;
-      case 6:  funText += "Object." + rndElt(["preventExtensions","seal","freeze"]) + "(" + t + ");"; break;
+      // Disable fuzzing preventExtensions until bug 855960 is fixed.
+      //case 6:  funText += "Object." + rndElt(["preventExtensions","seal","freeze"]) + "(" + t + ");"; break;
+      case 6:  funText += "Object." + rndElt(["seal","freeze"]) + "(" + t + ");"; break;
       default: funText += tprop + " = " + makeShapeyValue(d, bp) + ";"; break;
     }
   }
