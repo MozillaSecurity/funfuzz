@@ -8,28 +8,22 @@ from __future__ import with_statement
 
 import os
 import platform
-import random
 import shutil
 import subprocess
 import sys
-
-from copy import deepcopy
 from optparse import OptionParser
 from tempfile import mkdtemp
 
-from compileShell import CompiledShell, cfgJsCompileCopy, copyJsSrcDirs
-from inspectShell import archOfBinary, testDbgOrOpt, verifyBinary
 import buildOptions
+from compileShell import CompiledShell, cfgJsCompileCopy, copyJsSrcDirs
+from inspectShell import verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from countCpus import cpuCount
-from downloadBuild import downloadBuild, downloadLatestBuild, mozPlatform
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from lithOps import knownBugsDir
-from subprocesses import captureStdout, dateStr, isLinux, isMac, isWin, normExpUserPath, shellify, \
-    vdump
+from subprocesses import captureStdout, dateStr, normExpUserPath, shellify, vdump
 
 def machineTimeoutDefaults(options):
     '''Sets different defaults depending on the machine type or debugger used.'''
