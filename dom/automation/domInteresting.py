@@ -218,6 +218,9 @@ class AmissLogHandler:
             if msg.find("Unexpected aDocument: 'aDocument == mDocument'") != -1:
                 print "Ignoring memory leaks (bug 840098)"
                 self.expectedToLeak = True
+            if "nsCARenderer::Render failure" in msg:
+                print "Ignoring memory leaks (bug 840688)"
+                self.expectedToLeak = True
             if self.nsassertionCount == 100:
                 print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
@@ -329,6 +332,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
         ("aboutHome.js" in msg and "localStorage" in msg) or # Bug 789348 is rewriting about:home to not use localStorage
         "nsIFeedWriter::close" in msg or # Bug 813408
+        "SidebarUtils is not defined" in msg or # Bug 856250
         False
     )
 
