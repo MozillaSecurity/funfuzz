@@ -432,6 +432,7 @@ def skipJobNamed(j):
         "169445a38b7e11e280053c075472500f" in j or # fixed fuzzer sneakiness
         "a77265738d9011e28004406c8f3e046d" in j or # bug 851638
         "efc11bf3903311e280033c0754725dbe" in j or # bug 852404
+        "1f48c0ba917811e280073c075472596f" in j or # testIteration recursed due a getter, eventually over-recursing
         "1347875474" in j or # gczeal 9 -- bug 815241?
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
