@@ -147,6 +147,7 @@ def createDOMFuzzProfile(profileDir):
     with open(os.path.join(profileExtensionsPath, "domfuzz@squarefree.com"), "w") as extFile:
         extFile.write(domfuzzExtensionPath)
 
+
 valgrindComplaintRegexp = re.compile("^==\d+== ")
 
 class AmissLogHandler:
@@ -426,7 +427,11 @@ def removeIfExists(filename):
         os.remove(filename)
 
 def rdfInit(args):
-    """Fully prepare a Firefox profile, then return a function that will run Firefox with that profile."""
+    """
+    Returns (levelAndLines, options).
+
+    levelAndLines is a function that runs Firefox in a clean profile and analyzes Firefox's output for bugs.
+    """
 
     parser = OptionParser()
     parser.add_option("--valgrind",
@@ -449,9 +454,6 @@ def rdfInit(args):
 
     options.browserDir = browserDir # used by loopdomfuzz
 
-    profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
-    createDOMFuzzProfile(profileDir)
-
     runBrowserOptions = []
     if dirs.symbolsDir:
         runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
@@ -460,7 +462,6 @@ def rdfInit(args):
     env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
     if dirs.stackwalk:
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
-    runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
     runbrowserpy = ["python", "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
     close_fds = sys.platform != 'win32'
@@ -483,18 +484,14 @@ def rdfInit(args):
           "--quiet"
         )
 
-    def deleteProfile():
-        if profileDir:
-            print "Deleting Firefox profile in " + profileDir
-            shutil.rmtree(profileDir)
-
-    def levelAndLines(url, logPrefix=None, extraPrefs="", quiet=False):
+    def levelAndLines(url, logPrefix=None, extraPrefs="", quiet=False, leaveProfile=False):
         """Run Firefox using the profile created above, detecting bugs and stuff."""
 
+        profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
+        createDOMFuzzProfile(profileDir)
         writePrefs(profileDir, extraPrefs)
 
-        localstoreRDF = os.path.join(profileDir, "localstore.rdf")
-        removeIfExists(localstoreRDF)
+        runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
 
         assert logPrefix # :(
         leakLogFile = logPrefix + "-leaks.txt"
@@ -630,42 +627,37 @@ def rdfInit(args):
             removeIfExists(logPrefix + "-core.gz")
             removeIfExists(logPrefix + "-crash.txt")
 
+        if not leaveProfile:
+            shutil.rmtree(profileDir)
+
         print("DOMFUZZ INFO | domInteresting.py | " + str(lev))
+        return (lev, alh.FRClines)
 
-        FRClines = alh.FRClines
-
-        return (lev, FRClines)
-
-    return levelAndLines, deleteProfile, options # return a closure along with the set of options
+    return levelAndLines, options # return a closure along with the set of options
 
 # For use by Lithium
 def init(args):
     global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
-    levelAndLinesForLithium, deleteProfileForLithium, options = rdfInit(args)
+    levelAndLinesForLithium, options = rdfInit(args)
     minimumInterestingLevel = options.minimumInterestingLevel
     lithiumURL = options.argURL
 def interesting(args, tempPrefix):
     extraPrefs = grabExtraPrefs(lithiumURL) # Here in case Lithium is reducing the prefs file
     actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix, extraPrefs = extraPrefs)
     return actualLevel >= minimumInterestingLevel
-def cleanup(args):
-    # we don't get to try..finally for Ctrl+C.
-    # could this be fixed by using a generator with yield?
-    deleteProfileForLithium()
 
 # For direct (usually manual) invocations
 def directMain():
     logPrefix = os.path.join(mkdtemp(prefix="domfuzz-rdf-main"), "t")
     print logPrefix
-    levelAndLines, deleteProfileForMain, options = rdfInit(sys.argv[1:])
+    levelAndLines, options = rdfInit(sys.argv[1:])
     if options.argURL:
         extraPrefs = grabExtraPrefs(options.argURL)
     else:
         extraPrefs = ""
-    level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix, extraPrefs = extraPrefs)
+    level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
     print level
     sys.exit(level)
-    #deleteProfileForMain()
 
 if __name__ == "__main__":
     directMain()

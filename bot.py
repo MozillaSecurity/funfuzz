@@ -342,7 +342,7 @@ def retestAll(options, buildDir):
     testcases.sort(key=lambda t: t['mtime'], reverse=True)
 
     i = 0
-    levelAndLines, deleteProfile, domInterestingOptions = domInteresting.rdfInit([buildDir])
+    levelAndLines, domInterestingOptions = domInteresting.rdfInit([buildDir])
     tempDir = tempfile.mkdtemp("retesting")
 
     # Retest all the things!
@@ -379,7 +379,6 @@ def retestAll(options, buildDir):
         #if lithResult == lithOps.LITH_RETESTED_STILL_INTERESTING:
         #   print "Reproduced: " + testcase
 
-    deleteProfile()
     shutil.rmtree(tempDir)
 
 def skipJobNamed(j):
