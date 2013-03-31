@@ -212,6 +212,11 @@ class AmissLogHandler:
             self.printAndLog("@@@ " + msg)
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
+            if "PostCreate failed" in msg:
+                # Bug 856384
+                self.expectChromeFailure = True
+                self.crashIsKnown = True
+                self.expectedToLeak = True
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
                 print "Ignoring memory leaks (bug 622315)" # testcase in comment 2
                 self.expectedToLeak = True
