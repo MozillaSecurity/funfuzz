@@ -238,7 +238,7 @@ def parseOpts():
     if options.testType == 'auto':
         if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
-        elif isLinux: # Bug 855881
+        elif isLinux: # Bug 855881 / bug 803764
             options.testType = 'js'
         else:
             options.testType = random.choice(['js', 'dom'])
