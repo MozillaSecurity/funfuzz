@@ -239,13 +239,6 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--target=i686-pc-linux')
             if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
-        # 32-bit shell on ARM (non-tegra ubuntu)
-        elif os.uname()[4] == 'armv7l':
-            assert False, 'These old configuration parameters were for the old Tegra 250 board.'
-            cfgEnvDt['CC'] = '/opt/cs2007q3/bin/gcc'
-            cfgEnvDt['CXX'] = '/opt/cs2007q3/bin/g++'
-            cfgCmdList.append('sh')
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         else:
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
