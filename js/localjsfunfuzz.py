@@ -144,8 +144,8 @@ def localCompileFuzzJsShell(options):
             raise Exception('Unable to create ~/Desktop folder.')
     # WinXP has spaces in the user directory.
     fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder
-    buildIdentifier = getRepoNameFromHgrc(options.buildOptions.repoDir) + '-' + localOrigHgNum + "-" + \
-        localOrigHgHash
+    buildIdentifier = '-'.join([getRepoNameFromHgrc(options.buildOptions.repoDir), localOrigHgNum, \
+        localOrigHgHash])
     fullPath = mkdtemp(appendStr + os.sep,
                        buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
                        fuzzResultsDirStart)
