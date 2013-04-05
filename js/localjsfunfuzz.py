@@ -136,8 +136,14 @@ def localCompileFuzzJsShell(options):
     appendStr = ''
     if options.patchDir:
         appendStr += '-patched'
-    fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else \
-        normExpUserPath(os.path.join('~', 'Desktop'))  # WinXP has spaces in the user directory.
+    userDesktopFolder = normExpUserPath(os.path.join('~', 'Desktop'))
+    if not os.path.isdir(userDesktopFolder):
+        try:
+            os.mkdir(userDesktopFolder)
+        except OSError:
+            raise Exception('Unable to create ~/Desktop folder.')
+    # WinXP has spaces in the user directory.
+    fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder
     buildIdentifier = getRepoNameFromHgrc(options.buildOptions.repoDir) + '-' + localOrigHgNum + "-" + \
         localOrigHgHash
     fullPath = mkdtemp(appendStr + os.sep,
