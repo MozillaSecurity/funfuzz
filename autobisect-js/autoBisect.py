@@ -287,12 +287,19 @@ def externalTestAndLabel(options, interestingness):
     return inner
 
 def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
-    """Ensure we actually tested the parents of the blamed revision."""
+    """If bisect blamed a merge, try to figure out why."""
+
+    bisectLied = False
+    missedCommonAncestor = False
+
     parents = captureStdout(["hg", "-R", repoDir] + ["parent", '--template={node|short},',
                                                    "-r", blamedRev])[0].split(",")[:-1]
-    bisectLied = False
+
+    if len(parents) == 1:
+        return
+
     for p in parents:
-        testedLastMinute = False
+        # Ensure we actually tested the parent.
         if labels.get(p) is None:
             print ""
             print ("Oops! We didn't test rev %s, a parent of the blamed revision! " + \
@@ -301,10 +308,14 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
                     not isAncestor(repoDir, endRepo, p):
                 print ('We did not test rev %s because it is not a descendant of either ' + \
                     '%s or %s.') % (str(p), startRepo, endRepo)
+                # Note this in case we later decide the bisect result is wrong.
+                missedCommonAncestor = True
             label = testRev(p)
             labels[p] = label
             print label[0] + " (" + label[1] + ") "
-            testedLastMinute = True
+            print "As expected, the parent's label is the opposite of the blamed rev's label."
+
+        # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
             print "Parent rev %s was marked as 'skip', so the regression window includes it." % \
                     str(p)
@@ -312,19 +323,29 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
             print "Bisect lied to us! Parent rev %s was also %s!" % (str(p), blamedGoodOrBad)
             bisectLied = True
         else:
-            if verbose or testedLastMinute:
-                print "As expected, the parent's label is the opposite of the blamed rev's label."
             assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
-    if len(parents) == 2 and bisectLied:
+
+    # Explain why bisect blamed the merge.
+    if bisectLied:
+        if missedCommonAncestor:
+            ca = findCommonAncestor(repoDir, parents[0], parents[1])
+            print ""
+            print "Bisect blamed the merge because our initial range did not include one"
+            print "of the parents."
+            print "The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca)
+            label = testRev(ca)
+            print label[0] + " (" + label[1] + ") "
+            print "Consider re-running autoBisect with -s %s -e %s" % (ca, blamedRev)
+            print "in a configuration where earliestWorking is before the common ancestor."
+        else:
+            print ""
+            print "Most likely, bisect's result was unhelpful because one of the"
+            print "tested revisions was marked as 'good' or 'bad' for the wrong reason."
+            print "I don't know which revision was incorrectly marked. Sorry."
+    else:
         print ""
-        print "Perhaps we should expand the search to include the common ancestor of the " + \
-            "blamed changeset's parents."
-        ca = findCommonAncestor(repoDir, parents[0], parents[1])
-        print "The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca)
-        label = testRev(ca)
-        print label[0] + " (" + label[1] + ") "
-        print 'The following line is still under testing:'
-        print "Try setting -s to %s, and -e to %s, and re-run autoBisect." % (ca, endRepo)
+        print "The bug was introduced by a merge (it was not present on either parent)."
+        print "I don't know which patches from each side of the merge contributed to the bug. Sorry."
 
 def sanitizeCsetMsg(msg):
     '''Sanitizes changeset messages, removing email addresses.'''
