@@ -106,9 +106,9 @@ def earliestKnownWorkingRev(options, flags):
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
     if '--baseline-eager' in flags:
-        return 'be125cabea26' # 123133 on m-c, first rev that has the --baseline-eager option
+        return 'be125cabea26' # 127353 on m-c, first rev that has the --baseline-eager option
     elif '--no-baseline' in flags:
-        return '1c0489e5a302' # 115046 on m-c, first rev that has the --no-baseline option
+        return '1c0489e5a302' # 127126 on m-c, first rev that has the --no-baseline option
     elif threadCountFlag:
         return 'b4fa8b1f279d' # 114005 on m-c, first rev that has the --thread-count=N option
     elif isMac:
