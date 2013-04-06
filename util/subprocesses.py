@@ -177,12 +177,14 @@ def createWtmpDir(tmpDirBase):
     return tmpDirWithNum
 
 def dateStr():
-    '''
-    Equivalent of: assert subprocess.check_output(['Date'])[:-1] == currDateTime
-    '''
-    currTz = time.tzname[0] if time.daylight == 1 else time.tzname[1]
-    currAscDateTime = time.asctime( time.localtime(time.time()) )
+    '''Equivalent of running `date` in bash.'''
+    currTz = time.tzname[1] if time.daylight == 1 else time.tzname[0]
+    if os.name == 'nt':
+        currTz = 'PST' if currTz == 'Pacific Standard Time' else 'PDT'
+    currAscDateTime = time.asctime()
     currDateTime = currAscDateTime[:-4] + currTz + ' ' + currAscDateTime[-4:]
+    # assert captureStdout(['date'])[0] == currDateTime # This fails on Windows
+    # On Windows, there is a leading zero in the day of the date in time.asctime()
     return currDateTime
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
