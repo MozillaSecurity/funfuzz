@@ -96,7 +96,10 @@ def main():
                 assert repoType == 'git'
                 # Ignore exit codes so the loop can continue retrying up to number of counts.
                 gitStdout, retval = timeSubprocess(
-                    ['git', 'pull'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+                    ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+                    cwd=repoLocation, vb=True)
+                gitStdout, retval = timeSubprocess(
+                    ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
                     cwd=repoLocation, vb=True)
 
             if ((retval == 255) or (retval == -1)) and \
