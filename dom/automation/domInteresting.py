@@ -337,6 +337,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
         ("aboutHome.js" in msg and "localStorage" in msg) or # Bug 789348 is rewriting about:home to not use localStorage
+        ("tabbrowser.xml" in msg and "NS_ERROR_FAILURE" in msg) or # Bug 860494
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         False
