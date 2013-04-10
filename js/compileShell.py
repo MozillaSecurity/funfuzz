@@ -198,8 +198,7 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-            # From mjrosenb: things might go wrong if these three lines are not present for ARM.
-            cfgCmdList.append('--target=arm-linux-gnueabi')
+            # From mjrosenb: things might go wrong if these lines are not present for ARM.
             cfgCmdList.append('--with-arch=armv7-a')
             cfgCmdList.append('--with-thumb')
     elif options.arch == '32' and os.name == 'posix':
