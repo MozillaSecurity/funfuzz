@@ -538,7 +538,7 @@ def envDump(shell, log):
         f.write('Information about shell:\n\n')
 
         f.write('Create another shell in autobisect-cache like this one:\n')
-        f.write(shellify(["python", "-u", os.path.join(path0, "compileShell.py"),
+        f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
             "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgs]) + "\n\n")
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
@@ -608,13 +608,13 @@ def localCompileFuzzJsShell(options):
     cfgJsCompileCopy(myShell, options.buildOptions)
     verifyBinary(myShell, options.buildOptions)
 
-    analysisPath = os.path.abspath(os.path.join(path0, os.pardir, 'jsfunfuzz', 'analysis.py'))
+    analysisPath = os.path.abspath(os.path.join(path0, 'jsfunfuzz', 'analysis.py'))
     if os.path.exists(analysisPath):
         shutil.copy2(analysisPath, fullPath)
 
     # Construct a command-line for running loopjsfunfuzz.py
     cmdList = ['python', '-u']
-    cmdList.append(normExpUserPath(os.path.join(path0, 'loopjsfunfuzz.py')))
+    cmdList.append(normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + myShell.getRepoDir())
     cmdList += ["--build", options.buildOptions.inputArgs]
     if options.buildOptions.runWithVg:
