@@ -643,5 +643,15 @@ def localCompileFuzzJsShell(options):
     return myShell, cmdList
 
 
+def machineTimeoutDefaults(options):
+    '''Sets different defaults depending on the machine type or debugger used.'''
+    if options.buildOptions.runWithVg:
+        return 300
+    elif platform.uname()[4] == 'armv7l':
+        return 180
+    else:
+        return 10  # If no timeout preference is specified, use 10 seconds.
+
+
 if __name__ == "__main__":
     main()

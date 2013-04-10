@@ -7,7 +7,6 @@
 from __future__ import with_statement
 
 import os
-import platform
 import subprocess
 import sys
 from optparse import OptionParser
@@ -19,17 +18,9 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 path2 = os.path.abspath(os.path.join(path0, os.pardir))
 sys.path.append(path2)
-from bot import localCompileFuzzJsShell
+from bot import localCompileFuzzJsShell, machineTimeoutDefaults
 from subprocesses import normExpUserPath
 
-def machineTimeoutDefaults(options):
-    '''Sets different defaults depending on the machine type or debugger used.'''
-    if options.buildOptions.runWithVg:
-        return 300
-    elif platform.uname()[4] == 'armv7l':
-        return 180
-    else:
-        return 10  # If no timeout preference is specified, use 10 seconds.
 
 def parseOptions():
     usage = 'Usage: %prog [options]'
