@@ -441,6 +441,7 @@ def skipJobNamed(j):
         "415a2d5c257a11e280073c0754723a87" in j or # bug 859542 (old testcase that matches exactly, yet had a different symptom)
         "345168f024da11e280063c07547237b0" in j or # bug 859542 (old testcase that matches exactly, yet had a different symptom)
         "dcb62aca24da11e280013c075472877d" in j or # bug 859542 (old testcase that matches exactly, yet had a different symptom)
+        "31ace3c7932b11e280053c07547286ad" in j or # bug 860482
         "1347875474" in j or # gczeal 9 -- bug 815241?
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
