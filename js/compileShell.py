@@ -198,10 +198,10 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        # According to mjrosenb, things might go wrong if these three lines are not present for ARM.
-        cfgCmdList.append('--target=arm-linux-gnueabi')
-        cfgCmdList.append('--with-arch=armv7-a')
-        cfgCmdList.append('--with-thumb')
+            # From mjrosenb: things might go wrong if these three lines are not present for ARM.
+            cfgCmdList.append('--target=arm-linux-gnueabi')
+            cfgCmdList.append('--with-arch=armv7-a')
+            cfgCmdList.append('--with-thumb')
     elif options.arch == '32' and os.name == 'posix':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
