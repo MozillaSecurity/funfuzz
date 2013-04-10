@@ -24,13 +24,10 @@ from subprocesses import normExpUserPath
 
 def machineTimeoutDefaults(options):
     '''Sets different defaults depending on the machine type or debugger used.'''
-    # FIXME: Set defaults for Pandaboard ES w/ & w/o Valgrind.
     if options.buildOptions.runWithVg:
         return 300
-    elif platform.uname()[1] == 'tegra-ubuntu':
-        return 180
     elif platform.uname()[4] == 'armv7l':
-        return 600
+        return 180
     else:
         return 10  # If no timeout preference is specified, use 10 seconds.
 

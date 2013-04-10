@@ -190,9 +190,19 @@ def cfgBin(shell, options, binToBeCompiled):
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
     cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
-    # For tegra Ubuntu, no special commands needed, but do install Linux prerequisites,
-    # do not worry if build-dep does not work, also be sure to apt-get zip as well.
-    if options.arch == '32' and os.name == 'posix' and os.uname()[1] != 'tegra-ubuntu':
+    if platform.uname()[4] == 'armv7l':
+        # 32-bit shell on ARM boards, e.g. Pandaboards.
+        assert options.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
+        cfgCmdList.append('sh')
+        if binToBeCompiled == 'nspr':
+            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
+        else:
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        # According to mjrosenb, things might go wrong if these three lines are not present for ARM.
+        cfgCmdList.append('--target=arm-linux-gnueabi')
+        cfgCmdList.append('--with-arch=armv7-a')
+        cfgCmdList.append('--with-thumb')
+    elif options.arch == '32' and os.name == 'posix':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
@@ -334,12 +344,7 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--enable-valgrind')
 
         if os.name == 'posix':
-            if (isLinux and (os.uname()[4] != 'armv7l')) or isMac:
-                cfgCmdList.append('--with-ccache')  # ccache does not seem to work on Mac.
-            # ccache is not applicable for non-Tegra Ubuntu ARM builds.
-            elif os.uname()[1] == 'tegra-ubuntu':
-                cfgCmdList.append('--with-ccache')
-                cfgCmdList.append('--with-arch=armv7-a')
+            cfgCmdList.append('--with-ccache')
 
     if os.name == 'nt':
         # FIXME: Replace this with shellify.
