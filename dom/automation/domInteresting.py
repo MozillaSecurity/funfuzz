@@ -176,6 +176,7 @@ class AmissLogHandler:
         self.sawValgrindComplaint = False
         self.expectChromeFailure = False
         self.sawChromeFailure = False
+        self.outOfMemory = False
         detect_interesting_crashes.resetCounts()
         self.crashSignature = ""
     def processLine(self, msgLF):
@@ -269,8 +270,19 @@ class AmissLogHandler:
         if "ERROR: AddressSanitizer" in msg:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
-            if "failed to allocate" in msg:
-                self.crashIsKnown = True
+            m = re.search("on unknown address (0x\S+)", msg)
+            if m and int(m.group(1), 16) < 0x10000:
+                # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
+                # It would be good to know if it were a read, write, or execute.  But ASan doesn't have that info for SEGVs, I guess?
+                if self.outOfMemory:
+                    self.printAndLog("%%% We ran out of memory, then dereferenced null.")
+                    self.crashIsKnown = True
+            else:
+                # Not a null dereference.
+                #self.crashIsExploitable = True
+                pass
+        if "WARNING: AddressSanitizer failed to allocate" in msg:
+            self.outOfMemory = True
 
         if msg.startswith("freed by thread") or msg.startswith("previously allocated by thread"):
             # We don't want to treat these as part of the stack trace for the purpose of detect_interesting_crashes.
