@@ -179,6 +179,7 @@ layout.frames.force_resizability
 layout.gpu-scaling.enabled
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
+media.audio_data.enabled
 media.autoplay.enabled
 media.dash.enabled
 media.gstreamer.enabled
