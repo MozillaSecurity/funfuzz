@@ -101,7 +101,9 @@ def earliestKnownWorkingRev(options, flags):
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after --thread-count= can be any number, so we look for the string instead.
-        threadCountFlag = ('--thread-count=' in entry)
+        if '--thread-count=' in entry:
+            threadCountFlag = True
+            break
 
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
