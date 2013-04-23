@@ -98,6 +98,7 @@ def earliestKnownWorkingRev(options, flags):
     # make some quick modifications in the compilePath directory), or if we need the compilePath
     # sources for gdb to correctly grab line numbers for coredumps after the repo has been updated.
 
+    threadCountFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after --thread-count= can be any number, so we look for the string instead.
