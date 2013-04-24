@@ -101,8 +101,7 @@ def randomFlagSet(shellPath):
             args.append("--ion-limit-script-size=off")
 
     # This is here because of bug 830508
-    # Use of shellSupportsFlag with --execute is untested
-    # This will all be Falsed due to bug 830544, which breaks jsfunfuzz
+    # This will all be Falsed due to bug 865471, which breaks jsfunfuzz
     if False and shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
         if chance(.5):
             args.append("--execute=enableSPSProfilingAssertions(true)")
