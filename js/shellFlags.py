@@ -44,6 +44,9 @@ def randomFlagSet(shellPath):
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
     infer = chance(.7)
 
+    if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
+        args.append("--no-fpu")  # --no-fpu landed in bug 858022
+
     # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
     if shellSupportsFlag(shellPath, '--baseline-eager'):
         if chance(.3):
