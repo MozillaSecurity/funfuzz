@@ -214,16 +214,8 @@ class AmissLogHandler:
             self.printAndLog("@@@ " + msg)
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
-            if "PostCreate failed" in msg:
-                # Bug 856384
-                self.expectChromeFailure = True
-                self.crashIsKnown = True
-                self.expectedToLeak = True
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
                 print "Ignoring memory leaks (bug 622315)" # testcase in comment 2
-                self.expectedToLeak = True
-            if msg.find("Unexpected aDocument: 'aDocument == mDocument'") != -1:
-                print "Ignoring memory leaks (bug 840098)"
                 self.expectedToLeak = True
             if "nsCARenderer::Render failure" in msg:
                 print "Ignoring memory leaks (bug 840688)"
@@ -349,7 +341,6 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
         ("aboutHome.js" in msg and "localStorage" in msg) or # Bug 789348 is rewriting about:home to not use localStorage
-        ("tabbrowser.xml" in msg and "NS_ERROR_FAILURE" in msg) or # Bug 860494
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         False

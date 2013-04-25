@@ -424,7 +424,6 @@ def skipJobNamed(j):
         "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
         "69ba529e3d1d11e28001406c8f39f411" in j or # a pain to reduce (bug 829841)
         "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
-        "cf57b6ab703f11e280033c0754725808" in j or # a variant of bug 765780
         "4f62070079e411e280043c075472548a" in j or # Bug 842309
         "b8dabe0079b911e280023c07547237b1" in j or # Bug 842309
         "9dddf6dc6e0211e280033c0754724cb2" in j or # Fast quitApplication while opening the Style Editor causes a spurious leak
