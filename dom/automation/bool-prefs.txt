@@ -97,7 +97,6 @@ dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
 dom.ipc.plugins.java.enabled
 dom.new_bindings
-#dom.experimental_bindings # bug 801262
 dom.mozNetworkStats.enabled
 dom.network.enabled
 dom.network.metered
