@@ -98,13 +98,15 @@ def earliestKnownWorkingRev(options, flags):
     # make some quick modifications in the compilePath directory), or if we need the compilePath
     # sources for gdb to correctly grab line numbers for coredumps after the repo has been updated.
 
+    ionEdgeCaseAnalysisFlag = False
     threadCountFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
+        if '--ion-edgecase-analysis=' in entry:
+            ionEdgeCaseAnalysisFlag = True
         # What comes after --thread-count= can be any number, so we look for the string instead.
         if '--thread-count=' in entry:
             threadCountFlag = True
-            break
 
     #if options.buildWithAsan:
     #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
@@ -120,6 +122,8 @@ def earliestKnownWorkingRev(options, flags):
         return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
     elif '--ion-parallel-compile=' in flags:
         return 'f42381e2760d' # 106714 on m-c, first rev that has the --ion-parallel-compile=[on|off] option
+    elif ionEdgeCaseAnalysisFlag:
+        return '6c870a497ea4' # 106491 on m-c, first rev that supports --ion-edgecase-analysis=[on|off]
     elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
         return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
     elif '--ion' in flags:
