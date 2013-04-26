@@ -2,28 +2,30 @@
 
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
-#import tarfile
-
+from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from inspectShell import archOfBinary, testDbgOrOpt, testJsShellOrXpcshell
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, 'lithium', 'lithium.py'))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))
-shellBeautificationpy = os.path.join(p0, 'shellBeautification.py')
 
-path2 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
-sys.path.append(path2)
-from subprocesses import captureStdout, shellify
-import lithOps
+p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
+sys.path.append(p1)
+from fileManipulation import linesWith, writeLinesToFile
+from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
+from subprocesses import shellify
+
 
 def tempdir(path):
     os.mkdir(path)
     return "--tempdir=" + path
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, alsoRunChar=True, alsoReduceEntireFile=False):
+
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
     """
        Run Lithium and autobisect.
 
@@ -33,123 +35,12 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
     """
 
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
-    (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix + "-1-lines", targetTime)
 
-    if lithResult == lithOps.LITH_FINISHED and targetTime is None and alsoRunChar:
-        lith2Args = ["--char"] + lithArgs
-        print shellify([lithiumpy] + lith2Args)
-        (lithResult, lithDetails) = lithOps.runLithium(lith2Args, logPrefix + "-2-chars", targetTime)
+    (lithResult, lithDetails) = strategicReduction(logPrefix, infilename, lithArgs, bisectRepo,
+                                                   buildOptionsStr, targetTime, suspiciousLevel)
 
-    print
-    print "Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
-    print shellify([lithiumpy, "--strategy=check-only"] + lithArgs)
-    print
-
-    # Check that the testcase is interesting.
-    if False and alsoReduceEntireFile and lithResult == lithOps.LITH_FINISHED:
-        # FIXME: continue replacing direct calls to Lithium with calls to lithOps.runLithium, then remove the tempDir function.
-
-        # Beautify the output. This will remove DDBEGIN and DDEND as they are comments.
-        # This will output a file with the '-beautified' suffix.
-        # Reduce once using toString decompile method.
-        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
-
-        print 'Operating on the beautified testcase for the n-th time where n =',
-        # iterNum starts from 3 because lith1 and lith2 are already used above.
-        iterNumStart = 3 if alsoRunChar is True else 2
-        iterNum = iterNumStart
-        # Run Lithium on the testcase 10 more times, but run it using char only for 3 tries of toString and uneval reduction each.
-        # Generally, lines don't get significantly reduced after the 3rd try of line reduction.
-        MAX_BEAUTIFIED_LITHIUM_RUNS = iterNumStart + 10
-        while(iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS):
-            print iterNum - 2,
-            # Operate on the beautified version first.
-            lithArgs = lithArgs[0:-1]
-            beautifiedFilename = infilename + '-beautified'
-            lithArgs = lithArgs + [beautifiedFilename]
-            # We must still be operating on the beautified version.
-            assert beautifiedFilename in lithArgs
-            # Check that the testcase is still interesting.
-            beautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only", tempdir(logPrefix + "-lith" + str(iterNum) + "-b-tmp")] + lithArgs)[0]
-            if 'not interesting' not in beautifiedOutput:
-                assert 'interesting' in beautifiedOutput
-                # Overwrite the original -reduced file with the beautified version since it is interesting.
-                shutil.move(beautifiedFilename, infilename)
-                # Operate on the original -reduced file.
-                lithArgs = lithArgs[0:-1]
-                lithArgs = lithArgs + [infilename]
-                assert beautifiedFilename not in lithArgs
-                #print shellify([lithiumpy] + lithArgs)
-                subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lithArgs, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out.txt", "w"))
-
-                # Run it using char only after 3 tries of toString and uneval reduction each.
-                if alsoRunChar and (iterNum - 2) > ((MAX_BEAUTIFIED_LITHIUM_RUNS - iterNumStart) // 2):
-                    iterNum += 1
-                    print iterNum - 2,
-                    print '(operating on chars..)',
-                    assert iterNum in (9, 11, 13)  # Refer to reduction method below
-                    lith2Args = ["--char"] + lithArgs
-                    assert beautifiedFilename not in lith2Args
-                    #print shellify([lithiumpy] + lith2Args)
-                    subprocess.call([sys.executable, lithiumpy, tempdir(logPrefix + '-lith' + str(iterNum) + '-tmp')] + lith2Args, stdout=open(logPrefix + "-lith" + str(iterNum) + "-out.txt", "w"))
-            else:
-                # Beautified testcase is no longer interesting.
-                print 'Beautified testcase is no longer interesting!'
-                break
-            iterNum += 1
-            # We want the following reduction method:
-            # iterNum 3: uneval
-            # iterNum 4: toString
-            # iterNum 5: uneval
-            # iterNum 6: toString
-            # iterNum 7: uneval
-            # iterNum 8: toString
-            # iterNum 9: char
-            # iterNum 10: uneval
-            # iterNum 11: char
-            # iterNum 12: toString
-            # iterNum 13: char
-            if iterNum < MAX_BEAUTIFIED_LITHIUM_RUNS:
-                # This will output a file with the '-beautified' suffix.
-                # Rotate between reducing using the toString and uneval decompile method
-                if alsoRunChar:
-                    if iterNum % 2 == 0 and iterNum != 10:
-                        # toString
-                        assert iterNum in (4, 6, 8, 12)
-                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
-                    else:
-                        # uneval
-                        # iterNum 3 has already occurred prior to the increment of iterNum above.
-                        assert iterNum in (5, 7, 10)
-                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
-                else:
-                    # If alsoRunChar is false, which occurs when jsInteresting.py is operating at JS_DID_NOT_FINISH and below. iterNumStart also starts from 2.
-                    if iterNum % 2 != 0:
-                        # toString
-                        assert iterNum in (3, 5, 7, 9, 11, 13)
-                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=toString", infilename])
-                    else:
-                        # uneval
-                        # iterNum 3 has already occurred prior to the increment of iterNum above.
-                        assert iterNum in (4, 6, 8, 10, 12)
-                        subprocess.call([sys.executable, shellBeautificationpy, '--shell=' + jsEngine, "--decompilationType=uneval", infilename])
-            else:
-                print
-
-        # Operate on the original -reduced file.
-        lithArgs = lithArgs[0:-1]
-        lithArgs = lithArgs + [infilename]
-        assert beautifiedFilename not in lithArgs
-        # Check that the testcase is still interesting after the extra beautified lithium reductions.
-        finalBeautifiedOutput = captureStdout([sys.executable, lithiumpy, "--strategy=check-only", tempdir(logPrefix + "-lith-final-tmp")] + lithArgs)[0]
-        if 'not interesting' not in finalBeautifiedOutput:
-            assert 'interesting' in finalBeautifiedOutput
-
-        # Archive all wXX-lith*-tmp directories in a tarball.
-        #lithTmpDirTarball = tarfile.open('tempName.tar.bz2', 'w:bz2')
-        #for loop from 1 to iterNum
-            #lithTmpDirTarball.add(logPrefix + '-lith' + str(iterNum) + '-tmp')
-        #lithTmpDirTarball.close()
+    print "\nDone running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
+    print shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
 
     if bisectRepo is not "none" and targetTime is None:
         # We cannot test that it is not xpcshell with Python 2.5 since testJsShellOrXpcshell relies
@@ -172,6 +63,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
 
     return (lithResult, lithDetails)
 
+
 def guessBuildOptions(jsEngine):
     # It might be more accurate to use [./js -e "print(JSON.stringify(getBuildConfiguration()))"] or something in inspectShell.py
     # FIXME: -R is not specified here. Please be sure that the repository to be worked on is as intended.
@@ -183,3 +75,105 @@ def guessBuildOptions(jsEngine):
         opts.append('--enable-root-analysis')
     # XXX: Add threadsafe detection
     return ' '.join(opts)
+
+
+def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptionsStr, targetTime, lev):
+    '''Reduce jsfunfuzz output files using Lithium by using various strategies.'''
+    reductionCount = [0]  # This is an array because Python does not like assigning to upvars.
+    backupFilename = infilename + '-backup'
+
+    def lithReduceCmd(strategy):
+        '''Lithium reduction commands accepting various strategies.'''
+        reductionCount[0] += 1
+        fullLithArgs = [x for x in (strategy + lithArgs) if x]  # Remove empty elements
+        print shellify([lithiumpy] + fullLithArgs)
+
+        desc = '-chars' if strategy == '--char' else '-lines'
+        (lithResult, lithDetails) = runLithium(fullLithArgs, logPrefix + "-" +
+                                               str(reductionCount[0]) + desc, targetTime)
+        if lithResult == LITH_FINISHED:
+            shutil.copy2(infilename, backupFilename)
+
+        return lithResult, lithDetails
+
+    print '\nRunning the first line reduction...\n'
+    # Step 1: Run the first instance of line reduction.
+    lithResult, lithDetails = lithReduceCmd([])
+
+    origNumOfLines = int(lithDetails.split()[0])
+
+    hasTryItOut = False
+    hasTryItOutRegex = re.compile('count=[0-9]+; tryItOut\("')
+
+    with open(infilename, 'rb') as f:
+        for line in linesWith(f, '; tryItOut("'):
+            # Checks if testcase came from jsfunfuzz or compareJIT.
+            hasTryItOut = hasTryItOutRegex.match(line)
+            if hasTryItOut:  # Stop searching after finding the first tryItOut line.
+                break
+
+    # Step 2: Run 1 instance of 1-line reduction after moving tryItOut and count=X around.
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+
+        tryItOutAndCountRegex = re.compile('"\);\ncount=([0-9]+); tryItOut\("', re.MULTILINE)
+        with open(infilename, 'rb') as f:
+            infileContents = f.read()
+            infileContents = re.sub(tryItOutAndCountRegex, ';\\\n"); count=\\1; tryItOut("\\\n',
+                                    infileContents)
+        with open(infilename, 'wb') as f:
+            f.write(infileContents)
+
+        print '\nRunning 1 instance of 1-line reduction after moving tryItOut and count=X...\n'
+        # --chunksize=1: Reduce only individual lines, for only 1 round.
+        lithResult, lithDetails = lithReduceCmd(['--chunksize=1'])
+
+    # Step 3: Run 1 instance of 2-line reduction after moving count=X to its own line and add a
+    # 1-line offset.
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+        intendedLines = []
+        with open(infilename, 'rb') as f:
+            for line in f.readlines():  # The testcase is likely to already be partially reduced.
+                if 'dumpln(cookie' not in line:  # jsfunfuzz-specific line ignore
+                    # This should be simpler than re.compile.
+                    intendedLines.append(line.replace('; count=', ';\ncount=')
+                                             .replace('; tryItOut("', ';\ntryItOut("')
+                                             # The 1-line offset is added here.
+                                             .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
+
+        writeLinesToFile(intendedLines, infilename)
+        print '\nRunning 1 instance of 2-line reduction after moving count=X to its own line...\n'
+        lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
+
+    # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+        print '\nRunning 1 instance of 2-line reduction again...\n'
+        lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
+
+    # Step 5 (not always run): Run character reduction within interesting lines.
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and lev >= JS_OVERALL_MISMATCH:
+        print '\nRunning character reduction...\n'
+        lithResult, lithDetails = lithReduceCmd(['--char'])
+
+    # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+        infileContents = []
+        with open(infilename, 'rb') as f:
+            # The 1-line offset is added here.
+            infileContents = ['\n'] + [line.replace('NIGEBDD', 'DDBEGIN') for line in f.readlines()]
+        with open(infilename, 'wb') as f:
+            f.writelines(infileContents)
+
+        print '\nRunning line reduction with a 1-line offset...\n'
+        lithResult, lithDetails = lithReduceCmd([])
+
+    # Step 7: Run line reduction for a final time.
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+        print '\nRunning the final line reduction...\n'
+        lithResult, lithDetails = lithReduceCmd([])
+
+    # Restore from backup if testcase can no longer be reproduced halfway through reduction.
+    if lithResult != LITH_FINISHED and lithResult != LITH_PLEASE_CONTINUE:
+        # Probably can move instead of copy the backup, once this has stabilised.
+        shutil.copy2('backup-' + infilename, infilename)
+
+    return lithResult, lithDetails

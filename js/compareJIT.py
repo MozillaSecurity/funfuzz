@@ -6,7 +6,6 @@ import os
 import pinpoint
 import subprocess
 import sys
-import re
 
 from optparse import OptionParser
 
@@ -42,7 +41,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOpt
 
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
-        (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime)
+        (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
         print "Retesting " + infilename + " after running Lithium:"
         print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
         return (lithResult, lithDetails)

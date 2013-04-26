@@ -3,8 +3,6 @@
 from __future__ import with_statement
 
 import os
-import random
-import shutil
 import subprocess
 import sys
 import time
@@ -113,8 +111,9 @@ def many_timed_runs(targetTime, wtmpDir, args):
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
             [before, after] = fuzzSplice(options.fuzzjs)
+
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + linesWith(f, "FRC") + after
+                newfileLines = before + [l.replace('/*FRC*/', '') for l in linesWith(f, "FRC")] + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
 
@@ -125,11 +124,8 @@ def many_timed_runs(targetTime, wtmpDir, args):
             itest.append("--minlevel=" + str(level))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            alsoRunChar = (level > jsInteresting.JS_DECIDED_TO_EXIT)
-            alsoReduceEntireFile = (level > jsInteresting.JS_OVERALL_MISMATCH)
             (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                          options.repo, options.buildOptionsStr, targetTime, alsoRunChar=alsoRunChar,
-                                                          alsoReduceEntireFile=alsoReduceEntireFile)
+                                                          options.repo, options.buildOptionsStr, targetTime, level)
             if targetTime:
                 return (lithResult, lithDetails)
 
@@ -139,7 +135,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
                 with open(logPrefix + '-out.txt', 'rb') as f:
-                    jitcomparelines = linesWith(f, "FCM") + \
+                    jitcomparelines = [l.replace('/*FCM*/', '') for l in linesWith(f, "FCM")] + \
                         ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)

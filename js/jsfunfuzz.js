@@ -3805,7 +3805,7 @@ function testOne()
 //   * This creates the most... "interesting" testcases.
 
 var tryRunning = xpcshell ? useGeckoSandbox() : tryRunningDirectly;
-
+// SECOND NIGEBDD (NIGEBDD will be reversed RTL during jsfunfuzz testcase reduction)
 function fillShellSandbox(sandbox)
 {
   var safeFuns = [
