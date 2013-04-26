@@ -116,7 +116,8 @@ def randomFlagSet(shellPath):
     #if chance(.05):
     #    args.append("--execute=verifypostbarriers()")
 
-    if chance(.05):
+    # This is due to bug 865507, we can remove the --no-fpu not in args part when JM is removed.
+    if chance(.05) and "--no-fpu" not in args:
         args.append("-D") # aka --dump-bytecode
 
     return args
