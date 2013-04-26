@@ -114,6 +114,8 @@ def earliestKnownWorkingRev(options, flags):
         return 'be125cabea26' # 127353 on m-c, first rev that has the --baseline-eager option
     elif '--no-baseline' in flags:
         return '1c0489e5a302' # 127126 on m-c, first rev that has the --no-baseline option
+    elif '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
+        return 'dc4887f61d2e' # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
     elif threadCountFlag:
         return 'b4fa8b1f279d' # 114005 on m-c, first rev that has the --thread-count=N option
     elif isMac:

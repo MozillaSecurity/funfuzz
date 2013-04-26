@@ -104,6 +104,15 @@ def randomFlagSet(shellPath):
             args.append("--ion-osr=off")
         if chance(.2):
             args.append("--ion-limit-script-size=off")
+        # Landed in m-c changeset 8db8eef79b8c
+        if shellSupportsFlag(shellPath, '--ion-regalloc=lsra'):
+            if chance(.5):
+                args.append('--ion-regalloc=lsra')  # On by default
+            # Backtracking and stupid landed in m-c changeset dc4887f61d2e
+            elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.4):
+                args.append('--ion-regalloc=backtracking')
+            elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
+                args.append('--ion-regalloc=stupid')
 
     # This is here because of bug 830508
     # This will all be Falsed due to bug 865471, which breaks jsfunfuzz
