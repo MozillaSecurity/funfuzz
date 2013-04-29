@@ -225,9 +225,12 @@ class AmissLogHandler:
                 self.expectedToHang = True
 
         # It might be sensible to push more of this logic into detect_assertions...
-        newAssertion = detect_assertions.scanLine(self.knownPath, msgLF) and \
-            not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and \
-            not (self.goingDownHard and isWin) # Bug 763182
+        newAssertion = (
+            detect_assertions.scanLine(self.knownPath, msgLF) and
+            not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and
+            not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
+            not (self.goingDownHard and isWin) and # Bug 763182
+            True)
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
         if newAssertion:
