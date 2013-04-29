@@ -347,11 +347,11 @@ function printToFile(window)
   // Oddly asynchronous, at least on Linux.
 
   // Linux: works for PDF and PS.
-  // Windows: works for PDF at least. Text may be invisible (bug 653336).
+  // Windows: works for PDF at least. Text may be invisible (bug 653336). showHeaders causes an abnormal exit. Fairly busted and unlikely to be fixed as a result of me filing bugs.
   // Mac: tested, printToFile is ignored and it goes to a printer! (bug 675709)
   var xulRuntime = Components.classes["@mozilla.org/xre/app-info;1"]
                              .getService(Components.interfaces.nsIXULRuntime);
-  if (xulRuntime.OS != "Linux" && xulRuntime.OS != "WINNT") return function() { };
+  if (xulRuntime.OS != "Linux") return function() { };
 
   var fired = false;
 
