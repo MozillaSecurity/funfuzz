@@ -324,7 +324,7 @@ class AmissLogHandler:
 
 def knownChromeFailure(msg):
     return (
-        "nsIWebProgress.DOMWindow" in msg or # bug 732593
+        ("nsIWebProgress.DOMWindow" in msg or "nsIWebProgress.isTopLevel" in msg) or # bug 732593
         "installStatus is null" in msg or # bug 693237
         "aTab is null" in msg or # bug 693239
         "browser is null" in msg or # bug 693239?
