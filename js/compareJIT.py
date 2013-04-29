@@ -68,9 +68,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
         with open(prefix + "-out.txt") as f:
-            r.out = f.read()
+            r.out = f.read(lengthLimit + 10)
         with open(prefix + "-err.txt") as f:
-            r.err = f.read()
+            r.err = f.read(lengthLimit + 10)
 
         if len(r.out) > lengthLimit:
             r.out = "VERYLONGOUT"
