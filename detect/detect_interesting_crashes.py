@@ -15,7 +15,7 @@ def amiss(knownPath, crashLogFilename, verbose):
     if os.path.exists(crashLogFilename):
         with open(crashLogFilename, "r") as f:
             for line in f:
-                if isKnownCrashSignature(line):
+                if isKnownCrashSignature(line, False):
                     igmatch.append(line.rstrip())
 
         if len(igmatch) == 0:
@@ -33,6 +33,7 @@ def amiss(knownPath, crashLogFilename, verbose):
         return True
 
 TOO_MUCH_RECURSION_MAGIC = "[TMR] "
+EXPLOITABLE_MAGIC = "[EXPLOITABLE] "
 
 def readIgnoreLists(knownPath):
     global ignoreList
@@ -50,18 +51,28 @@ def readIgnoreList(filename):
     with open(filename) as ignoreFile:
         for line in ignoreFile:
             line = line.rstrip()
+            needCount = 0
+            exploitable = False
+            if line.startswith("#") or len(line) == 0:
+                continue
             if line.startswith(TOO_MUCH_RECURSION_MAGIC):
-                ignoreList.append({"seenCount": 0, "needCount": 20, "theString": line[len(TOO_MUCH_RECURSION_MAGIC):]})
-            elif len(line) > 0 and not line.startswith("#"):
-                ignoreList.append({"seenCount": 0, "needCount": 1,  "theString": line})
+                line = line[len(TOO_MUCH_RECURSION_MAGIC):]
+                needCount = 20
+            if line.startswith(EXPLOITABLE_MAGIC):
+                line = line[len(EXPLOITABLE_MAGIC):]
+                exploitable = True
+            if line.startswith("["):
+                raise Exception("Typo in crashes.txt?")
+            ignoreList.append({"seenCount": 0, "needCount": needCount, "exploitable": exploitable, "theString": line})
 
-def isKnownCrashSignature(line):
+def isKnownCrashSignature(line, exploitable):
     global ignoreList
     for ig in ignoreList:
-        if line.find(ig["theString"]) != -1:
-            ig["seenCount"] += 1
-            if ig["seenCount"] >= ig["needCount"]:
-                return True
+        if not exploitable or ig["exploitable"]: # If the caller says the crash is exploitable, only consider crashes.txt entries marked 'exploitable'.
+            if line.find(ig["theString"]) != -1:
+                ig["seenCount"] += 1
+                if ig["seenCount"] >= ig["needCount"]:
+                    return True
     return False
 
 def resetCounts():

@@ -171,6 +171,7 @@ class AmissLogHandler:
         self.crashBoringBits = False
         self.crashMightBeTooMuchRecursion = False
         self.crashIsKnown = False
+        self.crashIsExploitable = False
         self.timedOut = False
         self.goingDownHard = False
         self.sawValgrindComplaint = False
@@ -275,10 +276,12 @@ class AmissLogHandler:
                 if self.outOfMemory:
                     self.printAndLog("%%% We ran out of memory, then dereferenced null.")
                     self.crashIsKnown = True
+                else:
+                    self.printAndLog("%%% This looks like a null deref bug.")
             else:
                 # Not a null dereference.
-                #self.crashIsExploitable = True
-                pass
+                self.printAndLog("%%% Assuming this ASan crash is exploitable")
+                self.crashIsExploitable = True
         if "WARNING: AddressSanitizer failed to allocate" in msg:
             self.outOfMemory = True
 
@@ -288,7 +291,7 @@ class AmissLogHandler:
 
         if self.crashProcessor and len(self.summaryLog) < 300:
             self.summaryLog.append(msgLF)
-        if self.crashProcessor and not self.crashBoringBits and detect_interesting_crashes.isKnownCrashSignature(msg):
+        if self.crashProcessor and not self.crashBoringBits and detect_interesting_crashes.isKnownCrashSignature(msg, self.crashIsExploitable):
             self.printAndLog("%%% Known crash signature: " + msg)
             self.crashIsKnown = True
 
