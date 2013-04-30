@@ -241,9 +241,6 @@ class AmissLogHandler:
             self.sawFatalAssertion = True
             self.goingDownHard = True
             overlyGenericAssertion = ("You can't dereference a NULL" in msg)
-            if overlyGenericAssertion and isMac:
-                # https://bugzilla.mozilla.org/show_bug.cgi?id=866839 + https://bugzilla.mozilla.org/show_bug.cgi?id=859527
-                self.crashIsKnown = True
             if not overlyGenericAssertion:
                 self.crashIsKnown = True
 
