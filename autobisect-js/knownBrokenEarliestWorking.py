@@ -53,6 +53,11 @@ def knownBrokenRanges(options):
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
         ])
 
+    if options.enableMoreDeterministic:
+        skips.extend([
+            hgrange('7338d59869c3', 'e963546ec749'), # missing #include -> compile failure
+        ])
+
     if options.enableRootAnalysis:
         skips.extend([
             hgrange('7b516748a65c', '72859dc0fefd'), # broken root analysis builds
