@@ -86,7 +86,6 @@ converter.html2txt.structs
 device.sensors.enabled
 dom.archivereader.enabled
 dom.disable_image_src_set
-#dom.enable_performance # bug 866545
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
