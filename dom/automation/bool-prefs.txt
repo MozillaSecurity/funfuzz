@@ -91,6 +91,7 @@ dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
 dom.experimental_forms_range
+dom.forms.inputmode
 dom.identity.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
