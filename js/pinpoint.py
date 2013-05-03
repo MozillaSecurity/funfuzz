@@ -100,7 +100,8 @@ def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptions
     # Step 1: Run the first instance of line reduction.
     lithResult, lithDetails = lithReduceCmd([])
 
-    origNumOfLines = int(lithDetails.split()[0])
+    if lithDetails is not None:  # lithDetails can be None if testcase no longer becomes interesting
+        origNumOfLines = int(lithDetails.split()[0])
 
     hasTryItOut = False
     hasTryItOutRegex = re.compile('count=[0-9]+; tryItOut\("')
