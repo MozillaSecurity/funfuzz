@@ -225,8 +225,7 @@ class AmissLogHandler:
                 print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
 
-        fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
-        overlyGenericAssertion = fatalAssertion and (
+        overlyGenericAssertion = (
           "You can't dereference a NULL" in msg or
           ("Assertion failure: value" in msg and "BindingUtils.h" in msg)
         )
@@ -239,6 +238,7 @@ class AmissLogHandler:
             not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
             not (self.goingDownHard and isWin) and # Bug 763182
             True)
+
         fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
 
         if newAssertion:
