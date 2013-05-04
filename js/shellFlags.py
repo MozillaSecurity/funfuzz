@@ -115,7 +115,8 @@ def randomFlagSet(shellPath):
                 args.append('--ion-regalloc=stupid')
 
     # This is here because of bug 830508
-    if shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.3):
+    # This will all be Falsed due to bug 865471, which breaks jsfunfuzz
+    if False and shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
         if chance(.5):
             args.append("--execute=enableSPSProfilingAssertions(true)")
         else:
