@@ -26,6 +26,6 @@ For dedicated fuzzing machines (Mac only):
 Add to /etc/sudoers (using "sudo visudo") to allow the script to "sudo reboot" without entering a password:
 %admin ALL=(ALL)NOPASSWD: /sbin/reboot
 
-Add macbot.command to your startup commands (system preferences -> accounts). This is essentially a shell script that opens a Terminal window first.
+In "Users & Groups", enable "automatic login" and add macbot.command to your startup commands. This is essentially a shell script that opens a Terminal window first.
 
 And that's it!  The script will update the fuzzing repository and download new builds from Tinderbox automatically.  It will reboot the machine every 12 hours or so, and store its results in ~/domfuzzjobs/.
