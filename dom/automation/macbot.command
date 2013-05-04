@@ -2,7 +2,7 @@ date
 
 sleep 10 && ping -c 1 -o www.mozilla.org && hg -R ~/fuzzing pull -u
 
-python fuzzing/dom/automation/bot.py
+python fuzzing/dom/automation/bot.py --test-type=dom --target-time=43200
 
 # Reboot in a way that ensures the terminal window won't be saved
 echo REBOOT COMING
