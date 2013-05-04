@@ -12,6 +12,20 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import isLinux, isMac, macVer
 
+def hgrange(lastGood, firstWorking):
+    return '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'
+
+def knownBrokenRangesBrowser(options):
+    skips = [
+        hgrange('cc45fdc389df', 'e8938a43c31a'), # Builds with --disable-crashreporter were broken (see bug 779291)
+        hgrange('19f154ee6f54', 'd97ecf9f9b84'), # Backed out for bustage
+        hgrange('eaa88688e9e8', '7a7e1ca619c2'), # Missing include (affected Jesse's MBP but not Tinderbox)
+        hgrange('fbc1e196ca87', '7a9887e1f55e'), # Quick followup for bustage
+        hgrange('bfef9b308f92', '991938589ebe'), # A landing required a build fix and a startup-assertion fix
+    ]
+
+    return skips
+
 def knownBrokenRanges(options):
     '''Returns a list of revsets corresponding to known-busted revisions'''
     # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
@@ -22,9 +36,6 @@ def knownBrokenRanges(options):
     # - (2) autoBisect.py --compilationFailedLabel=bad -s FAILINGREV
 
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
-
-    def hgrange(lastGood, firstWorking):
-        return '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'
 
     skips = [
         hgrange('be9979b4c10b', '9f892a5a80fa'), # m-c 52501 - 53538: jm brokenness
@@ -74,6 +85,9 @@ def knownBrokenRanges(options):
         ])
 
     return skips
+
+def earliestKnownWorkingRevForBrowser(options):
+    return '4e852ca66ea0' # or 'd97862fb8e6d' ... either way, oct 2012 on mac :(
 
 def earliestKnownWorkingRev(options, flags):
     '''

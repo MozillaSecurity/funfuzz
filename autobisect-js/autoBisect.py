@@ -15,7 +15,7 @@ import time
 from optparse import OptionParser
 from tempfile import mkdtemp
 
-from knownBrokenEarliestWorking import knownBrokenRanges, earliestKnownWorkingRev
+from knownBrokenEarliestWorking import knownBrokenRanges, knownBrokenRangesBrowser, earliestKnownWorkingRev, earliestKnownWorkingRevForBrowser
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
@@ -25,8 +25,11 @@ path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 from compileShell import CompiledShell, makeTestRev, ensureCacheDir
 from inspectShell import constructVgCmdList, testBinary
-path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+path3 = os.path.abspath(os.path.join(path0, os.pardir, 'dom', 'automation'))
 sys.path.append(path3)
+import buildBrowser
+path4 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+sys.path.append(path4)
 from fileManipulation import firstLine
 import buildOptions
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor, destroyPyc
@@ -66,7 +69,10 @@ def parseOpts():
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+                      help='Specify js shell build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+    parser.add_option('-B', '--browser',
+                      dest='browserOptions',
+                      help='Specify browser build options, e.g. -b "-c mozconfig"')
 
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
@@ -110,7 +116,11 @@ def parseOpts():
                             '(bad, good, or skip) Defaults to "%default"')
 
     (options, args) = parser.parse_args()
-    options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+    if options.browserOptions:
+        assert not options.buildOptions
+        options.browserOptions = buildBrowser.parseOptions(options.browserOptions)
+    else:
+        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
 
     options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
@@ -121,33 +131,36 @@ def parseOpts():
         if len(args) < 1:
             print 'args are: ' + args
             parser.error('Not enough arguments.')
-        for a in args:
-            if a.startswith("--flags="):
-                extraFlags = a[8:].split(' ')
+        if not options.browserOptions:
+            for a in args:
+                if a.startswith("--flags="):
+                    extraFlags = a[8:].split(' ')
         options.testAndLabel = externalTestAndLabel(options, args)
     else:
+        assert not options.browserOptions # autoBisect doesn't have a built-in way to run the browser
         if len(args) >= 1:
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
     if options.startRepo is None:
-        options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags)
+        if options.browserOptions:
+            options.startRepo = earliestKnownWorkingRevForBrowser(options.browserOptions)
+        else:
+            options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags)
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
 
     return options
 
-def findBlamedCset():
+def findBlamedCset(options, repoDir, skipRevSet, testRev):
     print dateStr()
 
-    options = parseOpts()
-
-    hgPrefix = ['hg', '-R', options.buildOptions.repoDir]
+    hgPrefix = ['hg', '-R', repoDir]
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
-    realStartRepo = sRepo = getRepoHashAndId(options.buildOptions.repoDir, repoRev=options.startRepo)[0]
-    realEndRepo = eRepo = getRepoHashAndId(options.buildOptions.repoDir, repoRev=options.endRepo)[0]
+    realStartRepo = sRepo = getRepoHashAndId(repoDir, repoRev=options.startRepo)[0]
+    realEndRepo = eRepo = getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]
     vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
@@ -158,7 +171,8 @@ def findBlamedCset():
 
     # Reset bisect ranges and set skip ranges.
     captureStdout(hgPrefix + ['bisect', '-r'])
-    captureStdout(hgPrefix + ['bisect', '--skip', ' + '.join(knownBrokenRanges(options.buildOptions))])
+    if skipRevSet:
+        captureStdout(hgPrefix + ['bisect', '--skip', skipRevSet])
 
     labels = {}
     # Specify `hg bisect` ranges.
@@ -170,8 +184,6 @@ def findBlamedCset():
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
         currRev = getCsetHashFromBisectMsg(firstLine(
             captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
-
-    testRev = makeTestRev(options)
 
     iterNum = 1
     if options.testInitialRevs:
@@ -201,7 +213,7 @@ def findBlamedCset():
             print "Bisecting for the n-th round where n is", iterNum, "and 2^n is", \
                     str(2**iterNum), "...",
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
-            bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
+            bisectLabel(repoDir, hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
         if options.testInitialRevs:
             options.testInitialRevs = False
@@ -214,7 +226,7 @@ def findBlamedCset():
         print 'This iteration took %.3f seconds to run.' % oneRunTime
 
     if blamedRev is not None:
-        checkBlameParents(options.buildOptions.repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
+        checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
     vdump("Resetting bisect")
@@ -222,7 +234,7 @@ def findBlamedCset():
 
     vdump("Resetting working directory")
     captureStdout(hgPrefix + ['update', '-r', 'default'], ignoreStderr=True)
-    destroyPyc(options.buildOptions.repoDir)
+    destroyPyc(repoDir)
 
     print dateStr()
 
@@ -272,10 +284,10 @@ def externalTestAndLabel(options, interestingness):
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
     conditionArgPrefix = interestingness[1:]
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
+    vgExtra = constructVgCmdList() if options.buildOptions and options.buildOptions.runWithVg else []
 
     def inner(shellFilename, hgHash):
-        conditionArgs = conditionArgPrefix + (constructVgCmdList() if options.buildOptions.runWithVg else []) +\
-                            [shellFilename] + options.paramList
+        conditionArgs = conditionArgPrefix + vgExtra + [shellFilename] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
@@ -359,7 +371,7 @@ def sanitizeCsetMsg(msg):
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
-def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
+def bisectLabel(repoDir, hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
     outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
@@ -389,7 +401,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     if currRev is None:
         print 'Resetting to default revision...'
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
-        destroyPyc(options.buildOptions.repoDir)
+        destroyPyc(repoDir)
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
@@ -414,7 +426,13 @@ def main():
         print "autoBisect is already running"
         return
     try:
-        findBlamedCset()
+        options = parseOpts()
+        if options.browserOptions:
+            skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
+            findBlamedCset(options, options.browserOptions.repoDir, skipRevs, buildBrowser.makeTestRev(options))
+        else:
+            skipRevs = ' + '.join(knownBrokenRanges(options.buildOptions))
+            findBlamedCset(options, options.buildOptions.repoDir, skipRevs, makeTestRev(options))
     finally:
         os.rmdir(lockDir)
 
