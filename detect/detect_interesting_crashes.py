@@ -17,6 +17,8 @@ def amiss(knownPath, crashLogFilename, verbose):
             for line in f:
                 if isKnownCrashSignature(line, False):
                     igmatch.append(line.rstrip())
+                    if verbose:
+                        print "@ Known crash: " + line.rstrip()
 
         if len(igmatch) == 0:
             # Would be great to print [@ nsFoo::Bar] in addition to the filename, but
@@ -25,8 +27,6 @@ def amiss(knownPath, crashLogFilename, verbose):
             print "Unknown crash: " + crashLogFilename
             return True
         else:
-            if verbose:
-                print "@ Known crash: " + ", ".join(igmatch[0:5])
             return False
     else:
         print "Unknown crash (crash log is missing)"
