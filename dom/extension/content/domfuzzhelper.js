@@ -344,6 +344,9 @@ function safeResizeTo(aWindow)
 
 function printToFile(window)
 {
+  // Disabled completely for now.
+  return function() { };
+
   // Oddly asynchronous, at least on Linux.
 
   // Linux: works for PDF and PS.
