@@ -306,7 +306,7 @@ class AmissLogHandler:
             if (msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
                 self.printAndLog("%%% This crash is at the Mac stack guard page. It is probably a too-much-recursion crash or a stack buffer overflow.")
                 self.crashMightBeTooMuchRecursion = True
-            if self.crashMightBeTooMuchRecursion and msg.startswith(" 3 "):
+            if self.crashMightBeTooMuchRecursion and msg.startswith(" 3 ") and not self.crashIsKnown:
                 self.printAndLog("%%% The stack trace is not broken, so it's more likely to be a stack buffer overflow.")
                 self.crashMightBeTooMuchRecursion = False
             if self.crashMightBeTooMuchRecursion and msg.startswith("Thread 1"):
