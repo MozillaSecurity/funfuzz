@@ -21,7 +21,7 @@ def parseShellOptions(inputArgs):
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        repoDir = getMcRepoDir()[1],
+        repoDir = None,  # Do not set repoDir to anything other than None here.
         arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
         isThreadsafe = False,
@@ -72,8 +72,11 @@ def parseShellOptions(inputArgs):
 
     (options, args) = parser.parse_args(inputArgs.split())
 
-    options.repoDir = os.path.expanduser(normExpUserPath(options.repoDir))
-    assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
+    if options.repoDir is None:
+        options.repoDir = getMcRepoDir()[1]
+    else:  # options.repoDir is manually set.
+        options.repoDir = os.path.expanduser(normExpUserPath(options.repoDir))
+        assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
 
     options.inputArgs = inputArgs
     assert len(args) == 0
