@@ -87,7 +87,10 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
 def getRepoNameFromHgrc(repoDir):
     '''Looks in the hgrc file in the .hg directory of the repository and returns the name.'''
     hgrcpath = os.path.join(repoDir, '.hg', 'hgrc')
-    assert os.path.isfile(hgrcpath)
+    # hgrcpath is not needed to be asserted to exist, because this gets called from
+    # parser.set_defaults in buildOptions.py - if the tree is located in another directory, hgrc
+    # will not exist in the assumed default directory of ~/trees/mozilla-central anyway since it
+    # gets set later in the option parser in buildOptions.py.
     hgCfg = SafeConfigParser()
     hgCfg.read(hgrcpath)
     # Not all default entries in [paths] end with "/".
