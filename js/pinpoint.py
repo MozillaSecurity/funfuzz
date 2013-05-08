@@ -175,6 +175,6 @@ def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptions
     # Restore from backup if testcase can no longer be reproduced halfway through reduction.
     if lithResult != LITH_FINISHED and lithResult != LITH_PLEASE_CONTINUE:
         # Probably can move instead of copy the backup, once this has stabilised.
-        shutil.copy2('backup-' + infilename, infilename)
+        shutil.copy2(backupFilename, infilename)
 
     return lithResult, lithDetails
