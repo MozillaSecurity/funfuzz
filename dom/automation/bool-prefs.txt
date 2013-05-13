@@ -167,6 +167,7 @@ layers.force-active
 #layers.offmainthreadcomposition.animate-transform
 layout.3d-transforms.enabled
 layout.css.flexbox.enabled
+layout.css.font-features.enabled
 layout.css.masking.enabled
 layout.css.report_errors
 layout.css.supports-rule.enabled
