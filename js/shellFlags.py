@@ -111,8 +111,9 @@ def randomFlagSet(shellPath):
             # Backtracking and stupid landed in m-c changeset dc4887f61d2e
             elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.4):
                 args.append('--ion-regalloc=backtracking')
-            elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
-                args.append('--ion-regalloc=stupid')
+            # Disabled until bug 867767, bug 868731 and bug 871848 are fixed.
+            #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
+            #    args.append('--ion-regalloc=stupid')
 
     # This is here because of bug 830508
     # This will all be Falsed due to bug 868731, which breaks jsfunfuzz
