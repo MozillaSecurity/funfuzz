@@ -214,6 +214,13 @@ class AmissLogHandler:
         if msg.startswith("FAILURE:"):
             self.fuzzerComplained = True
             self.printAndLog("@@@ " + msg)
+        if "[object nsXPCComponents_Classes" in msg:
+            # See 'escalationAttempt' in fuzzer-combined.js
+            # A successful attempt will output something like:
+            #   Release: [object nsXPCComponents_Classes]
+            #   Debug: [object nsXPCComponents_Classes @ 0x12036b880 (native @ 0x1203678d0)]
+            self.fuzzerComplained = True
+            self.printAndLog("@@@ " + msg)
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
