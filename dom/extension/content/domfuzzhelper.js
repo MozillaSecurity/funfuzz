@@ -87,7 +87,6 @@ function makeDOMFuzzHelper(aWindow) {
       gcslice:            function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
       verifyprebarriers:  function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
       verifypostbarriers: function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
-      mjitChunkLimit:     function() { Components.utils.getJSTestingFunctions().mjitChunkLimit.apply(this, arguments); },
       terminate:          function() { Components.utils.getJSTestingFunctions().terminate(); },
 
       forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
@@ -152,7 +151,6 @@ function makeDOMFuzzHelper(aWindow) {
         gcslice: 'r',
         verifyprebarriers: 'r',
         verifypostbarriers: 'r',
-        mjitChunkLimit: 'r',
         terminate: 'r',
         reftestFilesDirectory: 'r',
         trustedKeyEvent: 'r',

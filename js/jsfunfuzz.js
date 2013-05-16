@@ -1793,9 +1793,6 @@ var exprMakers =
   // Turn on gczeal in the middle of something
   function(d, b) { return "gczeal(" + makeZealLevel() + ", " + rndElt([1, 2, rnd(100)]) + ")"; },
 
-  // Change spidermonkey mjit chunking (see https://bugzilla.mozilla.org/show_bug.cgi?id=706914)
-  function(d, b) { return "mjitChunkLimit(" + (5+rnd(4)+rnd(10)*rnd(10)) + ")"; },
-
   // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
   function(d, b) { return "gcPreserveCode()"; },
 
@@ -3433,7 +3430,6 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossIter: true
        && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
-       && code.indexOf("gcPreserveCode") == -1      // See bug 789647 - mjitChunkLimit breaks with Error: Can't change chunk limit after gcPreserveCode()
     ,
 
     expectConsistentOutputAcrossJITs: true
@@ -3809,7 +3805,7 @@ function fillShellSandbox(sandbox)
   var safeFuns = [
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
-    "verifyprebarriers", "verifypostbarriers", "mjitChunkLimit", "gcPreserveCode",
+    "verifyprebarriers", "verifypostbarriers", "gcPreserveCode",
     "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox"
   ];
