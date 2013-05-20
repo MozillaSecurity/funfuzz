@@ -195,6 +195,13 @@ def parseOpts():
         testType = "auto",
         existingBuildDir = None,
         retestRoot = None,
+        disableCompareJit = False,
+        disableRndFlags = False,
+        noStart = False,
+        timeout = 0,
+        buildOptions = "",
+        runLocalJsfunfuzz = False,
+        patchDir = None,
     )
 
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
@@ -224,7 +231,47 @@ def parseOpts():
     parser.add_option("--tempdir", dest="tempDir",
         help="Temporary directory for fuzzing. Will be blown away and re-created. Should be a name that can be reused.")
 
+    #####
+    parser.add_option('-j', '--local-jsfunfuzz', dest='runLocalJsfunfuzz', action='store_true',
+                      help='Run local jsfunfuzz.')
+    # From the old localjsfunfuzz file.
+    parser.add_option('--disable-comparejit', dest='disableCompareJit', action='store_true',
+                      help='Disable comparejit fuzzing.')
+    parser.add_option('--disable-random-flags', dest='disableRndFlags', action='store_true',
+                      help='Disable random flag fuzzing.')
+    parser.add_option('--nostart', dest='noStart', action='store_true',
+                      help='Compile shells only, do not start fuzzing.')
+
+    # Specify how the shell will be built.
+    # See buildOptions.py for details.
+    parser.add_option('-b', '--build-options',
+                      dest='buildOptions',
+                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+
+    parser.add_option('--timeout', type='int', dest='timeout',
+                      help='Sets the timeout for loopjsfunfuzz.py. ' + \
+                           'Defaults to taking into account the speed of the computer and ' + \
+                           'debugger (if any).')
+
+    parser.add_option('-p', '--set-patchDir', dest='patchDir',
+                      #help='Define the path to a single patch or to a directory containing mq ' + \
+                      #     'patches. Must have a "series" file present, containing the names ' + \
+                      #     'of the patches, the first patch required at the bottom of the list.')
+                      help='Define the path to a single patch. Multiple patches are not yet ' + \
+                           'supported.')
+
     options, args = parser.parse_args()
+
+    if options.patchDir:
+        options.patchDir = normExpUserPath(options.patchDir)
+
+    if not options.disableCompareJit:
+        options.buildOptions += " --enable-more-deterministic"
+
+    options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+
+    options.timeout = options.timeout or machineTimeoutDefaults(options)
+    #####
 
     if len(args) > 0:
         print "Warning: bot.py does not use positional arguments"
@@ -239,7 +286,7 @@ def parseOpts():
 
     options.remoteSep = "/" if options.remote_host else localSep
 
-    if options.testType == 'auto':
+    if options.testType == 'auto' and not options.runLocalJsfunfuzz:
         if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
         elif isLinux: # Bug 855881 / bug 803764
@@ -259,70 +306,91 @@ def parseOpts():
 def main():
     options = parseOpts()
 
-    if options.remote_host:
-        # Log information about the machine.
-        print "Platform details: " + " ".join(platform.uname())
-        print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
-        print "Python version: " + sys.version[:5]
-        print "Number of cores visible to OS: " +  str(cpuCount())
-        print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
+    #####
+    # These only affect fuzzing the js shell on a local machine.
+    if options.runLocalJsfunfuzz:
+        fuzzShell, cList = localCompileFuzzJsShell(options)
+        startDir = fuzzShell.getBaseTempDir()
 
-        hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
-        if os.path.isfile(hgrcLocation):
-            print 'The hgrc of this repository is:'
-            with open(hgrcLocation, 'rb') as f:
-                hgrcContentList = f.readlines()
-            for line in hgrcContentList:
-                print line.rstrip()
-
-        if os.name == 'posix':
-            # resource library is only applicable to Linux or Mac platforms.
-            import resource
-            print "Corefile size (soft limit, hard limit) is: " + \
-                    repr(resource.getrlimit(resource.RLIMIT_CORE))
-
-    runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
-    runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
-    runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
-    runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
-
-    # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-    buildDir = options.existingBuildDir or 'build'
-    #if options.remote_host:
-    #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-
-    if os.path.exists(options.tempDir):
-        shutil.rmtree(options.tempDir)
-    os.mkdir(options.tempDir)
-
-    if options.retestRoot:
-        print "Retesting time!"
-        ensureBuild(options, buildDir, None)
-        retestAll(options, buildDir)
-    else:
-        (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
-        if job:
-            print "Reduction time!"
-            ensureBuild(options, buildDir, readTinyFile(job + "preferred-build.txt"))
-            lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-            logPrefix = job + "reduce" + timestamp()
-            (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
-            uploadJob(options, lithResult, lithDetails, job, oldjobname)
-            runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
-
+        if options.noStart:
+            print 'Exiting, --nostart is set.'
+            sys.exit(0)
         else:
-            print "Fuzz time!"
-            #if options.remote_host:
-            #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-            buildSrc = ensureBuild(options, buildDir, None)
-            multiFuzzUntilBug(options, buildDir, buildSrc)
+            assert os.path.exists(normExpUserPath(os.path.join(path0, 'js', 'jsfunfuzz.js'))), \
+                'jsfunfuzz.js should be in the same location for the fuzzing harness to work.'
 
-    # Remove build directory
-    if not (options.retestRoot or options.existingBuildDir) and os.path.exists(buildDir):
-        shutil.rmtree(buildDir)
+        # Commands to simulate bash's `tee`.
+        tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=startDir)
 
-    # Remove the main temp dir, which should be empty at this point
-    os.rmdir(options.tempDir)
+        # Start fuzzing the newly compiled builds.
+        subprocess.call(cList, stdout=tee.stdin, cwd=startDir)
+    #####
+
+    else:
+        if options.remote_host:
+            # Log information about the machine.
+            print "Platform details: " + " ".join(platform.uname())
+            print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
+            print "Python version: " + sys.version[:5]
+            print "Number of cores visible to OS: " +  str(cpuCount())
+            print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
+
+            hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
+            if os.path.isfile(hgrcLocation):
+                print 'The hgrc of this repository is:'
+                with open(hgrcLocation, 'rb') as f:
+                    hgrcContentList = f.readlines()
+                for line in hgrcContentList:
+                    print line.rstrip()
+
+            if os.name == 'posix':
+                # resource library is only applicable to Linux or Mac platforms.
+                import resource
+                print "Corefile size (soft limit, hard limit) is: " + \
+                        repr(resource.getrlimit(resource.RLIMIT_CORE))
+
+        runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
+        runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
+        runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
+        runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
+
+        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
+        buildDir = options.existingBuildDir or 'build'
+        #if options.remote_host:
+        #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+
+        if os.path.exists(options.tempDir):
+            shutil.rmtree(options.tempDir)
+        os.mkdir(options.tempDir)
+
+        if options.retestRoot:
+            print "Retesting time!"
+            ensureBuild(options, buildDir, None)
+            retestAll(options, buildDir)
+        else:
+            (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
+            if job:
+                print "Reduction time!"
+                ensureBuild(options, buildDir, readTinyFile(job + "preferred-build.txt"))
+                lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
+                logPrefix = job + "reduce" + timestamp()
+                (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+                uploadJob(options, lithResult, lithDetails, job, oldjobname)
+                runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
+
+            else:
+                print "Fuzz time!"
+                #if options.remote_host:
+                #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+                buildSrc = ensureBuild(options, buildDir, None)
+                multiFuzzUntilBug(options, buildDir, buildSrc)
+
+        # Remove build directory
+        if not (options.retestRoot or options.existingBuildDir) and os.path.exists(buildDir):
+            shutil.rmtree(buildDir)
+
+        # Remove the main temp dir, which should be empty at this point
+        os.rmdir(options.tempDir)
 
 
 def retestAll(options, buildDir):
