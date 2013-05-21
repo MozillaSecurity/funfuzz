@@ -12,6 +12,8 @@ from downloadBuild import mozPlatformDetails
 from subprocesses import isWin, isWin64, isMac, isLinux, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
+DEFAULT_MC_REPO_LOCATION = normExpUserPath(os.path.join('~', 'trees', 'mozilla-central'))
+
 def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
 
@@ -21,7 +23,7 @@ def parseShellOptions(inputArgs):
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        repoDir = None,  # Do not set repoDir to anything other than None here.
+        repoDir = None,
         arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
         isThreadsafe = False,
@@ -72,11 +74,13 @@ def parseShellOptions(inputArgs):
 
     (options, args) = parser.parse_args(inputArgs.split())
 
-    if options.repoDir is None:
-        options.repoDir = getMcRepoDir()[1]
-    else:  # options.repoDir is manually set.
-        options.repoDir = os.path.expanduser(normExpUserPath(options.repoDir))
-        assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
+    # This ensures that releng machines do not enter the if block.
+    if os.path.isfile(normExpUserPath(os.path.join(DEFAULT_MC_REPO_LOCATION, '.hg', 'hgrc'))):
+        if options.repoDir is None:
+            options.repoDir = getMcRepoDir()[1]
+        else:  # options.repoDir is manually set.
+            options.repoDir = os.path.expanduser(normExpUserPath(options.repoDir))
+            assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
 
     options.inputArgs = inputArgs
     assert len(args) == 0
