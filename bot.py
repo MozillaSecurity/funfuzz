@@ -268,9 +268,9 @@ def parseOpts():
     if not options.disableCompareJit:
         options.buildOptions += " --enable-more-deterministic"
 
-    options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-
-    options.timeout = options.timeout or machineTimeoutDefaults(options)
+    if options.runLocalJsfunfuzz:
+      options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+      options.timeout = options.timeout or machineTimeoutDefaults(options)
     #####
 
     if len(args) > 0:
