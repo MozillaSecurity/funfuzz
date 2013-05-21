@@ -127,7 +127,7 @@ def main():
             timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
 
         if 'comm-' in repo:
-            timeSubprocess(['python', 'client.py', 'checkout'], cwd=repoLocation, vb=True)
+            timeSubprocess([sys.executable, 'client.py', 'checkout'], cwd=repoLocation, vb=True)
 
     print dateStr()
 

@@ -7,6 +7,7 @@
 from __future__ import with_statement
 
 import os
+import sys
 import shutil
 import subprocess
 from tempfile import mkdtemp
@@ -14,7 +15,7 @@ from tempfile import mkdtemp
 from subprocesses import normExpUserPath, shellify, vdump
 
 p0 = os.path.dirname(os.path.abspath(__file__))
-lithiumpy = ["python", "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
+lithiumpy = [sys.executable, "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
 
 # Status returns for runLithium and many_timed_runs (in loopdomfuzz.py, etc.)
 (HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,

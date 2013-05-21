@@ -695,7 +695,7 @@ def localCompileFuzzJsShell(options):
         shutil.copy2(analysisPath, fullPath)
 
     # Construct a command-line for running loopjsfunfuzz.py
-    cmdList = ['python', '-u']
+    cmdList = [sys.executable, '-u']
     cmdList.append(normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + myShell.getRepoDir())
     cmdList += ["--build", options.buildOptions.inputArgs]

@@ -489,7 +489,7 @@ def rdfInit(args):
     env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
     if dirs.stackwalk:
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
-    runbrowserpy = ["python", "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
+    runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
     close_fds = sys.platform != 'win32'
 
