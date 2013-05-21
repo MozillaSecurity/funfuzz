@@ -383,7 +383,14 @@ def main():
                 #if options.remote_host:
                 #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
                 buildSrc = ensureBuild(options, buildDir, None)
-                multiFuzzUntilBug(options, buildDir, buildSrc)
+
+                numProcesses = cpuCount()
+                if "-asan" in buildDir:
+                    # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
+                    # I could guess 1 GB RAM per core, but that wanders into sketchyville.
+                    numProcesses = max(numProcesses // 2, 1)
+
+                forkJoin(numProcesses, fuzzUntilBug, [options, buildDir, buildSrc])
 
         # Remove build directory
         if not (options.retestRoot or options.existingBuildDir) and os.path.exists(buildDir):
@@ -551,22 +558,19 @@ def ensureBuild(options, buildDir, preferredBuild):
             print "Preferred build for this reduction was missing, grabbing latest build"
     return downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
 
-
-def multiFuzzUntilBug(options, buildDir, buildSrc):
+# Call |fun| in a bunch of separate processes, then wait for them all to finish.
+# fun is called with someArgs, plus an additional argument with a numeric ID.
+def forkJoin(numProcesses, fun, someArgs):
     if sys.version_info < (2, 6):
         # The multiprocessing module was added in Python 2.6
-        fuzzUntilBug(options, buildDir, buildSrc, 0)
+        fun(*(someArgs + [0]))
     else:
         from multiprocessing import Process
         ps = []
         # Fork a bunch of processes
-        numProcesses = cpuCount()
-        if "-asan" in buildDir:
-            # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
-            numProcesses = max(numProcesses // 2, 1)
         print "Forking %d children..." % numProcesses
         for i in xrange(numProcesses):
-            p = Process(target=fuzzUntilBug, args=(options, buildDir, buildSrc, i + 1), name="Fuzzing process " + str(i + 1))
+            p = Process(target=fun, args=(someArgs + [i + 1]), name="Parallel process " + str(i + 1))
             p.start()
             ps.append(p)
         # Wait for them all to finish
