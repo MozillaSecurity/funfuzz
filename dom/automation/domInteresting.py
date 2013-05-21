@@ -365,6 +365,7 @@ def knownChromeFailure(msg):
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
+        "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
         False
     )
 
