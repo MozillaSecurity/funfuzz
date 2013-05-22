@@ -375,8 +375,8 @@ def copyJsSrcDirs(shell):
         vdump('Copying the js source tree, which is located at ' + origJsSrc)
         shutil.copytree(origJsSrc, shell.getCompilePathJsSrc(),
                         ignore=shutil.ignore_patterns(
-                            'jit-test', 'jsapi-tests', 'tests', 'trace-test', 'v8',
-                            'xpconnect'))
+                            'jit-test', 'jsapi-tests', 'parjs-benchmarks', 'tests',
+                            'trace-test', 'v8', 'xpconnect'))
         vdump('Finished copying the js tree')
     except OSError:
         raise Exception('Does the js source directory or the destination exist?')
