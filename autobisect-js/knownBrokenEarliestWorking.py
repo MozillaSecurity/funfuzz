@@ -65,6 +65,7 @@ def knownBrokenRanges(options):
             hgrange('996e96b4dbcf', '1902eff5df2a'), # broken ionmonkey
             hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
+            hgrange('c054eef6ba77', 'e02f86260dad'), # clang
         ])
 
     if options.enableMoreDeterministic:
