@@ -12,8 +12,11 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from subprocesses import isLinux, isMac, macVer
 
-def hgrange(lastGood, firstWorking):
-    return '(descendants(' + lastGood + ')-descendants(' + firstWorking + '))'
+def hgrange(firstBad, firstGood):
+    """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
+    # NB: mercurial's descendants(x) includes x
+    # So this revset expression includes firstBad, but does not include firstGood.
+    return '(descendants(' + firstBad + ')-descendants(' + firstGood + '))'
 
 def knownBrokenRangesBrowser(options):
     skips = [
