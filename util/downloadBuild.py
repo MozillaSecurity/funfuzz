@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 
-from __future__ import with_statement
-
 import os
 import platform
 import re
 import shutil
 import stat
-import subprocess
-import sys
-import time
 from HTMLParser import HTMLParser
 
 from optparse import OptionParser
@@ -280,7 +275,7 @@ def mozPlatformDetails():
         return ("macosx", "macosx64", platform.architecture()[0] == "64bit")
     elif s == "Linux":
         return ("linux", "linux64", platform.machine() == "x86_64")
-    elif s in ("Microsoft", "Windows"):
+    elif s == 'Windows':
         return ("win32", "win64", False)
     else:
         raise Exception("Unknown platform.system(): " + s)

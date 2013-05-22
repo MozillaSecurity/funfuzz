@@ -4,8 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import with_statement
-
 import ctypes
 import os
 import platform
@@ -14,27 +12,25 @@ import subprocess
 import sys
 
 from copy import deepcopy
+from multiprocessing import cpu_count
 from tempfile import mkdtemp
 from traceback import format_exc
 from optparse import OptionParser
 
 import buildOptions
 from inspectShell import ALL_COMPILE_LIBS, ALL_RUN_LIBS
-from inspectShell import COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB
 from inspectShell import RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB
 from inspectShell import verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from countCpus import cpuCount
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
 from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, \
     shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
-# Replace cpuCount() with multiprocessing's cpu_count() once Python 2.6 is in all build slaves.
-COMPILATION_JOBS = ((cpuCount() * 5) // 4) if cpuCount() > 2 else 3
+COMPILATION_JOBS = ((cpu_count() * 5) // 4) if cpu_count() > 2 else 3
 
 class CompiledShell(object):
     def __init__(self, buildOpts, hgHash, baseTmpDir):
@@ -377,14 +373,10 @@ def copyJsSrcDirs(shell):
     origJsSrc = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'src'))
     try:
         vdump('Copying the js source tree, which is located at ' + origJsSrc)
-        if sys.version_info >= (2, 6):
-            shutil.copytree(origJsSrc, shell.getCompilePathJsSrc(),
-                            ignore=shutil.ignore_patterns(
-                                'jit-test', 'jsapi-tests', 'tests', 'trace-test', 'v8',
-                                'xpconnect'))
-        else:
-            # Remove once Python 2.5.x is no longer used.
-            shutil.copytree(origJsSrc, shell.getCompilePathJsSrc())
+        shutil.copytree(origJsSrc, shell.getCompilePathJsSrc(),
+                        ignore=shutil.ignore_patterns(
+                            'jit-test', 'jsapi-tests', 'tests', 'trace-test', 'v8',
+                            'xpconnect'))
         vdump('Finished copying the js tree')
     except OSError:
         raise Exception('Does the js source directory or the destination exist?')

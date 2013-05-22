@@ -4,8 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import with_statement
-
 import ctypes
 import os
 import shutil
@@ -19,8 +17,7 @@ verbose = False
 
 isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
-# In Vista, Python 2.5.1 reports "Microsoft" - see http://bugs.python.org/issue1082
-isWin = (platform.system() in ('Microsoft', 'Windows'))
+isWin = (platform.system() == 'Windows')
 isWin64 = ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) if os.name == 'nt' else False
 
 ENV_PATH_SEPARATOR = ';' if os.name == 'nt' else ':'

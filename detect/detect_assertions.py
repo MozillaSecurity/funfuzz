@@ -4,7 +4,6 @@
 # Recognizes JS_ASSERT based on condition only :(
 # Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
 
-from __future__ import with_statement
 import os, sys
 
 simpleIgnoreList = []

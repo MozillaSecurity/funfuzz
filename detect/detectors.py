@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 
-from __future__ import with_statement
-import os, sys, platform, signal
+import os, sys, platform
 
 class Detector:
   def __init__(self):

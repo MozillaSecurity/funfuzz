@@ -4,8 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import with_statement
-
 import os
 import platform
 import sys
@@ -13,8 +11,8 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import envWithPath, captureStdout, isLinux, isMac, isWin, isWin64, \
-    normExpUserPath, shellify, vdump
+from subprocesses import envWithPath, captureStdout, isMac, isWin, isWin64, normExpUserPath, \
+    shellify, vdump
 
 if os.name == 'nt':
     COMPILE_NSPR_LIB = 'libnspr4.lib' if isWin64 else 'nspr4.lib'

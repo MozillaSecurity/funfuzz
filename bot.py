@@ -3,8 +3,6 @@
 # bot.py runs domfuzz, jsfunfuzz, or Lithium for a limited amount of time.
 # It stores jobs using ssh, using directory 'mv' for synchronization.
 
-from __future__ import with_statement
-
 import os
 import platform
 import random
@@ -15,6 +13,7 @@ import sys
 import time
 import uuid
 import tempfile
+from multiprocessing import cpu_count, Process
 from optparse import OptionParser
 from tempfile import mkdtemp
 
@@ -23,7 +22,6 @@ path1 = os.path.abspath(os.path.join(path0, 'util'))
 sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
-from countCpus import cpuCount
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from subprocesses import captureStdout, dateStr, getFreeSpace, isWin, isLinux, normExpUserPath, \
     shellify, vdump
@@ -332,7 +330,7 @@ def main():
             print "Platform details: " + " ".join(platform.uname())
             print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
             print "Python version: " + sys.version[:5]
-            print "Number of cores visible to OS: " +  str(cpuCount())
+            print "Number of cores visible to OS: " +  str(cpu_count())
             print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
 
             hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
@@ -384,7 +382,7 @@ def main():
                 #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
                 buildSrc = ensureBuild(options, buildDir, None)
 
-                numProcesses = cpuCount()
+                numProcesses = cpu_count()
                 if "-asan" in buildDir:
                     # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
                     # I could guess 1 GB RAM per core, but that wanders into sketchyville.
@@ -561,22 +559,17 @@ def ensureBuild(options, buildDir, preferredBuild):
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 def forkJoin(numProcesses, fun, someArgs):
-    if sys.version_info < (2, 6):
-        # The multiprocessing module was added in Python 2.6
-        fun(*(someArgs + [0]))
-    else:
-        from multiprocessing import Process
-        ps = []
-        # Fork a bunch of processes
-        print "Forking %d children..." % numProcesses
-        for i in xrange(numProcesses):
-            p = Process(target=fun, args=(someArgs + [i + 1]), name="Parallel process " + str(i + 1))
-            p.start()
-            ps.append(p)
-        # Wait for them all to finish
-        for p in ps:
-            p.join()
-        print "All %d children have finished!" % numProcesses
+    ps = []
+    # Fork a bunch of processes
+    print "Forking %d children..." % numProcesses
+    for i in xrange(numProcesses):
+        p = Process(target=fun, args=(someArgs + [i + 1]), name="Parallel process " + str(i + 1))
+        p.start()
+        ps.append(p)
+    # Wait for them all to finish
+    for p in ps:
+        p.join()
+    print "All %d children have finished!" % numProcesses
 
 def fuzzUntilBug(options, buildDir, buildSrc, i):
     # not really "oldjobname", but this is how i get newjobname to be what i want below

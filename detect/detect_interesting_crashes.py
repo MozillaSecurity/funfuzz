@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import with_statement
-import os, sys, platform, signal
+import os
 ready = False
 
 def amiss(knownPath, crashLogFilename, verbose):

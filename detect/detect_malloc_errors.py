@@ -3,8 +3,6 @@
 # Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
 # which are signs of malloc being unhappy (double free, out-of-memory, etc).
 
-from __future__ import with_statement
-
 pline = ""
 ppline = ""
 

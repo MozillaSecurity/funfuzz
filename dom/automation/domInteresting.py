@@ -16,11 +16,9 @@ bot.py --> loopdomfuzz.py --> domInteresting.py --> runbrowser.py --> automation
 """
 
 
-from __future__ import with_statement
 import sys
 import shutil
 import os
-import platform
 import signal
 import glob
 import re

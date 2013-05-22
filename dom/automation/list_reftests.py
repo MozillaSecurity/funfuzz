@@ -2,8 +2,7 @@
 
 # Based on js/src/tests/manifest.py
 
-from __future__ import with_statement
-import os, re, sys
+import os, re
 from subprocess import *
 
 

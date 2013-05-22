@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import with_statement
-
 import datetime
 import os
 import random
@@ -19,7 +17,7 @@ domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.
 
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import shellify, createWtmpDir
+from subprocesses import createWtmpDir
 from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLinesToFile
 import lithOps
 

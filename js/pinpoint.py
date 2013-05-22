@@ -43,12 +43,9 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
     print shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
 
     if bisectRepo is not "none" and targetTime is None:
-        # We cannot test that it is not xpcshell with Python 2.5 since testJsShellOrXpcshell relies
-        # on 'delete' being a keyword argument in NamedTemporaryFile(). The testing functions in
-        # inspectShell in general need at least Python 2.6 because of this.
         if platform.uname()[2] == 'XP':
             print 'Not pinpointing to exact changeset since autoBisect does not work well in WinXP.'
-        elif sys.version_info >= (2, 6) and testJsShellOrXpcshell(jsEngine) != "xpcshell":
+        elif testJsShellOrXpcshell(jsEngine) != "xpcshell":
             autobisectCmd = (
                 [sys.executable, autobisectpy] +
                 ["-b", buildOptionsStr if (buildOptionsStr is not None) else guessBuildOptions(jsEngine)] +
@@ -58,8 +55,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
             print shellify(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
-        elif sys.version_info < (2, 6):
-            print 'Not pinpointing to exact changeset, please use a Python version >= 2.6.'
 
     return (lithResult, lithDetails)
 
