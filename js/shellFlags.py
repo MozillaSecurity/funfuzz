@@ -37,7 +37,6 @@ def randomFlagSet(shellPath):
 
     args = []
 
-    jaeger = chance(.7)
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
     infer = chance(.7)
 
@@ -59,30 +58,8 @@ def randomFlagSet(shellPath):
             totalThreads = random.randint(2, (cpu_count() * 2))
             args.append('--thread-count=' + str(totalThreads))
 
-    if shellSupportsFlag(shellPath, "--no-ion"):
-        # New js shell defaults jaeger, ion, and infer to on! See bug 724751.
-        if not jaeger:
-            args.append("--no-jm")
-        if not ion:
-            args.append("--no-ion")
-        if not infer:
-            args.append("--no-ti")
-    else:
-        # Old shells (and xpcshell?) default jaeger, ion, and infer to off.
-        if jaeger:
-            args.append("-m")
-        if ion:
-            args.append("--ion")
-        if infer:
-            args.append("-n")
-
-    if jaeger:
-        if chance(.5):
-            args.append("-a") # aka --always-mjit
-        if chance(.2):
-            args.append("-d") # aka --debugjit
-        if chance(.2):
-            args.append("--execute=mjitChunkLimit(" + str(random.randint(5, 100)) + ")")
+    if not infer:
+        args.append("--no-ti")
 
     if ion:
         if chance(.6):
@@ -111,6 +88,8 @@ def randomFlagSet(shellPath):
             # Disabled until bug 867767, bug 868731 and bug 871848 are fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
+    else:
+        args.append("--no-ion")
 
     # This is here because of bug 830508
     # This will all be Falsed due to bug 874687, which breaks jsfunfuzz
@@ -125,8 +104,7 @@ def randomFlagSet(shellPath):
     #if chance(.05):
     #    args.append("--execute=verifypostbarriers()")
 
-    # The second condition can be removed once JM has been removed (bug 857845). See bug 865507.
-    if chance(.05) and "--no-fpu" not in args:
+    if chance(.05):
         args.append("-D") # aka --dump-bytecode
 
     return args
@@ -139,23 +117,17 @@ def basicFlagSets(shellPath):
     '''
     if shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
-            # From http://hg.mozilla.org/projects/ionmonkey/annotate/280e5ed3f0b7/js/src/jit-test/jit_test.py#l140
+            # From http://hg.mozilla.org/mozilla-central/annotate/4236b1163508/js/src/jit-test/jit_test.py#l140
             [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
             ['--no-baseline'],
-            ['--no-baseline', '--no-jm'],
-            ['--no-baseline', '--no-ion', '--no-jm', '--no-ti'],
             ['--no-baseline', '--no-ion', '--no-ti'],
-            ['--no-baseline', '--no-ion', '--no-ti', '-a', '-d'],
-            ['--no-baseline', '--no-ion', '--no-jm'],
             ['--no-baseline', '--no-ion'],
-            ['--no-baseline', '--no-ion', '-a'],
-            ['--no-baseline', '--no-ion', '-a', '-d'],
-            ['--no-baseline', '--no-ion', '-d'],
             ['--no-baseline', '--ion-eager'],
             ['--ion-eager'],
             ['--baseline-eager'],
             ['--baseline-eager', '--no-ion'], # See bug 848906 comment 1
             ['--baseline-eager', '--no-ti'],
+            ['--baseline-eager', '--no-ti', '--no-fpu'],
         ]
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--no-ion"):
@@ -179,7 +151,6 @@ def basicFlagSets(shellPath):
             basicFlagList.extend([
                 ['--no-baseline'],
                 ['--no-baseline', '--no-ti'],
-                # ['--baseline-eager'],
             ])
         return basicFlagList
     else:
