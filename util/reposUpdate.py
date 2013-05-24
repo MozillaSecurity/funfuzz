@@ -17,11 +17,11 @@ repos = []
 # Add your repository here.
 repos.append('fuzzing')
 # Spidermonkey friends
-repos.append('ionmonkey')
+#repos.append('ionmonkey')
 # Official repository branches
 repos.append('mozilla-inbound')
 repos.append('mozilla-central')
-repos.append('comm-central')
+#repos.append('comm-central')
 repos.append('mozilla-aurora')
 repos.append('mozilla-beta')
 repos.append('mozilla-release')
