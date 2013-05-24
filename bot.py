@@ -389,8 +389,8 @@ def main():
         if not (options.retestRoot or options.existingBuildDir) and os.path.exists(buildDir):
             shutil.rmtree(buildDir)
 
-        # Remove the main temp dir, which should be empty at this point
-        os.rmdir(options.tempDir)
+    # Remove the main temp dir, which should be empty at this point
+    os.rmdir(options.tempDir)
 
 
 def retestAll(options, buildDir):
