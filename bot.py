@@ -300,6 +300,8 @@ def parseOpts():
 
 def main():
     options = parseOpts()
+    options.tempDir = tempfile.mkdtemp("fuzzbot")
+    print options.tempDir
 
     #####
     # These only affect fuzzing the js shell on a local machine.
@@ -353,9 +355,6 @@ def main():
         buildDir = options.existingBuildDir or 'build'
         #if options.remote_host:
         #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-
-        options.tempDir = tempfile.mkdtemp("fuzzbot")
-        print options.tempDir
 
         if options.retestRoot:
             print "Retesting time!"
