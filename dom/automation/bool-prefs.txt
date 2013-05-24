@@ -90,6 +90,7 @@ dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
 dom.experimental_forms_range
+dom.forms.color
 dom.forms.inputmode
 dom.identity.enabled
 dom.indexedDB.enabled
