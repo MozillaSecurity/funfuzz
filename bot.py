@@ -189,7 +189,6 @@ def parseOpts():
         repoName = 'mozilla-central',
         compileType = 'dbg',
         targetTime = 15*60,       # 15 minutes
-        tempDir = "fuzztemp",
         testType = "auto",
         existingBuildDir = None,
         retestRoot = None,
@@ -226,8 +225,6 @@ def parseOpts():
         help="Base directory on remote machine to store fuzzing data")
     parser.add_option("--target-time", dest="targetTime", type='int',
         help="Nominal amount of time to run, in seconds")
-    parser.add_option("--tempdir", dest="tempDir",
-        help="Temporary directory for fuzzing. Will be blown away and re-created. Should be a name that can be reused.")
 
     #####
     parser.add_option('-j', '--local-jsfunfuzz', dest='runLocalJsfunfuzz', action='store_true',
@@ -357,9 +354,8 @@ def main():
         #if options.remote_host:
         #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        if os.path.exists(options.tempDir):
-            shutil.rmtree(options.tempDir)
-        os.mkdir(options.tempDir)
+        options.tempDir = tempfile.mkdtemp("fuzzbot")
+        print options.tempDir
 
         if options.retestRoot:
             print "Retesting time!"
