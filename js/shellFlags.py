@@ -92,7 +92,7 @@ def randomFlagSet(shellPath):
         args.append("--no-ion")
 
     # This is here because of bug 830508
-    # This will all be Falsed due to bug 874687, which breaks jsfunfuzz
+    # This will all be Falsed due to bug 875656, which breaks jsfunfuzz
     if False and shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
         if chance(.5):
             args.append("--execute=enableSPSProfilingAssertions(true)")
