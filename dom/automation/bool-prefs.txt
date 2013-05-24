@@ -163,8 +163,7 @@ layers.acceleration.disabled
 layers.composer2d.enabled
 layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
-#layers.offmainthreadcomposition.animate-opacity
-#layers.offmainthreadcomposition.animate-transform
+#layers.offmainthreadcomposition.async-animations
 layout.3d-transforms.enabled
 layout.css.flexbox.enabled
 layout.css.font-features.enabled
