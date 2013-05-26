@@ -154,8 +154,12 @@ def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptions
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         infileContents = []
         with open(infilename, 'rb') as f:
-            # The 1-line offset is added here.
-            infileContents = ['\n'] + [line.replace('NIGEBDD', 'DDBEGIN') for line in f.readlines()]
+            for line in f.readlines():
+                if 'NIGEBDD' in line:
+                    infileContents.append(line.replace('NIGEBDD', 'DDBEGIN'))
+                    infileContents.append('\n')  # The 1-line offset is added here.
+                    continue
+                infileContents.append(line)
         with open(infilename, 'wb') as f:
             f.writelines(infileContents)
 
