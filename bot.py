@@ -90,7 +90,7 @@ def grabJob(options, desiredJobType):
                 jobWithPostfix = copyFiles(options.remote_host, options.remote_prefix + takenNameOnServer + options.remoteSep, options.tempDir + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part after the "_"
                 job = options.tempDir + localSep + oldjobname + localSep
-                os.rename(jobWithPostfix, job) # so lithium gets the same filename as before
+                os.rename(jobWithPostfix, job)
                 print repr((job, oldjobname, takenNameOnServer))
                 return (job, oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
@@ -366,6 +366,7 @@ def main():
                 print "Reduction time!"
                 ensureBuild(options, buildDir, readTinyFile(job + "preferred-build.txt"))
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
+                lithArgs[-1] = job + lithArgs[-1].split('/')[-1] # options.tempDir may be different
                 logPrefix = job + "reduce" + timestamp()
                 (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
                 uploadJob(options, lithResult, lithDetails, job, oldjobname)
