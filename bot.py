@@ -364,7 +364,7 @@ def main():
             (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
             if job:
                 print "Reduction time!"
-                ensureBuild(options, buildDir, readTinyFile(job + "preferred-build.txt"))
+                ensureBuild(options, buildDir, None)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 lithArgs[-1] = job + lithArgs[-1].split('/')[-1] # options.tempDir may be different
                 logPrefix = job + "reduce" + timestamp()
