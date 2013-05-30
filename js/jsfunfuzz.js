@@ -2034,8 +2034,6 @@ function makeShapeyConstructor(d, b)
 
 var propertyNameMakers = weighted([
   { w: 1,  fun: function(d, b) { return makeExpr(d - 1, b); } },
-  { w: 1,  fun: function(d, b) { return "new QName(" + makePropertyName(d - 1, b) + ")"; } },
-  { w: 1,  fun: function(d, b) { return "new QName('http://www.w3.org/1999/xhtml', " + makePropertyName(d - 1, b) + ")"; } },
   { w: 1,  fun: function(d, b) { return maybeNeg() + rnd(20); } },
   { w: 1,  fun: function(d, b) { return '"' + maybeNeg() + rnd(20) + '"'; } },
   { w: 1,  fun: function(d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
