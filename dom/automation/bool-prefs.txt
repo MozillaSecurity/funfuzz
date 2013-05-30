@@ -136,10 +136,15 @@ image.mem.decodeondraw
 image.mem.discardable
 image.multithreaded_decoding.enabled
 intl.locale.matchOS
+javascript.options.asmjs
+javascript.options.baselinejit.content
+javascript.options.baselinejit.chrome
+javascript.options.baselinejit.unsafe_eager_compilation
 javascript.options.experimental_asmjs
 javascript.options.gc_on_memory_pressure
 javascript.options.ion.content
 javascript.options.ion.parallel_compilation
+javascript.options.ion.unsafe_eager_compilation
 javascript.options.jit_hardening
 javascript.options.jitprofiling.chrome
 javascript.options.jitprofiling.content
