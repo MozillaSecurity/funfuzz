@@ -1578,17 +1578,6 @@ function addPropertyName(p)
 }
 */
 
-function makeNamespacePrefix(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  switch (rnd(7)) {
-    case 0:  return "function::";
-    case 1:  return makeId(d, b) + "::";
-    default: return "";
-  }
-}
-
-
 var exprMakers =
 [
   // Left-unary operators
@@ -1602,11 +1591,11 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
 
   // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(allMethodNames)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(allMethodNames)]); },
   function(d, b) { var id = makeId(d, b); return cat(["/*UUV1*/", "(", id, ".", rndElt(allMethodNames), " = ", makeFunction(d, b), ")"]); },
   function(d, b) { var id = makeId(d, b); return cat(["/*UUV2*/", "(", id, ".", rndElt(allMethodNames), " = ", id, ".", rndElt(allMethodNames), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(allMethodNames), "(", makeActualArgList(d, b), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), "valueOf", "(", uneval("number"), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(allMethodNames), "(", makeActualArgList(d, b), ")"]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", "valueOf", "(", uneval("number"), ")"]); },
 
   // Binary operators
   function(d, b) { return cat([makeExpr(d, b), rndElt(binaryOps), makeExpr(d, b)]); },
@@ -1643,8 +1632,8 @@ var exprMakers =
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
 
   // Dot (property access)
-  function(d, b) { return cat([makeId(d, b),    ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b),  ".", makeNamespacePrefix(d, b), makeId(d, b)]); },
+  function(d, b) { return cat([makeId(d, b),    ".", makeId(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b),  ".", makeId(d, b)]); },
 
   // Property access / index into array
   function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
@@ -2368,7 +2357,7 @@ var functionMakers = [
   function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")" },
 
   // Methods with known names
-  function(d, b) { return cat([makeExpr(d, b), ".", makeNamespacePrefix(d, b), rndElt(allMethodNames)]); },
+  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(allMethodNames)]); },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
@@ -2673,16 +2662,12 @@ function makeId(d, b)
     // some keywords that can be used as identifiers in some contexts (e.g. variables, function names, argument names)
     // but that's annoying, and some of these cause lots of syntax errors.
     return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each"]);
-  case 11:
-    return "function::" + makeId(d, b);
-  case 12: case 13:
+  case 11: case 12: case 13:
     return "this." + makeId(d, b);
-  case 14:
-    return "x::" + makeId(d, b);
-  case 15: case 16:
-    return makeNamespacePrefix(d - 1, b) + makeObjLiteralName(d - 1, b);
+  case 14: case 15: case 16:
+    return makeObjLiteralName(d - 1, b);
   case 17: case 18:
-    return makeNamespacePrefix(d - 1, b) + makeId(d - 1, b);
+    return makeId(d - 1, b);
   case 19:
     return " "; // [k, v] becomes [, v] -- test how holes are handled in unexpected destructuring
   case 20:
