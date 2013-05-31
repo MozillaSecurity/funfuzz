@@ -1781,8 +1781,9 @@ function makeGlobal(d, b)
   var gs = rndElt([
     "evalcx('')",
     "evalcx('lazy')",
-    "newGlobal('same-compartment')",
-    "newGlobal('new-compartment')"
+    "newGlobal({})", // same zone
+    "newGlobal(" + makeExpr(d - 2, b) + ")", // other zone
+    "newGlobal()", // new zone
   ]);
 
   if (rnd(2))
@@ -3542,15 +3543,15 @@ function unlikelyToHang(code)
  * EXECUTION CONSISTENCY TESTS *
  *******************************/
 
-function sandboxResult(code, globalType)
+function sandboxResult(code, zone)
 {
   // Use sandbox to isolate side-effects.
   var result;
   var resultStr = "";
   try {
-    // Using newGlobal("new-compartment"), rather than evalcx(''), to get
+    // Using newGlobal(), rather than evalcx(''), to get
     // shell functions. (see bug 647412 comment 2)
-    var sandbox = newGlobal(globalType);
+    var sandbox = newGlobal(zone);
 
     result = evalcx(code, sandbox);
     if (typeof result != "object") {
@@ -3577,7 +3578,7 @@ function nestingConsistencyTest(code)
   }
 
   // These are on the same line so that line numbers in stack traces will match.
-  var resultO = sandboxResult(codeNestedOnce, "same-compartment"); var resultD = sandboxResult(codeNestedDeep, "same-compartment");
+  var resultO = sandboxResult(codeNestedOnce, null); var resultD = sandboxResult(codeNestedDeep, null);
 
   //if (resultO != "" && resultO != "undefined" && resultO != "use strict")
   //  print("NestTest: " + resultO);
@@ -3819,8 +3820,8 @@ function useSpidermonkeyShellSandbox(sandboxType)
   switch (sandboxType) {
     case 0:  primarySandbox = evalcx('');
     case 1:  primarySandbox = evalcx('lazy');
-    case 2:  primarySandbox = newGlobal('same-compartment');
-    default: primarySandbox = newGlobal('new-compartment');
+    case 2:  primarySandbox = newGlobal({}); // same zone
+    default: primarySandbox = newGlobal(); // new zone
   }
 
   fillShellSandbox(primarySandbox);
