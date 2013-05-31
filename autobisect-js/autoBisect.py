@@ -361,13 +361,15 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
         print "The bug was introduced by a merge (it was not present on either parent)."
         print "I don't know which patches from each side of the merge contributed to the bug. Sorry."
 
-def sanitizeCsetMsg(msg):
+def sanitizeCsetMsg(msg, repo):
     '''Sanitizes changeset messages, removing email addresses.'''
     msgList = msg.split('\n')
     sanitizedMsgList = []
     for line in msgList:
         if line.find('<') != -1 and line.find('@') != -1 and line.find('>') != -1:
             line = ' '.join(line.split(' ')[:-1])
+        elif line.startswith('changeset:') and 'mozilla-central' in repo:
+            line = 'changeset:   http://hg.mozilla.org/mozilla-central/rev/' + line.split(':')[-1]
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
@@ -379,14 +381,14 @@ def bisectLabel(repoDir, hgPrefix, options, hgLabel, currRev, startRepo, endRepo
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match\
             (outputLines[0]):
-        print('\n' + sanitizeCsetMsg(outputResult) + '\n')
+        print('\n' + sanitizeCsetMsg(outputResult, options.buildOptions.repoDir) + '\n')
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
         print '\n\nautoBisect shows this is probably related to the following changeset:\n'
-        print(sanitizeCsetMsg(outputResult) + '\n')
+        print(sanitizeCsetMsg(outputResult, options.buildOptions.repoDir) + '\n')
         blamedGoodOrBad = m.group(1)
         blamedRev = getCsetHashFromBisectMsg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
