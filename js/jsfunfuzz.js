@@ -1591,7 +1591,6 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
 
   // Methods
-  function(d, b) { return cat([makeExpr(d, b), ".", rndElt(allMethodNames)]); },
   function(d, b) { var id = makeId(d, b); return cat(["/*UUV1*/", "(", id, ".", rndElt(allMethodNames), " = ", makeFunction(d, b), ")"]); },
   function(d, b) { var id = makeId(d, b); return cat(["/*UUV2*/", "(", id, ".", rndElt(allMethodNames), " = ", id, ".", rndElt(allMethodNames), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(allMethodNames), "(", makeActualArgList(d, b), ")"]); },
@@ -1630,18 +1629,6 @@ var exprMakers =
 
   // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
-
-  // Dot (property access)
-  function(d, b) { return cat([makeId(d, b),    ".", makeId(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b),  ".", makeId(d, b)]); },
-
-  // Property access / index into array
-  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
-  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]", " = ", makeExpr(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]", " = ", makeFunction(d, b)]); },
-  function(d, b) { return cat([makeId(d, b),   "[", makePropertyName(d, b), "]", " = ", makeExpr(d, b)]); },
-  function(d, b) { return cat([makeId(d, b),   "[", makePropertyName(d, b), "]", " = ", makeFunction(d, b)]); },
-  function(d, b) { return cat(["arguments",    "[", makePropertyName(d, b), "]"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
   function(d, b) { return cat(["[", makeExpr(d, b), "]"]); },
@@ -1735,9 +1722,6 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), ".", "throw", "(", makeExpr(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", "yoyo",   "(", makeExpr(d, b), ")"]); },
 
-  // Throws, but more importantly, tests js_DecompileValueGenerator in various contexts.
-  function(d, b) { return "this.zzz.zzz"; },
-
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
   function(d, b) { return makeExpr(d, b) + ".eval(" + makeExpr(d, b) + ")"; },
@@ -1808,13 +1792,6 @@ var exprMakers =
 
   makeRegexUseExpr,
   makeShapeyValue,
-
-  function(d, b) { return rndElt(builtinProperties); },
-  function(d, b) { return rndElt(builtinObjectNames); },
-
-  function(d, b) { return makeFunOnCallChain(d, b) + ".arguments"; }, // read-only arguments object
-  function(d, b) { "arguments"; }, // read-write arguments object
-  function(d, b) { return "arguments[" + rnd(2) + "] = " + makeExpr(d, b); },
 ];
 
 var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
@@ -2739,25 +2716,37 @@ var lvalueMakers = [
   // Simple variable names :)
   function(d, b) { return cat([makeId(d, b)]); },
 
+  // Parenthesized lvalues
+  function(d, b) { return cat(["(", makeLValue(d, b), ")"]); },
+
   // Destructuring
   function(d, b) { return makeDestructuringLValue(d, b); },
   function(d, b) { return "(" + makeDestructuringLValue(d, b) + ")"; },
-
-  // Properties
-  function(d, b) { return cat([makeId(d, b),   ".", makeId(d, b)]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", makeId(d, b)]); },
-  function(d, b) { return cat([makeId(d, b),   "[", makePropertyName(d, b), "]"]); },
-  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
 
   // Certain functions can act as lvalues!  See JS_HAS_LVALUE_RETURN in js engine source.
   function(d, b) { return cat([makeId(d, b), "(", makeExpr(d, b), ")"]); },
   function(d, b) { return cat(["(", makeExpr(d, b), ")", "(", makeExpr(d, b), ")"]); },
 
-  // Parenthesized lvalues can cause problems ;)
-  function(d, b) { return cat(["(", makeLValue(d, b), ")"]); },
+  // Builtins
+  function(d, b) { return rndElt(builtinProperties); },
+  function(d, b) { return rndElt(builtinObjectNames); },
 
-  function(d, b) { return makeExpr(d, b); } // intentionally bogus, but not quite garbage.
+  // Arguments object, which can alias named parameters to the function
+  function(d, b) { "arguments"; },
+  function(d, b) { return cat(["arguments", "[", makePropertyName(d, b), "]"]); },
+  function(d, b) { return makeFunOnCallChain(d, b) + ".arguments"; }, // read-only arguments object
+
+  // Property access / index into array
+  function(d, b) { return cat([makeExpr(d, b),  ".", makeId(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
+
+  // Throws, but more importantly, tests js_DecompileValueGenerator in various contexts.
+  function(d, b) { return "this.zzz.zzz"; },
+
+  // Intentionally bogus, but not quite garbage.
+  function(d, b) { return makeExpr(d, b); },
 ];
+
 
 function makeDestructuringLValue(d, b)
 {
