@@ -1152,7 +1152,8 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "g", makeGlobal(d, b)); } },
     { w: 5,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + strToEval(d, b) + ")"); } },
     { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + strToEval(d, b) + ", " + m("g") + ")"); } },
-    { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", { global: " + m("g") + ", fileName: " + rndElt(["'evaluate.js'", "null"]) + ", lineNumber: 42, newContext: " + makeBoolean(d, b) + ", compileAndGo: " + makeBoolean(d, b) + ", noScriptRval: " + makeBoolean(d, b) + ", catchTermination: " + makeBoolean(d, b) + ", saveFrameChain: " + makeBoolean(d, b) + " })"); } },
+    // saveFrameChain is disabled to avoid bug 877378 and bug 877381
+    { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", { global: " + m("g") + ", fileName: " + rndElt(["'evaluate.js'", "null"]) + ", lineNumber: 42, newContext: " + makeBoolean(d, b) + ", compileAndGo: " + makeBoolean(d, b) + ", noScriptRval: " + makeBoolean(d, b) + ", catchTermination: " + makeBoolean(d, b) + ", saveFrameChainDISABLED: " + makeBoolean(d, b) + " })"); } },
     { w: 3,  fun: function(d, b) { return "schedulegc(" + m("g") + ");" } },
 
     // Mix builtins between globals
