@@ -3344,7 +3344,16 @@ function regexCharacterClassData(dr, inRange)
  *****************/
 
 function randomRegexFlags() {
-  return rndElt(["g", ""]) + rndElt(["i", ""]) + rndElt(["m", ""]) + rndElt(["y", ""]);
+  var s = "";
+  if (rnd(2))
+    s += "g";
+  if (rnd(2) && (!s || rnd(10000) == 0)) // only make /gy regexps rarely, due to bug 877912
+    s += "y";
+  if (rnd(2))
+    s += "i";
+  if (rnd(2))
+    s += "m";
+  return s;
 }
 
 function toRegexSource(rexpat)
