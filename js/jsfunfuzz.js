@@ -1949,6 +1949,9 @@ function makeProxyHandlerFactory(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
+  if (d < 1)
+    return "({/*TOODEEP*/})";
+
   try { // in case we screwed Object.prototype, breaking proxyHandlerProperties
     var preferred = rndElt(["empty", "forward", "yes", "no", "bind", "throwing"]);
     var fallback = rndElt(["empty", "forward"]);
@@ -1999,7 +2002,7 @@ function makeProxyHandler(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 1, b) + ")"
+  return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")"
 }
 
 
@@ -3025,6 +3028,15 @@ function makeShapeyValue(d, b)
   return rndElt(rndElt(a));
 }
 
+function mixedTypeArrayElem(d, b)
+{
+  while (true) {
+    var s = makeShapeyValue(d - 3, b);
+    if (s.length < 60)
+      return s;
+  }
+}
+
 function makeMixedTypeArray(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
@@ -3032,8 +3044,9 @@ function makeMixedTypeArray(d, b)
   // Pick two to five values to use as array entries.
   var q = rnd(4) + 2;
   var picks = [];
-  for (var j = 0; j < q; ++j)
-    picks.push(makeShapeyValue(d, b));
+  for (var j = 0; j < q; ++j) {
+    picks.push(mixedTypeArrayElem(d, b));
+  }
 
   // Create a large array literal by randomly repeating the values.
   var c = [];
@@ -3806,7 +3819,7 @@ function testOne()
 
   // Sometimes it makes sense to start with simpler functions:
   //var depth = ((count / 1000) | 0) & 16;
-  var depth = 10;
+  var depth = 14;
 
   if (dumpEachSeed) {
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
