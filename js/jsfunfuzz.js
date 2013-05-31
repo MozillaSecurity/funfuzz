@@ -513,7 +513,7 @@ function rndElt(a)
 
 // Even when not in "torture" mode, it may sneak in extra line breaks.
 
-// Why did I decide to toString at every step, instead of making larger and larger arrays (or more and more deeply nested arrays?).  no particular reason...
+// Why did I decide to toString at every step, instead of making larger and larger arrays (or more and more deeply nested arrays?).  no particular reason.
 
 function cat(toks)
 {
@@ -1071,11 +1071,12 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return "Array.prototype.shift.call("   + m("a") + ");"; } },
     { w: 3,  fun: function(d, b) { return "Array.prototype.reverse.call(" + m("a") + ");"; } },
     { w: 3,  fun: function(d, b) { return "Array.prototype.sort.call("    + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
-    { w: 1,  fun: function(d, b) { return "Array.prototype.splice.call("  + m("a") + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + rnd(ARRAY_SIZE) + ");" ; } }, // should also add new elements...
+    { w: 1,  fun: function(d, b) { return "Array.prototype.splice.call("  + m("a") + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + rnd(ARRAY_SIZE) + ");" ; } },
+
     // Array accessors
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", m("a") + ".join('')"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", m("a") + ".join(', ')"); } },
-    { w: 1,  fun: function(d, b) { return assign(d, b, "a", m("a") + ".concat(" + m("a") + ")"); } }, // can actually take multiple array or non-arrays...
+    { w: 1,  fun: function(d, b) { return assign(d, b, "a", m("a") + ".concat(" + m("at") + ")"); } }, // can actually take multiple arrays
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", m("a") + ".slice(" + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ")"); } },
     // Array iterators
     { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["filter", "forEach", "every", "map", "some"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
@@ -1095,7 +1096,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", m("s") + ".charAt(" + rnd(ARRAY_SIZE) + ")"); } },
     { w: 5,  fun: function(d, b) { return m("s") + " += 'x';"; } },
     { w: 5,  fun: function(d, b) { return m("s") + " += " + m("s") + ";"; } },
-    // substr, substring, replace, ...
+    // Should add substr, substring, replace
 
     // m: Map, WeakMap
     { w: 1,  fun: function(d, b) { return assign(d, b, "m", "new Map"); } },
@@ -1460,7 +1461,7 @@ function makeTryBlock(d, b)
   // Catches: 1/6 chance of having none
   // Catches: maybe 2 + 1/2
   // So approximately 4 recursions into makeExceptionyStatement on average!
-  // Therefore we want to keep the chance of recursing too much down...
+  // Therefore we want to keep the chance of recursing too much down.
 
   d = d - rnd(3);
 
@@ -2378,7 +2379,7 @@ var functionMakers = [
   function(d, b) { return "(let (e=eval) e)" },
   function(d, b) { return "new Function" }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
   function(d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
-  function(d, b) { return "Function" }, // without "new"!  it does seem to work...
+  function(d, b) { return "Function" }, // without "new"
   function(d, b) { return "gc" },
   function(d, b) { return "decodeURI" },
   function(d, b) { return "decodeURIComponent" },
@@ -2696,7 +2697,7 @@ function makeId(d, b)
   // window is a const (in the browser), so some attempts to redeclare it will cause errors
 
   // eval is interesting because it cannot be called indirectly. and maybe also because it has its own opcode in jsopcode.tbl.
-  // but bad things happen if you have "eval setter"... so let's not put eval in this list.
+  // but bad things happen if you have "eval setter". so let's not put eval in this list.
 }
 
 
@@ -3798,7 +3799,7 @@ function testOne()
 //   * In spidermonkey shell, we often use this method, so we can do additional correctness tests.
 //
 // * tryRunningDirectly(), which uses eval() or new Function().
-//   * This creates the most... "interesting" testcases.
+//   * This creates the most "interesting" testcases.
 
 var tryRunning = xpcshell ? useGeckoSandbox() : tryRunningDirectly;
 // SECOND NIGEBDD (NIGEBDD will be reversed RTL during jsfunfuzz testcase reduction)
