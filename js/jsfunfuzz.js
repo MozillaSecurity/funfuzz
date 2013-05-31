@@ -1214,6 +1214,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m() + " = wrap(" + val(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return m() + " = wrapWithProto(" + val(d, b) + ", " + val(d, b) + ");"; } },
     { w: 1,  fun: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
+    { w: 5,  fun: function(d, b) { return m() + ".__proto__ = " + m() + ";"; } },
     { w: 10, fun: function(d, b) { return "gc();"; } },
     { w: 10, fun: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
     { w: 10, fun: function(d, b) { return "for (var v of " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
@@ -2738,6 +2739,7 @@ var lvalueMakers = [
 
   // Property access / index into array
   function(d, b) { return cat([makeExpr(d, b),  ".", makeId(d, b)]); },
+  function(d, b) { return cat([makeExpr(d, b),  ".", "__proto__"]); },
   function(d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
 
   // Throws, but more importantly, tests js_DecompileValueGenerator in various contexts.
