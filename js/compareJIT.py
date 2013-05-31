@@ -96,6 +96,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         if i == 0:
             (r0, prefix0) = (r, prefix)
         else:
+            # --no-fpu on x86_32 turns off asm.js compilation, among other things.
+            # This changes the asm.js diagnostics on stderr, but shouldn't affect output (including catchable exceptions).
+            sameFpuOption = (("--no-fpu" in commands[0]) == ("--no-fpu" in command))
+
             if "js_ReportOverRecursed called" in r.err or "js_ReportOverRecursed called" in r0.err:
                 #print "Ignoring js_ReportOverRecursed difference"
                 # delete extra files
@@ -103,7 +107,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             elif "can't convert" in r0.out or "can't convert" in r.out: # Bug 735316
                 #print "Ignoring DVG difference (bug 735316?)"
                 jsInteresting.deleteLogs(prefix)
-            elif r.err != r0.err:
+            elif r.err != r0.err and sameFpuOption:
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
