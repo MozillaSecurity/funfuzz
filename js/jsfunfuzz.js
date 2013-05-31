@@ -637,7 +637,7 @@ function stripSemicolon(c)
 
 function makeOv(d, ignoredB)
 {
-  return maybeStrict() + makeStatement(d, ["x"]);
+  return directivePrologue() + makeStatement(d, ["x"]);
 }
 
 function makeStatement(d, b)
@@ -850,7 +850,7 @@ var statementMakers = weighted([
   { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
 
   // Function-declaration-statements with shared names
-  { w: 10, fun: function(d, b) { return cat([makeStatement(d-2, b), "function ", makeId(d, b), "(", makeFormalArgList(d, b), ")", "{", "/*jjj*/", "}", makeStatement(d-2, b)]); } },
+  { w: 10, fun: function(d, b) { return cat([makeStatement(d-2, b), "function ", makeId(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d - 1, b), makeStatement(d-2, b)]); } },
 
   // Function-declaration-statements with unique names, along with calls to those functions
   { w: 8, fun: makeNamedFunctionAndUse },
@@ -865,8 +865,8 @@ var statementMakers = weighted([
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
   { w: 1, fun: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
 
-  // ES5 strict mode
-  { w: 1, fun: function(d, b) { return '"use strict"; ' + makeStatement(d - 1, b); } },
+  // Oddly placed "use strict" or "use asm"
+  { w: 1, fun: function(d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
 
   // Spidermonkey gc and OOM controls
   { w: 5, fun: function(d, b) { return makeSpidermonkeySoonEffect(d - 1, b) + "; " + makeStatement(d - 1, b); } },
@@ -2013,7 +2013,7 @@ function makeShapeyConstructor(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   var argName = uniqueVarName();
   var t = rnd(4) ? "this" : argName;
-  var funText = "function shapeyConstructor(" + argName + "){" + maybeStrict();
+  var funText = "function shapeyConstructor(" + argName + "){" + directivePrologue();
   var bp = b.concat([argName]);
 
   var nPropNames = rnd(6) + 1;
@@ -2308,11 +2308,14 @@ function maybeName(d, b)
     return "";
 }
 
-function maybeStrict()
+function directivePrologue()
 {
+  var s = "";
   if (rnd(3) == 0)
-    return '"use strict"; ';
-  return "";
+    s += '"use strict"; ';
+  if (rnd(30) == 0)
+    s += '"use asm"; ';
+  return s;
 }
 
 function makeFunctionBody(d, b)
@@ -2320,9 +2323,9 @@ function makeFunctionBody(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch(rnd(4)) {
-    case 0:  return cat([" { ", maybeStrict(), makeStatement(d - 1, b),   " } "]);
-    case 1:  return cat([" { ", maybeStrict(), "return ", makeExpr(d, b), " } "]);
-    case 2:  return cat([" { ", maybeStrict(), "yield ",  makeExpr(d, b), " } "]);
+    case 0:  return cat([" { ", directivePrologue(), makeStatement(d - 1, b),   " } "]);
+    case 1:  return cat([" { ", directivePrologue(), "return ", makeExpr(d, b), " } "]);
+    case 2:  return cat([" { ", directivePrologue(), "yield ",  makeExpr(d, b), " } "]);
     default: return makeExpr(d, b); // make an "expression closure"
   }
 }
@@ -2339,28 +2342,28 @@ var functionMakers = [
   function(d, b) {                          return cat(["function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
 
   // The identity function
-  function(d, b) { return "function(q) { return q; }" },
+  function(d, b) { return "function(q) { " + directivePrologue() + "return q; }" },
 
   // A function that does something
-  function(d, b) { return "function(y) { " + makeStatement(d, b.concat(["y"])) + " }" },
+  function(d, b) { return "function(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }" },
 
   // A function that computes something
-  function(d, b) { return "function(y) { return " + makeExpr(d, b.concat(["y"])) + " }" },
+  function(d, b) { return "function(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }" },
 
   // A generator that does something
-  function(d, b) { return "function(y) { yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" },
+  function(d, b) { return "function(y) { " + + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" },
 
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
 
   // A simple wrapping pattern
-  function(d, b) { return "/*wrap1*/(function(){ " + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()" },
+  function(d, b) { return "/*wrap1*/(function(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()" },
 
   // Wrapping with upvar: escaping, may or may not be modified
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
 
   // Wrapping with upvar: non-escaping
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
   // Bind
   function(d, b) { return "Function.prototype.bind" },
