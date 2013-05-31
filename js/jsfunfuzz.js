@@ -1531,14 +1531,13 @@ var binaryOps = [
 ];
 
 var leftUnaryOps = [
-  "--", "++",
   "!", "+", "-", "~",
   "void ", "typeof ", "delete ",
   "new ", // but note that "new" can also be a very strange left-binary operator
   "yield " // see http://www.python.org/dev/peps/pep-0342/ .  Often needs to be parenthesized, so there's also a special exprMaker for it.
 ];
 
-var rightUnaryOps = [
+var incDecOps = [
   "++", "--",
 ];
 
@@ -1571,15 +1570,12 @@ function addPropertyName(p)
 
 var exprMakers =
 [
-  // Left-unary operators
-  function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
-  function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
-  function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
+  // Increment and decrement
+  function(d, b) { return cat([makeLValue(d, b), rndElt(incDecOps)]); },
+  function(d, b) { return cat([rndElt(incDecOps), makeLValue(d, b)]); },
 
-  // Right-unary operators
-  function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
-  function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
-  function(d, b) { return cat([makeExpr(d, b), rndElt(rightUnaryOps)]); },
+  // Other left-unary operators
+  function(d, b) { return cat([rndElt(leftUnaryOps), makeExpr(d, b)]); },
 
   // Methods
   function(d, b) { var id = makeId(d, b); return cat(["/*UUV1*/", "(", id, ".", rndElt(allMethodNames), " = ", makeFunction(d, b), ")"]); },
