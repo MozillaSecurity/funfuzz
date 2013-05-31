@@ -213,7 +213,7 @@ def findBlamedCset(options, repoDir, skipRevSet, testRev):
             print "Bisecting for the n-th round where n is", iterNum, "and 2^n is", \
                     str(2**iterNum), "...",
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
-            bisectLabel(repoDir, hgPrefix, options, label[0], currRev, sRepo, eRepo)
+            bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
         if options.testInitialRevs:
             options.testInitialRevs = False
@@ -373,7 +373,7 @@ def sanitizeCsetMsg(msg, repo):
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
-def bisectLabel(repoDir, hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
+def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
     outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
@@ -403,7 +403,7 @@ def bisectLabel(repoDir, hgPrefix, options, hgLabel, currRev, startRepo, endRepo
     if currRev is None:
         print 'Resetting to default revision...'
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
-        destroyPyc(repoDir)
+        destroyPyc(options.buildOptions.repoDir)
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
