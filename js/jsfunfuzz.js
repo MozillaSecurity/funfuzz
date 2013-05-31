@@ -2880,14 +2880,16 @@ var termMakers = [
     "arguments",
     "Math",
     "this",
-    "length"
+    "length",
+
+    '"\u03A0"', // unicode not escaped
     ]);
   },
   makeNumber,
   function(d, b) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(d, b) { return rndElt([ "this", "window" ]); },
   function(d, b) { return rndElt([" \"\" ", " '' "]) },
-  randomUnitStringLiteral,
+  randomUnitStringLiteral, // unicode escaped
   function(d, b) { return rndElt([" /x/ ", " /x/g "]) },
   makeRegex,
 ];
@@ -2895,8 +2897,7 @@ var termMakers = [
 function randomUnitStringLiteral()
 {
   var s = "\"\\u";
-  var nDigits = rnd(6) + 1;
-  for (var i = 0; i < nDigits; ++i) {
+  for (var i = 0; i < 4; ++i) {
     s += "0123456789ABCDEF".charAt(rnd(16));
   }
   s += "\""
