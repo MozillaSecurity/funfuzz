@@ -1051,7 +1051,7 @@ var makeEvilCallback;
     // a: Array
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", "[]"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "a", "new Array"); } },
-    { w: 1,  fun: function(d, b) { return assign(d, b, "a", makeMixedTypeArray(d, b)); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "a", makeIterable(d, b)); } },
     { w: 1,  fun: function(d, b) { return m("a") + ".length = " + rnd(ARRAY_SIZE) + ";"; } },
     { w: 8,  fun: function(d, b) { return assign(d, b, "v", m("at") + ".length"); } },
     { w: 4,  fun: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "]" + " = " + val(d, b) + ";"; } },
@@ -1429,7 +1429,8 @@ var exceptionyStatementMakers = [
   // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
-  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeMixedTypeArray(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
 
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
@@ -1613,9 +1614,9 @@ var exprMakers =
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
   // This fuzzer isn't the best for attacking this kind of thing, since it's unlikely that the code in the function will attempt to modify the array or make it go away.
   // The second parameter to "map" is used as the "this" for the function.
-  function(d, b) { return cat(["[11,12,13,14]",        ".", rndElt(["map", "filter", "some", "sort"]) ]); },
-  function(d, b) { return cat(["[15,16,17,18]",        ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
-  function(d, b) { return cat(["[", makeExpr(d, b), "]", ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
+  function(d, b) { return cat([makeArrayLiteral(d, b), ".", rndElt(["map", "filter", "some", "sort"]) ]); },
+  function(d, b) { return cat([makeArrayLiteral(d, b), ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
+  function(d, b) { return cat([makeArrayLiteral(d, b), ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
 
   // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
@@ -1652,13 +1653,6 @@ var exprMakers =
   function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v,                            ") ", makeExpr(d - 1, b.concat([v]))]); },
   function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, " = ", makeExpr(d - 1, b), ") ", makeExpr(d - 1, b.concat([v]))]); },
   function(d, b) {                          return cat(["let ", "(", makeLetHead(d, b),            ") ", makeExpr(d, b)]); },
-
-  // Array comprehensions (JavaScript 1.7)
-  function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); },
-
-  // Generator expressions (JavaScript 1.8)
-  function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); },
-  function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); },
 
   // Comments and whitespace
   function(d, b) { return cat([" /* Comment */", makeExpr(d, b)]); },
@@ -1726,7 +1720,6 @@ var exprMakers =
   // Constructors.  No cat() because I don't want to screw with the constructors themselves, just call them.
   function(d, b) { return "new " + rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
   function(d, b) { return          rndElt(constructors) + "(" + makeActualArgList(d, b) + ")"; },
-  function(d, b) { return "new Array(" + makeNumber(d, b) + ")"; },
 
   // Unary Math functions
   function (d, b) { return "Math." + rndElt(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
@@ -1751,6 +1744,7 @@ var exprMakers =
 
   makeRegexUseExpr,
   makeShapeyValue,
+  makeIterable,
 
   makeSpidermonkeyImmediateEffect,
   makeSpidermonkeySoonEffect,
@@ -2067,7 +2061,7 @@ function makePropertyName(d, b)
 
 function makeShapeyConstructorLoop(d, b)
 {
-  var a = makeMixedTypeArray(d, b);
+  var a = makeIterable(d, b);
   var v = makeNewId(d, b);
   var v2 = uniqueVarName(d, b);
   var bvv = b.concat([v, v2]);
@@ -2712,11 +2706,11 @@ function makeComprehension(d, b)
   case 0:
     return "";
   case 1:
-    return cat([" for ",          "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b),           ")"]) + makeComprehension(d - 1, b);
+    return cat([" for ",          "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
   case 2:
-    return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeExpr(d - 2, b),           ")"]) + makeComprehension(d - 1, b);
+    return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
   case 3:
-    return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeMixedTypeArray(d - 2, b), ")"]) + makeComprehension(d - 1, b);
+    return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
   default:
     return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
   }
@@ -3033,6 +3027,8 @@ function makeShapeyValue(d, b)
 
 function makeMixedTypeArray(d, b)
 {
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
   // Pick two to five values to use as array entries.
   var q = rnd(4) + 2;
   var picks = [];
@@ -3045,8 +3041,62 @@ function makeMixedTypeArray(d, b)
   for (var j = 0; j < count; ++j)
     c.push(rndElt(picks));
 
-  return "[" + c.join(", ") + "]";
+  return "/*MARR*/" + "[" + c.join(", ") + "]";
 }
+
+function makeArrayLiteral(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  if (rnd(2) == 0)
+    return makeMixedTypeArray(d, b);
+
+  var elems = [];
+  while (rnd(5)) elems.push(makeArrayLiteralElem(d, b));
+  return "/*FARR*/" + "[" + elems.join(", ") + "]";
+}
+
+function makeArrayLiteralElem(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  switch (rnd(5)) {
+    case 0:  return "..." + makeIterable(d - 1, b); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Spread_operator
+    case 1:  return ""; // hole
+    default: return makeExpr(d - 1, b);
+  }
+}
+
+function makeIterable(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  if (d < 1)
+    return "[]";
+
+  return (rndElt(iterableExprMakers))(d, b);
+}
+
+var iterableExprMakers = weighted([
+  // Arrays
+  { w: 1, fun: function(d, b) { return "new Array(" + makeNumber(d, b) + ")"; } },
+  { w: 8, fun: makeArrayLiteral },
+
+  // Array comprehensions (JavaScript 1.7)
+  { w: 1, fun: function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
+
+  // Generator expressions (JavaScript 1.8)
+  { w: 1, fun: function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); } },
+  { w: 1, fun: function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); } },
+
+  // A generator that yields once
+  { w: 1, fun: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
+  // A pass-through generator
+  { w: 1, fun: function(d, b) { return "/*PTHR*/(function() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+
+  { w: 1, fun: makeFunction },
+  { w: 1, fun: makeExpr },
+]);
 
 function strTimes(s, n)
 {
