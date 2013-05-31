@@ -3589,23 +3589,6 @@ function nestingConsistencyTest(code)
   }
 }
 
-function compartmentConsistencyTest(code)
-{
-  if ((code.indexOf("/") != -1 && code.indexOf(">") != -1) || code.indexOf("XML") != -1) {
-    return; // see bug 683361 comment 2 (XML can't be wrapped; luke says this is intentional even after that bug is fixed)
-  }
-
-  // Inspired by bug 683361
-  // These are on the same line so that line numbers in stack traces will match.
-  var resultS = sandboxResult(code, "same-compartment"); var resultN = sandboxResult(code, "new-compartment");
-
-  if (resultS != resultN) {
-    foundABug("CompartmentTest mismatch",
-      "resultO: " + resultS + "\n" +
-      "resultD: " + resultN);
-  }
-}
-
 
 
 /********************
@@ -4144,7 +4127,6 @@ function optionalTests(f, code, wtt)
 
   if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
     nestingConsistencyTest(code);
-    compartmentConsistencyTest(code);
   }
 }
 
