@@ -2444,12 +2444,12 @@ function makeNumber(d, b)
   switch(rnd(70)) {
     case 0:  return makeExpr(d - 2, b);
     case 1:  return signStr + "0";
-    case 2:  return signStr + (Math.random());
-    case 3:  return signStr + (Math.random() * 0xffffffff);
-    case 4:  return signStr + Math.floor(Math.random() * 0xffffffff);
+    case 2:  return signStr + (rnd(1000) / 1000);
+    case 3:  return signStr + (rnd(0xffffffff) / 2);
+    case 4:  return signStr + rnd(0xffffffff);
     case 5:  return rndElt(["0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", "3.141592653589793", "3/0", "-3/0", "0/0", "0x2D413CCC", "0x5a827999", "0xB504F332", "(0x50505050 >> 1)", "0x80000000"]);
     case 6:  return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
-    default: return signStr + Math.floor(Math.random() * 30);
+    default: return signStr + rnd(30);
   }
 }
 
