@@ -98,7 +98,7 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
 def jsfunfuzzLevel(options, logPrefix, quiet=False):
     (lev, issues, runinfo) = baseLevel(options.jsengineWithArgs, options.timeout, options.knownPath, logPrefix, valgrind=options.valgrind)
 
-    if lev == JS_FINE:
+    if lev == JS_FINE and not oomed(logPrefix):
         # Read in binary mode, because otherwise Python on Windows will
         # throw a fit when it encounters certain unicode.  Note that this
         # makes line endings platform-specific.
@@ -171,6 +171,16 @@ def deleteLogs(logPrefix):
     # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
     if (os.path.exists(logPrefix + "-core.gz")):
         os.remove(logPrefix + "-core.gz")
+
+def oomed(logPrefix):
+    """Did the shell run out of memory?"""
+    with open(logPrefix + "-err.txt", "rb") as f:
+        for line in f:
+            if "can't allocate region" in line:
+                 return True
+    return False
+
+
 
 def parseOptions(args):
     parser = OptionParser()
