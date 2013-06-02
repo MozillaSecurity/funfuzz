@@ -977,6 +977,8 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return m("f"); } },
     { w: 3,  fun: makeCounterClosure },
     { w: 2,  fun: makeFunction },
+    { w: 1,  fun: makeAsmJSModule },
+    { w: 1,  fun: makeAsmJSFunction },
   ]);
   makeEvilCallback = function(d, b) {
     return (rndElt(builderFunctionMakers))(d - 1, b)
@@ -2326,10 +2328,11 @@ function makeFunctionBody(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  switch(rnd(4)) {
+  switch(rnd(5)) {
     case 0:  return cat([" { ", directivePrologue(), makeStatement(d - 1, b),   " } "]);
     case 1:  return cat([" { ", directivePrologue(), "return ", makeExpr(d, b), " } "]);
     case 2:  return cat([" { ", directivePrologue(), "yield ",  makeExpr(d, b), " } "]);
+    case 3:  return '"use asm"; ' + asmJSInterior([]);
     default: return makeExpr(d, b); // make an "expression closure"
   }
 }
@@ -3127,6 +3130,513 @@ function strTimes(s, n)
   var d = (n - r) / 2;
   var m = strTimes(s2, d);
   return r ? m + s : m;
+}
+
+
+/***************************
+ * GENERATE ASM.JS MODULES *
+ ***************************/
+
+// Not yet tested:
+// * loops (avoiding hangs with special forms, counters, and/or not executing)
+// * break/continue with and without labels
+// * function calls within the module (somehow avoiding recursion?)
+// * function tables
+// * multiple exports
+
+function asmJSInterior(foreignFunctions, sanePlease)
+{
+  var interior = "";
+  var globalEnv = {stdlibImported: {}, stdlibImports: "", heapImported: {}, heapImports: "", foreignFunctions: foreignFunctions, sanePlease: !!sanePlease};
+  interior += asmJsFunction(globalEnv, "f", rnd(2) ? "signed" : "double", [rnd(2) ? "i0" : "d0", rnd(2) ? "i1" : "d1"]);
+  interior = globalEnv.stdlibImports + importForeign(foreignFunctions) + globalEnv.heapImports + interior;
+  interior += "  return f;"
+  return interior;
+}
+
+function importForeign(foreignFunctions)
+{
+  var s = "";
+  for (let h of foreignFunctions) {
+    s += "  var " + h + " = foreign." + h + ";\n";
+  }
+  return s;
+}
+
+// ret in ["signed", "double", "void"]
+// args looks like ["i0", "d1", "d2"] -- the first letter indicates int vs double
+function asmJsFunction(globalEnv, name, ret, args)
+{
+  var s = "  function " + name + "(" + args.join(", ") + ")\n"
+  s += "  {\n";
+  s += parameterTypeAnnotations(args);
+
+  // Add local variables
+  var locals = args;
+  while (rnd(2)) {
+    var isDouble = rnd(2);
+    var local = (isDouble ? "d" : "i") + locals.length;
+    s += "    var " + local + " = " + (isDouble ? doubleLiteral() : "0") + ";\n";
+    locals.push(local);
+  }
+
+  var env = {globalEnv: globalEnv, locals: locals, ret: ret};
+
+  // Add assignment statements
+  if (locals.length) {
+    while (rnd(5)) {
+      s += asmStatement("    ", env, 6);
+    }
+  }
+
+  // Add the required return statement at the end of the function
+  if (ret != "void" || rnd(2))
+  s += asmReturnStatement("    ", env);
+
+  s += "  }\n";
+
+  return s;
+}
+
+function asmStatement(indent, env, d)
+{
+  if (!env.globalEnv.sanePlease && rnd(100) == 0)
+    return makeStatement(3, ["x"]);
+
+  if (rnd(5) == 0 && d > 0) {
+    return indent + "{\n" + asmStatement(indent + "  ", env, d - 1) + indent + "}\n";
+  }
+  if (rnd(20) == 0 && d > 3) {
+    return asmSwitchStatement(indent, env, d);
+  }
+  if (rnd(10) == 0) {
+    return asmReturnStatement(indent, env);
+  }
+  if (rnd(100) == 0)
+    return ";";
+  return asmAssignmentStatement(indent, env);
+}
+
+function asmAssignmentStatement(indent, env)
+{
+  if (rnd(5) == 0 || !env.locals.length) {
+    if (rnd(2)) {
+      return indent + intishMemberExpr(8, env) + " = " + intishExpr(10, env) + ";\n";
+    } else {
+      return indent + doublishMemberExpr(8, env) + " = " + doubleExpr(10, env) + ";\n"; // bug 878505
+    }
+  }
+
+  var local = rndElt(env.locals);
+    if (local.charAt(0) == "d") {
+    return indent + local + " = " + doubleExpr(10, env) + ";\n";
+  } else {
+    return indent + local + " = " + intExpr(10, env) + ";\n";
+  }
+}
+
+function asmReturnStatement(indent, env)
+{
+  var ret = rnd(2) ? env.ret : rndElt(["double", "signed", "void"]);
+  if (env.ret == "double")
+    return indent + "return +" + doublishExpr(10, env) + ";\n";
+  else if (env.ret == "signed")
+    return indent + "return (" + intishExpr(10, env) + ")|0;\n";
+  else // (env.ret == "void")
+    return indent + "return;\n";
+}
+
+function asmSwitchStatement(indent, env, d)
+{
+  var s = indent + "switch (" + signedExpr(4, env) + ") {\n"
+  while (rnd(3)) {
+    s += indent + "  case " + (rnd(5)-3) + ":\n";
+    s += asmStatement(indent + "    ", env, d - 2)
+    if (rnd(4))
+      s += indent + "    break;\n"
+  }
+  if (rnd(2)) {
+    s += indent + "  default:\n"
+    s += asmStatement(indent + "    ", env, d - 2)
+  }
+  s += indent + "}\n";
+  return s;
+}
+
+function parameterTypeAnnotations(args)
+{
+  var s = "";
+  for (var a = 0; a < args.length; ++a) {
+    var arg = args[a];
+    if (arg.charAt(0) == "i")
+      s += "    " + arg + " = " + arg + "|0;\n";
+    else
+      s += "    " + arg + " = " + "+" + arg + ";\n";
+  }
+  return s;
+}
+
+
+var additive = ["+", "-"];
+var multiplicative = ["*", "/", "%"];
+
+// Special rules here:
+// * Parens are automatic.  (We're not testing the grammar, just the types.)
+// * The first element is the "too deep" fallback, and should not recurse far.
+// * We're allowed to write to some fields of |e|
+
+var intExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return intLiteralRange(-0x8000000, 0xffffffff); }},
+    {w: 1,  fun: function(d, e) { return intExpr(d - 3, e) + " ? " + intExpr(d - 3, e) + " : " + intExpr(d - 3, e); }},
+    {w: 1,  fun: function(d, e) { return "!" + intExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return signedExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return unsignedExpr(d - 1, e); }},
+    {w: 10, fun: function(d, e) { return intVar(e) }}, // + "|0";  ??
+    {w: 1,  fun: function(d, e) { return intCall(d - 1, e) }}, // + "|0";  ??
+//    {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }}, // bug 878435
+//    {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},  // bug 878435
+    {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + doubleExpr(d - 2, e); }},
+]));
+
+var intishExpr = autoExpr(weighted([
+    {w: 10, fun: function(d, e) { return intExpr(d, e); }},
+    {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? unknownExpr(d, e) : "1"; }},
+    {w: 1,  fun: function(d, e) { return intishMemberExpr(d, e); }},
+    // Add two or more ints
+    {w: 10, fun: function(d, e) { return intExpr(d - 1, e) + rndElt(additive) + intExpr(d - 1, e); }},
+    {w: 5,  fun: function(d, e) { return intExpr(d - 2, e) + rndElt(additive) + intExpr(d - 2, e) + rndElt(additive) + intExpr(d - 2, e); }},
+    // Multiply by a small int literal
+    {w: 2,  fun: function(d, e) { return intExpr(d - 1, e) + "*" + intLiteralRange(-0x100000, 0x100000); }},
+    {w: 2,  fun: function(d, e) { return intLiteralRange(-0xfffff, 0xfffff) + "*" + intExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return "-" + intExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + " / " + signedExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + " / " + unsignedExpr(d - 2, e); }},
+    // These are here because of bug 878433
+    {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + " % " + signedExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + " % " + unsignedExpr(d - 2, e); }},
+    ]));
+
+var signedExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return intLiteralRange(-0x8000000, 0x7fffffff); }},
+    {w: 1,  fun: function(d, e) { return "~" + intishExpr(d - 1, e); }},
+//    {w: 1,  fun: function(d, e) { return "~~" + doubleExpr(d - 1, e); }}, // bug 878444
+    {w: 1,  fun: function(d, e) { return intishExpr(d - 1, e) + "|0"; }}, // this isn't a special form, but it's common for a good reason
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")"; }},
+//    {w: 5,  fun: function(d, e) { return intishExpr(d - 2, e) + rndElt([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }}, // bug 878435
+]));
+
+var unsignedExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return intLiteralRange(0, 0xffffffff); }},
+    {w: 1,  fun: function(d, e) { return intishExpr(d - 2, e) + ">>>" + intishExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "abs") + "(" + signedExpr(d - 1, e) + ")"; }},
+]));
+
+var doublishExpr = autoExpr(weighted([
+    {w: 10, fun: function(d, e) { return doubleExpr(d, e); }},
+    {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? unknownExpr(d, e) : "1.0"; }},
+    {w: 1,  fun: function(d, e) { return doublishMemberExpr(d, e); }},
+    // Read from a doublish typed array view
+]));
+
+var doubleExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return doubleLiteral(); }},
+    {w: 20, fun: function(d, e) { return doubleVar(e); }},
+    {w: 5,  fun: function(d, e) { return doubleCall(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return "+(1.0/0.0)"; }},
+    {w: 1,  fun: function(d, e) { return "+(0.0/0.0)"; }},
+    {w: 1,  fun: function(d, e) { return "+(-1.0/0.0)"; }},
+    // Unary ops that return double
+    {w: 1,  fun: function(d, e) { return "+" + signedExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return "+" + unsignedExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return "+" + doublishExpr(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return "-" + doublishExpr(d - 1, e); }},
+    // Binary ops that return double
+    {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + " + " + doubleExpr(d - 2, e); }},
+//    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }}, // bug 878429
+    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " * " + doublishExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " / " + doublishExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return intExpr(d - 3, e) + " ? " + doubleExpr(d - 3, e) + " : " + doubleExpr(d - 3, e); }},
+    // with stdlib
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, rndElt(["acos", "asin", "atan", "cos", "sin", "tan", "ceil", "floor", "exp", "log", "sqrt"])) + "(" + doublishExpr(d - 1, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "abs") + "(" + doublishExpr(d - 1, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, rndElt(["atan2", "pow"])) + "(" + doublishExpr(d - 2, e) + ", " + doublishExpr(d - 2, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return ensureImport(e, "Infinity"); }},
+    {w: 1,  fun: function(d, e) { return ensureImport(e, "NaN"); }},
+// "E", "LN10", "LN2", "LOG2E", "LOG10E", "PI", "SQRT1_2", "SQRT2" // bug 878488
+]));
+
+// Only call this when foreignFunctions is populated
+var unknownExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return "/*FFI*/" + rndElt(e.globalEnv.foreignFunctions) + "(" + externExpr(d - 1, e) + ")"; }},
+]));
+
+var externExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return doubleExpr(d, e); } },
+    {w: 1,  fun: function(d, e) { return signedExpr(d, e); } },
+]));
+
+var intishMemberExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return ensureView(e, rndElt(["Int8Array",  "Uint8Array" ])) + "[" + asmIndex(d, e, 0) + "]"; }},
+    {w: 1,  fun: function(d, e) { return ensureView(e, rndElt(["Int16Array", "Uint16Array"])) + "[" + asmIndex(d, e, 1) + "]"; }},
+    {w: 1,  fun: function(d, e) { return ensureView(e, rndElt(["Int32Array", "Uint32Array"])) + "[" + asmIndex(d, e, 2) + "]"; }},
+]));
+
+var doublishMemberExpr = autoExpr(weighted([
+    {w: 1,  fun: function(d, e) { return ensureView(e, "Float32Array") + "[" + asmIndex(d, e, 2) + "]"; }},
+    {w: 1,  fun: function(d, e) { return ensureView(e, "Float64Array") + "[" + asmIndex(d, e, 3) + "]"; }},
+]));
+
+function asmIndex(d, e, logSize)
+{
+  if (rnd(2) || d < 2)
+    return rndElt(["0", "1", "2", "4096"]);
+
+  return intishExpr(d - 2, e) + " >> " + logSize;
+}
+
+function ensureView(e, t)
+{
+  var varName = t + "View";
+  if (!(varName in e.globalEnv.heapImported)) {
+    e.globalEnv.heapImports += "  var " + varName + " = new stdlib." + t + "(heap);\n";
+    e.globalEnv.heapImported[varName] = true;
+  }
+  return varName;
+}
+
+function ensureMathImport(e, f)
+{
+  return ensureImport(e, f, "Math.");
+}
+
+function ensureImport(e, f, prefix)
+{
+  if (!(f in e.globalEnv.stdlibImported)) {
+    e.globalEnv.stdlibImports += "  var " + f + " = stdlib." + (prefix||"") + f + ";\n";
+    e.globalEnv.stdlibImported[f] = true;
+  }
+  return f;
+}
+
+
+var anyAsmExpr = [intExpr, intishExpr, signedExpr, doublishExpr, doubleExpr, intishMemberExpr, doublishMemberExpr, function() { makeExpr(5, ["x"]); }];
+
+function autoExpr(funs)
+{
+  return function(d, e) {
+    var f = d < 1 ? funs[0] :
+            rnd(50) == 0 && !e.globalEnv.sanePlease ? rndElt(anyAsmExpr) : // The 'sanePlease' can eventually go away
+            rndElt(funs);
+    return "(" + f(d, e) + ")";
+  }
+}
+
+function intCall(d, e)
+{
+  return intVar(e);
+}
+
+function doubleCall(d, e)
+{
+  return doubleVar(e);
+}
+
+function intVar(e)
+{
+  var locals = e.locals;
+  if (!locals.length)
+    return intLiteralRange(-0x8000000, 0xffffffff);
+  var local = rndElt(locals);
+  if (local.charAt(0) == "i")
+    return local;
+  return intLiteralRange(-0x8000000, 0xffffffff);
+}
+
+function doubleVar(e)
+{
+  var locals = e.locals;
+  if (!locals.length)
+    return doubleLiteral();
+  var local = rndElt(locals);
+  if (local.charAt(0) == "d")
+    return local;
+  return doubleLiteral();
+}
+
+
+function doubleLiteral()
+{
+  return rndElt(["-", ""]) + rndElt(["0.0", "1.0", "1.2345e60"]);
+}
+
+function fuzzyRange(min, max)
+{
+  if (rnd(10000) == 0)
+    return min - 1;
+  if (rnd(10000) == 0)
+    return max + 1;
+  if (rnd(10) == 0)
+    return min;
+  if (rnd(10) == 0)
+    return max;
+
+  // rnd() is limited to 2^32. (It also skews toward lower numbers, oh well.)
+  if (max > min + 0x100000000 && rnd(3) == 0)
+    return min + 0x100000000 + rnd(max - (min + 0x100000000) + 1);
+  return min + rnd(max - min + 1);
+}
+
+function intLiteralRange(min, max)
+{
+  var val = fuzzyRange(min, max);
+  var sign = val < 0 ? "-" : "";
+  return sign + "0x" + Math.abs(val).toString(16);
+}
+
+
+
+/***************************
+ * TEST ASM.JS CORRECTNESS *
+ ***************************/
+
+// asm.js functions should always have the same semantics as JavaScript functions.
+//
+// We just need to watch out for:
+// * Invalid asm.js
+// * Foreign imports of impure functions
+// * Mixing int and double heap views (NaN bits)
+// * Allowing mutable state to diverge (mutable module globals, heap)
+
+// In those cases, we can test that the asm-compiled version matches the normal js version.
+// *  isAsmJSFunction(f)
+// * !isAsmJSFunction(g)
+
+var compareAsm = (function() {
+
+  function isSameNumber(a, b)
+  {
+    if (!(typeof a == "number" && typeof b == "number"))
+      return false;
+
+    // Differentiate between 0 and -0
+    if (a === 0 && b === 0)
+      return 1/a === 1/b;
+
+    // Don't differentiate between NaNs
+    return a === b || (a !== a && b !== b);
+  }
+
+  var asmvals = [
+    1, Math.PI, 42,
+    // Special float values
+    0, -0, 0/0, 1/0, -1/0,
+    // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
+     0x07fffffff,  0x080000000,  0x080000001,
+    -0x07fffffff, -0x080000000, -0x080000001,
+     0x0ffffffff,  0x100000000,  0x100000001,
+    -0x0ffffffff, -0x100000000,  0x100000001,
+    // Boundaries of double
+    Number.MIN_VALUE, -Number.MIN_VALUE,
+    Number.MAX_VALUE, -Number.MAX_VALUE,
+  ];
+  var asmvalsLen = asmvals.length;
+
+  function compareUnaryFunctions(f, g)
+  {
+    for (var i = 0; i < asmvalsLen; ++i) {
+      var x = asmvals[i];
+      var fr = f(x);
+      var gr = g(x);
+      if (!isSameNumber(fr, gr)) {
+        foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs "  + uneval(gr))
+      }
+    }
+  }
+
+  function compareBinaryFunctions(f, g)
+  {
+    for (var i = 0; i < asmvalsLen; ++i) {
+      var x = asmvals[i];
+      for (var j = 0; j < asmvalsLen; ++j) {
+        var y = asmvals[j];
+        var fr = f(x, y);
+        var gr = g(x, y);
+        if (!isSameNumber(fr, gr)) {
+          foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs "  + uneval(gr))
+        }
+      }
+    }
+  }
+
+  return {compareUnaryFunctions: compareUnaryFunctions, compareBinaryFunctions: compareBinaryFunctions};
+})();
+
+function nanBitsMayBeVisible(s)
+{
+  // Does the code use more than one of {*int*, float32, or float64} views on the same array buffer?
+  return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1) + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
+}
+
+function testOneAsmJSInterior(stdlib)
+{
+  var foreignFunctions = rnd(10) ? [] : ["identity", "quadruple", "half"];
+  var pureForeign = {
+    identity:  function(x) { return x; },
+    quadruple: function(x) { return x * 4; },
+    half:      function(x) { return x / 2; },
+  }
+
+  try {
+    var interior = asmJSInterior(foreignFunctions, true);
+  } catch(e) {
+    errorstack();
+    throw e;
+  }
+  print(interior);
+
+  if (nanBitsMayBeVisible(interior)) {
+    dumpln("Skipping correctness test for asm module that could expose low bits of NaN")
+    return;
+  }
+
+  var asmJs = "(function(stdlib, foreign, heap) { 'use asm'; " + interior + " })";
+  var asmModule = eval(asmJs);
+
+  if (isAsmJSModule(asmModule)) {
+    var asmHeap = new ArrayBuffer(4096);
+    (new Int32Array(asmHeap))[0] = 0x12345678;
+    var asmFun = asmModule(stdlib, pureForeign, asmHeap);
+
+    var normalHeap = new ArrayBuffer(4096);
+    (new Int32Array(normalHeap))[0] = 0x12345678;
+    var normalJs = "(function(stdlib, foreign, heap) { " + interior + " })";
+    var normalModule = eval(normalJs);
+    var normalFun = normalModule(stdlib, pureForeign, normalHeap);
+
+    compareAsm.compareBinaryFunctions(asmFun, normalFun);
+  }
+}
+
+
+/******************************
+ * EXPORT ASM.JS TO JSFUNFUZZ *
+ ******************************/
+
+function makeAsmJSModule(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var interior = asmJSInterior([]);
+  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + ' })';
+}
+
+function makeAsmJSFunction(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var interior = asmJSInterior(["ff"]);
+  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + ' })(this, {ff: ' + makeFunction(d - 2, b) + '}, new ArrayBuffer(4096))';
 }
 
 
@@ -4199,7 +4709,7 @@ function optionalTests(f, code, wtt)
     }
   }
 
-  if (count % 100 == 3 && f && typeof disassemble == "function") {
+  if (count % 100 == 3 && f && typeof disassemble == "function" && false) { // disabled due to bug 878495
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
     disassemble("-r", f);
