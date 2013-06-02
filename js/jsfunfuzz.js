@@ -454,7 +454,7 @@ if (1) {
     var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
     dumpln("fuzzSeed: " + fuzzSeed);
     fuzzMT.init_genrand(fuzzSeed);
-    rnd = function (n) { return Math.floor(fuzzMT.genrand_real2() * n); };
+    rnd = function (n) { return fuzzMT.genrand_int32() % n; };
     rnd.rndReal = function() { return fuzzMT.genrand_real2(); };
     rnd.fuzzMT = fuzzMT;
   })();
