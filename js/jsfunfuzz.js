@@ -885,7 +885,11 @@ var statementMakers = weighted([
   //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
-// Test built-in types
+
+/***********************
+ * TEST BUILT-IN TYPES *
+ ***********************/
+
 var makeBuilderStatement;
 var makeEvilCallback;
 
@@ -1225,6 +1229,11 @@ var makeEvilCallback;
     return (rndElt(builderStatementMakers))(d - 1, b)
   }
 })();
+
+
+/********
+ * .... *
+ ********/
 
 function linkedList(x, n)
 {
