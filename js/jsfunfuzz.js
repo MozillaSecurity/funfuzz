@@ -2224,7 +2224,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
       propertyNames.push(hn);
       allPropertyNames.push(hn);
 
-      fullName = an + "." + hn;
+      var fullName = an + "." + hn;
       builtinProperties.push(fullName);
 
       try {
