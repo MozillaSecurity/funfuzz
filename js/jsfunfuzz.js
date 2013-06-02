@@ -487,6 +487,7 @@ function rndElt(a)
 
   if (!a.length) {
     dumpln("Empty thing passed to rndElt");
+    errorstack();
     return null;
   }
 
