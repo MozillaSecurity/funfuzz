@@ -30,7 +30,13 @@ from subprocesses import captureStdout, handleRemoveReadOnly, isLinux, isMac, is
     normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
-COMPILATION_JOBS = ((cpu_count() * 5) // 4) if cpu_count() > 2 else 3
+if cpu_count() > 2:
+    COMPILATION_JOBS = ((cpu_count() * 5) // 4)  else 3
+elif os.name == 'posix' and os.uname()[4] == 'armv7l':
+    COMPILATION_JOBS = 2  # Likely an ARM board, e.g. pandaboard
+else:
+    COMPILATION_JOBS = 3  # Other single/dual core computers
+
 
 class CompiledShell(object):
     def __init__(self, buildOpts, hgHash, baseTmpDir):
