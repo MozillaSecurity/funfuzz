@@ -26,8 +26,8 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
-from subprocesses import captureStdout, isLinux, isMac, isVM, isWin, macVer, normExpUserPath, \
-    shellify, vdump
+from subprocesses import captureStdout, handleRemoveReadOnly, isLinux, isMac, isVM, isWin, macVer, \
+    normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 COMPILATION_JOBS = ((cpu_count() * 5) // 4) if cpu_count() > 2 else 3
@@ -499,7 +499,9 @@ def compileStandalone(compiledShell):
             assert os.path.isfile(normExpUserPath(os.path.join(
                 compiledShell.getShellCacheDir(), RUN_PLC_LIB)))
     finally:
-        shutil.rmtree(compiledShell.getBaseTempDir())
+        shutil.rmtree(compiledShell.getBaseTempDir(), ignore_errors=False,
+                      onerror=handleRemoveReadOnly)
+
 
 def makeTestRev(options):
     def testRev(rev):

@@ -5,10 +5,12 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import ctypes
+import errno
 import os
 import shutil
 import platform
 import re
+import stat
 import subprocess
 import time
 from copy import deepcopy
@@ -298,6 +300,38 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
                 print "grabCrashLog waited a long time, but a crash log for " + progname + \
                     " [" + str(crashedPID) + "] never appeared!"
                 break
+
+
+def testHandleRemoveReadOnly():
+    '''Run this function in the same directory as subprocesses.py to test.'''
+    testDir = 'testHandleRemoveReadOnly'
+    os.mkdir(testDir)
+    readOnlyDir = os.path.join(testDir, 'nestedReadOnlyDir')
+    os.mkdir(readOnlyDir)
+    filename = os.path.join(readOnlyDir, 'test.txt')
+    with open(filename, 'wb') as f:
+        f.write('testing\n')
+
+    os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    os.chmod(readOnlyDir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+
+    shutil.rmtree(testDir, onerror=handleRemoveReadOnly)  # Should pass here
+
+
+def handleRemoveReadOnly(func, path, exc):
+    '''Handle read-only files. Adapted from http://stackoverflow.com/q/1213706'''
+    if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
+        if os.name == 'posix':
+            # Ensure parent directory is also writeable.
+            pardir = os.path.abspath(os.path.join(path, os.path.pardir))
+            if not os.access(pardir, os.W_OK):
+                os.chmod(pardir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        elif os.name == 'nt':
+            os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
+        func(path)
+    else:
+        raise
+
 
 def normExpUserPath(p):
     return os.path.normpath(os.path.expanduser(p))
