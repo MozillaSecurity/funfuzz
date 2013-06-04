@@ -529,7 +529,7 @@ def makeTestRev(options):
                 with open(cachedNoShell, 'wb') as f:
                     f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
                     f.write("Backtrace:\n")
-                    f.write(format_exc() + "\n");
+                    f.write(format_exc() + "\n")
                 if os.path.exists(shell.getShellCacheFullPath()):
                     print 'Stop autoBisect - a .busted file should not be generated ' + \
                                     'with a shell that has been compiled successfully.'
