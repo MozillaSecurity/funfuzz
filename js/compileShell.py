@@ -31,7 +31,7 @@ from subprocesses import captureStdout, handleRemoveReadOnly, isLinux, isMac, is
 
 CLANG_PARAMS = ' -Qunused-arguments'
 if cpu_count() > 2:
-    COMPILATION_JOBS = ((cpu_count() * 5) // 4)  else 3
+    COMPILATION_JOBS = ((cpu_count() * 5) // 4)
 elif os.name == 'posix' and os.uname()[4] == 'armv7l':
     COMPILATION_JOBS = 2  # Likely an ARM board, e.g. pandaboard
 else:
