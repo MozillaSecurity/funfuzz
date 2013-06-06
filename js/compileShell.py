@@ -440,6 +440,15 @@ def compileJsCopy(shell, options):
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception, e:
+        # This exception message is returned from captureStdout via cmdList.
+        if (isLinux or isMac) and 'GCC running out of memory' in repr(e)):
+            # FIXME: Absolute hack to retry after hitting OOM. -s removal lines can be removed after
+            # 232553f741a0 is (prior to) the earliest known compilable changeset.
+            if '-s' in cmdList:
+                cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
+            print 'Trying once more without -s...'
+            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
+                                currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
             print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
