@@ -137,7 +137,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
                     'C++ compiler cannot create executables.' in stderr:
                 raise Exception('Windows conftest.exe configuration permission problem')
             elif (isLinux or isMac) and stderr and \
-                    'g++-4.7.real: internal compiler error: Killed (program cc1plus)' in stderr:
+                    'internal compiler error: Killed (program cc1plus)' in stderr:
                 raise Exception('GCC running out of memory')
             else:
                 raise Exception('Nonzero exit code')
