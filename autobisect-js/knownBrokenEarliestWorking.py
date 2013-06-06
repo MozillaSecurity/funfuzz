@@ -173,5 +173,7 @@ def earliestKnownWorkingRev(options, flags):
         return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
     elif '-m' in flags:
         return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
+    #else:
+    #    return '232553f741a0' # 52099 on m-c, first rev that can run pymake with -s
     else: # Only Windows should end up here
         return 'ceef8a5c3ca1' # 35725 on m-c, first rev that can build with Visual Studio 2010
