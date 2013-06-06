@@ -126,8 +126,10 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         if 'no such option: -s' not in stdout:
             print 'Nonzero exit code from: '
             print '  ' + shellify(cmd)
+            print 'stdout is:'
             print stdout
         if stderr is not None:
+            print 'stderr is:'
             print stderr
         # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
         if 'hg pull: option --rebase not recognized' not in stdout and \
