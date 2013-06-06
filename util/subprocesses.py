@@ -238,16 +238,17 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                 pass
     return None
 
-def grabCrashLog(progname, progfullname, crashedPID, logPrefix):
+def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
     '''Returns the crash log if found.'''
-    if progname == "valgrind":
-        return
     useLogFiles = isinstance(logPrefix, str)
     if useLogFiles:
         if os.path.exists(logPrefix + "-crash.txt"):
             os.remove(logPrefix + "-crash.txt")
         if os.path.exists(logPrefix + "-core"):
             os.remove(logPrefix + "-core")
+
+    if wantStack == False or progname == "valgrind":
+        return
 
     # On Mac and Linux, look for a core file.
     coreFilename = None

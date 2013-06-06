@@ -593,7 +593,8 @@ def rdfInit(args):
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
             if signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
                 # Well, maybe we have a core file or log from the Mac crash reporter.
-                crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, logPrefix)
+                wantStack = True
+                crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, logPrefix, wantStack)
                 if crashlog:
                     with open(crashlog) as f:
                         crashText = f.read()

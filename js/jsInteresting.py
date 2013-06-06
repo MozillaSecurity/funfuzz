@@ -45,7 +45,8 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
             valgrindSuppressions(knownPath) +
           runthis)
 
-    runinfo = timedRun.timed_run(runthis, timeout, logPrefix)
+    wantStack = True
+    runinfo = timedRun.timed_run(runthis, timeout, logPrefix, wantStack)
     sta = runinfo.sta
 
     lev = JS_FINE
