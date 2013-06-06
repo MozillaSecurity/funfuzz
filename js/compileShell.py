@@ -441,7 +441,7 @@ def compileJsCopy(shell, options):
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception, e:
         # This exception message is returned from captureStdout via cmdList.
-        if (isLinux or isMac) and 'GCC running out of memory' in repr(e)):
+        if (isLinux or isMac) and 'GCC running out of memory' in repr(e):
             # FIXME: Absolute hack to retry after hitting OOM. -s removal lines can be removed after
             # 232553f741a0 is (prior to) the earliest known compilable changeset.
             if '-s' in cmdList:
