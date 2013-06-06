@@ -1562,6 +1562,7 @@ var specialProperties = [
   "arguments", "caller", "callee",
   "toString", "toSource", "valueOf",
   "call", "apply", // ({apply:...}).apply() hits a special case (speculation failure with funapply / funcall bytecode)
+  "length",
   "0", "1",
 ];
 
