@@ -118,31 +118,32 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         (stdout, stderr) = p.communicate()
     except OSError, e:
         raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
-    if not ignoreExitCode and p.returncode != 0:
-        # Potential problem area: Note that having a non-zero exit code does not mean that the
-        # operation did not succeed, for example when compiling a shell. A non-zero exit code can
-        # appear even though a shell compiled successfully.
-        # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
-        if 'no such option: -s' not in stdout:
-            print 'Nonzero exit code from: '
-            print '  ' + shellify(cmd)
-            print 'stdout is:'
-            print stdout
-        if stderr is not None:
-            print 'stderr is:'
-            print stderr
-        # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
-        if 'hg pull: option --rebase not recognized' not in stdout and \
-          'no such option: -s' not in stdout:
-            if isWin and stderr and 'Permission denied' in stderr and \
-                    'configure: error: installation or configuration problem: ' + \
-                    'C++ compiler cannot create executables.' in stderr:
-                raise Exception('Windows conftest.exe configuration permission problem')
-            elif (isLinux or isMac) and stderr and \
-                    'internal compiler error: Killed (program cc1plus)' in stderr:
-                raise Exception('GCC running out of memory')
-            else:
-                raise Exception('Nonzero exit code')
+    if p.returncode != 0:
+        if (isLinux or isMac) and stderr and \
+                'internal compiler error: Killed (program cc1plus)' in stderr:
+            raise Exception('GCC running out of memory')
+        if not ignoreExitCode:
+            # Potential problem area: Note that having a non-zero exit code does not mean that the
+            # operation did not succeed, for example when compiling a shell. A non-zero exit code
+            # can appear even though a shell compiled successfully.
+            # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
+            if 'no such option: -s' not in stdout:
+                print 'Nonzero exit code from: '
+                print '  ' + shellify(cmd)
+                print 'stdout is:'
+                print stdout
+            if stderr is not None:
+                print 'stderr is:'
+                print stderr
+            # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
+            if 'hg pull: option --rebase not recognized' not in stdout and \
+              'no such option: -s' not in stdout:
+                if isWin and stderr and 'Permission denied' in stderr and \
+                        'configure: error: installation or configuration problem: ' + \
+                        'C++ compiler cannot create executables.' in stderr:
+                    raise Exception('Windows conftest.exe configuration permission problem')
+                else:
+                    raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
         # Ignore hg color mode throwing an error in console on Windows platforms.
         # Ignore stderr warning when running a Linux VM on a Mac host:
