@@ -1561,6 +1561,7 @@ var specialProperties = [
   "wrappedJSObject",
   "arguments", "caller", "callee",
   "toString", "toSource", "valueOf",
+  "call", "apply", // ({apply:...}).apply() hits a special case (speculation failure with funapply / funcall bytecode)
   "0", "1",
 ];
 
@@ -2372,8 +2373,11 @@ var functionMakers = [
   // Wrapping with upvar: non-escaping
   function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
+  // Apply, call
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").apply" },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").call" },
+
   // Bind
-  function(d, b) { return "Function.prototype.bind" },
   function(d, b) { return "(" + makeFunction(d-1, b) + ").bind" },
   function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")" },
 
@@ -2489,21 +2493,21 @@ David Anderson suggested creating the following recursive structures:
 var recursiveFunctions = [
   {
     // Unless the recursive call is in the tail position, this will throw.
-    text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); } @ })",
+    text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); @ } else { @ } @ })",
     vars: ["depth"],
-    args: function(d, b) { return rnd(10000); },
+    args: function(d, b) { return singleRecursionDepth(d, b); },
     test: function(f) { try { f(5000); } catch(e) { } return true; }
   },
   {
-    text: "(function factorial(N) { @; if (N == 0) return 1; @; return N * factorial(N - 1); @ })",
+    text: "(function factorial(N) { @; if (N == 0) { @; return 1; } @; return N * factorial(N - 1); @ })",
     vars: ["N"],
-    args: function(d, b) { return "" + rnd(20); },
+    args: function(d, b) { return singleRecursionDepth(d, b); },
     test: function(f) { return f(10) == 3628800; }
   },
   {
     text: "(function factorial_tail(N, Acc) { @; if (N == 0) { @; return Acc; } @; return factorial_tail(N - 1, Acc * N); @ })",
     vars: ["N", "Acc"],
-    args: function(d, b) { return rnd(20) + ", 1"; },
+    args: function(d, b) { return singleRecursionDepth(d, b) + ", 1"; },
     test: function(f) { return f(10, 1) == 3628800; }
   },
   {
@@ -2544,6 +2548,17 @@ var recursiveFunctions = [
     test: function(f) { return f([1,2,3,"4",5,6,7]) == "123418"; }
   }
 ];
+
+function singleRecursionDepth(d, b)
+{
+  if (rnd(2) == 0) {
+    return "" + rnd(4);
+  }
+  if (rnd(10) == 0) {
+    return makeExpr(d - 2, b)
+  }
+  return "" + rnd(100000);
+}
 
 (function testAllRecursiveFunctions() {
   for (var i = 0; i < recursiveFunctions.length; ++i) {
@@ -3644,7 +3659,7 @@ function makeAsmJSFunction(d, b)
  * RANDOMLY IGNORE THE GRAMMAR *
  *******************************/
 
-var TOTALLY_RANDOM = 500;
+var TOTALLY_RANDOM = 1000;
 
 var allMakers = [];
 
