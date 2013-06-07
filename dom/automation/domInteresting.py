@@ -327,10 +327,7 @@ class AmissLogHandler:
             "InternalError: too much recursion" in msg # Bug 732665 (see bug 762598 for a testcase)
             ):
             self.expectChromeFailure = True
-        if (not self.expectChromeFailure and
-            ("uncaught exception" in msg or "JavaScript error" in msg or "JavaScript Error" in msg or "[Exception..." in msg) and
-            ("chrome://browser/" in msg or "resource:///components" in msg) and
-            not knownChromeFailure(msg)):
+        if (not self.expectChromeFailure and jsInChrome(msg) and jsFailure(msg) and not knownChromeFailure(msg)):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
 
@@ -339,6 +336,22 @@ class AmissLogHandler:
         print "$ " + msg
         self.fullLogHead.append(msg + "\n")
         self.summaryLog.append(msg + "\n")
+
+def jsFailure(msg):
+    return ("uncaught exception" in msg or
+            "JavaScript error" in msg or
+            "JavaScript Error" in msg or
+            "[Exception..." in msg or
+            "JS Component Loader: ERROR" in msg or
+            "TypeError" in msg or
+            False)
+
+def jsInChrome(msg):
+    return ("chrome://browser/" in msg or
+            "resource:///components" in msg or
+            "resource:///modules/" in msg or
+            "resource:///gre/modules/" in msg or
+            False)
 
 def knownChromeFailure(msg):
     return (
