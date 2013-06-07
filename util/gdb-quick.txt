@@ -1,8 +1,9 @@
 set pagination 0
 set backtrace limit 250
 
-echo \n\nthread apply all bt\n\n
-thread apply all bt
+# CrashSignature trips up with "thread apply all bt" for now.
+echo \n\nbt\n\n
+bt
 
 # Could use "info all-registers" but that spews lots of junk
 echo \n\ninfo reg\n\n
@@ -12,3 +13,7 @@ info registers
 # ($pc is an alias for $eip or $rip as needed)
 echo \n\nx/8i $pc\n\n
 x/8i $pc
+
+echo \n\nthread apply all bt\n\n
+thread apply all bt
+
