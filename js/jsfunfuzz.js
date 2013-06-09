@@ -3309,8 +3309,8 @@ var intExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 1, e); }},
     {w: 10, fun: function(d, e) { return intVar(e) }}, // + "|0";  ??
     {w: 1,  fun: function(d, e) { return intCall(d - 1, e) }}, // + "|0";  ??
-//    {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }}, // bug 878435
-//    {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},  // bug 878435
+    {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + doubleExpr(d - 2, e); }},
 ]));
 
@@ -3338,7 +3338,7 @@ var signedExpr = autoExpr(weighted([
 //    {w: 1,  fun: function(d, e) { return "~~" + doubleExpr(d - 1, e); }}, // bug 878444
     {w: 1,  fun: function(d, e) { return intishExpr(d - 1, e) + "|0"; }}, // this isn't a special form, but it's common for a good reason
     {w: 1,  fun: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")"; }},
-//    {w: 5,  fun: function(d, e) { return intishExpr(d - 2, e) + rndElt([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }}, // bug 878435
+    {w: 5,  fun: function(d, e) { return intishExpr(d - 2, e) + rndElt([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }},
 ]));
 
 var unsignedExpr = autoExpr(weighted([
