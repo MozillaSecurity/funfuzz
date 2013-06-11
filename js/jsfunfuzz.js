@@ -3440,7 +3440,7 @@ function autoExpr(funs, avoidSubst)
 {
   return function(d, e) {
     var f = d < 1 ? funs[0] :
-            rnd(50) == 0 && !e.globalEnv.sanePlease ? makeExpr(5, ["x"]) :
+            rnd(50) == 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]) } :
             rnd(50) == 0 && !avoidSubst ? rndElt(anyAsmExpr) :
             rndElt(funs);
     return "(" + f(d, e) + ")";
