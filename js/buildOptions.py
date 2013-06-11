@@ -33,6 +33,8 @@ def parseShellOptions(inputArgs):
         llvmRootSrcDir = normExpUserPath('~/llvm'),
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
+        enableExactRooting = False,
+        enableGcGenerational = False,
     )
 
     parser.add_option('-R', '--repoDir', dest='repoDir',
@@ -71,6 +73,13 @@ def parseShellOptions(inputArgs):
     parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
                       action='store_true',
                       help='Build shells with --enable-root-analysis. Defaults to "%default".')
+    parser.add_option('--enable-exact-rooting', dest='enableExactRooting',
+                      action='store_true',
+                      help='Build shells with --enable-exact-rooting. Defaults to "%default".')
+    parser.add_option('--enable-gcgenerational', dest='enableGcGenerational',
+                      action='store_true',
+                      help='Build shells with --enable-gcgenerational. Defaults to "%default". ' + \
+                           'Requires --enable-exact-rooting.')
 
     (options, args) = parser.parse_args(inputArgs.split())
 
@@ -97,6 +106,13 @@ def parseShellOptions(inputArgs):
     if options.buildWithAsan:
         assert not isWin, 'Asan is not yet supported on Windows.'
 
+    if options.enableRootAnalysis:
+        assert not options.enableExactRooting
+        assert not options.enableGcGenerational
+
+    if options.enableGcGenerational:
+        assert options.enableExactRooting
+
     if isWin:
         assert isWin64 == (options.arch == '64')
 
@@ -108,14 +124,18 @@ def computeShellName(options, extraIdentifier):
     specialParamList = []
     if options.enableMoreDeterministic:
         specialParamList.append('dm')
-    if options.enableRootAnalysis:
-        specialParamList.append('ra')
     if options.buildWithAsan:
         specialParamList.append('asan')
     if options.buildWithVg:
         specialParamList.append('vg')
     if options.isThreadsafe:
         specialParamList.append('ts')
+    if options.enableRootAnalysis:
+        specialParamList.append('ra')
+    if options.enableExactRooting:
+        specialParamList.append('er')
+    if options.enableGcGenerational:
+        specialParamList.append('ggc')
     specialParam = '-'.join(specialParamList)
     return '-'.join(x for x in ['js', options.compileType, options.arch, specialParam,
                                 'windows' if isWin else platform.system().lower(),

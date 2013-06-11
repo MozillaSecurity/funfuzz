@@ -333,6 +333,10 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--enable-more-deterministic')
         if options.enableRootAnalysis:
             cfgCmdList.append('--enable-root-analysis')
+        if options.enableExactRooting:
+            cfgCmdList.append('--enable-exact-rooting')
+            if options.enableGcGenerational:
+                cfgCmdList.append('--enable-gcgenerational')
         if options.isThreadsafe:
             cfgCmdList.append('--enable-threadsafe')
             cfgCmdList.append('--with-nspr-prefix=' + \

@@ -88,6 +88,11 @@ def knownBrokenRanges(options):
             hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
         ])
 
+    if (options.enableGcGenerational or options.enableExactRooting) == options.enableExactRooting:
+        skips.extend([
+            hgrange('f8f0facf81ec', '492e87516012'), # broken exact rooting or GGC
+        ])
+
     return skips
 
 def earliestKnownWorkingRevForBrowser(options):
@@ -139,13 +144,15 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('be125cabea26') # 127353 on m-c, first rev that has the --baseline-eager option
     if '--no-baseline' in flags:
         required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
+    if options.enableGcGenerational:
+        required.append('f12876112a28') # 123661 on m-c, first rev with working Generational GC builds
     if '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
         required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
     if threadCountFlag:
         required.append('b4fa8b1f279d') # 114005 on m-c, first rev that has the --thread-count=N option
     if isMac:
         required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
-    if options.enableRootAnalysis or options.isThreadsafe:
+    if options.enableRootAnalysis or options.isThreadsafe or options.enableExactRooting:
         required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
     if '--ion-parallel-compile=' in flags:
         required.append('f42381e2760d') # 106714 on m-c, first rev that has the --ion-parallel-compile=[on|off] option

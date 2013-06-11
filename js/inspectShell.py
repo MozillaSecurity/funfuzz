@@ -149,3 +149,7 @@ def verifyBinary(sh, options):
             options.enableMoreDeterministic
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
             options.enableRootAnalysis
+        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'exact-rooting') == \
+            options.enableExactRooting
+        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'generational-gc') == \
+            options.enableGcGenerational
