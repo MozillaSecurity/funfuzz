@@ -95,8 +95,8 @@ def earliestKnownWorkingRevForBrowser(options):
 
 def earliestKnownWorkingRev(options, flags):
     '''
-    Returns the oldest version of the shell that can run jsfunfuzz and which supports all the flags
-    listed in |flags|.
+    Returns a revset which evaluates to the first revision of the shell that
+    compiles with |options| and runs jsfunfuzz successfully with |flags|.
     '''
     assert (not isMac) or (macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
 
@@ -131,49 +131,52 @@ def earliestKnownWorkingRev(options, flags):
         if '--thread-count=' in entry:
             threadCountFlag = True
 
+    required = []
+
     #if options.buildWithAsan:
-    #    return '774ba579fd39' # 120418 on m-c, first rev with correct getBuildConfiguration details
+    #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     if '--baseline-eager' in flags:
-        return 'be125cabea26' # 127353 on m-c, first rev that has the --baseline-eager option
-    elif '--no-baseline' in flags:
-        return '1c0489e5a302' # 127126 on m-c, first rev that has the --no-baseline option
-    elif '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
-        return 'dc4887f61d2e' # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
-    elif threadCountFlag:
-        return 'b4fa8b1f279d' # 114005 on m-c, first rev that has the --thread-count=N option
-    elif isMac:
-        return 'd97862fb8e6d' # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
-    elif options.enableRootAnalysis or options.isThreadsafe:
-        return 'e3799f9cfee8' # 107071 on m-c, first rev with correct getBuildConfiguration details
-    elif '--ion-parallel-compile=' in flags:
-        return 'f42381e2760d' # 106714 on m-c, first rev that has the --ion-parallel-compile=[on|off] option
-    elif ionEdgeCaseAnalysisFlag:
-        return '6c870a497ea4' # 106491 on m-c, first rev that supports --ion-edgecase-analysis=[on|off]
-    elif '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
-        return '300ac3d58291' # 106120 on m-c, See bug 724751: IonMonkey flag change
-    elif '--ion' in flags:
-        return '43b55878da46' # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
-    elif '--ion-eager' in flags:
-        return '4ceb3e9961e4' # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
-    elif '-n' in flags and ('-D' in flags or '--dump-bytecode' in flags):
-        return '0c5ed245a04f' # 75176 on m-c, merge brings in -D from one side and -n from another
-    elif '-n' in flags:
-        return '228e319574f9' # 74704 on m-c, first rev that has the -n option
-    elif '--debugjit' in flags or '--methodjit' in flags or '--dump-bytecode' in flags:
-        return 'b1923b866d6a' # 73054 on m-c, first rev that has long variants of many options
-    elif '-D' in flags:
-        return 'e5b92c2bdd2d' # 70991 on m-c, first rev that has the -D option
-    elif '-a' in flags:  # -a only works with -m
-        return '11d72b25348d' # 64558 on m-c, first rev that has the -a option
-    elif isLinux:
-        return 'e8753473cdff' # 61217 on m-c, first rev that compiles properly on Ubuntu 12.10.
-    elif '-p' in flags:
-        return '339457364540' # 56551 on m-c, first rev that has the -p option
-    elif '-d' in flags:  # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
-        return 'ea0669bacf12' # 54578 on m-c, first rev that has the -d option
-    elif '-m' in flags:
-        return '547af2626088' # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
-    #else:
-    #    return '232553f741a0' # 52099 on m-c, first rev that can run pymake with -s
-    else: # Only Windows should end up here
-        return 'ceef8a5c3ca1' # 35725 on m-c, first rev that can build with Visual Studio 2010
+        required.append('be125cabea26') # 127353 on m-c, first rev that has the --baseline-eager option
+    if '--no-baseline' in flags:
+        required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
+    if '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
+        required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
+    if threadCountFlag:
+        required.append('b4fa8b1f279d') # 114005 on m-c, first rev that has the --thread-count=N option
+    if isMac:
+        required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
+    if options.enableRootAnalysis or options.isThreadsafe:
+        required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
+    if '--ion-parallel-compile=' in flags:
+        required.append('f42381e2760d') # 106714 on m-c, first rev that has the --ion-parallel-compile=[on|off] option
+    if ionEdgeCaseAnalysisFlag:
+        required.append('6c870a497ea4') # 106491 on m-c, first rev that supports --ion-edgecase-analysis=[on|off]
+    if '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
+        required.append('300ac3d58291') # 106120 on m-c, See bug 724751: IonMonkey flag change
+    if '--ion' in flags:
+        required.append('43b55878da46') # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
+    if '--ion-eager' in flags:
+        required.append('4ceb3e9961e4') # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
+    if '-n' in flags:
+        required.append('228e319574f9') # 74704 on m-c, first rev that has the -n option
+    if '--debugjit' in flags or '--methodjit' in flags or '--dump-bytecode' in flags:
+        required.append('b1923b866d6a') # 73054 on m-c, first rev that has long variants of many options
+    if '-D' in flags:
+        required.append('e5b92c2bdd2d') # 70991 on m-c, first rev that has the -D option
+    if '-a' in flags:  # -a only works with -m
+        required.append('11d72b25348d') # 64558 on m-c, first rev that has the -a option
+    if isLinux:
+        required.append('e8753473cdff') # 61217 on m-c, first rev that compiles properly on Ubuntu 12.10.
+    if '-p' in flags:
+        required.append('339457364540') # 56551 on m-c, first rev that has the -p option
+    if '-d' in flags:  # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
+        required.append('ea0669bacf12') # 54578 on m-c, first rev that has the -d option
+    if '-m' in flags:
+        required.append('547af2626088') # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
+    #required.append('232553f741a0') # 52099 on m-c, first rev that can run pymake with -s
+    required.append('ceef8a5c3ca1') # 35725 on m-c, first rev that can build with Visual Studio 2010
+
+    return leastCommonDescendant(required)
+
+def leastCommonDescendant(revs):
+    return "first(" + " and ".join("descendants(" + r + ")" for r in revs) + ")"
