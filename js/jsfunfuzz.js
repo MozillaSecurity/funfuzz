@@ -3328,7 +3328,7 @@ var intishExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + " / " + unsignedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + " % " + signedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + " % " + unsignedExpr(d - 2, e); }},
-    ]));
+]));
 
 var signedExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return intLiteralRange(-0x8000000, 0x7fffffff); }},
