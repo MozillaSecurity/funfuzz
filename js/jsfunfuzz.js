@@ -3238,7 +3238,7 @@ function asmAssignmentStatement(indent, env)
     if (rnd(2)) {
       return indent + intishMemberExpr(8, env) + " = " + intishExpr(10, env) + ";\n";
     } else {
-      return indent + doublishMemberExpr(8, env) + " = " + doubleExpr(10, env) + ";\n"; // bug 878505
+      return indent + doublishMemberExpr(8, env) + " = " + doublishExpr(10, env) + ";\n";
     }
   }
 
@@ -3326,7 +3326,6 @@ var intishExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return "-" + intExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + " / " + signedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + " / " + unsignedExpr(d - 2, e); }},
-    // These are here because of bug 878433
     {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + " % " + signedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + " % " + unsignedExpr(d - 2, e); }},
     ]));
@@ -3367,7 +3366,7 @@ var doubleExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return "-" + doublishExpr(d - 1, e); }},
     // Binary ops that return double
     {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + " + " + doubleExpr(d - 2, e); }},
-//    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }}, // bug 878429
+    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " * " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " / " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
