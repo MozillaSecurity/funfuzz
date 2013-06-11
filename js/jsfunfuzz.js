@@ -3394,12 +3394,12 @@ var intishMemberExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return ensureView(e, rndElt(["Int8Array",  "Uint8Array" ])) + "[" + asmIndex(d, e, 0) + "]"; }},
     {w: 1,  fun: function(d, e) { return ensureView(e, rndElt(["Int16Array", "Uint16Array"])) + "[" + asmIndex(d, e, 1) + "]"; }},
     {w: 1,  fun: function(d, e) { return ensureView(e, rndElt(["Int32Array", "Uint32Array"])) + "[" + asmIndex(d, e, 2) + "]"; }},
-]));
+]), true);
 
 var doublishMemberExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return ensureView(e, "Float32Array") + "[" + asmIndex(d, e, 2) + "]"; }},
     {w: 1,  fun: function(d, e) { return ensureView(e, "Float64Array") + "[" + asmIndex(d, e, 3) + "]"; }},
-]));
+]), true);
 
 function asmIndex(d, e, logSize)
 {
@@ -3434,13 +3434,14 @@ function ensureImport(e, f, prefix)
 }
 
 
-var anyAsmExpr = [intExpr, intishExpr, signedExpr, doublishExpr, doubleExpr, intishMemberExpr, doublishMemberExpr, function() { makeExpr(5, ["x"]); }];
+var anyAsmExpr = [intExpr, intishExpr, signedExpr, doublishExpr, doubleExpr, intishMemberExpr, doublishMemberExpr];
 
-function autoExpr(funs)
+function autoExpr(funs, avoidSubst)
 {
   return function(d, e) {
     var f = d < 1 ? funs[0] :
-            rnd(50) == 0 && !e.globalEnv.sanePlease ? rndElt(anyAsmExpr) : // The 'sanePlease' can eventually go away
+            rnd(50) == 0 && !e.globalEnv.sanePlease ? makeExpr(5, ["x"]) :
+            rnd(50) == 0 && !avoidSubst ? rndElt(anyAsmExpr) :
             rndElt(funs);
     return "(" + f(d, e) + ")";
   }
