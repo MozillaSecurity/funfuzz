@@ -93,7 +93,7 @@ def knownBrokenRanges(options):
 def earliestKnownWorkingRevForBrowser(options):
     return '4e852ca66ea0' # or 'd97862fb8e6d' (same as js below) ... either way, oct 2012 on mac :(
 
-def earliestKnownWorkingRev(options, flags):
+def earliestKnownWorkingRev(options, flags, skipRevs):
     '''
     Returns a revset which evaluates to the first revision of the shell that
     compiles with |options| and runs jsfunfuzz successfully with |flags|.
@@ -176,7 +176,7 @@ def earliestKnownWorkingRev(options, flags):
     #required.append('232553f741a0') # 52099 on m-c, first rev that can run pymake with -s
     required.append('ceef8a5c3ca1') # 35725 on m-c, first rev that can build with Visual Studio 2010
 
-    return leastCommonDescendant(required)
+    return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 
-def leastCommonDescendant(revs):
-    return "first(" + " and ".join("descendants(" + r + ")" for r in revs) + ")"
+def commonDescendants(revs):
+    return " and ".join("descendants(" + r + ")" for r in revs)

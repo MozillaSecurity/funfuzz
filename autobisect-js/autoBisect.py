@@ -144,16 +144,18 @@ def parseOpts():
 
     if options.startRepo is None:
         if options.browserOptions:
+            options.skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
             options.startRepo = earliestKnownWorkingRevForBrowser(options.browserOptions)
         else:
-            options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags)
+            options.skipRevs = ' + '.join(knownBrokenRanges(options.buildOptions))
+            options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
 
     return options
 
-def findBlamedCset(options, repoDir, skipRevSet, testRev):
+def findBlamedCset(options, repoDir, testRev):
     print dateStr()
 
     hgPrefix = ['hg', '-R', repoDir]
@@ -171,8 +173,8 @@ def findBlamedCset(options, repoDir, skipRevSet, testRev):
 
     # Reset bisect ranges and set skip ranges.
     captureStdout(hgPrefix + ['bisect', '-r'])
-    if skipRevSet:
-        captureStdout(hgPrefix + ['bisect', '--skip', skipRevSet])
+    if options.skipRevs:
+        captureStdout(hgPrefix + ['bisect', '--skip', options.skipRevs])
 
     labels = {}
     # Specify `hg bisect` ranges.
@@ -430,11 +432,9 @@ def main():
     try:
         options = parseOpts()
         if options.browserOptions:
-            skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
-            findBlamedCset(options, options.browserOptions.repoDir, skipRevs, buildBrowser.makeTestRev(options))
+            findBlamedCset(options, options.browserOptions.repoDir, buildBrowser.makeTestRev(options))
         else:
-            skipRevs = ' + '.join(knownBrokenRanges(options.buildOptions))
-            findBlamedCset(options, options.buildOptions.repoDir, skipRevs, makeTestRev(options))
+            findBlamedCset(options, options.buildOptions.repoDir, makeTestRev(options))
     finally:
         os.rmdir(lockDir)
 
