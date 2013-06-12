@@ -108,6 +108,8 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
                 if line.rstrip() == "It's looking good!" or line.startswith("jsfunfuzz broke its own scripting environment: "):
                     break
                 elif line.startswith("Found a bug: "):
+                    if "NestTest" in line and reportedOverRecursion(logPrefix):
+                        break
                     lev = JS_DECIDED_TO_EXIT
                     issues.append(line.rstrip())
                     # FIXME: if not quiet:
@@ -140,6 +142,15 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
     if not quiet:
         print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
     return lev
+
+def reportedOverRecursion(logPrefix):
+    # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they over-recurse.
+    with open(logPrefix + "-err.txt", "rb") as f:
+        for line in f:
+            if "js_ReportOverRecursed called" in line:
+                return True
+    return False
+
 
 def summaryString(issues, level, elapsedtime):
     amissDetails = ("") if (len(issues) == 0) else (" | " + repr(issues) + " ")

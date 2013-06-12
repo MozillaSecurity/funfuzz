@@ -4735,7 +4735,8 @@ function optionalTests(f, code, wtt)
     tryEnsureSanity();
   }
 
-  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter) {
+  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter
+    && engine == ENGINE_SPIDERMONKEY_TRUNK && getBuildConfiguration()['more-deterministic']) {
     nestingConsistencyTest(code);
   }
 }
