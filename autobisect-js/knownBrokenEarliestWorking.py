@@ -91,7 +91,7 @@ def knownBrokenRanges(options):
     return skips
 
 def earliestKnownWorkingRevForBrowser(options):
-    return '4e852ca66ea0' # or 'd97862fb8e6d' ... either way, oct 2012 on mac :(
+    return '4e852ca66ea0' # or 'd97862fb8e6d' (same as js below) ... either way, oct 2012 on mac :(
 
 def earliestKnownWorkingRev(options, flags):
     '''
