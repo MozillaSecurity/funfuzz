@@ -88,6 +88,7 @@ def knownBrokenRanges(options):
             hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
         ])
 
+    # --enable-gcgenerational requires --enable-exact-rooting, so just check for the latter.
     if options.enableExactRooting:
         skips.extend([
             hgrange('f8f0facf81ec', '492e87516012'), # broken exact rooting or GGC
