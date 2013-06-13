@@ -119,8 +119,10 @@ def parseOpts():
     if options.browserOptions:
         assert not options.buildOptions
         options.browserOptions = buildBrowser.parseOptions(options.browserOptions)
+        options.skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
     else:
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+        options.skipRevs = ' + '.join(knownBrokenRanges(options.buildOptions))
 
     options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
@@ -144,10 +146,8 @@ def parseOpts():
 
     if options.startRepo is None:
         if options.browserOptions:
-            options.skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
             options.startRepo = earliestKnownWorkingRevForBrowser(options.browserOptions)
         else:
-            options.skipRevs = ' + '.join(knownBrokenRanges(options.buildOptions))
             options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     if options.parameters == '-e 42':
