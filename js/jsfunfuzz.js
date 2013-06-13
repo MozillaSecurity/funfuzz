@@ -1837,6 +1837,10 @@ var spidermonkeyImmediateEffectMakers = weighted([
   { w: 1, fun: function(d, b) { return "gc('compartment')"; } },
   { w: 1, fun: function(d, b) { return "gc(" + makeExpr(d, b) + ")"; } },
 
+  // Run a minor garbage collection on the nursery.
+  { w: 1, fun: function(d, b) { return "minorgc(false)"; } },
+  { w: 1, fun: function(d, b) { return "minorgc(true)"; } },
+
   // Add a compartment to the next garbage collection.
   { w: 1, fun: function(d, b) { return "schedulegc(" + makeExpr(d, b) + ")"; } },
 
@@ -4425,6 +4429,7 @@ function fillShellSandbox(sandbox)
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
     "verifyprebarriers", "verifypostbarriers", "gcPreserveCode",
+    "minorgc",
     "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox"
   ];
