@@ -2349,8 +2349,15 @@ var functionMakers = [
   function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
   function(d, b) {                          return cat(["function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
 
+  // Arrow functions with one argument (no parens needed) (no destructuring allowed in this form?)
+  function(d, b) { var v = makeNewId(d, b); return cat([     v,                            " => ", makeFunctionBody(d, b.concat([v]))]); },
+
+  // Arrow functions with multiple arguments
+  function(d, b) {                          return cat(["(", makeFormalArgList(d, b), ")", " => ", makeFunctionBody(d, b)]); },
+
   // The identity function
   function(d, b) { return "function(q) { " + directivePrologue() + "return q; }" },
+  function(d, b) { return "q => q" },
 
   // A function that does something
   function(d, b) { return "function(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }" },
@@ -2966,7 +2973,7 @@ function makeCrazyToken()
   // a few operators
   "!", "@", "%", "^", "*", "|", ":", "?", "'", "\"", ",", ".", "/",
   "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=",
-  "...",
+  "...", "=>",
 
   // most real keywords plus a few reserved keywords
   " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
