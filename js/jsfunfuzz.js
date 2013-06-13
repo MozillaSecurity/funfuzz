@@ -2972,6 +2972,9 @@ function makeCrazyToken()
   " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
   " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " break ", " continue ", " typeof ", " var ", " const ",
 
+  // reserved when found in strict mode code
+  " package ",
+
   // several keywords can be used as identifiers. these are just a few of them.
   " enum ", // JS_HAS_RESERVED_ECMA_KEYWORDS
   " debugger ", // JS_HAS_DEBUGGER_KEYWORD
