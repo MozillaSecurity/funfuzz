@@ -3321,7 +3321,7 @@ var intishExpr = autoExpr(weighted([
     {w: 10, fun: function(d, e) { return intExpr(d - 1, e) + rndElt(additive) + intExpr(d - 1, e); }},
     {w: 5,  fun: function(d, e) { return intExpr(d - 2, e) + rndElt(additive) + intExpr(d - 2, e) + rndElt(additive) + intExpr(d - 2, e); }},
     // Multiply by a small int literal
-    {w: 2,  fun: function(d, e) { return intExpr(d - 1, e) + "*" + intLiteralRange(-0x100000, 0x100000); }},
+    {w: 2,  fun: function(d, e) { return intExpr(d - 1, e) + "*" + intLiteralRange(-0xfffff, 0xfffff); }},
     {w: 2,  fun: function(d, e) { return intLiteralRange(-0xfffff, 0xfffff) + "*" + intExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return "-" + intExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + " / " + signedExpr(d - 2, e); }},
@@ -3333,7 +3333,7 @@ var intishExpr = autoExpr(weighted([
 var signedExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return intLiteralRange(-0x8000000, 0x7fffffff); }},
     {w: 1,  fun: function(d, e) { return "~" + intishExpr(d - 1, e); }},
-//    {w: 1,  fun: function(d, e) { return "~~" + doubleExpr(d - 1, e); }}, // bug 878444
+    {w: 1,  fun: function(d, e) { return "~~" + doubleExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return intishExpr(d - 1, e) + "|0"; }}, // this isn't a special form, but it's common for a good reason
     {w: 1,  fun: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")"; }},
     {w: 5,  fun: function(d, e) { return intishExpr(d - 2, e) + rndElt([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }},
@@ -3366,7 +3366,7 @@ var doubleExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return "-" + doublishExpr(d - 1, e); }},
     // Binary ops that return double
     {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + " + " + doubleExpr(d - 2, e); }},
-    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }},
+    {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + " - " + doubleExpr(d - 2, e); }}, // inputs should be doublish (bug 882008)
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " * " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " / " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
@@ -3526,6 +3526,17 @@ function intLiteralRange(min, max)
 // In those cases, we can test that the asm-compiled version matches the normal js version.
 // *  isAsmJSFunction(f)
 // * !isAsmJSFunction(g)
+
+// Because we pass the 'sanePlease' flag to asmJSInterior,
+// * We don't expect any parse errors. (testOneAsmJSInterior currently relies on this.)
+// * We expect only the following asm.js type errors:
+//   * "numeric literal out of representable integer range" (https://github.com/dherman/asm.js/issues/67 makes composition hard)
+//   * "no duplicate case labels" (because asmSwitchStatement doesn't avoid this)
+// * And the following, infrequently, due to out-of-range integer literals:
+//   * "one arg to int multiply must be a small (-2^20, 2^20) int literal"
+//   * "arguments to / or % must both be double, signed, or unsigned, unsigned and signed are given"
+//   * "unsigned is not a subtype of signed or doublish" [Math.abs]
+
 
 var compareAsm = (function() {
 
