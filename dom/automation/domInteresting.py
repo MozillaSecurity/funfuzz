@@ -379,6 +379,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
         ("aboutHome.js" in msg and "localStorage" in msg) or # Bug 789348 is rewriting about:home to not use localStorage
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
+        ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
