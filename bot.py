@@ -264,8 +264,8 @@ def parseOpts():
         options.buildOptions += " --enable-more-deterministic"
 
     if options.runLocalJsfunfuzz:
-      options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-      options.timeout = options.timeout or machineTimeoutDefaults(options)
+        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+        options.timeout = options.timeout or machineTimeoutDefaults(options)
     #####
 
     if len(args) > 0:
