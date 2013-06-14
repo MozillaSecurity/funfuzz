@@ -17,6 +17,7 @@ p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
 from subprocesses import createWtmpDir
 from fileManipulation import fuzzSplice, linesWith, writeLinesToFile
+from inspectShell import queryBuildConfiguration
 import lithOps
 
 def parseOpts(args):
@@ -128,7 +129,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
                 return (lithResult, lithDetails)
 
         else:
-            shellIsDeterministic = os.path.join('build', 'dist', 'js') not in options.jsEngine # bug 751700
+            shellIsDeterministic = queryBuildConfiguration(options.jsEngine, 'more-deterministic')
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
