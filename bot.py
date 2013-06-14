@@ -261,6 +261,8 @@ def parseOpts():
         options.patchDir = normExpUserPath(options.patchDir)
 
     if not options.disableCompareJit:
+        print 'Deterministic builds are broken due to bug 883395. Exiting...'
+        sys.exit(0);
         options.buildOptions += " --enable-more-deterministic"
 
     if options.runLocalJsfunfuzz:
