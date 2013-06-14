@@ -146,7 +146,10 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     if '--no-baseline' in flags:
         required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
     if options.enableGcGenerational:
-        required.append('f12876112a28') # 123661 on m-c, first rev with working Generational GC builds
+        if options.arch == '32':
+            required.append('8d65f437c771') # 124553 on m-c, first rev with working 32-bit Generational GC builds
+        elif options.arch == '64':
+            required.append('f12876112a28') # 123661 on m-c, first rev with working 64-bit Generational GC builds
     if '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
         required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
     if threadCountFlag:
