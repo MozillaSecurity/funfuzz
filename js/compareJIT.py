@@ -65,12 +65,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
 
         with open(prefix + "-out.txt") as f:
-            r.out = f.read(lengthLimit + 10)
+            r.out = f.read(lengthLimit)
         with open(prefix + "-err.txt") as f:
-            r.err = f.read(lengthLimit + 10)
+            r.err = f.read(lengthLimit)
 
-        if len(r.out) > lengthLimit:
-            r.out = "VERYLONGOUT"
         r.err = ignoreMallocScribble(r.err)
 
         if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
