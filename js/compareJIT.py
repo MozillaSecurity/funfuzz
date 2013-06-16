@@ -105,9 +105,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             elif "can't allocate region" in r.err or "can't allocate region" in r0.err:
                 #print "compareJIT: Ignoring OOM difference"
                 jsInteresting.deleteLogs(prefix)
-            elif "can't convert" in r0.out or "can't convert" in r.out: # Bug 735316
-                #print "Ignoring DVG difference (bug 735316?)"
-                jsInteresting.deleteLogs(prefix)
             elif r.err != r0.err and sameFpuOption:
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
