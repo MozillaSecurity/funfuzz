@@ -123,6 +123,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             else:
+                #print "compareJIT: match"
                 jsInteresting.deleteLogs(prefix)
 
     # All matched :)
