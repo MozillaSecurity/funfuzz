@@ -99,11 +99,11 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             sameFpuOption = (("--no-fpu" in commands[0]) == ("--no-fpu" in command))
 
             if "js_ReportOverRecursed called" in r.err or "js_ReportOverRecursed called" in r0.err:
-                #print "Ignoring js_ReportOverRecursed difference"
+                #print "compareJIT: Ignoring js_ReportOverRecursed difference"
                 # delete extra files
                 jsInteresting.deleteLogs(prefix)
             elif "can't allocate region" in r.err or "can't allocate region" in r0.err:
-                #print "Ignoring OOM difference"
+                #print "compareJIT: Ignoring OOM difference"
                 jsInteresting.deleteLogs(prefix)
             elif "can't convert" in r0.out or "can't convert" in r.out: # Bug 735316
                 #print "Ignoring DVG difference (bug 735316?)"
