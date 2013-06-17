@@ -491,7 +491,6 @@ def skipJobNamed(j):
         "6b6b1f474cca11e280033c0754724fc3" in j or # bogus 'hang'
         "ffb0660a4a8611e280023c075472596f" in j or # bogus 'hang'
         "e9dcc991488811e280023c0754724cee" in j or # bogus 'hang'
-        "e4d3876651a411e280053c075472877d" in j or # leak bug 829817
         "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
         "69ba529e3d1d11e28001406c8f39f411" in j or # a pain to reduce (bug 829841)
         "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
@@ -524,8 +523,6 @@ def skipJobNamed(j):
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
         "1343538581" in j or # probably a nasty variant of bug 728632
-        "1339201819" in j or # Bug 763126
-        "1338835174" in j or # Bug 763126
         "1339379020" in j or # Bug 763560
         "1339573949" in j or # Bug 767279
         "1339599262" in j or # lol mv

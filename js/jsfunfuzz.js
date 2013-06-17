@@ -4750,7 +4750,7 @@ function optionalTests(f, code, wtt)
     }
   }
 
-  if (count % 100 == 3 && f && typeof disassemble == "function" && false) { // disabled due to bug 878495
+  if (count % 100 == 3 && f && typeof disassemble == "function") {
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
     disassemble("-r", f);

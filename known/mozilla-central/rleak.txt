@@ -16,7 +16,6 @@ SIZE medium. when known to leak, allowed to entrain unknown objects.
   LEAK nsDNSPrefetch                   # Bug 463724
   LEAK nsDNSAsyncRequest               # Bug 463724
   LEAK nsHostResolver                  # Bug 463724
-  LEAK imgRequest                      # Bug 614149
   LEAK nsNPAPIPluginInstance           # Java
   LEAK nsLocalFile                     # Intermittent, but frequent, at least in the range 2011-08-20 to 2011-09-14
 
