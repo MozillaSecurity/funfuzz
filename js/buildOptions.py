@@ -24,21 +24,24 @@ def parseShellOptions(inputArgs):
 
     parser.set_defaults(
         repoDir = None,
+        llvmRootSrcDir = normExpUserPath('~/llvm'),
         arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
         isThreadsafe = False,
         runWithVg = False,
         buildWithVg = False,
         buildWithAsan = False,
-        llvmRootSrcDir = normExpUserPath('~/llvm'),
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
         enableExactRooting = False,
         enableGcGenerational = False,
     )
 
+    # Where to find the source dir and compiler
     parser.add_option('-R', '--repoDir', dest='repoDir',
                       help='Sets the source repository. Defaults to "%default".')
+    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
+                      help='Specify the LLVM root source dir (for clang). Defaults to "%default".')
 
     # Basic spidermonkey options
     parser.add_option('-a', '--arch', dest='arch',
@@ -51,8 +54,6 @@ def parseShellOptions(inputArgs):
     # Memory debuggers
     parser.add_option('--build-with-asan', dest='buildWithAsan', action='store_true',
                       help='Build with clang AddressSanitizer support. Defaults to "%default".')
-    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
-                      help='Specify the LLVM root source dir (for clang). Defaults to "%default".')
 
     parser.add_option('--build-with-valgrind', dest='buildWithVg',
                       action='store_true',
