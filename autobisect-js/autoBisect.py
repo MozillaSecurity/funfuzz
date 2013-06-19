@@ -423,6 +423,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 def main():
     '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
     sanityChecks()
+    options = parseOpts()
     lockDir = os.path.join(ensureCacheDir(), 'autoBisectJs-lock')
     try:
         os.mkdir(lockDir)
@@ -430,7 +431,6 @@ def main():
         print "autoBisect is already running"
         return
     try:
-        options = parseOpts()
         if options.browserOptions:
             findBlamedCset(options, options.browserOptions.repoDir, buildBrowser.makeTestRev(options))
         else:
