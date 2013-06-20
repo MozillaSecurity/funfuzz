@@ -93,6 +93,7 @@ dom.experimental_forms_range
 dom.forms.color
 dom.forms.inputmode
 dom.future.enabled
+dom.gamepad.enabled
 dom.identity.enabled
 dom.indexedDB.enabled
 dom.ipc.plugins.enabled.i386
