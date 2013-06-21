@@ -236,9 +236,11 @@ class AmissLogHandler:
                 print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
 
+        # Treat these fatal assertions as crashes. This lets us distinguish call sites and makes ASan signatures match.
         overlyGenericAssertion = (
           "You can't dereference a NULL" in msg or
-          ("Assertion failure: value" in msg and "BindingUtils.h" in msg)
+          ("Assertion failure: value" in msg and "BindingUtils.h" in msg) or
+          ("Assertion failure: i < Length() (invalid array index)" in msg)
         )
 
         # It might be sensible to push more of this logic into detect_assertions...
