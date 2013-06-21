@@ -39,7 +39,8 @@ import detect_leaks
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
 from subprocesses import grabCrashLog, isMac, isWin
-import asanSymbolize
+
+close_fds = sys.platform != 'win32'
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -168,6 +169,7 @@ class AmissLogHandler:
         self.sawFatalAssertion = False
         self.fuzzerComplained = False
         self.crashProcessor = None
+        self.asanSymbolizer = None
         self.crashBoringBits = False
         self.crashMightBeTooMuchRecursion = False
         self.crashIsKnown = False
@@ -180,10 +182,12 @@ class AmissLogHandler:
         self.outOfMemory = False
         detect_interesting_crashes.resetCounts()
         self.crashSignature = ""
+
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
-        if self.crashProcessor == "asan":
-            msgLF = asanSymbolize.symbolize(msgLF)
+        if self.asanSymbolizer:
+            self.asanSymbolizer.stdin.write(msgLF)
+            msgLF = self.asanSymbolizer.stdout.readline()
         msg = msgLF.rstrip("\n")
         if len(self.fullLogHead) < 100000:
             self.fullLogHead.append(msgLF)
@@ -279,6 +283,11 @@ class AmissLogHandler:
         if "ERROR: AddressSanitizer" in msg:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
+            self.asanSymbolizer = subprocess.Popen(
+                ["python", "-u", os.path.expanduser("~/llvm/projects/compiler-rt/lib/asan/scripts/asan_symbolize.py")],
+                stdin = subprocess.PIPE,
+                stdout = subprocess.PIPE,
+                close_fds = close_fds)
             m = re.search("on unknown address (0x\S+)", msg)
             if m and int(m.group(1), 16) < 0x10000:
                 # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
@@ -333,6 +342,11 @@ class AmissLogHandler:
             self.sawChromeFailure = True
 
         return msgLF
+
+    def destroy(self):
+        if self.asanSymbolizer:
+            self.asanSymbolizer.stdin.close()
+
     def printAndLog(self, msg):
         print "$ " + msg
         self.fullLogHead.append(msg + "\n")
@@ -508,8 +522,6 @@ def rdfInit(args):
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
     runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
-    close_fds = sys.platform != 'win32'
-
     knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, "known", "mozilla-central")
     detect_interesting_crashes.readIgnoreLists(knownPath)
 
@@ -676,6 +688,8 @@ def rdfInit(args):
 
         if not leaveProfile:
             shutil.rmtree(profileDir)
+
+        alh.destroy()
 
         print("DOMFUZZ INFO | domInteresting.py | " + str(lev))
         return (lev, alh.FRClines)
