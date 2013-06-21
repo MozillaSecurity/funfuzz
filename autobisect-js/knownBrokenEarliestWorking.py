@@ -70,7 +70,7 @@ def knownBrokenRanges(options):
 
     if options.enableMoreDeterministic:
         skips.extend([
-            hgrange('7338d59869c3', 'e963546ec749'), # missing #include -> compile failure
+            hgrange('9ab1119d4596', 'e963546ec749'), # missing #include -> compile failure
             hgrange('7c148efceaf9', '541248fb29e4'), # missing #include -> compile failure
         ])
 
