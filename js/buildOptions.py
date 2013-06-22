@@ -12,7 +12,10 @@ from downloadBuild import mozPlatformDetails
 from subprocesses import isWin, isWin64, isMac, isLinux, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
-DEFAULT_MC_REPO_LOCATION = normExpUserPath(os.path.join('~', 'trees', 'mozilla-central'))
+if platform.uname()[2] == 'XP':
+    DEFAULT_MC_REPO_LOCATION = normExpUserPath(os.path.join(path0, '..', '..', 'trees', 'mozilla-central'))
+else:
+    DEFAULT_MC_REPO_LOCATION = normExpUserPath(os.path.join('~', 'trees', 'mozilla-central'))
 
 def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
