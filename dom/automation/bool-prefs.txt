@@ -281,6 +281,7 @@ webgl.can-lose-context-in-foreground
 webgl.default-no-alpha
 webgl.disable-extensions
 webgl.disabled
+webgl.enable-draft-extensions
 webgl.force-enabled
 webgl.force-layers-readback
 webgl.force_osmesa
