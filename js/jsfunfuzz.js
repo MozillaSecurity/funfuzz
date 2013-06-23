@@ -903,7 +903,7 @@ var makeEvilCallback;
   function m(t)
   {
     if (!t)
-      t = "aosmevbtihgf";
+      t = "aosmevbtihgfp";
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
     switch(rnd(16)) {
@@ -1049,6 +1049,7 @@ var makeEvilCallback;
       s += "v" + i + " = null; ";
       s += "b" + i + " = new ArrayBuffer(64); ";
       s += "t" + i + " = new Uint8ClampedArray; ";
+      // don't initialize p (ParallelArray) here because we don't want initializeEverything to trip consistency exclusions
       // nothing for iterators, handlers
     }
     return s;
@@ -1089,6 +1090,23 @@ var makeEvilCallback;
     { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["filter", "forEach", "every", "map", "some"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 3,  fun: function(d, b) { return "Array.prototype." + rndElt(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ", " + m() + ");"; } },
+
+    // p: ParallelArray
+    // A parallel array can be constructed from (1) an array-like that has a length property, or (2) a length [possibly multi-dimensional] and elemental function
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", "new ParallelArray(" + m("at") + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", "new ParallelArray(" + makeParallelArraySizeAndInitializer(d, b) + ")"); } },
+    // Parallel arrays are immutable, but have some readable properties
+    { w: 3,  fun: function(d, b) { return assign(d, b, "a", m("p") + ".shape"); } }, // what
+    // Parallel arrays have functional methods that will sometimes run in parallel.
+    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("p") + ".get(" + m("v") + ")"); } },
+    { w: 3,  fun: function(d, b) { return assign(d, b, "v", m("p") + ".get([" + m("v") + ", " + m("v") + "])"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", m("p") + ".map(" + rndElt(["1, ", "2, ", ""]) + (rnd(2)?m("f"):makeParallelMap(d,b)) + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", m("p") + ".filter(" + (rnd(2)?m("f"):makeParallelFilter(d,b)) + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "v", m("p") + ".reduce(" + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", m("p") + ".scan(" +   (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", m("p") + ".scatter([0,0,1,1,2,2], undefined," + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", m("p") + ".flatten()"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "p", m("p") + ".partition(" + (rnd(2)?m("v"):rnd(10)) + ")"); } },
 
     // o: Object
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "{}"); } },
@@ -1231,6 +1249,59 @@ var makeEvilCallback;
   }
 })();
 
+
+function makeParallelArraySizeAndInitializer(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var dimensions = rnd(5) ? 1 : 2;
+  var sizes = [];
+  var argList = [];
+  for (var i = 0; i < dimensions; ++i) {
+    sizes[i] = (rnd(100) == 0) ? makeExpr(d, b) :
+      (dimensions == 1) ? rnd(20000) + 1 :
+      rnd(120) + 1;
+    
+    argList.push("x" + i);
+  }
+  var bv = b.concat(argList);
+  
+  var sizeArg = (dimensions == 1 && rnd(2)) ? sizes[0] : "[" + sizes.join(", ") + "]";
+  
+  var elementalFunctionArg = rnd(2) ?
+    makeFunction(d, bv) :
+    "function(" + argList.join(", ") + ") { " + parallelBail(d, bv, argList) + "return " + (rnd(2) ? argList[0] : makeExpr(d, bv)) + "; }";
+  
+  return sizeArg + ", " + elementalFunctionArg;
+}
+
+function makeParallelMap(d, b)
+{
+  // Map can also see indices and the array, but we don't use them here
+  var bv = b.concat(["e"]);
+  return "function(e) { " + parallelBail(d, bv, ["e"]) + "return " + (rnd(2) ? "e" : makeExpr(d, bv)) + "; }";
+}
+
+function makeParallelFilter(d, b)
+{
+  var bv = b.concat(["e", "i", "s"]);
+  return "function(e, i, s) { " + parallelBail(d, bv, ["e", "i"]) + "return " + (rnd(2) ? "i%2" : makeExpr(d, bv)) + "; }";
+}
+
+function makeParallelBinary(d, b)
+{
+  var bv = b.concat(["a", "b"]);
+  return "function(a, b) { " + parallelBail(d, bv, ["a", "b"]) + "return " + (rnd(2) ? "a-b" : makeExpr(d, bv)) + "; }";
+}
+
+function parallelBail(d, b, inputs)
+{
+  if (rnd(3))
+    return "";
+
+  var condition = rndElt(inputs) + rndElt([" > 1000", " % 1000 == 999"]);
+  return "if (" + condition + ") { " + makeStatement(d, b) + "return " + makeExpr(d, b) + " }";
+}
 
 /********
  * .... *
@@ -4069,6 +4140,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("oomAfterAllocations") == -1
+       && code.indexOf("ParallelArray") == -1
     ,
 
     expectConsistentOutputAcrossIter: true
