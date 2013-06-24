@@ -942,18 +942,16 @@ var makeEvilCallback;
   {
     // A closure with a counter. Do stuff depending on the counter.
     var v = uniqueVarName();
-    var mod = rnd(10) + 2;
-    var target = rnd(mod);
-    var matchExpr = v + " % " + mod + " == " + target;
+    var infrequently = infrequentCondition(v, 10);
     return (
       "(function mcc_() { " +
         "var " + v + " = 0; " +
         "return function() { " +
           "++" + v + "; " +
             (rnd(3) ?
-              "if (" + matchExpr + ") { dumpln('hit!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
+              "if (" + infrequently + ") { dumpln('hit!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
               "else { dumpln('miss!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } "
-            : m("f") + "(" + matchExpr + ");"
+            : m("f") + "(" + infrequently + ");"
             ) +
         "};" +
       "})()");
@@ -1261,17 +1259,17 @@ function makeParallelArraySizeAndInitializer(d, b)
     sizes[i] = (rnd(100) == 0) ? makeExpr(d, b) :
       (dimensions == 1) ? rnd(20000) + 1 :
       rnd(120) + 1;
-    
+
     argList.push("x" + i);
   }
   var bv = b.concat(argList);
-  
+
   var sizeArg = (dimensions == 1 && rnd(2)) ? sizes[0] : "[" + sizes.join(", ") + "]";
-  
+
   var elementalFunctionArg = rnd(2) ?
     makeFunction(d, bv) :
     "function(" + argList.join(", ") + ") { " + parallelBail(d, bv, argList) + "return " + (rnd(2) ? argList[0] : makeExpr(d, bv)) + "; }";
-  
+
   return sizeArg + ", " + elementalFunctionArg;
 }
 
@@ -1299,8 +1297,18 @@ function parallelBail(d, b, inputs)
   if (rnd(3))
     return "";
 
-  var condition = rndElt(inputs) + rndElt([" > 1000", " % 1000 == 999"]);
+  var condition = infrequentCondition(rndElt(inputs), 2000);
   return "if (" + condition + ") { " + makeStatement(d, b) + "return " + makeExpr(d, b) + " }";
+}
+
+function infrequentCondition(v, n)
+{
+  switch (rnd(20)) {
+    case 0: return true;
+    case 1: return false;
+    case 2: return v + " > " + rnd(n);
+    default: var mod = rnd(n) + 2; var target = rnd(mod); return "/*ICCD*/" + v + " % " + mod + (rnd(8) ? " == " : " != ") + target;
+  }
 }
 
 /********
