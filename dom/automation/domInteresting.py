@@ -248,6 +248,7 @@ class AmissLogHandler:
             not overlyGenericAssertion and
             detect_assertions.scanLine(self.knownPath, msgLF) and
             not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and
+            not ("The observers have not been correctly removed" in msg and self.expectedToLeak) and # Not sure about this (bug 886213)
             not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
             not (self.goingDownHard and isWin) and # Bug 763182
             True)
