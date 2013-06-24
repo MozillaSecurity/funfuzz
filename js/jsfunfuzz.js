@@ -3320,9 +3320,17 @@ function asmStatement(indent, env, d)
   if (rnd(10) == 0) {
     return asmReturnStatement(indent, env);
   }
+  if (rnd(50) == 0 && env.globalEnv.foreignFunctions.length) {
+    return asmVoidCallStatement(indent, env);
+  }
   if (rnd(100) == 0)
     return ";";
   return asmAssignmentStatement(indent, env);
+}
+
+function asmVoidCallStatement(indent, env)
+{
+  return indent + asmFfiCall(8, env) + ";\n";
 }
 
 function asmAssignmentStatement(indent, env)
@@ -3400,7 +3408,7 @@ var intExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return signedExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 1, e); }},
     {w: 10, fun: function(d, e) { return intVar(e) }}, // + "|0";  ??
-    {w: 1,  fun: function(d, e) { return intCall(d - 1, e) }}, // + "|0";  ??
+    {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? asmFfiCall(d, e) + "|0" : "1"; }},
     {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + doubleExpr(d - 2, e); }},
@@ -3408,7 +3416,6 @@ var intExpr = autoExpr(weighted([
 
 var intishExpr = autoExpr(weighted([
     {w: 10, fun: function(d, e) { return intExpr(d, e); }},
-    {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? unknownExpr(d, e) : "1"; }},
     {w: 1,  fun: function(d, e) { return intishMemberExpr(d, e); }},
     // Add two or more ints
     {w: 10, fun: function(d, e) { return intExpr(d - 1, e) + rndElt(additive) + intExpr(d - 1, e); }},
@@ -3428,19 +3435,18 @@ var signedExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return "~" + intishExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return "~~" + doubleExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return intishExpr(d - 1, e) + "|0"; }}, // this isn't a special form, but it's common for a good reason
-    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")|0"; }},
+    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "abs") + "(" + signedExpr(d - 1, e) + ")|0"; }},
     {w: 5,  fun: function(d, e) { return intishExpr(d - 2, e) + rndElt([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }},
 ]));
 
 var unsignedExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return intLiteralRange(0, 0xffffffff); }},
     {w: 1,  fun: function(d, e) { return intishExpr(d - 2, e) + ">>>" + intishExpr(d - 2, e); }},
-    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "abs") + "(" + signedExpr(d - 1, e) + ")"; }},
 ]));
 
 var doublishExpr = autoExpr(weighted([
     {w: 10, fun: function(d, e) { return doubleExpr(d, e); }},
-    {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? unknownExpr(d, e) : "1.0"; }},
     {w: 1,  fun: function(d, e) { return doublishMemberExpr(d, e); }},
     // Read from a doublish typed array view
 ]));
@@ -3448,7 +3454,7 @@ var doublishExpr = autoExpr(weighted([
 var doubleExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return doubleLiteral(); }},
     {w: 20, fun: function(d, e) { return doubleVar(e); }},
-    {w: 5,  fun: function(d, e) { return doubleCall(d - 1, e); }},
+    {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? "+" + asmFfiCall(d, e) : "1.0"; }},
     {w: 1,  fun: function(d, e) { return "+(1.0/0.0)"; }},
     {w: 1,  fun: function(d, e) { return "+(0.0/0.0)"; }},
     {w: 1,  fun: function(d, e) { return "+(-1.0/0.0)"; }},
@@ -3465,17 +3471,12 @@ var doubleExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return intExpr(d - 3, e) + " ? " + doubleExpr(d - 3, e) + " : " + doubleExpr(d - 3, e); }},
     // with stdlib
-    {w: 1,  fun: function(d, e) { return ensureMathImport(e, rndElt(["acos", "asin", "atan", "cos", "sin", "tan", "ceil", "floor", "exp", "log", "sqrt"])) + "(" + doublishExpr(d - 1, e) + ")"; }},
-    {w: 1,  fun: function(d, e) { return ensureMathImport(e, "abs") + "(" + doublishExpr(d - 1, e) + ")"; }},
-    {w: 1,  fun: function(d, e) { return ensureMathImport(e, rndElt(["atan2", "pow"])) + "(" + doublishExpr(d - 2, e) + ", " + doublishExpr(d - 2, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return "+" + ensureMathImport(e, rndElt(["acos", "asin", "atan", "cos", "sin", "tan", "ceil", "floor", "exp", "log", "sqrt"])) + "(" + doublishExpr(d - 1, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return "+" + ensureMathImport(e, "abs") + "(" + doublishExpr(d - 1, e) + ")"; }},
+    {w: 1,  fun: function(d, e) { return "+" + ensureMathImport(e, rndElt(["atan2", "pow"])) + "(" + doublishExpr(d - 2, e) + ", " + doublishExpr(d - 2, e) + ")"; }},
     {w: 1,  fun: function(d, e) { return ensureImport(e, "Infinity"); }},
     {w: 1,  fun: function(d, e) { return ensureImport(e, "NaN"); }},
 // "E", "LN10", "LN2", "LOG2E", "LOG10E", "PI", "SQRT1_2", "SQRT2" // bug 878488
-]));
-
-// Only call this when foreignFunctions is populated
-var unknownExpr = autoExpr(weighted([
-    {w: 1,  fun: function(d, e) { return "/*FFI*/" + rndElt(e.globalEnv.foreignFunctions) + "(" + externExpr(d - 1, e) + ")"; }},
 ]));
 
 var externExpr = autoExpr(weighted([
@@ -3501,6 +3502,19 @@ function asmIndex(d, e, logSize)
 
   return intishExpr(d - 2, e) + " >> " + logSize;
 }
+
+function asmFfiCall(d, e)
+{
+  var argList = "";
+  while (rnd(2)) {
+    if (argList)
+      argList += ", ";
+    argList += externExpr(d - 1, e);
+  }
+
+  return "/*FFI*/" + rndElt(e.globalEnv.foreignFunctions) + "(" + argList + ")";
+}
+
 
 function ensureView(e, t)
 {
@@ -3538,16 +3552,6 @@ function autoExpr(funs, avoidSubst)
             rndElt(funs);
     return "(" + f(d, e) + ")";
   }
-}
-
-function intCall(d, e)
-{
-  return intVar(e);
-}
-
-function doubleCall(d, e)
-{
-  return doubleVar(e);
 }
 
 function intVar(e)
