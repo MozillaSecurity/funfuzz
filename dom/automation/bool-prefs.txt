@@ -173,7 +173,6 @@ layers.composer2d.enabled
 layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 #layers.offmainthreadcomposition.async-animations
-layout.3d-transforms.enabled
 layout.css.flexbox.enabled
 layout.css.font-features.enabled
 layout.css.masking.enabled
