@@ -1193,6 +1193,7 @@ var makeEvilCallback;
     // i: Iterator
     { w: 1,  fun: function(d, b) { return assign(d, b, "i", "new Iterator(" + m() + ")"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "i", "new Iterator(" + m() + ", true)"); } },
+    { w: 1,  fun: function(d, b) { return assign(d, b, "i", m("ema") + "." + rndElt(["entries", "keys", "values", "iterator"])); } },
     { w: 3,  fun: function(d, b) { return m("i") + ".next();"; } },
     { w: 3,  fun: function(d, b) { return m("i") + ".send(" + m() + ");"; } },
     // Other ways to build iterators: https://developer.mozilla.org/en/JavaScript/Guide/Iterators_and_Generators
