@@ -178,6 +178,7 @@ layout.css.font-features.enabled
 layout.css.masking.enabled
 layout.css.report_errors
 layout.css.supports-rule.enabled
+layout.css.vertical-text.enabled
 layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
 layout.frame_rate.precise
