@@ -199,6 +199,7 @@ def parseOpts():
         buildOptions = "",
         runLocalJsfunfuzz = False,
         patchDir = None,
+        retestSkips = None
     )
 
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
@@ -208,6 +209,8 @@ def parseOpts():
         help="Use an existing build directory.")
     parser.add_option("--retest", dest="retestRoot",
         help="Instead of fuzzing or reducing, take reduced testcases and retest them. Pass a directory such as ~/fuzzingjobs/ or an rsync'ed ~/fuzz-results/.")
+    parser.add_option("--retest-skips", dest="retestSkips",
+        help="File listing job names to skip when retesting.")
 
     parser.add_option('--repotype', dest='repoName',
         help='Sets the repository to be fuzzed. Defaults to "%default".')
@@ -395,6 +398,14 @@ def main():
     # Remove the main temp dir, which should be empty at this point
     os.rmdir(options.tempDir)
 
+def readSkips(filename):
+    skips = {}
+    if filename:
+        with open(filename) as f:
+            for line in f:
+                jobname = line.split(" ")[0]
+                skips[jobname] = True
+    return skips
 
 def retestAll(options, buildDir):
     '''
@@ -405,12 +416,17 @@ def retestAll(options, buildDir):
     assert options.testType == "dom"
 
     testcases = []
+    retestSkips = readSkips(options.retestSkips)
 
     # Find testcases to retest
     for jobTypeDir in (os.path.join(options.retestRoot, x) for x in os.listdir(options.retestRoot) if x.startswith(options.testType + "-")):
-        for job in (os.path.join(jobTypeDir, x) for x in os.listdir(jobTypeDir) if "_reduced" in x and not skipJobNamed(x)):
-            testcase = os.path.join(job, filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0])
-            testcases.append({'testcase': testcase, 'mtime': os.stat(testcase).st_mtime})
+        for j in os.listdir(jobTypeDir):
+            if j.split("_")[0] in retestSkips:
+                print "Skipping " + j + " for " + j.split("_")[0]
+            if "_reduced" in j and not j.split("_")[0] in retestSkips:
+                job = os.path.join(jobTypeDir, j)
+                testcase = os.path.join(job, filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0])
+                testcases.append({'testcase': testcase, 'mtime': os.stat(testcase).st_mtime})
 
     # Sort so the newest testcases are first
     print "Retesting " + str(len(testcases)) + " testcases..."
@@ -455,84 +471,6 @@ def retestAll(options, buildDir):
         #   print "Reproduced: " + testcase
 
     shutil.rmtree(tempDir)
-
-def skipJobNamed(j):
-    # These testcases cause random crashes, or rely on internal blacklists.
-
-    return (
-        "e9a41a6b16c311e280033c0754725936" in j or # Bug 801914, in its manifestation as a "hang"
-        "623986e119f511e280063c0754724cee" in j or # A fixed bug in the fuzzer
-        "27fed8d11a9111e280053c0754725891" in j or # Another fixed bug in the fuzzer
-        "d18c1bc21ab611e28007406c8f39f8b7" in j or # Ditto
-        "91b3a56810ac11e280053c0754724fc3" in j or # makeCommand threw an exception
-        "e441bd47108511e280083c07547257fa" in j or # makeCommand threw an exception
-        "951f93f3103f11e280023c07547257ed" in j or # makeCommand threw an exception
-        "c4f5c9d4103011e280083c07547237b0" in j or # makeCommand threw an exception
-        "63f907230ffc11e280043c075472548a" in j or # makeCommand threw an exception
-        "2d406fc70ff811e280083c07547237b0" in j or # makeCommand threw an exception
-        "5f30be210fee11e280063c07547237b0" in j or # makeCommand threw an exception
-        "913531bd0fe911e280063c075472877d" in j or # makeCommand threw an exception
-        "274db34f0fe611e280063c07547237b0" in j or # makeCommand threw an exception
-        "274d72bd0fe611e280043c07547237b0" in j or # makeCommand threw an exception
-        "ccd24e300fe411e280043c07547257fa" in j or # makeCommand threw an exception
-        "ccd2ccb50fe411e280073c07547257fa" in j or # makeCommand threw an exception
-        "5d9762170fe311e280043c07547286ad" in j or # makeCommand threw an exception
-        "e03fa4f30fdf11e280023c07547237b0" in j or # makeCommand threw an exception
-        "e03fd1730fdf11e280033c07547237b0" in j or # makeCommand threw an exception
-        "9918e5351c1911e280023c075472528a" in j or # see bug 804083 (invalid)
-        "cdf14c542bc711e280073c07547237b0" in j or # bug 812826
-        "5fadf559581b11e280083c07547257c3" in j or # bogus 'hang'
-        "d4a1851457ff11e280023c07547257fa" in j or # bogus 'hang'
-        "03f44bcf546811e280030030489f8067" in j or # bogus 'hang'
-        "86d15cc7544c11e280023c0754724fc3" in j or # bogus 'hang'
-        "e8ce34d453bf11e280083c07547257ed" in j or # bogus 'hang'
-        "5ffa51574dfc11e280013c07547286ad" in j or # bogus 'hang'
-        "0188e0c54cd011e280083c07547257ed" in j or # bogus 'hang'
-        "6b6b1f474cca11e280033c0754724fc3" in j or # bogus 'hang'
-        "ffb0660a4a8611e280023c075472596f" in j or # bogus 'hang'
-        "e9dcc991488811e280023c0754724cee" in j or # bogus 'hang'
-        "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
-        "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
-        "4f62070079e411e280043c075472548a" in j or # Bug 842309
-        "b8dabe0079b911e280023c07547237b1" in j or # Bug 842309
-        "9dddf6dc6e0211e280033c0754724cb2" in j or # Fast quitApplication while opening the Style Editor causes a spurious leak
-        "d678c02183c711e280053c0754725808" in j or # Bug 847138
-        "a93f1eee4b0511e280073c0754727aad" in j or # moz-column mess (moved)
-        "2c75856688dd11e28008406c8f3e0352" in j or # gczeal 9 -- bug 815241?
-        "724d5e518c2611e28001406c8f39f8b7" in j or # fixed fuzzer bug
-        "169445a38b7e11e280053c075472500f" in j or # fixed fuzzer sneakiness
-        "a77265738d9011e28004406c8f3e046d" in j or # bug 851638
-        "1f48c0ba917811e280073c075472596f" in j or # testIteration recursed due a getter, eventually over-recursing
-        "7a254f8a27df11e28005406c8f3e04bc" in j or # fixed fuzzer bug
-        "e29dba6b95bd11e280083c0754725891" in j or # bug 859542
-        "415a2d5c257a11e280073c0754723a87" in j or # bug 859542 (old testcase that matches exactly, yet had a different symptom)
-        "345168f024da11e280063c07547237b0" in j or # bug 859542 (old testcase that matches exactly, yet had a different symptom)
-        "dcb62aca24da11e280013c075472877d" in j or # bug 859542 (old testcase that matches exactly, yet had a different symptom)
-        "31ace3c7932b11e280053c07547286ad" in j or # bug 860482
-        "52e4bb33a8b711e280073c0754725548" in j or # bug 863918
-        "f841968fa57911e280030025900a065f" in j or # nasty OOM
-        "12fd52deac3611e280063c0754724cee" in j or # bug 865027
-        "e27efa0fb05411e28002002590097765" in j or # leak with search bar (bug 867290)
-        "ea1c928fa78b11e28004002590096e43" in j or # leak with search bar (bug 867290)
-        "4a56bc21adaa11e28002002590097685" in j or # bug 867307
-        "37ab781c9bc211e280023c0754725295" in j or # bug 860123
-        "65f2bcf3b8c911e280013c07547237b1" in j or # Moved to whenfixed
-        "4b1f0211dac711e280073c07547257fa" in j or # bug 886213
-        "1347875474" in j or # gczeal 9 -- bug 815241?
-        "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
-        "1342591803" in j or # old fuzzer bug with quirks_values
-        "1343538581" in j or # probably a nasty variant of bug 728632
-        "1339379020" in j or # Bug 763560
-        "1339573949" in j or # Bug 767279
-        "1339599262" in j or # lol mv
-        "1341082845" in j or # hang that should have been ignored
-        "1340073462" in j or # Bug 767233
-        "1339516108" in j or # Nasty OOM behavior
-        "1338878206" in j or # Nasty OOM behavior
-        "1338698829" in j or # Nasty OOM behavior
-        "1341133958" in j or # grr. bug 735081 or bug 735082.
-        "1341815616" in j or # grr. bug 735081 or bug 735082.
-        False)
 
 
 def ensureBuild(options, buildDir, preferredBuild):
