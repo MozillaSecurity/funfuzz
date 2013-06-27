@@ -492,7 +492,6 @@ def skipJobNamed(j):
         "ffb0660a4a8611e280023c075472596f" in j or # bogus 'hang'
         "e9dcc991488811e280023c0754724cee" in j or # bogus 'hang'
         "44e634592c4011e280053c07547243b3" in j or # leak bug 829831
-        "69ba529e3d1d11e28001406c8f39f411" in j or # a pain to reduce (bug 829841)
         "d65485c579fa11e280023c075472548a" in j or # Oops (HTTP auth dialog)
         "4f62070079e411e280043c075472548a" in j or # Bug 842309
         "b8dabe0079b911e280023c07547237b1" in j or # Bug 842309
@@ -503,7 +502,6 @@ def skipJobNamed(j):
         "724d5e518c2611e28001406c8f39f8b7" in j or # fixed fuzzer bug
         "169445a38b7e11e280053c075472500f" in j or # fixed fuzzer sneakiness
         "a77265738d9011e28004406c8f3e046d" in j or # bug 851638
-        "efc11bf3903311e280033c0754725dbe" in j or # bug 852404
         "1f48c0ba917811e280073c075472596f" in j or # testIteration recursed due a getter, eventually over-recursing
         "7a254f8a27df11e28005406c8f3e04bc" in j or # fixed fuzzer bug
         "e29dba6b95bd11e280083c0754725891" in j or # bug 859542
