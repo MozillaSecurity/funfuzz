@@ -519,6 +519,7 @@ def skipJobNamed(j):
         "4a56bc21adaa11e28002002590097685" in j or # bug 867307
         "37ab781c9bc211e280023c0754725295" in j or # bug 860123
         "65f2bcf3b8c911e280013c07547237b1" in j or # Moved to whenfixed
+        "4b1f0211dac711e280073c07547257fa" in j or # bug 886213
         "1347875474" in j or # gczeal 9 -- bug 815241?
         "1342637058" in j or # fuzzer bug, fixed in fuzzer rev 784e6fe8f808
         "1342591803" in j or # old fuzzer bug with quirks_values
