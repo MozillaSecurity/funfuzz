@@ -198,7 +198,7 @@ def parseOpts():
         disableRndFlags = False,
         noStart = False,
         timeout = 0,
-        buildOptions = '',
+        buildOptions = None,
         runLocalJsfunfuzz = False,
         patchDir = None,
         retestSkips = None
@@ -269,6 +269,8 @@ def parseOpts():
 
     if options.runLocalJsfunfuzz:
         options.testType = 'js'
+        if buildOptions is None:
+            buildOptions = ''
 
     if options.testType == 'auto':
         if options.retestRoot or options.existingBuildDir:
