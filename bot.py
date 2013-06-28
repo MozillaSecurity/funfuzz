@@ -342,16 +342,16 @@ def main():
 
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         buildDir = options.existingBuildDir or 'build'
+        buildSrc = ensureBuild(options, buildDir)
 
         if options.retestRoot:
             print "Retesting time!"
-            ensureBuild(options, buildDir, None)
+
             retestAll(options, buildDir)
         else:
             (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
             if job:
                 print "Reduction time!"
-                ensureBuild(options, buildDir, None)
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
                 lithArgs[-1] = job + lithArgs[-1].split('/')[-1] # options.tempDir may be different
                 logPrefix = job + "reduce" + timestamp()
@@ -363,7 +363,6 @@ def main():
                 print "Fuzz time!"
                 #if options.remote_host:
                 #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-                buildSrc = ensureBuild(options, buildDir, None)
 
                 numProcesses = cpu_count()
                 if "-asan" in buildDir:
@@ -479,17 +478,11 @@ def retestAll(options, buildDir):
     shutil.rmtree(tempDir)
 
 
-def ensureBuild(options, buildDir, preferredBuild):
+def ensureBuild(options, buildDir):
     '''Returns a string indicating the source of the build we got.'''
     if options.existingBuildDir:
         assert os.path.isdir(buildDir)
         return buildDir
-    if preferredBuild:
-        gotPreferred = downloadBuild.downloadBuild(preferredBuild, './', jsShell=(options.testType == 'js'))
-        if gotPreferred:
-            return gotPreferred # is this the right type?
-        else:
-            print "Preferred build for this reduction was missing, grabbing latest build"
     return downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
@@ -527,7 +520,7 @@ def fuzzUntilBug(options, buildDir, buildSrc, i):
     if lithResult == lithOps.HAPPY:
         print "Happy happy! No bugs found!"
     else:
-        writeTinyFile(job + "preferred-build.txt", buildSrc)
+        writeTinyFile(job + "build-source.txt", buildSrc)
         uploadJob(options, lithResult, lithDetails, job, oldjobname)
 
 
