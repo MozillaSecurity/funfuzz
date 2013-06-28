@@ -118,7 +118,7 @@ def parseOpts():
     (options, args) = parser.parse_args()
     if options.browserOptions:
         assert not options.buildOptions
-        options.browserOptions = buildBrowser.parseOptions(options.browserOptions)
+        options.browserOptions = buildBrowser.parseOptions(options.browserOptions.split())
         options.skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
     else:
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
