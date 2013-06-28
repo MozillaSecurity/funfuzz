@@ -264,7 +264,19 @@ def parseOpts():
     if options.patchDir:
         options.patchDir = normExpUserPath(options.patchDir)
 
-    if not options.disableCompareJit:
+    if options.runLocalJsfunfuzz:
+        options.testType = 'js'
+
+    if options.testType == 'auto':
+        if options.retestRoot or options.existingBuildDir:
+            options.testType = 'dom'
+        elif isLinux: # Bug 855881 / bug 803764
+            options.testType = 'js'
+        else:
+            options.testType = random.choice(['js', 'dom'])
+            print "Randomly fuzzing: " + options.testType
+
+    if options.testType == 'js' and not options.disableCompareJit:
         options.buildOptions += " --enable-more-deterministic"
 
     if options.runLocalJsfunfuzz:
@@ -284,15 +296,6 @@ def parseOpts():
     options.remote_prefix = (options.remote_host + ":") if options.remote_host else ""
 
     options.remoteSep = "/" if options.remote_host else localSep
-
-    if options.testType == 'auto' and not options.runLocalJsfunfuzz:
-        if options.retestRoot or options.existingBuildDir:
-            options.testType = 'dom'
-        elif isLinux: # Bug 855881 / bug 803764
-            options.testType = 'js'
-        else:
-            options.testType = random.choice(['js', 'dom'])
-            print "Randomly fuzzing: " + options.testType
 
     options.buildType = 'local-build' if options.existingBuildDir else downloadBuild.defaultBuildType(options)
     options.relevantJobsDirName = options.testType + "-" + options.buildType
