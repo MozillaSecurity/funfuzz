@@ -132,10 +132,11 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     if options.remote_host and (lithResult == lithOps.LITH_FINISHED or (options.testType == 'js')):
         recipients = []
         subject = "Reduced " + options.testType + " fuzz testcase"
+        machineInfo = "This machine: " + platform.uname()[1] + "\n" + "Reporting to: " + options.remote_host + ":" + options.baseDir
         dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
         # no_longer_reproducible crashes do not have a summary file,
         # so check if summary is an actual local variable with a value.
-        body = dirRef + "\n\n" + summary[0:50000] if 'summary' in locals() else dirRef
+        body = machineInfo + "\n\n" + dirRef + "\n\n" + summary[0:50000] if 'summary' in locals() else dirRef
         if options.testType == 'js':
             # Send jsfunfuzz emails to gkw
             recipients.append("gkwong")
