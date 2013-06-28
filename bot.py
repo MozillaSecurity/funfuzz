@@ -329,28 +329,8 @@ def main():
 
     else:
         if options.remote_host:
-            # Log information about the machine.
-            print "Platform details: " + " ".join(platform.uname())
-            print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
-            # FIXME: Should have if os.path.exists(path to git) or something
-            #print "git version: " + captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
-            print "Python version: " + sys.version[:5]
-            print "Number of cores visible to OS: " +  str(cpu_count())
-            print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
-
-            hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
-            if os.path.isfile(hgrcLocation):
-                print 'The hgrc of this repository is:'
-                with open(hgrcLocation, 'rb') as f:
-                    hgrcContentList = f.readlines()
-                for line in hgrcContentList:
-                    print line.rstrip()
-
-            if os.name == 'posix':
-                # resource library is only applicable to Linux or Mac platforms.
-                import resource
-                print "Corefile size (soft limit, hard limit) is: " + \
-                        repr(resource.getrlimit(resource.RLIMIT_CORE))
+            printMachineInfo()
+            #sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
         runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
         runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
@@ -359,8 +339,6 @@ def main():
 
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         buildDir = options.existingBuildDir or 'build'
-        #if options.remote_host:
-        #  sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
         if options.retestRoot:
             print "Retesting time!"
@@ -398,6 +376,30 @@ def main():
 
     # Remove the main temp dir, which should be empty at this point
     os.rmdir(options.tempDir)
+
+def printMachineInfo():
+    # Log information about the machine.
+    print "Platform details: " + " ".join(platform.uname())
+    print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
+    # FIXME: Should have if os.path.exists(path to git) or something
+    #print "git version: " + captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
+    print "Python version: " + sys.version[:5]
+    print "Number of cores visible to OS: " +  str(cpu_count())
+    print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
+
+    hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
+    if os.path.isfile(hgrcLocation):
+        print 'The hgrc of this repository is:'
+        with open(hgrcLocation, 'rb') as f:
+            hgrcContentList = f.readlines()
+        for line in hgrcContentList:
+            print line.rstrip()
+
+    if os.name == 'posix':
+        # resource library is only applicable to Linux or Mac platforms.
+        import resource
+        print "Corefile size (soft limit, hard limit) is: " + \
+                repr(resource.getrlimit(resource.RLIMIT_CORE))
 
 def readSkips(filename):
     skips = {}
