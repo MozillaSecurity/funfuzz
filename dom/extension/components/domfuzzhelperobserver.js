@@ -211,7 +211,7 @@ var timerDeathGrip;
 function runOnTimer(f)
 {
     timerDeathGrip = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-    timerDeathGrip.initWithCallback({notify: function(){ timerDeathGrip=null; f(); }}, 2000, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
+    timerDeathGrip.initWithCallback({notify: function(){ timerDeathGrip=null; f(); }}, 4000, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
 }
 
 function closeAllWindows()
