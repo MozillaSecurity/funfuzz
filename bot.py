@@ -29,6 +29,7 @@ path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
 import domInteresting
+import buildBrowser
 path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
@@ -197,7 +198,7 @@ def parseOpts():
         disableRndFlags = False,
         noStart = False,
         timeout = 0,
-        buildOptions = "",
+        buildOptions = None,
         runLocalJsfunfuzz = False,
         patchDir = None,
         retestSkips = None
@@ -242,10 +243,10 @@ def parseOpts():
                       help='Compile shells only, do not start fuzzing.')
 
     # Specify how the shell will be built.
-    # See buildOptions.py for details.
+    # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
     parser.add_option('-b', '--build-options',
                       dest='buildOptions',
-                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+                      help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
 
     parser.add_option('--timeout', type='int', dest='timeout',
                       help='Sets the timeout for loopjsfunfuzz.py. ' + \
@@ -260,6 +261,8 @@ def parseOpts():
                            'supported.')
 
     options, args = parser.parse_args()
+    if len(args) > 0:
+        print "Warning: bot.py does not use positional arguments"
 
     if options.patchDir:
         options.patchDir = normExpUserPath(options.patchDir)
@@ -276,17 +279,6 @@ def parseOpts():
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
 
-    if options.testType == 'js' and not options.disableCompareJit:
-        options.buildOptions += " --enable-more-deterministic"
-
-    if options.runLocalJsfunfuzz:
-        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-        options.timeout = options.timeout or machineTimeoutDefaults(options)
-    #####
-
-    if len(args) > 0:
-        print "Warning: bot.py does not use positional arguments"
-
     if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
         # when we are trying to refer to a directory on another computer.
@@ -297,10 +289,6 @@ def parseOpts():
 
     options.remoteSep = "/" if options.remote_host else localSep
 
-    options.buildType = 'local-build' if options.existingBuildDir else downloadBuild.defaultBuildType(options)
-    options.relevantJobsDirName = options.testType + "-" + options.buildType
-    options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
-
     assert options.baseDir.endswith(options.remoteSep)
     return options
 
@@ -309,10 +297,18 @@ def main():
     options = parseOpts()
     options.tempDir = tempfile.mkdtemp("fuzzbot")
     print options.tempDir
+    botmain(options)
+    # Remove the main temp dir, which should be empty at this point
+    os.rmdir(options.tempDir)
 
+def botmain(options):
     #####
     # These only affect fuzzing the js shell on a local machine.
     if options.runLocalJsfunfuzz:
+        if not options.disableCompareJit:
+            options.buildOptions += " --enable-more-deterministic"
+        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+        options.timeout = options.timeout or machineTimeoutDefaults(options)
         fuzzShell, cList = localCompileFuzzJsShell(options)
         startDir = fuzzShell.getBaseTempDir()
 
@@ -335,20 +331,23 @@ def main():
             printMachineInfo()
             #sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
-        runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
-        runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
-        runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
-
-        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-        buildDir = options.existingBuildDir or 'build'
-        buildSrc = ensureBuild(options, buildDir)
+        buildDir, buildSrc, buildType, haveBuild = ensureBuild(options)
+        if not haveBuild:
+            return
+        assert os.path.isdir(buildDir)
 
         if options.retestRoot:
             print "Retesting time!"
-
             retestAll(options, buildDir)
         else:
+            options.relevantJobsDirName = options.testType + "-" + buildType
+            options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
+
+            runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
+            runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
+            runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
+            runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
+
             (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
             if job:
                 print "Reduction time!"
@@ -373,11 +372,9 @@ def main():
                 forkJoin(numProcesses, fuzzUntilBug, [options, buildDir, buildSrc])
 
         # Remove build directory
-        if not (options.retestRoot or options.existingBuildDir) and os.path.exists(buildDir):
+        if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
             shutil.rmtree(buildDir)
 
-    # Remove the main temp dir, which should be empty at this point
-    os.rmdir(options.tempDir)
 
 def printMachineInfo():
     # Log information about the machine.
@@ -478,12 +475,33 @@ def retestAll(options, buildDir):
     shutil.rmtree(tempDir)
 
 
-def ensureBuild(options, buildDir):
-    '''Returns a string indicating the source of the build we got.'''
+def ensureBuild(options):
     if options.existingBuildDir:
-        assert os.path.isdir(buildDir)
-        return buildDir
-    return downloadBuild.downloadLatestBuild(options.buildType, './', getJsShell=(options.testType == 'js'))
+        buildDir = options.existingBuildDir
+        buildType = 'local-build'
+        buildSrc = buildDir
+        success = True
+    elif options.buildOptions is not None:
+        # Compile from source
+        if options.testType == "js":
+            # options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+            # buildType = computeShellName(options.buildOptions, "x") ??
+            raise Exception("For now, use 'localjsfunfuzz' mode to compile and fuzz local shells")
+        else:
+            options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
+            buildDir = options.buildOptions.objDir
+            buildType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
+            buildSrc = repr(getRepoHashAndId(options.buildOptions.repoDir))
+            success = buildBrowser.tryCompiling(options.buildOptions)
+    else:
+        # Download from Tinderbox and call it 'build'
+        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
+        buildDir = 'build'
+        buildType = downloadBuild.defaultBuildType(options)
+        buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=(options.testType == 'js'))
+        success = True
+    return buildDir, buildSrc, buildType, success
+
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
@@ -511,6 +529,7 @@ def fuzzUntilBug(options, buildDir, buildSrc, i):
         shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
         # Not using compareJIT: bug 751700, and it's not fully hooked up
         # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
+        # FIXME: use the right timeout
         mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
         (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
     else:
