@@ -71,11 +71,12 @@ def tryCompiling(options):
     if rv != 0:
         print "Compilation failed"
         time.sleep(8)
-        shutil.rmtree(objDir)
+        if os.path.exists(options.objDir):
+            shutil.rmtree(options.objDir)
         os.remove(compileOutputFn)
         return False
     else:
-        assert os.path.exists(objDir)
+        assert os.path.exists(options.objDir)
         os.remove(compileOutputFn)
         return True
 
