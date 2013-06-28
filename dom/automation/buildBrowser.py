@@ -75,6 +75,7 @@ def tryCompiling(options):
         os.remove(compileOutputFn)
         return False
     else:
+        assert os.path.exists(objDir)
         os.remove(compileOutputFn)
         return True
 
@@ -98,7 +99,6 @@ def makeTestRev(options):
             return (options.compilationFailedLabel, "compilation failed")
 
         print "Testing..."
-        assert os.path.exists(objDir)
         ans = options.testAndLabel(objDir, rev)
         time.sleep(8)
         return ans
