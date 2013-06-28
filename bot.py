@@ -198,7 +198,7 @@ def parseOpts():
         disableRndFlags = False,
         noStart = False,
         timeout = 0,
-        buildOptions = None,
+        buildOptions = '',
         runLocalJsfunfuzz = False,
         patchDir = None,
         retestSkips = None
