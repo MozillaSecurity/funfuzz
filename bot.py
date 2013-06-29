@@ -136,7 +136,10 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
         recipients = []
         subject = "Reduced " + options.testType + " fuzz testcase"
         machineInfo = "This machine: " + platform.uname()[1] + "\n" + "Reporting to: " + options.remote_host + ":" + options.baseDir
-        dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
+        if options.baseDir == "//mnt/pvt_builds/fuzzing/":
+            dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
+        else:
+            dirRef = options.relevantJobsDirName + "/" + newjobname + "/"
         # no_longer_reproducible crashes do not have a summary file,
         # so check if summary is an actual local variable with a value.
         body = machineInfo + "\n\n" + dirRef + summary
