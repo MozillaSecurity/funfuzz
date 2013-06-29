@@ -3592,7 +3592,31 @@ function doubleVar(e)
 
 function doubleLiteral()
 {
-  return rndElt(["-", ""]) + rndElt(["0.0", "1.0", "1.2345e60"]);
+  return rndElt(["-", ""]) + positiveDoubleLiteral();
+}
+
+function positiveDoubleLiteral()
+{
+  if (rnd(3) == 0) {
+    rndElt(["0.0", "1.0", "1.2345e60"])
+  }
+
+  // A power of two
+  var value = Math.pow(2, rnd(100) - 10);
+
+  // One more or one less
+  if (rnd(3)) {
+    value += 1;
+  } else if (value > 1 && rnd(2)) {
+    value -= 1;
+  }
+
+  var str = value + "";
+  if (str.indexOf(".") == -1) {
+    return str + ".0";
+  }
+  // Numbers with decimal parts, or numbers serialized with exponential notation
+  return str;
 }
 
 function fuzzyRange(min, max)
