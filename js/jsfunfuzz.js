@@ -3255,11 +3255,23 @@ function strTimes(s, n)
 
 function asmJSInterior(foreignFunctions, sanePlease)
 {
-  var interior = "";
+  function mess()
+  {
+    if (!sanePlease && rnd(600) == 0)
+      return makeStatement(8, ["x"]) + "\n";
+    if (!sanePlease && rnd(600) == 0)
+      return totallyRandom(8, ["x"]);
+    return "";
+  }
+
   var globalEnv = {stdlibImported: {}, stdlibImports: "", heapImported: {}, heapImports: "", foreignFunctions: foreignFunctions, sanePlease: !!sanePlease};
-  interior += asmJsFunction(globalEnv, "f", rnd(2) ? "signed" : "double", [rnd(2) ? "i0" : "d0", rnd(2) ? "i1" : "d1"]);
-  interior = globalEnv.stdlibImports + importForeign(foreignFunctions) + globalEnv.heapImports + interior;
-  interior += "  return f;"
+  var asmFunDecl = asmJsFunction(globalEnv, "f", rnd(2) ? "signed" : "double", [rnd(2) ? "i0" : "d0", rnd(2) ? "i1" : "d1"]);
+  var interior = mess() + globalEnv.stdlibImports +
+                 mess() + importForeign(foreignFunctions) +
+                 mess() + globalEnv.heapImports +
+                 mess() + asmFunDecl +
+                 mess() + "  return f;" +
+                 mess();
   return interior;
 }
 
