@@ -3738,22 +3738,19 @@ function nanBitsMayBeVisible(s)
   return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1) + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
 }
 
-function testOneAsmJSInterior(stdlib)
+function generateAsmDifferential()
 {
   var foreignFunctions = rnd(10) ? [] : ["identity", "quadruple", "half"];
+  return asmJSInterior(foreignFunctions, true);
+}
+
+function testAsmDifferential(stdlib, interior)
+{
   var pureForeign = {
     identity:  function(x) { return x; },
     quadruple: function(x) { return x * 4; },
     half:      function(x) { return x / 2; },
   }
-
-  try {
-    var interior = asmJSInterior(foreignFunctions, true);
-  } catch(e) {
-    errorstack();
-    throw e;
-  }
-  print(interior);
 
   if (nanBitsMayBeVisible(interior)) {
     dumpln("Skipping correctness test for asm module that could expose low bits of NaN")
@@ -3775,6 +3772,20 @@ function testOneAsmJSInterior(stdlib)
     var normalFun = normalModule(stdlib, pureForeign, normalHeap);
 
     compareAsm.compareBinaryFunctions(asmFun, normalFun);
+  }
+}
+
+// Call this instead of start() to run asm-differential tests
+function startAsmDifferential()
+{
+  init(this);
+  while (true) {
+    for (var i = 0; i < 100; ++i) {
+      var interior = generateAsmDifferential();
+      print(interior);
+      testAsmDifferential(this, interior);
+    }
+    gc();
   }
 }
 
