@@ -287,7 +287,7 @@ class AmissLogHandler:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
             self.asanSymbolizer = subprocess.Popen(
-                ["python", "-u", os.path.expanduser("~/llvm/projects/compiler-rt/lib/asan/scripts/asan_symbolize.py")],
+                ["python", "-u", os.path.expanduser("~/llvm/projects/compiler-rt/lib/asan/scripts/asan_symbolize.py"), "--demangle"],
                 stdin = subprocess.PIPE,
                 stdout = subprocess.PIPE,
                 close_fds = close_fds)
