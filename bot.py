@@ -119,7 +119,9 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
         statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
         summaryFile = job + filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
         with open(summaryFile) as f:
-            summary = f.read()
+            summary = "\n\n" + f.read(50000)
+    else:
+        summary = ""
 
     #print "oldjobname: " + oldjobname
     newjobname = oldjobname + statePostfix
@@ -137,7 +139,7 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
         dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
         # no_longer_reproducible crashes do not have a summary file,
         # so check if summary is an actual local variable with a value.
-        body = machineInfo + "\n\n" + dirRef + "\n\n" + summary[0:50000] if 'summary' in locals() else dirRef
+        body = machineInfo + "\n\n" + dirRef + summary
         if options.testType == 'js':
             # Send jsfunfuzz emails to gkw
             recipients.append("gkwong")
