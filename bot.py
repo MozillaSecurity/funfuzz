@@ -269,8 +269,8 @@ def parseOpts():
 
     if options.runLocalJsfunfuzz:
         options.testType = 'js'
-        if 'buildOptions' not in locals():
-            buildOptions = ''
+        if options.buildOptions is None:
+            options.buildOptions = ''
 
     if options.testType == 'auto':
         if options.retestRoot or options.existingBuildDir:
