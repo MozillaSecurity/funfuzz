@@ -174,6 +174,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
             dlAction = downloadURL(remotefn, localfn)
             print 'extracting...',
             unzip(dlAction, testsDir)
+            moveCrashInjector(testsDir)
             print 'completed!'
             gotTests = True
         if remotefn.split('/')[-1].endswith('.txt'):
@@ -245,6 +246,13 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
                 gotSyms = True
     return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
+
+def moveCrashInjector(tests):
+    # Hackaround for crashinject.exe not being a reliable way to kill firefox.exe (see bug 888748)
+    testsBin = os.path.join(tests, "bin")
+    crashinject = os.path.join(testsBin, "crashinject.exe")
+    if os.path.exists(crashinject):
+        os.rename(crashinject, os.path.join(testsBin, "crashinject-disabled.exe"))
 
 def isNumericSubDir(n):
     '''
