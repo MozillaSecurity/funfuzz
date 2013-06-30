@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import platform
 import random
 import subprocess
 import sys
@@ -60,6 +61,8 @@ def many_timed_runs(targetTime, tempDir, args):
         if level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(lines, logPrefix)
+            if platform.system() == "Windows":
+                rFN = rFN.replace("/","\\") # Ensure both Lithium and Firefox understand the filename
             writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
             lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
