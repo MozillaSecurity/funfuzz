@@ -19,6 +19,7 @@ bot.py --> loopdomfuzz.py --> domInteresting.py --> runbrowser.py --> automation
 import sys
 import shutil
 import os
+import platform
 import signal
 import glob
 import re
@@ -283,6 +284,7 @@ class AmissLogHandler:
             print "We have a crash on our hands!"
             self.crashProcessor = "minidump_stackwalk"
             self.crashSignature = msg[len("PROCESS-CRASH | automation.py | application crashed") : ]
+
         if "ERROR: AddressSanitizer" in msg:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
@@ -292,7 +294,10 @@ class AmissLogHandler:
                 stdout = subprocess.PIPE,
                 close_fds = close_fds)
             m = re.search("on unknown address (0x\S+)", msg)
-            if m and int(m.group(1), 16) < 0x10000:
+            if 'attempting to call malloc_usable_size' in msg and platform.system() == "Linux":
+                self.printAndLog("%%% Ignoring malloc_usable_size issue: http://code.google.com/p/address-sanitizer/issues/detail?id=193")
+                self.crashIsKnown = True
+            elif m and int(m.group(1), 16) < 0x10000:
                 # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
                 # It would be good to know if it were a read, write, or execute.  But ASan doesn't have that info for SEGVs, I guess?
                 if self.outOfMemory:
@@ -304,6 +309,7 @@ class AmissLogHandler:
                 # Not a null dereference.
                 self.printAndLog("%%% Assuming this ASan crash is exploitable")
                 self.crashIsExploitable = True
+
         if "WARNING: AddressSanitizer failed to allocate" in msg:
             self.outOfMemory = True
 
