@@ -42,8 +42,17 @@ localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in 
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
 
+def splitSlash(d):
+    return d.split("/" if "/" in d else "\\")
+
 def assertTrailingSlash(d):
     assert d[-1] in ("/", "\\")
+
+def adjustForScp(d):
+    if platform.system() == "Windows" and d[1] == ":":
+        # Turn "c:\foo\" into "/c/foo/" so scp doesn't think "c" is a hostname
+        return "/" + d[0] + d[2:].replace("\\", "/")
+    return d
 
 # Copies a directory (the directory itself, not just its contents)
 # whose full name is |srcDir|, creating a subdirectory of |destParent| with the same short name.
@@ -54,8 +63,8 @@ def copyFiles(remoteHost, srcDir, destParent):
         subprocess.check_call(["cp", "-R", srcDir[:-1], destParent])
     else:
         with open(os.devnull, "w") as devnull:
-            subprocess.check_call(["scp", "-p", "-r", srcDir, destParent], stdout=devnull)
-    srcDirLeaf = srcDir.split("/" if "/" in srcDir else "\\")[-2]
+            subprocess.check_call(["scp", "-p", "-r", adjustForScp(srcDir), adjustForScp(destParent)], stdout=devnull)
+    srcDirLeaf = splitSlash(srcDir)[-2]
     return destParent + srcDirLeaf + destParent[-1]
 
 def tryCommand(remoteHost, cmd):
@@ -359,7 +368,10 @@ def botmain(options):
             if job:
                 print "Reduction time!"
                 lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-                lithArgs[-1] = job + lithArgs[-1].split('/')[-1] # options.tempDir may be different
+                lithArgs[-1] = job + splitSlash(lithArgs[-1])[-1] # options.tempDir may be different
+                if platform.system() == "Windows":
+                    # Ensure both Lithium and Firefox understand the filename
+                    lithArgs[-1] = lithArgs[-1].replace("/","\\")
                 logPrefix = job + "reduce" + timestamp()
                 (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
                 uploadJob(options, lithResult, lithDetails, job, oldjobname)
