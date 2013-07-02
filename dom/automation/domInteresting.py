@@ -288,11 +288,12 @@ class AmissLogHandler:
         if "ERROR: AddressSanitizer" in msg:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
-            self.asanSymbolizer = subprocess.Popen(
-                ["python", "-u", os.path.expanduser("~/llvm/projects/compiler-rt/lib/asan/scripts/asan_symbolize.py"), "--demangle"],
-                stdin = subprocess.PIPE,
-                stdout = subprocess.PIPE,
-                close_fds = close_fds)
+            if platform.system() == "Linux": # Remove all this once https://code.google.com/p/address-sanitizer/issues/detail?id=204 is fixed
+                self.asanSymbolizer = subprocess.Popen(
+                    ["python", "-u", os.path.expanduser("~/llvm/projects/compiler-rt/lib/asan/scripts/asan_symbolize.py"), "--demangle"],
+                    stdin = subprocess.PIPE,
+                    stdout = subprocess.PIPE,
+                    close_fds = close_fds)
             m = re.search("on unknown address (0x\S+)", msg)
             if 'attempting to call malloc_usable_size' in msg and platform.system() == "Linux":
                 self.printAndLog("%%% Ignoring malloc_usable_size issue: http://code.google.com/p/address-sanitizer/issues/detail?id=193")
@@ -526,6 +527,8 @@ def rdfInit(args):
 
     env = os.environ.copy()
     env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
+    if platform.system() == "Darwin": # remove condition once https://code.google.com/p/address-sanitizer/issues/detail?id=204 is fixed
+        env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release+Asserts/bin/llvm-symbolizer")
     if dirs.stackwalk:
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
     runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
