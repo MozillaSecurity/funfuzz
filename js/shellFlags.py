@@ -40,6 +40,9 @@ def randomFlagSet(shellPath):
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
     infer = chance(.7)
 
+    if shellSupportsFlag(shellPath, '--fuzzing-safe'):
+        args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
+
     if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
         args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
@@ -115,18 +118,35 @@ def basicFlagSets(shellPath):
     compareJIT uses these combinations of flags (as well as the original set of flags) when run
     through Lithium and autoBisect.
     '''
-    if shellSupportsFlag(shellPath, "--baseline-eager"):
+    if shellSupportsFlag(shellPath, "--fuzzing-safe"):
+        basicFlagList = [
+            # Parts of this flag permutation come from:
+            # http://hg.mozilla.org/mozilla-central/annotate/c6bca8768874/js/src/jit-test/jit_test.py#l140
+            # as well as other interesting flag combinations that have found / may find new bugs.
+            ['--fuzzing-safe'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
+            ['--fuzzing-safe', '--no-baseline'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--no-baseline', '--no-ion', '--no-ti'],
+            ['--fuzzing-safe', '--no-baseline', '--no-ion'],
+            ['--fuzzing-safe', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-eager'],
+            ['--fuzzing-safe', '--baseline-eager'],
+            ['--fuzzing-safe', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
+            ['--fuzzing-safe', '--baseline-eager', '--no-ti'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--baseline-eager', '--no-ti', '--no-fpu'],
+        ]
+        return basicFlagList
+    elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
             # From http://hg.mozilla.org/mozilla-central/annotate/4236b1163508/js/src/jit-test/jit_test.py#l140
             [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
-            ['--no-baseline'],
+            ['--no-baseline'],  # Not in jit_test.py as of rev c6bca8768874 though...
             ['--no-baseline', '--no-ion', '--no-ti'],
             ['--no-baseline', '--no-ion'],
-            ['--no-baseline', '--ion-eager'],
+            ['--no-baseline', '--ion-eager'],  # Not in jit_test.py as of rev c6bca8768874 though...
             ['--ion-eager'],
             ['--baseline-eager'],
             ['--baseline-eager', '--no-ion'], # See bug 848906 comment 1
-            ['--baseline-eager', '--no-ti'],
+            ['--baseline-eager', '--no-ti'],  # Not in jit_test.py as of rev c6bca8768874 though...
             ['--baseline-eager', '--no-ti', '--no-fpu'],
         ]
         return basicFlagList
