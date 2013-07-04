@@ -200,6 +200,7 @@ media.webspeech.recognition.enable
 media.navigator.enabled
 media.navigator.permission.disabled
 media.peerconnection.enabled
+media.webvtt.enabled
 media.windows-media-foundation.enabled
 media.windows-media-foundation.play-stand-alone
 memory.free_dirty_pages
