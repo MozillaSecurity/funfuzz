@@ -3519,10 +3519,11 @@ function asmIndex(d, e, logSize)
 function asmFfiCall(d, e)
 {
   var argList = "";
-  while (rnd(2)) {
+  while (rnd(6)) {
     if (argList)
       argList += ", ";
-    argList += externExpr(d - 1, e);
+    d -= 1;
+    argList += externExpr(d, e);
   }
 
   return "/*FFI*/" + rndElt(e.globalEnv.foreignFunctions) + "(" + argList + ")";
@@ -3738,19 +3739,32 @@ function nanBitsMayBeVisible(s)
   return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1) + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
 }
 
+var pureForeign = {
+  identity:  function(x) { return x; },
+  quadruple: function(x) { return x * 4; },
+  half:      function(x) { return x / 2; },
+  // Test coercion coming back from FFI.
+  asString:  function(x) { return uneval(x); },
+  asValueOf: function(x) { return { valueOf: function() { return x } }; },
+  // Test register arguments vs stack arguments.
+  sum:       function()  { var s = 0; for (var i = 0; i < arguments.length; ++i) s += arguments[i]; return s; },
+}
+
+var pureMath = ["abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "exp", "floor", "imul", "log", "max", "min", "pow", "round", "sin", "sqrt", "tan"];
+for (var f in pureMath) {
+  pureForeign["Math_" + pureMath[f]] = Math[pureMath[f]];
+}
+
+var pureMathNames = Object.keys(pureForeign);
+
 function generateAsmDifferential()
 {
-  var foreignFunctions = rnd(10) ? [] : ["identity", "quadruple", "half"];
+  var foreignFunctions = rnd(10) ? [] : pureMathNames;
   return asmJSInterior(foreignFunctions, true);
 }
 
 function testAsmDifferential(stdlib, interior)
 {
-  var pureForeign = {
-    identity:  function(x) { return x; },
-    quadruple: function(x) { return x * 4; },
-    half:      function(x) { return x / 2; },
-  }
 
   if (nanBitsMayBeVisible(interior)) {
     dumpln("Skipping correctness test for asm module that could expose low bits of NaN")
