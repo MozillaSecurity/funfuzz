@@ -158,8 +158,6 @@ javascript.options.mem.gc_per_compartment
 javascript.options.methodjit.chrome
 javascript.options.methodjit.content
 javascript.options.methodjit_always
-javascript.options.pccounts.chrome
-javascript.options.pccounts.content
 javascript.options.tracejit.chrome
 javascript.options.tracejit.content
 javascript.options.typeinference
