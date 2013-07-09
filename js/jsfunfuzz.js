@@ -61,14 +61,13 @@ var printImportant;
 if (jsshell) {
   dumpln = print;
   printImportant = function(s) { dumpln("***"); dumpln(s); }
-  if (typeof line2pc == "function") {
-
+  if (typeof verifyprebarriers == "function") {
     // Run a diff between the help() outputs of different js shells.
     // Make sure the function to look out for is not located only in some
-    // particular #ifdef, e.g. JS_GC_ZEAL.
+    // particular #ifdef, e.g. JS_GC_ZEAL, or controlled by --fuzzing-safe.
     if (typeof dumpHeapComplete == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
-    } else if (typeof verifyprebarriers == "function") {
+    } else {
       engine = ENGINE_SPIDERMONKEY_MOZILLA17;
     }
 
