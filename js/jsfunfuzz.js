@@ -879,6 +879,8 @@ var statementMakers = weighted([
 
   { w: 20, fun: makeRegexUseBlock },
 
+  { w: 1, fun: makeRegisterStompBody },
+
   // Discover properties to add to the allPropertyNames list
   //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
   //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
@@ -976,6 +978,7 @@ var makeEvilCallback;
     { w: 2,  fun: makeFunction },
     { w: 1,  fun: makeAsmJSModule },
     { w: 1,  fun: makeAsmJSFunction },
+    { w: 1,  fun: makeRegisterStompFunction },
   ]);
   makeEvilCallback = function(d, b) {
     return (rndElt(builderFunctionMakers))(d - 1, b)
@@ -3241,6 +3244,64 @@ function strTimes(s, n)
 }
 
 
+/**********************
+ * STOMP ON REGISTERS *
+ **********************/
+
+// Using up all the registers can find bugs where a caller does not store its
+// registers properly, or a callee violates an ABI.
+
+function makeRegisterStompFunction(d, b, pure)
+{
+  var args = [];
+  var nArgs = (rnd(10) ? rnd(20) : rnd(100)) + 1;
+  for (var i = 0; i < nArgs; ++i) {
+    args.push("a" + i);
+  }
+
+  var bv = b.concat(args);
+
+  return (
+    "(function(" + args.join(", ") + ") { " +
+      makeRegisterStompBody(d, bv, pure) +
+      "return " + rndElt(bv) + "; " +
+    "})"
+  );
+}
+
+function makeRegisterStompBody(d, b, pure)
+{
+  var bv = b.slice(0);
+  var lastRVar = 0;
+  var s = "";
+
+  function value()
+  {
+    return rnd(3) && bv.length ? rndElt(bv) : "" + rnd(10);
+  }
+
+  function expr()
+  {
+    return value() + rndElt([" + ", " - ", " / ", " * ", " % ", " | ", " & ", " ^ "]) + value();
+  }
+
+  while (rnd(100)) {
+    if (bv.length == 0 || rnd(4)) {
+      var newVar = "r" + lastRVar;
+      ++lastRVar;
+      s += "var " + newVar + " = " + expr() + "; "
+      bv.push(newVar);
+    } else if (rnd(5) == 0 && !pure) {
+      s += "print(" + rndElt(bv) + "); ";
+    } else {
+      s += rndElt(bv) + " = " + expr() + "; ";
+    }
+  }
+
+  return s;
+}
+
+
 /***************************
  * GENERATE ASM.JS MODULES *
  ***************************/
@@ -3747,6 +3808,8 @@ var pureForeign = {
   asValueOf: function(x) { return { valueOf: function() { return x } }; },
   // Test register arguments vs stack arguments.
   sum:       function()  { var s = 0; for (var i = 0; i < arguments.length; ++i) s += arguments[i]; return s; },
+  // Will be replaced by calling makeRegisterStompFunction
+  stomp:     function()  { },
 }
 
 var pureMath = ["abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "exp", "floor", "imul", "log", "max", "min", "pow", "round", "sin", "sqrt", "tan"];
@@ -3758,6 +3821,10 @@ var pureMathNames = Object.keys(pureForeign);
 
 function generateAsmDifferential()
 {
+  var stompStr = makeRegisterStompFunction(8, [], true);
+  print(stompStr);
+  pureForeign.stomp = eval(stompStr);
+
   var foreignFunctions = rnd(10) ? [] : pureMathNames;
   return asmJSInterior(foreignFunctions, true);
 }
