@@ -3764,7 +3764,6 @@ function generateAsmDifferential()
 
 function testAsmDifferential(stdlib, interior)
 {
-
   if (nanBitsMayBeVisible(interior)) {
     dumpln("Skipping correctness test for asm module that could expose low bits of NaN")
     return;
