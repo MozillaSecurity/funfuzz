@@ -249,7 +249,6 @@ class AmissLogHandler:
             not overlyGenericAssertion and
             detect_assertions.scanLine(self.knownPath, msgLF) and
             not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and
-            not ("The observers have not been correctly removed" in msg and self.expectedToLeak) and # Not sure about this (bug 886213)
             not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
             not (self.goingDownHard and isWin) and # Bug 763182
             True)
@@ -400,7 +399,6 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
-        ("aboutHome.js" in msg and "localStorage" in msg) or # Bug 789348 is rewriting about:home to not use localStorage
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or # opening dev tools while simultaneously opening and closing tabs is mean
