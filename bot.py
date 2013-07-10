@@ -136,10 +136,11 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     newjobname = oldjobname + statePostfix
     print "Uploading as: " + newjobname
     newjobnameTmp = newjobname + ".uploading"
-    os.rename(job, newjobnameTmp)
-    copyFiles(options.remote_host, newjobnameTmp + localSep, options.remote_prefix + options.relevantJobsDir + options.remoteSep)
+    newjobTmp = options.tempDir + localSep + newjobnameTmp
+    os.rename(job, newjobTmp)
+    copyFiles(options.remote_host, newjobTmp + localSep, options.remote_prefix + options.relevantJobsDir + options.remoteSep)
     runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
-    shutil.rmtree(newjobnameTmp)
+    shutil.rmtree(newjobTmp)
 
     if options.remote_host and (lithResult == lithOps.LITH_FINISHED or (options.testType == 'js')):
         recipients = []
