@@ -92,7 +92,7 @@ dom.experimental_forms
 dom.experimental_forms_range
 dom.forms.color
 dom.forms.inputmode
-dom.future.enabled
+dom.promise.enabled
 dom.gamepad.enabled
 dom.gamepad.non_standard_events.enabled
 dom.identity.enabled
