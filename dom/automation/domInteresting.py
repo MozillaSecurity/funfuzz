@@ -396,6 +396,7 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "this._cps2 is undefined" in msg) or     # Bug 877013
         ("browser.js" in msg and "this.button is null" in msg) or         # Bug 877013
         ("places.js" in msg and "PlacesUIUtils is not defined" in msg) or # Bug 801436
+        ("places.js" in msg and "this._places is null" in msg) or         # Bug 893322
         ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
