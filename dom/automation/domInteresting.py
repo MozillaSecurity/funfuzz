@@ -557,6 +557,10 @@ def rdfInit(args):
 
         profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
         createDOMFuzzProfile(profileDir)
+        if platform.system() == "Linux" and "-asan" in browserDir:
+            # Work around old version of asan not working with asm.js (see bug 872565)
+            # Remove this once https://code.google.com/p/address-sanitizer/issues/detail?id=204 is fixed
+            extraPrefs += 'user_pref("javascript.options.asmjs", false);\n'
         writePrefs(profileDir, extraPrefs)
 
         runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
