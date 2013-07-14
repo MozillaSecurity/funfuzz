@@ -406,6 +406,7 @@ def knownChromeFailure(msg):
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
+        "devtools" in msg or # most devtools js errors I hit are uninteresting races
         False
     )
 
