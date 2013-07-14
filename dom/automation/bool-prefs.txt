@@ -143,7 +143,6 @@ javascript.options.asmjs
 javascript.options.baselinejit.content
 javascript.options.baselinejit.chrome
 javascript.options.baselinejit.unsafe_eager_compilation
-javascript.options.experimental_asmjs
 javascript.options.gc_on_memory_pressure
 javascript.options.ion.content
 javascript.options.ion.parallel_compilation
