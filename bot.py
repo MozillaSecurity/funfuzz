@@ -414,6 +414,12 @@ def printMachineInfo():
         for line in hgrcContentList:
             print line.rstrip()
 
+    if os.name == 'nt':
+        print 'Does cdb.exe exist? - ' + os.path.exists(os.path.join(os.getenv('ProgramFiles(x86)'),
+                                                                     'Windows Kits', '8.0',
+                                                                     'Debuggers', 'x64'))
+        print 'Program Files (x86) - ' + os.listdir(os.getenv('ProgramFiles(x86)'))
+
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
         import resource
