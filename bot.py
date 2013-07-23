@@ -419,6 +419,18 @@ def printMachineInfo():
             os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0', 'Debuggers', 'x64', 'cdb.exe')))
         print 'x64 debugger folder - ' + str(os.listdir(os.path.join(
             os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0', 'Debuggers', 'x64')))
+        import _winreg
+        isWinMiniDump = False
+        try:
+            dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
+            isWinMiniDump = (dumpTypeRegValue[0] == 1 and \
+                             dumpTypeRegValue[1] == _winreg.REG_DWORD)
+            print 'isWinMiniDump is: ' + isWinMiniDump
+        except WindowsError as e:
+            if e.errno == 2:
+                print 'Registry key not found.'
+            else:
+                raise
 
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
