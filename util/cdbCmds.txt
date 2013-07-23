@@ -1,0 +1,8 @@
+.echo Display lines in stack trace
+.lines
+~kn 250
+.echo .ecxr switches to the exception context frame
+.ecxr
+!exploitable -v
+~*kPn 250
+q

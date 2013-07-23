@@ -12,6 +12,7 @@ import platform
 import re
 import stat
 import subprocess
+import sys
 import time
 from copy import deepcopy
 
@@ -20,10 +21,21 @@ verbose = False
 isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
 isWin = (platform.system() == 'Windows')
-# This refers to the Win-specific 64-bit "MozillaBuild" environment in which Python is running.
-isMozBuild64 = ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) if os.name == 'nt' else False
+isWin64 = ('PROGRAMFILES(X86)' in os.environ)
+isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
+# This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
+# spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
+isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
 
 ENV_PATH_SEPARATOR = ';' if os.name == 'nt' else ':'
+
+noMinidumpMsg = '''
+WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
+WARNING: Make sure the following key value exists in this key:
+WARNING: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps
+WARNING: Name: DumpType  Type: REG_DWORD
+WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs.85%29.aspx
+'''
 
 ########################
 #  Platform Detection  #
@@ -253,28 +265,18 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
     if wantStack == False or progname == "valgrind":
         return
 
-    # On Mac and Linux, look for a core file.
-    coreFilename = None
-    if isMac:
-        # Core files will be generated if you do:
-        #   mkdir -p /cores/
-        #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
-        coreFilename = "/cores/core." + str(crashedPID)
-    elif isLinux:
-        isPidUsed = False
-        if os.path.exists('/proc/sys/kernel/core_uses_pid'):
-            with open('/proc/sys/kernel/core_uses_pid') as f:
-                isPidUsed = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
-        coreFilename = 'core.' + str(crashedPID) if isPidUsed else 'core'
-    if coreFilename and os.path.exists(coreFilename):
-        # Run gdb and move the core file. Tip: gdb gives more info for:
-        # (debug with intact build dir > debug > opt with frame pointers > opt)
-        gdbCommandFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gdb-quick.txt")
-        assert os.path.exists(gdbCommandFile)
-        gdbArgs = ["gdb", "-n", "-batch", "-x", gdbCommandFile, progfullname, coreFilename]
-        vdump(" ".join(gdbArgs))
+    # This has only been tested on 64-bit Windows 7 and higher, but should work on 64-bit Vista.
+    if isWinVistaOrHigher and isWin64:
+       debuggerCmd = constructCdbCommand(progname, progfullname, crashedPID)
+    elif os.name == 'posix':
+       debuggerCmd = constructGdbCommand(progfullname, crashedPID)
+    else:
+       debuggerCmd = None
+
+    if debuggerCmd:
+        vdump(' '.join(debuggerCmd))
         subprocess.call(
-            gdbArgs,
+            debuggerCmd,
             stdin =  None,
             stderr = subprocess.STDOUT,
             stdout = open(logPrefix + "-crash.txt", 'w') if useLogFiles else None,
@@ -283,7 +285,8 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
             close_fds = (os.name == "posix")
         )
         if useLogFiles:
-            os.rename(coreFilename, logPrefix + "-core")
+            # Path to memory dump is the last element of debuggerCmd.
+            os.rename(debuggerCmd[-1], logPrefix + "-core")
             subprocess.call(["gzip", logPrefix + "-core"])
             # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
             subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
@@ -309,6 +312,125 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
                 print "grabCrashLog waited a long time, but a crash log for " + progname + \
                     " [" + str(crashedPID) + "] never appeared!"
                 break
+
+
+def constructCdbCommand(progname, progfullname, crashedPID):
+    '''
+    Constructs a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a
+    stack trace.
+    '''
+    # On Windows Vista and above, look for a minidump.
+    dumpFilename = normExpUserPath(os.path.join(
+        '~', 'AppData', 'Local', 'CrashDumps', progfullname + '.' + str(crashedPID) + '.dmp'))
+    win64bitDebuggerFolder = os.path.join(os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0',
+                                          'Debuggers', 'x64')
+    # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
+    cdbPath = os.path.join(win64bitDebuggerFolder, 'cdb.exe')
+    if not os.path.exists(cdbPath):
+        print '\nWARNING: cdb.exe is not found - all crashes will be uninteresting.\n'
+        return None
+
+    if isWinDumpingToDefaultLocation():
+        loops = 0
+        maxLoops = 30
+        while True:
+            if os.path.exists(dumpFilename):
+                debuggerCmdPath = getAbsPathForAdjacentFile('cdbCmds.txt')
+                assert os.path.exists(debuggerCmdPath)
+
+                cdbCmdList = []
+                bExploitableDLL = os.path.join(win64bitDebuggerFolder, 'winext', 'msec.dll')
+                if os.path.exists(bExploitableDLL):
+                    cdbCmdList.append('.load ' + bExploitableDLL)
+                cdbCmdList.append('$<' + debuggerCmdPath)
+
+                return [cdbPath, '-c', ';'.join(cdbCmdList), '-z', dumpFilename]
+
+            time.sleep(0.200)
+            loops += 1
+            if loops > maxLoops:
+                # Windows may take some time to generate the dump.
+                print "grabCrashLog waited a long time, but a crash log for " + progname + \
+                    " [" + str(crashedPID) + "] never appeared!"
+                return None
+    else:
+        return None
+
+
+def isWinDumpingToDefaultLocation():
+    '''Checks whether Windows minidumps are enabled and set to go to Windows' default location.'''
+    import _winreg
+    # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
+    # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
+    # If writing a key, we most likely need to flush. For the moment, no keys are written.
+    with _winreg.OpenKey(_winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE),
+                         r'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps',
+                         # Read key from 64-bit registry, which also works for 32-bit
+                         0, (_winreg.KEY_WOW64_64KEY + _winreg.KEY_READ)) as key:
+
+        try:
+            dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
+            if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == _winreg.REG_DWORD):
+                print noMinidumpMsg
+                return False
+        except WindowsError as e:
+            if e.errno == 2:
+                print noMinidumpMsg
+                return False
+            else:
+                raise
+
+        try:
+            dumpFolderRegValue = _winreg.QueryValueEx(key, 'DumpFolder')
+            # %LOCALAPPDATA%\CrashDumps is the default location.
+            if not (dumpFolderRegValue[0] == '%LOCALAPPDATA%\CrashDumps' and
+                    dumpFolderRegValue[1] == _winreg.REG_EXPAND_SZ):
+                print '\nWARNING: Dumps are instead appearing at: ' + dumpFolderRegValue[0] + \
+                    ' - all crashes will be uninteresting.\n'
+                return False
+        except WindowsError as e:
+            # If the registry key cannot be found, the dumps will be put in the default location
+            if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
+                return True
+            else:
+                raise
+
+    return True
+
+
+def constructGdbCommand(progfullname, crashedPID):
+    '''
+    Constructs a command that uses the POSIX debugger (gdb) to turn a minidump file into a
+    stack trace.
+    '''
+    # On Mac and Linux, look for a core file.
+    coreFilename = None
+    if isMac:
+        # Core files will be generated if you do:
+        #   mkdir -p /cores/
+        #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
+        coreFilename = "/cores/core." + str(crashedPID)
+    elif isLinux:
+        isPidUsed = False
+        if os.path.exists('/proc/sys/kernel/core_uses_pid'):
+            with open('/proc/sys/kernel/core_uses_pid') as f:
+                isPidUsed = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
+        coreFilename = 'core.' + str(crashedPID) if isPidUsed else 'core'
+
+    if coreFilename and os.path.exists(coreFilename):
+        debuggerCmdPath = getAbsPathForAdjacentFile('gdb-quick.txt')
+        assert os.path.exists(debuggerCmdPath)
+
+        # Run gdb and move the core file. Tip: gdb gives more info for:
+        # (debug with intact build dir > debug > opt with frame pointers > opt)
+        return ["gdb", "-n", "-batch", "-x", debuggerCmdPath, progfullname, coreFilename]
+    else:
+        return None
+
+
+def getAbsPathForAdjacentFile(filename):
+    '''Gets the absolute path of a particular file, given its base directory and filename.'''
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
 def testHandleRemoveReadOnly():
