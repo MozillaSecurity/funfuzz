@@ -420,17 +420,21 @@ def printMachineInfo():
         print 'x64 debugger folder - ' + str(os.listdir(os.path.join(
             os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0', 'Debuggers', 'x64')))
         import _winreg
-        isWinMiniDump = False
-        try:
-            dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
-            isWinMiniDump = (dumpTypeRegValue[0] == 1 and \
-                             dumpTypeRegValue[1] == _winreg.REG_DWORD)
-            print 'isWinMiniDump is: ' + isWinMiniDump
-        except WindowsError as e:
-            if e.errno == 2:
-                print 'Registry key not found.'
-            else:
-                raise
+        with _winreg.OpenKey(_winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE),
+                             r'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps',
+                             # Read key from 64-bit registry, which also works for 32-bit
+                             0, (_winreg.KEY_WOW64_64KEY + _winreg.KEY_READ)) as key:
+            isWinMiniDump = False
+            try:
+                dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
+                isWinMiniDump = (dumpTypeRegValue[0] == 1 and \
+                                 dumpTypeRegValue[1] == _winreg.REG_DWORD)
+                print 'isWinMiniDump is: ' + isWinMiniDump
+            except WindowsError as e:
+                if e.errno == 2:
+                    print 'Registry key not found.'
+                else:
+                    raise
 
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
