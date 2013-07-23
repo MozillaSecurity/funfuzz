@@ -20,7 +20,8 @@ verbose = False
 isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
 isWin = (platform.system() == 'Windows')
-isWin64 = ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) if os.name == 'nt' else False
+# This refers to the Win-specific 64-bit "MozillaBuild" environment in which Python is running.
+isMozBuild64 = ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1]) if os.name == 'nt' else False
 
 ENV_PATH_SEPARATOR = ';' if os.name == 'nt' else ':'
 

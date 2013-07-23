@@ -14,7 +14,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path3 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
-from subprocesses import isWin, isWin64, isMac, isLinux, normExpUserPath
+from subprocesses import isWin, isMac, isLinux, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc, destroyPyc
 
 def parseOptions(inputArgs):

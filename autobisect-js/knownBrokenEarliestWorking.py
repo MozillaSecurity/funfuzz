@@ -10,7 +10,7 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import isLinux, isMac, isWin64, macVer
+from subprocesses import isLinux, isMac, isMozBuild64, macVer
 
 def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
@@ -69,7 +69,7 @@ def knownBrokenRanges(options):
             hgrange('c054eef6ba77', 'e02f86260dad'), # clang
         ])
 
-    if isWin64:
+    if isMozBuild64:
         skips.extend([
             hgrange('b4d7497c01c2', 'ef0e134ef78f'), # broken Win64 builds
             hgrange('89a645d498e3', 'ee42c4773641'), # broken Win64 builds

@@ -9,7 +9,7 @@ sys.path.append(path2)
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
-from subprocesses import isWin, isWin64, isMac, isLinux, normExpUserPath
+from subprocesses import isWin, isMozBuild64, isMac, isLinux, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
 if platform.uname()[2] == 'XP':
@@ -118,7 +118,7 @@ def parseShellOptions(inputArgs):
         assert options.enableExactRooting
 
     if isWin:
-        assert isWin64 == (options.arch == '64')
+        assert isMozBuild64 == (options.arch == '64')
 
     return options
 

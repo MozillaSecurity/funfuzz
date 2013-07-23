@@ -11,17 +11,17 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import envWithPath, captureStdout, isMac, isWin, isWin64, normExpUserPath, \
+from subprocesses import envWithPath, captureStdout, isMac, isWin, isMozBuild64, normExpUserPath, \
     shellify, vdump
 
 if os.name == 'nt':
-    COMPILE_NSPR_LIB = 'libnspr4.lib' if isWin64 else 'nspr4.lib'
-    COMPILE_PLDS_LIB = 'libplds4.lib' if isWin64 else 'plds4.lib'
-    COMPILE_PLC_LIB = 'libplc4.lib' if isWin64 else 'plc4.lib'
+    COMPILE_NSPR_LIB = 'libnspr4.lib' if isMozBuild64 else 'nspr4.lib'
+    COMPILE_PLDS_LIB = 'libplds4.lib' if isMozBuild64 else 'plds4.lib'
+    COMPILE_PLC_LIB = 'libplc4.lib' if isMozBuild64 else 'plc4.lib'
 
-    RUN_NSPR_LIB = 'libnspr4.dll' if isWin64 else 'nspr4.dll'
-    RUN_PLDS_LIB = 'libplds4.dll' if isWin64 else 'plds4.dll'
-    RUN_PLC_LIB = 'libplc4.dll' if isWin64 else 'plc4.dll'
+    RUN_NSPR_LIB = 'libnspr4.dll' if isMozBuild64 else 'nspr4.dll'
+    RUN_PLDS_LIB = 'libplds4.dll' if isMozBuild64 else 'plds4.dll'
+    RUN_PLC_LIB = 'libplc4.dll' if isMozBuild64 else 'plc4.dll'
 else:
     COMPILE_NSPR_LIB = 'libnspr4.a'
     COMPILE_PLDS_LIB = 'libplds4.a'
