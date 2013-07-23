@@ -416,8 +416,9 @@ def printMachineInfo():
 
     if os.name == 'nt':
         print 'Does cdb.exe exist? - ' + str(os.path.exists(os.path.join(
-            os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0', 'Debuggers', 'x64')))
-        print 'Program Files (x86) - ' + str(os.listdir(os.getenv('ProgramFiles(x86)')))
+            os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0', 'Debuggers', 'x64', 'cdb.exe')))
+        print 'x64 debugger folder - ' + str(os.listdir(os.path.exists(os.path.join(
+            os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0', 'Debuggers', 'x64')))))
 
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
