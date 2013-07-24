@@ -350,8 +350,7 @@ def constructCdbCommand(progname, progfullname, crashedPID):
             loops += 1
             if loops > maxLoops:
                 # Windows may take some time to generate the dump.
-                print "grabCrashLog waited a long time, but a crash log for " + progname + \
-                    " [" + str(crashedPID) + "] never appeared!"
+                print "grabCrashLog waited a long time, but " + dumpFilename + " never appeared!"
                 return None
     else:
         return None
