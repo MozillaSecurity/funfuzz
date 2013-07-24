@@ -3467,7 +3467,6 @@ function parameterTypeAnnotations(args)
 
 
 var additive = ["+", "-"];
-var multiplicative = ["*", "/", "%"];
 
 // Special rules here:
 // * Parens are automatic.  (We're not testing the grammar, just the types.)
