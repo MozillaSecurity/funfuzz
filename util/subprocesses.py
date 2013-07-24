@@ -267,7 +267,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
 
     # This has only been tested on 64-bit Windows 7 and higher, but should work on 64-bit Vista.
     if isWinVistaOrHigher and isWin64:
-       debuggerCmd = constructCdbCommand(progname, crashedPID)
+       debuggerCmd = constructCdbCommand(progfullname, crashedPID)
     elif os.name == 'posix':
        debuggerCmd = constructGdbCommand(progfullname, crashedPID)
     else:
@@ -314,14 +314,14 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
                 break
 
 
-def constructCdbCommand(progname, crashedPID):
+def constructCdbCommand(progfullname, crashedPID):
     '''
     Constructs a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a
     stack trace.
     '''
     # On Windows Vista and above, look for a minidump.
-    dumpFilename = normExpUserPath(os.path.join(
-        '~', 'AppData', 'Local', 'CrashDumps', progname + '.' + str(crashedPID) + '.dmp'))
+    dumpFilename = normExpUserPath(os.path.join('~', 'AppData', 'Local', 'CrashDumps',
+                    os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
     win64bitDebuggerFolder = os.path.join(os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0',
                                           'Debuggers', 'x64')
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
