@@ -362,39 +362,48 @@ def isWinDumpingToDefaultLocation():
     # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
     # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
     # If writing a key, we most likely need to flush. For the moment, no keys are written.
-    with _winreg.OpenKey(_winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE),
-                         r'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps',
-                         # Read key from 64-bit registry, which also works for 32-bit
-                         0, (_winreg.KEY_WOW64_64KEY + _winreg.KEY_READ)) as key:
+    try:
+        with _winreg.OpenKey(_winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE),
+                             r'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps',
+                             # Read key from 64-bit registry, which also works for 32-bit
+                             0, (_winreg.KEY_WOW64_64KEY + _winreg.KEY_READ)) as key:
 
-        try:
-            dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
-            if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == _winreg.REG_DWORD):
-                print noMinidumpMsg
-                return False
-        except WindowsError as e:
-            if e.errno == 2:
-                print noMinidumpMsg
-                return False
-            else:
-                raise
+            try:
+                dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
+                if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == _winreg.REG_DWORD):
+                    print noMinidumpMsg
+                    return False
+            except WindowsError as e:
+                if e.errno == 2:
+                    print noMinidumpMsg
+                    return False
+                else:
+                    raise
 
-        try:
-            dumpFolderRegValue = _winreg.QueryValueEx(key, 'DumpFolder')
-            # %LOCALAPPDATA%\CrashDumps is the default location.
-            if not (dumpFolderRegValue[0] == '%LOCALAPPDATA%\CrashDumps' and
-                    dumpFolderRegValue[1] == _winreg.REG_EXPAND_SZ):
-                print '\nWARNING: Dumps are instead appearing at: ' + dumpFolderRegValue[0] + \
-                    ' - all crashes will be uninteresting.\n'
-                return False
-        except WindowsError as e:
-            # If the registry key cannot be found, the dumps will be put in the default location
-            if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
-                return True
-            else:
-                raise
+            try:
+                dumpFolderRegValue = _winreg.QueryValueEx(key, 'DumpFolder')
+                # %LOCALAPPDATA%\CrashDumps is the default location.
+                if not (dumpFolderRegValue[0] == '%LOCALAPPDATA%\CrashDumps' and
+                        dumpFolderRegValue[1] == _winreg.REG_EXPAND_SZ):
+                    print '\nWARNING: Dumps are instead appearing at: ' + dumpFolderRegValue[0] + \
+                        ' - all crashes will be uninteresting.\n'
+                    return False
+            except WindowsError as e:
+                # If the key value cannot be found, the dumps will be put in the default location
+                if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
+                    return True
+                else:
+                    raise
 
-    return True
+        return True
+    except WindowsError as e:
+        # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
+        if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
+            print '\nWARNING: The registry key HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\' + \
+                'Windows\\Windows Error Reporting\\LocalDumps cannot be found.\n'
+            return None
+        else:
+            raise
 
 
 def constructGdbCommand(progfullname, crashedPID):
