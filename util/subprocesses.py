@@ -332,7 +332,7 @@ def constructCdbCommand(progname, progfullname, crashedPID):
 
     if isWinDumpingToDefaultLocation():
         loops = 0
-        maxLoops = 30
+        maxLoops = 300
         while True:
             if os.path.exists(dumpFilename):
                 debuggerCmdPath = getAbsPathForAdjacentFile('cdbCmds.txt')
