@@ -3821,10 +3821,6 @@ var pureMathNames = Object.keys(pureForeign);
 
 function generateAsmDifferential()
 {
-  var stompStr = makeRegisterStompFunction(8, [], true);
-  print(stompStr);
-  pureForeign.stomp = eval(stompStr);
-
   var foreignFunctions = rnd(10) ? [] : pureMathNames;
   return asmJSInterior(foreignFunctions, true);
 }
@@ -3858,7 +3854,13 @@ function testAsmDifferential(stdlib, interior)
 function startAsmDifferential()
 {
   init(this);
+
   while (true) {
+
+    var stompStr = makeRegisterStompFunction(8, [], true);
+    print(stompStr);
+    pureForeign.stomp = eval(stompStr);
+
     for (var i = 0; i < 100; ++i) {
       var interior = generateAsmDifferential();
       print(interior);
