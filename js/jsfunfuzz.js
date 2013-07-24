@@ -3538,7 +3538,7 @@ var doubleExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return "-" + doublishExpr(d - 1, e); }},
     // Binary ops that return double
     {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + " + " + doubleExpr(d - 2, e); }},
-    {w: 1,  fun: function(d, e) { return doubleExpr(d - 2, e) + " - " + doubleExpr(d - 2, e); }}, // inputs should be doublish (bug 882008)
+    {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " * " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " / " + doublishExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
