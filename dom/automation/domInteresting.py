@@ -393,6 +393,7 @@ def knownChromeFailure(msg):
         "prompt aborted by user" in msg or # thrown intentionally in nsPrompter.js
         "nsIIOService.getProtocolHandler" in msg or # bug 746878
         "tipElement is null" in msg or # bug 746893
+        ("browser.xul" in msg and "gBrowserInit is not defined" in msg) or # Bug 897867
         ("browser.js" in msg and "overlayText is null" in msg) or # Bug 797945
         ("browser.js" in msg and "organizer.PlacesOrganizer" in msg) or # Bug 801436?
         ("browser.js" in msg and "element is null" in msg) or # trustedKeyEvent can artifically direct F6 at browser.js (focusNextFrame) when the focused window is a Scratchpad window
