@@ -345,7 +345,7 @@ class AmissLogHandler:
                 self.printAndLog("%%% This crash report is totally busted. Giving up.")
                 self.crashIsKnown = True
 
-        if ("quitApplication" in msg or
+        if ("goQuitApplication" in msg or
             "fuzzerWhenDeep" in msg or # Bug 732665
             "InternalError: too much recursion" in msg # Bug 732665 (see bug 762598 for a testcase)
             ):
