@@ -85,7 +85,7 @@ def getFreeSpace(folder, mulVar):
 #  Shell Functions  #
 #####################
 
-def envWithPath(path):
+def envWithPath(path, runningEnv=os.environ):
     '''Appends the path to the appropriate library path on various platforms.'''
     if isLinux:
         libPath = 'LD_LIBRARY_PATH'
@@ -94,7 +94,7 @@ def envWithPath(path):
     elif isWin:
         libPath = 'PATH'
 
-    env = deepcopy(os.environ)
+    env = deepcopy(runningEnv)
     if libPath in env:
         if path not in env[libPath]:
             env[libPath] += ENV_PATH_SEPARATOR + path
