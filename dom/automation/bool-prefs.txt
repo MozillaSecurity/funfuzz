@@ -62,6 +62,7 @@ browser.history.allowPopState
 browser.history.allowPushState
 browser.history.allowReplaceState
 browser.newtabpage.enabled
+browser.pageThumbs.enabled
 browser.popups.showPopupBlocker
 browser.send_pings
 browser.send_pings.require_same_host
