@@ -140,10 +140,24 @@ def queryBuildConfiguration(s, parameter):
                      False, False)[0]
     return ans.find('true') != -1
 
+
+def testIsHardFpShellARM(s):
+    '''Tests if the ARM shell is compiled with hardfp support.'''
+    readelfBin = '/usr/bin/readelf'
+    if os.path.exists(readelfBin):
+        newEnv = envWithPath(os.path.dirname(os.path.abspath(s)))
+        readelfOutput = captureStdout([readelfBin, '-A', s], env=newEnv)[0]
+        return ('Tag_ABI_VFP_args: VFP registers' in readelfOutput)
+    else:
+        raise Exception('readelf is not found.')
+
+
 def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
     assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.buildOptions.arch
     assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.buildOptions.compileType
+    if platform.uname()[4] == 'armv7l':
+        assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == options.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
         if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
             assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'threadsafe') == \

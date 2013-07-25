@@ -30,6 +30,7 @@ def parseShellOptions(inputArgs):
         llvmRootSrcDir = normExpUserPath('~/llvm'),
         arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
+        enableHardFp = False,
         isThreadsafe = False,
         runWithVg = False,
         buildWithVg = False,
@@ -66,6 +67,9 @@ def parseShellOptions(inputArgs):
                       help='Run the shell under Valgrind.  Requires --build-with-valgrind.')
 
     # Misc spidermonkey options
+    parser.add_option('--enable-hardfp', dest='enableHardFp',
+                      action='store_true',
+                      help='Build hardfp shells (ARM-specific setting). Defaults to "%default".')
     parser.add_option('--enable-threadsafe', dest='isThreadsafe', action='store_true',
                       help='Enable compilation and fuzzing of threadsafe js shell. ' + \
                            'NSPR should first be installed, see: ' + \
@@ -110,6 +114,9 @@ def parseShellOptions(inputArgs):
     if options.buildWithAsan:
         assert not isWin, 'Asan is not yet supported on Windows.'
 
+    if options.enableHardFp:
+        assert isLinux and (platform.uname()[4] == 'armv7l')
+
     if options.enableRootAnalysis:
         assert not options.enableExactRooting
         assert not options.enableGcGenerational
@@ -140,6 +147,11 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('er')
     if options.enableGcGenerational:
         specialParamList.append('ggc')
+    if platform.uname()[4] == 'armv7l':
+        if options.enableHardFp:
+            specialParamList.append('hfp')
+        else:
+            specialParamList.append('sfp')
     specialParam = '-'.join(specialParamList)
     return '-'.join(x for x in ['js', options.compileType, options.arch, specialParam,
                                 'windows' if isWin else platform.system().lower(),
