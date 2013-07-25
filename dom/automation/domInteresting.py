@@ -408,6 +408,7 @@ def knownChromeFailure(msg):
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         "abouthealth.js" in msg or # Bug 895113
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or # opening dev tools while simultaneously opening and closing tabs is mean
+        ("WindowsPreviewPerTab.jsm" in msg and "this.previewFromTab(...) is undefined" in msg) or # Bug 897794
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
