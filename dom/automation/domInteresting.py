@@ -288,7 +288,7 @@ class AmissLogHandler:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
             m = re.search("on unknown address (0x\S+)", msg)
-            elif m and int(m.group(1), 16) < 0x10000:
+            if m and int(m.group(1), 16) < 0x10000:
                 # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
                 # It would be good to know if it were a read, write, or execute.  But ASan doesn't have that info for SEGVs, I guess?
                 if self.outOfMemory:
