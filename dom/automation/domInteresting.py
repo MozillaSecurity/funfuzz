@@ -170,7 +170,6 @@ class AmissLogHandler:
         self.sawFatalAssertion = False
         self.fuzzerComplained = False
         self.crashProcessor = None
-        self.asanSymbolizer = None
         self.crashBoringBits = False
         self.crashMightBeTooMuchRecursion = False
         self.crashIsKnown = False
@@ -186,9 +185,6 @@ class AmissLogHandler:
 
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
-        if self.asanSymbolizer:
-            self.asanSymbolizer.stdin.write(msgLF)
-            msgLF = self.asanSymbolizer.stdout.readline()
         msg = msgLF.rstrip("\n")
         if len(self.fullLogHead) < 100000:
             self.fullLogHead.append(msgLF)
@@ -291,16 +287,7 @@ class AmissLogHandler:
         if "ERROR: AddressSanitizer" in msg:
             print "We have an asan crash on our hands!"
             self.crashProcessor = "asan"
-            if platform.system() == "Linux": # Remove all this once https://code.google.com/p/address-sanitizer/issues/detail?id=204 is fixed
-                self.asanSymbolizer = subprocess.Popen(
-                    ["python", "-u", os.path.expanduser("~/llvm/projects/compiler-rt/lib/asan/scripts/asan_symbolize.py"), "--demangle"],
-                    stdin = subprocess.PIPE,
-                    stdout = subprocess.PIPE,
-                    close_fds = close_fds)
             m = re.search("on unknown address (0x\S+)", msg)
-            if 'attempting to call malloc_usable_size' in msg and platform.system() == "Linux":
-                self.printAndLog("%%% Ignoring malloc_usable_size issue: http://code.google.com/p/address-sanitizer/issues/detail?id=193")
-                self.crashIsKnown = True
             elif m and int(m.group(1), 16) < 0x10000:
                 # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
                 # It would be good to know if it were a read, write, or execute.  But ASan doesn't have that info for SEGVs, I guess?
@@ -355,10 +342,6 @@ class AmissLogHandler:
             self.sawChromeFailure = True
 
         return msgLF
-
-    def destroy(self):
-        if self.asanSymbolizer:
-            self.asanSymbolizer.stdin.close()
 
     def printAndLog(self, msg):
         print "$ " + msg
@@ -535,8 +518,7 @@ def rdfInit(args):
 
     env = os.environ.copy()
     env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
-    if platform.system() == "Darwin": # remove condition once https://code.google.com/p/address-sanitizer/issues/detail?id=204 is fixed
-        env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release+Asserts/bin/llvm-symbolizer")
+    env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release+Asserts/bin/llvm-symbolizer")
     if dirs.stackwalk:
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
     runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
@@ -564,10 +546,6 @@ def rdfInit(args):
 
         profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
         createDOMFuzzProfile(profileDir)
-        if platform.system() == "Linux" and "-asan" in browserDir:
-            # Work around old version of asan not working with asm.js (see bug 872565)
-            # Remove this once https://code.google.com/p/address-sanitizer/issues/detail?id=204 is fixed
-            extraPrefs += 'user_pref("javascript.options.asmjs", false);\n'
         writePrefs(profileDir, extraPrefs)
 
         runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
@@ -711,8 +689,6 @@ def rdfInit(args):
 
         if not leaveProfile:
             shutil.rmtree(profileDir)
-
-        alh.destroy()
 
         print("DOMFUZZ INFO | domInteresting.py | " + str(lev))
         return (lev, alh.FRClines)

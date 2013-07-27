@@ -133,13 +133,13 @@ gfx.font_rendering.fallback.always_use_cmaps
 gfx.use_text_smoothing_setting
 #gfx.prefer-mesa-llvmpipe # Bug 868787
 #gfx.textures.poweroftwo.force-enabled # bug 750590
-#gfx.xrender.enabled # http://code.google.com/p/address-sanitizer/issues/detail?id=193 which I am still hitting because of http://code.google.com/p/address-sanitizer/issues/detail?id=204
+gfx.xrender.enabled
 image.high_quality_downscaling.enabled
 image.mem.decodeondraw
 image.mem.discardable
 image.multithreaded_decoding.enabled
 intl.locale.matchOS
-#javascript.options.asmjs # https://code.google.com/p/address-sanitizer/issues/detail?id=204
+javascript.options.asmjs
 javascript.options.baselinejit.content
 javascript.options.baselinejit.chrome
 javascript.options.baselinejit.unsafe_eager_compilation
