@@ -2666,7 +2666,7 @@ function singleRecursionDepth(d, b)
 
 function makeImmediateRecursiveCall(d, b, cheat1, cheat2)
 {
-  if (rnd(10) != 0)
+  if (rnd(10) !== 0)
     return "(4277)";
 
   var a = (cheat1 == null) ? rndElt(recursiveFunctions) : recursiveFunctions[cheat1];
