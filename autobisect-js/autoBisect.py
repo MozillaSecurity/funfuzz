@@ -381,16 +381,18 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
+    repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
+
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match\
             (outputLines[0]):
-        print('\n' + sanitizeCsetMsg(outputResult, options.buildOptions.repoDir) + '\n')
+        print('\n' + sanitizeCsetMsg(outputResult, repoDir) + '\n')
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
         print '\n\nautoBisect shows this is probably related to the following changeset:\n'
-        print(sanitizeCsetMsg(outputResult, options.buildOptions.repoDir) + '\n')
+        print(sanitizeCsetMsg(outputResult, repoDir) + '\n')
         blamedGoodOrBad = m.group(1)
         blamedRev = getCsetHashFromBisectMsg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
@@ -405,7 +407,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     if currRev is None:
         print 'Resetting to default revision...'
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
-        destroyPyc(options.buildOptions.repoDir)
+        destroyPyc(repoDir)
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
