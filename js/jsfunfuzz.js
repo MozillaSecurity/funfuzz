@@ -35,6 +35,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/* jshint moz:true, evil:true, maxerr:10000 */
 //"use strict";
 var jsStrictMode = false;
 
@@ -60,7 +61,7 @@ var dumpln;
 var printImportant;
 if (jsshell) {
   dumpln = print;
-  printImportant = function(s) { dumpln("***"); dumpln(s); }
+  printImportant = function(s) { dumpln("***"); dumpln(s); };
   if (typeof verifyprebarriers == "function") {
     // Run a diff between the help() outputs of different js shells.
     // Make sure the function to look out for is not located only in some
@@ -83,21 +84,21 @@ if (jsshell) {
     // XXX detect Google Chrome for V8
     engine = ENGINE_JAVASCRIPTCORE;
     // This worked in Safari 3.0, but it might not work in Safari 3.1.
-    dump = function(s) { console.log(s); }
+    dump = function(s) { console.log(s); };
   } else if (navigator.userAgent.indexOf("Gecko") != -1) {
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof dump != "function") {
     // In other browsers, jsfunfuzz does not know how to log anything.
     dump = function() { };
   }
-  dumpln = function(s) { dump(s + "\n"); }
+  dumpln = function(s) { dump(s + "\n"); };
 
   printImportant = function(s) {
     dumpln(s);
     var p = document.createElement("pre");
     p.appendChild(document.createTextNode(s));
     document.body.appendChild(p);
-  }
+  };
 }
 
 if (typeof gc == "undefined")
@@ -265,7 +266,7 @@ function MersenneTwister19937()
 
 	function addition32 (n1, n2) // emulates overflow of a c 32-bits unsiged integer variable, instead of the operator +. these both arguments must be non-negative integers expressible using unsigned 32 bits.
 	{
-		return unsigned32((n1 + n2) & 0xffffffff)
+		return unsigned32((n1 + n2) & 0xffffffff);
 	}
 
 	function multiplication32 (n1, n2) // emulates overflow of a c 32-bits unsiged integer variable, instead of the operator *. these both arguments must be non-negative integers expressible using unsigned 32 bits.
@@ -297,7 +298,7 @@ function MersenneTwister19937()
 			mt[mti] = unsigned32(mt[mti] & 0xffffffff);
 			/* for >32 bit machines */
 		}
-	}
+	};
 
 	/* initialize by an array with array-length */
 	/* init_key is the array for initializing keys */
@@ -333,14 +334,14 @@ function MersenneTwister19937()
 			if (i>=N) { mt[0] = mt[N-1]; i=1; }
 		}
 		mt[0] = 0x80000000; /* MSB is 1; assuring non-zero initial array */
-	}
+	};
 
   this.export_state = function() { return [mt, mti]; };
   this.import_state = function(s) { mt = s[0]; mti = s[1]; };
   this.export_mta = function() { return mt; };
-  this.import_mta = function(_mta) { mt = _mta };
+  this.import_mta = function(_mta) { mt = _mta; };
   this.export_mti = function() { return mti; };
-  this.import_mti = function(_mti) { mti = _mti; }
+  this.import_mti = function(_mti) { mti = _mti; };
 
 	/* generates a random number on [0,0xffffffff]-interval */
 	//c//unsigned long genrand_int32(void)
@@ -392,7 +393,7 @@ function MersenneTwister19937()
 		y = unsigned32(y ^ (y >>> 18));
 
 		return y;
-	}
+	};
 
 	/* generates a random number on [0,0x7fffffff]-interval */
 	//c//long genrand_int31(void)
@@ -400,7 +401,7 @@ function MersenneTwister19937()
 	{
 		//c//return (genrand_int32()>>1);
 		return (this.genrand_int32()>>>1);
-	}
+	};
 
 	/* generates a random number on [0,1]-real-interval */
 	//c//double genrand_real1(void)
@@ -409,7 +410,7 @@ function MersenneTwister19937()
 		//c//return genrand_int32()*(1.0/4294967295.0);
 		return this.genrand_int32()*(1.0/4294967295.0);
 		/* divided by 2^32-1 */
-	}
+	};
 
 	/* generates a random number on [0,1)-real-interval */
 	//c//double genrand_real2(void)
@@ -418,7 +419,7 @@ function MersenneTwister19937()
 		//c//return genrand_int32()*(1.0/4294967296.0);
 		return this.genrand_int32()*(1.0/4294967296.0);
 		/* divided by 2^32 */
-	}
+	};
 
 	/* generates a random number on (0,1)-real-interval */
 	//c//double genrand_real3(void)
@@ -427,7 +428,7 @@ function MersenneTwister19937()
 		//c//return ((genrand_int32()) + 0.5)*(1.0/4294967296.0);
 		return ((this.genrand_int32()) + 0.5)*(1.0/4294967296.0);
 		/* divided by 2^32 */
-	}
+	};
 
 	/* generates a random number on [0,1) with 53-bit resolution*/
 	//c//double genrand_res53(void)
@@ -436,7 +437,7 @@ function MersenneTwister19937()
 		//c//unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6;
 		var a=this.genrand_int32()>>>5, b=this.genrand_int32()>>>6;
 		return(a*67108864.0+b)*(1.0/9007199254740992.0);
-	}
+	};
 	/* These real versions are due to Isaku Wada, 2002/01/09 added */
 }
 
@@ -468,7 +469,7 @@ if (1) {
 function errorstack()
 {
   print("EEE");
-  try { [].qwerty.qwerty } catch(e) { print(e.stack) }
+  try { [].qwerty.qwerty; } catch(e) { print(e.stack); }
 }
 
 function rndElt(a)
@@ -534,8 +535,8 @@ function cat(toks)
     // Unary plus in the first one coerces the string that follows to number!
     if (typeof(toks[i]) != "string") {
       dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
-      dumpln(cat.caller)
-      dumpln(cat.caller.caller)
+      dumpln(cat.caller);
+      dumpln(cat.caller.caller);
       dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
     }
 
@@ -655,7 +656,7 @@ function makeStatement(d, b)
 
   d = rnd(d); // !
 
-  return (rndElt(statementMakers))(d, b)
+  return (rndElt(statementMakers))(d, b);
 }
 
 var varBinder = ["var ", "let ", "const ", ""];
@@ -694,7 +695,7 @@ function makeOpaqueIdiomaticLoop(d, b)
   var vHidden = uniqueVarName();
   return "/*oLoop*/" + forLoopHead(d, b, vHidden, reps) + " { " +
       makeStatement(d - 2, b) +
-      " } "
+      " } ";
 }
 
 function makeTransparentIdiomaticLoop(d, b)
@@ -706,7 +707,7 @@ function makeTransparentIdiomaticLoop(d, b)
     " { " +
       rndElt(varBinder) + vVisible + " = " + vHidden + "; " +
       makeStatement(d - 2, b.concat([vVisible])) +
-    " } "
+    " } ";
 }
 
 function makeBranchUnstableLoop(d, b)
@@ -718,7 +719,7 @@ function makeBranchUnstableLoop(d, b)
   return "/*bLoop*/" + forLoopHead(d, b, v, reps) + " { " +
     "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
     "else { " + makeStatement(d - 2, b) + " } " +
-    " } "
+    " } ";
 }
 
 function makeTypeUnstableLoop(d, b) {
@@ -981,7 +982,7 @@ var makeEvilCallback;
     { w: 1,  fun: makeRegisterStompFunction },
   ]);
   makeEvilCallback = function(d, b) {
-    return (rndElt(builderFunctionMakers))(d - 1, b)
+    return (rndElt(builderFunctionMakers))(d - 1, b);
   };
 
   var handlerTraps = ["getOwnPropertyDescriptor", "getPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
@@ -1112,7 +1113,7 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "{}"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "new Object"); } },
     { w: 1,  fun: function(d, b) { return assign(d, b, "o", "Object.create(" + val(d, b) + ")"); } },
-    { w: 3,  fun: function(d, b) { return "selectforgc(" + m("o") + ");" } },
+    { w: 3,  fun: function(d, b) { return "selectforgc(" + m("o") + ");"; } },
 
     // s: String
     { w: 1,  fun: function(d, b) { return assign(d, b, "s", "''"); } },
@@ -1179,7 +1180,7 @@ var makeEvilCallback;
     { w: 5,  fun: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + strToEval(d, b) + ")"); } },
     { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evalcx(" + strToEval(d, b) + ", " + m("g") + ")"); } },
     { w: 5,  fun: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", { global: " + m("g") + ", fileName: " + rndElt(["'evaluate.js'", "null"]) + ", lineNumber: 42, newContext: " + makeBoolean(d, b) + ", compileAndGo: " + makeBoolean(d, b) + ", noScriptRval: " + makeBoolean(d, b) + ", catchTermination: " + makeBoolean(d, b) + ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) + " })"); } },
-    { w: 3,  fun: function(d, b) { return "schedulegc(" + m("g") + ");" } },
+    { w: 3,  fun: function(d, b) { return "schedulegc(" + m("g") + ");"; } },
 
     // Mix builtins between globals
     { w: 3,  fun: function(d, b) { return "/*MXX1*/" + assign(d, b, "o", m("g") + "." + rndElt(builtinProperties)); } },
@@ -1218,8 +1219,8 @@ var makeEvilCallback;
     { w: 1,  fun: function(d, b) { return m() + "[" + makePropertyName(d, b) + "] = " + val(d, b) + ";"; } },
 
     // evil things we can do to any object
-    { w: 5,  fun: function(d, b) { return "print(" + m() + ");" } },
-    { w: 5,  fun: function(d, b) { return "print(uneval(" + m() + "));" } },
+    { w: 5,  fun: function(d, b) { return "print(" + m() + ");"; } },
+    { w: 5,  fun: function(d, b) { return "print(uneval(" + m() + "));"; } },
     { w: 5,  fun: function(d, b) { return m() + ".toString = " + makeEvilCallback(d, b) + ";"; } },
     { w: 5,  fun: function(d, b) { return m() + ".toSource = " + makeEvilCallback(d, b) + ";"; } },
     { w: 5,  fun: function(d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
@@ -1246,8 +1247,8 @@ var makeEvilCallback;
     { w: 5,  fun: initializeEverything },
   ]);
   makeBuilderStatement = function(d, b) {
-    return (rndElt(builderStatementMakers))(d - 1, b)
-  }
+    return (rndElt(builderStatementMakers))(d - 1, b);
+  };
 })();
 
 
@@ -1403,7 +1404,7 @@ function makeSwitchBody(d, b)
 
     // Might want a statement.
     if (rnd(2))
-      output += makeStatement(d, b)
+      output += makeStatement(d, b);
 
     // Might want to break, or might want to fall through.
     if (rnd(2))
@@ -1484,7 +1485,7 @@ var statementBlockMakers = [
   function(d, b) { return makeStatement(d, b); },
   function(d, b) { return cat(["{", makeStatement(d, b), " }"]); },
   function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); },
-]
+];
 
 
 // Extra-hard testing for try/catch/finally and related things.
@@ -1508,7 +1509,7 @@ var exceptionyStatementMakers = [
   function(d, b) { return makeStatement(d, b); },
   function(d, b) { return makeLittleStatement(d, b); },
 
-  function(d, b) { return "return;" }, // return without a value can be mixed with yield
+  function(d, b) { return "return;"; }, // return without a value can be mixed with yield
   function(d, b) { return cat(["return ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["yield ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["throw ", makeId(d, b), ";"]); },
@@ -1530,9 +1531,9 @@ var exceptionyStatementMakers = [
   function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
   function(d, b) { return "with({}) { " + makeExceptionyStatement(d, b) + " } "; },
   function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])) + "}"; },
-  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());" },
+  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());"; },
   function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b) + "}"; },
-  function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());" },
+  function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());"; },
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
@@ -1568,7 +1569,7 @@ function makeTryBlock(d, b)
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
     var catchId = makeId(d, b);
-    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]))
+    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
     if (rnd(2))
       s += cat(["catch", "(", catchId, " if ",                 makeExpr(d, b),                    ")", " { ", catchBlock, " } "]);
     else
@@ -1579,7 +1580,7 @@ function makeTryBlock(d, b)
     // Add an unguarded catch.
     ++numCatches;
     var catchId = makeId(d, b);
-    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]))
+    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
     s +=   cat(["catch", "(", catchId,                                                          ")", " { ", catchBlock, " } "]);
   }
 
@@ -1952,19 +1953,19 @@ var spidermonkeyImmediateEffectMakers = weighted([
   { w: 1, fun: function(d, b) { return "gcPreserveCode()"; } },
 
   // Spidermonkey: global ES5 strict mode
-  { w: 1, fun: function(d, b) { return "(void options('strict_mode'))" } },
+  { w: 1, fun: function(d, b) { return "(void options('strict_mode'))"; } },
 
   // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
-  { w: 1, fun: function(d, b) { return "(void options('strict'))" } },
+  { w: 1, fun: function(d, b) { return "(void options('strict'))"; } },
 
   // Spidermonkey: versions
-  { w: 1, fun: function(d, b) { return "(void version(" + rndElt([170, 180, 185]) + "))" } },
+  { w: 1, fun: function(d, b) { return "(void version(" + rndElt([170, 180, 185]) + "))"; } },
 
   // More special Spidermonkey shell functions
   // { w: 1, fun: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
-  { w: 1, fun: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))" } },
-  { w: 1, fun: function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))" } },
-  { w: 1, fun: function(d, b) { return "intern(" + makeExpr(d, b) + ")" } },
+  { w: 1, fun: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))"; } },
+  { w: 1, fun: function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; } },
+  { w: 1, fun: function(d, b) { return "intern(" + makeExpr(d, b) + ")"; } },
   { w: 1, fun: function(d, b) { return "timeout(1800)"; } }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
 ]);
 
@@ -2038,7 +2039,7 @@ var proxyHandlerProperties = {
     empty:    "function() { return []; }",
     forward:  "function() { return Object.keys(x); }"
   }
-}
+};
 
 function makeProxyHandlerFactory(d, b)
 {
@@ -2053,7 +2054,7 @@ function makeProxyHandlerFactory(d, b)
     var fidelity = rnd(10);
 
     var handlerFactoryText = "(function handlerFactory(x) {";
-    handlerFactoryText += "return {"
+    handlerFactoryText += "return {";
 
     if (rnd(2)) {
       // handlerFactory has an argument 'x'
@@ -2079,7 +2080,7 @@ function makeProxyHandlerFactory(d, b)
       handlerFactoryText += p + ": " + funText + ", ";
     }
 
-    handlerFactoryText += "}; })"
+    handlerFactoryText += "}; })";
 
     return handlerFactoryText;
   } catch(e) {
@@ -2097,7 +2098,7 @@ function makeProxyHandler(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")"
+  return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")";
 }
 
 
@@ -2178,7 +2179,7 @@ function makePropertyDescriptor(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  var s = "({"
+  var s = "({";
 
   switch(rnd(3)) {
   case 0:
@@ -2199,7 +2200,7 @@ function makePropertyDescriptor(d, b)
 
   // remove trailing comma
   if (s.length > 2)
-    s = s.substr(0, s.length - 2)
+    s = s.substr(0, s.length - 2);
 
   s += "})";
   return s;
@@ -2442,23 +2443,23 @@ var functionMakers = [
   function(d, b) {                          return cat(["(", makeFormalArgList(d, b), ")", " => ", makeFunctionBody(d, b)]); },
 
   // The identity function
-  function(d, b) { return "function(q) { " + directivePrologue() + "return q; }" },
-  function(d, b) { return "q => q" },
+  function(d, b) { return "function(q) { " + directivePrologue() + "return q; }"; },
+  function(d, b) { return "q => q"; },
 
   // A function that does something
-  function(d, b) { return "function(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }" },
+  function(d, b) { return "function(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }"; },
 
   // A function that computes something
-  function(d, b) { return "function(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }" },
+  function(d, b) { return "function(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
 
   // A generator that does something
-  function(d, b) { return "function(y) { " + + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }" },
+  function(d, b) { return "function(y) { " + + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
 
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
 
   // A simple wrapping pattern
-  function(d, b) { return "/*wrap1*/(function(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()" },
+  function(d, b) { return "/*wrap1*/(function(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
 
   // Wrapping with upvar: escaping, may or may not be modified
   function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
@@ -2467,32 +2468,32 @@ var functionMakers = [
   function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
   // Apply, call
-  function(d, b) { return "(" + makeFunction(d-1, b) + ").apply" },
-  function(d, b) { return "(" + makeFunction(d-1, b) + ").call" },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").apply"; },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").call"; },
 
   // Bind
-  function(d, b) { return "(" + makeFunction(d-1, b) + ").bind" },
-  function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")" },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").bind"; },
+  function(d, b) { return "(" + makeFunction(d-1, b) + ").bind(" + makeActualArgList(d, b) + ")"; },
 
   // Methods with known names
   function(d, b) { return cat([makeExpr(d, b), ".", rndElt(allMethodNames)]); },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
-  function(d, b) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
-  function(d, b) { return "(let (e=eval) e)" },
-  function(d, b) { return "new Function" }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
+  function(d, b) { return "eval"; }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
+  function(d, b) { return "(let (e=eval) e)"; },
+  function(d, b) { return "new Function"; }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
   function(d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
-  function(d, b) { return "Function" }, // without "new"
-  function(d, b) { return "gc" },
-  function(d, b) { return "decodeURI" },
-  function(d, b) { return "decodeURIComponent" },
-  function(d, b) { return "encodeURI" },
-  function(d, b) { return "encodeURIComponent" },
-  function(d, b) { return "wrap" }, // spidermonkey shell shortcut for a native forwarding proxy
-  function(d, b) { return "wrapWithProto" }, // spidermonkey shell shortcut for a native forwarding proxy
-  function(d, b) { return "objectEmulatingUndefined" }, // spidermonkey shell object like the browser's document.all
-  function(d, b) { return "XPCNativeWrapper" },
-  function(d, b) { return "XPCSafeJSObjectWrapper" },
+  function(d, b) { return "Function"; }, // without "new"
+  function(d, b) { return "gc"; },
+  function(d, b) { return "decodeURI"; },
+  function(d, b) { return "decodeURIComponent"; },
+  function(d, b) { return "encodeURI"; },
+  function(d, b) { return "encodeURIComponent"; },
+  function(d, b) { return "wrap"; }, // spidermonkey shell shortcut for a native forwarding proxy
+  function(d, b) { return "wrapWithProto"; }, // spidermonkey shell shortcut for a native forwarding proxy
+  function(d, b) { return "objectEmulatingUndefined"; }, // spidermonkey shell object like the browser's document.all
+  function(d, b) { return "XPCNativeWrapper"; },
+  function(d, b) { return "XPCSafeJSObjectWrapper"; },
   function(d, b) { return makeProxyHandlerFactory(d, b); },
   function(d, b) { return makeShapeyConstructor(d, b); },
   function(d, b) { return rndElt(typedArrayConstructors); },
@@ -2648,7 +2649,7 @@ function singleRecursionDepth(d, b)
     return "" + rnd(4);
   }
   if (rnd(10) === 0) {
-    return makeExpr(d - 2, b)
+    return makeExpr(d - 2, b);
   }
   return "" + rnd(100000);
 }
@@ -2658,7 +2659,7 @@ function singleRecursionDepth(d, b)
     var a = recursiveFunctions[i];
     var text = a.text;
     if (a.testSub) text = a.testSub(text);
-    var f = eval(text.replace(/@/g, ""))
+    var f = eval(text.replace(/@/g, ""));
     if (!a.test(f))
       throw "Failed test of: " + a.text;
   }
@@ -2966,9 +2967,9 @@ var destructuringLValueMakers = [
 function maybeMakeDestructuringLValue(d, b)
 {
   if (rnd(2) === 0)
-    return ""
+    return "";
 
-  return makeDestructuringLValue(d, b)
+  return makeDestructuringLValue(d, b);
 }
 
 
@@ -3009,9 +3010,9 @@ var termMakers = [
   makeNumber,
   function(d, b) { return rndElt([ "true", "false", "undefined", "null"]); },
   function(d, b) { return rndElt([ "this", "window" ]); },
-  function(d, b) { return rndElt([" \"\" ", " '' "]) },
+  function(d, b) { return rndElt([" \"\" ", " '' "]); },
   randomUnitStringLiteral, // unicode escaped
-  function(d, b) { return rndElt([" /x/ ", " /x/g "]) },
+  function(d, b) { return rndElt([" /x/ ", " /x/g "]); },
   makeRegex,
 ];
 
@@ -3021,7 +3022,7 @@ function randomUnitStringLiteral()
   for (var i = 0; i < 4; ++i) {
     s += "0123456789ABCDEF".charAt(rnd(16));
   }
-  s += "\""
+  s += "\"";
   return s;
 }
 
@@ -3289,7 +3290,7 @@ function makeRegisterStompBody(d, b, pure)
     if (bv.length == 0 || rnd(4)) {
       var newVar = "r" + lastRVar;
       ++lastRVar;
-      s += "var " + newVar + " = " + expr() + "; "
+      s += "var " + newVar + " = " + expr() + "; ";
       bv.push(newVar);
     } else if (rnd(5) === 0 && !pure) {
       s += "print(" + rndElt(bv) + "); ";
@@ -3348,7 +3349,7 @@ function importForeign(foreignFunctions)
 // args looks like ["i0", "d1", "d2"] -- the first letter indicates int vs double
 function asmJsFunction(globalEnv, name, ret, args)
 {
-  var s = "  function " + name + "(" + args.join(", ") + ")\n"
+  var s = "  function " + name + "(" + args.join(", ") + ")\n";
   s += "  {\n";
   s += parameterTypeAnnotations(args);
 
@@ -3437,16 +3438,16 @@ function asmReturnStatement(indent, env)
 
 function asmSwitchStatement(indent, env, d)
 {
-  var s = indent + "switch (" + signedExpr(4, env) + ") {\n"
+  var s = indent + "switch (" + signedExpr(4, env) + ") {\n";
   while (rnd(3)) {
     s += indent + "  case " + (rnd(5)-3) + ":\n";
-    s += asmStatement(indent + "    ", env, d - 2)
+    s += asmStatement(indent + "    ", env, d - 2);
     if (rnd(4))
-      s += indent + "    break;\n"
+      s += indent + "    break;\n";
   }
   if (rnd(2)) {
-    s += indent + "  default:\n"
-    s += asmStatement(indent + "    ", env, d - 2)
+    s += indent + "  default:\n";
+    s += asmStatement(indent + "    ", env, d - 2);
   }
   s += indent + "}\n";
   return s;
@@ -3479,7 +3480,7 @@ var intExpr = autoExpr(weighted([
     {w: 1,  fun: function(d, e) { return "!" + intExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return signedExpr(d - 1, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 1, e); }},
-    {w: 10, fun: function(d, e) { return intVar(e) }}, // + "|0";  ??
+    {w: 10, fun: function(d, e) { return intVar(e); }}, // + "|0"  ??
     {w: 1,  fun: function(d, e) { return e.globalEnv.foreignFunctions.length ? asmFfiCall(d, e) + "|0" : "1"; }},
     {w: 1,  fun: function(d, e) { return signedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }},
     {w: 1,  fun: function(d, e) { return unsignedExpr(d - 2, e) + rndElt([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},
@@ -3620,11 +3621,11 @@ function autoExpr(funs, avoidSubst)
 {
   return function(d, e) {
     var f = d < 1 ? funs[0] :
-            rnd(50) === 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]) } :
+            rnd(50) === 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]); } :
             rnd(50) === 0 && !avoidSubst ? rndElt(anyAsmExpr) :
             rndElt(funs);
     return "(" + f(d, e) + ")";
-  }
+  };
 }
 
 function intVar(e)
@@ -3658,7 +3659,7 @@ function doubleLiteral()
 function positiveDoubleLiteral()
 {
   if (rnd(3) === 0) {
-    rndElt(["0.0", "1.0", "1.2345e60"])
+    rndElt(["0.0", "1.0", "1.2345e60"]);
   }
 
   // A power of two
@@ -3769,7 +3770,7 @@ var compareAsm = (function() {
       var fr = f(x);
       var gr = g(x);
       if (!isSameNumber(fr, gr)) {
-        foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs "  + uneval(gr))
+        foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs "  + uneval(gr));
       }
     }
   }
@@ -3783,7 +3784,7 @@ var compareAsm = (function() {
         var fr = f(x, y);
         var gr = g(x, y);
         if (!isSameNumber(fr, gr)) {
-          foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs "  + uneval(gr))
+          foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs "  + uneval(gr));
         }
       }
     }
@@ -3804,12 +3805,12 @@ var pureForeign = {
   half:      function(x) { return x / 2; },
   // Test coercion coming back from FFI.
   asString:  function(x) { return uneval(x); },
-  asValueOf: function(x) { return { valueOf: function() { return x } }; },
+  asValueOf: function(x) { return { valueOf: function() { return x; } }; },
   // Test register arguments vs stack arguments.
   sum:       function()  { var s = 0; for (var i = 0; i < arguments.length; ++i) s += arguments[i]; return s; },
   // Will be replaced by calling makeRegisterStompFunction
   stomp:     function()  { },
-}
+};
 
 var pureMath = ["abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "exp", "floor", "imul", "log", "max", "min", "pow", "round", "sin", "sqrt", "tan"];
 for (var f in pureMath) {
@@ -3827,7 +3828,7 @@ function generateAsmDifferential()
 function testAsmDifferential(stdlib, interior)
 {
   if (nanBitsMayBeVisible(interior)) {
-    dumpln("Skipping correctness test for asm module that could expose low bits of NaN")
+    dumpln("Skipping correctness test for asm module that could expose low bits of NaN");
     return;
   }
 
@@ -3972,7 +3973,7 @@ function regexPattern(depth, parentWasQuantifier)
 
   var index = rnd(regexMakers.length);
   if (parentWasQuantifier && rnd(30)) index = rnd(regexMakers.length - 1) + 1; // avoid double quantifiers
-  return (rndElt(regexMakers[index]))(dr)
+  return (rndElt(regexMakers[index]))(dr);
 }
 
 var regexMakers =
@@ -3995,7 +3996,7 @@ var regexMakers =
   ],
   [
     // Grouping
-    function(dr) { return ["\\" + (rnd(3) + 1), backrefHack.slice(0)] }, // backref
+    function(dr) { return ["\\" + (rnd(3) + 1), backrefHack.slice(0)]; }, // backref
     function(dr) { return regexGrouped("(", dr, ")");   }, // capturing: feeds \1 and exec() result
     function(dr) { return regexGrouped("(?:", dr, ")"); }, // non-capturing
     function(dr) { return regexGrouped("(?=", dr, ")"); }, // lookahead
@@ -4115,7 +4116,7 @@ function regexTerm()
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     strings[i] = rnd(5) ? oneString : regexTermPair()[1];
   }
-  return [re, strings]
+  return [re, strings];
 }
 
 function regexTermPair()
@@ -4165,7 +4166,7 @@ function regexCharacterClassData(dr, inRange)
     function(dr) { return regexTermPair(); },
     function(dr) { var pair1 = regexCharacterClassData(dr-1, inRange); var pair2 = regexCharacterClassData(dr-1, inRange); return [ pair1[0] + pair2[0], pair1[1] ]; },
     function(dr) { var pair1 = regexCharacterClassData(dr-1, inRange); var pair2 = regexCharacterClassData(dr-1, inRange); return [ pair1[0] + pair2[0], pair2[1] ]; }
-  ]
+  ];
 
   return (rndElt(y))();
 }
@@ -4486,7 +4487,7 @@ function trySandboxEval(code, isRetry)
     dumpln("Done with this sandbox.");
     sandbox = null;
     gc();
-    var currentHeapCount = countHeap()
+    var currentHeapCount = countHeap();
     dumpln("countHeap: " + currentHeapCount);
     if (currentHeapCount > maxHeapCount) {
       if (maxHeapCount != 0)
@@ -4584,7 +4585,7 @@ function testOne()
   // generated function manages to output the entire jsfunfuzz source,
   // that output won't match the grep command.
   var cookie = "/*F";
-  cookie += "RC*/"
+  cookie += "RC*/";
 
   // Sometimes it makes sense to start with simpler functions:
   //var depth = ((count / 1000) | 0) & 16;
@@ -4604,7 +4605,7 @@ function testOne()
   var code = makeOv(depth);
 
   if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
-    code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");"
+    code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
     //print("Sane mode!")
   }
 
@@ -4675,11 +4676,11 @@ function useSpidermonkeyShellSandbox(sandboxType)
 
   return function(f, code, wtt) {
     try {
-      evalcx(code, primarySandbox)
+      evalcx(code, primarySandbox);
     } catch(e) {
       dumpln("Running in sandbox threw " + errorToString(e));
     }
-  }
+  };
 }
 
 // When in xpcshell,
@@ -4712,7 +4713,7 @@ function useGeckoSandbox() {
     } catch(e) {
       // It might not be safe to operate on |e|.
     }
-  }
+  };
 }
 
 
@@ -4734,7 +4735,7 @@ function tryRunningDirectly(f, code, wtt)
   }
 
   if (count % 23 == 4) {
-    dumpln("About to recompile, using eval hack.")
+    dumpln("About to recompile, using eval hack.");
     f = directEvalC("(function(){" + code + "});");
   }
 
@@ -4785,7 +4786,7 @@ function tryEnsureSanity()
   } catch(e) { }
 
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
-  try { eval("") } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
+  try { eval(""); } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
 
   if (!this) {
     // Strict mode. Great.
@@ -4798,12 +4799,12 @@ function tryEnsureSanity()
 
     // Restore important stuff that might have been broken as soon as possible :)
     if ('unwatch' in this) {
-      this.unwatch("eval")
-      this.unwatch("Function")
-      this.unwatch("gc")
-      this.unwatch("uneval")
-      this.unwatch("toSource")
-      this.unwatch("toString")
+      this.unwatch("eval");
+      this.unwatch("Function");
+      this.unwatch("gc");
+      this.unwatch("uneval");
+      this.unwatch("toSource");
+      this.unwatch("toString");
     }
 
     if ('__defineSetter__' in this) {
@@ -4895,7 +4896,7 @@ function tryItOut(code)
   if (!wtt.allowParse)
     return;
 
-  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); })
+  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); });
 
   if (jsStrictMode)
     code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
@@ -4920,7 +4921,7 @@ function tryItOut(code)
       // pure jsfunfuzz doesn't test top-level at all.
       // (This is a good reason to use compareJIT even if I'm not interested in finding JIT bugs!)
       if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
-        nCode = "(function(){" + nCode + "})()"
+        nCode = "(function(){" + nCode + "})()";
       dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
     }
   }
@@ -4956,7 +4957,7 @@ function optionalTests(f, code, wtt)
     if (wtt.allowExec && (typeof sandbox == "function")) {
       f = null;
       if (trySandboxEval(code, false)) {
-        dumpln("Trying it again to see if it's a 'real leak' (???)")
+        dumpln("Trying it again to see if it's a 'real leak' (???)");
         trySandboxEval(code, true);
       }
     }
