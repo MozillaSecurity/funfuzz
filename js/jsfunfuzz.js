@@ -517,10 +517,10 @@ function rndElt(a)
 
 function cat(toks)
 {
-  if (rnd(1700) == 0)
+  if (rnd(1700) === 0)
     return totallyRandom(2, []);
 
-  var torture = (rnd(1700) == 57);
+  var torture = (rnd(1700) === 57);
   if (torture)
     dumpln("Torture!!!");
 
@@ -539,7 +539,7 @@ function cat(toks)
       dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
     }
 
-    if (!(torture && rnd(12) == 0))
+    if (!(torture && rnd(12) === 0))
       s += toks[i];
 
     s += maybeLineBreak();
@@ -603,9 +603,9 @@ var UNTERMINATED_REGEXP_LITERAL = "/";
 
 function maybeLineBreak()
 {
-  if (rnd(900) == 3)
+  if (rnd(900) === 3)
     return rndElt(["\r", "\n", "//h\n", "/*\n*/"]); // line break to trigger semicolon insertion and stuff
-  else if (rnd(400) == 3)
+  else if (rnd(400) === 3)
     return rnd(2) ? "\u000C" : "\t"; // weird space-like characters
   else
     return "";
@@ -613,7 +613,7 @@ function maybeLineBreak()
 
 function maybeSpace()
 {
-  if (rnd(2) == 0)
+  if (rnd(2) === 0)
     return " ";
   else
     return "";
@@ -647,7 +647,7 @@ function makeStatement(d, b)
   if (rnd(2))
     return makeBuilderStatement(d, b);
 
-  if (d < 6 && rnd(3) == 0)
+  if (d < 6 && rnd(3) === 0)
     return makePrintStatement(d, b);
 
   if (d < rnd(8)) // frequently for small depth, infrequently for large depth
@@ -670,19 +670,19 @@ function forLoopHead(d, b, v, reps)
   var sCond = v + " < " + reps;
   var sNext = "++" + v;
 
-  while (rnd(10) == 0)
+  while (rnd(10) === 0)
     sInit += ", " + makeLetHeadItem(d - 2, b);
-  while (rnd(10) == 0)
+  while (rnd(10) === 0)
     sInit += ", " + makeExpr(d - 2, b); // NB: only makes sense if our varBinder is ""
 
-  while (rnd(20) == 0)
+  while (rnd(20) === 0)
     sCond = sCond + " && (" + makeExpr(d - 2, b) + ")";
-  while (rnd(20) == 0)
+  while (rnd(20) === 0)
     sCond = "(" + makeExpr(d - 2, b) + ") && " + sCond;
 
-  while (rnd(20) == 0)
+  while (rnd(20) === 0)
     sNext = sNext + ", " + makeExpr(d - 2, b);
-  while (rnd(20) == 0)
+  while (rnd(20) === 0)
     sNext = makeExpr(d - 2, b) + ", " + sNext;
 
   return "for (" + sInit + "; " + sCond + "; " + sNext + ")";
@@ -1259,7 +1259,7 @@ function makeParallelArraySizeAndInitializer(d, b)
   var sizes = [];
   var argList = [];
   for (var i = 0; i < dimensions; ++i) {
-    sizes[i] = (rnd(100) == 0) ? makeExpr(d, b) :
+    sizes[i] = (rnd(100) === 0) ? makeExpr(d, b) :
       (dimensions == 1) ? rnd(20000) + 1 :
       rnd(120) + 1;
 
@@ -1357,7 +1357,7 @@ function makePrintStatement(d, b)
 
 function maybeLabel()
 {
-  if (rnd(4) == 1)
+  if (rnd(4) === 1)
     return cat([rndElt(["L", "M"]), ":"]);
   else
     return "";
@@ -1423,7 +1423,7 @@ function makeLittleStatement(d, b)
 
   d = d - 1;
 
-  if (rnd(4) == 1)
+  if (rnd(4) === 1)
     return makeStatement(d, b);
 
   return (rndElt(littleStatementMakers))(d, b);
@@ -1564,7 +1564,7 @@ function makeTryBlock(d, b)
 
   var numCatches = 0;
 
-  while(rnd(3) == 0) {
+  while(rnd(3) === 0) {
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
     var catchId = makeId(d, b);
@@ -1583,7 +1583,7 @@ function makeTryBlock(d, b)
     s +=   cat(["catch", "(", catchId,                                                          ")", " { ", catchBlock, " } "]);
   }
 
-  if (numCatches == 0 || rnd(2) == 1) {
+  if (numCatches == 0 || rnd(2) === 1) {
     // Add a finally.
     s += cat(["finally", " { ", makeExceptionyStatement(d, b), " } "]);
   }
@@ -1598,20 +1598,20 @@ function makeExpr(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (d <= 0 || (rnd(7) == 1))
+  if (d <= 0 || (rnd(7) === 1))
     return makeTerm(d - 1, b);
 
-  if (rnd(6) == 1 && b.length)
+  if (rnd(6) === 1 && b.length)
     return rndElt(b);
 
-  if (rnd(10) == 1)
+  if (rnd(10) === 1)
     return makeImmediateRecursiveCall(d, b);
 
   d = rnd(d); // !
 
   var expr = (rndElt(exprMakers))(d, b);
 
-  if (rnd(4) == 1)
+  if (rnd(4) === 1)
     return "(" + expr + ")";
   else
     return expr;
@@ -2119,7 +2119,7 @@ function makeShapeyConstructor(d, b)
   for (var i = 0; i < nStatements; ++i) {
     var propName = rndElt(propNames);
     var tprop = t + "[" + propName + "]";
-    if (rnd(5) == 0) {
+    if (rnd(5) === 0) {
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
     }
     switch(rnd(8)) {
@@ -2383,10 +2383,10 @@ function makeFunction(d, b)
 
   d = d - 1;
 
-  if(rnd(5) == 1)
+  if(rnd(5) === 1)
     return makeExpr(d, b);
 
-  if (rnd(4) == 1)
+  if (rnd(4) === 1)
     return rndElt(builtinFunctions);
 
   return (rndElt(functionMakers))(d, b);
@@ -2395,7 +2395,7 @@ function makeFunction(d, b)
 
 function maybeName(d, b)
 {
-  if (rnd(2) == 0)
+  if (rnd(2) === 0)
     return " " + makeId(d, b) + " ";
   else
     return "";
@@ -2404,9 +2404,9 @@ function maybeName(d, b)
 function directivePrologue()
 {
   var s = "";
-  if (rnd(3) == 0)
+  if (rnd(3) === 0)
     s += '"use strict"; ';
-  if (rnd(30) == 0)
+  if (rnd(30) === 0)
     s += '"use asm"; ';
   return s;
 }
@@ -2532,7 +2532,7 @@ function makeTypedArrayStatements(d, b)
     bv.push(view);
     var view_0 = view + "[0]";
     bv.push(view_0);
-    if (rnd(3) == 0)
+    if (rnd(3) === 0)
       statements += "print(" + view_0 + "); ";
     if (rnd(3))
       statements += view_0 + " = " + makeNumber(d - 2, b) + "; ";
@@ -2644,10 +2644,10 @@ var recursiveFunctions = [
 
 function singleRecursionDepth(d, b)
 {
-  if (rnd(2) == 0) {
+  if (rnd(2) === 0) {
     return "" + rnd(4);
   }
-  if (rnd(10) == 0) {
+  if (rnd(10) === 0) {
     return makeExpr(d - 2, b)
   }
   return "" + rnd(100000);
@@ -2679,7 +2679,7 @@ function makeImmediateRecursiveCall(d, b, cheat1, cheat2)
   }
   var actualArgs = cheat2 == null ? a.args(d, b) : cheat2;
   s = s + "(" + actualArgs + ")";
-  s = s.replace(/@/g, function() { if (rnd(4) == 0) return makeStatement(d-2, b); return ""; });
+  s = s.replace(/@/g, function() { if (rnd(4) === 0) return makeStatement(d-2, b); return ""; });
   if (a.randSub) s = a.randSub(s, varMap, d, b);
   s = "(" + s + ")";
   return s;
@@ -2689,7 +2689,7 @@ function makeLetHead(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  var items = (d > 0 || rnd(2) == 0) ? rnd(10) + 1 : 1;
+  var items = (d > 0 || rnd(2) === 0) ? rnd(10) + 1 : 1;
   var result = "";
 
   for (var i = 0; i < items; ++i) {
@@ -2707,9 +2707,9 @@ function makeLetHeadItem(d, b)
 
   d = d - 1;
 
-  if (d < 0 || rnd(2) == 0)
+  if (d < 0 || rnd(2) === 0)
     return rnd(2) ? uniqueVarName() : makeId(d, b);
-  else if (rnd(5) == 0)
+  else if (rnd(5) === 0)
     return makeDestructuringLValue(d, b) + " = " + makeExpr(d, b);
   else
     return makeId(d, b) + " = " + makeExpr(d, b);
@@ -2744,7 +2744,7 @@ function makeFormalArgList(d, b)
     argList.push(makeFormalArg(d - i, b));
   }
 
-  if (rnd(5) == 0) {
+  if (rnd(5) === 0) {
     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/rest_parameters
     argList.push("..." + makeId(d, b));
   }
@@ -2756,7 +2756,7 @@ function makeFormalArg(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(8) == 1)
+  if (rnd(8) === 1)
     return makeDestructuringLValue(d, b);
 
   return makeId(d, b) + (rnd(5) ? "" : " = " + makeExpr(d, b));
@@ -2774,7 +2774,7 @@ function makeId(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(3) == 1 && b.length)
+  if (rnd(3) === 1 && b.length)
     return rndElt(b);
 
   switch(rnd(200))
@@ -2846,7 +2846,7 @@ function makeForInLHS(d, b)
 
 // JS 1.7 only (removed in JS 1.8)
 //
-//  if (version() == 170 && rnd(4) == 0)
+//  if (version() == 170 && rnd(4) === 0)
 //    return cat(["[", makeLValue(d, b), ", ", makeLValue(d, b), "]"]);
 
   return makeLValue(d, b);
@@ -2857,7 +2857,7 @@ function makeLValue(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (d <= 0 || (rnd(2) == 1))
+  if (d <= 0 || (rnd(2) === 1))
     return makeId(d - 1, b);
 
   d = rnd(d); // !
@@ -2909,10 +2909,10 @@ function makeDestructuringLValue(d, b)
 
   d = d - 1;
 
-  if (d < 0 || rnd(4) == 1)
+  if (d < 0 || rnd(4) === 1)
     return makeId(d, b);
 
-  if (rnd(6) == 1)
+  if (rnd(6) === 1)
     return makeLValue(d, b);
 
   return (rndElt(destructuringLValueMakers))(d, b);
@@ -2965,7 +2965,7 @@ var destructuringLValueMakers = [
 // Allow "holes".
 function maybeMakeDestructuringLValue(d, b)
 {
-  if (rnd(2) == 0)
+  if (rnd(2) === 0)
     return ""
 
   return makeDestructuringLValue(d, b)
@@ -3037,10 +3037,10 @@ function maybeMakeTerm(d, b)
 
 function makeCrazyToken()
 {
-  if (rnd(3) == 0) {
+  if (rnd(3) === 0) {
     return String.fromCharCode(32 + rnd(128 - 32));
   }
-  if (rnd(6) == 0) {
+  if (rnd(6) === 0) {
     return String.fromCharCode(rnd(65536));
   }
 
@@ -3092,7 +3092,7 @@ function makeShapeyValue(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(10) == 0)
+  if (rnd(10) === 0)
     return makeExpr(d, b);
 
   var a = [
@@ -3182,7 +3182,7 @@ function makeArrayLiteral(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (rnd(2) == 0)
+  if (rnd(2) === 0)
     return makeMixedTypeArray(d, b);
 
   var elems = [];
@@ -3291,7 +3291,7 @@ function makeRegisterStompBody(d, b, pure)
       ++lastRVar;
       s += "var " + newVar + " = " + expr() + "; "
       bv.push(newVar);
-    } else if (rnd(5) == 0 && !pure) {
+    } else if (rnd(5) === 0 && !pure) {
       s += "print(" + rndElt(bv) + "); ";
     } else {
       s += rndElt(bv) + " = " + expr() + "; ";
@@ -3317,9 +3317,9 @@ function asmJSInterior(foreignFunctions, sanePlease)
 {
   function mess()
   {
-    if (!sanePlease && rnd(600) == 0)
+    if (!sanePlease && rnd(600) === 0)
       return makeStatement(8, ["x"]) + "\n";
-    if (!sanePlease && rnd(600) == 0)
+    if (!sanePlease && rnd(600) === 0)
       return totallyRandom(8, ["x"]);
     return "";
   }
@@ -3381,22 +3381,22 @@ function asmJsFunction(globalEnv, name, ret, args)
 
 function asmStatement(indent, env, d)
 {
-  if (!env.globalEnv.sanePlease && rnd(100) == 0)
+  if (!env.globalEnv.sanePlease && rnd(100) === 0)
     return makeStatement(3, ["x"]);
 
-  if (rnd(5) == 0 && d > 0) {
+  if (rnd(5) === 0 && d > 0) {
     return indent + "{\n" + asmStatement(indent + "  ", env, d - 1) + indent + "}\n";
   }
-  if (rnd(20) == 0 && d > 3) {
+  if (rnd(20) === 0 && d > 3) {
     return asmSwitchStatement(indent, env, d);
   }
-  if (rnd(10) == 0) {
+  if (rnd(10) === 0) {
     return asmReturnStatement(indent, env);
   }
-  if (rnd(50) == 0 && env.globalEnv.foreignFunctions.length) {
+  if (rnd(50) === 0 && env.globalEnv.foreignFunctions.length) {
     return asmVoidCallStatement(indent, env);
   }
-  if (rnd(100) == 0)
+  if (rnd(100) === 0)
     return ";";
   return asmAssignmentStatement(indent, env);
 }
@@ -3408,7 +3408,7 @@ function asmVoidCallStatement(indent, env)
 
 function asmAssignmentStatement(indent, env)
 {
-  if (rnd(5) == 0 || !env.locals.length) {
+  if (rnd(5) === 0 || !env.locals.length) {
     if (rnd(2)) {
       return indent + intishMemberExpr(8, env) + " = " + intishExpr(10, env) + ";\n";
     } else {
@@ -3620,8 +3620,8 @@ function autoExpr(funs, avoidSubst)
 {
   return function(d, e) {
     var f = d < 1 ? funs[0] :
-            rnd(50) == 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]) } :
-            rnd(50) == 0 && !avoidSubst ? rndElt(anyAsmExpr) :
+            rnd(50) === 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]) } :
+            rnd(50) === 0 && !avoidSubst ? rndElt(anyAsmExpr) :
             rndElt(funs);
     return "(" + f(d, e) + ")";
   }
@@ -3657,7 +3657,7 @@ function doubleLiteral()
 
 function positiveDoubleLiteral()
 {
-  if (rnd(3) == 0) {
+  if (rnd(3) === 0) {
     rndElt(["0.0", "1.0", "1.2345e60"])
   }
 
@@ -3681,17 +3681,17 @@ function positiveDoubleLiteral()
 
 function fuzzyRange(min, max)
 {
-  if (rnd(10000) == 0)
+  if (rnd(10000) === 0)
     return min - 1;
-  if (rnd(10000) == 0)
+  if (rnd(10000) === 0)
     return max + 1;
-  if (rnd(10) == 0)
+  if (rnd(10) === 0)
     return min;
-  if (rnd(10) == 0)
+  if (rnd(10) === 0)
     return max;
 
   // rnd() is limited to 2^32. (It also skews toward lower numbers, oh well.)
-  if (max > min + 0x100000000 && rnd(3) == 0)
+  if (max > min + 0x100000000 && rnd(3) === 0)
     return min + 0x100000000 + rnd(max - (min + 0x100000000) + 1);
   return min + rnd(max - min + 1);
 }
@@ -4089,7 +4089,7 @@ function regexGrouped(prefix, dr, postfix)
   var newStrings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     newStrings[i] = rnd(5) ? strings[i] : "";
-    if (prefix == "(" && strings[i].length < 40 && rnd(3) == 0) {
+    if (prefix == "(" && strings[i].length < 40 && rnd(3) === 0) {
       backrefHack[i] = strings[i];
     }
   }
@@ -4190,7 +4190,7 @@ function randomRegexFlags() {
 
 function toRegexSource(rexpat)
 {
-  return (rnd(2) == 0 && rexpat.charAt(0) != "*") ?
+  return (rnd(2) === 0 && rexpat.charAt(0) != "*") ?
     "/" + rexpat + "/" + randomRegexFlags() :
     "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
 }
@@ -4201,8 +4201,8 @@ function makeRegexUseBlock(d, b, rexExpr, strExpr)
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
 
-  if (!rexExpr) rexExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
-  if (!strExpr) strExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : simpleSource(str);
+  if (!rexExpr) rexExpr = rnd(10) === 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
+  if (!strExpr) strExpr = rnd(10) === 0 ? makeExpr(d - 1, b) : simpleSource(str);
 
   var bv = b.concat(["s", "r"]);
 
@@ -4230,8 +4230,8 @@ function makeRegexUseExpr(d, b)
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
 
-  var rexExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
-  var strExpr = rnd(10) == 0 ? makeExpr(d - 1, b) : simpleSource(str);
+  var rexExpr = rnd(10) === 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
+  var strExpr = rnd(10) === 0 ? makeExpr(d - 1, b) : simpleSource(str);
 
   return "/*RXUE*/" + rexExpr + ".exec(" + strExpr + ")";
 }
@@ -4608,7 +4608,7 @@ function testOne()
     //print("Sane mode!")
   }
 
-//  if (rnd(10) == 1) {
+//  if (rnd(10) === 1) {
 //    var dp = "/*infloop-deParen*/" + rndElt(deParen(code));
 //    if (dp)
 //      code = dp;
