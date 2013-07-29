@@ -35,7 +35,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-/* jshint moz:true, evil:true, maxerr:10000 */
+/* jshint moz:true, evil:true, sub:true, maxerr:10000 */
 //"use strict";
 var jsStrictMode = false;
 
