@@ -451,7 +451,7 @@ if (1) {
   // (spidermonkey trunk 2008-10-08 with JIT on, makes jsfunfuzz 20% slower overall!)
 
   (function() {
-    var fuzzMT = new MersenneTwister19937;
+    var fuzzMT = new MersenneTwister19937();
     var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
     dumpln("fuzzSeed: " + fuzzSeed);
     fuzzMT.init_genrand(fuzzSeed);
@@ -2454,7 +2454,7 @@ var functionMakers = [
   function(d, b) { return "function(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
 
   // A generator that does something
-  function(d, b) { return "function(y) { " + + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
+  function(d, b) { return "function(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
 
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
@@ -4841,7 +4841,7 @@ function tryEnsureSanity()
 function tryIteration(rv)
 {
   try {
-    if (!(Iterator(rv) === rv))
+    if (Iterator(rv) !== rv)
       return; // not an iterator
   }
   catch(e) {
