@@ -402,6 +402,7 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "gURLBar.editor is undefined" in msg) or
         ("browser.js" in msg and "browser is undefined" in msg) or
         ("browser.js" in msg and "gNavigatorBundle.getString is not a function" in msg) or
+        ("browser.js" in msg and "gBrowser.browsers is undefined" in msg) or
         "devtools" in msg or # most devtools js errors I hit are uninteresting races
 
         False
