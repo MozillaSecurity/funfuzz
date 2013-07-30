@@ -124,12 +124,12 @@ function simpleSource(s)
   }
 
   if (typeof s == "string")
-    return "\"" + s.replace(/\\/g, "\\\\")
-                   .replace(/\"/g, "\\\"")
-                   .replace(/\0/g, "\\0")
-                   .replace(/\n/g, "\\n")
-                   .replace(/[^ -~]/g, hexify) // not space (32) through tilde (126)
-                   + "\"";
+    return ("\"" + s.replace(/\\/g, "\\\\")
+                    .replace(/\"/g, "\\\"")
+                    .replace(/\0/g, "\\0")
+                    .replace(/\n/g, "\\n")
+                    .replace(/[^ -~]/g, hexify) // not space (32) through tilde (126)
+                 + "\"");
   else
     return "" + s; // hope this is right ;)  should work for numbers.
 }
