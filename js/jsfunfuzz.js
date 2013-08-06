@@ -1870,8 +1870,8 @@ function makeGlobal(d, b)
   var gs = rndElt([
     "evalcx('')",
     "evalcx('lazy')",
-    "newGlobal({})", // same zone
-    "newGlobal(" + makeExpr(d - 2, b) + ")", // other zone
+    "newGlobal({sameZoneAs: {}})", // same zone
+    "newGlobal({sameZoneAs: " + makeExpr(d - 2, b) + "})", // other zone
     "newGlobal()", // new zone
   ]);
 
@@ -4399,7 +4399,7 @@ function sandboxResult(code, zone)
   try {
     // Using newGlobal(), rather than evalcx(''), to get
     // shell functions. (see bug 647412 comment 2)
-    var sandbox = newGlobal(zone);
+    var sandbox = newGlobal({sameZoneAs: zone});
 
     result = evalcx(code, sandbox);
     if (typeof result != "object") {
@@ -4669,7 +4669,7 @@ function useSpidermonkeyShellSandbox(sandboxType)
   switch (sandboxType) {
     case 0:  primarySandbox = evalcx('');
     case 1:  primarySandbox = evalcx('lazy');
-    case 2:  primarySandbox = newGlobal({}); // same zone
+    case 2:  primarySandbox = newGlobal({sameZoneAs: {}}); // same zone
     default: primarySandbox = newGlobal(); // new zone
   }
 
