@@ -182,6 +182,8 @@ layout.enable_japanese_specific_transform
 layout.frame_rate.precise
 layout.frames.force_resizability
 layout.gpu-scaling.enabled
+layers.prefer-memory-over-shmem
+layers.use-deprecated-textures
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
 media.audio_data.enabled
