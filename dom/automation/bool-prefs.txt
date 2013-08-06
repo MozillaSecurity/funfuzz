@@ -166,6 +166,7 @@ keyword.enabled
 layers.acceleration.disabled
 #layers.acceleration.force-enabled # Bug 868787
 #layers.async-video.enabled # requires OMTC
+layers.bufferrotation.enabled
 layers.composer2d.enabled
 layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
