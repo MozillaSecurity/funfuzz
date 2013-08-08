@@ -344,7 +344,8 @@ def constructCdbCommand(progfullname, crashedPID):
                     cdbCmdList.append('.load ' + bExploitableDLL)
                 cdbCmdList.append('$<' + debuggerCmdPath)
 
-                return [cdbPath, '-c', ';'.join(cdbCmdList), '-z', dumpFilename]
+                # See bug 902706 about -g.
+                return [cdbPath, '-g', '-c', ';'.join(cdbCmdList), '-z', dumpFilename]
 
             time.sleep(0.200)
             loops += 1
