@@ -91,6 +91,9 @@ def randomFlagSet(shellPath):
             # Disabled until bug 867767, bug 868731 and bug 871848 are fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
+        if shellSupportsFlag(shellPath, '--ion-compile-try-catch'):
+            if chance(.5):
+                args.append('--ion-compile-try-catch')
     else:
         args.append("--no-ion")
 

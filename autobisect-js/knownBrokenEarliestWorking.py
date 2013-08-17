@@ -149,6 +149,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     #if options.buildWithAsan:
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
+    if '--ion-compile-try-catch' in flags:
+        required.append('73912c9ba403') # 142172 on m-c, first rev that has a stable --ion-compile-try-catch option
     if '--fuzzing-safe' in flags:
         required.append('0a9314155404') # 135892 on m-c, first rev that has the --fuzzing-safe option
     if '--baseline-eager' in flags:
