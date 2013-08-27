@@ -94,9 +94,14 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         if i == 0:
             (r0, prefix0) = (r, prefix)
         else:
-            # --no-fpu on x86_32 turns off asm.js compilation, among other things.
-            # This changes the asm.js diagnostics on stderr, but shouldn't affect output (including catchable exceptions).
-            sameFpuOption = (("--no-fpu" in commands[0]) == ("--no-fpu" in command))
+
+            def fpuOptionDisabledAsmOnOneSide():
+                # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
+                # This changes asm.js behavior (asm.js diagnostics on stderr; output of decompilation due to bug 878399)
+                fpuAsmMsg = "asm.js type error: Disabled by lack of floating point support"
+                fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err
+                fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
+                return (fpuOptionDisabledAsm and fpuOptionDiffers)
 
             if "js_ReportOverRecursed called" in r.err or "js_ReportOverRecursed called" in r0.err:
                 #print "compareJIT: Ignoring js_ReportOverRecursed difference"
@@ -105,13 +110,16 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             elif "can't allocate region" in r.err or "can't allocate region" in r0.err:
                 #print "compareJIT: Ignoring OOM difference"
                 jsInteresting.deleteLogs(prefix)
-            elif r.err != r0.err and sameFpuOption:
+            elif r.err != r0.err and not fpuOptionDisabledAsmOnOneSide():
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
                 showDifferences(prefix0 + "-err.txt", prefix + "-err.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
+            elif r.err != r0.err:
+                #print "compareJIT: Ignoring both stderr and stdout differences (bug 878399) (see bug 908608)
+                jsInteresting.deleteLogs(prefix)
             elif r.out != r0.out:
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stdout"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
