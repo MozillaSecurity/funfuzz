@@ -47,6 +47,27 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOpt
         return (lithOps.HAPPY, None)
 
 
+def hitMemoryLimit(err, infilename, issues, lev, elapsedtime):
+    """Does stderr indicate hitting a memory limit?"""
+
+    def reportOOM(msg):
+        fullMsg = "compareJIT is not comparing output: OOM (" + msg + ")"
+        print infilename + " | " + jsInteresting.summaryString(issues + [fullMsg], lev, elapsedtime)
+
+    if "js_ReportOverRecursed called" in err:
+        reportOOM("js_ReportOverRecursed called")
+        return True
+    elif "can't allocate region" in err:
+        reportOOM("can't allocate region")
+        return True
+    elif len(err) + 5 > lengthLimit:
+        # If the output was too long for Python to read it in, assume the worst.
+        reportOOM("stderr too long")
+        return True
+
+    return False
+
+
 def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
     combos = shellFlags.basicFlagSets(jsEngine)
 
@@ -76,7 +97,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             print "  " + shellify(command)
             assert i > 0
             jsInteresting.deleteLogs(prefix)
-            continue
         elif lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
             print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT found a more serious bug"], lev, r.elapsedtime)
@@ -86,14 +106,19 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT is not comparing output, because the shell exited strangely"], lev, r.elapsedtime)
             print "  " + shellify(command)
             jsInteresting.deleteLogs(prefix)
-            if i > 0:
-                continue
-            else:
+            if i == 0:
                 return jsInteresting.JS_FINE
-
-        if i == 0:
+        elif hitMemoryLimit(r.err, infilename, issues, lev, r.elapsedtime):
+            # If the shell or python hit a memory limit, we consider the rest of the computation
+            # "tainted" for the purpose of correctness comparison.
+            jsInteresting.deleteLogs(prefix)
+            if i == 0:
+                return jsInteresting.JS_FINE
+        elif i == 0:
+            # Stash output from this run (the first one), so for subsequent runs, we can compare against it.
             (r0, prefix0) = (r, prefix)
         else:
+            # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
             def fpuOptionDisabledAsmOnOneSide():
                 # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
@@ -103,14 +128,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
                 return (fpuOptionDisabledAsm and fpuOptionDiffers)
 
-            if "js_ReportOverRecursed called" in r.err or "js_ReportOverRecursed called" in r0.err:
-                #print "compareJIT: Ignoring js_ReportOverRecursed difference"
-                # delete extra files
-                jsInteresting.deleteLogs(prefix)
-            elif "can't allocate region" in r.err or "can't allocate region" in r0.err:
-                #print "compareJIT: Ignoring OOM difference"
-                jsInteresting.deleteLogs(prefix)
-            elif r.err != r0.err and not fpuOptionDisabledAsmOnOneSide():
+            if r.err != r0.err and not fpuOptionDisabledAsmOnOneSide():
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
