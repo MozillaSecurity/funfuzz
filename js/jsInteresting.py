@@ -164,7 +164,7 @@ def truncateFile(fn, maxSize):
 def valgrindSuppressions(knownPath):
     a = []
     while os.path.basename(knownPath) != "known":
-        filename = os.path.join(knownPath, "valgrind.txt")
+        filename = os.path.join(knownPath, "valgrind-shell.txt")
         if os.path.exists(filename):
              a.append("--suppressions=" + filename)
         knownPath = os.path.dirname(os.path.dirname(filename))
