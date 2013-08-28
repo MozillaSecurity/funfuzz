@@ -4291,7 +4291,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("'strict") == -1             // bug 743425
-       && code.indexOf("Function.prototype") == -1  // bug 892787
+       && code.indexOf("arguments") == -1           // bug 909602
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
