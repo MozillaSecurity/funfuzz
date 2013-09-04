@@ -337,6 +337,11 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--enable-exact-rooting')
             if options.enableGcGenerational:
                 cfgCmdList.append('--enable-gcgenerational')
+        if options.buildWithVg:
+            cfgCmdList.append('--enable-valgrind')
+
+        if os.name == 'posix':
+            cfgCmdList.append('--with-ccache')
         if options.isThreadsafe:
             cfgCmdList.append('--enable-threadsafe')
             cfgCmdList.append('--with-nspr-prefix=' + \
@@ -347,11 +352,6 @@ def cfgBin(shell, options, binToBeCompiled):
                 normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)) \
                     for compileLib in ALL_COMPILE_LIBS
                 ]))
-        if options.buildWithVg:
-            cfgCmdList.append('--enable-valgrind')
-
-        if os.name == 'posix':
-            cfgCmdList.append('--with-ccache')
 
     if os.name == 'nt':
         # FIXME: Replace this with shellify.
