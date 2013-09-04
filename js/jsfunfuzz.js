@@ -4293,8 +4293,8 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("'strict") == -1             // bug 743425
        && code.indexOf("arguments") == -1           // bug 909602
        && code.indexOf("ArrayBuffer") == -1         // bug 911369
+       && code.indexOf("valueOf") == -1             // bug 911369
        && code.indexOf("__noSuchMethod__") == -1    // bug 912303
-       && code.indexOf("decodeURIComponent") == -1  // bug 912304
        && code.indexOf("Array.prototype") == -1     // bug 912316
        && code.indexOf("gcPreserveCode") == -1      // bug 912328
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
