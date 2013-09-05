@@ -100,6 +100,7 @@ def knownBrokenRanges(options):
     if options.enableExactRooting:
         skips.extend([
             hgrange('f8f0facf81ec', '492e87516012'), # broken exact rooting or GGC
+            hgrange('541248fb29e4', '9695f620df74'), # broken exact rooting or GGC
         ])
 
     return skips
