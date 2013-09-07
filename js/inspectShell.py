@@ -49,7 +49,7 @@ def archOfBinary(binary):
     else:
         if 'universal binary' in filetype:
             raise Exception("I don't know how to deal with multiple-architecture binaries")
-        if '386' in filetype or '32-bit' in filetype:
+        if '32-bit' in filetype or 'i386' in filetype:
             assert '64-bit' not in filetype
             return '32'
         if '64-bit' in filetype:
