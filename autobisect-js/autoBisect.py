@@ -24,7 +24,7 @@ import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 from compileShell import CompiledShell, makeTestRev, ensureCacheDir
-from inspectShell import constructVgCmdList, testBinary
+from inspectShell import testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'dom', 'automation'))
 sys.path.append(path3)
 import buildBrowser
@@ -286,10 +286,9 @@ def externalTestAndLabel(options, interestingness):
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
     conditionArgPrefix = interestingness[1:]
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
-    vgExtra = constructVgCmdList() if options.buildOptions and options.buildOptions.runWithVg else []
 
     def inner(shellFilename, hgHash):
-        conditionArgs = conditionArgPrefix + vgExtra + [shellFilename] + options.paramList
+        conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
