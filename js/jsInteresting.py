@@ -153,7 +153,7 @@ def reportedOverRecursion(logPrefix):
 
 
 def summaryString(issues, level, elapsedtime):
-    amissDetails = ("") if (len(issues) == 0) else (" | " + repr(issues) + " ")
+    amissDetails = ("") if (len(issues) == 0) else (" | " + repr(issues[:5]) + " ")
     return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 def truncateFile(fn, maxSize):
