@@ -38,11 +38,9 @@ def runBrowser():
   url = args[4]
 
   sys.path.append(reftestScriptDir)
-  try:
-    from automation import Automation
-    import automationutils
-  finally:
-    sys.path.pop()
+  from automation import Automation
+  import automationutils
+
   automation = Automation()
 
   # also run automation.py's options parser, but don't give it any input
