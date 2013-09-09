@@ -147,7 +147,7 @@ def autoconfRun(cwd):
 def cfgAsanParams(currEnv, options):
     '''Configures parameters that Asan needs.'''
     # https://developer.mozilla.org/en-US/docs/Building_Firefox_with_Address_Sanitizer#Manual_Build
-    vdump('Assumed LLVM SVN version is: 163716')
+    vdump('Assumed LLVM SVN version is: 185949')
 
     llvmRoot = normExpUserPath(options.llvmRootSrcDir)
     # FIXME: It would be friendlier to show instructions (or even offer to set up LLVM for the user,
@@ -155,13 +155,13 @@ def cfgAsanParams(currEnv, options):
     assert os.path.isdir(llvmRoot)
     currEnv['LLVM_ROOT'] = llvmRoot
 
-    ccClang = os.path.join(llvmRoot, 'build', 'Release+Asserts', 'bin', 'clang')
+    ccClang = os.path.join(llvmRoot, 'build', 'bin', 'clang')
     assert os.path.isfile(ccClang)
-    currEnv['CC'] = ccClang + ' -faddress-sanitizer -Dxmalloc=myxmalloc'
+    currEnv['CC'] = ccClang + ' -fsanitize=address -Dxmalloc=myxmalloc'
 
-    cxxClang = os.path.join(llvmRoot, 'build', 'Release+Asserts', 'bin', 'clang++')
+    cxxClang = os.path.join(llvmRoot, 'build', 'bin', 'clang++')
     assert os.path.isfile(cxxClang)
-    currEnv['CXX'] = cxxClang + ' -faddress-sanitizer -Dxmalloc=myxmalloc'
+    currEnv['CXX'] = cxxClang + ' -fsanitize=address -Dxmalloc=myxmalloc'
 
     return currEnv
 
