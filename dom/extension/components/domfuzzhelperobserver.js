@@ -165,6 +165,9 @@ var quitting = false;
 
 function quitWithLeakCheck(leaveWindowsOpen)
 {
+  // if not pref nglayout.debug.disable_xul_cache
+  //   return
+
   leaveWindowsOpen = !!leaveWindowsOpen;
 
   // Magic string that domInteresting.py looks for

@@ -227,6 +227,7 @@ network.websocket.allowInsecureFromHTTPS
 network.websocket.auto-follow-http-redirects
 network.websocket.enabled
 network.websocket.extensions.stream-deflate
+nglayout.debug.disable_xul_cache
 nglayout.enable_drag_images
 notification.feature.enabled
 plugin.allow.asyncdrawing

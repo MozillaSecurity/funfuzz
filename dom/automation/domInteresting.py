@@ -82,7 +82,6 @@ def writePrefs(profileDir, extraPrefs):
   user_pref("extensions.enabledScopes", 3);
   user_pref("extensions.autoDisableScopes", 10);
   user_pref("extensions.update.notifyUser", false);
-  user_pref("nglayout.debug.disable_xul_cache", true);
   user_pref("security.fileuri.strict_origin_policy", false);
   user_pref("dom.min_background_timeout_value", 4);
   user_pref("dom.successive_dialog_time_limit", 0);
