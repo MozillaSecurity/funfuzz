@@ -144,6 +144,7 @@ javascript.options.baselinejit.content
 javascript.options.baselinejit.chrome
 javascript.options.baselinejit.unsafe_eager_compilation
 javascript.options.gc_on_memory_pressure
+javascript.options.ion.chrome
 javascript.options.ion.content
 javascript.options.ion.parallel_compilation
 javascript.options.ion.unsafe_eager_compilation
@@ -159,7 +160,8 @@ javascript.options.methodjit.content
 javascript.options.methodjit_always
 javascript.options.tracejit.chrome
 javascript.options.tracejit.content
-javascript.options.typeinference
+javascript.options.typeinference.chrome
+javascript.options.typeinference.content
 javascript.options.xml.content
 javascript.options.xml.chrome
 keyword.enabled
