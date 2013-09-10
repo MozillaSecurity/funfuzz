@@ -95,10 +95,9 @@ def randomFlagSet(shellPath):
         if shellSupportsFlag(shellPath, '--ion-compile-try-catch'):
             if chance(.5):
                 args.append('--ion-compile-try-catch')
-        # Disabled due to bug 908867.
-        #if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
-        #    if chance(.5):
-        #        args.append('--ion-check-range-analysis')
+        if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
+            if chance(.5):
+                args.append('--ion-check-range-analysis')
     else:
         args.append("--no-ion")
 
