@@ -4295,7 +4295,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("ArrayBuffer") == -1         // bug 911369
        && code.indexOf("valueOf") == -1             // bug 911369
        && code.indexOf("__noSuchMethod__") == -1    // bug 912303
-       && code.indexOf("Array.prototype") == -1     // bug 912316
        && code.indexOf("gcPreserveCode") == -1      // bug 912328
        && code.indexOf("length") == -1              // bug 913749
        && code.indexOf("schedulegc") == -1          // bug 913885
