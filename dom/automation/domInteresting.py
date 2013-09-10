@@ -249,7 +249,6 @@ class AmissLogHandler:
             not overlyGenericAssertion and
             detect_assertions.scanLine(self.knownPath, msgLF) and
             not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and
-            not ("Assertion failure: !JSRuntime::hasLiveRuntimes() (forgot to destroy a runtime before shutting down)," in msg and self.expectedToLeak) and # Bug 899270
             not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
             not (self.goingDownHard and isWin) and # Bug 763182
             True)
@@ -333,10 +332,7 @@ class AmissLogHandler:
                 self.printAndLog("%%% This crash report is totally busted. Giving up.")
                 self.crashIsKnown = True
 
-        if ("goQuitApplication" in msg or
-            "fuzzerWhenDeep" in msg or # Bug 732665
-            "InternalError: too much recursion" in msg # Bug 732665 (see bug 762598 for a testcase)
-            ):
+        if "goQuitApplication" in msg:
             self.expectChromeFailure = True
         if (not self.expectChromeFailure and jsInChrome(msg) and jsFailure(msg) and not knownChromeFailure(msg)):
             self.printAndLog("@@@ " + msg)
@@ -371,7 +367,6 @@ def knownChromeFailure(msg):
         "installStatus is null" in msg or # bug 693237
         "aTab is null" in msg or # bug 693239
         "browser is null" in msg or # bug 693239?
-        "too much recursion" in msg or # bug 732665
         "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
         "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
         "prompt aborted by user" in msg or # thrown intentionally in nsPrompter.js
