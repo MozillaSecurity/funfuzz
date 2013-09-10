@@ -84,6 +84,9 @@ browser.zoom.siteSpecific
 browser.zoom.updateBackgroundTabs
 converter.html2txt.structs
 device.sensors.enabled
+dom.global-constructor.disable.mozContact
+dom.mozContacts.enabled
+dom.navigator-property.disable.mozContacts
 dom.archivereader.enabled
 dom.disable_image_src_set
 dom.event.clipboardevents.enabled
