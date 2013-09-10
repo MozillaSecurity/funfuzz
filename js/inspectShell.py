@@ -147,6 +147,8 @@ def verifyBinary(sh, options):
                 options.isThreadsafe
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \
             options.enableMoreDeterministic
+        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
+            options.buildWithAsan
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
             options.enableRootAnalysis
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'exact-rooting') == \
