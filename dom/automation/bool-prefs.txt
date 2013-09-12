@@ -100,6 +100,7 @@ dom.gamepad.enabled
 dom.gamepad.non_standard_events.enabled
 dom.identity.enabled
 dom.indexedDB.enabled
+dom.indexedDB.experimental
 dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
 dom.ipc.plugins.java.enabled
