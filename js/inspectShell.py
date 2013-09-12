@@ -64,6 +64,7 @@ def constructVgCmdList(errorCode=77):
         vgCmdList.append('--dsymutil=yes')
     vgCmdList.append('--error-exitcode=' + str(errorCode))
     vgCmdList.append('--smc-check=all-non-file')
+    vgCmdList.append('--partial-loads-ok=yes')  # See bug 913883 comment 3
     vgCmdList.append('--gen-suppressions=all')
     vgCmdList.append('--leak-check=full')
     vgCmdList.append('--show-possibly-lost=no')
