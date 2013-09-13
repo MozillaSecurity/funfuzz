@@ -4294,7 +4294,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("arguments") == -1           // bug 909602
        && code.indexOf("__noSuchMethod__") == -1    // bug 912303
        && code.indexOf("gcPreserveCode") == -1      // bug 912328
-       && code.indexOf("length") == -1              // bug 913749
        && code.indexOf("schedulegc") == -1          // bug 913885
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
