@@ -484,6 +484,9 @@ def compileNspr(shell, options):
         raise Exception('Unable to create NSPR objdir.')
     cfgBin(shell, options, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
+    # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
+    # build during bisection. Maybe find the changeset that fixes this, and if before that, use -j1,
+    # and after that, use -jX ?
     nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j1', '-s']
     #nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
     out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
