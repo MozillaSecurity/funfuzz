@@ -447,8 +447,11 @@ def retestAll(options, buildDir):
                 print "Skipping " + j + " for " + j.split("_")[0]
             if "_reduced" in j and not j.split("_")[0] in retestSkips:
                 job = os.path.join(jobTypeDir, j)
-                testcase = os.path.join(job, filter(lambda s: s.find("reduced") != -1, os.listdir(job))[0])
-                testcases.append({'testcase': testcase, 'mtime': os.stat(testcase).st_mtime})
+                testcase_leafs = filter(lambda s: s.find("reduced") != -1, os.listdir(job))
+                if len(testcase_leafs) == 1:
+                    testcase = os.path.join(job, testcase_leafs[0])
+                    mtime = os.stat(testcase).st_mtime
+                    testcases.append({'testcase': testcase, 'mtime': mtime})
 
     # Sort so the newest testcases are first
     print "Retesting " + str(len(testcases)) + " testcases..."
