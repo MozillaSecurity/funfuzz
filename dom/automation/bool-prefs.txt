@@ -189,6 +189,7 @@ layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
 layout.frame_rate.precise
 layout.frames.force_resizability
+layout.imagevisibility.enabled
 layout.gpu-scaling.enabled
 layers.prefer-memory-over-shmem
 layers.use-deprecated-textures
