@@ -309,13 +309,16 @@ def cfgBin(shell, options, binToBeCompiled):
         assert 'clang' in cfgEnvDt['CC']
         assert 'clang++' in cfgEnvDt['CXX']
 
-    if options.compileType == 'dbg':
-        # See https://hg.mozilla.org/mozilla-central/file/0a91da5f5eab/configure.in#l6894
-        # Debug builds are compiled with --enable-optimize because --disable-optimize is not present.
-        cfgCmdList.append('--enable-optimize')
-        cfgCmdList.append('--enable-debug')
+    # See https://hg.mozilla.org/mozilla-central/file/0a91da5f5eab/configure.in#l6894
+    # Debug builds are compiled with --enable-optimize because --disable-optimize is not present.
+    if options.buildWithVg:
+        cfgCmdList.append('--enable-optimize=-O1')
     else:
         cfgCmdList.append('--enable-optimize')
+
+    if options.compileType == 'dbg':
+        cfgCmdList.append('--enable-debug')
+    else:
         cfgCmdList.append('--disable-debug')
 
     if binToBeCompiled == 'nspr':
