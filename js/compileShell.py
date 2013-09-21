@@ -175,14 +175,14 @@ def cfgJsCompileCopy(shell, options):
     except OSError:
         raise Exception('Unable to create js objdir.')
 
-    configureCount = 0
+    configureTryCount = 0
     while True:
         try:
             cfgBin(shell, options, 'js')
             break
         except Exception, e:
-            configureCount += 1
-            if configureCount > 5:
+            configureTryCount += 1
+            if configureTryCount > 5:
                 print 'Configuration of the js binary failed 5 times.'
                 raise
             # This exception message is returned from captureStdout via cfgBin.
