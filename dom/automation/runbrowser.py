@@ -38,7 +38,11 @@ def runBrowser():
   url = args[4]
 
   sys.path.append(reftestScriptDir)
-  from automation import Automation
+  try:
+    from automation import Automation
+  except ImportError as e:
+    print "Working around https://bugzilla.mozilla.org/show_bug.cgi?id=903616"
+    from automation import Automation
   import automationutils
 
   automation = Automation()
