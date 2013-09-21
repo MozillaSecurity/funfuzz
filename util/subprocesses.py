@@ -156,6 +156,8 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
                         'configure: error: installation or configuration problem: ' + \
                         'C++ compiler cannot create executables.' in stderr:
                     raise Exception('Windows conftest.exe configuration permission problem')
+                elif stderr and '[buildicu] Error' in stderr:
+                    raise Exception('ICU build problem')
                 else:
                     raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
