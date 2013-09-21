@@ -181,10 +181,6 @@ def cfgJsCompileCopy(shell, options):
         if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
             print 'Trying once more...'
             cfgBin(shell, options, 'js')
-        # ICU can fail to build due to a strange reason, some binary during the build segfaults
-        elif '[buildicu] Error' in repr(e):
-            print 'Trying once more...'
-            cfgBin(shell, options, 'js')
         else:
             print 'Configuration of the js binary failed.'
             raise
