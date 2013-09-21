@@ -174,16 +174,22 @@ def cfgJsCompileCopy(shell, options):
         os.mkdir(shell.getJsObjdir())
     except OSError:
         raise Exception('Unable to create js objdir.')
-    try:
-        cfgBin(shell, options, 'js')
-    except Exception, e:
-        # This exception message is returned from captureStdout via cfgBin.
-        if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
-            print 'Trying once more...'
+
+    compileCount = 0
+    while True:
+        try:
             cfgBin(shell, options, 'js')
-        else:
-            print 'Configuration of the js binary failed.'
-            raise
+            break
+        except Exception, e:
+            compileCount += 1
+            if compileCount > 5:
+                print 'Configuration of the js binary failed 5 times.'
+                raise
+            # This exception message is returned from captureStdout via cfgBin.
+            # No idea why this is isLinux as well..
+            if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
+                print 'Trying once more...'
+                continue
     compileJsCopy(shell, options)
 
 def cfgBin(shell, options, binToBeCompiled):
