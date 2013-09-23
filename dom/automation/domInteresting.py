@@ -355,6 +355,7 @@ def jsFailure(msg):
 
 def jsInChrome(msg):
     return ("chrome://browser/" in msg or
+            "chrome://global/content/bindings/browser.xml" in msg or
             "resource:///components" in msg or
             "resource:///modules/" in msg or
             "resource:///gre/modules/" in msg or
