@@ -12,8 +12,8 @@ import urllib
 import domInteresting
 
 p0 = os.path.dirname(os.path.abspath(__file__))
-emptiesDir = os.path.abspath(os.path.join(p0, os.pardir, "empties"))
-fuzzersDir = os.path.abspath(os.path.join(p0, os.pardir, "fuzzers"))
+fuzzingDomDir = os.path.abspath(os.path.join(p0, os.pardir))
+emptiesDir = os.path.abspath(os.path.join(fuzzingDomDir, "empties"))
 domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
 
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
@@ -21,9 +21,15 @@ sys.path.append(path1)
 from subprocesses import createWtmpDir
 from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLinesToFile
 import lithOps
+import linkJS
 
 urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
-fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
+
+
+def linkFuzzer(target_fn):
+    file_list_fn = os.path.join(fuzzingDomDir, "fuzzer", "files-to-link.txt")
+    source_base = os.path.join(fuzzingDomDir, "fuzzer")
+    linkJS.linkJS(target_fn, file_list_fn, source_base)
 
 
 # If targetTime is None, this loops forever.
@@ -32,6 +38,11 @@ fuzzerJS = "fuzzer-combined.js" # XXX make this "--fuzzerjs=" somehow
 def many_timed_runs(targetTime, tempDir, args):
     startTime = time.time()
     iteration = 0
+
+    fuzzerJS = os.path.abspath(os.path.join(tempDir, "fuzzer-combined.js"))
+    linkFuzzer(fuzzerJS)
+    print fuzzerJS
+    os.environ["DOM_FUZZER_SCRIPT"] = fuzzerJS
 
     levelAndLines, options = domInteresting.rdfInit(args)
     browserDir = options.browserDir
@@ -56,11 +67,11 @@ def many_timed_runs(targetTime, tempDir, args):
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
-        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(prefs), quiet=True)
+        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(prefs), quiet=False)
 
         if level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
-            rFN = createReproFile(lines, logPrefix)
+            rFN = createReproFile(fuzzerJS, lines, logPrefix)
             if platform.system() == "Windows":
                 rFN = rFN.replace("/","\\") # Ensure both Lithium and Firefox understand the filename
             writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
@@ -92,7 +103,7 @@ def many_timed_runs(targetTime, tempDir, args):
 
 # Stuffs "lines" into a fresh file, which Lithium should be able to reduce.
 # Returns the name of the repro file.
-def createReproFile(lines, logPrefix):
+def createReproFile(fuzzerJS, lines, logPrefix):
     contentTypes = linesStartingWith(lines, "FRCX Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
 
@@ -120,11 +131,7 @@ def createReproFile(lines, logPrefix):
         if len(docTypes) > 0:
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
 
-    with open(os.path.join(fuzzersDir, "fuzz.js")) as f:
-        fuzzjs = f.readlines()
-    with open(os.path.join(fuzzersDir, "fuzz-start.js")) as g:
-        fuzzstartjs = g.readlines()
-    [jbefore, jafter] = fuzzSplice(os.path.join(fuzzersDir, fuzzerJS))
+    [jbefore, jafter] = fuzzSplice(fuzzerJS)
     fuzzlines = linesStartingWith(lines, "  /*FRCA")
     if len(fuzzlines) < 3:
         fuzzlines = [
@@ -138,7 +145,7 @@ def createReproFile(lines, logPrefix):
       "fuzzCommands.push({origCount: 8888, rest: true, timeout: 3000});\n",
       "fuzzCommands.push({origCount: 9999, fun: function() { fuzzPriv.quitApplication(); } });\n"
     ]
-    linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + fuzzjs + fuzzstartjs + wafter
+    linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + wafter
 
     oFN = logPrefix + "-splice-orig." + extension
     rFN = logPrefix + "-splice-reduced." + extension
@@ -190,7 +197,7 @@ def randomHash():
 
     metaMax = 30000
 
-    return "#squarefree-af," + fuzzerJS + "," + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
+    return "#fuzz=" + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
 
 def afterColon(s):
     (head, sep, tail) = s.partition(": ")

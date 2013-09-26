@@ -435,9 +435,7 @@ function reftestList()
 
 function cssPropertyDatabase()
 {
-  var f = Components.classes["@mozilla.org/file/local;1"]
-                    .createInstance(Components.interfaces.nsILocalFile);
-  f.initWithPath(reftestFilesDirectory());
+  var f = fileObject(reftestFilesDirectory());
   f.append("layout");
   f.append("style");
   f.append("test");
@@ -450,20 +448,30 @@ function cssPropertyDatabase()
  * FILESYSTEM HELPERS *
  **********************/
 
+function getEnv(key)
+{
+  var env = Components.classes["@mozilla.org/process/environment;1"]
+                      .getService(Components.interfaces.nsIEnvironment);
+  return env.get(key);
+}
+
+function fileObject(path)
+{
+  var f = Components.classes["@mozilla.org/file/local;1"]
+                    .createInstance(Components.interfaces.nsILocalFile);
+  f.initWithPath(path);
+  return f;
+}
+
 function reftestFilesDirectory()
 {
-  var env = Components.classes["@mozilla.org/process/environment;1"].
-            getService(Components.interfaces.nsIEnvironment);
-  var reftestFilesDir = env.get("REFTEST_FILES_DIR");
-  return reftestFilesDir;
+  return getEnv("REFTEST_FILES_DIR");
 }
 
 function profileDirectory()
 {
   var fn = sendSyncMessage('DOMFuzzHelper.getProfileDirectory', {})[0];
-  var d = Components.classes["@mozilla.org/file/local;1"]
-                    .createInstance(Components.interfaces.nsILocalFile);
-  d.initWithPath(fn);
+  var d = fileObject(fn);
   return d;
 }
 
@@ -475,10 +483,7 @@ function extensionLocation()
 
   var extensionLocation = readFile(d).replace(/\s*$/, "");
 
-  var f = Components.classes["@mozilla.org/file/local;1"]
-                    .createInstance(Components.interfaces.nsILocalFile);
-  f.initWithPath(extensionLocation);
-  return f;
+  return fileObject(extensionLocation);
 }
 
 
@@ -530,36 +535,32 @@ function indir(dir, filename)
 function maybeInjectScript(event)
 {
   var doc = event.originalTarget;
-  if (doc.nodeName != "#document")
+  if (doc.nodeName != "#document") {
     return;
+  }
 
   var hash = doc.location.hash;
-
-  var r = hash.split(",");
-
-  if (r[0] != "#squarefree-af") {
-    return;
-  }
-  if (!(/^[a-zA-Z0-9\-.]*$/.test(r[1]))) {
-    dump("Sketchy fuzzer filename!\n");
+  if (!hash.startsWith("#fuzz=")) {
     return;
   }
 
-  var dir = extensionLocation().parent;
-  dir.append("fuzzers");
+  var fuzzSettings = hash.slice(6).split(",").map(function(s) { return parseInt(s); });
+
+  var domFuzzerScript = getEnv("DOM_FUZZER_SCRIPT");
+  if (!domFuzzerScript) {
+    return;
+  }
 
   var scriptToInject =
-    readFile(indir(dir, "fuzz.js")) + "\n"
-  + readFile(indir(dir, r[1])) + "\n"
-  + readFile(indir(dir, "fuzz-finish-auto.js")) + "\n"
+    readFile(fileObject(domFuzzerScript)) + "\n"
   + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
-  + "fuzzSettings = [" + r.slice(2).join(",") + "];\n"
+  + "fuzzSettings = [" + fuzzSettings.join(",") + "];\n"
   + "fuzzOnload();\n";
 
   var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
-
-  if (!insertionPoint)
+  if (!insertionPoint) {
     return;
+  }
 
   var script = doc.createElementNS("http://www.w3.org/1999/xhtml", "script");
   script.setAttribute("id", "fuzz1");
