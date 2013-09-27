@@ -27,8 +27,6 @@ user_pref("javascript.options.gczeal", 0);
 user_pref("browser.tabs.warnOnClose", false);
 user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.EULA.override", true);
-user_pref("security.warn_submit_insecure", false);
-user_pref("security.warn_viewing_mixed", false);
 user_pref("toolkit.telemetry.prompted", 2);
 user_pref("browser.rights.3.shown", true);
 user_pref("browser.firstrun.show.localepicker", false);
