@@ -111,6 +111,7 @@ dom.network.metered
 dom.placeholder.show_on_focus
 dom.send_after_paint_to_content
 dom.server-events.enabled
+dom.sms.enabled
 dom.storage.enabled
 dom.telephony.enabled
 dom.undo_manager.enabled
@@ -129,6 +130,7 @@ gfx.canvas.azure.enabled
 gfx.canvas.azure.accelerated
 gfx.content.azure.enabled
 gfx.color_management.enablev4
+gfx.direct2d.disabled
 gfx.downloadable_fonts.enabled
 gfx.filter.nearest.force-enabled
 gfx.font_rendering.graphite.enabled
@@ -201,8 +203,10 @@ media.autoplay.enabled
 media.dash.enabled
 media.gstreamer.enabled
 media.h264.enabled
+media.mediasource.enabled
 media.ogg.enabled
 media.opus.enabled
+media.raw.enabled
 media.wave.enabled
 media.webm.enabled
 media.webaudio.enabled
@@ -230,6 +234,9 @@ network.http.rendering-critical-requests-prioritization
 network.http.sendSecureXSiteReferrer
 network.http.use-cache
 network.prefetch-next
+network.http.spdy.enabled
+network.http.spdy.enabled.v2
+network.http.spdy.enabled.v3
 network.standard-url.encode-query-utf8
 network.standard-url.encode-utf8
 network.standard-url.escape-utf8
@@ -269,6 +276,7 @@ privacy.popups.showBrowserMessage
 privacy.popups.usecustom
 privacy.sanitize.sanitizeOnShutdown
 prompts.tab_modal.enabled
+security.ssl.enable_false_start
 security.warn_entering_secure
 security.warn_entering_weak
 security.warn_leaving_secure
@@ -295,6 +303,7 @@ webgl.default-no-alpha
 webgl.disable-extensions
 webgl.disabled
 webgl.enable-draft-extensions
+webgl.enable-prototype-webgl2
 webgl.force-enabled
 webgl.force-layers-readback
 webgl.force_osmesa
