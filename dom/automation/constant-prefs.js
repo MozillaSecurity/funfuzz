@@ -1,6 +1,6 @@
-// Disable slow script dialogs.
-user_pref("dom.max_script_run_time", 0);
-user_pref("dom.max_chrome_script_run_time", 0);
+// Extend the time before slow script dialogs appear.
+user_pref("dom.max_chrome_script_run_time", 75);
+user_pref("dom.max_script_run_time", 60);
 
 // Set additional prefs for fuzzing.
 user_pref("browser.dom.window.dump.enabled", true);
