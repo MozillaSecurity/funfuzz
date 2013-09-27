@@ -10,6 +10,7 @@ import time
 import urllib
 
 import domInteresting
+import randomPrefs
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 fuzzingDomDir = os.path.abspath(os.path.join(p0, os.pardir))
@@ -49,8 +50,6 @@ def many_timed_runs(targetTime, tempDir, args):
 
     reftestFilesDir = domInteresting.FigureOutDirs(browserDir).reftestFilesDir
     reftestURLs = getURLs(os.path.abspath(reftestFilesDir))
-    with open(os.path.join(p0, "bool-prefs.txt")) as f:
-        boolPrefNames = filter(lambda s: len(s) and s[0] != "#", f)
 
     while True:
         if targetTime and time.time() > startTime + targetTime:
@@ -62,12 +61,12 @@ def many_timed_runs(targetTime, tempDir, args):
         iteration += 1
 
         url = options.argURL or (random.choice(reftestURLs) + randomHash())
-        prefs = map(lambda s: 'user_pref("' + s.strip() + '", ' + random.choice(["true", "false"]) + ');\n', boolPrefNames) + nonBoolPrefs()
+        extraPrefs = randomPrefs.randomPrefs()
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
-        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs="\n".join(prefs), quiet=False)
+        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=False)
 
         if level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
@@ -81,7 +80,7 @@ def many_timed_runs(targetTime, tempDir, args):
             if lithresult == lithOps.LITH_NO_REPRO:
                 os.remove(rFN)
                 print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
-                level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs="\n".join(prefs))
+                level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs=extraPrefs)
                 if level2 > domInteresting.DOM_FINE:
                     print "%%% Lithium can't reproduce, but I can!"
                     with open(logPrefix + "-repro-only.txt", "w") as reproOnlyFile:
@@ -202,37 +201,6 @@ def randomHash():
 def afterColon(s):
     (head, sep, tail) = s.partition(": ")
     return tail.strip()
-
-def nonBoolPrefs():
-    p = []
-    if random.random() > 0.2:
-        p += ['user_pref("ui.caretBlinkTime", -1);\n']
-    if random.random() > 0.8:
-        p += ['user_pref("font.size.inflation.minTwips", 120);\n']
-    if random.random() > 0.8:
-        p += ['user_pref("font.size.inflation.emPerLine", 15);\n']
-    if random.random() > 0.8:
-        p += ['user_pref("font.size.inflation.lineThreshold", ' + str(random.randrange(0, 400)) + ');\n']
-        p += ['user_pref("font.size.inflation.maxRatio", ' + str(random.randrange(0, 400)) + ');\n']
-        p += ['user_pref("browser.sessionhistory.max_entries", ' + str(random.randrange(2, 10)) + ');\n']
-        p += ['user_pref("browser.sessionhistory.max_total_viewers", ' + str(random.randrange(0, 4)) + ');\n']
-        p += ['user_pref("bidi.direction", ' + random.choice(["1", "2"]) + ');\n']
-        p += ['user_pref("bidi.numeral", ' + random.choice(["0", "1", "2", "3", "4"]) + ');\n']
-        p += ['user_pref("browser.display.use_document_fonts", ' + random.choice(["0", "1"]) + ');\n']
-        p += ['user_pref("browser.history.maxStateObjectSize", ' + random.choice(["0", "100", "655360", "655360"]) + ');\n']
-        p += ['user_pref("browser.sessionstore.interval", ' + random.choice(["100", "1000", "15000"]) + ');\n']
-        p += ['user_pref("browser.sessionstore.max_tabs_undo", ' + random.choice(["0", "1", "10"]) + ');\n']
-        p += ['user_pref("browser.sessionstore.browser.sessionstore.max_windows_undo", ' + random.choice(["0", "1", "10"]) + ');\n']
-        p += ['user_pref("browser.sessionstore.postdata", ' + random.choice(["0", "-1", "1000"]) + ');\n']
-        p += ['user_pref("layout.scrollbar.side", ' + random.choice(["0", "1", "2", "3"]) + ');\n']
-        p += ['user_pref("permissions.default.image", ' + random.choice(["1", "2", "3"]) + ');\n']
-        p += ['user_pref("accessibility.force_disabled", ' + random.choice(["-1", "0", "1"]) + ');\n']
-        p += ['user_pref("gfx.font_rendering.harfbuzz.scripts", ' + random.choice(["-1", str(random.randrange(0, 0x80))]) + ');\n'] # gfx/thebes/gfxUnicodeProperties.h ShapingType bitfield
-        p += ['user_pref("layout.css.devPixelsPerPx", ' + random.choice(["'-1.0'", "'1.0'", "'2.0'"]) + ');\n']
-        p += ['user_pref("gfx.hidpi.enabled", ' + random.choice(["0", "1", "2"]) + ');\n']
-    if random.random() > 0.9:
-        p += ['user_pref("intl.uidirection.en", "rtl");\n']
-    return p
 
 if __name__ == "__main__":
     many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:])

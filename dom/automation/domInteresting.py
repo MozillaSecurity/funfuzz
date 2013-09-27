@@ -72,6 +72,8 @@ def writePrefs(profileDir, extraPrefs):
         for line in kPrefs:
             prefsText += line
 
+    prefsText += "\n"
+    prefsText += "// Extra, random prefs\n"
     prefsText += extraPrefs
 
     print prefsText
