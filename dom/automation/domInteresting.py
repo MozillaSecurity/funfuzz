@@ -292,12 +292,15 @@ def jsFailure(msg):
             "JavaScript Error" in msg or
             "[Exception..." in msg or
             "JS Component Loader: ERROR" in msg or
+            "ReferenceError" in msg or
             "TypeError" in msg or
+            "Full stack:" in msg or
             False)
 
 def jsInChrome(msg):
     return ("chrome://browser/" in msg or
             "chrome://global/content/bindings/browser.xml" in msg or
+            "resource:///app/" in msg or
             "resource:///components" in msg or
             "resource:///modules/" in msg or
             "resource:///gre/modules/" in msg or
