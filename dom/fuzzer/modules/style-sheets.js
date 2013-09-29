@@ -569,17 +569,14 @@ var fuzzerRandomClasses = (function() {
           return "fuzzerRandomClasses.removeSheet(" + slot + ");";
         } else {
           var cssText = randomStatement();
-          var holder = (rnd(5) ? "null" : pick("nodes"));
+          var holder = (rnd(5) ? "null" : Things.instance("Element"));
           var scoped = (rnd(3) === 0);
           return "fuzzerRandomClasses.addSheet(" + slot + ", " + simpleSource(cssText) + ", " + holder + ", " + scoped + ");";
         }
 
       default:
-        // Change a random node's class.
-        var n1index = randomElementIndex();
-        if (n1index === null)
-          return [];
-        return "all.nodes[" + n1index + "].setAttribute(\"class\", " + simpleSource(rndElt(classes)) + ");";
+        // Change a random element's class.
+        return Things.instance("Element") +".setAttribute(\"class\", " + simpleSource(rndElt(classes)) + ");";
     }
   }
 

@@ -4,14 +4,14 @@ var fuzzerStirDOM = (function() {
 
   function makeCommand()
   {
-    var n1index = rnd(all.nodes.length);
-    var n2index = rnd(all.nodes.length);
+    var n1index = Things.instanceIndex("Node");
+    var n2index = Things.instanceIndex("Node");
 
-    var n1 = all.nodes[n1index];
-    var n2 = all.nodes[n2index];
+    var n1 = o[n1index];
+    var n2 = o[n2index];
 
-    var commandn1 = "all.nodes[" + n1index + "]";
-    var commandn2 = "all.nodes[" + n2index + "]";
+    var commandn1 = "o[" + n1index + "]";
+    var commandn2 = "o[" + n2index + "]";
 
     if (n2 == document.documentElement || n2 == document.body)
       return []; // removing the root is reserved for a separate routine

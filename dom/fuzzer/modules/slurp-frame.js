@@ -5,12 +5,12 @@ var fuzzerSlurpFrames = (function() {
 
   function makeCommand()
   {
-    if (all.nodes.length > 500)
+    if (o.length > 500)
       return [];
 
     if (slurpQueue.length && rnd(5)) {
-      var n = slurpQueue.shift();
-      return "fuzzerSlurpFrames.slurp(" + n + ");";
+      var frameExpr = slurpQueue.shift();
+      return "fuzzerSlurpFrames.slurp(" + frameExpr + ");";
     }
 
     while (commandQueue.length) {
@@ -27,34 +27,39 @@ var fuzzerSlurpFrames = (function() {
         // No point loading a non-same-origin page and attempting to slurp it.
         return [];
       }
-      var nnindex = all.nodes.length;
-      var commandnn = nextSlot("nodes");
-      var s = commandnn + ' = document.createElementNS("http://www.w3.org/1999/xhtml", "iframe"); ';
-      s += commandnn + ".src = " + simpleSource(uri) + "; ";
-      s += "(document.body || document.documentElement).appendChild(" + commandnn + "); ";
-      s += "function elv(event) { " + commandnn + ".removeEventListener('load', elv, false); fuzzerSlurpFrames.slurpSoon(" + nnindex + "); }";
-      s += commandnn + ".addEventListener('load', elv, false);";
-      return s;
+      var newFrame = Things.reserve();
+      return [
+        newFrame + ' = document.createElementNS("http://www.w3.org/1999/xhtml", "iframe");',
+        (
+          "function elv(event) { " +
+            newFrame + ".removeEventListener('load', elv, false); " +
+            "fuzzerSlurpFrames.slurpSoon(" + simpleSource(newFrame) + "); " +
+          "} " + newFrame + ".addEventListener('load', elv, false);"
+        ),
+        newFrame + ".src = " + simpleSource(uri) + ";",
+        "(document.body || document.documentElement).appendChild(" + newFrame + ");"
+      ];
     default:
       return [];
     }
   }
 
-  function slurpSoon(n)
+  function slurpSoon(frameExpr)
   {
-    slurpQueue.push(n);
+    slurpQueue.push(frameExpr);
   }
 
-  function slurp(n)
+  function slurp(frameObj)
   {
     try {
-      var oldAllNodesLength = all.nodes.length;
-      var cs = serializeTreeAsScript(all.nodes[n].contentDocument.documentElement);
-      var newAllNodesLength = all.nodes.length;
+      var oldLastIndex = Things._lastIndex;
+      var cs = serializeTreeAsScript(frameObj.contentDocument.documentElement);
+      var newLastIndex = Things._lastIndex;
 
-      // Reserve the entire slice
-      for (var i = oldAllNodesLength; i < newAllNodesLength; ++i) {
-        all.nodes[i] = null;
+      // Undo what serializeTreeAsScript just did, because we want to redo it ourselves.
+      // (This is smelly; serializeTreeAsScript should be refactored to handle this use case better.)
+      for (var i = oldLastIndex+1; i < newLastIndex+1; ++i) {
+        o[i] = null;
       }
 
       for (var i = 0; i < cs.length; ++i) {
@@ -63,9 +68,11 @@ var fuzzerSlurpFrames = (function() {
         cs[i] = "/*slurped*/ " + cs[i];
       }
       commandQueue.push(cs);
-      commandQueue.push("/*slurpDone*/rM(all.nodes[" + n + "]);");
-      commandQueue.push("/*slurpInsert*/aC(all.nodes[0], all.nodes[" + oldAllNodesLength + "]);");
-      dumpln("Slurped " + (newAllNodesLength - oldAllNodesLength) + " nodes!");
+      if (rnd(2)) {
+        commandQueue.push("/*slurpDone*/rM(" + Things.find(frameObj) + ");");
+      }
+      commandQueue.push("/*slurpInsert*/aC(" + Things.find(document.documentElement) + ", o[" + (oldLastIndex+1) + "]);");
+      dumpln("Slurped " + (newLastIndex - oldLastIndex) + " nodes!");
     } catch(e) {
       dumpln("Slurp failure: " + e);
     }

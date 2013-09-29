@@ -1,13 +1,8 @@
 var fuzzerCloneNode = (function() {
   function makeCommand() {
-    var n1index = randomElementIndex();
-    if (n1index == null)
-      return [];
-    var commandn1 = "all.nodes[" + n1index + "]";
-
-    var n2index = rnd(all.nodes.length);
-    var commandn2 = "all.nodes[" + n2index + "]";
-    var n2 = all.nodes[n2index];
+    var n2index = Things.instanceIndex("Node");
+    var commandn2 = "o[" + n2index + "]";
+    var n2 = o[n2index];
 
     var deep = rndElt(["true", "false"]);
 
@@ -19,11 +14,11 @@ var fuzzerCloneNode = (function() {
       return [];
     }
 
-    var newb = nextSlot("nodes");
+    var newb = Things.reserve();
 
     return [
       newb + " = " + commandn2 + ".cloneNode(" + deep + ");",
-      commandn1 + ".appendChild(" + newb + ");"
+      Things.instance("Element") + ".appendChild(" + newb + ");"
     ];
   }
 

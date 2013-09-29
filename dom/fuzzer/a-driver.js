@@ -95,7 +95,7 @@ function initRnd(fuzzSeed)
 
 
 
-function startFuzzing(useSerializeDOMAsScript, storeObjects)
+function startFuzzing(useSerializeDOMAsScript, storeThings)
 {
   if (window.fuzzCommands) {
     // Already recorded, so we should play.
@@ -113,18 +113,19 @@ function startFuzzing(useSerializeDOMAsScript, storeObjects)
       dumpln(oPrefix + "var fuzzCommands = [];");
 
       if (useSerializeDOMAsScript) {
-        if (all.nodes.length > 10000) {
+        if (o.length > 10000) {
           dumpln("This document contains so many nodes that reduction would be painful and serializeDOMAsScript might hang!");
           fuzzPriv.quitApplication();
           return;
         }
         serializeDOMAsScript(); // includes its own DD + BEGIN
+        Things._lastIndex = o.length - 1;
       } else {
         dumpln(oPrefix + "// DD" + "BEGIN");
       }
 
-      if(storeObjects)
-        fuzzerSmartRandomJS.storeInitialObjects();
+      if(storeThings)
+        fuzzerSmartRandomJS.storeInitialThings();
 
       immedChunk(numImmediate || stepsPerInterval);
     }
@@ -341,7 +342,7 @@ function obtainSettings()
     fuzzSettings = prompt(fuzzerName + " settings\n\nSeed\nNumber of changes in first chunk\nNumber of changes in each subsequent chunk\nInterval between chunks in milliseconds\nTotal number of changes (or 0 for unlimited)\n1 to record, 0 to go", "0, 0, 100, 150, 0, 0");
 
   if (fuzzSettings == null) {
-    fuzzSeed = 0; // for playing around with javascript: URLs, accessing all.nodes, etc.
+    fuzzSeed = 0; // for playing around with javascript: URLs, accessing o[...], etc.
     numImmediate = stepsPerInterval = maxSteps = 0;
     interval = 1000;
     // throw "User hit cancel!";

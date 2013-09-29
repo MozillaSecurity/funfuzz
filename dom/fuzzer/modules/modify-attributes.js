@@ -4,9 +4,11 @@ var fuzzerModifyAttributes = (function() {
 
   function makeCommand()
   {
-    var n1index = randomElementIndex();
-    var n1 = all.nodes[n1index];
-    var commandn1 = "all.nodes[" + n1index + "]";
+    var n1index = Things.instanceIndex("Element");
+    if (n1index === -1)
+      return [];
+    var n1 = o[n1index];
+    var commandn1 = "o[" + n1index + "]";
 
     if (!n1 ||
         !n1.attributes ||

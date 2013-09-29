@@ -13,7 +13,10 @@ var fuzzerCanvas = (function() {
   var colors = function() { return simpleSource(randomThing(fuzzValues.colors)); };
   var numbersZeroOne = fuzzValues.numbersZeroOne;
 
-  function inputImages() { return pick("nodes"); }
+  function inputImages() {
+    // XXX Things.instanceAny(HTMLImageElement or HTMLCanvasElement or HTMLVideoElement)
+    return Things.instance("Element");
+  }
 
   function makeCommand()
   {
@@ -23,7 +26,7 @@ var fuzzerCanvas = (function() {
     }
 
     if (!myCanvas || rnd(100) === 0) {
-      myCanvas = nextSlot("nodes");
+      myCanvas = Things.reserve();
 
       // On my MacBook pro (early 2011), canvas drawing starts to fail
       // around 20000 x 20000 (but the failure is not reported to JS).
@@ -40,12 +43,12 @@ var fuzzerCanvas = (function() {
     }
 
     if (!myContext || rnd(100) === 0) {
-      myContext = nextSlot("nodes");
+      myContext = Things.reserve();
       return myContext + " = " + myCanvas + ".getContext('2d');";
     }
 
     if (rnd(800) === 0) {
-      myContext = nextSlot("nodes");
+      myContext = Things.reserve();
       return myContext + " = " + myCanvas + ".getContext('experimental-webgl');";
     }
 

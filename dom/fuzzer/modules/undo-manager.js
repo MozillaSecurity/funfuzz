@@ -2,6 +2,15 @@
 
 var fuzzerUndoManager = (function() {
 
+  // DOMTransaction is a "callback interface" -- one that is considered "implemented" by any non-platform object.
+  // XXX make a general concept of custom lists
+  var transactionIndexes = [];
+  function anyTransaction() {
+    if (!transactionIndexes.length)
+      return null;
+    return "o[" + rndElt(transactionIndexes) + "]";
+  }
+
   function addTransactionFunction(t)
   {
     var funName = rndElt(["executeAutomatic", "execute", "redo", "undo"]);
@@ -12,7 +21,7 @@ var fuzzerUndoManager = (function() {
   function transactionFunction(funName)
   {
     switch(rnd(3)) {
-      case 0:  if (all.functions.length) return pick("functions");
+      case 0:  return Things.anyFunction();
       case 1:  return "null";
       /// XXX best if it does *several* actions
       default: return "function " + funName + "() { " + fuzzSubCommand("transaction-" + funName) + " }";
@@ -21,15 +30,17 @@ var fuzzerUndoManager = (function() {
 
   function makeCommand()
   {
+    var um = Things.instance("UndoManager");
+
     // Try to keep the number of undoManagers small, so each one can have a meaningful experience.
-    if (all.undoManagers.length == 0 || rnd(100) === 0) {
+    if (um == "o[-1]" || rnd(100) === 0) {
       if (rnd(2)) {
         // Grab an undoManager
-        return addIfNovel("undoManagers", pick(rnd(2) ? "documents" : "nodes") + ".undoManager");
+        return Things.add(Things.instance(rnd(2) ? "Document" : "Element") + ".undoManager");
       } else {
         // Add an undo scope, and maybe grab the newly created undoManager
-        var n = pick("nodes");
-        return [n + ".undoScope = true;", (rnd(2) ? addIfNovel("undoManagers", n + ".undoManager") : "")];
+        var n = Things.instance("Element");
+        return [n + ".undoScope = true;", (rnd(2) ? Things.add(n + ".undoManager") : "")];
       }
     }
 
@@ -38,19 +49,20 @@ var fuzzerUndoManager = (function() {
       switch(rnd(3)) {
       case 0:
         // Remove an undo scope
-        return pick("nodes") + ".undoScope = false;";
+        return Things.instance("Element") + ".undoScope = false;";
       case 1:
         // Clear undo stack
-        return pick("undoManagers") + ".clearUndo();";
+        return um + ".clearUndo();";
       default:
         // Clear redo stack
-        return pick("undoManagers") + ".clearRedo();";
+        return um + ".clearRedo();";
       }
     }
 
-    if (all.domTransactions.length == 0 || rnd(5) === 0) {
+    if (rnd(5) === 0) {
       // Create a transaction
-      var t = nextSlot("domTransactions");
+      var t = Things.reserve();
+      transactionIndexes.push(Things._lastIndex);
       return [t + " = {};", addTransactionFunction(t), addTransactionFunction(t)];
     }
 
@@ -58,17 +70,17 @@ var fuzzerUndoManager = (function() {
     switch(rnd(4)) {
     case 0:
       // Undo
-      return pick("undoManagers") + ".undo();";
+      return Things.instance("UndoManager") + ".undo();";
     case 1:
       // Redo
-      return pick("undoManagers") + ".redo();";
+      return Things.instance("UndoManager") + ".redo();";
     case 2:
       // Modify a transaction
-      return addTransactionFunction(pick("domTransactions"));
+      return addTransactionFunction(anyTransaction("DOMTransaction"));
     default:
       // Transact. This will either call 'execute' or 'executeAutomatic', and in the latter case,
       // will remember the DOM manipulations in order to be able to undo or redo them.
-      return pick("undoManagers") + ".transact(" + pick("domTransactions") + ", " + rndElt(["true", "false"]) + ");";
+      return Things.instance("UndoManager") + ".transact(" + anyTransaction("DOMTransaction") + ", " + rndElt(["true", "false"]) + ");";
     }
   }
 

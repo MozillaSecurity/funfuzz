@@ -14,13 +14,13 @@ var fuzzerEventLoop = (function() {
     } else if (rnd(20000) === 4) {
       return "setInterval(function() { " + fuzzSubCommand("interval") + " }, 0);";
     } else if (rnd(200000) === 4) { // 100x less often because of 802477
-      return "setTimeout(" + pick("nodes") + ", 0);";
+      return "setTimeout(" + Things.anyFunction() + ", 0);";
     } else if (rnd(18) === 4) {
       return "window.mozRequestAnimationFrame(function() { " + fuzzSubCommand("raf") + " });";
     } else if (rnd(17) === 4) {
       return "window.mozRequestAnimationFrame();";
     } else if (rnd(16) === 4) {
-      return "window.mozRequestAnimationFrame(" + pick("nodes") + ");";
+      return "window.mozRequestAnimationFrame(" + Things.anyFunction() + ");";
     } else if (rnd(20000) === 0) {
       return "function rafc() { window.mozRequestAnimationFrame(rafc); " + fuzzSubCommand("rafc") + "} rafc();";
     } else {

@@ -10,9 +10,9 @@ var fuzzerTestIteration = (function() {
   {
     var checkTimer = setTimeout(check, 0);
 
-    for (var iterI = 0; iterI < all.nodes.length; ++iterI) {
-      dumpln("Testing iteration: all.nodes[" + iterI + "]");
-      testObjectIteration(all.nodes[iterI]);
+    for (var iterI = 0; iterI < o.length; ++iterI) {
+      dumpln("Testing iteration: o[" + iterI + "]");
+      testObjectIteration(o[iterI]);
     }
 
     clearTimeout(checkTimer);
@@ -21,7 +21,7 @@ var fuzzerTestIteration = (function() {
     function check()
     {
       var failPrefix = fuzzExpectSanity ? "FAILURE: " : "";
-      dumpln(failPrefix + "Iteration got stuck on all.nodes[" + iterI + "]");
+      dumpln(failPrefix + "Iteration got stuck on o[" + iterI + "]");
     }
   }
 

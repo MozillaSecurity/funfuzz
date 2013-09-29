@@ -2,11 +2,11 @@ var fuzzerStirAttributes = (function() {
 
   function makeCommand()
   {
-    var n1index = randomElementIndex();
-    var n2index = randomElementIndex();
+    var n1index = Things.instanceIndex("Element");
+    var n2index = Things.instanceIndex("Element");
 
-    var n1 = all.nodes[n1index];
-    var n2 = all.nodes[n2index];
+    var n1 = o[n1index];
+    var n2 = o[n2index];
 
     if ( n1 == n2 ||
         !n1 ||
@@ -21,8 +21,8 @@ var fuzzerStirAttributes = (function() {
     // If n2 doesn't have this attr, that means calling removeAttribute on n1.
     // (Conservation of name-value pairs!)
 
-    var commandn1 = "all.nodes[" + n1index + "]";
-    var commandn2 = "all.nodes[" + n2index + "]";
+    var commandn1 = "o[" + n1index + "]";
+    var commandn2 = "o[" + n2index + "]";
 
     var attr = rndElt(n1.attributes);
 
@@ -41,8 +41,10 @@ var fuzzerStirAttributes = (function() {
       return [];
     }
 
-    addImmIfNovel(all.strings, attr.value);
-    addImmIfNovel(all.strings, attr.name);
+    Things.addImmediately(attr.value);
+    Things.addImmediately(attr.name);
+    Things.addImmediately(attr.localName);
+    Things.addImmediately(attr.namespaceURI);
 
     if (n2has)
       c1 = commandn1 + ".setAttributeNS(" + simpleSource(attr.namespaceURI) + ", " + simpleSource(attr.name) + ", " + simpleSource(n2val) + ");";

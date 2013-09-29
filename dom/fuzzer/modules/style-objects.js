@@ -1,8 +1,10 @@
 var fuzzerDOMStyle = (function() {
+
   // This fuzzer deals with three slightly different types of objects:
-  // (0) immutable "CSSStyleDeclaration" objects (returned by getComputedStyle)
-  // (1) mutable "CSS2Properties" objects (node.style)
-  // (2) mutable "CSSStyleDeclaration" objects (cssRule.style)
+  // * immutable "CSSStyleDeclaration" objects (returned by getComputedStyle)
+  // * mutable "CSSStyleDeclaration" objects (cssRule.style)
+  // * mutable "CSS2Properties" objects (element.style), which are instanceof CSSStyleDeclaration
+  //
   // The relationship between these objects, which I don't fully understand, is described in
   // http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSS2Properties
 
@@ -10,34 +12,25 @@ var fuzzerDOMStyle = (function() {
   {
     switch(rnd(5)) {
       case 0:
-        // Get a computed style object.
+        // Get a computed style object from an element.
         var pseudoElt = rnd(4) ? "null" : simpleSource(randomThing(fuzzValues.cssPseudoElements));
-        return nextSlot("CSSStyleDeclarations") + " = " + pick("windows") + "." + rndElt(["getComputedStyle", "getDefaultComputedStyle"]) + "(" + pick("nodes") + ", " + pseudoElt + ");";
+        var f = rndElt(["getComputedStyle", "getDefaultComputedStyle"]);
+        return Things.add(Things.instance("Window") + "." + f + "(" + Things.instance("Element") + ", " + pseudoElt + ")");
       case 1:
-        // Get a style object off a node.
-        return nextSlot("CSSStyleDeclarations") + " = " + pick("nodes") + ".style;";
+        // Get a style object off an element.
+        return Things.add(Things.instance("Element") + ".style");
       case 2:
-        // Get a style object off a cssRule.
-        if (all.CSSRules.length) {
-          return nextSlot("CSSStyleDeclarations") + " = " + pick("CSSRules") + ".style;";
-        }
-        return [];
+        // Get a style object off a CSSStyleRule.
+        return Things.add(Things.instance("CSSStyleRule") + ".style");
       case 3:
         // Grab a property value.
-        if (all.CSSStyleDeclarations.length) {
-          return addIfNovel('strings', pick("CSSStyleDeclarations") + ".getPropertyValue(" + simpleSource(rndElt(fuzzerRandomClasses.CSSPropList)) + ")");
-        }
-        return [];
+        return Things.add(Things.instance("CSSStyleDeclaration") + ".getPropertyValue(" + simpleSource(rndElt(fuzzerRandomClasses.CSSPropList)) + ")");
       default:
         // Grab a CSSPrimitiveValue object. (Only works for computed styles, and for non-shorthands)
         // Note: I'm not really sure what to do with the CSSPrimitiveValue object, so I'm letting fuzzerRandomJS have at it.
-        if (all.CSSStyleDeclarations.length) {
-          return addIfNovel('nodes', pick("CSSStyleDeclarations") + ".getPropertyCSSValue(" + simpleSource(rndElt(fuzzerRandomClasses.CSSPropList)) + ")");
-        }
-        return [];
+        return Things.add(Things.instance("CSSStyleDeclaration") + ".getPropertyCSSValue(" + simpleSource(rndElt(fuzzerRandomClasses.CSSPropList)) + ")");
     }
   }
 
   return { makeCommand: makeCommand };
 })();
-

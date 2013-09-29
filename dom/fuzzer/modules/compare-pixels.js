@@ -4,7 +4,7 @@ var fuzzerComparePixels = (function() {
     var a = [
       "var root = document.documentElement; document.removeChild(root); " + fuzzerGC.immediate() + " document.appendChild(root); ",
       // "document.normalize(); ", // bug 723357, bug 723657 (could use max channel difference instead)
-      // "var t = " + pick("nodes") + "; var s = t.getAttribute('style'); t.removeAttribute('style'); t.setAttribute('style', s); ", // bug 475216
+      // "var t = " + Things.instance("Element") + "; var s = t.getAttribute('style'); t.removeAttribute('style'); t.setAttribute('style', s); ", // bug 475216
       fuzzerGC.immediate(),
       "document.documentElement.offsetHeight; ",
       "document.documentElement.getBoundingClientRect(); "

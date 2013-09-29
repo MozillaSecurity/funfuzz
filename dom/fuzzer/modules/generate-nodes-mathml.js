@@ -258,7 +258,7 @@ var fuzzerMathMLAttributes = (function() {
           if (rnd(2) === 1)
             fillGapIndex = findDisconnectedElement(n);
           if (fillGapIndex != undefined)
-            return "3; insertAsFirstChild(" + commandnn + ", all.nodes[" + fillGapIndex + "]);";
+            return "3; insertAsFirstChild(" + commandnn + ", o[" + fillGapIndex + "]);";
           else
             return "4; insertAsFirstChild(" + commandnn + ", createToken('mi', '" + rndElt(['a','b','c','d','e','f','x','y','z']) + "'));";
         }

@@ -3,7 +3,7 @@
 var fuzzerDocumentFragments = (function(){
   function makeCommand()
   {
-    var newFrag = nextSlot("nodes");
+    var newFrag = Things.reserve();
     switch(rnd(2)) {
     case 0:
       return newFrag + " = document.createDocumentFragment();";

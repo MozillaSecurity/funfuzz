@@ -13,16 +13,6 @@ function getKeysFromHash(h)
 
 
 /*
-function findDisconnectedElement(notMe) {
-  for (var i = 0; i < all.nodes.length; ++i) {
-    var n = all.nodes[i];
-    if (n && typeof n == "object" && n.nodeType == 1 && n != notMe && !n.parentNode) {
-      return i;
-    }
-  }
-
-  return null;
-}
 
 function insertAsFirstChild(p, n)
 {

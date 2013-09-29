@@ -2,19 +2,14 @@ var fuzzerDOMCSS = (function() {
 
   // http://www.w3.org/TR/DOM-Level-2-Style/css
 
-  // Both CSSStyleSheet and CSSGroupingRule have "deleteRule", "insertRule", and "cssRules" properties.
-  // Because of this, we're happy to have stylesheets in all.CSSRules
-
-  function varss()
+  function anyRuleGroup()
   {
-    if (all.CSSRules.length && rnd(2))
-      return "var ss = " + pick("CSSRules") + "; ";
+    return rnd(2) ? Things.instance("CSSGroupingRule") : Things.instance("CSSStyleSheet");
+  }
 
-    var ssl = document.styleSheets.length;
-    if (ssl == 0)
-      return ""; // no sheets to play with :(
-    var ssn = rnd(ssl);
-    return "var ss = document.styleSheets[" + ssn + "]; ";
+  function varRG()
+  {
+    return "var rg = " + anyRuleGroup() + "; ";
   }
 
   function makeCommand()
@@ -30,14 +25,14 @@ var fuzzerDOMCSS = (function() {
     switch(rnd(8)) {
     case 0:
       // delete a rule
-      return varss() + "ss.deleteRule(" + rnd(10000) + " % ss.cssRules.length);";
+      return varRG() + "rg.deleteRule(" + rnd(10000) + " % rg.cssRules.length);";
     case 1:
       // insert a new rule
-      return varss() + "ss.insertRule(" + simpleSource(fuzzerRandomClasses.randomRule()) + ", " + rnd(10000) + " % (ss.cssRules.length+1));";
+      return varRG() + "rg.insertRule(" + simpleSource(fuzzerRandomClasses.randomRule()) + ", " + rnd(10000) + " % (rg.cssRules.length+1));";
     case 2:
       // append a rule
       // (CSSKeyframesRule has appendRule instead of insertRule, because order doesn't matter)
-      return varss() + "ss.appendRule(" + simpleSource(fuzzerRandomClasses.randomRule()) + ");";
+      return varRG() + "rg.appendRule(" + simpleSource(fuzzerRandomClasses.randomRule()) + ");";
     case 3:
       // loop over all rules, doing SOMETHING...
       var sc = fuzzSubCommand();
@@ -48,21 +43,19 @@ var fuzzerDOMCSS = (function() {
       // pick an insertion point
       var sca = ["","","",""];
       sca[rnd(4)] = sc;
-      return varss() + "for (var fuzzRepeat = 0; fuzzRepeat < ss.cssRules.length; ++fuzzRepeat) { " + sca[0] + "; var rule = ss.cssRules[fuzzRepeat]; " + sca[1] + "; rule.selectorText; " + sca[2] + "; rule.cssText; " + sca[3] + " }";
+      return varRG() + "for (var fuzzRepeat = 0; fuzzRepeat < rg.cssRules.length; ++fuzzRepeat) { " + sca[0] + "; var rule = rg.cssRules[fuzzRepeat]; " + sca[1] + "; rule.selectorText; " + sca[2] + "; rule.cssText; " + sca[3] + " }";
     case 4:
       // read from a rule
-      if (all.CSSRules.length) {
-        return addIfNovel("strings", pick("CSSRules") + "." + rndElt(["selectorText", "cssText"]));
-      }
+      return Things.add(Things.instance("CSSStyleRule") + "." + rndElt(["selectorText", "cssText"]));
     case 5:
       // grab a rule
-      return varss() + addIfNovel("CSSRules", "ss.cssRules[" + rnd(10000) + " % ss.cssRules.length]");
+      return varRG() + Things.add("rg.cssRules[" + rnd(10000) + " % rg.cssRules.length]");
     case 6:
-      // grab a CSSStyleSheet object from a HTMLStyleElement (as long as the HTMLStyleElement is in a document)
-      return addIfNovel("CSSRules", pick("nodes") + ".sheet");
+      // Grab a CSSStyleSheet object from a HTMLStyleElement (as long as the HTMLStyleElement is in a document)
+      return Things.add(Things.instance("HTMLStyleElement") + ".sheet");
     default:
-      // stash a stylesheet -- possibly one that will be removed from the document, or possibly from another document
-      return addIfNovel("CSSRules", pick("documents") + ".styleSheets[0]");
+      // Grab a CSSStyleSheet object -- possibly one that will be removed from the document, or possibly from another document
+      return Things.add(Things.instance("Document") + ".styleSheets[0]");
     }
 
     return [];

@@ -4,16 +4,12 @@ var fuzzerInnerHTML = (function() {
   function makeCommand() {
     window.disableCrazyURIs = true; // prevent too much recursion. kludgy :(
 
-    var n1index = randomElementIndex();
-    if (n1index == null)
-      return [];
-    var commandn1 = "all.nodes[" + n1index + "]";
-
     // this is boring in anything but HTML (including XHTML), because
     // most of the generated tag soup is not well-formed :(
 
     // Could additionally use ".innerHTML += ..." but that's messy.
 
+    var commandn1 = Things.instance("Element");
     if (rnd(2)) {
       return commandn1 + "." + rndElt(["innerHTML", "outerHTML"]) + " = " + simpleSource(fuzzValues.generateHTML(rnd(15))) + ";";
     } else {

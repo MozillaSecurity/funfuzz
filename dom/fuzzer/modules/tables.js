@@ -187,7 +187,7 @@ var fuzzerStirTable = (function() {
       }
     }
 
-    var neVar = nextSlot("nodes");
+    var neVar = Things.reserve();
 
     if (childTag == "text") {
       commands.push(neVar + " = document.createTextNode('" + parentTag + "');");
@@ -209,8 +209,8 @@ var fuzzerStirTable = (function() {
     // Decide where to put it and stick it in.
 
     var sib = elem.firstChild ? rndElt(elem.childNodes) : null;
-    var sibIndex = findInAllNodes(sib);
-    var sibExpr = (sibIndex != null) ? ("all.nodes[" + sibIndex + "]") : null;
+    var sibIndex = Things.findIndex(sib);
+    var sibExpr = (sibIndex !== -1) ? ("o[" + sibIndex + "]") : null;
     commands.push(elemVar + ".insertBefore(" + neVar + ", " + sibExpr + ");");
 
     return commands;
@@ -231,8 +231,9 @@ var fuzzerStirTable = (function() {
     else
       numChildrenWanted = rndElt([0, 0, 0, 0, 0, 0, 1]);
 
-    for (var i = 0; i < numChildrenWanted; ++i)
+    for (var i = 0; i < numChildrenWanted; ++i) {
       elementsWantingChildren.push(newNode);
+    }
   }
 
 
@@ -305,6 +306,7 @@ var fuzzerStirTable = (function() {
   }
 
   var rootD = "(document.body || document.documentElement)";
+  function rootDE() { return document.body || document.documentElement; }
 
 
   function makeCommand() {
@@ -314,8 +316,8 @@ var fuzzerStirTable = (function() {
     var elem, elemVar, elemIndex, op;
 
     if (document.getElementsByTagName("table").length == 0) {
-      // Create a table?
-      elem = document.documentElement;
+      // Create a top-level table?
+      elem = rootDE();
       elemVar = rootD;
       if (!elem)
         return "/* stirtable -- completely empty document */";
@@ -323,22 +325,22 @@ var fuzzerStirTable = (function() {
     } else if (elementsWantingChildren.length) {
       // Pop off an element, and make a child for it.
       elem = elementsWantingChildren.pop();
-      elemIndex = findInAllNodes(elem);
-      elemVar = "all.nodes[" + elemIndex + "]";
+      elemIndex = Things.findIndex(elem);
+      elemVar = "o[" + elemIndex + "]";
       op = insertNewInto;
     } else if (rnd(19) !== 1 && (elem = getTableRelatedVictim())) { // prefer table-related, present elements
-      elemIndex = findInAllNodes(elem);
-      if (!elemIndex)
+      elemIndex = Things.findIndex(elem);
+      if (elemIndex === -1)
         return "/* stirtable's victim (" + elem.tagName + ") is hiding */";
-      elemVar = "all.nodes[" + elemIndex + "]";
+      elemVar = "o[" + elemIndex + "]";
       op = rndElt(ops);
     } else {
       // Pick an operation and a victim at random.
-      elemIndex = randomElementIndex();
-      if (!elemIndex)
+      elemIndex = Things.instanceIndex("Element");
+      if (elemIndex === -1)
         return "/* stirtable couldn't find a victim */";
-      elem = all.nodes[elemIndex];
-      elemVar = "all.nodes[" + elemIndex + "]";
+      elem = o[elemIndex];
+      elemVar = "o[" + elemIndex + "]";
       op = rndElt(ops);
     }
 

@@ -79,11 +79,11 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
   function makeCommand()
   {
     while(1) {
-      var n1index = randomElementIndex();
-      if (n1index === null)
+      var n1index = Things.instanceIndex("Element");
+      if (n1index === -1)
         return [];
-      var commandn1 = "all.nodes[" + n1index + "]";
-      var n1 = all.nodes[n1index];
+      var commandn1 = "o[" + n1index + "]";
+      var n1 = o[n1index];
 
       switch (rnd(5)) {
       case 0:
@@ -118,7 +118,7 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
         // Place it randomly, but only rarely place it outside of the document, because that's usually boring.
 
         var tag = rndElt(allTags);
-        var newb = nextSlot("nodes");
+        var newb = Things.reserve();
         var commands = [];
 
         // Create the element.

@@ -16,7 +16,7 @@ function serializeDOMAsScript(root, splitTextNodes, splitStyleAttributes)
   //dumpln(fuzzRecord(oPrefix2, 0, "fun: function() { document.documentElement.offsetHeight; }"));
 }
 
-// Walks the tree in document order, not in all.nodes order, mostly
+// Walks the tree in document order, not in o[...] order, mostly
 // because we want it to work after the DOM has been modified heavily.
 // This means it will fail for weird DOMs involving XBL or frames,
 // for example.
@@ -54,7 +54,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
     cs.push("createEmptyLists();"); // XXX this creates a dependency on fuzzer-combined.js
 
     if (root == document.documentElement) {
-      cs.push("all.nodes[0] = document.documentElement;");
+      cs.push(ensureIndexed(document.documentElement) + " = document.documentElement;");
     } else if (root == null) {
       cs.push("document.removeChild(document.documentElement);");
     } else {
@@ -70,21 +70,23 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
   }
 
   if (magic) {
-    // Look for additional disconnected subtrees in all.nodes.
+    // Look for additional disconnected subtrees in o.
     // XXX Maybe it should crawl up the parentNode chain all
     // the way to the document or document fragment, and serialize *that*.
-    for (var i = 0; i < all.nodes.length; ++i) {
-      var n = all.nodes[i];
-      if (n && !n.parentNode) {
-        cs.push("/* all.nodes[" + i + "] has no parent (disconnected) */");
-        serializeSubtreeAsScript(n, "null", "all.nodes[" + i + "]", true, true);
-      } else if (n && n.parentNode.nodeType == 11) {
-        cs.push("/* all.nodes[" + i + "] has a document fragment as its parent */");
-        serializeSubtreeAsScript(n, "null", "all.nodes[" + i + "]", true, true);
-// sorta covered by case 9 below
-//    } else if (n && n.parentNode.nodeType == 9 && n.parentNode != document) {
-//      cs.push("/* all.nodes[" + i + "] has another document as its parent */");
-//      serializeSubtreeAsScript(n, "null", "all.nodes[" + i + "]", true, true);
+    for (var i = 0; i < o.length; ++i) {
+      var n = o[i];
+      if (n && n instanceof Node && n != document && n != root) {
+        if (!n.parentNode) {
+          cs.push("/* o[" + i + "] has no parent (disconnected) */");
+          serializeSubtreeAsScript(n, "null", "o[" + i + "]", true, true);
+        } else if (n.parentNode.nodeType == 11) {
+          cs.push("/* o[" + i + "] has a document fragment as its parent */");
+          serializeSubtreeAsScript(n, "null", "o[" + i + "]", true, true);
+        } else if (n.parentNode.nodeType == 9) {
+          // Covered better by case 9 below, assuming the document is indexed
+          //cs.push("/* o[" + i + "] has a document as its parent */");
+          //serializeSubtreeAsScript(n, "null", "o[" + i + "]", true, true);
+        }
       }
     }
 
@@ -92,41 +94,46 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
     var sel = window.getSelection();
     cs.push("window.getSelection().removeAllRanges();");
     for (var i = 0; i < sel.rangeCount; ++i) {
-      var rangeStr = "all.ranges[" + i + "]"; // XXX prefer existing index in all.ranges, if it exists
       var range = sel.getRangeAt(i);
+      var rangeStr = ensureIndexed(range);
       cs.push(rangeStr + " = document.createRange();");
-      cs.push(rangeStr + ".setStart(" + ensureInAllNodes(range.startContainer) + ", " + range.startOffset + ");");
-      cs.push(rangeStr + ".setEnd(" + ensureInAllNodes(range.endContainer) + ", " + range.endOffset + ");");
+      cs.push(rangeStr + ".setStart(" + ensureIndexed(range.startContainer) + ", " + range.startOffset + ");");
+      cs.push(rangeStr + ".setEnd(" + ensureIndexed(range.endContainer) + ", " + range.endOffset + ");");
       cs.push("window.getSelection().addRange(" + rangeStr + ");");
     }
   }
 
   /*
   // Untested
-  var rootix = findInAllNodes(root);
+  var rootix = Things.findIndex(root);
   if (rootix > 0)
-    cs.push("all.nodes[" + rootix + "] = " + rootStr);
+    cs.push("o[" + rootix + "] = " + rootStr);
   */
 
   return cs;
 
-  function ensureInAllNodes(n)
+  function ensureIndexed(n)
   {
-    var ix = findInAllNodes(n);
-    if (ix == null) {
+    var ix = Things.findIndex(n);
+    if (ix === -1) {
       try {
         if (n.getAttribute && n.getAttribute("fuzzskip")) {
           // e.g. for adding a base href tag
           return null;
         }
       } catch(e) {
-        return "null /* ensureInAllNodes may have been given a native anonymous node: " + e + "*/";
+        /* A native anonymous node? */
       }
-      ix = all.nodes.length;
-      all.nodes[ix] = n;
-      warn("serializeDOMAsScript noticed that a node was missing from all.nodes.  It is now all.nodes[" + ix + "].");
+      var description = "???"
+      try {
+        description = Object.prototype.toString.call(n);
+      } catch(e) {
+      }
+      ix = o.length;
+      o[ix] = n;
+      warn("serializeDOMAsScript indexed a " + description + " as o[" + ix + "].");
     }
-    return "all.nodes[" + ix + "]";
+    return "o[" + ix + "]";
   }
 
   // No return value; side effect is to push commands into |cs| in its closure.
@@ -151,7 +158,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
   {
     var i, a, c;
 
-    var nodeStr = (isRoot && !createRoot && rootStr) ? rootStr : ensureInAllNodes(n);
+    var nodeStr = (isRoot && !createRoot && rootStr) ? rootStr : ensureIndexed(n);
     if (!nodeStr) {
       return;
     }

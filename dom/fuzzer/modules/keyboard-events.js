@@ -29,7 +29,7 @@ var fuzzerFakeEvents = (function() {
 
   function makeCommand()
   {
-    var target = rnd(8) ? "document.activeElement" : pick("nodes");
+    var target = rnd(8) ? "document.activeElement" : Things.instance("Node");
 
     var type;
     var keyCode = 0;

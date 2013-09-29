@@ -23,24 +23,24 @@ var fuzzerChars = (function() {
   function makeCommand()
   {
     // First, pick a random node.  If it's a text node, do something with it.
-    var t1index = rnd(all.nodes.length);
-    var t1 = all.nodes[t1index];
+    var t1index = Things.instanceIndex("CharacterData");
+    var t1 = o[t1index];
     if (t1 && typeof t1 == "object" && "nodeType" in t1 && t1.nodeType == 3) {
-      var commandt1 = "all.nodes[" + t1index + "]";
+      var commandt1 = "o[" + t1index + "]";
       return makeTextNodeCommand(t1, commandt1);
     }
 
     // Otherwise, pick a (separate) *element* node, perhaps "caching",
     // and do something with it.
     if (lastElementIndex == null || rnd(30) === 0) {
-      var newIndex = randomElementIndex();
+      var newIndex = Things.instanceIndex("Element");
       if (newIndex == null && lastElementIndex == null)
         return [];
       if (newIndex != null)
         lastElementIndex = newIndex;
     }
 
-    return makeElementCommand(all.nodes[lastElementIndex], "all.nodes[" + lastElementIndex + "]");
+    return makeElementCommand(o[lastElementIndex], "o[" + lastElementIndex + "]");
   }
 
   function makeElementCommand(n1, commandn1)
@@ -66,7 +66,7 @@ var fuzzerChars = (function() {
     }
 
     // Append the new text-ish node to the element.
-    var newb = nextSlot("nodes");
+    var newb = Things.reserve();
     return [
       newb + " = document." + c + "(" + randomQuotedString() + ");",
       commandn1 + ".appendChild(" + newb + ");"
@@ -92,7 +92,7 @@ var fuzzerChars = (function() {
     case 3:
       // Split the text node.
       var splitIndex = rnd(n1.data.length + 1);
-      return nextSlot("nodes") + " = " + commandn1 + ".splitText(" + splitIndex + ");";
+      return Things.reserve() + " = " + commandn1 + ".splitText(" + splitIndex + ");";
     case 4:
       // Prepend to its text.
       return commandn1 + ".data = " + randomQuotedString() + " + " + commandn1 + ".data;";
@@ -107,7 +107,7 @@ var fuzzerChars = (function() {
   //    return "var e = " + commandn1 + "; e.textContent = e.textContent.substr(0, e.textContent.length - 1);";
 
   // This had the disadvantage  of both:
-  // * Normalizes and throws away all.nodes indices
+  // * Normalizes and throws away o indices
 
   // Previous versions also did the same with .innerHTML, which was even worse
   // for reduction.

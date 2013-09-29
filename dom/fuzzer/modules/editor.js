@@ -81,11 +81,11 @@ var fuzzerContentEditable = (function() {
   {
     switch(rnd(10)) {
     case 0:
-      return pick("windows");
+      return Things.instance("Window");
     case 1:
-      return pick("documents");
+      return Things.instance("Document");
     default:
-      return pick("nodes");
+      return Things.instance("HTMLElement");
     }
   }
 
@@ -100,23 +100,23 @@ var fuzzerContentEditable = (function() {
     case 0:
       return pickFocusable() + ".contentEditable = " + contentEditableValue() + ";";
     case 1:
-      return pick("nodes") + ".setAttribute('contenteditable', " + contentEditableValue() + ");";
+      return Things.instance("Element") + ".setAttribute('contenteditable', " + contentEditableValue() + ");";
     case 2: case 3:
       return pickFocusable() + ".focus();";
     case 4:
       return pickFocusable() + ".select();";
     case 5:
-      return pick("documents") + ".queryCommandState(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandState(" + simpleSource(rndElt(allEditorCommands)) + ");";
     case 6:
-      return pick("documents") + ".queryCommandIndeterm(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandIndeterm(" + simpleSource(rndElt(allEditorCommands)) + ");";
     case 7:
-      return pick("documents") + ".queryCommandSupported(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandSupported(" + simpleSource(rndElt(allEditorCommands)) + ");";
     case 8:
-      return pick("documents") + ".queryCommandEnabled(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandEnabled(" + simpleSource(rndElt(allEditorCommands)) + ");";
     case 9:
-      return pick("documents") + ".queryCommandValue(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandValue(" + simpleSource(rndElt(allEditorCommands)) + ");";
     case 10:
-      return pick("nodes") + ".spellcheck = " + rndElt(["true", "false"]) + ";";
+      return Things.instance("HTMLElement") + ".spellcheck = " + rndElt(["true", "false"]) + ";";
     case 11:
       return "document.designMode = 'on';";
     case 12:
@@ -125,7 +125,7 @@ var fuzzerContentEditable = (function() {
       var editorCommand = rndElt(allEditorCommands);
       var showUI = rndElt(["true", "false"]);
       var value = randomThing(editorCommands[rnd(10) ? editorCommand : rndElt(allEditorCommands)]);
-      return pick("documents") + ".execCommand(" + simpleSource(editorCommand) + ", " + showUI + ", " + simpleSource(value) + ");";
+      return Things.instance("Document") + ".execCommand(" + simpleSource(editorCommand) + ", " + showUI + ", " + simpleSource(value) + ");";
     }
   }
 

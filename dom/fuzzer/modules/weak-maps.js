@@ -1,14 +1,13 @@
 var fuzzerWeakMaps = (function() {
   function makeCommand()
   {
-    var theMap = pick("nodes");
-    var theKey = pick("nodes");
-    var theValue = pick("nodes");
+    var theMap = Things.instance("WeakMap");
+    var theKey = Things.any();
+    var theValue = Things.any();
 
     switch(rnd(6)) {
     case 0:
-      // Create a new weak map
-      return nextSlot("nodes") + " = new WeakMap();";
+      return Things.reserve() + " = new WeakMap();";
     case 1:
       return theMap + ".set(" + theKey + ", " + theValue + ");";
     case 2:
@@ -16,15 +15,12 @@ var fuzzerWeakMaps = (function() {
     case 3:
       return theMap + ".has(" + theKey + ");";
     case 4:
-      // Get an item from the map (XXX use 'novel' or something)
-      return nextSlot("nodes") + " = " + theMap + ".get(" + theKey + ");";
-    case 5:
+      return Things.add(theMap + ".get(" + theKey + ")");
+    default:
       if (rnd(200) === 0) {
         return "fuzzerWeakMaps.checkDetermism();";
       }
-    default:
-      // Possibly wipe out a map or key
-      return theMap + " = null; " + fuzzerGC.immediate();
+      return [];
     }
   }
 
@@ -51,8 +47,8 @@ var fuzzerWeakMaps = (function() {
   function countEntriesAll()
   {
     var count = 0;
-    for (var i = 0; i < all.nodes.length; ++i) {
-      var m = all.nodes[i];
+    for (var i = 0; i < o.length; ++i) {
+      var m = o[i];
       if (m && typeof m == "object" && Object.getPrototypeOf(m) == WeakMap.prototype && Object.getPrototypeOf(Object.getPrototypeOf(m)) == Object.prototype) {
         count += countEntries(m);
       }
@@ -64,8 +60,8 @@ var fuzzerWeakMaps = (function() {
   {
     // Count entries in WeakMap |m| that are known to the fuzzer.
     var count = 0;
-    for (var j = 0; j < all.nodes.length; ++j) {
-      var key = all.nodes[j];
+    for (var j = 0; j < o.length; ++j) {
+      var key = o[j];
       if (key && typeof key == "object" && m.has(key))
         ++count;
     }

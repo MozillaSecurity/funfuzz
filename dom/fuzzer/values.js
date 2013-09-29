@@ -204,7 +204,7 @@ var fuzzValues = {
 
   formEncTypes: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
 
-  names:       [ "a", "b", "c" ], // XXX also grab IDs from the all.nodes
+  names:       [ "a", "b", "c" ], // XXX also grab IDs from Things.instance("Element")
   namerefs:    function() { return "#" + randomThing(fuzzValues.names); },
   nameURLRefs: function() { return "url('#" + randomThing(fuzzValues.names) + "')"; },
 
@@ -471,7 +471,7 @@ var fuzzValues = {
   },
 
   htmlMarkup: [
-    function() { try { return serializeHTML(all.nodes[randomElementIndex()], false); } catch(e) { return ""; } },
+    function() { try { return serializeHTML(o[Things.instanceIndex("Element")], false); } catch(e) { return ""; } },
     function() { return fuzzValues.generateHTML(rnd(7)); },
     function() { return fuzzValues.xmlMarkup(); },
     function() { return randomThing(fuzzValues.metaRefresh) + randomThing(fuzzValues.htmlMarkup); },
@@ -484,7 +484,7 @@ var fuzzValues = {
       return "<script xmlns='http://www.w3.org/1999/xhtml'><![CDATA[" + fuzzSubCommand("xmlscript") + "]]><\/script>";
     }
     try {
-      x = (new XMLSerializer).serializeToString(all.nodes[randomElementIndex()]);
+      x = (new XMLSerializer).serializeToString(o[Things.instanceIndex("Element")]);
     } catch(e) {
       x = "<oops/>";
     }
@@ -520,7 +520,7 @@ var fuzzValues = {
     function() { return fuzzValues.mediumMixedString(); },
     function() { return fuzzValues.longRepeatedString(); },
     function() { return randomThing(fuzzValues.chars); },
-    function() { var s = rndElt(all.strings); try { if (s) return "" + s; } catch(e) { } return ""; }
+    function() { return "" + o[Things.anyIndex(function(v) { return (typeof v == "string"); })]; }
   ],
   chars: [
     function() { return fuzzValues.bmpChars(); },
@@ -688,10 +688,11 @@ var fuzzValues = {
   },
 
   stolenText: function() {
-    // Could integrate with all.strings
-    if (!window.all.nodes) return ""; // possible with html-round-trip.html
-    var node = rndElt(all.nodes);
-    try { return "" + node.data; } catch(e) { return ""; }
+    try {
+      return "" + o[Things.instanceIndex("CharacterData")].data;
+    } catch(e) {
+      return "";
+    }
   },
 
   modifyText: function(s) {

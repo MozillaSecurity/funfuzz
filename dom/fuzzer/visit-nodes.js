@@ -13,7 +13,7 @@ function addDOMNodes(n, enterIFrames, enterSVG, enterXBL) {
   }
 
   // Add this node
-  all.nodes.push(n);
+  o.push(n);
 
   // Look for children
   for (i=0; (c = n.childNodes[i]); ++i) {
