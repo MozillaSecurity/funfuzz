@@ -24,7 +24,6 @@ function fuzzInitBlacklists()
                 "\"length",          // bug 346268, fuzzerRandomJS hang
                 "fuzzerRandomJS",    // Gigantic arrays, destructiveAndAnnoying
                 "uneval",            // Gigantic arrays are sadmaking
-                "/*MIX*/",           // Does mean things like putting |window| in all.documents
                 "frame",             // setting src can toss up a dialog (bug 331334)
                 "iframe",            // setting src can toss up a dialog (bug 331334)
                 "beforeunload",      // dialog on attempt to quit
