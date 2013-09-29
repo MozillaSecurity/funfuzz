@@ -73,7 +73,9 @@ def many_timed_runs(targetTime, tempDir, args):
             rFN = createReproFile(fuzzerJS, lines, logPrefix)
             if platform.system() == "Windows":
                 rFN = rFN.replace("/","\\") # Ensure both Lithium and Firefox understand the filename
-            writeLinesToFile(prefs, logPrefix + "-prefs.txt") # domInteresting.py will look for this file when invoked by Lithium or directly
+            with open(logPrefix + "-prefs.txt", "w") as f:
+                 # domInteresting.py will look for this file when invoked by Lithium or directly
+                 f.write(extraPrefs)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
             lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
             (lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
