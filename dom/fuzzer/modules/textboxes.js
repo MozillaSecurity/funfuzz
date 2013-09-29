@@ -13,13 +13,13 @@ var fuzzerTextboxes = (function() {
     switch(rnd(10)) {
       case 0:  return internallySelectable() + ".selectionStart = " + rnd(max) + ";";
       case 1:  return internallySelectable() + ".selectionEnd = " + rnd(max) + ";";
-      case 2:  return internallySelectable() + ".selectionDirection = " + simpleSource(rndElt(selDirections)) + ";";
-      case 3:  return internallySelectable() + ".setSelectionRange(" + rnd(max) + ", " + rnd(max) + ", " + simpleSource(rndElt(selDirections)) + ");";
-      case 4:  var newnode = Things.reserve(); return newnode + " = document.createElementNS(\"http://www.w3.org/1999/xhtml\", " + simpleSource(rndElt(textInputElements)) + "); document.documentElement.appendChild(" + newnode + ");";
+      case 2:  return internallySelectable() + ".selectionDirection = " + simpleSource(Random.index(selDirections)) + ";";
+      case 3:  return internallySelectable() + ".setSelectionRange(" + rnd(max) + ", " + rnd(max) + ", " + simpleSource(Random.index(selDirections)) + ");";
+      case 4:  var newnode = Things.reserve(); return newnode + " = document.createElementNS(\"http://www.w3.org/1999/xhtml\", " + simpleSource(Random.index(textInputElements)) + "); document.documentElement.appendChild(" + newnode + ");";
       case 5:  return Things.instance("Node") + ".focus();";
       case 6:  return Things.instance("Node") + ".select();";
       case 7:  return Things.instance("Node") + ".blur();";
-      default: return Things.instance("Element") + ".value = " + simpleSource(randomThing(fuzzValues.texts)) + ";";
+      default: return Things.instance("Element") + ".value = " + simpleSource(Random.pick(fuzzValues.texts)) + ";";
     }
   }
 

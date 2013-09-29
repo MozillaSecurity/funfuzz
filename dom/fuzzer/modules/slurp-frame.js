@@ -22,7 +22,7 @@ var fuzzerSlurpFrames = (function() {
 
     switch(rnd(6)) {
     case 0:
-      var uri = fuzzSrcTreePathToURI(randomThing(fuzzValues.srcTreeReftestFilenames));
+      var uri = fuzzSrcTreePathToURI(Random.pick(fuzzValues.srcTreeReftestFilenames));
       if (uri.substr(0, 5) != "file:" || location.protocol != "file:") {
         // No point loading a non-same-origin page and attempting to slurp it.
         return [];

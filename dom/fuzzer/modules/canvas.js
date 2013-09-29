@@ -7,10 +7,10 @@ var fuzzerCanvas = (function() {
   var myContext = null;
 
   // Concentrate on small numbers for now, because larger numbers often hang.
-  var numbers = function() { if (rnd(100)) return rnd(1000)/(rnd(10)+1); return randomThing(fuzzValues.jsNumbers); };
+  var numbers = function() { if (rnd(100)) return rnd(1000)/(rnd(10)+1); return Random.pick(fuzzValues.jsNumbers); };
 
-  var texts = function() { return simpleSource(randomThing(fuzzValues.texts)); };
-  var colors = function() { return simpleSource(randomThing(fuzzValues.colors)); };
+  var texts = function() { return simpleSource(Random.pick(fuzzValues.texts)); };
+  var colors = function() { return simpleSource(Random.pick(fuzzValues.colors)); };
   var numbersZeroOne = fuzzValues.numbersZeroOne;
 
   function inputImages() {
@@ -22,7 +22,7 @@ var fuzzerCanvas = (function() {
   {
     function totallyRandomThing()
     {
-      return randomThing([numbers, texts, CreateStyle, colors, inputImages, [0,"0",.5,1,-.5,-1,rnd(1000), rndr()]]);
+      return Random.pick([numbers, texts, CreateStyle, colors, inputImages, [0,"0",.5,1,-.5,-1,rnd(1000), rndr()]]);
     }
 
     if (!myCanvas || rnd(100) === 0) {
@@ -31,8 +31,8 @@ var fuzzerCanvas = (function() {
       // On my MacBook pro (early 2011), canvas drawing starts to fail
       // around 20000 x 20000 (but the failure is not reported to JS).
 
-      var w = Math.floor(Math.pow(2, rnd.rndReal() * 15)) - 1;
-      var h = Math.floor(Math.pow(2, rnd.rndReal() * 15)) - 1;
+      var w = Math.floor(Math.pow(2, Random.float() * 15)) - 1;
+      var h = Math.floor(Math.pow(2, Random.float() * 15)) - 1;
 
       return [
         myCanvas + " = document.createElementNS('http://www.w3.org/1999/xhtml', 'canvas');",
@@ -57,15 +57,15 @@ var fuzzerCanvas = (function() {
     case 1:
     case 2:
       // Change a canvas context attribute
-      var attr = rndElt(allattribs);
-      var value = randomThing(rnd(5)==1 ? totallyRandomThing : attributes[attr]);
+      var attr = Random.index(allattribs);
+      var value = Random.pick(rnd(5)==1 ? totallyRandomThing : attributes[attr]);
       return myContext + "." + attr + " = " + value + ";";
 
     case 3:
     case 4:
     case 5:
       // Call a canvas context method
-      var methd = rndElt(allmethods);
+      var methd = Random.index(allmethods);
       var arglist = methods[methd];
 
       var command = myContext + "." + methd + "(";
@@ -75,7 +75,7 @@ var fuzzerCanvas = (function() {
       var numArgs = rnd(10) ? arglist.length : rnd(arglist.length + 1);
 
       for (var i=0;i<numArgs;i++){
-        argvalue = randomThing(rnd(5)==1 ? totallyRandomThing : arglist[i]);
+        argvalue = Random.pick(rnd(5)==1 ? totallyRandomThing : arglist[i]);
         command += argvalue;
         if (i+1<numArgs)
           command += ", ";
@@ -103,7 +103,7 @@ var fuzzerCanvas = (function() {
 
       function rndNumForHere() {
         //this gets called often, so we might as well have a separate function to clean things up a bit
-        return randomThing([[0,"0",.5,1,-.5,-1], numbers, rnd(1000), rndr()]);
+        return Random.pick([[0,"0",.5,1,-.5,-1], numbers, rnd(1000), rndr()]);
       }
 
       switch (rnd(9)) {
@@ -119,8 +119,8 @@ var fuzzerCanvas = (function() {
             {
               funcreturn += "  try{" +
               "    grad.addColorStop(" +
-                    randomThing([0, '0', .5, 1, -.5, -1, numbers, rndr()]) + "," +
-                    randomThing(colors) +
+                    Random.pick([0, '0', .5, 1, -.5, -1, numbers, rndr()]) + "," +
+                    Random.pick(colors) +
                   ");" +
               "  }catch(Exx2){}";
             }
@@ -141,8 +141,8 @@ var fuzzerCanvas = (function() {
             {
               funcreturn += "  try{" +
               "    grad.addColorStop(" +
-                    randomThing([0, '0', .5, 1, -.5, -1, numbers, rndr()]) + "," +
-                    randomThing(colors) + ");" +
+                    Random.pick([0, '0', .5, 1, -.5, -1, numbers, rndr()]) + "," +
+                    Random.pick(colors) + ");" +
               "  }catch(Exx2){}";
             }
             funcreturn += "return grad; }(" + myContext + ")";
@@ -151,11 +151,11 @@ var fuzzerCanvas = (function() {
         case 2:
           //return a repeating pattern
           return "function(ctx){return ctx.createPattern(" +
-            randomThing(inputImages) + ",'" +
-            randomThing(["repeat","repeat-x","repeat-y","no-repeat"]) + "');}(" + myContext + ")";
+            Random.pick(inputImages) + ",'" +
+            Random.pick(["repeat","repeat-x","repeat-y","no-repeat"]) + "');}(" + myContext + ")";
 
         default:
-          return randomThing(colors);
+          return Random.pick(colors);
       }
     }
 
@@ -166,7 +166,7 @@ var fuzzerCanvas = (function() {
     // XXX some of these are strings, some of them are not. are they all getting escaped?
     var attributes = {
       "fillStyle": CreateStyle,
-      "font": function() { return simpleSource(randomThing(fuzzValues.numbersWithUnits) + " " + randomThing(fuzzValues.fontFaces)); },
+      "font": function() { return simpleSource(Random.pick(fuzzValues.numbersWithUnits) + " " + Random.pick(fuzzValues.fontFaces)); },
       "globalAlpha": numbersZeroOne,
       "globalCompositeOperation": ["'copy'", "'darker'", "'destination-atop'", "'destination-in'", "'destination-out'", "'destination-over'", "'lighter'", "'source-atop'", "'source-in'", "'source-out'", "'source-over'", "'xor'"],
       "lineCap": ["'butt'", "'round'", "'square'"],

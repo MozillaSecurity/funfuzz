@@ -13,10 +13,10 @@ var fuzzerSVGAttributes = (function() {
   var clipPathIDs = function() { return "clippath" + rnd(3); };
   var maskIDs = function() { return "mask" + rnd(3); };
 
-  function idAsHref(x) { return function() { return "#" + randomThing(x); }; }
-  function idAsCssRef(x) { return function() { return "url(#" + randomThing(x) + ")"; }; }
+  function idAsHref(x) { return function() { return "#" + Random.pick(x); }; }
+  function idAsCssRef(x) { return function() { return "url(#" + Random.pick(x) + ")"; }; }
 
-  var anythingIDs = function() { return randomThing([symbolIDs, textIDs, pathIDs, markerIDs, filterIDs, clipPathIDs, maskIDs, filterLocalNames, fuzzValues.names]); };
+  var anythingIDs = function() { return Random.pick([symbolIDs, textIDs, pathIDs, markerIDs, filterIDs, clipPathIDs, maskIDs, filterLocalNames, fuzzValues.names]); };
 
 
   var opacities = ["0", ".2", ".3", ".5", ".8", "1"];

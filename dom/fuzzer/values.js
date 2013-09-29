@@ -32,7 +32,7 @@ var fuzzValues = {
       v = Math.pow(2, rnd(65)) + rnd(3) - 1;
     } else {
       // Make numbers from 1 to [very huge], weighted toward smaller numbers.
-      v = Math.pow(2, rnd.rndReal() * rnd.rndReal() * 65);
+      v = Math.pow(2, Random.float() * Random.float() * 65);
       // With plenty of integers and half-integers
       if (rnd(2) === 0) {
         v = Math.floor(v);
@@ -57,7 +57,7 @@ var fuzzValues = {
     switch(rnd(20)) {
     case 0:  return 0;
     case 1:  return 1;
-    case 2:  return randomThing(fuzzValues.numbers);
+    case 2:  return Random.pick(fuzzValues.numbers);
     default: return rnd(100000) / 100000;
     }
   },
@@ -74,7 +74,7 @@ var fuzzValues = {
     case 2:  return "(0/0)"; // NaN
     case 3:  return "0";
     case 4:  return "(-0)";
-    default: return "" + randomThing(fuzzValues.numbers);
+    default: return "" + Random.pick(fuzzValues.numbers);
     }
   },
 
@@ -90,17 +90,17 @@ var fuzzValues = {
     }
   },
 
-  percents: function() { return (randomThing(fuzzValues.numbers) * 100) + "%"; },
-  numbersWithUnits: function () { return randomThing(fuzzValues.numbers) + randomThing(fuzzValues.units); },
+  percents: function() { return (Random.pick(fuzzValues.numbers) * 100) + "%"; },
+  numbersWithUnits: function () { return Random.pick(fuzzValues.numbers) + Random.pick(fuzzValues.units); },
   units: ["%", "", ["px", "em", "rem", "ch", "pt", "in", "cm", "pc", "mm", "mozmm", "deg", "grad", "rad", "turn", "vw", "vh", "vmax", "vmin", "s", "ms"]],
 
   durations: function() {
     // Mostly, use time scales close to fuzzer pauses
     if (rnd(10)) {
-      var ms = Math.floor(Math.pow(2, rnd.rndReal() * 14)) - 1;
+      var ms = Math.floor(Math.pow(2, Random.float() * 14)) - 1;
       return ms + "ms";
     } else {
-      return randomThing(fuzzValues.numbers) + rndElt(["ms", "s"]);
+      return Random.pick(fuzzValues.numbers) + Random.index(["ms", "s"]);
     }
   },
 
@@ -110,7 +110,7 @@ var fuzzValues = {
       return function randomFontFaceInner() {
         if (!allFonts)
           allFonts = (typeof fuzzPriv == "object" && typeof fuzzPriv.fontList == "function") ? fuzzPriv.fontList().split("\n") : ["monospace"];
-        return rndElt(allFonts);
+        return Random.index(allFonts);
       };
     })(),
     [
@@ -199,49 +199,49 @@ var fuzzValues = {
     "video/ogg; codecs=\"theora, vorbis\"",
     "video/mp4",
     "video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"",
-    function() { return randomThing(fuzzValues.formEncTypes); },
+    function() { return Random.pick(fuzzValues.formEncTypes); },
   ],
 
   formEncTypes: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
 
   names:       [ "a", "b", "c" ], // XXX also grab IDs from Things.instance("Element")
-  namerefs:    function() { return "#" + randomThing(fuzzValues.names); },
-  nameURLRefs: function() { return "url('#" + randomThing(fuzzValues.names) + "')"; },
+  namerefs:    function() { return "#" + Random.pick(fuzzValues.names); },
+  nameURLRefs: function() { return "url('#" + Random.pick(fuzzValues.names) + "')"; },
 
   scriptcode: function() {
     return "/*scriptcode*/" + fuzzSubCommand("scriptcode");
   },
 
   metaRefreshContent: [
-    function() { return randomThing(fuzzValues.unsignedNumbers); },  // refresh without redirect
-    function() { return rnd(6) + ";url=" + randomThing(fuzzValues.URIs); },
+    function() { return Random.pick(fuzzValues.unsignedNumbers); },  // refresh without redirect
+    function() { return rnd(6) + ";url=" + Random.pick(fuzzValues.URIs); },
   ],
 
   metaRefresh: function() {
-    return "<meta mmmrefresh http-equiv=\"refresh\" content=\"" + randomThing(fuzzValues.metaRefreshContent) + "\">";
+    return "<meta mmmrefresh http-equiv=\"refresh\" content=\"" + Random.pick(fuzzValues.metaRefreshContent) + "\">";
   },
 
   URIs: function () {
     if (rnd(20000) === 0) {
-      return randomThing(fuzzValues.annoyingURIs);
+      return Random.pick(fuzzValues.annoyingURIs);
     }
     if (rnd(100) === 0) {
       return fuzzTextDataURI(null, null);
     }
     if (rnd(60) === 0) {
-      return randomThing(fuzzValues.networkURIs);
+      return Random.pick(fuzzValues.networkURIs);
     }
 
     if (rnd(6) === 0) {
-      return randomThing(fuzzValues.URIs) + "#" + randomThing(fuzzValues.names);
+      return Random.pick(fuzzValues.URIs) + "#" + Random.pick(fuzzValues.names);
     }
 
     if (rnd(30) === 0) {
-      return "view-source:" + randomThing([fuzzValues.dataTextHTMLURIs, fuzzValues.URIs]);
+      return "view-source:" + Random.pick([fuzzValues.dataTextHTMLURIs, fuzzValues.URIs]);
     }
 
     if (rnd(100) === 0) {
-      return rndElt(["feed:", "pcast:"]) + randomThing(fuzzValues.URIs);
+      return Random.index(["feed:", "pcast:"]) + Random.pick(fuzzValues.URIs);
     }
 
     if (rnd(30) === 0) {
@@ -250,28 +250,28 @@ var fuzzValues = {
     }
 
     if (rnd(4) === 0) {
-      return randomThing(fuzzValues.pageURIs);
+      return Random.pick(fuzzValues.pageURIs);
     }
     if (rnd(10) === 0) {
       return location.href;
     }
     if (rnd(7) === 0) {
-      return "#" + randomThing(fuzzValues.names);
+      return "#" + Random.pick(fuzzValues.names);
     }
     if (rnd(3) === 0 && !("disableCrazyURIs" in window)) {
       return "javascript:" + fuzzSubCommand("URI") + " void 0;";
     }
     if (rnd(6) === 0) {
-      return randomThing(fuzzValues.boringURIs);
+      return Random.pick(fuzzValues.boringURIs);
     }
 
-    return fuzzSrcTreePathToURI(randomThing(fuzzValues.srcTreeFilenames));
+    return fuzzSrcTreePathToURI(Random.pick(fuzzValues.srcTreeFilenames));
   },
 
   // Top-level reftest files, which are mostly HTML and SVG documents.
   srcTreeReftestFilenames: function() {
     try {
-      return rndElt(fuzzPriv.reftestList().split("\n").slice(2));
+      return Random.index(fuzzPriv.reftestList().split("\n").slice(2));
     } catch(e) {
       dumpln("fuzzPriv.reftestList() threw?");
       return "srcTreeReftestFilenames/is/broken";
@@ -293,7 +293,7 @@ var fuzzValues = {
 
   // Various reftest files that are safe to load as pages.
   srcTreePageFilenames: [
-    function() { return randomThing(fuzzValues.srcTreeReftestFilenames); },
+    function() { return Random.pick(fuzzValues.srcTreeReftestFilenames); },
 
     [
       // Sound
@@ -344,8 +344,8 @@ var fuzzValues = {
 
   // Various reftest files.
   srcTreeFilenames: [
-    function() { return randomThing(fuzzValues.srcTreePageFilenames); },
-    function() { return randomThing(fuzzValues.srcTreeFontFilenames); },
+    function() { return Random.pick(fuzzValues.srcTreePageFilenames); },
+    function() { return Random.pick(fuzzValues.srcTreeFontFilenames); },
 
     [
       // RDF
@@ -420,21 +420,21 @@ var fuzzValues = {
   // URLs that are safe to load as frames, in new tabs, etc.
   pageURIs: function() {
     if (rnd(2000) === 0)
-      return randomThing(fuzzValues.URIs);
+      return Random.pick(fuzzValues.URIs);
 
     if (rnd(30) === 0) {
-      return "view-source:" + randomThing([fuzzValues.dataTextHTMLURIs, fuzzValues.pageURIs]);
+      return "view-source:" + Random.pick([fuzzValues.dataTextHTMLURIs, fuzzValues.pageURIs]);
     }
 
     if (rnd(30) === 0) {
-      return "#" + randomThing(fuzzValues.names);
+      return "#" + Random.pick(fuzzValues.names);
     }
     if (rnd(6) === 0) {
-      return randomThing(fuzzValues.pageURIs) + "#" + randomThing(fuzzValues.names);
+      return Random.pick(fuzzValues.pageURIs) + "#" + Random.pick(fuzzValues.names);
     }
 
-    return randomThing([
-      function() { return fuzzSrcTreePathToURI(randomThing(fuzzValues.srcTreePageFilenames)); },
+    return Random.pick([
+      function() { return fuzzSrcTreePathToURI(Random.pick(fuzzValues.srcTreePageFilenames)); },
       fuzzValues.dataTextPlainURIs,
       fuzzValues.dataTextHTMLURIs,
       fuzzValues.dataXMLURIs,
@@ -454,19 +454,19 @@ var fuzzValues = {
   ],
 
   dataTextPlainURIs: function() {
-    var text = rnd(2) ? randomThing(fuzzValues.texts) : "" + fuzzTotallyRandomValue();
+    var text = rnd(2) ? Random.pick(fuzzValues.texts) : "" + fuzzTotallyRandomValue();
     return fuzzTextDataURI("text/plain", text);
   },
 
   dataTextHTMLURIs: function() {
-    var docType = randomThing(fuzzValues.doctypeDeclarations);
-    var html = randomThing(fuzzValues.htmlMarkup);
+    var docType = Random.pick(fuzzValues.doctypeDeclarations);
+    var html = Random.pick(fuzzValues.htmlMarkup);
     return fuzzTextDataURI("text/html", docType + html);
   },
 
   dataXMLURIs: function() {
-    var xmlMimeType = rndElt(["application/xml", "text/xml", "application/xhtml+xml", "image/svg+xml", "application/vnd.mozilla.xul+xml"]);
-    var xml = randomThing(fuzzValues.xmlMarkup);
+    var xmlMimeType = Random.index(["application/xml", "text/xml", "application/xhtml+xml", "image/svg+xml", "application/vnd.mozilla.xul+xml"]);
+    var xml = Random.pick(fuzzValues.xmlMarkup);
     return fuzzTextDataURI(xmlMimeType, xml);
   },
 
@@ -474,8 +474,8 @@ var fuzzValues = {
     function() { try { return serializeHTML(o[Things.instanceIndex("Element")], false); } catch(e) { return ""; } },
     function() { return fuzzValues.generateHTML(rnd(7)); },
     function() { return fuzzValues.xmlMarkup(); },
-    function() { return randomThing(fuzzValues.metaRefresh) + randomThing(fuzzValues.htmlMarkup); },
-    function() { return fuzzValues.modifyText(randomThing(fuzzValues.htmlMarkup)); }
+    function() { return Random.pick(fuzzValues.metaRefresh) + Random.pick(fuzzValues.htmlMarkup); },
+    function() { return fuzzValues.modifyText(Random.pick(fuzzValues.htmlMarkup)); }
   ],
 
   xmlMarkup: function() {
@@ -519,7 +519,7 @@ var fuzzValues = {
     function() { return fuzzValues.stolenText(); },
     function() { return fuzzValues.mediumMixedString(); },
     function() { return fuzzValues.longRepeatedString(); },
-    function() { return randomThing(fuzzValues.chars); },
+    function() { return Random.pick(fuzzValues.chars); },
     function() { return "" + o[Things.anyIndex(function(v) { return (typeof v == "string"); })]; }
   ],
   chars: [
@@ -527,7 +527,7 @@ var fuzzValues = {
     function() { return fuzzValues.surrogatePairs(); },
     function() { return fuzzValues.syntaxChars(); },
     function() { return fuzzValues.nearbyChars(); },
-    function() { return fuzzCodePointToUTF16(rndElt(fuzzValues.layoutCodePoints)); }
+    function() { return fuzzCodePointToUTF16(Random.index(fuzzValues.layoutCodePoints)); }
   ],
 
   nearbyChars: (function () {
@@ -537,13 +537,13 @@ var fuzzValues = {
     {
       switch(rnd(30)) {
       case 0:  return rnd(0x100); // ASCII+
-      case 1:  return rndElt(fuzzValues.layoutCodePoints);
+      case 1:  return Random.index(fuzzValues.layoutCodePoints);
       case 2:
       case 3:
       case 4:  return rnd(0x10000); // BMP
       case 5:  return rnd(0x110000); // All 17 planes
       default:
-        var newCodePoint = lastCodePoint + (rnd(3)-2) * Math.floor(Math.pow(2, rnd.rndReal() * 10));
+        var newCodePoint = lastCodePoint + (rnd(3)-2) * Math.floor(Math.pow(2, Random.float() * 10));
         if (newCodePoint < 0)
           newCodePoint = 0x20;
         if (newCodePoint >= 0x110000)
@@ -706,7 +706,7 @@ var fuzzValues = {
 
     switch (rnd(10)) {
     case 0:
-      return randomThing(fuzzValues.texts);
+      return Random.pick(fuzzValues.texts);
     case 1:
       return s.substr(0, i);
     case 2:
@@ -719,16 +719,16 @@ var fuzzValues = {
       return fuzzValues.modifyNumbersInString(s);
     case 5:
       // Insert a string at position i
-      return s.substr(0, i) + randomThing(fuzzValues.texts) + s.slice(i);
+      return s.substr(0, i) + Random.pick(fuzzValues.texts) + s.slice(i);
     case 6:
       // Modify a character at position i
-      return s.substr(0, i) + randomThing(fuzzValues.chars) + s.slice(i + 1);
+      return s.substr(0, i) + Random.pick(fuzzValues.chars) + s.slice(i + 1);
     case 7:
       // Duplicate the string
-      return s + rndElt(["", ",", " "]) + s;
+      return s + Random.index(["", ",", " "]) + s;
     default:
       // Insert a character at position i
-      return s.substr(0, i) + randomThing(fuzzValues.chars) + s.slice(i);
+      return s.substr(0, i) + Random.pick(fuzzValues.chars) + s.slice(i);
     }
   },
 
@@ -736,15 +736,15 @@ var fuzzValues = {
     s = typeof s == "string" ? s : ""; // needed for fuzzTotallyRandomValue
     var pctA = rnd(100);
     var pctB = rnd(100);
-    var replaceNumber = function(q) { return rnd(100) > pctA ? q : randomThing(fuzzValues.numbers); };
-    var replaceUnit = function(q) { return rnd(100) > pctB ? q : randomThing(fuzzValues.numbersWithUnits); };
+    var replaceNumber = function(q) { return rnd(100) > pctA ? q : Random.pick(fuzzValues.numbers); };
+    var replaceUnit = function(q) { return rnd(100) > pctB ? q : Random.pick(fuzzValues.numbersWithUnits); };
     s = s.replace(/-?\d+(\.\d+)?(px|em|ch|cm|in|rem)/g, replaceUnit);
     s = s.replace(/-?\d+(\.\d+)?/g, replaceNumber);
     return s;
   },
 
   longRepeatedString: function () {
-    var x = randomThing(fuzzValues.chars);
+    var x = Random.pick(fuzzValues.chars);
     var doublings = rnd(4) * rnd(3) * rnd(3);
     for (var i = 0; i < doublings; ++i)
       x = x + x;
@@ -756,11 +756,11 @@ var fuzzValues = {
   mediumMixedString: function () {
     var t = fuzzValues.chars;
     if (rnd(2))
-      t = rndElt(t); // pick a strategy and stick to it
+      t = Random.index(t); // pick a strategy and stick to it
     var s = "";
     var len = rnd(1000) * rnd(10) + rnd(10);
     for (var i = 0; i < len; ++i)
-      s += randomThing(t);
+      s += Random.pick(t);
     return s;
   },
 
@@ -770,7 +770,7 @@ var fuzzValues = {
     var hex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
     var len = rnd(200);
     for (var i = 0; i < len; ++i) {
-      s += "%" + rndElt(hex) + rndElt(hex);
+      s += "%" + Random.index(hex) + Random.index(hex);
     }
     return s;
   },
@@ -809,7 +809,7 @@ var fuzzValues = {
     ":-moz-only-whitespace",
     ":-moz-empty-except-children-with-localname",
     ":lang",
-    function() { return ":lang(" + randomThing(fuzzValues.languages) + ")"; },
+    function() { return ":lang(" + Random.pick(fuzzValues.languages) + ")"; },
     ":-moz-bound-element",
     ":root",
     ":scope",
@@ -899,19 +899,19 @@ var fuzzValues = {
   cssSelectorBases: ["*", "div", ":not(div)", "#a", ":not(#a)"],
 
   cssSelectorParts: function() {
-    var sel = randomThing(fuzzValues.cssSelectorBases);
+    var sel = Random.pick(fuzzValues.cssSelectorBases);
     while (rnd(3) === 0)
-      sel += randomThing(fuzzValues.cssPseudoClasses);
+      sel += Random.pick(fuzzValues.cssPseudoClasses);
     return sel;
   },
 
   cssSelectors: function() {
-    var sel = randomThing(fuzzValues.cssSelectorParts);
+    var sel = Random.pick(fuzzValues.cssSelectorParts);
     while (rnd(2)) {
-      sel += randomThing(fuzzValues.cssCombinators) + randomThing(fuzzValues.cssSelectorParts);
+      sel += Random.pick(fuzzValues.cssCombinators) + Random.pick(fuzzValues.cssSelectorParts);
     }
     if (rnd(5) === 0) {
-      sel += randomThing(fuzzValues.cssPseudoElements);
+      sel += Random.pick(fuzzValues.cssPseudoElements);
     }
     return sel;
   },
@@ -921,8 +921,8 @@ var fuzzValues = {
 function fuzzTotallyRandomValue()
 {
   var fuzzValueKeys = getKeysFromHash(fuzzValues);
-  var k = rndElt(fuzzValueKeys);
-  return randomThing(fuzzValues[k]);
+  var k = Random.index(fuzzValueKeys);
+  return Random.pick(fuzzValues[k]);
 }
 
 
@@ -942,7 +942,7 @@ function fuzzSrcTreePathToURI(path)
   // XXX it would be more polite to use a local server than pounding mxr/hg
   // XXX that would also allow supporting multipart/x-mixed-replace (e.g. image/test/reftest/jpeg/webcam-simulacrum.mjpg and custom evil)
 
-  var protocol = rndElt(["http", "https"]);
+  var protocol = Random.index(["http", "https"]);
   if (rnd(3)) {
     // hgweb gives the right mime type for most files
     return protocol + "://hg.mozilla.org/mozilla-central/raw-file/default/" + path;
@@ -970,10 +970,10 @@ function fuzzTextDataURI(mime, text)
   // Creates a data: URL with a random charset
 
   if (mime == undefined || rnd(10) === 0)
-    mime = randomThing(fuzzValues.mimeTypes);
+    mime = Random.pick(fuzzValues.mimeTypes);
 
   if (text == undefined) {
-    text = randomThing(fuzzValues.texts);
+    text = Random.pick(fuzzValues.texts);
   } else if (rnd(10) === 0) {
     text = fuzzValues.modifyText(text);
   }
@@ -996,7 +996,7 @@ function fuzzTextDataURI(mime, text)
   {
     switch(rnd(10)) {
       case 0:  return "";
-      case 1:  return ";charset=" + randomThing(fuzzValues.charsets);
+      case 1:  return ";charset=" + Random.pick(fuzzValues.charsets);
       default: return ";charset=" + c;
     }
   }
@@ -1025,7 +1025,7 @@ function fuzzTextDataURI(mime, text)
     // http://blogs.msdn.com/b/tijujohn/archive/2012/06/01/different-redirect-http-response-status-codes-and-how-the-browser-should-react-301-vs-302-vs-303-vs-307.aspx
     var redirectStatuses = ["301 Moved Permanently", "302 Found", "303 See Other", "307 Temporary Redirect"];
 
-    return fuzzEchoRequest(rndElt(redirectStatuses), ['Location: ' + uri, 'Connection: Close'], "");
+    return fuzzEchoRequest(Random.index(redirectStatuses), ['Location: ' + uri, 'Connection: Close'], "");
   }
 
   function fuzzEchoRequest(responseStatus, responseHeaders, responseBody)
@@ -1033,7 +1033,7 @@ function fuzzTextDataURI(mime, text)
     if (rnd(10) == 0) {
       // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
       // http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-      responseStatus = rndElt([100, 101, 200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 305, 306, 307, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 500, 501, 502, 503, 504, 505]);
+      responseStatus = Random.index([100, 101, 200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 305, 306, 307, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 500, 501, 502, 503, 504, 505]);
     } else if (rnd(300) == 0) {
       if (rnd(20)) responseStatus = '401 Not Authorized';
       if (rnd(20)) responseHeaders.push('WWW-Authenticate: Basic realm="Fuzzland"');
@@ -1066,7 +1066,7 @@ function fuzzTextDataURI(mime, text)
         return "data:" + mime + probablyCharset("utf-16be") + "," + utf16be_escape(text);
       case 3:
         // Complete nonsense (test the charset decoders)
-        return "data:" + mime + (rnd(2) ? ";charset=" + randomThing(fuzzValues.charsets) : "") + "," + fuzzValues.percentEscapedBytes();
+        return "data:" + mime + (rnd(2) ? ";charset=" + Random.pick(fuzzValues.charsets) : "") + "," + fuzzValues.percentEscapedBytes();
       default:
         // Bounce it off a server instead (requires echo_server to be running)
         //return echoServerURI(mime + probablyCharset("utf-8"), text);
@@ -1080,5 +1080,5 @@ function fuzzTextDataURI(mime, text)
   return uri;
 }
 
-function rndBoolStr() { return rndElt(["true", "false"]); }
+function rndBoolStr() { return Random.index(["true", "false"]); }
 

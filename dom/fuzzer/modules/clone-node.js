@@ -4,7 +4,7 @@ var fuzzerCloneNode = (function() {
     var commandn2 = "o[" + n2index + "]";
     var n2 = o[n2index];
 
-    var deep = rndElt(["true", "false"]);
+    var deep = Random.index(["true", "false"]);
 
     try {
       if (n2.getElementsByTagName("*").length > 20) {

@@ -1,21 +1,21 @@
 var fuzzerMathMLAttributes = (function() {
 
-  function several(randomThingArg)
+  function several(pickArg)
   {
     return function() {
-      var num = randomThing([0, 1, [2, 4, 8, 16, 1024]]);
+      var num = Random.pick([0, 1, [2, 4, 8, 16, 1024]]);
       var s = "";
       for (var i = 0; i < num; ++i) {
         if (i != 0)
           s += " ";
-        s += randomThing(randomThingArg);
+        s += Random.pick(pickArg);
       }
       return s;
     };
   }
 
   var tableAligns = ["top", "bottom", "center", "baseline", "axis"];
-  function tableAlignAttr() { return rndElt(tableAligns) + rndElt(["", " " + randomThing(fuzzValues.numbers)]); }
+  function tableAlignAttr() { return Random.index(tableAligns) + Random.index(["", " " + Random.pick(fuzzValues.numbers)]); }
   var horizAligns = ["left", "center", "right"];
   var lines = ["none", "solid", "dashed"];
 
@@ -25,9 +25,9 @@ var fuzzerMathMLAttributes = (function() {
     // suggesting that this was the intended format. Formally, spaces are not allowed within these values, but
     // implementers may wish to ignore such spaces to maximize backward compatibility."
     return (
-      rndElt(["+", "-", ""]) +
-      randomThing(fuzzValues.unsignedNumbers) +
-      (rnd(2) ? rndElt(["%", "%width", "%height", "%depth", "width", "height", "depth", "mediummathspace", "negativemediummathspace"]) : randomThing(fuzzValues.units))
+      Random.index(["+", "-", ""]) +
+      Random.pick(fuzzValues.unsignedNumbers) +
+      (rnd(2) ? Random.index(["%", "%width", "%height", "%depth", "width", "height", "depth", "mediummathspace", "negativemediummathspace"]) : Random.pick(fuzzValues.units))
     );
   }
 
@@ -115,7 +115,7 @@ var fuzzerMathMLAttributes = (function() {
     "rowlines": several(lines),
     "columnlines": several(lines),
     "frame": lines,
-    "framespacing": function() { return randomThing(fuzzValues.numbersWithUnits) + " " + randomThing(fuzzValues.numbersWithUnits); },
+    "framespacing": function() { return Random.pick(fuzzValues.numbersWithUnits) + " " + Random.pick(fuzzValues.numbersWithUnits); },
     "equalrows": fuzzValues.booleans,
     "equalcolumns": fuzzValues.booleans,
 
@@ -127,7 +127,7 @@ var fuzzerMathMLAttributes = (function() {
       var n = rnd(2) ? 1 : rnd(10);
       var a = [];
       for (var i = 0; i < n; ++i)
-        a.push(rndElt(notations));
+        a.push(Random.index(notations));
       return a.join(" ");
     },
 
@@ -260,7 +260,7 @@ var fuzzerMathMLAttributes = (function() {
           if (fillGapIndex != undefined)
             return "3; insertAsFirstChild(" + commandnn + ", o[" + fillGapIndex + "]);";
           else
-            return "4; insertAsFirstChild(" + commandnn + ", createToken('mi', '" + rndElt(['a','b','c','d','e','f','x','y','z']) + "'));";
+            return "4; insertAsFirstChild(" + commandnn + ", createToken('mi', '" + Random.index(['a','b','c','d','e','f','x','y','z']) + "'));";
         }
 
       }

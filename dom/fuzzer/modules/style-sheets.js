@@ -22,8 +22,8 @@ var fuzzerRandomClasses = (function() {
 
     switch(rnd(5)) {
       case 0:  return "(" + calcExpr() + ")";
-      case 1:  return calcExpr() + maybeSpace() + rndElt(["+", "-", "*", "/", "mod"]) + maybeSpace() + calcExpr();
-      default: return randomThing(fuzzValues.numbersWithUnits);
+      case 1:  return calcExpr() + maybeSpace() + Random.index(["+", "-", "*", "/", "mod"]) + maybeSpace() + calcExpr();
+      default: return Random.pick(fuzzValues.numbersWithUnits);
     }
   }
 
@@ -31,7 +31,7 @@ var fuzzerRandomClasses = (function() {
   {
     if (rnd(4) === 0)
       return "calc(" + calcExpr() + ")";
-    return randomThing(fuzzValues.numbersWithUnits);
+    return Random.pick(fuzzValues.numbersWithUnits);
   }
 
   var numbers = fuzzValues.numbers;
@@ -40,7 +40,7 @@ var fuzzerRandomClasses = (function() {
 
   function borderShorthands()
   {
-    return randomThing(lengths) + " " + rndElt(["solid", "dotted", "hidden", "dashed", "double", "groove", "ridge", "inset", "outset", "none"]) + " " + randomThing(fuzzValues.colors);
+    return Random.pick(lengths) + " " + Random.index(["solid", "dotted", "hidden", "dashed", "double", "groove", "ridge", "inset", "outset", "none"]) + " " + Random.pick(fuzzValues.colors);
   }
 
   // http://www.w3.org/TR/2003/CR-css3-text-20030514/#text-shadows
@@ -51,7 +51,7 @@ var fuzzerRandomClasses = (function() {
       return "none";
 
     if (rnd(2) === 0)
-      return rndElt([
+      return Random.index([
         // Examples from http://www.w3.org/Style/Examples/007/text-shadow
         "0.1em 0.1em #333",
         "0.1em 0.1em 0.05em #333",
@@ -74,7 +74,7 @@ var fuzzerRandomClasses = (function() {
       sh[i] = fuzzValues.numbersWithUnits() + " " + fuzzValues.numbersWithUnits() + " ";
       if (rnd(2))
         sh[i] += fuzzValues.numbersWithUnits() + " "; // optional blur radius
-      sh[i] += randomThing(fuzzValues.colors);
+      sh[i] += Random.pick(fuzzValues.colors);
     }
 
     return sh.join(", ");
@@ -97,8 +97,8 @@ var fuzzerRandomClasses = (function() {
     switch(rnd(10)) {
       case 0:  return cssCounterUse();
       case 1:  return cssCountersUse();
-      case 2:  return rndElt(["open-quote", "close-quote", "no-open-quote", "no-close-quote"]);
-      case 3:  return rndElt(["attr(href)", "attr(alt)", "attr(id)"]);
+      case 2:  return Random.index(["open-quote", "close-quote", "no-open-quote", "no-close-quote"]);
+      case 3:  return Random.index(["attr(href)", "attr(alt)", "attr(id)"]);
       case 4:  return "url(" + cssLiteralString(fuzzValues.URIs()) + ")";
       default: return cssQuotedStrings();
     }
@@ -106,7 +106,7 @@ var fuzzerRandomClasses = (function() {
 
   function cssQuotedStrings()
   {
-    return cssLiteralString(randomThing(fuzzValues.texts));
+    return cssLiteralString(Random.pick(fuzzValues.texts));
   }
 
   function cssLiteralString(s)
@@ -132,7 +132,7 @@ var fuzzerRandomClasses = (function() {
   {
     if (rnd(3) !== 0)
       return "";
-    return ", " + rndElt(listStyleTypes);
+    return ", " + Random.index(listStyleTypes);
   }
 
   // https://developer.mozilla.org/en/CSS/list-style-type
@@ -144,10 +144,10 @@ var fuzzerRandomClasses = (function() {
 
   var backgroundImages = [
     cssURLs,
-    function() { return "-moz-element(#" + randomThing(fuzzValues.names) + ")"; },
+    function() { return "-moz-element(#" + Random.pick(fuzzValues.names) + ")"; },
     // http://weblogs.mozillazine.org/roc/archives/2008/07/svg_paint_serve.html
     // http://weblogs.mozillazine.org/roc/archives/2008/07/the_latest_feat.html
-    function() { return randomThing(fuzzValues.nameURLRefs); }
+    function() { return Random.pick(fuzzValues.nameURLRefs); }
   ];
 
   function cubicBeziers()
@@ -162,9 +162,9 @@ var fuzzerRandomClasses = (function() {
   {
     return function() {
       if (rnd(2)) {
-        return randomThing(a);
+        return Random.pick(a);
       } else {
-        return randomThing(a) + sep + randomThing(a);
+        return Random.pick(a) + sep + Random.pick(a);
       }
     };
   }
@@ -200,9 +200,9 @@ var fuzzerRandomClasses = (function() {
     "background": ["transparent", fuzzValues.colors, backgroundImages],
     "background-size":
         [lengths,
-         function() { return randomThing(lengths) + " " + randomThing(lengths); },
-         function() { return "auto"               + " " + randomThing(lengths); },
-         function() { return randomThing(lengths) + " " + "auto"; },
+         function() { return Random.pick(lengths) + " " + Random.pick(lengths); },
+         function() { return "auto"               + " " + Random.pick(lengths); },
+         function() { return Random.pick(lengths) + " " + "auto"; },
          "auto auto",
          "auto",
          "cover",
@@ -245,7 +245,7 @@ var fuzzerRandomClasses = (function() {
     "font-size-adjust": fuzzValues.numbers,
     "font-family": [
       fuzzValues.fontFaces,
-      function() { return cssLiteralString(randomThing(fuzzValues.fontFaces)); },
+      function() { return cssLiteralString(Random.pick(fuzzValues.fontFaces)); },
       "-moz-use-system-font", // "-moz-use-system-font is the value we use for all the 'font' subproperties to say that 'font' was set to one of the system font values"
       // Or a comma-separated list of such...
     ],
@@ -284,9 +284,9 @@ var fuzzerRandomClasses = (function() {
 
     // A few SVG-referencing properties are supported in HTML now!
     // http://weblogs.mozillazine.org/roc/archives/2008/06/applying_svg_ef.html
-    "mask":      [cssURLs, fuzzValues.nameURLRefs, function() { return randomThing(fuzzerSVGAttributes.maskRefs); }],
-    "clip-path": [cssURLs, fuzzValues.nameURLRefs, function() { return randomThing(fuzzerSVGAttributes.clipPathRefs); }],
-    "filter":    [cssURLs, fuzzValues.nameURLRefs, function() { return randomThing(fuzzerSVGAttributes.filterRefs); }],
+    "mask":      [cssURLs, fuzzValues.nameURLRefs, function() { return Random.pick(fuzzerSVGAttributes.maskRefs); }],
+    "clip-path": [cssURLs, fuzzValues.nameURLRefs, function() { return Random.pick(fuzzerSVGAttributes.clipPathRefs); }],
+    "filter":    [cssURLs, fuzzValues.nameURLRefs, function() { return Random.pick(fuzzerSVGAttributes.filterRefs); }],
 
     // -moz-column tends to be buggy
     "-moz-column-count": ["-1", "0", "1", "2", "3", "15", numbers],
@@ -382,8 +382,8 @@ var fuzzerRandomClasses = (function() {
 
   function randomCSSValue() {
     return rnd(2) ?
-      rndElt(["", "inherit", "initial", "auto"]) :
-      randomThing(CSSPropHash[rndElt(CSSPropList)]);
+      Random.index(["", "inherit", "initial", "auto"]) :
+      Random.pick(CSSPropHash[Random.index(CSSPropList)]);
   }
 
   // Concentrate on a set of related properties.
@@ -396,10 +396,10 @@ var fuzzerRandomClasses = (function() {
       case 0:  return "basics";
       case 1:  return "flex";
       default:
-        var p = rndElt(CSSPropList);
+        var p = Random.index(CSSPropList);
         if (p.substr(0, 5) == "-moz-")
           p = p.slice(5);
-        return rndElt(p.split("-"));
+        return Random.index(p.split("-"));
     }
   }
 
@@ -409,29 +409,29 @@ var fuzzerRandomClasses = (function() {
   {
     if (rnd(2) === 0) {
       if (hammer == "basics") {
-        return rndElt(["display", "float", "visibility", "position", "overflow", "content"]);
+        return Random.index(["display", "float", "visibility", "position", "overflow", "content"]);
       }
       if (hammer == "flex") {
-        return rndElt(["display", "align-items", "align-self", "flex", "flex-basis", "flex-direction", "flex-grow", "flex-shrink", "order", "justify-content"]);
+        return Random.index(["display", "align-items", "align-self", "flex", "flex-basis", "flex-direction", "flex-grow", "flex-shrink", "order", "justify-content"]);
       }
-      return rndElt(CSSPropList.filter(function(p) { return p.indexOf(hammer) != -1; }));
+      return Random.index(CSSPropList.filter(function(p) { return p.indexOf(hammer) != -1; }));
     }
 
-    return rndElt(CSSPropList);
+    return Random.index(CSSPropList);
   }
 
   function randomDeclaration()
   {
     var prop = randomProperty();
 
-    var value = rnd(6) ? randomThing(CSSPropHash[prop]) : randomCSSValue();
+    var value = rnd(6) ? Random.pick(CSSPropHash[prop]) : randomCSSValue();
 
     if (typeof value == "number")
       value = "" + value;
 
     if (rnd(10) === 0) {
-      var value2 = rnd(6) ? randomThing(CSSPropHash[prop]) : randomCSSValue();
-      value = value + rndElt(["", " ", ", "]) + value2;
+      var value2 = rnd(6) ? Random.pick(CSSPropHash[prop]) : randomCSSValue();
+      value = value + Random.index(["", " ", ", "]) + value2;
     }
 
     if (typeof value != "string") {
@@ -460,19 +460,19 @@ var fuzzerRandomClasses = (function() {
 
     // Slightly more evil than fuzzerRandomClasses wants.
     if (rnd(10) === 0)
-      return randomThing(fuzzValues.cssSelectors);
+      return Random.pick(fuzzValues.cssSelectors);
 
     if (rnd(30) === 0) {
       selector = "*";
     } else {
-      selector = "." + rndElt(classes);
+      selector = "." + Random.index(classes);
     }
 
     while (rnd(3) === 0)
-      selector += randomThing(fuzzValues.cssPseudoClasses);
+      selector += Random.pick(fuzzValues.cssPseudoClasses);
 
     if (rnd(3) === 0)
-      selector += randomThing(fuzzValues.cssPseudoElements);
+      selector += Random.pick(fuzzValues.cssPseudoElements);
 
     return selector;
   }
@@ -486,7 +486,7 @@ var fuzzerRandomClasses = (function() {
 
     for (var i = 0; i < numProps; ++i) {
       var decl = randomDeclaration();
-      importance = rndElt(importances);
+      importance = Random.index(importances);
       rule += decl.prop + ": " + decl.value + importance + "; ";
     }
 
@@ -514,11 +514,11 @@ var fuzzerRandomClasses = (function() {
   function randomFontFaceRule()
   {
     var s = "@font-face { ";
-    s += "font-family: '" + randomThing(fuzzValues.fontFaces) + "'; ";
+    s += "font-family: '" + Random.pick(fuzzValues.fontFaces) + "'; ";
     if (rnd(2)) {
-      s += "src: url('" + fuzzSrcTreePathToURI(randomThing(fuzzValues.srcTreeFontFilenames)) + "'); ";
+      s += "src: url('" + fuzzSrcTreePathToURI(Random.pick(fuzzValues.srcTreeFontFilenames)) + "'); ";
     } else {
-      s += "src: local('" + randomThing(fuzzValues.fontFaces) + "'); ";
+      s += "src: local('" + Random.pick(fuzzValues.fontFaces) + "'); ";
     }
     s += "}";
     return s;
@@ -526,7 +526,7 @@ var fuzzerRandomClasses = (function() {
 
   function randomCSSAnimation()
   {
-    var animName = randomThing(fuzzValues.names);
+    var animName = Random.pick(fuzzValues.names);
     var s = "@keyframes " + animName + " { ";
 
     for (var j = 0; j < 3; ++j) {
@@ -543,7 +543,7 @@ var fuzzerRandomClasses = (function() {
     s += "} ";
 
     if (rnd(4)) {
-      var duration = randomThing(fuzzValues.durations);
+      var duration = Random.pick(fuzzValues.durations);
       s += randomSelector() + " { animation-name: " + animName + "; animation-duration: " + duration + "; }";
     }
 
@@ -552,7 +552,7 @@ var fuzzerRandomClasses = (function() {
 
   function randomKeyframePoints()
   {
-    return rndElt(["from", "to", "0%", "20%", "40%", "60%", "80%", "100%", "20%, 50%"]);
+    return Random.index(["from", "to", "0%", "20%", "40%", "60%", "80%", "100%", "20%, 50%"]);
   }
 
 
@@ -576,7 +576,7 @@ var fuzzerRandomClasses = (function() {
 
       default:
         // Change a random element's class.
-        return Things.instance("Element") +".setAttribute(\"class\", " + simpleSource(rndElt(classes)) + ");";
+        return Things.instance("Element") +".setAttribute(\"class\", " + simpleSource(Random.index(classes)) + ");";
     }
   }
 

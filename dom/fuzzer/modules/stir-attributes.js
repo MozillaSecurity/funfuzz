@@ -24,7 +24,7 @@ var fuzzerStirAttributes = (function() {
     var commandn1 = "o[" + n1index + "]";
     var commandn2 = "o[" + n2index + "]";
 
-    var attr = rndElt(n1.attributes);
+    var attr = Random.index(n1.attributes);
 
     var c1, c2, n2has, n2val;
 

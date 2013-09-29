@@ -70,7 +70,7 @@ var Things = {
     }
 
     if (matches.length) {
-      return rndElt(matches);
+      return Random.index(matches);
     }
     return -1;
   },

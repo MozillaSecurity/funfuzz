@@ -2,7 +2,7 @@ var fuzzerRandomStyles = (function() {
 
   function makeCommand() {
     if (rnd(3000) === 0)
-      return (rnd(2) ? Things.instance("Document") : Things.instance("HTMLElement")) + ".dir = \"" + rndElt(["ltr", "rtl", "auto"]) + "\";";
+      return (rnd(2) ? Things.instance("Document") : Things.instance("HTMLElement")) + ".dir = \"" + Random.index(["ltr", "rtl", "auto"]) + "\";";
 
     var target = Things.instance("CSSStyleDeclaration");
     if (target == "o[-1]" || rnd(2)) {

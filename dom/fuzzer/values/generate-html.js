@@ -16,18 +16,18 @@ fuzzValues.generateHTML = (function() {
     "<optgroup>",
     function() {
       var scriptCode = fuzzSubCommand("scriptsrc");
-      return '<script' + rndElt(scriptOptions) + ' src="' + quoteEscape(fuzzTextDataURI('text/javascript', scriptCode)) + '"><\/script>';
+      return '<script' + Random.index(scriptOptions) + ' src="' + quoteEscape(fuzzTextDataURI('text/javascript', scriptCode)) + '"><\/script>';
     },
 
     function() {
-      return "<script" + rndElt(scriptOptions) + ">" + fuzzSubCommand("inlinescript") + "<\/script>";
+      return "<script" + Random.index(scriptOptions) + ">" + fuzzSubCommand("inlinescript") + "<\/script>";
     },
 
     function() {
-      return randomThing(fuzzValues.doctypeDeclarations);
+      return Random.pick(fuzzValues.doctypeDeclarations);
     },
 
-    function() { return "<meta charset='" + randomThing(fuzzValues.charsets) + "'>"; },
+    function() { return "<meta charset='" + Random.pick(fuzzValues.charsets) + "'>"; },
     "<!---->",
     "<!--x-->",
   ];
@@ -52,14 +52,14 @@ fuzzValues.generateHTML = (function() {
 
   function makeText()
   {
-    return randomThing(fuzzValues.texts);
+    return Random.pick(fuzzValues.texts);
   }
 
 
   function makeAttribute(tag, source)
   {
     var attr; // a string or [string, value-generator] pair
-    var vg; // a thing that can be passed to randomThing to get a value string or number out
+    var vg; // a thing that can be passed to Random.pick to get a value string or number out
     var value; // a string or number
 
     var tagToAttrs = source.elemHash;
@@ -67,16 +67,16 @@ fuzzValues.generateHTML = (function() {
     // Sometimes, pretend it's a different tag.
     // This lets us get at tag-specific values!
     if (rnd(10) === 0) {
-      tag = rndElt(source.elemList);
+      tag = Random.index(source.elemList);
       // dumpln("Pretending it's a: " + tag);
     }
 
     // This typeof thing is because if the tag name is "filter", and you look in the MathML tag array, you could get an array extra (argh!) (does that make sense?) (array/hash confusion?)
     var choices = tagToAttrs[tag];
     if ((typeof choices == "object") && (choices.length) && (rnd(10) !== 0)) {
-      attr = rndElt(choices);
+      attr = Random.index(choices);
     } else {
-      attr = rndElt(source.attrList);
+      attr = Random.index(source.attrList);
     }
 
     if (typeof attr == "string") {
@@ -92,10 +92,10 @@ fuzzValues.generateHTML = (function() {
     }
 
     if (vg != null && rnd(5) !== 0) {
-      value = randomThing(vg);
+      value = Random.pick(vg);
     } else {
-      var otherAttr = rndElt(source.attrList);
-      value = randomThing(source.attrHash[otherAttr]);
+      var otherAttr = Random.index(source.attrList);
+      value = Random.pick(source.attrHash[otherAttr]);
     }
 
     // dumpln("% " + uneval(attr) + " " + uneval(value));
@@ -128,16 +128,16 @@ fuzzValues.generateHTML = (function() {
     var tagStack = [];
     var s = "";
     if (rnd(2))
-      s += randomThing(fuzzValues.doctypeDeclarations);
+      s += Random.pick(fuzzValues.doctypeDeclarations);
 
     for (var i = 0; i < n; ++i) {
-      var source = randomThing([fuzzerHTMLAttributes, fuzzerSVGAttributes, fuzzerMathMLAttributes]);
-      var el = rnd(4) ? rndElt(source.elemList) : rndElt(funTags);
+      var source = Random.pick([fuzzerHTMLAttributes, fuzzerSVGAttributes, fuzzerMathMLAttributes]);
+      var el = rnd(4) ? Random.index(source.elemList) : Random.index(funTags);
 
       switch(rnd(10))
       {
         case 0:
-          s += rndElt(funIngredients);
+          s += Random.index(funIngredients);
         case 1:
           s += makeOpenTag(el, source);
           break;

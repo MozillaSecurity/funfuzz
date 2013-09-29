@@ -95,7 +95,7 @@ var fuzzerRangeAndSelection = (function() {
 
     var callStr = subject + "." + method.name + "(";
     for (var b = 0; b < args.length; ++b)
-      callStr += randomThing(args[b]) + (b+1 == args.length ? "" : ", ");
+      callStr += Random.pick(args[b]) + (b+1 == args.length ? "" : ", ");
     callStr += ")";
 
     if (method.retobj) {
@@ -114,7 +114,7 @@ var fuzzerRangeAndSelection = (function() {
 
     case 1:
       // Call a random method of a Range.
-      var method = rndElt(rangeMethods);
+      var method = Random.index(rangeMethods);
       return callStr(Things.instance("Range"), method);
 
     case 2:
@@ -123,13 +123,13 @@ var fuzzerRangeAndSelection = (function() {
 
     case 3:
       // Call a random method of a Selection.
-      var method = rndElt(selectionMethods);
+      var method = Random.index(selectionMethods);
       return callStr(Things.instance("Selection"), method);
 
     case 4:
       // Call window.find(), which can affect the selection.
       // (If bug 672395 gets fixed, this will need to move into fuzzPriv.)
-      var findText = randomThing(fuzzValues.texts);
+      var findText = Random.pick(fuzzValues.texts);
       var caseSensitive = rnd(2) === 1;
       var backwards = rnd(2) === 1;
       var wraparound = rnd(2) === 1;
@@ -140,7 +140,7 @@ var fuzzerRangeAndSelection = (function() {
 
     default:
       // Grab anchorNode or focusNode
-      return Things.add(Things.instance("Range") + "." + rndElt(["anchorNode", "focusNode"]));
+      return Things.add(Things.instance("Range") + "." + Random.index(["anchorNode", "focusNode"]));
     }
   }
 

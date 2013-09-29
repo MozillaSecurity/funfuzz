@@ -10,7 +10,7 @@ var fuzzerDocumentFragments = (function(){
     default:
       return [
         newFrag + " = document.createDocumentFragment();",
-        newFrag + ".write(" + simpleSource(randomThing(fuzzValues.htmlMarkup)) + ");"
+        newFrag + ".write(" + simpleSource(Random.pick(fuzzValues.htmlMarkup)) + ");"
       ];
     }
   }

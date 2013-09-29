@@ -46,7 +46,7 @@ var fuzzerDOMCSS = (function() {
       return varRG() + "for (var fuzzRepeat = 0; fuzzRepeat < rg.cssRules.length; ++fuzzRepeat) { " + sca[0] + "; var rule = rg.cssRules[fuzzRepeat]; " + sca[1] + "; rule.selectorText; " + sca[2] + "; rule.cssText; " + sca[3] + " }";
     case 4:
       // read from a rule
-      return Things.add(Things.instance("CSSStyleRule") + "." + rndElt(["selectorText", "cssText"]));
+      return Things.add(Things.instance("CSSStyleRule") + "." + Random.index(["selectorText", "cssText"]));
     case 5:
       // grab a rule
       return varRG() + Things.add("rg.cssRules[" + rnd(10000) + " % rg.cssRules.length]");

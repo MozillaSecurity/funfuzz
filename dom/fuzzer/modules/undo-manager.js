@@ -8,12 +8,12 @@ var fuzzerUndoManager = (function() {
   function anyTransaction() {
     if (!transactionIndexes.length)
       return null;
-    return "o[" + rndElt(transactionIndexes) + "]";
+    return "o[" + Random.index(transactionIndexes) + "]";
   }
 
   function addTransactionFunction(t)
   {
-    var funName = rndElt(["executeAutomatic", "execute", "redo", "undo"]);
+    var funName = Random.index(["executeAutomatic", "execute", "redo", "undo"]);
     var lvalue = t + "." + funName;
     return t + "." + funName + " = " + transactionFunction(funName) + ";";
   }
@@ -80,7 +80,7 @@ var fuzzerUndoManager = (function() {
     default:
       // Transact. This will either call 'execute' or 'executeAutomatic', and in the latter case,
       // will remember the DOM manipulations in order to be able to undo or redo them.
-      return Things.instance("UndoManager") + ".transact(" + anyTransaction("DOMTransaction") + ", " + rndElt(["true", "false"]) + ");";
+      return Things.instance("UndoManager") + ".transact(" + anyTransaction("DOMTransaction") + ", " + Random.index(["true", "false"]) + ");";
     }
   }
 

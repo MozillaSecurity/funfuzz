@@ -13,7 +13,6 @@ var gPageCompleted = false;
 var reportAllErrors = false;
 var fuzzExpectSanity = (location.href.indexOf("xslt") == -1 && location.href.indexOf("xml-stylesheet") == -1);
 
-var rnd;
 var fuzzCount;
 
 var oPrefix  = "  /*FRCA1*/ "; // most recording output, including all random commands
@@ -23,7 +22,7 @@ var oPrefix2 = "  /*FRCA2*/ "; // dom reconstruction
 function fuzzOnload(ev)
 {
   // Work around bug 380537.
-  if (rnd) {
+  if (Random.twister) {
     dumpln("fuzzOnload called twice!?");
     return;
   }
@@ -80,19 +79,8 @@ function initFuzzerGeneral()
   if (document.doctype)
     dumpln("FRCX Doctype: <!DOCTYPE " + document.doctype.name + (document.doctype.publicId ? " PUBLIC \"" + document.doctype.publicId + "\"" + (document.doctype.systemId ? " \"" + document.doctype.systemId + "\"" : "") : "") + ">");
 
-  initRnd(fuzzSeed);
+  Random.init(fuzzSeed);
 }
-
-function initRnd(fuzzSeed)
-{
-  var fuzzMT = new MersenneTwister19937();
-  fuzzMT.init_genrand(fuzzSeed);
-  rnd = function (n) { return Math.floor(fuzzMT.genrand_real2() * n); };
-  rnd.rndReal = function() { return fuzzMT.genrand_real2(); };
-  rnd.fuzzMT = fuzzMT;
-}
-
-
 
 
 function startFuzzing(useSerializeDOMAsScript, storeThings)
@@ -193,8 +181,8 @@ function immedChunk(changes)
 
 function fuzzTryMakeCommand()
 {
-  var MTA = rnd.fuzzMT.export_mta();
-  var MTI = rnd.fuzzMT.export_mti();
+  var MTA = Random.twister.export_mta();
+  var MTI = Random.twister.export_mti();
 
   function dumpRNGStateBefore()
   {
@@ -202,10 +190,10 @@ function fuzzTryMakeCommand()
     var MTA_str = uneval(MTA);
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
     if (MTA_str != rnd.lastDumpedMTA) {
-      dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { rnd.fuzzMT.import_mta(" + MTA_str + "); }"));
+      dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { Random.twister.import_mta(" + MTA_str + "); }"));
       rnd.lastDumpedMTA = MTA_str;
     }
-    dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { rnd.fuzzMT.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); }"));
+    dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); }"));
   }
 
   if (dumpEachSeed) {

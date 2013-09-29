@@ -34,7 +34,7 @@ var fuzzerChromeCode = (function() {
       var scale = rnd(2) ? "null" : (0.01 * (1 + rnd(100))); // http://hg.mozilla.org/mozilla-central/annotate/6d7fae9764b3/browser/components/thumbnails/PageThumbs.jsm#l114
       return "fuzzPriv.callDrawWindow(" + flags + ", " + scale + ");";
     case 9:
-      return rndElt(["fuzzPriv", "window"]) + ".resizeTo(" + rnd(screen.width + 1) + ", " + rnd(screen.height + 1) + ");";
+      return Random.index(["fuzzPriv", "window"]) + ".resizeTo(" + rnd(screen.width + 1) + ", " + rnd(screen.height + 1) + ");";
     default:
       return [];
     }

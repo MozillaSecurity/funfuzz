@@ -112,7 +112,7 @@ var fuzzerHTMLAttributes = (function() {
     "http-equiv": ["content-language", "content-type", "default-style", "refresh", "set-cookie"],
     "content": [
       fuzzValues.languages,
-      function() { return "text/html; " + randomThing(fuzzValues.charsets); },
+      function() { return "text/html; " + Random.pick(fuzzValues.charsets); },
       fuzzValues.names, // ...
       fuzzValues.metaRefreshContent,
       "foo=bar", // ...

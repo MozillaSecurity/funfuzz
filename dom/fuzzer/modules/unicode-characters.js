@@ -14,9 +14,9 @@ var fuzzerChars = (function() {
   {
     switch(rnd(15)) {
     case 0:
-      return simpleSource(randomThing(fuzzValues.texts));
+      return simpleSource(Random.pick(fuzzValues.texts));
     default:
-      return simpleSource(randomThing(fuzzValues.chars));
+      return simpleSource(Random.pick(fuzzValues.chars));
     }
   }
 

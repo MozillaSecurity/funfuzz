@@ -8,19 +8,19 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
 
   function totallyRandomAttr()
   {
-    return rndElt(rnd(2) ? allBasicAttrs : commonAttributes);
+    return Random.index(rnd(2) ? allBasicAttrs : commonAttributes);
   }
 
   function makeSetAttribute(tag)
   {
     var attr; // a string or [string, value-generator] pair
-    var vg; // a thing that can be passed to randomThing to get a value string or number out
+    var vg; // a thing that can be passed to Random.pick to get a value string or number out
     var value; // a string or number
 
     // Sometimes, pretend it's a different tag.
     // This lets us get at tag-specific values!
     if (rnd(30) === 0) {
-      tag = rndElt(allTags);
+      tag = Random.index(allTags);
       // dumpln("Pretending it's a: " + tag);
     }
     if (rnd(30) === 0) {
@@ -36,7 +36,7 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
 
     // This typeof thing is because if the tag name is "filter", and you look in the MathML tag array, you could get an array extra (argh!) (does that make sense?) (array/hash confusion?)
     if ((typeof tagToAttrs[tag] == "object") && (tagToAttrs[tag].length) && (rnd(10) !== 0)) {
-      attr = rndElt(tagToAttrs[tag]);
+      attr = Random.index(tagToAttrs[tag]);
     } else {
       attr = totallyRandomAttr();
     }
@@ -54,15 +54,15 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
     }
 
     if (vg != null && rnd(5) !== 0) {
-      value = randomThing(vg);
+      value = Random.pick(vg);
     } else {
-      var otherAttr = rndElt(allBasicAttrs);
+      var otherAttr = Random.index(allBasicAttrs);
       dumpln("Using a '" + otherAttr + "' value for '" + attr + "'.");
-      value = randomThing(attrToValueRT[otherAttr]);
+      value = Random.pick(attrToValueRT[otherAttr]);
     }
 
     if (rnd(30) === 0)
-      value = randomThing(fuzzValues.texts);
+      value = Random.pick(fuzzValues.texts);
 
     var quotedValue = simpleSource(value);
 
@@ -102,7 +102,7 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
         // Remove an attribute on n1, based on n1's current attribute list.
         var attrs = n1.attributes;
         if (attrs && attrs.length) {
-          var attr = rndElt(attrs);
+          var attr = Random.index(attrs);
           if (attr)
             return commandn1 + ".removeAttribute(" + simpleSource(attr.name) + ");";
           else
@@ -117,7 +117,7 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
         // Maybe put some attributes on it!
         // Place it randomly, but only rarely place it outside of the document, because that's usually boring.
 
-        var tag = rndElt(allTags);
+        var tag = Random.index(allTags);
         var newb = Things.reserve();
         var commands = [];
 
@@ -159,7 +159,7 @@ xxx ressurect the svg everything-has-a-good-id thing
 
         if (namespaceURI == "http://www.w3.org/2000/svg" && (tag == "text" || tag == "tspan" || tag == "textPath")) {
           if (rnd(5) !== 1)
-            commands.push(newb + ".appendChild(document.createTextNode(" + simpleSource(randomThing(fuzzValues.texts)) + "));");
+            commands.push(newb + ".appendChild(document.createTextNode(" + simpleSource(Random.pick(fuzzValues.texts)) + "));");
         }
 
         commands.push(commandn1 + ".appendChild(" + newb + ");");

@@ -91,10 +91,10 @@ var fuzzerStirTable = (function() {
     var commands = [];
 
     if (rnd(3) === 0)
-      commands.push(elemVar + ".setAttribute('width', '"  + rndElt(lengthValues) + rndElt(lengthUnits) + "');");
+      commands.push(elemVar + ".setAttribute('width', '"  + Random.index(lengthValues) + Random.index(lengthUnits) + "');");
 
     if (rnd(3) === 0)
-      commands.push(elemVar + ".setAttribute('height', '" + rndElt(lengthValues) + rndElt(lengthUnits) + "');");
+      commands.push(elemVar + ".setAttribute('height', '" + Random.index(lengthValues) + Random.index(lengthUnits) + "');");
 
     while (rnd(3) === 0)
       commands.push(change_style(elemVar, elem, tag));
@@ -176,9 +176,9 @@ var fuzzerStirTable = (function() {
       childTag = "table";
     } else {
       if (preferredChildTags.length != 0 && rnd(5) !== 1)
-        childTag = rndElt(preferredChildTags);
+        childTag = Random.index(preferredChildTags);
       else
-        childTag = rndElt(tableRelatedTags);
+        childTag = Random.index(tableRelatedTags);
 
       if (childTag == "table") {
         // Don't make nested tables too often.
@@ -208,7 +208,7 @@ var fuzzerStirTable = (function() {
 
     // Decide where to put it and stick it in.
 
-    var sib = elem.firstChild ? rndElt(elem.childNodes) : null;
+    var sib = elem.firstChild ? Random.index(elem.childNodes) : null;
     var sibIndex = Things.findIndex(sib);
     var sibExpr = (sibIndex !== -1) ? ("o[" + sibIndex + "]") : null;
     commands.push(elemVar + ".insertBefore(" + neVar + ", " + sibExpr + ");");
@@ -227,9 +227,9 @@ var fuzzerStirTable = (function() {
     var ti = tagInfo[newNode.tagName.toLowerCase()];
 
     if (ti && ti.children.length)
-      numChildrenWanted = rndElt([0, 0, 1, 1, 1, 1, 2]);
+      numChildrenWanted = Random.index([0, 0, 1, 1, 1, 1, 2]);
     else
-      numChildrenWanted = rndElt([0, 0, 0, 0, 0, 0, 1]);
+      numChildrenWanted = Random.index([0, 0, 0, 0, 0, 0, 1]);
 
     for (var i = 0; i < numChildrenWanted; ++i) {
       elementsWantingChildren.push(newNode);
@@ -248,14 +248,14 @@ var fuzzerStirTable = (function() {
   }
 
   function change_style(elemVar, elem, tag) {
-    var propPair = rndElt(tableRelatedCSSProperties);
+    var propPair = Random.index(tableRelatedCSSProperties);
     var prop = propPair.prop;
     var value;
 
     if (rnd(3) === 1)
-      value = rndElt(["", "inherit", "initial", "auto"]);
+      value = Random.index(["", "inherit", "initial", "auto"]);
     else
-      value = rndElt(propPair.values);
+      value = Random.index(propPair.values);
 
     return elemVar + ".style." + prop + " = " + simpleSource(value) + ";";
   }
@@ -264,10 +264,10 @@ var fuzzerStirTable = (function() {
     var attrs = (tagInfo[tag] || tagInfo["div"]).attributes;
     if (!attrs || rnd(5) === 1)
       attrs = allAttributes;
-    var attr = rndElt(attrs);
+    var attr = Random.index(attrs);
 
     if (rnd(3)) {
-      var value = rndElt(attributeInfo[attr]);
+      var value = Random.index(attributeInfo[attr]);
       return elemVar + ".setAttribute(" + simpleSource(attr) + ", " + simpleSource(value) + ");";
     } else {
       return elemVar + ".removeAttribute(" + simpleSource(attr) + ");";
@@ -275,12 +275,12 @@ var fuzzerStirTable = (function() {
   }
 
   function change_rowspan(elemVar, elem, tag) {
-    var rowspanX = simpleSource(randomThing(fuzzValues.tableSpans));
+    var rowspanX = simpleSource(Random.pick(fuzzValues.tableSpans));
     return elemVar + ".setAttribute('rowspan', " + rowspanX + ");";
   }
 
   function change_colspan(elemVar, elem, tag) {
-    var colspanX = simpleSource(randomThing(fuzzValues.tableSpans));
+    var colspanX = simpleSource(Random.pick(fuzzValues.tableSpans));
 
     if (tag.toLowerCase() == 'col' || tag.toLowerCase() == 'colgroup')
       return elemVar + ".setAttribute('span', " + colspanX + ");";
@@ -297,10 +297,10 @@ var fuzzerStirTable = (function() {
 
   function getTableRelatedVictim()
   {
-    var tag = rndElt(tableRelatedTags);
+    var tag = Random.index(tableRelatedTags);
     var elems = document.getElementsByTagName(tag);
     if (elems.length)
-      return rndElt(elems);
+      return Random.index(elems);
     else
       return null;
   }
@@ -333,7 +333,7 @@ var fuzzerStirTable = (function() {
       if (elemIndex === -1)
         return "/* stirtable's victim (" + elem.tagName + ") is hiding */";
       elemVar = "o[" + elemIndex + "]";
-      op = rndElt(ops);
+      op = Random.index(ops);
     } else {
       // Pick an operation and a victim at random.
       elemIndex = Things.instanceIndex("Element");
@@ -341,7 +341,7 @@ var fuzzerStirTable = (function() {
         return "/* stirtable couldn't find a victim */";
       elem = o[elemIndex];
       elemVar = "o[" + elemIndex + "]";
-      op = rndElt(ops);
+      op = Random.index(ops);
     }
 
     if (elem.tagName) {

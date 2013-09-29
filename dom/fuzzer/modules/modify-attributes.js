@@ -16,7 +16,7 @@ var fuzzerModifyAttributes = (function() {
         )
         return " /* fuzzerModifyAttributes: nothing to do here */";
 
-    var attr = rndElt(n1.attributes);
+    var attr = Random.index(n1.attributes);
 
     var oldValue = attr.value;
     var newValue = rnd(10) ? fuzzValues.modifyText(oldValue) : storedValue;

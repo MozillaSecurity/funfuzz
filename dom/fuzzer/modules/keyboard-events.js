@@ -82,7 +82,7 @@ var fuzzerFakeEvents = (function() {
       if (type != "press" || rnd(2)) {
         keyCode = rnd(256);
       } else {
-        charCode = randomThing(fuzzValues.chars).charCodeAt(0); // assuming BMP (astral doesn't work here anyway)
+        charCode = Random.pick(fuzzValues.chars).charCodeAt(0); // assuming BMP (astral doesn't work here anyway)
       }
 
       if (rnd(5)) {

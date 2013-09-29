@@ -11,9 +11,9 @@ var fuzzerInnerHTML = (function() {
 
     var commandn1 = Things.instance("Element");
     if (rnd(2)) {
-      return commandn1 + "." + rndElt(["innerHTML", "outerHTML"]) + " = " + simpleSource(fuzzValues.generateHTML(rnd(15))) + ";";
+      return commandn1 + "." + Random.index(["innerHTML", "outerHTML"]) + " = " + simpleSource(fuzzValues.generateHTML(rnd(15))) + ";";
     } else {
-      var where = rndElt(["beforeBegin", "afterBegin", "beforeEnd", "afterEnd"]);
+      var where = Random.index(["beforeBegin", "afterBegin", "beforeEnd", "afterEnd"]);
       return commandn1 + ".insertAdjacentHTML(" + simpleSource(where) + ", " + simpleSource(fuzzValues.generateHTML(rnd(10))) + ");";
     }
   }

@@ -16,10 +16,10 @@ var fuzzerContentEditable = (function() {
     "fontname": fuzzValues.fontFaces,
     "fontsize": [
       ["x-small", "small", "medium", "large", "x-large", "xx-large", "xxx-large"],
-      function() { return rndElt(["", "+", "-"]) + randomThing([0, 1, 2, 3, fuzzValues.unsignedNumbers]); }
+      function() { return Random.index(["", "+", "-"]) + Random.pick([0, 1, 2, 3, fuzzValues.unsignedNumbers]); }
     ],
     "forecolor": fuzzValues.colors,
-    "formatBlock": ["<address>", "<aside>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "<nav>", "<p>", "<pre>", "<blockquote>", function() { return rndElt(fuzzerHTMLAttributes.elemList); }],
+    "formatBlock": ["<address>", "<aside>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "<nav>", "<p>", "<pre>", "<blockquote>", function() { return Random.index(fuzzerHTMLAttributes.elemList); }],
     "forwardDelete": null,
     "hilitecolor": fuzzValues.colors,
     "indent": null,
@@ -91,7 +91,7 @@ var fuzzerContentEditable = (function() {
 
   function contentEditableValue()
   {
-    return simpleSource(rndElt(["inherit", "true", "false"]));
+    return simpleSource(Random.index(["inherit", "true", "false"]));
   }
 
   function makeCommand()
@@ -106,25 +106,25 @@ var fuzzerContentEditable = (function() {
     case 4:
       return pickFocusable() + ".select();";
     case 5:
-      return Things.instance("Document") + ".queryCommandState(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandState(" + simpleSource(Random.index(allEditorCommands)) + ");";
     case 6:
-      return Things.instance("Document") + ".queryCommandIndeterm(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandIndeterm(" + simpleSource(Random.index(allEditorCommands)) + ");";
     case 7:
-      return Things.instance("Document") + ".queryCommandSupported(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandSupported(" + simpleSource(Random.index(allEditorCommands)) + ");";
     case 8:
-      return Things.instance("Document") + ".queryCommandEnabled(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandEnabled(" + simpleSource(Random.index(allEditorCommands)) + ");";
     case 9:
-      return Things.instance("Document") + ".queryCommandValue(" + simpleSource(rndElt(allEditorCommands)) + ");";
+      return Things.instance("Document") + ".queryCommandValue(" + simpleSource(Random.index(allEditorCommands)) + ");";
     case 10:
-      return Things.instance("HTMLElement") + ".spellcheck = " + rndElt(["true", "false"]) + ";";
+      return Things.instance("HTMLElement") + ".spellcheck = " + Random.index(["true", "false"]) + ";";
     case 11:
       return "document.designMode = 'on';";
     case 12:
       return "document.designMode = 'off';";
     default:
-      var editorCommand = rndElt(allEditorCommands);
-      var showUI = rndElt(["true", "false"]);
-      var value = randomThing(editorCommands[rnd(10) ? editorCommand : rndElt(allEditorCommands)]);
+      var editorCommand = Random.index(allEditorCommands);
+      var showUI = Random.index(["true", "false"]);
+      var value = Random.pick(editorCommands[rnd(10) ? editorCommand : Random.index(allEditorCommands)]);
       return Things.instance("Document") + ".execCommand(" + simpleSource(editorCommand) + ", " + showUI + ", " + simpleSource(value) + ");";
     }
   }
