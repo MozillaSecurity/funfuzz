@@ -76,8 +76,6 @@ def writePrefs(profileDir, extraPrefs):
     prefsText += "// Extra, random prefs\n"
     prefsText += extraPrefs
 
-    print prefsText
-
     with open(os.path.join(profileDir, "prefs.js"), "w") as prefsFile:
         prefsFile.write(prefsText)
 
