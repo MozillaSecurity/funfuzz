@@ -128,7 +128,7 @@ var fuzzerCanvas2D = (function() {
         elementName = Things.instance(Random.pick(Things.filterHasInstance(["HTMLCanvasElement", "HTMLImageElement", "HTMLVideoElement"])));
     if (Platform.isChrome && Random.chance(4)) {
       params = [elementName];
-      for (var i = 0; i < 8; ++i)
+      for (var i = 0; i < 8; ++i) {
         params.push(Make.number());
       }
       return Things.instance("CanvasRenderingContext2D") + ".drawImageFromRect" + JS.methodHead(params);
