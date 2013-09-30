@@ -73,10 +73,7 @@ var Things = {
       }
     }
 
-    if (matches.length) {
-      return Random.index(matches);
-    }
-    return -1;
+    return Random.index(matches, -1);
   },
   any: function(f) {
     return "o[" + Things.anyIndex(f) + "]";
