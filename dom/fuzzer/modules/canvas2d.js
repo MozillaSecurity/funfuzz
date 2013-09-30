@@ -67,14 +67,14 @@ var fuzzerCanvas2D = (function() {
     }
 
     if (Things.hasInstance("CanvasGradient") && Random.chance(16)) {
-      return JS.methodCall(Things.instance("CanvasGradient"), CanvasGradientMethods);
+      return JS.methodCall(Things.instance("CanvasGradient"), CanvasGradientMethods) + ";";
     }
 
     if (Random.chance(1000)) {
       return convertFromCanvas();
     }
 
-    return JS.methodCall(Things.instance("CanvasRenderingContext2D"), CanvasRenderingContext2DMethods);
+    return JS.methodCall(Things.instance("CanvasRenderingContext2D"), CanvasRenderingContext2DMethods) + ";";
   }
 
   function convertFromCanvas()
@@ -100,12 +100,12 @@ var fuzzerCanvas2D = (function() {
   function _CanvasGradient() {
     // Firefox defines an overloaded function with 4 parameters but throws an error?
     return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createRadialGradient" + JS.methodHead(
-      [Make.number, Make.number, Make.number, Make.number, Make.number, Make.number]);
+      [Make.number, Make.number, Make.number, Make.number, Make.number, Make.number]) + ";";
   }
 
   function _CanvasPattern() {
     var params = [Things.instance("HTMLCanvasElement"), ["'repeat'", "'repeat-x'", "'repeat-y'", "'no-repeat'"]];
-    return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createPattern" + JS.methodHead(params);
+    return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createPattern" + JS.methodHead(params) + ";";
   }
 
   function _ImageData() {
@@ -113,14 +113,14 @@ var fuzzerCanvas2D = (function() {
     var choice = Random.number(6);
     if (choice == 0) {
       params = [Make.number, Make.number, Make.number, Make.number];
-      return Things.reserve()  + " = " + Things.instance("CanvasRenderingContext2D") + ".getImageData" + JS.methodHead(params);
+      return Things.reserve()  + " = " + Things.instance("CanvasRenderingContext2D") + ".getImageData" + JS.methodHead(params) + ";";
     }
     if (choice == 1 && Things.hasInstance("ImageData")) {
       params = [Things.instance("ImageData")];
-      return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createImageData" + JS.methodHead(params);
+      return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createImageData" + JS.methodHead(params) + ";";
     }
     params = [Make.number, Make.number];
-    return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createImageData" + JS.methodHead(params);
+    return Things.reserve() + " = " + Things.instance("CanvasRenderingContext2D") + ".createImageData" + JS.methodHead(params) + ";";
   }
 
   function _DrawImage() {
@@ -131,14 +131,14 @@ var fuzzerCanvas2D = (function() {
       for (var i = 0; i < 8; ++i) {
         params.push(Make.number());
       }
-      return Things.instance("CanvasRenderingContext2D") + ".drawImageFromRect" + JS.methodHead(params);
+      return Things.instance("CanvasRenderingContext2D") + ".drawImageFromRect" + JS.methodHead(params) + ";";
     }
     params = Random.choose([
       [1, [elementName, Make.number(), Make.number()]],
       [1, [elementName, Make.number(), Make.number(), Make.number(), Make.number()]],
       [1, [elementName, Make.number(), Make.number(), Make.number(), Make.number(), Make.number(), Make.number(), Make.number(), Make.number()]]
       ], true);
-    return Things.instance("CanvasRenderingContext2D") + ".drawImage" + JS.methodHead(params);
+    return Things.instance("CanvasRenderingContext2D") + ".drawImage" + JS.methodHead(params) + ";";
   }
 
   function _putImageData() {
@@ -148,13 +148,13 @@ var fuzzerCanvas2D = (function() {
         [1, [Things.instance("ImageData"), Make.number(), Make.number()]],
         [1, [Things.instance("ImageData"), Make.number(), Make.number(), Make.number(), Make.number(), Make.number(), Make.number()]]
       ], true);
-      return Things.instance("CanvasRenderingContext2D") + ".webkitPutImageDataHD" + JS.methodHead(params);
+      return Things.instance("CanvasRenderingContext2D") + ".webkitPutImageDataHD" + JS.methodHead(params) + ";";
     }
     params = Random.choose([
       [1, [Things.instance("ImageData"), Make.number(), Make.number()]],
       [1, [Things.instance("ImageData"), Make.number(), Make.number(), Make.number(), Make.number(), Make.number(), Make.number()]]
     ], true);
-    return Things.instance("CanvasRenderingContext2D") + ".putImageData" + JS.methodHead(params);
+    return Things.instance("CanvasRenderingContext2D") + ".putImageData" + JS.methodHead(params) + ";";
   }
 
   /*
