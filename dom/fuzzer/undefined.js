@@ -110,7 +110,7 @@ var JS = {
     }
   },
   addElementToBody: function (name) {
-    return "(document.body || document.documentElement).appendChild" + JS.methodHead([name]);
+    return "(document.body || document.documentElement).appendChild" + JS.methodHead([name]) + ";";
   },
   forceGC: function () {
     if (Platform.isMozilla) {}
