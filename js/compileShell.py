@@ -245,7 +245,7 @@ def cfgBin(shell, options, binToBeCompiled):
             if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif isLinux and os.uname()[4] != 'armv7l':
+        elif isLinux and platform.uname()[4] != 'armv7l':
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvDt['CC'] = 'gcc -m32'
