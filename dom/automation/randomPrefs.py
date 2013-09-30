@@ -5,14 +5,24 @@ import random
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 
+def chance(p):
+    return random.random() < p
+
 def randomPrefs():
     p = []
 
     with open(os.path.join(p0, "bool-prefs.txt")) as f:
         for line in f:
-             pref = line.strip()
-             if len(pref) and pref[0] != "#":
-                 p += ['user_pref("' + pref + '", ' + random.choice(["true", "false"]) + ');']
+            pref = line.strip()
+            if len(pref) and pref[0] != "#":
+                if 'enable' in pref:
+                    t = chance(.8)
+                elif 'disable' in pref:
+                    t = chance(.2)
+                else:
+                    t = chance(.5)
+                v = "true" if t else "false"
+                p += ['user_pref("' + pref + '", ' + v + ');']
 
     if random.random() > 0.2:
         p += ['user_pref("ui.caretBlinkTime", -1);']
