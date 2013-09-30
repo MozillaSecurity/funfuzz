@@ -100,7 +100,10 @@ function fuzzInitBlacklists()
                 "webgl",             // bug 859542
                 "history",           // bug 860482
                 "frame",             // bug 860482
-                "object",            // bug 860482
+                "object ",           // bug 860482
+                "object>",           // bug 860482
+                "object'",           // bug 860482
+                "object\"",          // bug 860482
                 "trustedKeyEvent",   // leak with search bar (bug 867290)
                 "window.open",       // bug 867307
                 "promise",           // bug 887687
@@ -122,7 +125,10 @@ function fuzzInitBlacklists()
                 "nearScriptStackLimit", // kinda expected to break things
                 "iframe",           // bug 254144 - paints white immediately after a move
                 "frameset",         // ditto
-                "object",           // can act like an iframe
+                "object ",          // can act like an iframe
+                "object>",          // can act like an iframe
+                "object'",          // can act like an iframe
+                "object\"",         // can act like an iframe
                 "embed",            // animated infobar + async missing-plugin box
                 "applet",           // animated infobar + async missing-plugin box
                 "spampede",         // animated infobar + async missing-plugin box
