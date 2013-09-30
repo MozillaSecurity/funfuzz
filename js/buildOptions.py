@@ -106,7 +106,7 @@ def parseShellOptions(inputArgs):
     assert options.arch in ['32', '64']
 
     if options.buildWithVg:
-        assert (isLinux and (os.uname()[4] != 'armv7l')) or isMac
+        assert (isLinux and (platform.uname()[4] != 'armv7l')) or isMac
     if options.runWithVg:
         assert options.buildWithVg
         assert not options.buildWithAsan
