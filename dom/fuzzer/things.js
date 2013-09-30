@@ -56,9 +56,9 @@ var Things = {
     return "o[" + Things.instanceIndex(className) + "]";
   },
 
-  hasInstance: function() { throw NotImplemented; },
-  filterHasInstance: function() { throw NotImplemented; },
-  instanceAny: function() { throw NotImplemented; },
+  hasInstance: function(className) { return Things.instanceIndex(className) != -1; },
+  filterHasInstance: function(classes) { return classes.filter(function(className) { return Things.hasInstance(className); }); },
+  instanceAny: function(classes) { classes = Things.filterHasInstance(classes); return Things.instance(Random.pick(classes)); },
 
   anyIndex: function(f) {
     if (!f) {
