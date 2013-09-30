@@ -80,8 +80,12 @@ var Platform = (function () {
     return null;
   }
 
-  platform.WebGL = findWebGLContextName(["webgl", "experimental-webgl", "webkit-3d"]);
-  platform.WebGL2 = findWebGLContextName(["webgl2", "experimental-webgl2"]);
+  //platform.WebGL = findWebGLContextName(["webgl", "experimental-webgl", "webkit-3d"]);
+  //platform.WebGL2 = findWebGLContextName(["webgl2", "experimental-webgl2"]);
+  // XXX move this into WebGL.js, and perhaps into generated code. Creating a context on every load is slow and may perturb results.
+  // For now:
+  platform.WebGL = "experimental-webgl";
+  platform.WebGL2 = "experimental-webgl2";
 
   platform.captureStreamUntilEnded = "captureStreamUntilEnded";
   if (platform.isMozilla) { platform.captureStreamUntilEnded = "mozCaptureStreamUntilEnded"; }
