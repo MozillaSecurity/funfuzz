@@ -56,6 +56,10 @@ var Things = {
     return "o[" + Things.instanceIndex(className) + "]";
   },
 
+  hasInstance: function() { throw NotImplemented; },
+  filterHasInstance: function() { throw NotImplemented; },
+  instanceAny: function() { throw NotImplemented; },
+
   anyIndex: function(f) {
     if (!f) {
       // This is an inefficient way to do it...
