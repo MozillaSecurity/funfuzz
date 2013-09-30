@@ -13,7 +13,7 @@ var fuzzerCanvas2D = (function() {
     if (!Things.hasInstance("HTMLCanvasElement") || rnd(20) == 0) {
       var newCanvas = Things.reserve();
       return [
-        newCanvas + " = document.createElement('canvas');",
+        newCanvas + " = document.createElementNS('http://www.w3.org/1999/xhtml', 'canvas');",
         JS.addElementToBody(newCanvas)
       ];
     }
@@ -25,7 +25,7 @@ var fuzzerCanvas2D = (function() {
     if (!Things.hasInstance("HTMLImageElement")) {
       var newImage = Things.reserve();
       return [
-        newImage + " = document.createElement('img');",
+        newImage + " = document.createElementNS('http://www.w3.org/1999/xhtml', 'img');",
         newImage + ".src = " + Make.image() + ";"
       ];
     }
@@ -33,7 +33,7 @@ var fuzzerCanvas2D = (function() {
     if (!Things.hasInstance("HTMLVideoElement") && Random.chance(800)) {
       var newVideo = Things.reserve();
       return [
-        newVideo + " = document.createElement('video');",
+        newVideo + " = document.createElementNS('http://www.w3.org/1999/xhtml', 'video');",
         newVideo + ".src = " + Make.video() + ";"
       ];
     }
