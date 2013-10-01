@@ -26,13 +26,13 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
-from subprocesses import captureStdout, handleRemoveReadOnly, isLinux, isMac, isVM, isWin, macVer, \
-    normExpUserPath, shellify, vdump
+from subprocesses import captureStdout, handleRemoveReadOnly, isARMv7l, isLinux, isMac, isVM, \
+    isWin, macVer, normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 if cpu_count() > 2:
     COMPILATION_JOBS = ((cpu_count() * 5) // 4)
-elif platform.uname()[4] == 'armv7l':
+elif isARMv7l:
     COMPILATION_JOBS = 2  # Likely an ARM board, e.g. pandaboard
 else:
     COMPILATION_JOBS = 3  # Other single/dual core computers
@@ -198,7 +198,7 @@ def cfgBin(shell, options, binToBeCompiled):
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
     cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
-    if platform.uname()[4] == 'armv7l':
+    if isARMv7l:
         # 32-bit shell on ARM boards, e.g. Pandaboards.
         assert options.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not options.enableHardFp:
@@ -245,7 +245,7 @@ def cfgBin(shell, options, binToBeCompiled):
             if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif isLinux and platform.uname()[4] != 'armv7l':
+        elif isLinux and isARMv7l:
             # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvDt['CC'] = 'gcc -m32'

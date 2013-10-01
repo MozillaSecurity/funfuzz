@@ -18,6 +18,7 @@ from copy import deepcopy
 
 verbose = False
 
+isARMv7l = (platform.uname()[4] == 'armv7l')
 isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
 isWin = (platform.system() == 'Windows')

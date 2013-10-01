@@ -23,8 +23,8 @@ sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
-from subprocesses import captureStdout, dateStr, getFreeSpace, isWin, isLinux, normExpUserPath, \
-    shellify, vdump
+from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isWin, \
+    normExpUserPath, shellify, vdump
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -693,7 +693,7 @@ def machineTimeoutDefaults(options):
     '''Sets different defaults depending on the machine type or debugger used.'''
     if options.buildOptions.runWithVg:
         return 300
-    elif platform.uname()[4] == 'armv7l':
+    elif isARMv7l:
         return 180
     else:
         return 10  # If no timeout preference is specified, use 10 seconds.

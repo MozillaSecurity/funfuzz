@@ -9,7 +9,7 @@ sys.path.append(path2)
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
-from subprocesses import isWin, isMozBuild64, isMac, isLinux, normExpUserPath
+from subprocesses import isARMv7l, isLinux, isMac, isMozBuild64, isWin, normExpUserPath
 from hgCmds import getMcRepoDir, getRepoNameFromHgrc
 
 if platform.uname()[2] == 'XP':
@@ -106,7 +106,7 @@ def parseShellOptions(inputArgs):
     assert options.arch in ['32', '64']
 
     if options.buildWithVg:
-        assert (isLinux and (platform.uname()[4] != 'armv7l')) or isMac
+        assert (isLinux and isARMv7l) or isMac
     if options.runWithVg:
         assert options.buildWithVg
         assert not options.buildWithAsan
@@ -115,7 +115,7 @@ def parseShellOptions(inputArgs):
         assert not isWin, 'Asan is not yet supported on Windows.'
 
     if options.enableHardFp:
-        assert isLinux and (platform.uname()[4] == 'armv7l')
+        assert isLinux and isARMv7l
 
     if options.enableRootAnalysis:
         assert not options.enableExactRooting
@@ -147,7 +147,7 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('er')
     if options.enableGcGenerational:
         specialParamList.append('ggc')
-    if platform.uname()[4] == 'armv7l':
+    if isARMv7l:
         if options.enableHardFp:
             specialParamList.append('hfp')
         else:

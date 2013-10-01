@@ -11,8 +11,8 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import envWithPath, captureStdout, isMac, isWin, isMozBuild64, normExpUserPath, \
-    shellify, vdump
+from subprocesses import envWithPath, captureStdout, isARMv7l, isMac, isWin, isMozBuild64, \
+    normExpUserPath, shellify, vdump
 
 if os.name == 'nt':
     COMPILE_NSPR_LIB = 'libnspr4.lib' if isMozBuild64 else 'nspr4.lib'
@@ -156,7 +156,7 @@ def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
     assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.buildOptions.arch
     assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.buildOptions.compileType
-    if platform.uname()[4] == 'armv7l':
+    if isARMv7l:
         assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == options.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
         if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
