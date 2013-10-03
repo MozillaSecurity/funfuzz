@@ -10,7 +10,7 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import isLinux, isMac, isMozBuild64, macVer
+from subprocesses import isARMv7l, isLinux, isMac, isMozBuild64, macVer
 
 def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
@@ -68,6 +68,11 @@ def knownBrokenRanges(options):
             hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
             hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
             hgrange('c054eef6ba77', 'e02f86260dad'), # clang
+        ])
+
+    if isARMv7l:
+        skips.extend([
+            hgrange('743204c6b245', 'fbd476579542'), # broken ARM builds
         ])
 
     if isMozBuild64:
