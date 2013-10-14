@@ -66,7 +66,6 @@ def constructVgCmdList(errorCode=77):
     vgCmdList.append('--smc-check=all-non-file')
     # See bug 913876 comment 18:
     vgCmdList.append('--vex-iropt-register-updates=allregs-at-mem-access')
-    vgCmdList.append('--partial-loads-ok=yes')  # See bug 913883 comment 3
     vgCmdList.append('--gen-suppressions=all')
     vgCmdList.append('--leak-check=full')
     vgCmdList.append('--show-possibly-lost=no')
