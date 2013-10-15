@@ -89,7 +89,7 @@ def randomFlagSet(shellPath):
             # Disabled until bug 906858 is fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.4):
             #    args.append('--ion-regalloc=backtracking')
-            # Disabled until bug 867767, bug 871848 and bug 875656 are fixed.
+            # Disabled until bug 871848 and bug 875656 are fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-compile-try-catch'):
