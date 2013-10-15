@@ -114,6 +114,7 @@ var Make = {
     return Utils.quote(Random.pick([
       //'data:text/vtt,' + encodeURIComponent('WEBVTT\n\n00:00:00.000 --> 00:00:00.001\ntest');,
       "media/video/sample.vtt"
+      // XXX in tree: content/media/test/basic.vtt
     ]));
   },
   file: function () {
