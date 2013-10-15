@@ -166,6 +166,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('be125cabea26') # 127353 on m-c, first rev that has the --baseline-eager option
     if '--no-baseline' in flags:
         required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
+    if '--no-asmjs' in flags:
+        required.append('b3d85b68449d') # 124920 on m-c, first rev that has the --no-asmjs option
     if options.enableGcGenerational:
         if options.arch == '32':
             required.append('8d65f437c771') # 124553 on m-c, first rev with working 32-bit Generational GC builds
