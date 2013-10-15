@@ -162,6 +162,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('73912c9ba403') # 142172 on m-c, first rev that has a stable --ion-compile-try-catch option
     if '--fuzzing-safe' in flags:
         required.append('0a9314155404') # 135892 on m-c, first rev that has the --fuzzing-safe option
+    if '--no-fpu' in flags:
+        required.append('f10884c6a91e') # 128312 on m-c, first rev that has the --no-fpu option
     if '--baseline-eager' in flags:
         required.append('be125cabea26') # 127353 on m-c, first rev that has the --baseline-eager option
     if '--no-baseline' in flags:
