@@ -29,7 +29,7 @@ var fuzzerRangeAndSelection = (function() {
   function makeRndNodeRef()
   {
     // Store tempNodeIndex so rndOffsetRndNode can use it
-    tempNodeIndex = Things.instanceIndex("node");
+    tempNodeIndex = Things.instanceIndex("Node");
     return "o[" + tempNodeIndex + "]";
   }
   function rndOffsetRndNode()
