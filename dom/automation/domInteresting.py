@@ -334,6 +334,7 @@ def knownChromeFailure(msg):
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
+        ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
         "abouthealth.js" in msg or # Bug 895113
         ("WindowsPreviewPerTab.jsm" in msg and "this.previewFromTab(...) is undefined" in msg) or # Bug 897794
         "nsIFeedWriter::close" in msg or # Bug 813408
