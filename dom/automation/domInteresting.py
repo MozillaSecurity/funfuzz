@@ -336,6 +336,7 @@ def knownChromeFailure(msg):
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
         "abouthealth.js" in msg or # Bug 895113
+        "Webapps.js" in msg or # Bug 927699
         ("WindowsPreviewPerTab.jsm" in msg and "this.previewFromTab(...) is undefined" in msg) or # Bug 897794
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
