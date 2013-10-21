@@ -157,6 +157,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     #if options.buildWithAsan:
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
+    if '--disable-threadsafe' in flags:
+        required.append('07606a1ebf5d') # 151079 on m-c, first rev that has the --disable-threadsafe option
     if '--ion-check-range-analysis' in flags:
         required.append('e4a0c6fd1aa9') # 143131 on m-c, first rev that has a stable --ion-check-range-analysis option
     if '--ion-compile-try-catch' in flags:
