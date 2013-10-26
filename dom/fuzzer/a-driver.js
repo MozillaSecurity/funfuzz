@@ -107,7 +107,6 @@ function startFuzzing(useSerializeDOMAsScript, storeThings)
           return;
         }
         serializeDOMAsScript(); // includes its own DD + BEGIN
-        Things._lastIndex = o.length - 1;
       } else {
         dumpln(oPrefix + "// DD" + "BEGIN");
       }

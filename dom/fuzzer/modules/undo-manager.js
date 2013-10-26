@@ -61,8 +61,8 @@ var fuzzerUndoManager = (function() {
 
     if (rnd(5) === 0) {
       // Create a transaction
+      transactionIndexes.push(o.length);
       var t = Things.reserve();
-      transactionIndexes.push(Things._lastIndex);
       return [t + " = {};", addTransactionFunction(t), addTransactionFunction(t)];
     }
 

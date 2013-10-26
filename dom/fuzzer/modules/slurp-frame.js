@@ -52,13 +52,13 @@ var fuzzerSlurpFrames = (function() {
   function slurp(frameObj)
   {
     try {
-      var oldLastIndex = Things._lastIndex;
+      var oldOLen = o.length;
       var cs = serializeTreeAsScript(frameObj.contentDocument.documentElement);
-      var newLastIndex = Things._lastIndex;
+      var newOLen = o.length;
 
       // Undo what serializeTreeAsScript just did, because we want to redo it ourselves.
       // (This is smelly; serializeTreeAsScript should be refactored to handle this use case better.)
-      for (var i = oldLastIndex+1; i < newLastIndex+1; ++i) {
+      for (var i = oldOLen; i < newOLen; ++i) {
         o[i] = null;
       }
 
@@ -71,8 +71,8 @@ var fuzzerSlurpFrames = (function() {
       if (rnd(2)) {
         commandQueue.push("/*slurpDone*/rM(" + Things.find(frameObj) + ");");
       }
-      commandQueue.push("/*slurpInsert*/aC(" + Things.find(document.documentElement) + ", o[" + (oldLastIndex+1) + "]);");
-      dumpln("Slurped " + (newLastIndex - oldLastIndex) + " nodes!");
+      commandQueue.push("/*slurpInsert*/aC(" + Things.find(document.documentElement) + ", o[" + oldOLen + "]);");
+      dumpln("Slurped " + (newOLen - oldOLen) + " nodes!");
     } catch(e) {
       dumpln("Slurp failure: " + e);
     }

@@ -9,17 +9,17 @@
 var o;
 
 var Things = {
-  _lastIndex: 0,
   addImmediately: function(v) {
     if (!Things.has(v)) {
-      this._lastIndex += 1;
-      o[this._lastIndex] = v;
-      return "o[" + this._lastIndex + "]";
+      var ix = o.length;
+      o[ix] = v;
+      return "o[" + ix + "]";
     }
   },
   reserve: function() {
-    this._lastIndex += 1;
-    return "o[" + this._lastIndex + "]";
+    var ix = o.length;
+    o[ix] = null;
+    return "o[" + ix + "]";
   },
   add: function(expr) {
     return this.reserve() + " = Things.ifNovel(" + expr + ");";
@@ -96,7 +96,5 @@ var Things = {
         o.push(null);
       }
     }
-
-    Things._lastIndex = o.length - 1;
   }
 }
