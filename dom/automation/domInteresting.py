@@ -336,6 +336,7 @@ def knownChromeFailure(msg):
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
         ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or # Bug 931286
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
+        ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
         "abouthealth.js" in msg or # Bug 895113
         "Webapps.js" in msg or # Bug 927699
         ("WindowsPreviewPerTab.jsm" in msg and "this.previewFromTab(...) is undefined" in msg) or # Bug 897794
