@@ -83,7 +83,7 @@ function initFuzzerGeneral()
 }
 
 
-function startFuzzing(useSerializeDOMAsScript, storeThings)
+function startFuzzing(useSerializeDOMAsScript)
 {
   if (window.fuzzCommands) {
     // Already recorded, so we should play.
@@ -112,9 +112,6 @@ function startFuzzing(useSerializeDOMAsScript, storeThings)
       } else {
         dumpln(oPrefix + "// DD" + "BEGIN");
       }
-
-      if(storeThings)
-        fuzzerSmartRandomJS.storeInitialThings();
 
       immedChunk(numImmediate || stepsPerInterval);
     }
