@@ -92,8 +92,10 @@ function startFuzzing(useSerializeDOMAsScript, storeThings)
   }
   else {
     // Not already recorded
-    if (recordStrategy == "Record as it goes")
+    if (recordStrategy == "Record as it goes") {
       dumpEachCommand = true;
+    }
+
     if (recordMode) {
       recordSomehow();
     } else {
