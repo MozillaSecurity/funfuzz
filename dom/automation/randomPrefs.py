@@ -51,5 +51,7 @@ def randomPrefs():
         p += ['user_pref("gfx.hidpi.enabled", ' + random.choice(["0", "1", "2"]) + ');']
     if random.random() > 0.9:
         p += ['user_pref("intl.uidirection.en", "rtl");']
+    if random.random() > 0.8:
+        p += ['user_pref("gfx.canvas.azure.backends", "skia");'] # cg, direct2d, skia, cairo
 
     return "\n".join(p)

@@ -64,7 +64,6 @@ user_pref("network.proxy.type", 0);
 // Prefs from Christoph (?)
 user_pref("network.jar.open-unsafe-types", true);
 user_pref("gfx.color_management.mode", 2);
-user_pref("gfx.canvas.azure.backends", "skia"); //direct2d, skia, cairo
 user_pref("media.peerconnection.aec", 1);
 user_pref("media.peerconnection.aec_enabled", true);
 user_pref("media.peerconnection.agc", 1);
