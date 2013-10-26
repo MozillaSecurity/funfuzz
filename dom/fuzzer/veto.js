@@ -68,6 +68,7 @@ function fuzzInitBlacklists()
                 "find",              // bug 852381
                 "focus",             // bug 852381
                 "select",            // bug 852381
+                "MediaSource",       // bug 931388
                 "squarefree.com/stats", // http auth dialog
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
             ]
