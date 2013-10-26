@@ -331,6 +331,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
+        ("pageInfo.js" in msg and "nsICacheEntryOpenCallback is not defined" in msg) or # Bug 931383
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
