@@ -205,7 +205,7 @@ class AmissLogHandler:
             if not overlyGenericAssertion:
                 self.crashIsKnown = True
 
-        if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
+        if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF) and not "bug 931331":
             self.mallocFailure = True
             self.printAndLog("@@@ Malloc is unhappy")
         if self.valgrind and valgrindComplaintRegexp.match(msg):
