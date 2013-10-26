@@ -83,7 +83,7 @@ function initFuzzerGeneral()
 }
 
 
-function startFuzzing(useSerializeDOMAsScript)
+function startFuzzing(kickoff)
 {
   if (window.fuzzCommands) {
     // Already recorded, so we should play.
@@ -102,16 +102,7 @@ function startFuzzing(useSerializeDOMAsScript)
       dumpln(oPrefix + "var fuzzSettings = [" + fuzzSettings + "];");
       dumpln(oPrefix + "var fuzzCommands = [];");
 
-      if (useSerializeDOMAsScript) {
-        if (o.length > 10000) {
-          dumpln("This document contains so many nodes that reduction would be painful and serializeDOMAsScript might hang!");
-          fuzzPriv.quitApplication();
-          return;
-        }
-        serializeDOMAsScript(); // includes its own DD + BEGIN
-      } else {
-        dumpln(oPrefix + "// DD" + "BEGIN");
-      }
+      kickoff();
 
       immedChunk(numImmediate || stepsPerInterval);
     }

@@ -85,16 +85,5 @@ var Things = {
 
   init: function() {
     o = [0, null, undefined, window, document, function(){}, "", []];
-
-    var fuzzRoot = document.documentElement;
-    if (fuzzRoot) {
-      addDOMNodes(fuzzRoot, false, false, false);
-    } else {
-      try {
-        o.push(document.createElementNS("http://www.w3.org/1999/xhtml", "div"));
-      } catch(e) {
-        o.push(null);
-      }
-    }
   }
 }
