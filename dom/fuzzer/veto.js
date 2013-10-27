@@ -48,9 +48,7 @@ function fuzzInitBlacklists()
                 "letter-spacing",    // can be slow
                 "letterSpacing",     // can be slow
                 "autoplay",          // bug 573426 (windows only)
-                "use",               // bug 592129
                 "shadow",            // bug 595042
-                "svg",               // bug 408147
                 "filter",            // bug 612213
                 "title",             // rdar://8706039
                 "window.open",       // bug 622218
@@ -65,9 +63,6 @@ function fuzzInitBlacklists()
                 "trustedKeyEvent",   // can navigate away (?)
                 "__proto__",         // bug 801914 (too-much-recursion stops the fuzzer, which is interpreted by the python harness as a hang)
                 "202E",              // bug 812826 (RLO causes a hang in CoreText)
-                "find",              // bug 852381
-                "focus",             // bug 852381
-                "select",            // bug 852381
                 "MediaSource",       // bug 931388
                 "squarefree.com/stats", // http auth dialog
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
@@ -114,9 +109,6 @@ function fuzzInitBlacklists()
                 "/*keyCode*/118",    // leak with style editor (bug 865027)
                 "notification",      // general badness when spamming Notifications (bug 897367, bug 866653)
                 "peerconnection",    // bug 914015
-                "mediarecorder",     // bug 919051
-                "VTTCue",            // bug 919265
-                "getCueAsHTML",      // bug 919265
             ]
         },
         {
