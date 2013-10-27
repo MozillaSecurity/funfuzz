@@ -338,6 +338,7 @@ def knownChromeFailure(msg):
         ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or # Bug 931286
         ("nsDOMIdentity.js" in msg and "aOptions is undefined" in msg) or # Bug 931465
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
+        ("urlbarBindings.xml" in msg and "aUrl is undefined" in msg) or # Bug 931622
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
         "abouthealth.js" in msg or # Bug 895113
         "Webapps.js" in msg or # Bug 927699
