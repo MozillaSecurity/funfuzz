@@ -336,6 +336,7 @@ def knownChromeFailure(msg):
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
         ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or # Bug 931286
+        ("nsDOMIdentity.js" in msg and "aOptions is undefined" in msg) or # Bug 931465
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
         "abouthealth.js" in msg or # Bug 895113
