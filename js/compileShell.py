@@ -368,6 +368,8 @@ def cfgBin(shell, options, binToBeCompiled):
                 normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)) \
                     for compileLib in ALL_COMPILE_LIBS
                 ]))
+        else:
+            cfgCmdList.append('--disable-threadsafe')
 
     if os.name == 'nt':
         # FIXME: Replace this with shellify.
