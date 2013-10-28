@@ -187,6 +187,7 @@ layout.css.masking.enabled
 layout.css.report_errors
 layout.css.sticky.enabled
 layout.css.supports-rule.enabled
+layout.css.text-align-true-value.enabled
 layout.css.vertical-text.enabled
 layout.css.visited_links_enabled
 layout.enable_japanese_specific_transform
