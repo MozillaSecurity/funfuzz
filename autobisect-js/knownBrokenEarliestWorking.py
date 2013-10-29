@@ -157,6 +157,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     #if options.buildWithAsan:
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
+    #if isMac and macVer() >= [10, 9]:
+    #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
     if '--disable-threadsafe' in flags:
         required.append('07606a1ebf5d') # 151079 on m-c, first rev that has the --disable-threadsafe option
     if '--ion-check-range-analysis' in flags:
