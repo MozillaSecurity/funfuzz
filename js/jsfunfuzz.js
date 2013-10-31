@@ -1844,8 +1844,47 @@ var exprMakers =
   function(d, b) { return cat(["(", makeSpidermonkeySoonEffect(d - 1, b), ", ", makeExpr(d - 1, b), ")"]); },
 ];
 
-var unaryMathFunctions = ["abs", "acos", "asin", "atan", "ceil", "cos", "exp", "log", "round", "sin", "sqrt", "tan"]; // "floor" and "random" omitted -- needed by rnd
-var binaryMathFunctions = ["atan2", "max", "min", "pow"]; // min and max are technically N-ary, but the generic makeFunction mechanism should give that some testing
+
+var unaryMathFunctions = [
+  "abs",
+  "acos",
+  "acosh",
+  "asin",
+  "asinh",
+  "atan",
+  "atanh",
+  "cbrt",
+  "ceil",
+  "cos",
+  "cosh",
+  "exp",
+  "expm1",
+  // "floor", // avoid breaking rnd.
+  "fround",
+  "log",
+  "log2",
+  "log10",
+  "log1p",
+  // "random", // avoid breaking rnd. avoid non-determinism.
+  "round",
+  "sign",
+  "sin",
+  "sinh",
+  "sqrt",
+  "tan",
+  "tanh",
+  "trunc",
+];
+
+// n-ary functions will also be tested with varying numbers of parameters by makeFunction
+var binaryMathFunctions = [
+  "atan2",
+  "hypot", // n-ary
+  "imul",
+  "max", // n-ary
+  "min", // n-ary
+  "pow",
+];
 
 
 // SpiderMonkey shell (but not xpcshell) has an "evalcx" function and a "newGlobal" function.
