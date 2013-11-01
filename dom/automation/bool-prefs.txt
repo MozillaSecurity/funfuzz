@@ -214,6 +214,7 @@ media.webaudio.enabled
 media.webspeech.recognition.enable
 media.navigator.enabled
 media.navigator.permission.disabled
+media.navigator.load_adapt
 media.peerconnection.enabled
 media.webvtt.enabled
 media.windows-media-foundation.enabled
