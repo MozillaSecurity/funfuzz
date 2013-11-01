@@ -623,6 +623,11 @@ def rdfInit(args):
             alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
             lev = max(lev, DOM_ABNORMAL_EXIT)
 
+        if 'user_pref("layers.use-deprecated-textures", true);' in extraPrefs:
+            # Bug 933569
+            # Doing the change *here* only works because this is a small leak that shouldn't affect the reads in alh
+            alh.expectedToLeak = True
+
         if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=not quiet) and not alh.expectedToLeak:
             alh.printAndLog("@@@ Unexpected leak or leak pattern")
             alh.printAndLog("Leak details: " + os.path.basename(leakLogFile))
