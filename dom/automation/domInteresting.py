@@ -343,6 +343,7 @@ def knownChromeFailure(msg):
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
         ("urlbarBindings.xml" in msg and "aUrl is undefined" in msg) or # Bug 931622
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
+        ("content-sessionStore.js" in msg and "Ci is not defined" in msg) or # Bug 933587
         "abouthealth.js" in msg or # Bug 895113
         "Webapps.js" in msg or # Bug 927699
         "nsIFeedWriter::close" in msg or # Bug 813408
