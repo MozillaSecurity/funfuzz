@@ -22,16 +22,15 @@ var fuzzerChars = (function() {
 
   function makeCommand()
   {
-    // First, pick a random node.  If it's a text node, do something with it.
+    // Do something with a text node
     var t1index = Things.instanceIndex("CharacterData");
     var t1 = o[t1index];
-    if (t1 && typeof t1 == "object" && "nodeType" in t1 && t1.nodeType == 3) {
+    if (t1 && rnd(2)) {
       var commandt1 = "o[" + t1index + "]";
       return makeTextNodeCommand(t1, commandt1);
     }
 
-    // Otherwise, pick a (separate) *element* node, perhaps "caching",
-    // and do something with it.
+    // Or do something with an element
     if (lastElementIndex == null || rnd(30) === 0) {
       var newIndex = Things.instanceIndex("Element");
       if (newIndex == null && lastElementIndex == null)
@@ -39,7 +38,6 @@ var fuzzerChars = (function() {
       if (newIndex != null)
         lastElementIndex = newIndex;
     }
-
     return makeElementCommand(o[lastElementIndex], "o[" + lastElementIndex + "]");
   }
 
