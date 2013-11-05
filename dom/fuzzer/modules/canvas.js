@@ -28,11 +28,8 @@ var fuzzerCanvas = (function() {
     if (!myCanvas || rnd(100) === 0) {
       myCanvas = Things.reserve();
 
-      // On my MacBook pro (early 2011), canvas drawing starts to fail
-      // around 20000 x 20000 (but the failure is not reported to JS).
-
-      var w = Math.floor(Math.pow(2, Random.float() * 15)) - 1;
-      var h = Math.floor(Math.pow(2, Random.float() * 15)) - 1;
+      var w = Math.floor(Math.pow(2, Random.float() * 17)) - 1;
+      var h = Math.floor(Math.pow(2, Random.float() * 17)) - 1;
 
       return [
         myCanvas + " = document.createElementNS('http://www.w3.org/1999/xhtml', 'canvas');",
