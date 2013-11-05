@@ -160,9 +160,10 @@ var fuzzerCanvas2D = (function() {
   /*
   ** Methods and attributes.
   */
+  function canvasDim() { return Math.floor(Math.pow(2, Random.float() * 17)) - 1; }
   var CanvasRenderingContext2DElementAttributes = {
-    "width": [Make.number],
-    "height": [Make.number]
+    "width": [canvasDim],
+    "height": [canvasDim]
   };
   if (Platform.isMozilla) {
     Utils.mergeHash(CanvasRenderingContext2DElementAttributes, {
