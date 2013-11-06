@@ -128,7 +128,6 @@ general.smoothScroll
 geo.enabled
 gfx.canvas.azure.enabled
 gfx.canvas.azure.accelerated
-gfx.content.azure.enabled
 gfx.color_management.enablev4
 gfx.direct2d.disabled
 gfx.downloadable_fonts.enabled
