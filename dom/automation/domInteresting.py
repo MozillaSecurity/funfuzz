@@ -337,7 +337,6 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
-        ("pageInfo.js" in msg and "nsICacheEntryOpenCallback is not defined" in msg) or # Bug 931383
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
@@ -346,13 +345,11 @@ def knownChromeFailure(msg):
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
         ("urlbarBindings.xml" in msg and "aUrl is undefined" in msg) or # Bug 931622
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
-        ("content-sessionStore.js" in msg and "Ci is not defined" in msg) or # Bug 933587
         "abouthealth.js" in msg or # Bug 895113
         "Webapps.js" in msg or # Bug 927699
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
-        "this._mutationObserver is undefined" in msg or # Bug 933984
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
