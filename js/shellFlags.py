@@ -89,9 +89,8 @@ def randomFlagSet(shellPath):
             if chance(.5):
                 args.append('--ion-regalloc=lsra')  # On by default
             # Backtracking and stupid landed in m-c changeset dc4887f61d2e
-            # Disabled until bug 906858 is fixed.
-            #elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.4):
-            #    args.append('--ion-regalloc=backtracking')
+            elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.4):
+                args.append('--ion-regalloc=backtracking')
             # Disabled until bug 871848 and bug 909586 are fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
