@@ -128,7 +128,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
                 return (fpuOptionDisabledAsm and fpuOptionDiffers)
 
-            if r.err != r0.err and not fpuOptionDisabledAsmOnOneSide():
+            def optionDisabledAsmOnOneSide():
+                asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"
+                optionDisabledAsm = asmMsg in r0.err or asmMsg in r.err
+                optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
+                return (optionDisabledAsm and optionDiffers)
+
+            if r.err != r0.err and not fpuOptionDisabledAsmOnOneSide() and not optionDisabledAsmOnOneSide():
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
                 print "  " + shellify(command)
