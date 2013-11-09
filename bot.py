@@ -23,7 +23,7 @@ sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
-from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isWin, \
+from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isMac, isWin, \
     normExpUserPath, shellify, vdump
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
@@ -616,6 +616,8 @@ def localCompileFuzzJsShell(options):
     appendStr = ''
     if options.patchDir:
         appendStr += '-patched'
+    if isMac:
+        appendStr += '.noindex'  # Prevents Spotlight in Mac from indexing these folders.
     userDesktopFolder = normExpUserPath(os.path.join('~', 'Desktop'))
     if not os.path.isdir(userDesktopFolder):
         try:
