@@ -10,8 +10,8 @@ ac_add_options --enable-address-sanitizer
 export LLVM_HOME="$HOME/llvm"
 
 # Set CC/CXX based on LLVM_HOME
-export CC="$LLVM_HOME/build/Release+Asserts/bin/clang"
-export CXX="$LLVM_HOME/build/Release+Asserts/bin/clang++"
+export CC="$LLVM_HOME/build/Release/bin/clang"
+export CXX="$LLVM_HOME/build/Release/bin/clang++"
 
 # Add ASan to our compiler flags
 export CFLAGS="-fsanitize=address -Dxmalloc=myxmalloc"
