@@ -19,6 +19,7 @@ from subprocesses import createWtmpDir
 from fileManipulation import fuzzSplice, linesWith, writeLinesToFile
 from inspectShell import queryBuildConfiguration
 import lithOps
+import linkJS
 
 def parseOpts(args):
     parser = OptionParser()
@@ -32,10 +33,6 @@ def parseOpts(args):
                       action = "store_true", dest = "randomFlags",
                       default = False,
                       help = "Pass a random set of flags (-m, -j, etc) to the js engine")
-    parser.add_option("--fuzzjs",
-                      action = "store", dest = "fuzzjs",
-                      default = os.path.join(p0, "jsfunfuzz.js"),
-                      help = "Which fuzzer to run (e.g. jsfunfuzz.js)")
     parser.add_option("--repo",
                       action = "store", dest = "repo",
                       default = os.path.expanduser("~/trees/mozilla-central/"),
@@ -71,10 +68,18 @@ def showtail(filename):
     print
     print
 
+def linkFuzzer(target_fn):
+    source_base = p0
+    file_list_fn = os.path.join(p0, "files-to-link.txt")
+    linkJS.linkJS(target_fn, file_list_fn, source_base)
+
 def many_timed_runs(targetTime, wtmpDir, args):
     options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
     startTime = time.time()
+
+    fuzzjs = os.path.join(wtmpDir, "jsfunfuzz.js")
+    linkFuzzer(fuzzjs)
 
     iteration = 0
     while True:
@@ -95,7 +100,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
             engineFlags = shellFlags.randomFlagSet(options.jsEngine)
             jsInterestingArgs.extend(engineFlags)
         jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout*(1000/2))])
-        jsInterestingArgs.extend(['-f', options.fuzzjs])
+        jsInterestingArgs.extend(['-f', fuzzjs])
         jsunhappyOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
         iteration += 1
@@ -109,7 +114,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
 
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
-            [before, after] = fuzzSplice(options.fuzzjs)
+            [before, after] = fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
                 newfileLines = before + [l.replace('/*FRC*/', '') for l in linesWith(f, "FRC")] + after
