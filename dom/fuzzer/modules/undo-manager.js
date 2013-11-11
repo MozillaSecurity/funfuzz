@@ -15,7 +15,7 @@ var fuzzerUndoManager = (function() {
   {
     var funName = Random.index(["executeAutomatic", "execute", "redo", "undo"]);
     var lvalue = t + "." + funName;
-    return t + "." + funName + " = " + transactionFunction(funName) + ";";
+    return t + "." + funName + " = /*KEEPLISTENER*/ " + transactionFunction(funName) + ";";
   }
 
   function transactionFunction(funName)
