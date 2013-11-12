@@ -6,7 +6,6 @@
 
 import ctypes
 import os
-import platform
 import shutil
 import subprocess
 import sys
