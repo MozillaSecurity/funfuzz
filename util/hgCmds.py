@@ -51,7 +51,6 @@ def getMcRepoDir():
     else:
         baseDir = '~'
     mcRepoDir = normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
-    assert getRepoNameFromHgrc(mcRepoDir) == 'mozilla-central'
     return baseDir, mcRepoDir
 
 def getRepoHashAndId(repoDir, repoRev='parents() and default'):
