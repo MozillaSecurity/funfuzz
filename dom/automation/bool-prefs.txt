@@ -195,7 +195,7 @@ layout.frame_rate.precise
 layout.frames.force_resizability
 layout.imagevisibility.enabled
 layout.gpu-scaling.enabled
-layers.prefer-memory-over-shmem
+#layers.prefer-memory-over-shmem # Bug 937603
 layers.use-deprecated-textures
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
