@@ -83,7 +83,7 @@ function makeDOMFuzzHelper(aWindow) {
       deterministicgc:    function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
       schedulegc:         function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
       selectforgc:        function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
-      gczeal:             function() { /* Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); */ }, // bug 841487 ??
+      gczeal:             function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
       gcslice:            function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
       verifyprebarriers:  function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
       verifypostbarriers: function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
