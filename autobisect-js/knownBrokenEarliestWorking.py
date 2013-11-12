@@ -162,6 +162,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
     if '--disable-threadsafe' in flags:
         required.append('07606a1ebf5d') # 151079 on m-c, first rev that has the --disable-threadsafe option
+    if isMac and macVer() >= [10, 9]:
+        required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
         required.append('e4a0c6fd1aa9') # 143131 on m-c, first rev that has a stable --ion-check-range-analysis option
     if '--ion-compile-try-catch' in flags:
