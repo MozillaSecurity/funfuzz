@@ -25,7 +25,7 @@ from inspectShell import verifyBinary
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, getMcRepoDir, destroyPyc
+from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
 from subprocesses import captureStdout, handleRemoveReadOnly, isARMv7l, isLinux, isMac, isVM, \
     isWin, macVer, normExpUserPath, shellify, vdump
 
@@ -591,7 +591,6 @@ def main():
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        repoDir = getMcRepoDir()[1],
         buildOptions = "",
     )
 
@@ -600,10 +599,6 @@ def main():
     parser.add_option('-b', '--build',
                       dest='buildOptions',
                       help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
-
-    # Specify the repository (working directory) in which to bisect.
-    parser.add_option('-R', '--repoDir', dest='repoDir',
-                      help='Source code directory. Defaults to "%default".')
 
     (options, args) = parser.parse_args()
     options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
