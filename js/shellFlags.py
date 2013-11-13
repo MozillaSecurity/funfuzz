@@ -143,6 +143,10 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--baseline-eager', '--no-ti'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--baseline-eager', '--no-ti', '--no-fpu'],
         ]
+        # Range analysis had only started to stabilize around the time when --no-sse3 landed.
+        if shellSupportsFlag(shellPath, '--no-sse3'):
+            basicFlagList.append(['--fuzzing-safe',
+                                  '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
