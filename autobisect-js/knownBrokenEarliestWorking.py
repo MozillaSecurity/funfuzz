@@ -187,7 +187,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
     if threadCountFlag:
         required.append('b4fa8b1f279d') # 114005 on m-c, first rev that has the --thread-count=N option
-    if isMac:
+    if isMac and [10, 7] <= macVer() <= [10, 8]:
         required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
     if options.enableRootAnalysis or options.isThreadsafe or options.enableExactRooting:
         required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
