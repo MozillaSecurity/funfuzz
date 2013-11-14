@@ -160,8 +160,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
-    if '--disable-threadsafe' in flags:
-        required.append('07606a1ebf5d') # 151079 on m-c, first rev that has the --disable-threadsafe option
     if isMac and macVer() >= [10, 9]:
         required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
@@ -201,6 +199,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('43b55878da46') # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
     if '--ion-eager' in flags:
         required.append('4ceb3e9961e4') # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
+    if '--disable-threadsafe' in flags:
+        required.append('e077c138cd5d') # 97464 on m-c, first rev that has the --disable-threadsafe option
     if '-n' in flags:
         required.append('228e319574f9') # 74704 on m-c, first rev that has the -n option
     if '--debugjit' in flags or '--methodjit' in flags or '--dump-bytecode' in flags:
