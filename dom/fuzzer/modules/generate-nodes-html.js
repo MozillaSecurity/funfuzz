@@ -17,7 +17,7 @@ var fuzzerHTMLAttributes = (function() {
   var relations = ["alternate", "stylesheet", "icon", "prefetch", "next", "prev", "search"];
   var listOfFrameSizes = ["100,*", "*,100", "100,100,100,100,100", "*", "30%,20%,50%", "100%,*"];
 
-  var commonAttributes = ["id", "name", "width", "height", "lang", "spellcheck", "dir"];
+  var commonAttributes = ["id", "name", "width", "height", "lang", "spellcheck", "dir", "hidden"];
 
   var attributes = {
     "randomness": fuzzTotallyRandomValue,
