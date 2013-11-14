@@ -51,7 +51,6 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.quitApplication", this);
       messageManager.addMessageListener("DOMFuzzHelper.quitApplicationSoon", this);
       messageManager.addMessageListener("DOMFuzzHelper.quitWithLeakCheck", this);
-      messageManager.addMessageListener("DOMFuzzHelper.setGCZeal", this);
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
       messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
       messageManager.loadFrameScript(CHILD_SCRIPT, true);
@@ -95,10 +94,6 @@ DOMFuzzHelperObserver.prototype = {
         quitWithLeakCheck();
         break;
 
-      case "DOMFuzzHelper.setGCZeal":
-        setGCZeal(aMessage.json.zeal);
-        break;
-
       case "DOMFuzzHelper.getProfileDirectory":
         return getProfileDirectory();
 
@@ -132,13 +127,6 @@ function runSoon(f)
 }
 
 
-
-function setGCZeal(zeal)
-{
-  if (typeof(zeal) == "number") {
-    Services.prefs.setIntPref("javascript.options.gczeal", zeal)
-  }
-}
 
 function getProfileDirectory()
 {
