@@ -43,6 +43,14 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if (shellSupportsFlag(shellPath, '--no-sse3') and shellSupportsFlag(shellPath, '--no-sse4')) \
+            and chance(.2):
+        # --no-sse3 and --no-sse4 landed in m-c rev 526ba3ace37a.
+        if chance(.5):
+            args.append("--no-sse3")
+        else:
+            args.append("--no-sse4")
+
     if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
         args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
