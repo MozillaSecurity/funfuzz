@@ -1231,8 +1231,6 @@ var functionMakers = [
 ];
 
 var typedArrayConstructors = [
-  "WebGLIntArray",
-  "WebGLFloatArray",
   "Int8Array",
   "Uint8Array",
   "Int16Array",
