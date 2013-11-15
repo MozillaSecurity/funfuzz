@@ -106,68 +106,57 @@ function makeFunOnCallChain(d, b) {
 }
 
 
-function weighted(wa)
-{
-  var a = [];
-  for (var i = 0; i < wa.length; ++i) {
-    for (var j = 0; j < wa[i].w; ++j) {
-      a.push(wa[i].fun);
-    }
-  }
-  return a;
-}
-
-var statementMakers = weighted([
+var statementMakers = Random.weighted([
 
   // Any two statements in sequence
-  { w: 15, fun: function(d, b) { return cat([makeStatement(d - 1, b),       makeStatement(d - 1, b)      ]); } },
-  { w: 15, fun: function(d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); } },
+  { w: 15, v: function(d, b) { return cat([makeStatement(d - 1, b),       makeStatement(d - 1, b)      ]); } },
+  { w: 15, v: function(d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); } },
 
   // Stripping semilcolons.  What happens if semicolons are missing?  Especially with line breaks used in place of semicolons (semicolon insertion).
-  { w: 1, fun: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n", makeStatement(d, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n"                   ]); } },
-  { w: 1, fun: function(d, b) { return stripSemicolon(makeStatement(d, b)); } }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
+  { w: 1, v: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n", makeStatement(d, b)]); } },
+  { w: 1, v: function(d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n"                   ]); } },
+  { w: 1, v: function(d, b) { return stripSemicolon(makeStatement(d, b)); } }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
 
   // Simple variable declarations, followed (or preceded) by statements using those variables
-  { w: 4, fun: function(d, b) { var v = makeNewId(d, b); return cat([Random.index(varBinder), v, " = ", makeExpr(d, b), ";", makeStatement(d - 1, b.concat([v]))]); } },
-  { w: 4, fun: function(d, b) { var v = makeNewId(d, b); return cat([makeStatement(d - 1, b.concat([v])), Random.index(varBinder), v, " = ", makeExpr(d, b), ";"]); } },
+  { w: 4, v: function(d, b) { var v = makeNewId(d, b); return cat([Random.index(varBinder), v, " = ", makeExpr(d, b), ";", makeStatement(d - 1, b.concat([v]))]); } },
+  { w: 4, v: function(d, b) { var v = makeNewId(d, b); return cat([makeStatement(d - 1, b.concat([v])), Random.index(varBinder), v, " = ", makeExpr(d, b), ";"]); } },
 
   // Complex variable declarations, e.g. "const [a,b] = [3,4];" or "var a,b,c,d=4,e;"
-  { w: 10, fun: function(d, b) { return cat([Random.index(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); } },
+  { w: 10, v: function(d, b) { return cat([Random.index(varBinder), makeLetHead(d, b), ";", makeStatement(d - 1, b)]); } },
 
   // Blocks
-  { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d, b), " }"]); } },
-  { w: 2, fun: function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); } },
+  { w: 2, v: function(d, b) { return cat(["{", makeStatement(d, b), " }"]); } },
+  { w: 2, v: function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); } },
 
   // "with" blocks
-  { w: 2, fun: function(d, b) {                          return cat([maybeLabel(), "with", "(", makeExpr(d, b), ")",                    makeStatementOrBlock(d, b)]);             } },
-  { w: 2, fun: function(d, b) { var v = makeNewId(d, b); return cat([maybeLabel(), "with", "(", "{", v, ": ", makeExpr(d, b), "}", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 2, v: function(d, b) {                          return cat([maybeLabel(), "with", "(", makeExpr(d, b), ")",                    makeStatementOrBlock(d, b)]);             } },
+  { w: 2, v: function(d, b) { var v = makeNewId(d, b); return cat([maybeLabel(), "with", "(", "{", v, ": ", makeExpr(d, b), "}", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
 
   // C-style "for" loops
   // Two kinds of "for" loops: one with an expression as the first part, one with a var or let binding 'statement' as the first part.
   // I'm not sure if arbitrary statements are allowed there; I think not.
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
 
   // Various types of "for" loops, specially set up to test tracing, carefully avoiding infinite loops
-  { w: 6, fun: makeTransparentIdiomaticLoop },
-  { w: 6, fun: makeOpaqueIdiomaticLoop },
-  { w: 6, fun: makeBranchUnstableLoop },
-  { w: 8, fun: makeTypeUnstableLoop },
+  { w: 6, v: makeTransparentIdiomaticLoop },
+  { w: 6, v: makeOpaqueIdiomaticLoop },
+  { w: 6, v: makeBranchUnstableLoop },
+  { w: 8, v: makeTypeUnstableLoop },
 
   // "for..in" loops
   // arbitrary-LHS marked as infloop because
   // -- for (key in obj)
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for (key in generator())
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for each (value in obj)
-  { w: 1, fun: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
 
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
@@ -177,82 +166,82 @@ var statementMakers = weighted([
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
   // The last form is specific to JavaScript 1.7 (only).
-  { w: 1, fun: function(d, b) {                                               return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b);                      return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  { w: 1, fun: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
+  { w: 1, v: function(d, b) {                                               return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b);                      return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
 
   // do..while
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); } },
-  { w: 1, fun: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); } },
+  { w: 1, v: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"]); } },
 
   // Switch statement
-  { w: 3, fun: function(d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
+  { w: 3, v: function(d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
 
   // "let" blocks, with bound variable used inside the block
-  { w: 2, fun: function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, ")", " { ", makeStatement(d, b.concat([v])), " }"]); } },
+  { w: 2, v: function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, ")", " { ", makeStatement(d, b.concat([v])), " }"]); } },
 
   // "let" blocks, with and without multiple bindings, with and without initial values
-  { w: 2, fun: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
+  { w: 2, v: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
 
   // Conditionals, perhaps with 'else if' / 'else'
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b)]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
 
   // A tricky pair of if/else cases.
   // In the SECOND case, braces must be preserved to keep the final "else" associated with the first "if".
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); } },
-  { w: 1, fun: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b), "}"]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", "{", " if ", "(", makeExpr(d, b), ") ", makeStatementOrBlock(d - 1, b), "}", " else ", makeStatementOrBlock(d - 1, b)]); } },
 
   // Expression statements
-  { w: 5, fun: function(d, b) { return cat([makeExpr(d, b), ";"]); } },
-  { w: 5, fun: function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); } },
+  { w: 5, v: function(d, b) { return cat([makeExpr(d, b), ";"]); } },
+  { w: 5, v: function(d, b) { return cat(["(", makeExpr(d, b), ")", ";"]); } },
 
   // Exception-related statements :)
-  { w: 6, fun: function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); } },
-  { w: 7, fun: function(d, b) { return makeExceptionyStatement(d, b); } },
+  { w: 6, v: function(d, b) { return makeExceptionyStatement(d - 1, b) + makeExceptionyStatement(d - 1, b); } },
+  { w: 7, v: function(d, b) { return makeExceptionyStatement(d, b); } },
 
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
-  { w: 1, fun: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { return cat(["L", ": ", makeStatementOrBlock(d, b)]); } },
 
   // Function-declaration-statements with shared names
-  { w: 10, fun: function(d, b) { return cat([makeStatement(d-2, b), "function ", makeId(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d - 1, b), makeStatement(d-2, b)]); } },
+  { w: 10, v: function(d, b) { return cat([makeStatement(d-2, b), "function ", makeId(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d - 1, b), makeStatement(d-2, b)]); } },
 
   // Function-declaration-statements with unique names, along with calls to those functions
-  { w: 8, fun: makeNamedFunctionAndUse },
+  { w: 8, v: makeNamedFunctionAndUse },
 
   // Long script -- can confuse Spidermonkey's short vs long jmp or something like that.
   // Spidermonkey's regexp engine is so slow for long strings that we have to bypass whatToTest :(
-  //{ w: 1, fun: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
-  { w: 1, fun: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
+  //{ w: 1, v: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
+  { w: 1, v: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
 
-  { w: 1, fun: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
+  { w: 1, v: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
-  { w: 1, fun: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
+  { w: 1, v: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
 
   // Oddly placed "use strict" or "use asm"
-  { w: 1, fun: function(d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
+  { w: 1, v: function(d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
 
   // Spidermonkey gc and OOM controls
-  { w: 5, fun: function(d, b) { return makeSpidermonkeySoonEffect(d - 1, b) + "; " + makeStatement(d - 1, b); } },
+  { w: 5, v: function(d, b) { return makeSpidermonkeySoonEffect(d - 1, b) + "; " + makeStatement(d - 1, b); } },
 
   // Blocks of statements related to typed arrays
-  { w: 8, fun: makeTypedArrayStatements },
+  { w: 8, v: makeTypedArrayStatements },
 
   // Print statements
-  { w: 8, fun: makePrintStatement },
+  { w: 8, v: makePrintStatement },
 
-  { w: 20, fun: makeRegexUseBlock },
+  { w: 20, v: makeRegexUseBlock },
 
-  { w: 1, fun: makeRegisterStompBody },
+  { w: 1, v: makeRegisterStompBody },
 
   // Discover properties to add to the allPropertyNames list
-  //{ w: 3, fun: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
-  //{ w: 3, fun: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
+  //{ w: 3, v: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
+  //{ w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
 
@@ -890,59 +879,59 @@ function makeSpidermonkeyImmediateEffect(d, b)
   return (Random.index(spidermonkeyImmediateEffectMakers))(d, b);
 }
 
-var spidermonkeyImmediateEffectMakers = weighted([
+var spidermonkeyImmediateEffectMakers = Random.weighted([
   // Force garbage collection (global or specific compartment)
-  { w: 1, fun: function(d, b) { return "gc()"; } },
-  { w: 1, fun: function(d, b) { return "gc('compartment')"; } },
-  { w: 1, fun: function(d, b) { return "gc(" + makeExpr(d, b) + ")"; } },
+  { w: 1, v: function(d, b) { return "gc()"; } },
+  { w: 1, v: function(d, b) { return "gc('compartment')"; } },
+  { w: 1, v: function(d, b) { return "gc(" + makeExpr(d, b) + ")"; } },
 
   // Run a minor garbage collection on the nursery.
-  { w: 1, fun: function(d, b) { return "minorgc(false)"; } },
-  { w: 1, fun: function(d, b) { return "minorgc(true)"; } },
+  { w: 1, v: function(d, b) { return "minorgc(false)"; } },
+  { w: 1, v: function(d, b) { return "minorgc(true)"; } },
 
   // Add a compartment to the next garbage collection.
-  { w: 1, fun: function(d, b) { return "schedulegc(" + makeExpr(d, b) + ")"; } },
+  { w: 1, v: function(d, b) { return "schedulegc(" + makeExpr(d, b) + ")"; } },
 
   // Schedule the given objects to be marked in the next GC slice.
-  { w: 1, fun: function(d, b) { return "selectforgc(" + makeExpr(d, b) + ")"; } },
+  { w: 1, v: function(d, b) { return "selectforgc(" + makeExpr(d, b) + ")"; } },
 
   // Verify write barriers. These functions are effective in pairs.
   // The first call sets up the start barrier, the second call sets up the end barrier.
   // Nothing happens when there is only one call.
-  { w: 1, fun: function(d, b) { return "verifyprebarriers()"; } },
-  { w: 1, fun: function(d, b) { return "verifypostbarriers()"; } },
-  { w: 1, fun: function(d, b) { return "validategc(false)"; } },
-  { w: 1, fun: function(d, b) { return "validategc(true)"; } },
+  { w: 1, v: function(d, b) { return "verifyprebarriers()"; } },
+  { w: 1, v: function(d, b) { return "verifypostbarriers()"; } },
+  { w: 1, v: function(d, b) { return "validategc(false)"; } },
+  { w: 1, v: function(d, b) { return "validategc(true)"; } },
 
   // Check for compartment mismatches before every GC
-  { w: 1, fun: function(d, b) { return "fullcompartmentchecks(false)"; } },
-  { w: 1, fun: function(d, b) { return "fullcompartmentchecks(true)"; } },
+  { w: 1, v: function(d, b) { return "fullcompartmentchecks(false)"; } },
+  { w: 1, v: function(d, b) { return "fullcompartmentchecks(true)"; } },
 
   // I'm not sure what this does in the shell.
-  { w: 1, fun: function(d, b) { return "deterministicgc(false)"; } },
-  { w: 1, fun: function(d, b) { return "deterministicgc(true)"; } },
+  { w: 1, v: function(d, b) { return "deterministicgc(false)"; } },
+  { w: 1, v: function(d, b) { return "deterministicgc(true)"; } },
 
   // Invoke an incremental garbage collection slice.
-  { w: 1, fun: function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, Random.float() * 32)) + ")"; } },
+  { w: 1, v: function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, Random.float() * 32)) + ")"; } },
 
   // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
-  { w: 1, fun: function(d, b) { return "gcPreserveCode()"; } },
+  { w: 1, v: function(d, b) { return "gcPreserveCode()"; } },
 
   // Spidermonkey: global ES5 strict mode
-  { w: 1, fun: function(d, b) { return "(void options('strict_mode'))"; } },
+  { w: 1, v: function(d, b) { return "(void options('strict_mode'))"; } },
 
   // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
-  { w: 1, fun: function(d, b) { return "(void options('strict'))"; } },
+  { w: 1, v: function(d, b) { return "(void options('strict'))"; } },
 
   // Spidermonkey: versions
-  { w: 1, fun: function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; } },
+  { w: 1, v: function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; } },
 
   // More special Spidermonkey shell functions
-  // { w: 1, fun: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
-  { w: 1, fun: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))"; } },
-  { w: 1, fun: function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; } },
-  { w: 1, fun: function(d, b) { return "intern(" + makeExpr(d, b) + ")"; } },
-  { w: 1, fun: function(d, b) { return "timeout(1800)"; } }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
+  // { w: 1, v: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
+  { w: 1, v: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))"; } },
+  { w: 1, v: function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; } },
+  { w: 1, v: function(d, b) { return "intern(" + makeExpr(d, b) + ")"; } },
+  { w: 1, v: function(d, b) { return "timeout(1800)"; } }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
 ]);
 
 
@@ -983,14 +972,14 @@ function makeShapeyConstructor(d, b)
 }
 
 
-var propertyNameMakers = weighted([
-  { w: 1,  fun: function(d, b) { return makeExpr(d - 1, b); } },
-  { w: 1,  fun: function(d, b) { return maybeNeg() + rnd(20); } },
-  { w: 1,  fun: function(d, b) { return '"' + maybeNeg() + rnd(20) + '"'; } },
-  { w: 1,  fun: function(d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
-  { w: 5,  fun: function(d, b) { return simpleSource(Random.index(specialProperties)); } },
-  { w: 1,  fun: function(d, b) { return simpleSource(makeId(d - 1, b)); } },
-  { w: 5,  fun: function(d, b) { return simpleSource(Random.index(allMethodNames)); } },
+var propertyNameMakers = Random.weighted([
+  { w: 1,  v: function(d, b) { return makeExpr(d - 1, b); } },
+  { w: 1,  v: function(d, b) { return maybeNeg() + rnd(20); } },
+  { w: 1,  v: function(d, b) { return '"' + maybeNeg() + rnd(20) + '"'; } },
+  { w: 1,  v: function(d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
+  { w: 5,  v: function(d, b) { return simpleSource(Random.index(specialProperties)); } },
+  { w: 1,  v: function(d, b) { return simpleSource(makeId(d - 1, b)); } },
+  { w: 5,  v: function(d, b) { return simpleSource(Random.index(allMethodNames)); } },
 ]);
 
 function maybeNeg() { return rnd(5) ? "" : "-"; }
@@ -1831,25 +1820,25 @@ function makeIterable(d, b)
   return (Random.index(iterableExprMakers))(d, b);
 }
 
-var iterableExprMakers = weighted([
+var iterableExprMakers = Random.weighted([
   // Arrays
-  { w: 1, fun: function(d, b) { return "new Array(" + makeNumber(d, b) + ")"; } },
-  { w: 8, fun: makeArrayLiteral },
+  { w: 1, v: function(d, b) { return "new Array(" + makeNumber(d, b) + ")"; } },
+  { w: 8, v: makeArrayLiteral },
 
   // Array comprehensions (JavaScript 1.7)
-  { w: 1, fun: function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
+  { w: 1, v: function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
 
   // Generator expressions (JavaScript 1.8)
-  { w: 1, fun: function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); } },
-  { w: 1, fun: function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); } },
+  { w: 1, v: function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); } },
+  { w: 1, v: function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); } },
 
   // A generator that yields once
-  { w: 1, fun: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
+  { w: 1, v: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
   // A pass-through generator
-  { w: 1, fun: function(d, b) { return "/*PTHR*/(function() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+  { w: 1, v: function(d, b) { return "/*PTHR*/(function() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
 
-  { w: 1, fun: makeFunction },
-  { w: 1, fun: makeExpr },
+  { w: 1, v: makeFunction },
+  { w: 1, v: makeExpr },
 ]);
 
 function strTimes(s, n)
