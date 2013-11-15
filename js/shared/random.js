@@ -98,7 +98,7 @@ var Random = {
         a.push(wa[i].v);
       }
     }
-    return function() { return Random.index(a); };
+    return a;
   },
   use: function (obj) {
     return Random.bool() ? obj : "";
