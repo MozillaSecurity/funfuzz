@@ -90,6 +90,7 @@ function makeDOMFuzzHelper(aWindow) {
       enableOsiPointRegisterChecks: function() { Components.utils.getJSTestingFunctions().enableOsiPointRegisterChecks.apply(this, arguments); },
       gcPreserveCode:               function() { Components.utils.getJSTestingFunctions().gcPreserveCode.apply(this, arguments); },
       minorgc:                      function() { Components.utils.getJSTestingFunctions().minorgc.apply(this, arguments); },
+      gcparam:                      function() { return Components.utils.getJSTestingFunctions().gcparam.apply(this, arguments); },
       setJitCompilerOption:         function() { Components.utils.getJSTestingFunctions().setJitCompilerOption.apply(this, arguments); },
 
       verifyprebarriers:            function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
@@ -157,6 +158,7 @@ function makeDOMFuzzHelper(aWindow) {
         selectforgc: 'r',
         gczeal: 'r',
         gcslice: 'r',
+        gcparam: 'r',
         verifyprebarriers: 'r',
         verifypostbarriers: 'r',
         terminate: 'r',
