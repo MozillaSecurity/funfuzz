@@ -227,7 +227,7 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
 
   // Spidermonkey gc and OOM controls
-  { w: 5, v: function(d, b) { return makeSpidermonkeySoonEffect(d - 1, b) + "; " + makeStatement(d - 1, b); } },
+  { w: 5, v: function(d, b) { return makeTestingFunctionCall(d - 1, b) + "; " + makeStatement(d - 1, b); } },
 
   // Blocks of statements related to typed arrays
   { w: 8, v: makeTypedArrayStatements },
@@ -760,15 +760,36 @@ var exprMakers =
 
   function(d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
+  // Spidermonkey: global ES5 strict mode
+  function(d, b) { return "(void options('strict_mode'))"; },
+
+  // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
+  function(d, b) { return "(void options('strict'))"; },
+
+  // Spidermonkey: versions
+  function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; },
+
+  // More special Spidermonkey shell functions
+  //  function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
+  function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))"; },
+  function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; },
+  function(d, b) { return "intern(" + makeExpr(d, b) + ")"; },
+  function(d, b) { return "bailout()"; },
+  function(d, b) { return "timeout(1800)"; }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
+
   makeRegexUseExpr,
   makeShapeyValue,
   makeIterable,
+  makeTestingFunctionCall,
 
-  makeSpidermonkeyImmediateEffect,
-  makeSpidermonkeySoonEffect,
-  function(d, b) { return cat(["(", makeSpidermonkeySoonEffect(d - 1, b), ", ", makeExpr(d - 1, b), ")"]); },
+  function(d, b) { return cat(["(", makeTestingFunctionCall(d - 1, b), ", ", makeExpr(d - 1, b), ")"]); },
 ];
 
+function makeTestingFunctionCall(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+  return Random.index(fuzzTestingFunctions.testingFunctions)(d, b);
+}
 
 var unaryMathFunctions = [
   "abs",
@@ -856,83 +877,6 @@ if (xpcshell) {
     function(d, b) { return "(Components.classes ? quit() : gc()); }"; },
   ]);
 }
-
-
-function makeSpidermonkeySoonEffect(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-  var soonness = Math.floor(Math.exp(rnd(rnd(6000)) / 1000));
-  if (rnd(5))
-    return "schedulegc(" + soonness + ")";
-  if (rnd(5))
-    return "gczeal(" + makeZealLevel() + ", " + soonness + ")";
-   /*
-   return "oomAfterAllocations(" + soonness + ")";
-   */
-   return "1";
-}
-
-function makeSpidermonkeyImmediateEffect(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  return (Random.index(spidermonkeyImmediateEffectMakers))(d, b);
-}
-
-var spidermonkeyImmediateEffectMakers = Random.weighted([
-  // Force garbage collection (global or specific compartment)
-  { w: 1, v: function(d, b) { return "gc()"; } },
-  { w: 1, v: function(d, b) { return "gc('compartment')"; } },
-  { w: 1, v: function(d, b) { return "gc(" + makeExpr(d, b) + ")"; } },
-
-  // Run a minor garbage collection on the nursery.
-  { w: 1, v: function(d, b) { return "minorgc(false)"; } },
-  { w: 1, v: function(d, b) { return "minorgc(true)"; } },
-
-  // Add a compartment to the next garbage collection.
-  { w: 1, v: function(d, b) { return "schedulegc(" + makeExpr(d, b) + ")"; } },
-
-  // Schedule the given objects to be marked in the next GC slice.
-  { w: 1, v: function(d, b) { return "selectforgc(" + makeExpr(d, b) + ")"; } },
-
-  // Verify write barriers. These functions are effective in pairs.
-  // The first call sets up the start barrier, the second call sets up the end barrier.
-  // Nothing happens when there is only one call.
-  { w: 1, v: function(d, b) { return "verifyprebarriers()"; } },
-  { w: 1, v: function(d, b) { return "verifypostbarriers()"; } },
-  { w: 1, v: function(d, b) { return "validategc(false)"; } },
-  { w: 1, v: function(d, b) { return "validategc(true)"; } },
-
-  // Check for compartment mismatches before every GC
-  { w: 1, v: function(d, b) { return "fullcompartmentchecks(false)"; } },
-  { w: 1, v: function(d, b) { return "fullcompartmentchecks(true)"; } },
-
-  // I'm not sure what this does in the shell.
-  { w: 1, v: function(d, b) { return "deterministicgc(false)"; } },
-  { w: 1, v: function(d, b) { return "deterministicgc(true)"; } },
-
-  // Invoke an incremental garbage collection slice.
-  { w: 1, v: function(d, b) { return "gcslice(" + Math.floor(Math.pow(2, Random.float() * 32)) + ")"; } },
-
-  // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
-  { w: 1, v: function(d, b) { return "gcPreserveCode()"; } },
-
-  // Spidermonkey: global ES5 strict mode
-  { w: 1, v: function(d, b) { return "(void options('strict_mode'))"; } },
-
-  // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
-  { w: 1, v: function(d, b) { return "(void options('strict'))"; } },
-
-  // Spidermonkey: versions
-  { w: 1, v: function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; } },
-
-  // More special Spidermonkey shell functions
-  // { w: 1, v: function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
-  { w: 1, v: function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))"; } },
-  { w: 1, v: function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; } },
-  { w: 1, v: function(d, b) { return "intern(" + makeExpr(d, b) + ")"; } },
-  { w: 1, v: function(d, b) { return "timeout(1800)"; } }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
-]);
 
 
 function makeShapeyConstructor(d, b)

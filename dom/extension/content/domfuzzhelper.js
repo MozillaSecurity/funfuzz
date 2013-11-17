@@ -79,15 +79,22 @@ function makeDOMFuzzHelper(aWindow) {
       MP: sendMemoryPressureNotification.bind(this),
 
       // Using the apply/arguments pattern because some of these functions (GC, gcslice) vary their behavior based on the number of arguments
-      GC:                 function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
-      deterministicgc:    function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
-      schedulegc:         function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
-      selectforgc:        function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
-      gczeal:             function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
-      gcslice:            function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
-      verifyprebarriers:  function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
-      verifypostbarriers: function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
-      terminate:          function() { Components.utils.getJSTestingFunctions().terminate(); },
+      GC:                           function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
+      gc:                           function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
+      deterministicgc:              function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
+      schedulegc:                   function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
+      selectforgc:                  function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
+      gczeal:                       function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
+      gcslice:                      function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
+      setIonAssertGraphCoherency:   function() { Components.utils.getJSTestingFunctions().setIonAssertGraphCoherency.apply(this, arguments); },
+      enableOsiPointRegisterChecks: function() { Components.utils.getJSTestingFunctions().enableOsiPointRegisterChecks.apply(this, arguments); },
+      gcPreserveCode:               function() { Components.utils.getJSTestingFunctions().gcPreserveCode.apply(this, arguments); },
+      minorgc:                      function() { Components.utils.getJSTestingFunctions().minorgc.apply(this, arguments); },
+      setJitCompilerOption:         function() { Components.utils.getJSTestingFunctions().setJitCompilerOption.apply(this, arguments); },
+
+      verifyprebarriers:            function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
+      verifypostbarriers:           function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
+      terminate:                    function() { Components.utils.getJSTestingFunctions().terminate(); },
 
       forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
 
@@ -129,6 +136,7 @@ function makeDOMFuzzHelper(aWindow) {
         'enableAccessibility': 'r',
         'forceGC': 'r',
         'GC': 'r',
+        'gc': 'r',
         'CC': 'r',
         'CCLog': 'r',
         'MP': 'r',
@@ -154,6 +162,11 @@ function makeDOMFuzzHelper(aWindow) {
         terminate: 'r',
         reftestFilesDirectory: 'r',
         trustedKeyEvent: 'r',
+        setIonAssertGraphCoherency: 'r',
+        enableOsiPointRegisterChecks: 'r',
+        gcPreserveCode: 'r',
+        minorgc: 'r',
+        setJitCompilerOption: 'r',
       }
   };
 };

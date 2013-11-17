@@ -481,6 +481,7 @@ def rdfInit(args):
         runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
 
     env = os.environ.copy()
+    env['MOZ_FUZZING_SAFE'] = '1'
     env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
     env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release/bin/llvm-symbolizer")
     if dirs.stackwalk:
