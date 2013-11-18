@@ -54,6 +54,7 @@ def many_timed_runs(targetTime, tempDir, args):
     while True:
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
+            os.remove(fuzzerJS)
             if len(os.listdir(tempDir)) == 0:
                 os.rmdir(tempDir)
             return (lithOps.HAPPY, None)

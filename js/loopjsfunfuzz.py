@@ -85,6 +85,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
     while True:
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
+            os.remove(fuzzjs)
             if len(os.listdir(wtmpDir)) == 0:
                 os.rmdir(wtmpDir)
             return (lithOps.HAPPY, None)
