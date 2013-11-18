@@ -50,6 +50,9 @@ var fuzzTestingFunctions = (function(){
     { w: 10, v: function(d, b) { return tf + "verifyprebarriers()"; } },
     { w: 10, v: function(d, b) { return tf + "verifypostbarriers()"; } },
 
+    // Trace the heap using non-GC tracing code
+    { w: 1,  v: function(d, b) { return "(void " + tf + "countHeap()" + ")"; } },
+
     // Toggle various validations.
     { w: 5,  v: function(d, b) { return tf + "validategc(false)"; } },
     { w: 1,  v: function(d, b) { return tf + "validategc(true)"; } },
