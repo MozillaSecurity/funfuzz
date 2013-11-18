@@ -55,9 +55,15 @@ def hitMemoryLimit(err, infilename, issues, lev, elapsedtime):
         print infilename + " | " + jsInteresting.summaryString(issues + [fullMsg], lev, elapsedtime)
 
     if "js_ReportOverRecursed called" in err:
+        # --enable-more-deterministic
         reportOOM("js_ReportOverRecursed called")
         return True
+    elif "failed to allocate" in err:
+        # ASan
+        reportOOM("failed to allocate")
+        return True
     elif "can't allocate region" in err:
+        # malloc
         reportOOM("can't allocate region")
         return True
     elif len(err) + 5 > lengthLimit:
