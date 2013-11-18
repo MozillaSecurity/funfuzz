@@ -105,9 +105,12 @@ var pureForeign = {
   stomp:     function()  { },
 };
 
-var pureMath = ["abs", "acos", "asin", "atan", "atan2", "ceil", "cos", "exp", "floor", "imul", "log", "max", "min", "pow", "round", "sin", "sqrt", "tan"];
-for (var f in pureMath) {
-  pureForeign["Math_" + pureMath[f]] = Math[pureMath[f]];
+for (var f in unaryMathFunctions) {
+  pureForeign["Math_" + unaryMathFunctions[f]] = Math[unaryMathFunctions[f]];
+}
+
+for (var f in binaryMathFunctions) {
+  pureForeign["Math_" + binaryMathFunctions[f]] = Math[binaryMathFunctions[f]];
 }
 
 var pureMathNames = Object.keys(pureForeign);
