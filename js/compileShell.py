@@ -245,7 +245,7 @@ def cfgBin(shell, options, binToBeCompiled):
                 cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on 32/64-bit x86 Linux
         elif isLinux and not isARMv7l:
-            # apt-get `ia32-libs gcc-multilib g++-multilib` first, if on 64-bit Linux.
+            # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             cfgEnvDt['CC'] = 'gcc -m32'
             cfgEnvDt['CXX'] = 'g++ -m32'
