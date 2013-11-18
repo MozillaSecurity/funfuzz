@@ -288,7 +288,7 @@ def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
         if useLogFiles:
             # Path to memory dump is the last element of debuggerCmd.
             os.rename(debuggerCmd[-1], logPrefix + "-core")
-            subprocess.call(["gzip", logPrefix + "-core"])
+            subprocess.call(["gzip", '-f', logPrefix + "-core"])
             # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
             subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
             return logPrefix + "-crash.txt"
