@@ -58,6 +58,10 @@ def hitMemoryLimit(err, infilename, issues, lev, elapsedtime):
         # --enable-more-deterministic
         reportOOM("js_ReportOverRecursed called")
         return True
+    elif "js_ReportOutOfMemory called" in err:
+        # --enable-more-deterministic
+        reportOOM("js_ReportOutOfMemory called")
+        return True
     elif "failed to allocate" in err:
         # ASan
         reportOOM("failed to allocate")
