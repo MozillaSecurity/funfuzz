@@ -6,6 +6,9 @@
 
 function makeOv(d, ignoredB)
 {
+  if (rnd(3) == 0) {
+    return makeMathyFunAndTest(d, ["x"]);
+  }
   return directivePrologue() + makeStatement(d, ["x"]);
 }
 
@@ -790,47 +793,6 @@ function makeTestingFunctionCall(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   return Random.index(fuzzTestingFunctions.testingFunctions)(d, b);
 }
-
-var unaryMathFunctions = [
-  "abs",
-  "acos",
-  "acosh",
-  "asin",
-  "asinh",
-  "atan",
-  "atanh",
-  "cbrt",
-  "ceil",
-  "cos",
-  "cosh",
-  "exp",
-  "expm1",
-  // "floor", // avoid breaking rnd.
-  "fround",
-  "log",
-  "log2",
-  "log10",
-  "log1p",
-  // "random", // avoid breaking rnd. avoid non-determinism.
-  "round",
-  "sign",
-  "sin",
-  "sinh",
-  "sqrt",
-  "tan",
-  "tanh",
-  "trunc",
-];
-
-// n-ary functions will also be tested with varying numbers of parameters by makeFunction
-var binaryMathFunctions = [
-  "atan2",
-  "hypot", // n-ary
-  "imul",
-  "max", // n-ary
-  "min", // n-ary
-  "pow",
-];
 
 
 // SpiderMonkey shell (but not xpcshell) has an "evalcx" function and a "newGlobal" function.

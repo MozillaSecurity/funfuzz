@@ -6,6 +6,8 @@ function start(glob)
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);
 
+  mathInitFCM();
+
   count = 0;
 
   if (jsshell) {

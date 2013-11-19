@@ -22,7 +22,9 @@ function fillShellSandbox(sandbox)
     "verifyprebarriers", "verifypostbarriers", "gcPreserveCode",
     "minorgc",
     "evalcx", "newGlobal", "evaluate",
-    "dumpln", "fillShellSandbox"
+    "dumpln", "fillShellSandbox",
+    "testMathyFunction", "hashStr",
+    "isAsmJSCompilationAvailable",
   ];
 
   for (var i = 0; i < safeFuns.length; ++i) {

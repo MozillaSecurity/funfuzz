@@ -14,6 +14,7 @@ jsfunfuzz/mess-tokens.js
 jsfunfuzz/mess-grammar.js
 
 jsfunfuzz/gen-asm.js
+jsfunfuzz/gen-math.js
 jsfunfuzz/gen-grammar.js
 jsfunfuzz/gen-proxy.js
 jsfunfuzz/gen-recursion.js
@@ -22,6 +23,7 @@ jsfunfuzz/gen-stomp-on-registers.js
 jsfunfuzz/gen-type-aware-code.js
 
 jsfunfuzz/test-asm.js
+jsfunfuzz/test-math.js
 jsfunfuzz/test-consistency.js
 jsfunfuzz/test-misc.js
 jsfunfuzz/test-regex.js

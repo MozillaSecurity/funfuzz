@@ -20,7 +20,8 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("oomAfterAllocations") == -1
-       && code.indexOf("ParallelArray") == -1
+       && code.indexOf("ParallelArray") == -1       // some parallel operations are non-deterministic (todo: only ignore those ones)
+       && code.indexOf("NODIFF") == -1
     ,
 
     expectConsistentOutputAcrossIter: true
