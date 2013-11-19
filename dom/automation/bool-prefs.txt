@@ -294,7 +294,6 @@ svg.display-lists.hit-testing.enabled
 svg.marker-improvements.enabled
 svg.paint-order.enabled
 svg.smil.enabled
-#svg.text.css-frames.enabled # Don't bother testing false any more.  It's on its way out.
 toolkit.identity.debug
 toolkit.telemetry.enabled
 view_source.syntax_highlight
