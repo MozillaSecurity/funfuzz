@@ -140,7 +140,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
                 with open(logPrefix + '-out.txt', 'rb') as f:
-                    jitcomparelines = [l.replace('/*FCM*/', '') for l in linesWith(f, "FCM")] + \
+                    jitcomparelines = [l.replace('/*FCM*/', '') for l in linesWith(f, "/*FCM*/")] + \
                         ["try{print(uneval(this));}catch(e){}"]
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 writeLinesToFile(jitcomparelines, jitcomparefilename)
