@@ -199,26 +199,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('43b55878da46') # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
     if '--ion-eager' in flags:
         required.append('4ceb3e9961e4') # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
-    if not options.isThreadsafe:
-        required.append('e077c138cd5d') # 97464 on m-c, first rev that has the --disable-threadsafe option
-    if '-n' in flags:
-        required.append('228e319574f9') # 74704 on m-c, first rev that has the -n option
-    if '--debugjit' in flags or '--methodjit' in flags or '--dump-bytecode' in flags:
-        required.append('b1923b866d6a') # 73054 on m-c, first rev that has long variants of many options
-    if '-D' in flags:
-        required.append('e5b92c2bdd2d') # 70991 on m-c, first rev that has the -D option
-    if '-a' in flags:  # -a only works with -m
-        required.append('11d72b25348d') # 64558 on m-c, first rev that has the -a option
-    if isLinux:
-        required.append('e8753473cdff') # 61217 on m-c, first rev that compiles properly on Ubuntu 12.10.
-    if '-p' in flags:
-        required.append('339457364540') # 56551 on m-c, first rev that has the -p option
-    if '-d' in flags:  # To bisect farther back, use setDebug(true). See bug 656381 comment 0.
-        required.append('ea0669bacf12') # 54578 on m-c, first rev that has the -d option
-    if '-m' in flags:
-        required.append('547af2626088') # 53105 on m-c, first rev that can run jsfunfuzz-n.js with -m
-    #required.append('232553f741a0') # 52099 on m-c, first rev that can run pymake with -s
-    required.append('ceef8a5c3ca1') # 35725 on m-c, first rev that can build with Visual Studio 2010
+    required.append('e077c138cd5d') # 97464 on m-c, first rev that has the --disable-threadsafe option
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 
