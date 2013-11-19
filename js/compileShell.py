@@ -351,6 +351,17 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--enable-root-analysis')
         if options.enableExactRooting:
             cfgCmdList.append('--enable-exact-rooting')
+            # All these extra stuff came from bug 916338.
+            cfgCmdList.append('--enable-elf-hack')
+            cfgCmdList.append('--enable-stdcxx-compat')
+            cfgCmdList.append('--enable-warnings-as-errors')
+            cfgCmdList.append('--enable-signmar')
+            cfgCmdList.append('--disable-elf-hack')
+            cfgCmdList.append('--enable-js-diagnostics')
+            cfgCmdList.append('--with-intl-api=build')
+            cfgCmdList.append('--enable-ctypes')
+            cfgCmdList.append('--disable-shared-js')
+            cfgCmdList.append('--enable-jemalloc')
             if options.enableGcGenerational:
                 cfgCmdList.append('--enable-gcgenerational')
         if options.buildWithVg:
