@@ -25,13 +25,20 @@ def lastLine(err):
         return lines[-2]
     return ""
 
-# MallocScribble prints a line that includes the process's pid.  We don't want to include that pid in the comparison!
-def ignoreMallocScribble(e):
-    lines = e.split("\n")
-    if lines[0].endswith("malloc: enabling scribbling to detect mods to free blocks"):
-        return "\n".join(lines[1:])
-    else:
-        return e
+
+def ignoreSomeOfStderr(e):
+    rawlines = e.split("\n")
+    lines = []
+    for line in rawlines:
+        if line.endswith("malloc: enabling scribbling to detect mods to free blocks"):
+            # MallocScribble prints a line that includes the process's pid.  We don't want to include that pid in the comparison!
+            pass
+        elif "Bailed out of parallel operation" in e:
+            # This error message will only appear in --enable-threadsafe builds, and only when JITs are enabled
+            pass
+        else:
+            lines.append(line)
+    return "\n".join(lines)
 
 # For use by loopjsfunfuzz.py
 def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOptionsStr, timeout, targetTime):
@@ -100,7 +107,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         with open(prefix + "-err.txt") as f:
             r.err = f.read(lengthLimit)
 
-        r.err = ignoreMallocScribble(r.err)
+        r.err = ignoreSomeOfStderr(r.err)
 
         if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
             print "Got usage error from:"
