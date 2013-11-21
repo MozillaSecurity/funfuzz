@@ -8,6 +8,7 @@ from inspectShell import shellSupports
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
+from subprocesses import isARMv7l
 
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
@@ -54,7 +55,8 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
         args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
-    if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
+    # Remove the following isARMv7l block when bug 941905 is fixed.
+    if isARMv7l or (shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5)):
         args.append("--no-asmjs")
 
     # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
@@ -157,6 +159,9 @@ def basicFlagSets(shellPath):
         #if shellSupportsFlag(shellPath, '--no-sse3'):
         #    basicFlagList.append(['--fuzzing-safe',
         #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        # Remove the following --no-asmjs line when bug 941905 is fixed.
+        if isARMv7l:
+            basicFlagList.append("--no-asmjs")
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
