@@ -59,6 +59,7 @@ def knownBrokenRanges(options):
         hgrange('d2cce982a7c8', '4a6b8dd4dfe3'), # broken virtualenv
         hgrange('e213c2a01ec2', 'cd67ffb5ca47'), # broken spidermonkey
         hgrange('4ceb3e9961e4', '73e8ca73e5bd'), # broken spidermonkey
+        hgrange('79a1f60d83df', 'a88f40be25e7'), # broken spidermonkey
     ]
 
     if isMac and macVer() >= [10, 7]:
