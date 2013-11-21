@@ -60,6 +60,7 @@ def knownBrokenRanges(options):
         hgrange('e213c2a01ec2', 'cd67ffb5ca47'), # broken spidermonkey
         hgrange('4ceb3e9961e4', '73e8ca73e5bd'), # broken spidermonkey
         hgrange('79a1f60d83df', 'a88f40be25e7'), # broken spidermonkey
+        hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
     ]
 
     if isMac and macVer() >= [10, 7]:
