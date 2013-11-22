@@ -78,7 +78,7 @@ def runBrowser():
   gatherAssertionStacks = not automation.IS_WIN32 # bug 573306
   browserEnv["XPCOM_DEBUG_BREAK"] = "stack" if gatherAssertionStacks else "warn"
   browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
-  if not options.valgrind:
+  if not options.valgrind and not "-asan" in theapp:
     browserEnv["MallocScribble"] = "1"
     browserEnv["MallocPreScribble"] = "1"
   if options.valgrind and automation.IS_LINUX:
