@@ -464,7 +464,9 @@ def copyJsSrcDirs(shell):
 def compileJsCopy(shell, options):
     '''This function compiles and copies a binary.'''
     try:
-        cmdList = ['make', '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
+        # Bug 925605 adds a requirement for a specially-compiled make, so using pymake again instead
+        cmdList = ['python', '-OO', normExpUserPath(os.path.join(shell.getRepoDir(),
+                      'build', 'pymake', 'make.py')), '-j' + str(COMPILATION_JOBS), '-s']
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                             currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         if 'no such option: -s' in out:  # Retry only for this situation.
