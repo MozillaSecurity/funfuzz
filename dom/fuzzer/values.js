@@ -796,6 +796,11 @@ var fuzzValues = {
     "::-moz-range-thumb",
     "::-moz-range-progress",
     "::-moz-meter-bar",
+    "::-moz-number-wrapper",
+    "::-moz-number-text",
+    "::-moz-number-spin-box",
+    "::-moz-number-spin-up",
+    "::-moz-number-spin-down",
   ],
 
   // Anonymous boxes, in contrast, are only available to privileged stylesheets.
