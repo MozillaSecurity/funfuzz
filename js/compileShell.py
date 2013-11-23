@@ -197,11 +197,11 @@ def cfgBin(shell, options, binToBeCompiled):
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
     cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
+    cfgEnvDt['AR'] = 'ar'
     if isARMv7l:
         # 32-bit shell on ARM boards, e.g. Pandaboards.
         assert options.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not options.enableHardFp:
-            cfgEnvDt['AR'] = 'ar'
             cfgEnvDt['CC'] = 'gcc -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
             cfgEnvDt['CXX'] = 'g++ -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
         cfgCmdList.append('sh')
@@ -229,7 +229,6 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgEnvDt['HOST_CC'] = cfgEnvDt['HOST_CC'] + CLANG_PARAMS
             cfgEnvDt['HOST_CXX'] = cfgEnvDt['HOST_CXX'] + CLANG_PARAMS
             cfgEnvDt['RANLIB'] = 'ranlib'
-            cfgEnvDt['AR'] = 'ar'
             cfgEnvDt['AS'] = '$CC'
             cfgEnvDt['LD'] = 'ld'
             cfgEnvDt['STRIP'] = 'strip -x -S'
@@ -254,7 +253,6 @@ def cfgBin(shell, options, binToBeCompiled):
                 cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
                 cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
                 cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
-            cfgEnvDt['AR'] = 'ar'
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
                 cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
@@ -277,7 +275,6 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
         cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
         cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
-        cfgEnvDt['AR'] = 'ar'
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
