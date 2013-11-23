@@ -66,11 +66,11 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
 
     with open(logPrefix + "-err.txt", "rb") as err:
         for line in err:
-            if detect_assertions.scanLine(knownPath, line):
+            assertionSeverity, assertionIsNew = detect_assertions.scanLine(knownPath, line)
+            if assertionIsNew:
                 issues.append(line.rstrip())
                 lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-            if line.startswith("Assertion failure:"):
-                # FIXME: detect_assertions.scanLine should return more info: assert(fatal: bool, known: bool) | none
+            if assertionSeverity == detect_assertions.FATAL_ASSERT:
                 sawAssertion = True
                 lev = max(lev, JS_KNOWN_CRASH)
             if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):

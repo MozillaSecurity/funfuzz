@@ -180,6 +180,8 @@ class AmissLogHandler:
                 print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
 
+        assertionSeverity, newAssertion = detect_assertions.scanLine(self.knownPath, msgLF)
+
         # Treat these fatal assertions as crashes. This lets us distinguish call sites and makes ASan signatures match.
         overlyGenericAssertion = (
           "You can't dereference a NULL" in msg or
@@ -188,22 +190,18 @@ class AmissLogHandler:
           ("Assertion failure: i < Length() (invalid array index)" in msg)
         )
 
-        # It might be sensible to push more of this logic into detect_assertions...
-        newAssertion = (
+        newAssertion = newAssertion and (
             not overlyGenericAssertion and
-            detect_assertions.scanLine(self.knownPath, msgLF) and
             not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and
             not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
             not ("JS_IsExceptionPending" in msg) and # Bug 813646, bug 735082, bug 735081
             not (self.goingDownHard and isWin) and # Bug 763182
             True)
 
-        fatalAssertion = msg.startswith("###!!! ABORT") or msg.startswith("Assertion fail")
-
         if newAssertion:
             self.newAssertionFailure = True
             self.printAndLog("@@@ " + msg)
-        if fatalAssertion:
+        if assertionSeverity == detect_assertions.FATAL_ASSERT:
             self.sawFatalAssertion = True
             self.goingDownHard = True
             if not overlyGenericAssertion:

@@ -10,7 +10,10 @@ simpleIgnoreList = []
 twoPartIgnoreList = []
 ready = False
 
-# Called directly by domInteresting.py
+(NO_ASSERT, NON_FATAL_ASSERT, FATAL_ASSERT) = range(3)
+
+# Called directly by domInteresting.py and jsInteresting.py
+# Returns (severity, new) where |severity| is the enum above and |new| is a bool
 def scanLine(knownPath, line):
     global ignoreList
     if not ready:
@@ -18,46 +21,25 @@ def scanLine(knownPath, line):
 
     line = line.strip("\x07").rstrip("\n")
 
-    if assertiony(line) and not ignore(line):
-        return True
+    severity = assertionSeverity(line)
+    if severity == NO_ASSERT:
+        return (NO_ASSERT, False)
+    return (severity, assertionIsNew(line))
 
-    return False
-
-# FIXME: scanFile is now dead code
-def scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions):
-    global ignoreList
-    if not ready:
-        readIgnoreLists(knownPath)
-
-    foundSomething = False
-
-    # map from (assertion message) to (true, if seen in the current file)
-    seenInCurrentFile = {}
-
-    for line in currentFile:
-        line = line.strip("\x07").rstrip("\n")
-        if (assertiony(line) and not (line in seenInCurrentFile)):
-            seenInCurrentFile[line] = True
-            if not (ignore(line)):
-                print "! New assertion: "
-                print line
-                foundSomething = True
-            elif not ignoreKnownAssertions:
-                foundSomething = True
-            elif verbose:
-                print "@ Known assertion: "
-                print line
-
-    currentFile.close()
-
-    return foundSomething
-
-def assertiony(line):
-    return (line.startswith("###!!!") or # NS_ASSERTION and also aborts
-            line.startswith("Assertion failure:") or # spidermonkey; nss
-            line.find("Assertion failed:") != -1 or # assert.h e.g. as used by harfbuzz
-            line.find("Mozilla has caught an Obj-C exception") != -1
-           )
+def assertionSeverity(line):
+    if "###!!! ASSERT" in line:
+        return NON_FATAL_ASSERT
+    if "###!!! ABORT" in line:
+        return FATAL_ASSERT
+    if "Assertion failure:" in line:
+         # MOZ_ASSERT; spidermonkey; nss
+         return FATAL_ASSERT
+    if "Assertion failed:" in line:
+        # assert.h e.g. as used by harfbuzz
+        return FATAL_ASSERT
+    if "Mozilla has caught an Obj-C exception" in line:
+        return NON_FATAL_ASSERT
+    return NO_ASSERT
 
 def readIgnoreLists(knownPath):
     global ready
@@ -85,24 +67,12 @@ def readIgnoreList(filename):
     ready = True
 
 
-def ignore(assertion):
+def assertionIsNew(assertion):
     global simpleIgnoreList
     for ig in simpleIgnoreList:
         if assertion.find(ig) != -1:
-            return True
+            return False
     for (part1, part2) in twoPartIgnoreList:
         if assertion.find(part1) != -1 and assertion.replace('\\', '/').find(part2) != -1:
-            return True
-    return False
-
-
-# For use by af_timed_run and jsunhappy.py
-def amiss(knownPath, logPrefix, verbose, ignoreKnownAssertions=True):
-    with open(logPrefix + "-err.txt") as currentFile:
-        return scanFile(knownPath, currentFile, verbose, ignoreKnownAssertions)
-
-# For standalone use
-if __name__ == "__main__":
-    knownPath = sys.argv[1]
-    with open(sys.argv[2]) as currentFile:
-        print scanFile(knownPath, currentFile, False, True)
+            return False
+    return True
