@@ -101,6 +101,11 @@ def knownBrokenRanges(options):
             hgrange('07606a1ebf5d', '43f17af3f704'), # --enable-threadsafe was removed
         ])
 
+    #if not options.isThreadsafe:
+    #    skips.extend([
+    #        hgrange('3b9e118ded0f', ''), # --disable-threadsafe was broken
+    #    ])
+
     if options.enableRootAnalysis and options.isThreadsafe and options.enableMoreDeterministic:
         skips.extend([
             hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
