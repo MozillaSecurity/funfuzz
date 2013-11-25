@@ -179,10 +179,10 @@ function fuzzTryMakeCommand()
     var MTA_str = uneval(MTA);
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
     if (MTA_str != rnd.lastDumpedMTA) {
-      dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { Random.twister.import_mta(" + MTA_str + "); }"));
+      dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { if (Random.twister) { Random.twister.import_mta(" + MTA_str + "); } "));
       rnd.lastDumpedMTA = MTA_str;
     }
-    dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); }"));
+    dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { if (Random.twister) { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); } "));
   }
 
   if (dumpEachSeed) {
