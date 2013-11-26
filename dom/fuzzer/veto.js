@@ -67,6 +67,8 @@ function fuzzInitBlacklists()
                 "squarefree.com/stats", // http auth dialog
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
                 "generateCRMFRequest", // bug 922034 (master password dialog, especially when it interferes with quitting)
+                "strokeText",        // bug 943622
+                ".arc",              // bug 943587
             ]
         },
         {
