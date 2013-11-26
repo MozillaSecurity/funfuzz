@@ -29,6 +29,7 @@ from subprocesses import captureStdout, handleRemoveReadOnly, isARMv7l, isLinux,
     isWin, macVer, normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
+MAKE_BINARY = 'mozmake' if isWin else 'make'
 if cpu_count() > 2:
     COMPILATION_JOBS = ((cpu_count() * 5) // 4)
 elif isARMv7l:
@@ -461,29 +462,21 @@ def copyJsSrcDirs(shell):
 def compileJsCopy(shell, options):
     '''This function compiles and copies a binary.'''
     try:
-        cmdList = ['make', '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
+        cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                             currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
-        if 'no such option: -s' in out:  # Retry only for this situation.
-            cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
-            print 'Trying once more without -s...'
-            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                                currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception, e:
         # This exception message is returned from captureStdout via cmdList.
         if (isLinux or isMac) and 'GCC running out of memory' in repr(e):
-            # FIXME: Absolute hack to retry after hitting OOM. -s removal lines can be removed after
-            # 232553f741a0 is (prior to) the earliest known compilable changeset.
-            if '-s' in cmdList:
-                cmdList.remove('-s')  # Pymake older than m-c rev 232553f741a0 did not support '-s'.
-            print 'Trying once more without -s...'
+            # FIXME: Absolute hack to retry after hitting OOM.
+            print 'Trying once more due to GCC running out of memory...'
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
             print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
         else:
-            print "`make` did not result in a js shell:"
+            print MAKE_BINARY + " did not result in a js shell:"
             raise
 
     if os.path.exists(shell.getShellCompiledPath()):
@@ -497,7 +490,7 @@ def compileJsCopy(shell, options):
             assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLC_LIB)))
     else:
         print out
-        raise Exception("`make` did not result in a js shell, no exception thrown.")
+        raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
 
 def compileNspr(shell, options):
     '''Compile a NSPR binary.'''
@@ -513,14 +506,13 @@ def compileNspr(shell, options):
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
     # build during bisection. Maybe find the changeset that fixes this, and if before that, use -j1,
     # and after that, use -jX ?
-    nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j1', '-s']
-    #nsprCmdList = ['make', '-C', shell.getNsprObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
+    nsprCmdList = [MAKE_BINARY, '-C', shell.getNsprObjdir(), '-j1', '-s']
     out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
                         currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
     for compileLib in ALL_COMPILE_LIBS:
         if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
             print out
-            raise Exception("`make` did not result in a NSPR binary.")
+            raise Exception(MAKE_BINARY + " did not result in a NSPR binary.")
 
     assert os.path.isdir(normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
