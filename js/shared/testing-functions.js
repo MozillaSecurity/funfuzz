@@ -75,9 +75,10 @@ var fuzzTestingFunctions = (function(glob){
     { w: 1,  v: function(d, b) { return tf("enableOsiPointRegisterChecks") + "()"; } },
 
     // Run-time equivalents to --baseline-eager or --baseline-uses-before-compile, --no-baseline, etc
-    { w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('baseline.usecount.trigger', " + rnd(20) + ")"; } },
-    { w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('ion.usecount.trigger', " + rnd(40) + ")"; } },
-    { w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")"; } },
+    // (void is for bug 944153)
+    { w: 1,  v: function(d, b) { return "(void " + tf("setJitCompilerOption") + "('baseline.usecount.trigger', " + rnd(20) + ")" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(void " + tf("setJitCompilerOption") + "('ion.usecount.trigger', " + rnd(40) + ")" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(void " + tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")" + ")"; } },
     //{ w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('baseline.enable', " + rnd(2) + ")"; } }, // bug 932284
 
     // I'm not sure what this does in the shell.
