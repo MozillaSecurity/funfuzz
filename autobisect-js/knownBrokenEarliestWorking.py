@@ -206,6 +206,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('43b55878da46') # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
     if '--ion-eager' in flags:
         required.append('4ceb3e9961e4') # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
+    # if m-c 153666:81175b9cddcf is ever older than the base rev here, compile POSIX threadsafe shells using --enable-posix-nspr-emulation
     required.append('e077c138cd5d') # 97464 on m-c, first rev that has the --disable-threadsafe option
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
