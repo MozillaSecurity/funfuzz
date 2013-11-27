@@ -29,6 +29,8 @@ from subprocesses import captureStdout, handleRemoveReadOnly, isARMv7l, isLinux,
     isWin, macVer, normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
+# If one wants to bisect between 97464:e077c138cd5d to 150878:afae5911a1e0 on Windows with
+# MSVC 2010, change "mozmake" in the line below back to "make".
 MAKE_BINARY = 'mozmake' if isWin else 'make'
 if cpu_count() > 2:
     COMPILATION_JOBS = ((cpu_count() * 5) // 4)
