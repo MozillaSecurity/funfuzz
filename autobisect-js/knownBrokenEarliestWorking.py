@@ -10,7 +10,7 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import isARMv7l, isLinux, isMac, isMozBuild64, macVer
+from subprocesses import isARMv7l, isLinux, isMac, isMozBuild64, isWin, macVer
 
 def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
@@ -167,6 +167,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if isWin:
+        required.append('afae5911a1e0') # 150878 on m-c, first rev that builds with mozmake.exe on Windows successfully
     if isMac and macVer() >= [10, 9]:
         required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
