@@ -350,6 +350,7 @@ def knownChromeFailure(msg):
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
+        "pbu_privacyContextFromWindow" in msg or # bug 931304 whenfixed 'pb'
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
