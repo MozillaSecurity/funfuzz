@@ -161,7 +161,8 @@ def basicFlagSets(shellPath):
         #    basicFlagList.append(['--fuzzing-safe',
         #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         # Remove the following --no-asmjs line when bug 941905 is fixed.
-        if isARMv7l:
+        # Remove the following isWin64 block when bug 944278 is fixed.
+        if isARMv7l or isWin64:
             basicFlagList.append("--no-asmjs")
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
