@@ -8,7 +8,7 @@ from inspectShell import shellSupports
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import isARMv7l
+from subprocesses import isARMv7l, isWin64
 
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
@@ -56,7 +56,8 @@ def randomFlagSet(shellPath):
         args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
     # Remove the following isARMv7l block when bug 941905 is fixed.
-    if isARMv7l or (shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5)):
+    # Remove the following isWin64 block when bug 944278 is fixed.
+    if isARMv7l or isWin64 or (shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5)):
         args.append("--no-asmjs")
 
     # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
