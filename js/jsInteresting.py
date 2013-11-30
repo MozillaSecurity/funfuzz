@@ -105,7 +105,10 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         # makes line endings platform-specific.
         with open(logPrefix + "-out.txt", "rb") as f:
             for line in f:
-                if line.rstrip() == "It's looking good!" or line.startswith("jsfunfuzz broke its own scripting environment: "):
+                sline = line.rstrip()
+                if sline == "It's looking good!" or line.startswith("jsfunfuzz broke its own scripting environment: "):
+                    break
+                if sline == "terminate called" or sline == "quit called":
                     break
                 elif line.startswith("Found a bug: "):
                     if "NestTest" in line and reportedOverRecursion(logPrefix):
