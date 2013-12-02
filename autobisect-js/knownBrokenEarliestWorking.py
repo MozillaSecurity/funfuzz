@@ -116,6 +116,7 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('f8f0facf81ec', '492e87516012'), # broken exact rooting or GGC
             hgrange('541248fb29e4', 'b3f8eee3c389'), # broken exact rooting or GGC
+            hgrange('eb89f19070ae', '6b466b03f5c0'), # broken GGC, 32-bit, assuming 64-bit as well
         ])
 
     return skips
