@@ -469,9 +469,10 @@ def compileJsCopy(shell, options):
                             currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception, e:
         # This exception message is returned from captureStdout via cmdList.
-        if (isLinux or isMac) and 'GCC running out of memory' in repr(e):
+        if (isLinux or isMac) and \
+            ('GCC running out of memory' in repr(e) or 'Clang running out of memory' in repr(e)):
             # FIXME: Absolute hack to retry after hitting OOM.
-            print 'Trying once more due to GCC running out of memory...'
+            print 'Trying once more due to the compiler running out of memory...'
             out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.

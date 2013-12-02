@@ -134,9 +134,11 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
     if p.returncode != 0:
         oomErrorOutput = stdout if combineStderr else stderr
-        if (isLinux or isMac) and oomErrorOutput and \
-                'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
-            raise Exception('GCC running out of memory')
+        if (isLinux or isMac) and oomErrorOutput:
+                if 'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
+                    raise Exception('GCC running out of memory')
+                elif 'error: unable to execute command: Killed' in oomErrorOutput:
+                    raise Exception('Clang running out of memory')
         if not ignoreExitCode:
             # Potential problem area: Note that having a non-zero exit code does not mean that the
             # operation did not succeed, for example when compiling a shell. A non-zero exit code
