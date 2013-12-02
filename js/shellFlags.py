@@ -163,7 +163,7 @@ def basicFlagSets(shellPath):
         # Remove the following --no-asmjs line when bug 941905 is fixed.
         # Remove the following isWin64 block when bug 944278 is fixed.
         if isARMv7l or isWin64:
-            basicFlagList.append("--no-asmjs")
+            basicFlagList.append(["--no-asmjs"])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
