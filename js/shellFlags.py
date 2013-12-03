@@ -156,7 +156,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--baseline-eager', '--no-ti', '--no-fpu'],
         ]
         # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-        # Disabled --ion-check-range-analysis for bug 940638
+        # Disabled --ion-check-range-analysis for bug 944321
         #if shellSupportsFlag(shellPath, '--no-sse3'):
         #    basicFlagList.append(['--fuzzing-safe',
         #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
