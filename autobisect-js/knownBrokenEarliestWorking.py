@@ -61,6 +61,7 @@ def knownBrokenRanges(options):
         hgrange('4ceb3e9961e4', '73e8ca73e5bd'), # broken spidermonkey
         hgrange('79a1f60d83df', 'a88f40be25e7'), # broken spidermonkey
         hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
+        hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
     ]
 
     if isMac and macVer() >= [10, 7]:
@@ -101,10 +102,13 @@ def knownBrokenRanges(options):
             hgrange('07606a1ebf5d', '43f17af3f704'), # --enable-threadsafe was removed
         ])
 
-    if not options.isThreadsafe:
-        skips.extend([
-            hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
-        ])
+    # This has been moved to a global ignore range. JSBugMon passes in --disable-threadsafe directly
+    # so the way to solve this is if knownBrokenEarliestWorking.py knows what configure parameters
+    # have been passed.
+    #if not options.isThreadsafe:
+    #    skips.extend([
+    #        hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
+    #    ])
 
     if options.enableRootAnalysis and options.isThreadsafe and options.enableMoreDeterministic:
         skips.extend([
