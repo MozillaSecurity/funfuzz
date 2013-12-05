@@ -139,7 +139,6 @@ gfx.font_rendering.fallback.always_use_cmaps
 gfx.font_rendering.opentype_svg.enabled
 gfx.use_text_smoothing_setting
 #gfx.prefer-mesa-llvmpipe # Bug 868787
-#gfx.textures.poweroftwo.force-enabled # bug 750590
 gfx.xrender.enabled
 image.high_quality_downscaling.enabled
 image.mem.decodeondraw
