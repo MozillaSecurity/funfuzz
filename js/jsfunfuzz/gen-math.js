@@ -28,7 +28,7 @@ var unaryMathFunctions = [
   "exp",
   "expm1",
   // "floor", // avoid breaking rnd.
-  "/*NODIFF*/fround", // bug 939868
+  "/*NODIFF*/fround", // bug 946679
   "log",
   "log2",
   "log10",
@@ -48,7 +48,7 @@ var unaryMathFunctions = [
 var binaryMathFunctions = [
   "atan2",
   "hypot", // n-ary
-  "/*NODIFF*/imul", // bug 940642
+  "imul",
   "max", // n-ary
   "min", // n-ary
   "pow",
@@ -80,7 +80,7 @@ function generateMathExpr(d, b, i)
   function mc(expr) {
     switch(rnd(3) ? commonCoercion : rnd(10)) {
       case 0: return "(" + " + " + expr + ")";     // f64 (asm.js)
-      case 1: return "/*NODIFF*/Math.fround(" + expr + ")";  // f32 // bug 939868
+      case 1: return "/*NODIFF*/Math.fround(" + expr + ")";  // f32 // bug 946679
       case 2: return "(" + expr + " | 0)";         // i32 (asm.js)
       case 3: return "(" + expr + " >>> 0)";       // u32
       default: return expr;
