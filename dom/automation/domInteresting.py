@@ -346,7 +346,6 @@ def knownChromeFailure(msg):
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
         ("search.xml" in msg and "this.updateDisplay is not a function" in msg) or # Bug 903274
         "abouthealth.js" in msg or # Bug 895113
-        "Webapps.js" in msg or # Bug 927699
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
