@@ -67,13 +67,12 @@ def randomFlagSet(shellPath):
         elif chance(.6):
             args.append("--baseline-eager")
 
-    if shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
-        # Adjusts the default number of threads for parallel compilation (turned on by default).
-        if cpu_count() > 1 and chance(.7):
+    if cpu_count() > 1 and shellSupportsFlag(shellPath, '--ion-parallel-compile=on'):
+        # Turns on parallel compilation for threadsafe builds.
+        if chance(.7):
+            args.append("--ion-parallel-compile=on")
             totalThreads = random.randint(2, (cpu_count() * 2))
             args.append('--thread-count=' + str(totalThreads))
-        else:
-            args.append("--ion-parallel-compile=off")
 
     if not infer:
         args.append("--no-ti")
