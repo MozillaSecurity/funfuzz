@@ -47,7 +47,7 @@ var fuzzerMathMLAttributes = (function() {
     "mathbackground": fuzzValues.colors,
     "mathcolor": fuzzValues.colors,
     "mathsize": ["small", "normal", "big", fuzzValues.numbersWithUnits],
-    "mathvariant": ["normal", "bold", "italic", "bold-italic", "double-struck", "bold-fraktur", "script", "bold-script", "fraktur", "sans-serif", "bold-sans-serif", "sans-serif-italic", "sans-serif-bold-italic", "monospace"],
+    "mathvariant": ["normal", "bold", "italic", "bold-italic", "double-struck", "bold-fraktur", "script", "bold-script", "fraktur", "sans-serif", "bold-sans-serif", "sans-serif-italic", "sans-serif-bold-italic", "monospace", "initial", "tailed", "looped", "stretched"],
 
 
     // all tokens
