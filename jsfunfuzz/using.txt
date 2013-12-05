@@ -3,7 +3,7 @@ TESTING SPIDERMONKEY
 Bugs in SpiderMonkey found with this fuzzer are tracked by https://bugzilla.mozilla.org/show_bug.cgi?id=349611.
 
 Fuzz and compare optimization modes:
-  ~/fuzzing/js/loopjsfunfuzz.py --random-flags --comparejit 20 ~/fuzzing/known/mozilla-central/ $tmd
+  ~/fuzzing/js/loopjsfunfuzz.py --random-flags --comparejit 12 ~/fuzzing/known/mozilla-central/ $tmd
 Fuzz with Valgrind: (must build with --enable-valgrind. opt build recommended.)
   ~/fuzzing/js/loopjsfunfuzz.py --valgrind 60 ~/fuzzing/known/mozilla-central/ $tmd -m -n
 Fuzz xpcshell:
