@@ -141,25 +141,24 @@ def basicFlagSets(shellPath):
     if shellSupportsFlag(shellPath, "--fuzzing-safe"):
         basicFlagList = [
             # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/integration/mozilla-inbound/annotate/10932f3a0ba0/js/src/tests/lib/tests.py#l12
+            # http://hg.mozilla.org/mozilla-central/annotate/c6bca8768874/js/src/jit-test/jit_test.py#l140
             # as well as other interesting flag combinations that have found / may find new bugs.
             ['--fuzzing-safe'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--no-baseline'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--no-baseline', '--no-ion', '--no-ti'],
             ['--fuzzing-safe', '--no-baseline', '--no-ion'],
             ['--fuzzing-safe', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
-            ['--fuzzing-safe', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-eager'],
             ['--fuzzing-safe', '--baseline-eager'],
             ['--fuzzing-safe', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
+            ['--fuzzing-safe', '--baseline-eager', '--no-ti'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--baseline-eager', '--no-ti', '--no-fpu'],
         ]
-        if shellSupportsFlag(shellPath, "--ion-parallel-compile=off"):
-            basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
-            # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-            # Disabled --ion-check-range-analysis for bug 944321
-            #if shellSupportsFlag(shellPath, '--no-sse3'):
-            #    basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
-            #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        # Range analysis had only started to stabilize around the time when --no-sse3 landed.
+        # Disabled --ion-check-range-analysis for bug 944321
+        #if shellSupportsFlag(shellPath, '--no-sse3'):
+        #    basicFlagList.append(['--fuzzing-safe',
+        #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         # Remove the following isWin64 block when bug 944278 is fixed.
         if isWin64:
             basicFlagList.append(['--fuzzing-safe', '--no-asmjs'])
