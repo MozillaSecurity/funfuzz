@@ -67,7 +67,7 @@ def randomFlagSet(shellPath):
         elif chance(.6):
             args.append("--baseline-eager")
 
-    if shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
+    if shellSupportsFlag(shellPath, '--thread-count=1'):
         # Adjusts the default number of threads for parallel compilation (turned on by default).
         if cpu_count() > 1 and chance(.7):
             totalThreads = random.randint(2, (cpu_count() * 2))
@@ -154,7 +154,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
             ['--fuzzing-safe', '--baseline-eager', '--no-ti', '--no-fpu'],
         ]
-        if shellSupportsFlag(shellPath, "--ion-parallel-compile=off"):
+        if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
             # Disabled --ion-check-range-analysis for bug 944321
