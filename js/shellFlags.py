@@ -101,7 +101,7 @@ def randomFlagSet(shellPath):
             # Backtracking and stupid landed in m-c changeset dc4887f61d2e
             elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.4):
                 args.append('--ion-regalloc=backtracking')
-            # Disabled until bug 871848 and bug 909586 are fixed.
+            # Disabled until bug 871848 is fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-compile-try-catch'):
@@ -115,7 +115,7 @@ def randomFlagSet(shellPath):
         args.append("--no-ion")
 
     # This is here because of bug 830508
-    # This will all be Falsed due to bug 909586, which breaks jsfunfuzz
+    # This will all be Falsed due to bug 947070, which breaks jsfunfuzz
     if False and shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
         if chance(.5):
             args.append("--execute=enableSPSProfilingAssertions(true)")
