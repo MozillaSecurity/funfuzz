@@ -1125,6 +1125,7 @@ var functionMakers = [
   function(d, b) { return "decodeURIComponent"; },
   function(d, b) { return "encodeURI"; },
   function(d, b) { return "encodeURIComponent"; },
+  function(d, b) { return "neuter"; },
   function(d, b) { return "wrap"; }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return "wrapWithProto"; }, // spidermonkey shell shortcut for a native forwarding proxy
   function(d, b) { return "objectEmulatingUndefined"; }, // spidermonkey shell object like the browser's document.all

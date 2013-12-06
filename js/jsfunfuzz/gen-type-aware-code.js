@@ -255,6 +255,7 @@ var makeEvilCallback;
     // b: Buffer
     { w: 1,  v: function(d, b) { return assign(d, b, "b", "new ArrayBuffer(" + bufsize() + ")"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "b", m("t") + ".buffer"); } },
+    { w: 1,  v: function(d, b) { return "neuter(" + m("b") + ");"; } },
 
     // t: Typed arrays, aka ArrayBufferViews
     // Can be constructed using a length, typed array, sequence (e.g. array), or buffer with optional offsets!
