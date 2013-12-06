@@ -305,9 +305,9 @@ def jsInChrome(msg):
             "resource:///app/" in msg or
             "resource:///components" in msg or
             "resource:///modules/" in msg or
-#            "resource://app/" in msg or
-#            "resource://components" in msg or
-#            "resource://modules/" in msg or
+            "resource://app/" in msg or
+            "resource://components" in msg or
+            "resource://modules/" in msg or
             "resource://gre/modules/" in msg or
             "resource://gre/components/" in msg or
             False)
