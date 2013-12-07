@@ -481,7 +481,7 @@ var fuzzValues = {
   xmlMarkup: function() {
     var x;
     if (rnd(10) === 0) {
-      return "<script xmlns='http://www.w3.org/1999/xhtml'><![CDATA[" + fuzzSubCommand("xmlscript") + "]]><\/script>";
+      return "<script xmlns='http://www.w3.org/1999/xhtml'><![CDATA[" + fuzzSubCommand("xmlscript") + "]]" + "><\/script>";
     }
     try {
       x = (new XMLSerializer).serializeToString(o[Things.instanceIndex("Element")]);
