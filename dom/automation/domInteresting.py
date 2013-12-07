@@ -347,6 +347,7 @@ def knownChromeFailure(msg):
         ("search.xml" in msg and "this.updateDisplay is not a function" in msg) or # Bug 903274
         ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or # Bug 947404
         "abouthealth.js" in msg or # Bug 895113
+        "WindowsPrefSync.jsm" in msg or # Bug 947581
         "nsIFeedWriter::close" in msg or # Bug 813408
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
