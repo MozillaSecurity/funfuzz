@@ -214,7 +214,9 @@ media.webspeech.recognition.enable
 media.navigator.enabled
 media.navigator.permission.disabled
 media.navigator.load_adapt
+media.navigator.video.enabled
 media.peerconnection.enabled
+media.peerconnection.video.enabled
 media.webvtt.enabled
 media.windows-media-foundation.enabled
 media.windows-media-foundation.play-stand-alone
