@@ -62,6 +62,7 @@ def knownBrokenRanges(options):
         hgrange('79a1f60d83df', 'a88f40be25e7'), # broken spidermonkey
         hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
         hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
+        hgrange('b0678affef03', '77d06ee9ac48'), # broken standalone js shells with ICU
     ]
 
     if isMac and macVer() >= [10, 7]:
