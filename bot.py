@@ -443,7 +443,9 @@ def retestAll(options, buildDir):
         for j in os.listdir(jobTypeDir):
             if j.split("_")[0] in retestSkips:
                 print "Skipping " + j + " for " + j.split("_")[0]
-            if "_reduced" in j and not j.split("_")[0] in retestSkips:
+            elif "_0_lines" in j:
+                print "Skipping a 0-line testcase"
+            elif "_reduced" in j:
                 job = os.path.join(jobTypeDir, j)
                 testcase_leafs = filter(lambda s: s.find("reduced") != -1, os.listdir(job))
                 if len(testcase_leafs) == 1:
