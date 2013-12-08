@@ -70,8 +70,8 @@ var fuzzTestingFunctions = (function(glob){
     { w: 1,  v: function(d, b) { return tf("validategc") + "(true)"; } },
     { w: 5,  v: function(d, b) { return tf("fullcompartmentchecks") + "(false)"; } },
     { w: 1,  v: function(d, b) { return tf("fullcompartmentchecks") + "(true)"; } },
-    { w: 5,  v: function(d, b) { return tf("setIonAssertGraphCoherency") + "(false)"; } },
-    { w: 1,  v: function(d, b) { return tf("setIonAssertGraphCoherency") + "(true)"; } },
+    { w: 5,  v: function(d, b) { return tf("setIonCheckGraphCoherency") + "(false)"; } },
+    { w: 1,  v: function(d, b) { return tf("setIonCheckGraphCoherency") + "(true)"; } },
     { w: 1,  v: function(d, b) { return tf("enableOsiPointRegisterChecks") + "()"; } },
 
     // Run-time equivalents to --baseline-eager or --baseline-uses-before-compile, --no-baseline, etc
