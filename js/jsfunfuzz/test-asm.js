@@ -151,9 +151,9 @@ function startAsmDifferential()
 {
   getListOfMakers(this);
 
-  var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
-  dumpln("fuzzSeed: " + fuzzSeed);
-  Random.init(fuzzSeed);
+  var asmFuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
+  dumpln("asmFuzzSeed: " + asmFuzzSeed);
+  Random.init(asmFuzzSeed);
 
   while (true) {
 
