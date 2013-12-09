@@ -6,6 +6,19 @@ function start(glob)
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);
 
+  // Split this string across two source strings to ensure that if a
+  // generated function manages to output the entire jsfunfuzz source,
+  // that output won't match the grep command.
+  var cookie = "/*F";
+  cookie += "RC*/";
+
+  // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
+  var dumpEachSeed = false;
+
+  if (dumpEachSeed) {
+    dumpln(cookie + "Random.init(0);");
+  }
+
   mathInitFCM();
 
   count = 0;
@@ -26,59 +39,53 @@ function start(glob)
   } else {
     setTimeout(testStuffForAWhile, 200);
   }
-}
 
-function testStuffForAWhile()
-{
-  for (var j = 0; j < 100; ++j)
-    testOne();
+  function testStuffForAWhile()
+  {
+    for (var j = 0; j < 100; ++j)
+      testOne();
 
-  if (count % 10000 < 100)
-    printImportant("Iterations: " + count);
+    if (count % 10000 < 100)
+      printImportant("Iterations: " + count);
 
-  setTimeout(testStuffForAWhile, 30);
-}
+    setTimeout(testStuffForAWhile, 30);
+  }
 
-function testOne()
-{
-  var dumpEachSeed = false; // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
-  ++count;
-  // Split this string across two source strings to ensure that if a
-  // generated function manages to output the entire jsfunfuzz source,
-  // that output won't match the grep command.
-  var cookie = "/*F";
-  cookie += "RC*/";
+  function testOne()
+  {
+    ++count;
 
-  // Sometimes it makes sense to start with simpler functions:
-  //var depth = ((count / 1000) | 0) & 16;
-  var depth = 14;
+    // Sometimes it makes sense to start with simpler functions:
+    //var depth = ((count / 1000) | 0) & 16;
+    var depth = 14;
 
-  if (dumpEachSeed) {
-    // More complicated, but results in a much shorter script, making SpiderMonkey happier.
-    var MTA = uneval(Random.twister.export_mta());
-    var MTI = Random.twister.export_mti();
-    if (MTA != Random.lastDumpedMTA) {
-      dumpln(cookie + "Random.twister.import_mta(" + MTA + ");");
-      Random.lastDumpedMTA = MTA;
+    if (dumpEachSeed) {
+      // More complicated, but results in a much shorter script, making SpiderMonkey happier.
+      var MTA = uneval(Random.twister.export_mta());
+      var MTI = Random.twister.export_mti();
+      if (MTA != Random.lastDumpedMTA) {
+        dumpln(cookie + "Random.twister.import_mta(" + MTA + ");");
+        Random.lastDumpedMTA = MTA;
+      }
+      dumpln(cookie + "Random.twister.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
     }
-    dumpln(cookie + "Random.twister.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
+
+    var code = makeOv(depth);
+
+    if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
+      code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
+      //print("Sane mode!")
+    }
+
+  //  if (rnd(10) === 1) {
+  //    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));
+  //    if (dp)
+  //      code = dp;
+  //  }
+    dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
+
+    tryItOut(code);
   }
-
-  var code = makeOv(depth);
-
-  if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
-    code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
-    //print("Sane mode!")
-  }
-
-//  if (rnd(10) === 1) {
-//    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));
-//    if (dp)
-//      code = dp;
-//  }
-  dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
-
-  tryItOut(code);
 }
 
 
