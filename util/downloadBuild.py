@@ -260,20 +260,27 @@ def isNumericSubDir(n):
     '''
     return re.match(r'^\d+$', n.split('/')[0])
 
-def downloadLatestBuild(buildType, workingDir, getJsShell=False):
+def getBuildList(buildType):
     '''
-    Downloads the latest build based on machine type, e.g. mozilla-central-macosx-debug.
+    Returns the list of URLs of builds (e.g. 1386614507) that are present in tinderbox-builds/.
     '''
     buildsHttpDir = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/' + \
                     buildType + '/'
-    buildsRawList = httpDirList(buildsHttpDir)
-    buildsSubDirList = [x for x in buildsRawList if isNumericSubDir(x)]
-    builds = [c[:-1] for c in buildsSubDirList]
-    for b in reversed(builds):  # Try downloading the latest build first.
-        fullb = buildsHttpDir + b + '/'
-        if downloadBuild(fullb, workingDir, jsShell=getJsShell):
-            return fullb
-    raise Exception('No builds in ' + buildsHttpDir + '!')
+    dirNames = httpDirList(buildsHttpDir)
+    buildDirs = [(buildsHttpDir + d) for d in dirNames if isNumericSubDir(d)]
+    if len(buildDirs) < 1:
+        print ('Warning: No builds in ' + buildsHttpDir + '!')
+    return buildDirs
+
+def downloadLatestBuild(buildType, workingDir, getJsShell=False):
+    '''
+    Downloads the latest build based on machine type, e.g. mozilla-central-macosx64-debug.
+    '''
+    # Try downloading the latest build first.
+    for buildURL in reversed(getBuildList(buildType)):
+        if downloadBuild(buildURL, workingDir, jsShell=getJsShell):
+            return buildURL
+    raise Exception("No complete builds found.")
 
 def mozPlatformDetails():
     '''
