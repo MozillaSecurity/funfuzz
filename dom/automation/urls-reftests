@@ -1,4 +1,4 @@
-# To generate this list: python list_reftests.py | sort | grep -v "image/test/reftest/" | grep -v 394810-1.html | grep -v 284852.html | pbcopy
+# To generate this list: python list_reftests.py | sort | grep -v "image/test/reftest/" | grep -v 394810-1.html | grep -v 284852.html | grep -v 752340.html | pbcopy
 
 content/base/crashtests/116848-1.html
 content/base/crashtests/149320-1.html
@@ -833,7 +833,6 @@ dom/plugins/test/crashtests/48856-1.html
 dom/plugins/test/crashtests/570884.html
 dom/plugins/test/crashtests/598862.html
 dom/plugins/test/crashtests/626602-1.html
-dom/plugins/test/crashtests/752340.html
 dom/plugins/test/reftest/border-padding-1-ref.html
 dom/plugins/test/reftest/border-padding-1.html
 dom/plugins/test/reftest/border-padding-2-ref.html
@@ -6159,6 +6158,8 @@ layout/reftests/bugs/936670-1-ref.svg
 layout/reftests/bugs/936670-1.svg
 layout/reftests/bugs/941940-1-ref.html
 layout/reftests/bugs/941940-1.html
+layout/reftests/bugs/942017-ref.html
+layout/reftests/bugs/942017.html
 layout/reftests/bugs/942672-1-ref.html
 layout/reftests/bugs/942672-1.html
 layout/reftests/bugs/9458-basic-1-ref.html
@@ -7960,10 +7961,16 @@ layout/reftests/flexbox/pagination/flexbox-empty-2b.html
 layout/reftests/flexbox/pagination/flexbox-empty-2c.html
 layout/reftests/flexbox/pagination/flexbox-empty-2d.html
 layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1-ref.html
+layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1a-wrap.html
 layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1a.html
+layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1b-wrap.html
 layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1b.html
+layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1c-wrap.html
 layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1c.html
+layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1d-wrap.html
 layout/reftests/flexbox/pagination/flexbox-unbreakable-child-1d.html
+layout/reftests/flexbox/pagination/flexbox-unbreakable-child-2-ref.html
+layout/reftests/flexbox/pagination/flexbox-unbreakable-child-2.html
 layout/reftests/floats/345369-1-ref.html
 layout/reftests/floats/345369-1.html
 layout/reftests/floats/345369-2-ref.html
@@ -11465,6 +11472,7 @@ layout/reftests/svg/gradient-live-01a.svg
 layout/reftests/svg/gradient-live-01b.svg
 layout/reftests/svg/gradient-live-01c.svg
 layout/reftests/svg/gradient-live-01d.svg
+layout/reftests/svg/gradient-transform-01.svg
 layout/reftests/svg/href-attr-change-restyles-ref.svg
 layout/reftests/svg/href-attr-change-restyles.svg
 layout/reftests/svg/image/../pass.svg
@@ -14543,6 +14551,7 @@ layout/reftests/w3c-css/submitted/conditional3/css-supports-038.xht
 layout/reftests/w3c-css/submitted/conditional3/css-supports-039.xht
 layout/reftests/w3c-css/submitted/conditional3/css-supports-040.xht
 layout/reftests/w3c-css/submitted/conditional3/css-supports-041.xht
+layout/reftests/w3c-css/submitted/conditional3/css-supports-042.xht
 layout/reftests/w3c-css/submitted/conditional3/support/pass.xht
 layout/reftests/w3c-css/submitted/css21/pagination/moz-css21-block-page-break-inside-avoid-1.html
 layout/reftests/w3c-css/submitted/css21/pagination/moz-css21-block-page-break-inside-avoid-10.html
@@ -14609,6 +14618,12 @@ layout/reftests/w3c-css/submitted/css21/pagination/moz-css21-table-page-break-in
 layout/reftests/w3c-css/submitted/css21/pagination/moz-css21-table-page-break-inside-avoid-7.html
 layout/reftests/w3c-css/submitted/css21/pagination/moz-css21-table-page-break-inside-avoid-8.html
 layout/reftests/w3c-css/submitted/css21/pagination/moz-css21-table-page-break-inside-avoid-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-align-content-horiz-1-ref.xhtml
+layout/reftests/w3c-css/submitted/flexbox/flexbox-align-content-horiz-1a.xhtml
+layout/reftests/w3c-css/submitted/flexbox/flexbox-align-content-horiz-1b.xhtml
+layout/reftests/w3c-css/submitted/flexbox/flexbox-align-content-vert-1-ref.xhtml
+layout/reftests/w3c-css/submitted/flexbox/flexbox-align-content-vert-1a.xhtml
+layout/reftests/w3c-css/submitted/flexbox/flexbox-align-content-vert-1b.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-align-self-baseline-horiz-1-ref.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-align-self-baseline-horiz-1.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-align-self-horiz-1-block.xhtml
@@ -14651,6 +14666,10 @@ layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-item-horiz-1-re
 layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-item-horiz-1.html
 layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-item-vert-1-ref.html
 layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-item-vert-1.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-line-horiz-1-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-line-horiz-1.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-line-horiz-2-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-multi-line-horiz-2.html
 layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-single-item-1-ref.html
 layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-single-item-1a.html
 layout/reftests/w3c-css/submitted/flexbox/flexbox-baseline-single-item-1b.html
@@ -14682,6 +14701,26 @@ layout/reftests/w3c-css/submitted/flexbox/flexbox-basic-video-horiz-1-ref.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-basic-video-horiz-1.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-basic-video-vert-1-ref.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-basic-video-vert-1.xhtml
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-horiz-1-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-horiz-1a.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-horiz-1b.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-horiz-2-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-horiz-2a.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-horiz-2b.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-vert-1-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-vert-1a.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-vert-1b.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-vert-2-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-vert-2a.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-break-request-vert-2b.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-horiz-1-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-horiz-1.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-horiz-2-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-horiz-2.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-vert-1-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-vert-1.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-vert-2-ref.html
+layout/reftests/w3c-css/submitted/flexbox/flexbox-flex-wrap-vert-2.html
 layout/reftests/w3c-css/submitted/flexbox/flexbox-items-as-stacking-contexts-1-ref.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-items-as-stacking-contexts-1.xhtml
 layout/reftests/w3c-css/submitted/flexbox/flexbox-items-as-stacking-contexts-2-ref.html
