@@ -55,8 +55,7 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
         args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
-    # Remove the following isWin64 block when bug 944278 is fixed.
-    if isWin64 or (shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5)):
+    if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
         args.append("--no-asmjs")
 
     # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
@@ -159,9 +158,6 @@ def basicFlagSets(shellPath):
         #if shellSupportsFlag(shellPath, '--no-sse3'):
         #    basicFlagList.append(['--fuzzing-safe',
         #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-        # Remove the following isWin64 block when bug 944278 is fixed.
-        if isWin64:
-            basicFlagList.append(['--fuzzing-safe', '--no-asmjs'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
