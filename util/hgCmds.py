@@ -103,7 +103,8 @@ def patchHgRepoUsingMq(patchLoc, workingDir=os.getcwdu()):
     subprocess.check_call(['hg', '-R', workingDir, 'qimport', p])
     vdump("Patch qimport'ed.")
     try:
-        qpushMsg = captureStdout(['hg', '-R', workingDir, 'qpush', pname])[0]
+        qpushMsg = captureStdout(['hg', '-R', workingDir, 'qpush', pname], combineStderr=True,
+            ignoreStderr=True)[0]
         assert ' is empty' not in qpushMsg
         vdump("Patch qpush'ed.")
     except subprocess.CalledProcessError:
