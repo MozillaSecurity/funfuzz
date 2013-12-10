@@ -291,6 +291,7 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--enable-address-sanitizer')
 
     elif isWin:
+        cfgEnvDt['MAKE'] = 'mozmake'  # Workaround for bug 948534
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
