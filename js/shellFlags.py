@@ -116,7 +116,7 @@ def randomFlagSet(shellPath):
 
     # This is here because of bug 830508
     # This will all be Falsed due to bug 947070, which breaks jsfunfuzz
-    if shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
+    if False and shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
         if chance(.5):
             args.append("--execute=enableSPSProfilingAssertions(true)")
         else:
