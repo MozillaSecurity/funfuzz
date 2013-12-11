@@ -132,11 +132,8 @@ var fuzzerRandomClasses = (function() {
   {
     if (rnd(3) !== 0)
       return "";
-    return ", " + Random.index(listStyleTypes);
+    return ", " + Random.pick(CSSPropHash["list-style-type"]);
   }
-
-  // https://developer.mozilla.org/en/CSS/list-style-type
-  var listStyleTypes = ["none", "disc", "circle", "square", "decimal", "decimal-leading-zero", "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "lower-latin", "upper-alpha", "upper-latin", "armenian", "georgian", "hebrew", "cjk-ideographic", "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "-moz-arabic-indic", "-moz-bengali", "-moz-cjk-earthly-branch", "-moz-cjk-heavenly-stem", "-moz-devanagari", "-moz-ethiopic-halehame", "-moz-ethiopic-halehame-am", "-moz-ethiopic-halehame-ti-er", "-moz-ethiopic-halehame-ti-et", "-moz-ethiopic-numeric", "-moz-gujarati", "-moz-gurmukhi", "-moz-hangul", "-moz-hangul-consonant", "-moz-japanese-formal", "-moz-japanese-informal", "-moz-kannada", "-moz-khmer", "-moz-lao", "-moz-malayalam", "-moz-myanmar", "-moz-oriya", "-moz-persian", "-moz-simp-chinese-formal", "-moz-simp-chinese-informal", "-moz-tamil", "-moz-telugu", "-moz-thai", "-moz-trad-chinese-formal", "-moz-trad-chinese-informal", "-moz-urdu", "japanese-informal", "japanese-formal", "korean-hangul-formal", "korean-hanja-informal", "korean-hanja-formal", "simp-chinese-informal", "simp-chinese-formal", "trad-chinese-informal", "trad-chinese-formal"];
 
   function cssURLs() {
     return "url(" + cssLiteralString(fuzzValues.URIs()) + ")";
@@ -226,7 +223,6 @@ var fuzzerRandomClasses = (function() {
                function(){ return cssQuotedStrings() + " " + cssQuotedStrings(); }],
     "counter-reset": ["chicken", "egg", "chicken -1 egg", function() { return "chicken " + fuzzValues.numbers(); }],
     "counter-increment": ["chicken", "egg", "chicken -1 egg", function() { return "chicken " + fuzzValues.numbers(); }],
-    "list-style-type": listStyleTypes,
     "list-style-image": ["none", backgroundImages],
     "border": ["none", borderShorthands],
     "outline": ["none", borderShorthands],
