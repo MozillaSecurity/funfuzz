@@ -106,10 +106,9 @@ def randomFlagSet(shellPath):
         if shellSupportsFlag(shellPath, '--ion-compile-try-catch'):
             if chance(.5):
                 args.append('--ion-compile-try-catch')
-        # Disabled --ion-check-range-analysis for bug 944321
-        #if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
-        #    if chance(.5):
-        #        args.append('--ion-check-range-analysis')
+        if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
+            if chance(.5):
+                args.append('--ion-check-range-analysis')
     else:
         args.append("--no-ion")
 
@@ -154,10 +153,9 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--baseline-eager', '--no-ti', '--no-fpu'],
         ]
         # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-        # Disabled --ion-check-range-analysis for bug 944321
-        #if shellSupportsFlag(shellPath, '--no-sse3'):
-        #    basicFlagList.append(['--fuzzing-safe',
-        #                          '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        if shellSupportsFlag(shellPath, '--no-sse3'):
+            basicFlagList.append(['--fuzzing-safe',
+                                  '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
