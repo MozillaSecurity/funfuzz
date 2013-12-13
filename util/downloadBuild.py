@@ -26,6 +26,7 @@ def readFromURL(url):
         raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
     elif retVal != 0:
         print 'inpCmdList is: ' + shellify(inpCmdList)
+        print 'stdout and stderr: ' + repr(out)
         raise Exception('The following exit code was returned: ' + str(retVal))
     else:
         return out
