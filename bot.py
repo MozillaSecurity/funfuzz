@@ -291,11 +291,6 @@ def parseOpts():
         if options.buildOptions is not None:
             raise Exception('Do not use tinderbox shells if one needs to specify build parameters')
 
-    if options.runLocalJsfunfuzz:
-        options.testType = 'js'
-        if options.buildOptions is None and not options.useTinderboxShells:
-            options.buildOptions = ''
-
     if options.testType == 'auto':
         if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
@@ -305,6 +300,11 @@ def parseOpts():
         else:
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
+
+    if options.runLocalJsfunfuzz:
+        options.testType = 'js'
+        if options.buildOptions is None and not options.useTinderboxShells:
+            options.buildOptions = ''
 
     if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
