@@ -336,6 +336,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
+        ("pageInfo.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949927
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
@@ -346,6 +347,9 @@ def knownChromeFailure(msg):
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
         ("search.xml" in msg and "this.updateDisplay is not a function" in msg) or # Bug 903274
         ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or # Bug 947404
+        ("webrtcUI.jsm" in msg and "can't access dead object" in msg) or # Bug 949907
+        ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or # Bug 949920
+        ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
         "nsIFeedWriter::close" in msg or # Bug 813408
