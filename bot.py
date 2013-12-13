@@ -215,6 +215,7 @@ def parseOpts():
         timeout = 0,
         buildOptions = None,
         runLocalJsfunfuzz = False,
+        useTinderboxShells = False,
         patchDir = None,
         retestSkips = None
     )
@@ -249,6 +250,8 @@ def parseOpts():
     #####
     parser.add_option('-j', '--local-jsfunfuzz', dest='runLocalJsfunfuzz', action='store_true',
                       help='Run local jsfunfuzz.')
+    parser.add_option('-T', '--use-tinderbox-shells', dest='useTinderboxShells', action='store_true',
+                      help='Fuzz js using tinderbox shells. Requires -j.')
     # From the old localjsfunfuzz file.
     parser.add_option('--disable-comparejit', dest='disableCompareJit', action='store_true',
                       help='Disable comparejit fuzzing.')
@@ -282,9 +285,15 @@ def parseOpts():
     if options.patchDir:
         options.patchDir = normExpUserPath(options.patchDir)
 
+    if options.useTinderboxShells:
+        if not options.runLocalJsfunfuzz:
+            raise Exception('Turn on -j before using fuzzing using tinderbox js shells.')
+        if options.buildOptions is not None:
+            raise Exception('Do not use tinderbox shells if one needs to specify build parameters')
+
     if options.runLocalJsfunfuzz:
         options.testType = 'js'
-        if options.buildOptions is None:
+        if options.buildOptions is None and not options.useTinderboxShells:
             options.buildOptions = ''
 
     if options.testType == 'auto':
@@ -322,7 +331,7 @@ def main():
 def botmain(options):
     #####
     # These only affect fuzzing the js shell on a local machine.
-    if options.runLocalJsfunfuzz:
+    if options.runLocalJsfunfuzz and not options.useTinderboxShells:
         if not options.disableCompareJit:
             options.buildOptions += " --enable-more-deterministic"
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
