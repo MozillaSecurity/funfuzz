@@ -67,7 +67,7 @@ def many_timed_runs(targetTime, tempDir, args):
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
-        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=False)
+        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=True)
 
         if level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
