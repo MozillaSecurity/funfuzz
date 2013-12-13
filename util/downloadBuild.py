@@ -5,6 +5,7 @@ import platform
 import re
 import shutil
 import stat
+import subprocess
 from HTMLParser import HTMLParser
 
 from optparse import OptionParser
@@ -17,18 +18,21 @@ def readFromURL(url):
     '''
     Reads in a URL and returns its contents as a list.
     '''
-    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget', '-q', '-O', '-', url]
-    out, retVal = captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
-    if not useCurl and retVal == 5:
+    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget', '-O', '-', url]
+    p = subprocess.Popen(inpCmdList, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    out, err = p.communicate()
+    if not useCurl and p.returncode == 5:
         print 'Unable to read from URL. If you installed wget using MacPorts, you should put ' + \
               '"CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt" (without the quotes) ' + \
               'in ~/.wgetrc'
         raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
-    elif retVal != 0:
+    elif p.returncode != 0:
         print 'inpCmdList is: ' + shellify(inpCmdList)
-        print 'stdout and stderr: ' + repr(out)
-        raise Exception('The following exit code was returned: ' + str(retVal))
+        print 'stdout: ' + repr(out)
+        print 'stderr: ' + repr(err)
+        raise Exception('The following exit code was returned: ' + str(p.returncode))
     else:
+        # Ignore whatever verbose output wget spewed to stderr.
         return out
 
 def downloadURL(url, dest):
