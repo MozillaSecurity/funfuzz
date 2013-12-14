@@ -349,6 +349,7 @@ def knownChromeFailure(msg):
         ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or # Bug 947404
         ("webrtcUI.jsm" in msg and "can't access dead object" in msg) or # Bug 949907
         ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or # Bug 949920
+        ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or # Bug 950327
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
