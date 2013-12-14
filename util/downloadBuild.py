@@ -18,7 +18,8 @@ def readFromURL(url):
     Reads in a URL and returns its contents as a list.
     '''
     inpCmdList = ['curl', '--silent', url] if useCurl else ['wget', '-q', '-O', '-', url]
-    out, retVal = captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
+    out, retVal = captureStdout(inpCmdList, combineStderr=True, ignoreStderr=True,
+                                ignoreExitCode=True)
     if not useCurl and retVal == 5:
         print 'Unable to read from URL. If you installed wget using MacPorts, you should put ' + \
               '"CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt" (without the quotes) ' + \
