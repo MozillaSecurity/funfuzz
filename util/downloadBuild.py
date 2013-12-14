@@ -20,7 +20,7 @@ def readFromURL(url):
     '''
     # maybeNCC is a hack to work around a configuration problem (bug 803764) (see bug 950256)
     maybeNCC = ['--no-check-certificate'] if (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org") else []
-    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget', '-O'] + maybeNCC + ['-', url]
+    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + maybeNCC + ['-O', '-', url]
     p = subprocess.Popen(inpCmdList, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     out, err = p.communicate()
     if not useCurl and p.returncode == 5:
