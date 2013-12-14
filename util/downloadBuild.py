@@ -14,13 +14,14 @@ from subprocesses import captureStdout, normExpUserPath, shellify, vdump
 # Use curl/wget rather than urllib because urllib can't check certs.
 useCurl = False
 
+# A hack to work around a configuration problem (bug 803764) (see bug 950256)
+wgetMaybeNCC = ['--no-check-certificate'] if (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org") else []
+
 def readFromURL(url):
     '''
     Reads in a URL and returns its contents as a list.
     '''
-    # maybeNCC is a hack to work around a configuration problem (bug 803764) (see bug 950256)
-    maybeNCC = ['--no-check-certificate'] if (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org") else []
-    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + maybeNCC + ['-O', '-', url]
+    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', '-', url]
     p = subprocess.Popen(inpCmdList, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     out, err = p.communicate()
     if not useCurl and p.returncode == 5:
@@ -41,7 +42,7 @@ def downloadURL(url, dest):
     '''
     Reads in a URL and downloads it to a destination.
     '''
-    inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget', '-O', dest, url]
+    inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', dest, url]
     out, retVal = captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
     if retVal != 0:
         print out
