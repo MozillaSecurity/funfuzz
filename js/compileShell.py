@@ -423,6 +423,22 @@ def copyJsSrcDirs(shell):
 
     # Do not stop copying source files out until 119351:6b280e155484 is at least the minimum
     #  version required to build on all platforms.
+    # m-c changeset 160361:67fa1478308e requires dom/bindings/ to be present.
+    domBindingsDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'dom', 'bindings'))
+    if os.path.isdir(domBindingsDir):
+        shutil.copytree(domBindingsDir, os.path.join(shell.getCompilePathJsSrc(),
+                                                     os.pardir, os.pardir, 'dom', 'bindings'))
+    # m-c changeset 160361:67fa1478308e requires other-licenses/ply/ply/ to be present.
+    plyDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'other-licenses/', 'ply', 'ply'))
+    if os.path.isdir(plyDir):
+        shutil.copytree(plyDir, os.path.join(shell.getCompilePathJsSrc(),
+            os.pardir, os.pardir, 'other-licenses/', 'ply', 'ply'))
+    # m-c changeset 160361:67fa1478308e requires media/webrtc/trunk/tools/gyp/ to be present.
+    gypDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'media', 'webrtc', 'trunk',
+                                          'tools', 'gyp'))
+    if os.path.isdir(gypDir):
+        shutil.copytree(gypDir, os.path.join(shell.getCompilePathJsSrc(),
+            os.pardir, os.pardir, 'media', 'webrtc', 'trunk', 'tools', 'gyp'))
     # m-c changeset 130388:533d3fb8a7e9 requires the intl/ directory to be present.
     intlDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'intl'))
     if os.path.isdir(intlDir):
