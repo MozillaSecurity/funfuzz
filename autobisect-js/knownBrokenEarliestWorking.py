@@ -25,6 +25,9 @@ def knownBrokenRangesBrowser(options):
         hgrange('eaa88688e9e8', '7a7e1ca619c2'), # Missing include (affected Jesse's MBP but not Tinderbox)
         hgrange('fbc1e196ca87', '7a9887e1f55e'), # Quick followup for bustage
         hgrange('bfef9b308f92', '991938589ebe'), # A landing required a build fix and a startup-assertion fix
+        hgrange('b6dc96f18391', '37e29c27e6e8'), # Duplicate symbols with 10.9 SDK, between ICU being built by default and a bug being fixed
+        hgrange('ad70d9583d42', 'd0f501b227fc'), # Short bustage
+        hgrange('c5906eed61fc', '1c4ac1d21d29'), # Builds succeed but die early in startup
     ]
 
     return skips
@@ -134,7 +137,7 @@ def knownBrokenRanges(options):
 
 def earliestKnownWorkingRevForBrowser(options):
     if isMac and macVer() >= [10, 9]:
-        return 'beacc621ec68'
+        return '1c4ac1d21d29' # beacc621ec68 fixed 10.9 builds, but landed in the middle of unrelated bustage
     return '4e852ca66ea0' # or 'd97862fb8e6d' (same as js below) ... either way, oct 2012 on mac :(
 
 def earliestKnownWorkingRev(options, flags, skipRevs):
@@ -229,3 +232,4 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
 def commonDescendants(revs):
     return " and ".join("descendants(" + r + ")" for r in revs)
+
