@@ -291,7 +291,7 @@ def parseOpts():
         if options.buildOptions is not None:
             raise Exception('Do not use tinderbox shells if one needs to specify build parameters')
 
-    if options.testType == 'auto':
+    if options.testType == 'auto' and not options.runLocalJsfunfuzz:
         if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
         elif isLinux and platform.machine() != "x86_64":
