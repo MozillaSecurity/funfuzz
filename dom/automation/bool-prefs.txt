@@ -84,6 +84,7 @@ browser.zoom.siteSpecific
 browser.zoom.updateBackgroundTabs
 converter.html2txt.structs
 device.sensors.enabled
+dom.cycle_collector.incremental
 dom.global-constructor.disable.mozContact
 dom.mozContacts.enabled
 dom.navigator-property.disable.mozContacts
