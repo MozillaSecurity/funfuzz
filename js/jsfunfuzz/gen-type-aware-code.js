@@ -141,6 +141,25 @@ var makeEvilCallback;
     }
   }
 
+  function evaluateFlags(d, b)
+  {
+    return ("({ global: " + m("g") +
+      ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
+      ", lineNumber: 42, newContext: " + makeBoolean(d, b) +
+      ", compileAndGo: " + makeBoolean(d, b) +
+      ", noScriptRval: " + makeBoolean(d, b) +
+      ", catchTermination: " + makeBoolean(d, b) +
+      ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) +
+      ((rnd(5) == 0) ? (
+        ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
+        ((rnd(2) == 0) ? (", elementProperty: " + m("s")) : "") +
+        ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "") +
+        ((rnd(2) == 0) ? (", sourcePolicy: " + rndElt(["'NO_SOURCE'", "'LAZY_SOURCE'", "'SAVE_SOURCE'"])) : "")
+        ) : ""
+      ) +
+    " })");
+  }
+
   var initializedEverything = false;
   function initializeEverything(d, b)
   {
@@ -291,7 +310,7 @@ var makeEvilCallback;
     { w: 1,  v: function(d, b) { return assign(d, b, "g", makeGlobal(d, b)); } },
     { w: 5,  v: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + strToEval(d, b) + ")"); } },
     { w: 5,  v: function(d, b) { return assign(d, b, "v", "evalcx(" + strToEval(d, b) + ", " + m("g") + ")"); } },
-    { w: 5,  v: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", { global: " + m("g") + ", fileName: " + Random.index(["'evaluate.js'", "null"]) + ", lineNumber: 42, newContext: " + makeBoolean(d, b) + ", compileAndGo: " + makeBoolean(d, b) + ", noScriptRval: " + makeBoolean(d, b) + ", catchTermination: " + makeBoolean(d, b) + ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) + " })"); } },
+    { w: 5,  v: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", " + evaluateFlags(d, b) + ")"); } },
     { w: 3,  v: function(d, b) { return "schedulegc(" + m("g") + ");"; } },
 
     // Mix builtins between globals
