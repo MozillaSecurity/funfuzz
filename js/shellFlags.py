@@ -112,6 +112,9 @@ def randomFlagSet(shellPath):
         if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
             if chance(.5):
                 args.append('--ion-check-range-analysis')
+        if shellSupportsFlag(shellPath, '--ion-check-thread-safety'):
+            if chance(.5):
+                args.append('--ion-check-thread-safety')
     else:
         args.append("--no-ion")
 
@@ -160,6 +163,8 @@ def basicFlagSets(shellPath):
             if shellSupportsFlag(shellPath, '--no-sse3'):
                 basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        if shellSupportsFlag(shellPath, '--ion-check-thread-safety'):
+            basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-check-thread-safety'])  # Not in jit_test.py though...
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
         basicFlagList = [
