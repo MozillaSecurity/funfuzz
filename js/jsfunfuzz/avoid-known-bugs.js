@@ -39,7 +39,7 @@ function whatToTestSpidermonkeyTrunk(code)
   };
 }
 
-function whatToTestSpidermonkeyMozilla17(code)
+function whatToTestSpidermonkeyMozilla24(code)
 {
   // regexps can't match across lines, so replace whitespace with spaces.
   var codeL = code.replace(/\s/g, " ");
@@ -49,7 +49,6 @@ function whatToTestSpidermonkeyMozilla17(code)
     allowParse: true,
 
     allowExec: unlikelyToHang(code)
-      && code.indexOf("<>")       == -1 // avoid bug 334628 (17 branch), hopefully
       && (jsshell || code.indexOf("nogeckoex") == -1)
     ,
 
@@ -60,6 +59,8 @@ function whatToTestSpidermonkeyMozilla17(code)
        && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("Date") == -1                // time marches on
        && code.indexOf("random") == -1
+       && code.indexOf("dumpObject") == -1          // shows heap addresses
+       && code.indexOf("oomAfterAllocations") == -1
     ,
 
     expectConsistentOutputAcrossIter: true
@@ -67,10 +68,9 @@ function whatToTestSpidermonkeyMozilla17(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-       && code.indexOf("getOwnPropertyNames") == -1 // Object.getOwnPropertyNames(this) contains "jitstats" and "tracemonkey", which exist only with -j
-       && code.indexOf("lazy") == -1                // bug 743423 (17 branch), bug 743424 (17 branch)
-       && code.indexOf("strict") == -1              // see bug 743425 (17 branch)
-       && code.indexOf("QName") == -1              // See bug 748568 (17 branch)
+       && code.indexOf("'strict") == -1             // see bug 743425
+       && code.indexOf("Object.seal") == -1         // bug 937922 (24 branch)
+       && code.indexOf("RegExp") == -1              // bug 945512 (24 branch)
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
@@ -105,8 +105,8 @@ function whatToTestGeneric(code)
 var whatToTest;
 if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA17)
-  whatToTest = whatToTestSpidermonkeyMozilla17;
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA24)
+  whatToTest = whatToTestSpidermonkeyMozilla24;
 else if (engine == ENGINE_JAVASCRIPTCORE)
   whatToTest = whatToTestJavaScriptCore;
 else

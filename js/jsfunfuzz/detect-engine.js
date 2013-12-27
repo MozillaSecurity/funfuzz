@@ -3,7 +3,7 @@
 
 var ENGINE_UNKNOWN = 0;
 var ENGINE_SPIDERMONKEY_TRUNK = 1;
-var ENGINE_SPIDERMONKEY_MOZILLA17 = 3;
+var ENGINE_SPIDERMONKEY_MOZILLA24 = 3;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
@@ -22,7 +22,7 @@ if (jsshell) {
     if (typeof dumpHeapComplete == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
     } else {
-      engine = ENGINE_SPIDERMONKEY_MOZILLA17;
+      engine = ENGINE_SPIDERMONKEY_MOZILLA24;
     }
 
     version(180); // 170: make "yield" and "let" work. 180: sane for..in.
@@ -96,7 +96,7 @@ if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   printImportant("Targeting SpiderMonkey / Gecko (trunk).");
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA17)
-  printImportant("Targeting SpiderMonkey / Gecko (ESR 17 branch).");
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA24)
+  printImportant("Targeting SpiderMonkey / Gecko (ESR 24 branch).");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
