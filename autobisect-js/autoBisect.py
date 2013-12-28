@@ -4,6 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import math
 import os
 import platform
 import re
@@ -32,8 +33,10 @@ path4 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path4)
 from fileManipulation import firstLine
 import buildOptions
+from downloadBuild import defaultBuildType, downloadBuild, getBuildList
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor, destroyPyc
-from subprocesses import captureStdout, dateStr, isVM, normExpUserPath, Unbuffered, verbose, vdump
+from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, Unbuffered, vdump
+
 
 def sanityChecks():
     # autoBisect uses temporary directory python APIs. On WinXP, these are located at
@@ -63,6 +66,8 @@ def parseOpts():
         parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel = 'skip',
         buildOptions = "",
+        useTinderboxBinaries = False,
+        nameOfTinderboxBranch = 'mozilla-inbound',
     )
 
     # Specify how the shell will be built.
@@ -82,10 +87,11 @@ def parseOpts():
 
     # Specify the revisions between which to bisect.
     parser.add_option('-s', '--startRev', dest='startRepo',
-                      help='Earliest changeset to consider (usually a "good" cset). Defaults to the ' + \
-                           'earliest revision known to work at all.')
+                      help='Earliest changeset/build numeric ID to consider (usually a "good" cset). ' + \
+                           'Defaults to the earliest revision known to work at all/available.')
     parser.add_option('-e', '--endRev', dest='endRepo',
-                      help='Latest changeset to consider (usually a "bad" cset). Defaults to the head of the main branch, "default".')
+                      help='Latest changeset/build numeric ID to consider (usually a "bad" cset). ' + \
+                           'Defaults to the head of the main branch, "default", or latest available build.')
     parser.add_option('-k', '--skipInitialRevs', dest='testInitialRevs',
                       action='store_false',
                       help='Skip testing the -s and -e revisions and automatically trust them ' + \
@@ -114,6 +120,15 @@ def parseOpts():
     parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
                       help='Specify how to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
+
+    parser.add_option('-T', '--useTinderboxBinaries',
+                      dest='useTinderboxBinaries',
+                      action="store_true",
+                      help='Use tinderbox binaries for quick bisection, assuming a fast ' + \
+                           'internet connection. Defaults to "%default"')
+    parser.add_option('-N', '--nameOfTinderboxBranch',
+                      dest='nameOfTinderboxBranch',
+                      help='Name of the branch to download. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
     if options.browserOptions:
@@ -148,10 +163,18 @@ def parseOpts():
         if options.browserOptions:
             options.startRepo = earliestKnownWorkingRevForBrowser(options.browserOptions)
         else:
-            options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+            options.startRepo = 'default' if options.useTinderboxBinaries is True else \
+                earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
+        if options.useTinderboxBinaries:
+            print '\nWARNING: Not downloading binaries, because no parameters were set via "-p".'
+            print 'Quitting...\n'
+            sys.exit(0)
+
+    if options.nameOfTinderboxBranch != 'mozilla-central' and not options.useTinderboxBinaries:
+        raise Exception('Setting the name of branches only works for tinderbox shell bisection.')
 
     return options
 
@@ -242,7 +265,7 @@ def findBlamedCset(options, repoDir, testRev):
 
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
-    def inner(shellFilename, _hgHash):
+    def inner(shellFilename, _hsHash):
         (stdoutStderr, exitCode) = testBinary(shellFilename, options.paramList,
             options.buildOptions.runWithVg, options.buildOptions.isThreadsafe)
 
@@ -287,17 +310,17 @@ def externalTestAndLabel(options, interestingness):
     conditionArgPrefix = interestingness[1:]
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
 
-    def inner(shellFilename, hgHash):
+    def inner(shellFilename, hsHash):
         conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
-        if conditionScript.interesting(conditionArgs, tempPrefix + hgHash):
+        if conditionScript.interesting(conditionArgs, tempPrefix + hsHash):
             innerResult = ('bad', 'interesting')
         else:
             innerResult = ('good', 'not interesting')
-        if os.path.isdir(tempPrefix + hgHash):
-            shutil.rmtree(tempPrefix + hgHash)
+        if os.path.isdir(tempPrefix + hsHash):
+            shutil.rmtree(tempPrefix + hsHash)
         return innerResult
     return inner
 
@@ -421,10 +444,11 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 
     return None, None, currRev, start, end
 
-def main():
-    '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
-    sanityChecks()
-    options = parseOpts()
+
+def bisectUsingLocalBuilds(options):
+    '''
+    Compiles binaries and bisects them locally.
+    '''
     lockDir = os.path.join(ensureCacheDir(), 'autoBisectJs-lock')
     try:
         os.mkdir(lockDir)
@@ -438,6 +462,373 @@ def main():
             findBlamedCset(options, options.buildOptions.repoDir, makeTestRev(options))
     finally:
         os.rmdir(lockDir)
+
+
+#############################################
+#  Bisection involving tinderbox js shells  #
+#############################################
+
+
+# From http://stackoverflow.com/a/3337198/3011305
+class CustomDict(dict):
+    def __getattr__(self, name):
+        return self[name]
+
+
+def bisectUsingTboxBins(options):
+    '''
+    Downloads tinderbox binaries and bisects them.
+    '''
+    # Note that the autoBisect lock directory is ignored if bisecting using tinderbox binaries.
+    skippedIDs = []
+    testedIDs = {}
+
+    # Get list of tinderbox IDs
+    # Note that "arch: None" will select the default architecture depending on the system.
+    buildType = defaultBuildType(CustomDict(
+        arch = None,
+        compileType = options.buildOptions.compileType,
+        repoName = options.nameOfTinderboxBranch,
+    ))
+
+    try:
+        urlsTbox = getBuildList(buildType, earliestBuild=options.startRepo,
+                                latestBuild=options.endRepo)
+    except Exception, e:
+        if 'The following exit code was returned: 8' in repr(e):
+            print '\nYour branch name "' + options.nameOfTinderboxBranch + '" is likely invalid.',
+            print 'Please choose a valid name, e.g. mozilla-central'
+            sys.exit(1)
+        else:
+            raise
+
+    # Download and test starting point.
+    sID, startResult, sReason, sPosition, urlsTbox, skippedIDs, testedIDs = getAndTestMiddleBuild(
+        options, 0, urlsTbox, buildType, skippedIDs, testedIDs)
+    print 'Numeric ID ' + sID + ' was tested.'
+
+    # Download and test ending point.
+    eID, endResult, eReason, ePosition, urlsTbox, skippedIDs, testedIDs = getAndTestMiddleBuild(
+        options, -1, urlsTbox, buildType, skippedIDs, testedIDs)
+    print 'Numeric ID ' + eID + ' was tested.'
+
+    if startResult == endResult:
+        raise Exception('Starting and ending points should have opposite results')
+
+    count = 0
+    print '\nStarting bisection...\n'
+    while True:
+        vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
+        count += 1
+        print 'Test number ' + str(count) + ':'
+
+        sortedUrlsTbox = sorted(urlsTbox)
+        if len(sortedUrlsTbox) >= 3:
+            mPosition = len(sortedUrlsTbox) // 2
+        else:
+            print '\nWARNING: ' + str(sortedUrlsTbox) + ' has size smaller than 3. ' + \
+                'Impossible to return "middle" element.\n'
+            mPosition = len(sortedUrlsTbox)
+
+        # Test the middle revision. If it is not a complete build, test ones around it.
+        mID, mResult, mReason, mPosition, urlsTbox, skippedIDs, testedIDs = getAndTestMiddleBuild(
+            options, mPosition, urlsTbox, buildType, skippedIDs, testedIDs)
+
+        # Refresh the range of tinderbox IDs depending on mResult.
+        if mResult == endResult:
+            urlsTbox = urlsTbox[0:(mPosition + 1)]
+        else:
+            urlsTbox = urlsTbox[(mPosition):len(urlsTbox)]
+
+        print 'Numeric ID ' + mID + ' was tested.',
+
+        # Exit infinite loop once we have tested both the starting point and the ending point.
+        if len(urlsTbox) == 2 and (mID in testedIDs or mID in skippedIDs):
+            break
+        elif len(urlsTbox) < 2:
+            print 'urlsTbox is: ' + str(urlsTbox)
+            raise Exception('Length of urlsTbox should not be smaller than 2.')
+        elif (len(testedIDs) - 2) > 30:
+            raise Exception('Number of testedIDs has exceeded 30.')
+
+        print showRemainingNumOfTests(urlsTbox)
+
+    print
+    vdump('Build URLs are: ' + str(urlsTbox))
+    vdump('Skipped IDs are: ' + str(skippedIDs))
+    assert getIdFromTboxUrl(urlsTbox[0]) in testedIDs, 'Starting ID should have been tested.'
+    assert getIdFromTboxUrl(urlsTbox[1]) in testedIDs, 'Ending ID should have been tested.'
+    outputTBoxBisectionResults(options, urlsTbox, testedIDs)
+
+
+def createTBoxCacheFolder(cacheFolder):
+    '''
+    Attempt to create the tinderbox js shell's cache folder if it does not exist. If it does, check
+    that its binaries are working properly.
+    '''
+    try:
+        os.mkdir(cacheFolder)
+    except OSError:
+        # If the cache folder is present, check that the js binary is working properly.
+        try:
+            captureStdout([getTBoxJsBinPath(cacheFolder), '-e', '42'])
+            assert os.path.isdir(os.path.join(cacheFolder, 'build', 'download'))
+        except Exception:
+            # Remove build subdirectory of the numeric ID's cache folder if shell does not work well
+            # or if the <tboxCacheFolder>/build/download folder does not exist.
+            # This will cause a re-download of the binaries.
+            if os.path.isdir(os.path.join(cacheFolder, 'build')):
+                shutil.rmtree(os.path.join(cacheFolder, 'build'))
+
+    ensureCacheDirHasCorrectIdNum(cacheFolder)
+
+
+def ensureCacheDirHasCorrectIdNum(cacheFolder):
+    '''
+    Ensures that the cache folder is named with the correct numeric ID.
+    '''
+    if os.path.isfile(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt')):
+        with open(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'), 'rb') as f:
+            fContents = f.read().splitlines()
+
+        idNumFolderName = cacheFolder.split('-')[-1]
+        idNumSourceUrl = fContents[0].split('/')[-2]
+
+        assert idNumFolderName == idNumSourceUrl, 'Numeric ID in folder name (current value: ' + \
+            idNumFolderName + ') has to be equal to the numeric ID from source URL ' + \
+            '(current value: ' + idNumSourceUrl + ')'
+
+
+def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs):
+    '''
+    Downloads, tests the build, returning the results and reason for failure (if any).
+    '''
+    isJsShell = (not options.browserOptions)
+    idNum = getIdFromTboxUrl(urls[index])
+
+    if index == 0 or index == -1:
+        print '\nExamining ' + ('starting' if index == 0 else 'ending') + ' point...'
+
+    tboxCacheFolder = os.path.join(ensureCacheDir(), 'tboxjs-' + buildType + '-' + idNum)
+    createTBoxCacheFolder(tboxCacheFolder)
+
+    if os.path.isfile(getTBoxJsBinPath(tboxCacheFolder)):
+        print 'Found cached binary in: ' + tboxCacheFolder
+    else:
+        offset = 1
+        subtotalTestedCount = 0
+
+        prevNewIndex = newIndex = index
+
+        lookedAtIncompleteBuildTxtFile = False
+
+        breakOut = False
+        while not breakOut:
+            # These should remain within the loop as they get refreshed every iteration.
+            tboxCacheFolderList = os.listdir(tboxCacheFolder)
+            incompleteBuildTxtFile = os.path.join(tboxCacheFolder, 'incompleteBuild.txt')
+            incompleteBuildTxtContents = 'This build with numeric ID ' + idNum + ' is incomplete.'
+
+            if 'build' in tboxCacheFolderList and 'incompleteBuild.txt' in tboxCacheFolderList:
+                print tboxCacheFolder + ' has subdirectories: ' + str(tboxCacheFolderList)
+                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
+                                'present together in this directory.')
+
+            # Examine incompleteBuild.txt if it is present.
+            if os.path.isfile(incompleteBuildTxtFile) and not lookedAtIncompleteBuildTxtFile:
+                assert os.listdir(tboxCacheFolder) == ['incompleteBuild.txt'], 'Only ' + \
+                    'incompleteBuild.txt should be present in ' + tboxCacheFolder
+                with open(incompleteBuildTxtFile, 'rb') as f:
+                    contentsF = f.read()
+                    if not incompleteBuildTxtContents in contentsF:
+                        print 'Contents of ' + incompleteBuildTxtFile + ' is: ' + repr(contentsF)
+                        raise Exception('Invalid incompleteBuild.txt file contents.')
+                    else:
+                        lookedAtIncompleteBuildTxtFile = True
+                        print 'Numeric ID ' + idNum + ' has an incomplete build. ' + \
+                            'Trying another build...'
+                        continue
+
+            # If incompleteBuild.txt is present, do not bother downloading again.
+            if not lookedAtIncompleteBuildTxtFile:
+                if downloadBuild(urls[index], tboxCacheFolder, jsShell=isJsShell):
+                    assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
+                        'the build subdirectory should be present in ' + tboxCacheFolder
+                    breakOut = True
+                    break
+                else:
+                    # Create a text file if numeric ID has an incomplete build.
+                    lookedAtIncompleteBuildTxtFile = False
+                    assert not os.path.isfile(incompleteBuildTxtFile), \
+                        'incompleteBuild.txt should not be present.'
+                    with open(incompleteBuildTxtFile, 'wb') as f:
+                        f.write(incompleteBuildTxtContents)
+                    print 'Numeric ID ' + idNum + ' has an incomplete build. ' + \
+                        'Trying another build...'
+
+            newIndex = index + offset
+
+            # Remove skipped IDs from list of interesting URLs
+            skippedIDs.append(idNum)
+            # Try to avoid looping through everything by first checking for presence
+            if idNum in str(urls):
+                for entry in urls:
+                    if idNum in entry:
+                        urls.remove(entry)
+
+            try:
+                if urls[newIndex] in str(urls):
+                    subtotalTestedCount += 1
+            except IndexError:
+                # Stop once we are testing beyond the start & end entries of the list
+                if newIndex < 0 and prevNewIndex > len(urls):
+                    breakOut = True
+                    break
+                elif prevNewIndex < 0 and newIndex > len(urls):
+                    breakOut = True
+                    break
+
+                # Do not increment subtotalTestedCount if urls[newIndex] does not exist.
+                newIndex = prevNewIndex  # Reset newIndex because newIndex will be out of bounds.
+
+            offset = -offset if offset > 0 else -offset + 1
+
+            # Refresh idNum and tboxCacheFolder
+            idNum = getIdFromTboxUrl(urls[newIndex])
+            tboxCacheFolder = os.path.join(ensureCacheDir(), '-'.join(['tboxjs', buildType, idNum]))
+            createTBoxCacheFolder(tboxCacheFolder)
+
+            # Loop exit conditions
+            if subtotalTestedCount > len(urls):
+                breakOut = True  # Stop going out of range
+                break
+            elif idNum in testedIDs:
+                breakOut = True  # Stop going after a tested ID.
+                break
+            elif os.path.isfile(getTBoxJsBinPath(tboxCacheFolder)):
+                breakOut = True  # Stop once we reach a numeric ID with a working js shell.
+                break
+            elif subtotalTestedCount > 30:
+                raise Exception('Failed to find a working build after 30 tries.')
+
+            prevNewIndex = newIndex
+
+        if breakOut:
+            index = newIndex
+
+    # Test the build only if it has not been tested before.
+    if idNum not in testedIDs.keys():
+        testedIDs[idNum] = getTimestampAndHashFromTBoxFiles(tboxCacheFolder)
+        print 'Testing binary...',
+        result, reason = isTBoxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
+        print 'Result: ' + result + ' - ' + reason
+        # Adds the result and reason to testedIDs
+        testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
+    else:
+        print 'Retrieving previous test result: ',
+        result, reason = testedIDs[idNum][2:4]
+
+    return idNum, result, reason, index, urls, skippedIDs, testedIDs
+
+
+def getIdFromTboxUrl(url):
+    '''
+    Returns the numeric ID from the tinderbox URL at:
+        https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/
+    '''
+    return filter(None, url.split('/'))[-1]
+
+
+def getTBoxJsBinPath(baseDir):
+    '''
+    Returns the path to the tinderbox js binary from a download folder.
+    '''
+    return normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if isWin else 'js'))
+
+
+def getTimestampAndHashFromTBoxFiles(folder):
+    '''
+    Returns timestamp and changeset information from the .txt file downloaded from tinderbox.
+    '''
+    downloadDir = normExpUserPath(os.path.join(folder, 'build', 'download'))
+    for fn in os.listdir(downloadDir):
+        if '.txt' in fn:
+            with open(os.path.join(downloadDir, fn), 'rb') as f:
+                fContents = f.read().splitlines()
+            break
+    assert len(fContents) == 2, 'Contents of the .txt file should only have 2 lines'
+    return fContents[0], fContents[1].split('/')[-1]
+
+
+def isTBoxBinInteresting(options, downloadDir, csetHash):
+    '''
+    Test the required tinderbox binary.
+    '''
+    return options.testAndLabel(getTBoxJsBinPath(downloadDir), csetHash)
+
+
+def outputTBoxBisectionResults(options, interestingList, testedBuildsDict):
+    '''
+    Returns formatted bisection results from using tinderbox builds.
+    '''
+    sTimestamp, sHash, sResult, sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
+    eTimestamp, eHash, eResult, eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[1])]
+
+    print '\nParameters for compilation bisection:'
+    pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
+    oOutput = '-o "' + options.output + '"' if options.output is not '' else ''
+    params = filter(None, ['-s ' + sHash, '-e ' + eHash, pOutput, oOutput, '-b <build parameters>'])
+    print ' '.join(params)
+
+    print '\n=== Tinderbox Build Bisection Results ===\n'
+    print 'The "' + sResult + '" changeset has the timestamp "' + sTimestamp + \
+        '", the hash "' + sHash + '", and the reason for the result is: ' + sReason
+    print 'The "' + eResult + '" changeset has the timestamp "' + eTimestamp + \
+        '", the hash "' + eHash + '", and the reason for the result is: ' + eReason
+
+    # Formulate hgweb link for mozilla repositories
+    hgWebAddrList = ['hg.mozilla.org']
+    if options.nameOfTinderboxBranch == 'mozilla-central':
+        hgWebAddrList.append(options.nameOfTinderboxBranch)
+    elif options.nameOfTinderboxBranch == 'mozilla-inbound':
+        hgWebAddrList.extend(['integration', options.nameOfTinderboxBranch])
+    elif options.nameOfTinderboxBranch == 'mozilla-aurora' or \
+            options.nameOfTinderboxBranch == 'mozilla-beta' or \
+            options.nameOfTinderboxBranch == 'mozilla-release' or \
+            'mozilla-esr' in options.nameOfTinderboxBranch:
+        hgWebAddrList.extend(['releases', options.nameOfTinderboxBranch])
+    hgWebAddr = 'http://' + '/'.join(hgWebAddrList)
+
+    if sResult == 'good' and eResult == 'bad':
+        windowType = 'regression'
+    elif sResult == 'bad' and eResult == 'good':
+        windowType = 'fix'
+    else:
+        raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' + \
+                        'ending result is "' + eResult + '".')
+    print '\nLikely ' + windowType + ' window: ' + hgWebAddr + '/pushloghtml?fromchange=' + sHash +\
+            '&tochange=' + eHash + '\n'
+
+
+def showRemainingNumOfTests(reqList):
+    '''
+    Display the approximate number of tests remaining.
+    '''
+    remainingTests = int(math.ceil(math.log(len(reqList), 2))) - 1
+    wordTest = 'tests'
+    if remainingTests == 1:
+        wordTest = 'test'
+    return '~' + str(remainingTests) + ' ' + wordTest + ' remaining...\n'
+
+
+def main():
+    '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
+    sanityChecks()
+    options = parseOpts()
+    if options.useTinderboxBinaries:
+        bisectUsingTboxBins(options)
+    else:
+        bisectUsingLocalBuilds(options)
 
 if __name__ == '__main__':
     # Reopen stdout, unbuffered. This is similar to -u. From http://stackoverflow.com/a/107717

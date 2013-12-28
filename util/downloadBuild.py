@@ -268,13 +268,36 @@ def isNumericSubDir(n):
     '''
     return re.match(r'^\d+$', n.split('/')[0])
 
-def getBuildList(buildType):
+def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     '''
     Returns the list of URLs of builds (e.g. 1386614507) that are present in tinderbox-builds/.
     '''
     buildsHttpDir = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/' + \
                     buildType + '/'
     dirNames = httpDirList(buildsHttpDir)
+    earliestBuildIndex = 0
+    latestBuildIndex = -1
+
+    if earliestBuild != 'default':
+        earliestBuild = earliestBuild + '/'
+        if earliestBuild not in dirNames:
+            raise Exception('Earliest build is not found in list of IDs.')
+    else:
+        earliestBuild = dirNames[earliestBuildIndex]
+    earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
+
+    if latestBuild != 'default':
+        latestBuild = latestBuild + '/'
+        if latestBuild not in dirNames:
+            raise Exception('Latest build is not found in list of IDs.')
+    else:
+        latestBuild = dirNames[latestBuildIndex]
+    latestBuildIndex = dirNames.index(latestBuild)  # Set the end boundary
+
+    assert latestBuildIndex >= -1
+    dirNames = dirNames[earliestBuildIndex:latestBuildIndex + 1 if latestBuildIndex != '-1'
+                        else latestBuildIndex]
+
     buildDirs = [(buildsHttpDir + d) for d in dirNames if isNumericSubDir(d)]
     if len(buildDirs) < 1:
         print ('Warning: No builds in ' + buildsHttpDir + '!')
