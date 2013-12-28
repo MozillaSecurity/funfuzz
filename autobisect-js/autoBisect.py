@@ -141,7 +141,7 @@ def parseOpts():
 
     options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
     # First check that the testcase is present.
-    if not os.path.isfile(options.paramList[-1]):
+    if options.parameters is not '-e 42' and not os.path.isfile(options.paramList[-1]):
         print '\nList of parameters to be passed to the shell is: ' + ' '.join(options.paramList)
         print
         raise Exception('Testcase at ' + options.paramList[-1] + ' is not present.')
