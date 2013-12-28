@@ -786,7 +786,7 @@ def outputTBoxBisectionResults(options, interestingList, testedBuildsDict):
     params = filter(None, ['-s ' + sHash, '-e ' + eHash, pOutput, oOutput, '-b <build parameters>'])
     print ' '.join(params)
 
-    print '\n=== Tinderbox Build Bisection Results ===\n'
+    print '\n=== Tinderbox Build Bisection Results by autoBisect ===\n'
     print 'The "' + sResult + '" changeset has the timestamp "' + sTimestamp + \
         '", the hash "' + sHash + '", and the reason for the result is: ' + sReason
     print 'The "' + eResult + '" changeset has the timestamp "' + eTimestamp + \
