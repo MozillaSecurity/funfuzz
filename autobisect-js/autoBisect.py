@@ -179,7 +179,7 @@ def parseOpts():
             print 'Quitting...\n'
             sys.exit(0)
 
-    if options.nameOfTinderboxBranch != 'mozilla-central' and not options.useTinderboxBinaries:
+    if options.nameOfTinderboxBranch != 'mozilla-inbound' and not options.useTinderboxBinaries:
         raise Exception('Setting the name of branches only works for tinderbox shell bisection.')
 
     return options
