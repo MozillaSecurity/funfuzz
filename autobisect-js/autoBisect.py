@@ -578,13 +578,13 @@ def createTBoxCacheFolder(cacheFolder):
         # If the cache folder is present, check that the js binary is working properly.
         try:
             captureStdout([getTBoxJsBinPath(cacheFolder), '-e', '42'])
-            assert os.path.isdir(os.path.join(cacheFolder, 'build', 'download'))
+            assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
         except Exception:
             # Remove build subdirectory of the numeric ID's cache folder if shell does not work well
             # or if the <tboxCacheFolder>/build/download folder does not exist.
             # This will cause a re-download of the binaries.
-            if os.path.isdir(os.path.join(cacheFolder, 'build')):
-                shutil.rmtree(os.path.join(cacheFolder, 'build'))
+            if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build'))):
+                shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
 
     ensureCacheDirHasCorrectIdNum(cacheFolder)
 
@@ -593,8 +593,9 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
     '''
     Ensures that the cache folder is named with the correct numeric ID.
     '''
-    if os.path.isfile(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt')):
-        with open(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'), 'rb') as f:
+    srcUrlPath = normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
+    if os.path.isfile(srcUrlPath):
+        with open(srcUrlPath, 'rb') as f:
             fContents = f.read().splitlines()
 
         idNumFolderName = cacheFolder.split('-')[-1]
@@ -615,7 +616,8 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
     if index == 0 or index == -1:
         print '\nExamining ' + ('starting' if index == 0 else 'ending') + ' point...'
 
-    tboxCacheFolder = os.path.join(ensureCacheDir(), 'tboxjs-' + buildType + '-' + idNum)
+    tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
+                                                   'tboxjs-' + buildType + '-' + idNum))
     createTBoxCacheFolder(tboxCacheFolder)
 
     if os.path.isfile(getTBoxJsBinPath(tboxCacheFolder)):
@@ -632,7 +634,8 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
         while not breakOut:
             # These should remain within the loop as they get refreshed every iteration.
             tboxCacheFolderList = os.listdir(tboxCacheFolder)
-            incompleteBuildTxtFile = os.path.join(tboxCacheFolder, 'incompleteBuild.txt')
+            incompleteBuildTxtFile = normExpUserPath(os.path.join(tboxCacheFolder,
+                                                                  'incompleteBuild.txt'))
             incompleteBuildTxtContents = 'This build with numeric ID ' + idNum + ' is incomplete.'
 
             if 'build' in tboxCacheFolderList and 'incompleteBuild.txt' in tboxCacheFolderList:
@@ -701,7 +704,8 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
 
             # Refresh idNum and tboxCacheFolder
             idNum = getIdFromTboxUrl(urls[newIndex])
-            tboxCacheFolder = os.path.join(ensureCacheDir(), '-'.join(['tboxjs', buildType, idNum]))
+            tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
+                                                           '-'.join(['tboxjs', buildType, idNum])))
             createTBoxCacheFolder(tboxCacheFolder)
 
             # Loop exit conditions
