@@ -567,6 +567,18 @@ def bisectUsingTboxBins(options):
     outputTboxBisectionResults(options, urlsTbox, testedIDs)
 
 
+def checkSaneCacheDirContents(cacheFolder):
+    '''
+    Checks that the cache directories do not have contents that conflict with one another.
+    '''
+    if os.path.isdir(cacheFolder):
+        fList = os.listdir(cacheFolder)
+        if 'build' in fList and 'incompleteBuild.txt' in fList:
+            print cacheFolder + ' has subdirectories: ' + str(fList)
+            raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
+                            'present together in this directory.')
+
+
 def createTboxCacheFolder(cacheFolder):
     '''
     Attempt to create the tinderbox js shell's cache folder if it does not exist. If it does, check
@@ -575,15 +587,17 @@ def createTboxCacheFolder(cacheFolder):
     try:
         os.mkdir(cacheFolder)
     except OSError:
-        # If the cache folder is present, check that the js binary is working properly.
         try:
-            captureStdout([getTboxJsBinPath(cacheFolder), '-e', '42'])
-            assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
+            testSaneJsBinary(cacheFolder)
         except Exception:
-            # Remove build subdirectory of the numeric ID's cache folder if shell does not work well
-            # or if the <tboxCacheFolder>/build/download folder does not exist.
-            # This will cause a re-download of the binaries.
-            if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build'))):
+            isCacheBuildDirComplete = \
+                os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))) and \
+                os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
+            # Remove build subdirectory of the numeric ID's cache folder if the
+            # <tboxCacheFolder>/build/dist folder or <tboxCacheFolder>/build/download folder
+            # do not exist. This will cause a re-download of the binaries.
+            if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build'))) and \
+                    not isCacheBuildDirComplete:
                 shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
 
     ensureCacheDirHasCorrectIdNum(cacheFolder)
@@ -633,15 +647,9 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
         breakOut = False
         while not breakOut:
             # These should remain within the loop as they get refreshed every iteration.
-            tboxCacheFolderList = os.listdir(tboxCacheFolder)
             incompleteBuildTxtFile = normExpUserPath(os.path.join(tboxCacheFolder,
                                                                   'incompleteBuild.txt'))
             incompleteBuildTxtContents = 'This build with numeric ID ' + idNum + ' is incomplete.'
-
-            if 'build' in tboxCacheFolderList and 'incompleteBuild.txt' in tboxCacheFolderList:
-                print tboxCacheFolder + ' has subdirectories: ' + str(tboxCacheFolderList)
-                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
-                                'present together in this directory.')
 
             # Examine incompleteBuild.txt if it is present.
             if os.path.isfile(incompleteBuildTxtFile) and not lookedAtIncompleteBuildTxtFile:
@@ -649,31 +657,40 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
                     'incompleteBuild.txt should be present in ' + tboxCacheFolder
                 with open(incompleteBuildTxtFile, 'rb') as f:
                     contentsF = f.read()
-                    if not incompleteBuildTxtContents in contentsF:
+                    if not 'is incomplete.' in contentsF:
                         print 'Contents of ' + incompleteBuildTxtFile + ' is: ' + repr(contentsF)
                         raise Exception('Invalid incompleteBuild.txt file contents.')
                     else:
                         lookedAtIncompleteBuildTxtFile = True
-                        print 'Numeric ID ' + idNum + ' has an incomplete build. ' + \
+                        print 'Examined build with numeric ID ' + idNum + ' to be incomplete. ' + \
                             'Trying another build...'
-                        continue
 
             # If incompleteBuild.txt is present, do not bother downloading again.
             if not lookedAtIncompleteBuildTxtFile:
                 if downloadBuild(urls[index], tboxCacheFolder, jsShell=isJsShell):
                     assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
                         'the build subdirectory should be present in ' + tboxCacheFolder
+                    try:
+                        testSaneJsBinary(tboxCacheFolder)
+                    except Exception, e:
+                        if 'Shell startup error' in repr(e):
+                            if (index == 0 or index == -1):
+                                print '\nWARNING: Unable to test ' + \
+                                    ('starting' if index == 0 else 'ending') + \
+                                    ' point due to a startup error.\n'
+                                shutil.rmtree(tboxCacheFolder)
+                                raise Exception('Unable to ascertain an initial regression or ' + \
+                                                'fix window.')
+                            else:
+                                lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(
+                                    tboxCacheFolder, incompleteBuildTxtFile,
+                                    incompleteBuildTxtContents, idNum)
+                                continue
                     breakOut = True
                     break
                 else:
-                    # Create a text file if numeric ID has an incomplete build.
-                    lookedAtIncompleteBuildTxtFile = False
-                    assert not os.path.isfile(incompleteBuildTxtFile), \
-                        'incompleteBuild.txt should not be present.'
-                    with open(incompleteBuildTxtFile, 'wb') as f:
-                        f.write(incompleteBuildTxtContents)
-                    print 'Numeric ID ' + idNum + ' has an incomplete build. ' + \
-                        'Trying another build...'
+                    lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(tboxCacheFolder,
+                        incompleteBuildTxtFile, incompleteBuildTxtContents, idNum)
 
             newIndex = index + offset
 
@@ -707,6 +724,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
             tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
                                                            '-'.join(['tboxjs', buildType, idNum])))
             createTboxCacheFolder(tboxCacheFolder)
+            checkSaneCacheDirContents(tboxCacheFolder)
 
             # Loop exit conditions
             if subtotalTestedCount > len(urls):
@@ -725,6 +743,8 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
 
         if breakOut:
             index = newIndex
+
+    checkSaneCacheDirContents(tboxCacheFolder)
 
     # Test the build only if it has not been tested before.
     if idNum not in testedIDs.keys():
@@ -829,6 +849,50 @@ def showRemainingNumOfTests(reqList):
     if remainingTests == 1:
         wordTest = 'test'
     return '~' + str(remainingTests) + ' ' + wordTest + ' remaining...\n'
+
+
+def testSaneJsBinary(cacheFolder):
+    '''
+    If the cache folder is present, check that the js binary is working properly.
+    '''
+    assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
+    assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
+    assert os.path.isfile(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist',
+                                                       'js' + '.exe' if isWin else '')))
+    try:
+        out, retCode = captureStdout([getTboxJsBinPath(cacheFolder), '-e', '42'],
+            ignoreExitCode=True)
+        # Exit code -1073741515 on Windows seems to show up when a required DLL is not present.
+        # This was testable at the time of writing, see bug 953314.
+        isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)
+        # We should have another condition here for non-Windows platforms but we do not yet have
+        # a situation where we can test broken tinderbox js shells on those platforms.
+        if isDllNotPresentWinStartupError:
+            print 'Shell startup error - a .dll file is probably not present.'
+            raise
+        elif retCode != 0:
+            print 'Non-zero return code: ' + str(retCode)
+            raise
+        return True  # js binary is sane
+    except Exception:
+        # Remove build subdirectory of the numeric ID's cache folder if shell does not work well.
+        # This will cause a re-download of the binaries.
+        shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
+        if isDllNotPresentWinStartupError:
+            raise Exception('Shell startup error')
+
+
+def writeIncompleteBuildTxtFile(cacheFolder, txtFile, txtContents, num):
+    '''
+    Writes a text file indicating that this particular build is incomplete.
+    '''
+    assert not os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build'))), \
+        'The build/ directory with download/ and dist/ subdirectories should have been removed.'
+    assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
+    with open(txtFile, 'wb') as f:
+        f.write(txtContents)
+    print 'Wrote a text file that indicates numeric ID ' + num + ' has an incomplete build.'
+    return False  # False indicates that this text file has not yet been looked at.
 
 
 def main():
