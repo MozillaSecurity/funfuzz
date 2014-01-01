@@ -807,7 +807,7 @@ def outputTBoxBisectionResults(options, interestingList, testedBuildsDict):
             options.nameOfTinderboxBranch == 'mozilla-release' or \
             'mozilla-esr' in options.nameOfTinderboxBranch:
         hgWebAddrList.extend(['releases', options.nameOfTinderboxBranch])
-    hgWebAddr = 'http://' + '/'.join(hgWebAddrList)
+    hgWebAddr = 'https://' + '/'.join(hgWebAddrList)
 
     if sResult == 'good' and eResult == 'bad':
         windowType = 'regression'
