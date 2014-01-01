@@ -792,9 +792,9 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
 
     print '\n=== Tinderbox Build Bisection Results by autoBisect ===\n'
     print 'The "' + sResult + '" changeset has the timestamp "' + sTimestamp + \
-        '", the hash "' + sHash + '", and the reason for the result is: ' + sReason
+        '" and the hash "' + sHash + '".'
     print 'The "' + eResult + '" changeset has the timestamp "' + eTimestamp + \
-        '", the hash "' + eHash + '", and the reason for the result is: ' + eReason
+        '" and the hash "' + eHash + '".'
 
     # Formulate hgweb link for mozilla repositories
     hgWebAddrList = ['hg.mozilla.org']
