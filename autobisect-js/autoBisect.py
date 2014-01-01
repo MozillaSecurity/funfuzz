@@ -564,10 +564,10 @@ def bisectUsingTboxBins(options):
     vdump('Skipped IDs are: ' + str(skippedIDs))
     assert getIdFromTboxUrl(urlsTbox[0]) in testedIDs, 'Starting ID should have been tested.'
     assert getIdFromTboxUrl(urlsTbox[1]) in testedIDs, 'Ending ID should have been tested.'
-    outputTBoxBisectionResults(options, urlsTbox, testedIDs)
+    outputTboxBisectionResults(options, urlsTbox, testedIDs)
 
 
-def createTBoxCacheFolder(cacheFolder):
+def createTboxCacheFolder(cacheFolder):
     '''
     Attempt to create the tinderbox js shell's cache folder if it does not exist. If it does, check
     that its binaries are working properly.
@@ -577,7 +577,7 @@ def createTBoxCacheFolder(cacheFolder):
     except OSError:
         # If the cache folder is present, check that the js binary is working properly.
         try:
-            captureStdout([getTBoxJsBinPath(cacheFolder), '-e', '42'])
+            captureStdout([getTboxJsBinPath(cacheFolder), '-e', '42'])
             assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
         except Exception:
             # Remove build subdirectory of the numeric ID's cache folder if shell does not work well
@@ -618,9 +618,9 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
 
     tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
                                                    'tboxjs-' + buildType + '-' + idNum))
-    createTBoxCacheFolder(tboxCacheFolder)
+    createTboxCacheFolder(tboxCacheFolder)
 
-    if os.path.isfile(getTBoxJsBinPath(tboxCacheFolder)):
+    if os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
         print 'Found cached binary in: ' + tboxCacheFolder
     else:
         offset = 1
@@ -706,7 +706,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
             idNum = getIdFromTboxUrl(urls[newIndex])
             tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
                                                            '-'.join(['tboxjs', buildType, idNum])))
-            createTBoxCacheFolder(tboxCacheFolder)
+            createTboxCacheFolder(tboxCacheFolder)
 
             # Loop exit conditions
             if subtotalTestedCount > len(urls):
@@ -715,7 +715,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
             elif idNum in testedIDs:
                 breakOut = True  # Stop going after a tested ID.
                 break
-            elif os.path.isfile(getTBoxJsBinPath(tboxCacheFolder)):
+            elif os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
                 breakOut = True  # Stop once we reach a numeric ID with a working js shell.
                 break
             elif subtotalTestedCount > 30:
@@ -728,9 +728,9 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
 
     # Test the build only if it has not been tested before.
     if idNum not in testedIDs.keys():
-        testedIDs[idNum] = getTimestampAndHashFromTBoxFiles(tboxCacheFolder)
+        testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
         print 'Testing binary...',
-        result, reason = isTBoxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
+        result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
         print 'Result: ' + result + ' - ' + reason
         # Adds the result and reason to testedIDs
         testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
@@ -749,14 +749,14 @@ def getIdFromTboxUrl(url):
     return filter(None, url.split('/'))[-1]
 
 
-def getTBoxJsBinPath(baseDir):
+def getTboxJsBinPath(baseDir):
     '''
     Returns the path to the tinderbox js binary from a download folder.
     '''
     return normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if isWin else 'js'))
 
 
-def getTimestampAndHashFromTBoxFiles(folder):
+def getTimestampAndHashFromTboxFiles(folder):
     '''
     Returns timestamp and changeset information from the .txt file downloaded from tinderbox.
     '''
@@ -770,14 +770,14 @@ def getTimestampAndHashFromTBoxFiles(folder):
     return fContents[0], fContents[1].split('/')[-1]
 
 
-def isTBoxBinInteresting(options, downloadDir, csetHash):
+def isTboxBinInteresting(options, downloadDir, csetHash):
     '''
     Test the required tinderbox binary.
     '''
-    return options.testAndLabel(getTBoxJsBinPath(downloadDir), csetHash)
+    return options.testAndLabel(getTboxJsBinPath(downloadDir), csetHash)
 
 
-def outputTBoxBisectionResults(options, interestingList, testedBuildsDict):
+def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     '''
     Returns formatted bisection results from using tinderbox builds.
     '''
