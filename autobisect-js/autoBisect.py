@@ -886,8 +886,9 @@ def writeIncompleteBuildTxtFile(cacheFolder, txtFile, txtContents, num):
     '''
     Writes a text file indicating that this particular build is incomplete.
     '''
-    assert not os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build'))), \
-        'The build/ directory with download/ and dist/ subdirectories should have been removed.'
+    if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
+            os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
+        shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
     assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
     with open(txtFile, 'wb') as f:
         f.write(txtContents)
