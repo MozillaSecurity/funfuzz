@@ -107,7 +107,7 @@ def httpDirList(directory):
     '''
     Reads in an input directory and returns the href links in the directory as a list.
     '''
-    print "Looking in " + directory + "..."
+    print "Looking in " + directory + " ..."
     page = readFromURL(directory)
     vdump('Finished reading from: ' + directory)
 
