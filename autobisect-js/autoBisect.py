@@ -763,7 +763,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
     # Test the build only if it has not been tested before.
     if idNum not in testedIDs.keys():
         testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
-        print 'Found cached binary in: ' + tboxCacheFolder
+        print 'Found binary in: ' + tboxCacheFolder
         print 'Testing binary...',
         result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
         print 'Result: ' + result + ' - ' + reason
