@@ -605,7 +605,11 @@ def createTboxCacheFolder(cacheFolder):
                     not isCacheBuildDirComplete:
                 shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
 
-    ensureCacheDirHasCorrectIdNum(cacheFolder)
+    try:
+        ensureCacheDirHasCorrectIdNum(cacheFolder)
+    except Exception, e:
+        if 'Folder name numeric ID not equal to source URL numeric ID.' in repr(e):
+            shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
 
 
 def ensureCacheDirHasCorrectIdNum(cacheFolder):
@@ -620,9 +624,11 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
         idNumFolderName = cacheFolder.split('-')[-1]
         idNumSourceUrl = fContents[0].split('/')[-2]
 
-        assert idNumFolderName == idNumSourceUrl, 'Numeric ID in folder name (current value: ' + \
-            idNumFolderName + ') has to be equal to the numeric ID from source URL ' + \
-            '(current value: ' + idNumSourceUrl + ')'
+        if idNumFolderName != idNumSourceUrl:
+            print '\nWARNING: Numeric ID in folder name (current value: ' + \
+            idNumFolderName + ') is not equal to the numeric ID from source URL ' + \
+            '(current value: ' + idNumSourceUrl + ')\n'
+            raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
 def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs):
