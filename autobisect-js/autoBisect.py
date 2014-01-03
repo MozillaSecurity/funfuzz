@@ -672,7 +672,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
 
             # If incompleteBuild.txt is present, do not bother downloading again.
             if not lookedAtIncompleteBuildTxtFile:
-                if downloadBuild(urls[index], tboxCacheFolder, jsShell=isJsShell):
+                if downloadBuild(urls[newIndex], tboxCacheFolder, jsShell=isJsShell):
                     assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
                         'the build subdirectory should be present in ' + tboxCacheFolder
                     try:
@@ -681,23 +681,23 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
                         raise
                     except Exception, e:
                         if 'Shell startup error' in repr(e):
-                            if (index == 0 or index == -1):
+                            if (newIndex == 0 or newIndex == -1):
                                 print '\nWARNING: Unable to test ' + \
-                                    ('starting' if index == 0 else 'ending') + \
+                                    ('starting' if newIndex == 0 else 'ending') + \
                                     ' point due to a startup error.\n'
                                 shutil.rmtree(tboxCacheFolder)
                                 raise Exception('Unable to ascertain an initial regression or ' + \
                                                 'fix window.')
                             else:
                                 lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(
-                                    tboxCacheFolder, incompleteBuildTxtFile,
+                                    urls[newIndex], tboxCacheFolder, incompleteBuildTxtFile,
                                     incompleteBuildTxtContents, idNum)
                                 continue
                     breakOut = True
                     break
                 else:
-                    lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(tboxCacheFolder,
-                        incompleteBuildTxtFile, incompleteBuildTxtContents, idNum)
+                    lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(urls[newIndex],
+                        tboxCacheFolder, incompleteBuildTxtFile, incompleteBuildTxtContents, idNum)
 
             newIndex = index + offset
 
@@ -891,7 +891,7 @@ def testSaneJsBinary(cacheFolder):
             raise Exception('Shell startup error')
 
 
-def writeIncompleteBuildTxtFile(cacheFolder, txtFile, txtContents, num):
+def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, txtContents, num):
     '''
     Writes a text file indicating that this particular build is incomplete.
     '''
@@ -901,6 +901,8 @@ def writeIncompleteBuildTxtFile(cacheFolder, txtFile, txtContents, num):
     assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
     with open(txtFile, 'wb') as f:
         f.write(txtContents)
+    assert num == getIdFromTboxUrl(url), 'The numeric ID ' + num + \
+        ' has to be the one we downloaded from ' + url
     print 'Wrote a text file that indicates numeric ID ' + num + ' has an incomplete build.'
     return False  # False indicates that this text file has not yet been looked at.
 
