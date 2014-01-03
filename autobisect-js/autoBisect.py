@@ -573,9 +573,12 @@ def checkSaneCacheDirContents(cacheFolder):
     '''
     if os.path.isdir(cacheFolder):
         fList = os.listdir(cacheFolder)
-        if 'build' in fList and 'incompleteBuild.txt' in fList:
-            print cacheFolder + ' has subdirectories: ' + str(fList)
-            raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
+        if 'build' in fList:
+            assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
+            assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
+            if 'incompleteBuild.txt' in fList:
+                print cacheFolder + ' has subdirectories: ' + str(fList)
+                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
                             'present together in this directory.')
 
 
