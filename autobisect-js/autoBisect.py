@@ -589,6 +589,8 @@ def createTboxCacheFolder(cacheFolder):
     except OSError:
         try:
             testSaneJsBinary(cacheFolder)
+        except AssertionError:
+            raise
         except Exception:
             isCacheBuildDirComplete = \
                 os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))) and \
@@ -672,6 +674,8 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
                         'the build subdirectory should be present in ' + tboxCacheFolder
                     try:
                         testSaneJsBinary(tboxCacheFolder)
+                    except AssertionError:
+                        raise
                     except Exception, e:
                         if 'Shell startup error' in repr(e):
                             if (index == 0 or index == -1):
@@ -874,6 +878,8 @@ def testSaneJsBinary(cacheFolder):
             print 'Non-zero return code: ' + str(retCode)
             raise
         return True  # js binary is sane
+    except AssertionError:
+        raise
     except Exception:
         # Remove build subdirectory of the numeric ID's cache folder if shell does not work well.
         # This will cause a re-download of the binaries.
