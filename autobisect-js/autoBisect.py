@@ -648,9 +648,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
                                                    'tboxjs-' + buildType + '-' + idNum))
     createTboxCacheFolder(tboxCacheFolder)
 
-    if os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
-        print 'Found cached binary in: ' + tboxCacheFolder
-    else:
+    if not os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
         offset = 1
         subtotalTestedCount = 0
 
@@ -765,6 +763,7 @@ def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs
     # Test the build only if it has not been tested before.
     if idNum not in testedIDs.keys():
         testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
+        print 'Found cached binary in: ' + tboxCacheFolder
         print 'Testing binary...',
         result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
         print 'Result: ' + result + ' - ' + reason
