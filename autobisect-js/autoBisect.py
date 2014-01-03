@@ -587,14 +587,17 @@ def createTboxCacheFolder(cacheFolder):
     try:
         os.mkdir(cacheFolder)
     except OSError:
+        isCacheBuildDirComplete = \
+            os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))) and \
+            os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
         try:
             testSaneJsBinary(cacheFolder)
         except AssertionError:
-            raise
+            # Build IDs with complete subfolders (both build/download and build/dist) should not
+            # throw assertion failures.
+            if isCacheBuildDirComplete:
+                raise
         except Exception:
-            isCacheBuildDirComplete = \
-                os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))) and \
-                os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
             # Remove build subdirectory of the numeric ID's cache folder if the
             # <tboxCacheFolder>/build/dist folder or <tboxCacheFolder>/build/download folder
             # do not exist. This will cause a re-download of the binaries.
