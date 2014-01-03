@@ -858,7 +858,7 @@ def testSaneJsBinary(cacheFolder):
     assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
     assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
     assert os.path.isfile(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist',
-                                                       'js' + '.exe' if isWin else '')))
+                                                       'js' + ('.exe' if isWin else ''))))
     try:
         out, retCode = captureStdout([getTboxJsBinPath(cacheFolder), '-e', '42'],
             ignoreExitCode=True)
