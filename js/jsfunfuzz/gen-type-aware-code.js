@@ -154,7 +154,7 @@ var makeEvilCallback;
         ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
         ((rnd(2) == 0) ? (", elementProperty: " + m("s")) : "") +
         ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "") +
-        ((rnd(2) == 0) ? (", sourcePolicy: " + rndElt(["'NO_SOURCE'", "'LAZY_SOURCE'", "'SAVE_SOURCE'"])) : "")
+        ((rnd(2) == 0) ? (", sourcePolicy: " + Random.index(["'NO_SOURCE'", "'LAZY_SOURCE'", "'SAVE_SOURCE'"])) : "")
         ) : ""
       ) +
     " })");
