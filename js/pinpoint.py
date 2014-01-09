@@ -15,6 +15,7 @@ autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'aut
 
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
+from fileIngredients import fileContainsStr
 from fileManipulation import linesWith, writeLinesToFile
 from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 from subprocesses import shellify
@@ -145,8 +146,11 @@ def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptions
         print '\nRunning 1 instance of 2-line reduction again...\n'
         lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
 
+    isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH) and \
+        fileContainsStr(infilename, 'isAsmJSCompilationAvailable')
     # Step 5 (not always run): Run character reduction within interesting lines.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and lev >= JS_OVERALL_MISMATCH:
+    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
+            lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:
         print '\nRunning character reduction...\n'
         lithResult, lithDetails = lithReduceCmd(['--char'])
 
