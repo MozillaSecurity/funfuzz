@@ -275,15 +275,13 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     buildsHttpDir = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/' + \
                     buildType + '/'
     dirNames = httpDirList(buildsHttpDir)
-    earliestBuildIndex = 0
-    latestBuildIndex = -1
 
     if earliestBuild != 'default':
         earliestBuild = earliestBuild + '/'
         if earliestBuild not in dirNames:
             raise Exception('Earliest build is not found in list of IDs.')
     else:
-        earliestBuild = dirNames[earliestBuildIndex]
+        earliestBuild = dirNames[0]
     earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
 
     if latestBuild != 'default':
@@ -291,12 +289,10 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
         if latestBuild not in dirNames:
             raise Exception('Latest build is not found in list of IDs.')
     else:
-        latestBuild = dirNames[latestBuildIndex]
+        latestBuild = dirNames[-1]
     latestBuildIndex = dirNames.index(latestBuild)  # Set the end boundary
 
-    assert latestBuildIndex >= -1
-    dirNames = dirNames[earliestBuildIndex:latestBuildIndex + 1 if latestBuildIndex != '-1'
-                        else latestBuildIndex]
+    dirNames = dirNames[earliestBuildIndex:latestBuildIndex + 1]
 
     buildDirs = [(buildsHttpDir + d) for d in dirNames if isNumericSubDir(d)]
     if len(buildDirs) < 1:

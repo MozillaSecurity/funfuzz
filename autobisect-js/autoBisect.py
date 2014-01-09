@@ -37,6 +37,8 @@ from downloadBuild import defaultBuildType, downloadBuild, getBuildList
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor, destroyPyc
 from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, Unbuffered, vdump
 
+INCOMPLETE_NOTE = 'incompleteBuild.txt'
+
 
 def sanityChecks():
     # autoBisect uses temporary directory python APIs. On WinXP, these are located at
@@ -166,18 +168,15 @@ def parseOpts():
         options.testAndLabel = internalTestAndLabel(options)
 
     if options.startRepo is None:
-        if options.browserOptions:
+        if options.useTinderboxBinaries:
+            options.startRepo = 'default'
+        elif options.browserOptions:
             options.startRepo = earliestKnownWorkingRevForBrowser(options.browserOptions)
         else:
-            options.startRepo = 'default' if options.useTinderboxBinaries is True else \
-                earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+            options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
-        if options.useTinderboxBinaries:
-            print '\nWARNING: Not downloading binaries, because no parameters were set via "-p".'
-            print 'Quitting...\n'
-            sys.exit(0)
 
     if options.nameOfTinderboxBranch != 'mozilla-inbound' and not options.useTinderboxBinaries:
         raise Exception('Setting the name of branches only works for tinderbox shell bisection.')
@@ -271,7 +270,7 @@ def findBlamedCset(options, repoDir, testRev):
 
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
-    def inner(shellFilename, _hsHash):
+    def inner(shellFilename, _hgHash):
         (stdoutStderr, exitCode) = testBinary(shellFilename, options.paramList,
             options.buildOptions.runWithVg, options.buildOptions.isThreadsafe)
 
@@ -316,17 +315,17 @@ def externalTestAndLabel(options, interestingness):
     conditionArgPrefix = interestingness[1:]
     tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
 
-    def inner(shellFilename, hsHash):
+    def inner(shellFilename, hgHash):
         conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
-        if conditionScript.interesting(conditionArgs, tempPrefix + hsHash):
+        if conditionScript.interesting(conditionArgs, tempPrefix + hgHash):
             innerResult = ('bad', 'interesting')
         else:
             innerResult = ('good', 'not interesting')
-        if os.path.isdir(tempPrefix + hsHash):
-            shutil.rmtree(tempPrefix + hsHash)
+        if os.path.isdir(tempPrefix + hgHash):
+            shutil.rmtree(tempPrefix + hgHash)
         return innerResult
     return inner
 
@@ -451,25 +450,6 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     return None, None, currRev, start, end
 
 
-def bisectUsingLocalBuilds(options):
-    '''
-    Compiles binaries and bisects them locally.
-    '''
-    lockDir = os.path.join(ensureCacheDir(), 'autoBisectJs-lock')
-    try:
-        os.mkdir(lockDir)
-    except OSError:
-        print "autoBisect is already running"
-        return
-    try:
-        if options.browserOptions:
-            findBlamedCset(options, options.browserOptions.repoDir, buildBrowser.makeTestRev(options))
-        else:
-            findBlamedCset(options, options.buildOptions.repoDir, makeTestRev(options))
-    finally:
-        os.rmdir(lockDir)
-
-
 #############################################
 #  Bisection involving tinderbox js shells  #
 #############################################
@@ -481,12 +461,49 @@ class CustomDict(dict):
         return self[name]
 
 
+def assertSaneJsBinary(cacheF):
+    '''
+    If the cache folder is present, check that the js binary is working properly.
+    '''
+    if os.path.isdir(cacheF):
+        fList = os.listdir(cacheF)
+        if 'build' in fList:
+            if INCOMPLETE_NOTE in fList:
+                print cacheF + ' has subdirectories: ' + str(fList)
+                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
+                            'present together in this directory.')
+            assert os.path.isdir(normExpUserPath(os.path.join(cacheF, 'build', 'download')))
+            assert os.path.isdir(normExpUserPath(os.path.join(cacheF, 'build', 'dist')))
+            assert os.path.isfile(normExpUserPath(os.path.join(cacheF, 'build', 'dist',
+                                                               'js' + ('.exe' if isWin else ''))))
+            try:
+                out, retCode = captureStdout([getTboxJsBinPath(cacheF), '-e', '42'],
+                    ignoreExitCode=True)
+                # Exit code -1073741515 on Windows shows up when a required DLL is not present.
+                # This was testable at the time of writing, see bug 953314.
+                isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)
+                # We should have another condition here for non-Windows platforms but we do not yet
+                # have a situation where we can test broken tinderbox js shells on those platforms.
+                if isDllNotPresentWinStartupError:
+                    raise Exception('Shell startup error - a .dll file is probably not present.')
+                elif retCode != 0:
+                    raise Exception('Non-zero return code: ' + str(retCode))
+                return True  # Binary is working correctly
+            except (OSError, IOError):
+                raise Exception('Cache folder ' + cacheF + ' is corrupt, please delete it ' + \
+                                'and try again.')
+        elif INCOMPLETE_NOTE in fList:
+            return True
+        else:
+            raise Exception('Neither build/ nor INCOMPLETE_NOTE were found in the cache folder.')
+    else:
+        raise Exception('Cache folder ' + cacheF + ' is not found.')
+
+
 def bisectUsingTboxBins(options):
     '''
     Downloads tinderbox binaries and bisects them.
     '''
-    # Note that the autoBisect lock directory is ignored if bisecting using tinderbox binaries.
-    skippedIDs = []
     testedIDs = {}
 
     # Get list of tinderbox IDs
@@ -497,25 +514,22 @@ def bisectUsingTboxBins(options):
         repoName = options.nameOfTinderboxBranch,
     ))
 
-    try:
-        urlsTbox = getBuildList(buildType, earliestBuild=options.startRepo,
-                                latestBuild=options.endRepo)
-    except Exception, e:
-        if 'The following exit code was returned: 8' in repr(e):
-            print '\nYour branch name "' + options.nameOfTinderboxBranch + '" is likely invalid.',
-            print 'Please choose a valid name, e.g. mozilla-central'
-            sys.exit(1)
-        else:
-            raise
+    urlsTbox = getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
 
     # Download and test starting point.
-    sID, startResult, sReason, sPosition, urlsTbox, skippedIDs, testedIDs = getAndTestMiddleBuild(
-        options, 0, urlsTbox, buildType, skippedIDs, testedIDs)
+    print '\nExamining starting point...'
+    sID, startResult, sReason, sPosition, urlsTbox, testedIDs = testBuildOrNeighbour(
+        options, 0, urlsTbox, buildType, testedIDs)
+    if sID is None:
+        raise Exception('No complete builds were found.')
     print 'Numeric ID ' + sID + ' was tested.'
 
     # Download and test ending point.
-    eID, endResult, eReason, ePosition, urlsTbox, skippedIDs, testedIDs = getAndTestMiddleBuild(
-        options, -1, urlsTbox, buildType, skippedIDs, testedIDs)
+    print '\nExamining ending point...'
+    eID, endResult, eReason, ePosition, urlsTbox, testedIDs = testBuildOrNeighbour(
+        options, len(urlsTbox) - 1, urlsTbox, buildType, testedIDs)
+    if eID is None:
+        raise Exception('No complete builds were found.')
     print 'Numeric ID ' + eID + ' was tested.'
 
     if startResult == endResult:
@@ -537,8 +551,11 @@ def bisectUsingTboxBins(options):
             mPosition = len(sortedUrlsTbox)
 
         # Test the middle revision. If it is not a complete build, test ones around it.
-        mID, mResult, mReason, mPosition, urlsTbox, skippedIDs, testedIDs = getAndTestMiddleBuild(
-            options, mPosition, urlsTbox, buildType, skippedIDs, testedIDs)
+        mID, mResult, mReason, mPosition, urlsTbox, testedIDs = testBuildOrNeighbour(
+            options, mPosition, urlsTbox, buildType, testedIDs)
+        if mID is None:
+            print 'Middle ID is None.'
+            break
 
         # Refresh the range of tinderbox IDs depending on mResult.
         if mResult == endResult:
@@ -549,7 +566,7 @@ def bisectUsingTboxBins(options):
         print 'Numeric ID ' + mID + ' was tested.',
 
         # Exit infinite loop once we have tested both the starting point and the ending point.
-        if len(urlsTbox) == 2 and (mID in testedIDs or mID in skippedIDs):
+        if len(urlsTbox) == 2 and mID in testedIDs:
             break
         elif len(urlsTbox) < 2:
             print 'urlsTbox is: ' + str(urlsTbox)
@@ -561,25 +578,9 @@ def bisectUsingTboxBins(options):
 
     print
     vdump('Build URLs are: ' + str(urlsTbox))
-    vdump('Skipped IDs are: ' + str(skippedIDs))
     assert getIdFromTboxUrl(urlsTbox[0]) in testedIDs, 'Starting ID should have been tested.'
-    assert getIdFromTboxUrl(urlsTbox[1]) in testedIDs, 'Ending ID should have been tested.'
+    assert getIdFromTboxUrl(urlsTbox[-1]) in testedIDs, 'Ending ID should have been tested.'
     outputTboxBisectionResults(options, urlsTbox, testedIDs)
-
-
-def checkSaneCacheDirContents(cacheFolder):
-    '''
-    Checks that the cache directories do not have contents that conflict with one another.
-    '''
-    if os.path.isdir(cacheFolder):
-        fList = os.listdir(cacheFolder)
-        if 'build' in fList:
-            assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
-            assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
-            if 'incompleteBuild.txt' in fList:
-                print cacheFolder + ' has subdirectories: ' + str(fList)
-                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
-                            'present together in this directory.')
 
 
 def createTboxCacheFolder(cacheFolder):
@@ -590,23 +591,7 @@ def createTboxCacheFolder(cacheFolder):
     try:
         os.mkdir(cacheFolder)
     except OSError:
-        isCacheBuildDirComplete = \
-            os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))) and \
-            os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
-        try:
-            testSaneJsBinary(cacheFolder)
-        except AssertionError:
-            # Build IDs with complete subfolders (both build/download and build/dist) should not
-            # throw assertion failures.
-            if isCacheBuildDirComplete:
-                raise
-        except Exception:
-            # Remove build subdirectory of the numeric ID's cache folder if the
-            # <tboxCacheFolder>/build/dist folder or <tboxCacheFolder>/build/download folder
-            # do not exist. This will cause a re-download of the binaries.
-            if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build'))) and \
-                    not isCacheBuildDirComplete:
-                shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
+        assertSaneJsBinary(cacheFolder)
 
     try:
         ensureCacheDirHasCorrectIdNum(cacheFolder)
@@ -634,146 +619,47 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
             raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
-def getAndTestMiddleBuild(options, index, urls, buildType, skippedIDs, testedIDs):
+def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
     '''
-    Downloads, tests the build, returning the results and reason for failure (if any).
+    Downloads a build. If the build is incomplete, find a working neighbour, then return results.
     '''
-    isJsShell = (not options.browserOptions)
-    idNum = getIdFromTboxUrl(urls[index])
+    offset = None
 
-    if index == 0 or index == -1:
-        print '\nExamining ' + ('starting' if index == 0 else 'ending') + ' point...'
+    while True:
+        if offset is None:
+            offset = 0
+        elif offset > 16:
+            print 'Failed to find a working build after ~30 tries.'
+            return None, None, None
+        elif offset > 0:
+            # Stop once we are testing beyond the start & end entries of the list
+            if (preferredIndex + offset >= len(urls)) and (preferredIndex - offset < 0):
+                print 'Stop looping because everything within the range was tested.'
+                return None, None, None
+            offset = -offset
+        else:
+            offset = -offset + 1  # Alternate between positive and negative offsets
 
-    tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
-                                                   'tboxjs-' + buildType + '-' + idNum))
-    createTboxCacheFolder(tboxCacheFolder)
+        newIndex = preferredIndex + offset
 
-    if not os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
-        offset = 1
-        subtotalTestedCount = 0
+        if newIndex < 0:
+            continue
+        elif newIndex >= len(urls):
+            continue
 
-        prevNewIndex = newIndex = index
+        isWorking, idNum, tboxCacheFolder = getOneBuild(isJsShell, urls[newIndex], buildType,
+                                                        testedIDs)
 
-        lookedAtIncompleteBuildTxtFile = False
-
-        breakOut = False
-        while not breakOut:
-            # These should remain within the loop as they get refreshed every iteration.
-            incompleteBuildTxtFile = normExpUserPath(os.path.join(tboxCacheFolder,
-                                                                  'incompleteBuild.txt'))
-            incompleteBuildTxtContents = 'This build with numeric ID ' + idNum + ' is incomplete.'
-
-            # Examine incompleteBuild.txt if it is present.
-            if os.path.isfile(incompleteBuildTxtFile) and not lookedAtIncompleteBuildTxtFile:
-                assert os.listdir(tboxCacheFolder) == ['incompleteBuild.txt'], 'Only ' + \
-                    'incompleteBuild.txt should be present in ' + tboxCacheFolder
-                with open(incompleteBuildTxtFile, 'rb') as f:
-                    contentsF = f.read()
-                    if not 'is incomplete.' in contentsF:
-                        print 'Contents of ' + incompleteBuildTxtFile + ' is: ' + repr(contentsF)
-                        raise Exception('Invalid incompleteBuild.txt file contents.')
-                    else:
-                        lookedAtIncompleteBuildTxtFile = True
-                        print 'Examined build with numeric ID ' + idNum + ' to be incomplete. ' + \
-                            'Trying another build...'
-
-            # If incompleteBuild.txt is present, do not bother downloading again.
-            if not lookedAtIncompleteBuildTxtFile:
-                if downloadBuild(urls[newIndex], tboxCacheFolder, jsShell=isJsShell):
-                    assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
-                        'the build subdirectory should be present in ' + tboxCacheFolder
-                    try:
-                        testSaneJsBinary(tboxCacheFolder)
-                    except AssertionError:
-                        raise
-                    except Exception, e:
-                        if 'Shell startup error' in repr(e):
-                            if (newIndex == 0 or newIndex == -1):
-                                print '\nWARNING: Unable to test ' + \
-                                    ('starting' if newIndex == 0 else 'ending') + \
-                                    ' point due to a startup error.\n'
-                                shutil.rmtree(tboxCacheFolder)
-                                raise Exception('Unable to ascertain an initial regression or ' + \
-                                                'fix window.')
-                            else:
-                                lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(
-                                    urls[newIndex], tboxCacheFolder, incompleteBuildTxtFile,
-                                    incompleteBuildTxtContents, idNum)
-                                continue
-                    breakOut = True
-                    break
-                else:
-                    lookedAtIncompleteBuildTxtFile = writeIncompleteBuildTxtFile(urls[newIndex],
-                        tboxCacheFolder, incompleteBuildTxtFile, incompleteBuildTxtContents, idNum)
-
-            newIndex = index + offset
-
-            # Remove skipped IDs from list of interesting URLs
-            skippedIDs.append(idNum)
-            # Try to avoid looping through everything by first checking for presence
-            if idNum in str(urls):
-                for entry in urls:
-                    if idNum in entry:
-                        urls.remove(entry)
-
+        if isWorking:
             try:
-                if urls[newIndex] in str(urls):
-                    subtotalTestedCount += 1
-            except IndexError:
-                # Stop once we are testing beyond the start & end entries of the list
-                if newIndex < 0 and prevNewIndex > len(urls):
-                    breakOut = True
-                    break
-                elif prevNewIndex < 0 and newIndex > len(urls):
-                    breakOut = True
-                    break
+                assertSaneJsBinary(tboxCacheFolder)
+            except Exception, e:
+                if 'Shell startup error' in repr(e):
+                    writeIncompleteBuildTxtFile(urls[newIndex], tboxCacheFolder,
+                        normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE)), idNum)
+                    continue
+            return newIndex, idNum, tboxCacheFolder
 
-                # Do not increment subtotalTestedCount if urls[newIndex] does not exist.
-                newIndex = prevNewIndex  # Reset newIndex because newIndex will be out of bounds.
-
-            offset = -offset if offset > 0 else -offset + 1
-
-            # Refresh idNum and tboxCacheFolder
-            idNum = getIdFromTboxUrl(urls[newIndex])
-            tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
-                                                           '-'.join(['tboxjs', buildType, idNum])))
-            createTboxCacheFolder(tboxCacheFolder)
-            checkSaneCacheDirContents(tboxCacheFolder)
-
-            # Loop exit conditions
-            if subtotalTestedCount > len(urls):
-                breakOut = True  # Stop going out of range
-                break
-            elif idNum in testedIDs:
-                breakOut = True  # Stop going after a tested ID.
-                break
-            elif os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
-                breakOut = True  # Stop once we reach a numeric ID with a working js shell.
-                break
-            elif subtotalTestedCount > 30:
-                raise Exception('Failed to find a working build after 30 tries.')
-
-            prevNewIndex = newIndex
-
-        if breakOut:
-            index = newIndex
-
-    checkSaneCacheDirContents(tboxCacheFolder)
-
-    # Test the build only if it has not been tested before.
-    if idNum not in testedIDs.keys():
-        testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
-        print 'Found binary in: ' + tboxCacheFolder
-        print 'Testing binary...',
-        result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
-        print 'Result: ' + result + ' - ' + reason
-        # Adds the result and reason to testedIDs
-        testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
-    else:
-        print 'Retrieving previous test result: ',
-        result, reason = testedIDs[idNum][2:4]
-
-    return idNum, result, reason, index, urls, skippedIDs, testedIDs
 
 
 def getIdFromTboxUrl(url):
@@ -782,6 +668,35 @@ def getIdFromTboxUrl(url):
         https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/
     '''
     return filter(None, url.split('/'))[-1]
+
+
+def getOneBuild(isJsShell, url, buildType, testedIDs):
+    '''
+    Try to get a complete working build.
+    '''
+    idNum = getIdFromTboxUrl(url)
+    tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
+                                                   'tboxjs-' + buildType + '-' + idNum))
+    createTboxCacheFolder(tboxCacheFolder)
+
+    incompleteBuildTxtFile = normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE))
+
+    if os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
+        return True, idNum, tboxCacheFolder  # Cached, complete
+
+    if os.path.isfile(incompleteBuildTxtFile):
+        assert os.listdir(tboxCacheFolder) == [INCOMPLETE_NOTE], 'Only ' + \
+            'incompleteBuild.txt should be present in ' + tboxCacheFolder
+        readIncompleteBuildTxtFile(incompleteBuildTxtFile, idNum)
+        return False, None, None  # Cached, incomplete
+
+    if downloadBuild(url, tboxCacheFolder, jsShell=isJsShell):
+        assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
+            'the build subdirectory should be present in ' + tboxCacheFolder
+        return True, idNum, tboxCacheFolder  # Downloaded, complete
+    else:
+        writeIncompleteBuildTxtFile(url, tboxCacheFolder, incompleteBuildTxtFile, idNum)
+        return False, None, None  # Downloaded, incomplete
 
 
 def getTboxJsBinPath(baseDir):
@@ -817,7 +732,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     Returns formatted bisection results from using tinderbox builds.
     '''
     sTimestamp, sHash, sResult, sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
-    eTimestamp, eHash, eResult, eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[1])]
+    eTimestamp, eHash, eResult, eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
 
     print '\nParameters for compilation bisection:'
     pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
@@ -855,6 +770,20 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
             '&tochange=' + eHash + '\n'
 
 
+def readIncompleteBuildTxtFile(txtFile, idNum):
+    '''
+    Reads the INCOMPLETE_NOTE text file indicating that this particular build is incomplete.
+    '''
+    with open(txtFile, 'rb') as f:
+        contentsF = f.read()
+        if not 'is incomplete.' in contentsF:
+            print 'Contents of ' + txtFile + ' is: ' + repr(contentsF)
+            raise Exception('Invalid ' + INCOMPLETE_NOTE + ' file contents.')
+        else:
+            print 'Examined build with numeric ID ' + idNum + ' to be incomplete. ' + \
+                'Trying another build...'
+
+
 def showRemainingNumOfTests(reqList):
     '''
     Display the approximate number of tests remaining.
@@ -866,40 +795,32 @@ def showRemainingNumOfTests(reqList):
     return '~' + str(remainingTests) + ' ' + wordTest + ' remaining...\n'
 
 
-def testSaneJsBinary(cacheFolder):
+def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
     '''
-    If the cache folder is present, check that the js binary is working properly.
+    Tests the build. If the build is incomplete, find a working neighbour, then return results.
     '''
-    assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download')))
-    assert os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist')))
-    assert os.path.isfile(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist',
-                                                       'js' + ('.exe' if isWin else ''))))
-    try:
-        out, retCode = captureStdout([getTboxJsBinPath(cacheFolder), '-e', '42'],
-            ignoreExitCode=True)
-        # Exit code -1073741515 on Windows seems to show up when a required DLL is not present.
-        # This was testable at the time of writing, see bug 953314.
-        isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)
-        # We should have another condition here for non-Windows platforms but we do not yet have
-        # a situation where we can test broken tinderbox js shells on those platforms.
-        if isDllNotPresentWinStartupError:
-            print 'Shell startup error - a .dll file is probably not present.'
-            raise
-        elif retCode != 0:
-            print 'Non-zero return code: ' + str(retCode)
-            raise
-        return True  # js binary is sane
-    except AssertionError:
-        raise
-    except Exception:
-        # Remove build subdirectory of the numeric ID's cache folder if shell does not work well.
-        # This will cause a re-download of the binaries.
-        shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
-        if isDllNotPresentWinStartupError:
-            raise Exception('Shell startup error')
+    finalIndex, idNum, tboxCacheFolder = getBuildOrNeighbour(
+        (not options.browserOptions), preferredIndex, urls, buildType, testedIDs)
+
+    if idNum is None:
+        result, reason = None, None
+    elif idNum in testedIDs.keys():
+        print 'Retrieving previous test result: ',
+        result, reason = testedIDs[idNum][2:4]
+    else:
+        # The build has not been tested before, so test it.
+        testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
+        print 'Found binary in: ' + tboxCacheFolder
+        print 'Testing binary...',
+        result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
+        print 'Result: ' + result + ' - ' + reason
+        # Adds the result and reason to testedIDs
+        testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
+
+    return idNum, result, reason, finalIndex, urls, testedIDs
 
 
-def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, txtContents, num):
+def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
     '''
     Writes a text file indicating that this particular build is incomplete.
     '''
@@ -908,7 +829,7 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, txtContents, num):
         shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
     assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
     with open(txtFile, 'wb') as f:
-        f.write(txtContents)
+        f.write('This build with numeric ID ' + num + ' is incomplete.')
     assert num == getIdFromTboxUrl(url), 'The numeric ID ' + num + \
         ' has to be the one we downloaded from ' + url
     print 'Wrote a text file that indicates numeric ID ' + num + ' has an incomplete build.'
@@ -919,10 +840,28 @@ def main():
     '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
     sanityChecks()
     options = parseOpts()
-    if options.useTinderboxBinaries:
-        bisectUsingTboxBins(options)
-    else:
-        bisectUsingLocalBuilds(options)
+
+    isUsingTboxBins = 'Tbox' if options.useTinderboxBinaries else ''
+    lockDir = os.path.join(ensureCacheDir(), 'autoBisect' + isUsingTboxBins + 'Js-lock')
+    try:
+        os.mkdir(lockDir)
+    except OSError:
+        print "autoBisect is already running"
+        return
+
+    try:
+        if options.useTinderboxBinaries:
+            bisectUsingTboxBins(options)
+        else:
+            # Bisect using local builds
+            if options.browserOptions:
+                findBlamedCset(options, options.browserOptions.repoDir,
+                               buildBrowser.makeTestRev(options))
+            else:
+                findBlamedCset(options, options.buildOptions.repoDir, makeTestRev(options))
+    finally:
+        os.rmdir(lockDir)
+
 
 if __name__ == '__main__':
     # Reopen stdout, unbuffered. This is similar to -u. From http://stackoverflow.com/a/107717
