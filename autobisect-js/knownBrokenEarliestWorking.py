@@ -193,8 +193,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
         required.append('e4a0c6fd1aa9') # 143131 on m-c, first rev that has a stable --ion-check-range-analysis option
-    if '--ion-compile-try-catch' in flags:
-        required.append('73912c9ba403') # 142172 on m-c, first rev that has a stable --ion-compile-try-catch option
     if '--fuzzing-safe' in flags:
         required.append('0a9314155404') # 135892 on m-c, first rev that has the --fuzzing-safe option
     if '--no-fpu' in flags:
