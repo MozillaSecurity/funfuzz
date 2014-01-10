@@ -28,7 +28,7 @@ var unaryMathFunctions = [
   "exp",
   "expm1",
   // "floor", // avoid breaking rnd.
-  "/*NODIFF*/fround", // bug 946679
+  "fround",
   "log",
   "log2",
   "log10",
@@ -80,7 +80,7 @@ function generateMathExpr(d, b, i)
   function mc(expr) {
     switch(rnd(3) ? commonCoercion : rnd(10)) {
       case 0: return "(" + " + " + expr + ")";     // f64 (asm.js)
-      case 1: return "/*NODIFF*/Math.fround(" + expr + ")";  // f32 // bug 946679
+      case 1: return "Math.fround(" + expr + ")";  // f32
       case 2: return "(" + expr + " | 0)";         // i32 (asm.js)
       case 3: return "(" + expr + " >>> 0)";       // u32
       default: return expr;
