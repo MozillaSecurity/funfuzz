@@ -193,7 +193,10 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
         required.append('e4a0c6fd1aa9') # 143131 on m-c, first rev that has a stable --ion-check-range-analysis option
-    if '--fuzzing-safe' in flags:
+    if '--fuzzing-safe' in flags or '--ion-parallel-compile=' in flags:
+        # --fuzzing-safe and --ion-parallel-compile=off generally are required flags for compareJIT
+        # autoBisect acts funny when in the region between m-c rev f42381e2760d and 0a9314155404,
+        # so we should just use the later revision as the start revision.
         required.append('0a9314155404') # 135892 on m-c, first rev that has the --fuzzing-safe option
     if '--no-fpu' in flags:
         required.append('f10884c6a91e') # 128312 on m-c, first rev that has the --no-fpu option
@@ -216,8 +219,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
     if options.enableRootAnalysis or options.isThreadsafe or options.enableExactRooting:
         required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
-    if '--ion-parallel-compile=' in flags:
-        required.append('f42381e2760d') # 106714 on m-c, first rev that has the --ion-parallel-compile=[on|off] option
     if ionEdgeCaseAnalysisFlag:
         required.append('6c870a497ea4') # 106491 on m-c, first rev that supports --ion-edgecase-analysis=[on|off]
     if '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
