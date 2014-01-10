@@ -108,7 +108,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
                 sline = line.rstrip()
                 if sline == "It's looking good!" or line.startswith("jsfunfuzz broke its own scripting environment: "):
                     break
-                if sline == "terminate called" or sline == "quit called":
+                if 'terminate called' in sline or 'quit called' in sline:
                     break
                 elif line.startswith("Found a bug: "):
                     if "NestTest" in line and reportedOverRecursion(logPrefix):
