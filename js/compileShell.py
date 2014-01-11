@@ -99,7 +99,7 @@ class CompiledShell(object):
     def getShellCacheFullPath(self):
         return normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
     def getShellCompiledPath(self):
-        return normExpUserPath(os.path.join(self.getJsObjdir(), 'js' + ('.exe' if isWin else '')))
+        return normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if isWin else '')))
     def getShellCompiledRunLibsPath(self):
         libsList = [
             normExpUserPath(os.path.join(self.getNsprObjdir(), 'dist', 'lib', runLib)) \
@@ -475,6 +475,31 @@ def copyJsSrcDirs(shell):
     if os.path.isdir(mfbtDir):
         shutil.copytree(mfbtDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
                                               'mfbt'))
+
+    # JS shell builds require the nsprpub/config/make-system-wrappers.pl to be present.
+    # We only need to copy this if we are building a non-threadsafe build because
+    # threadsafe builds will require the whole nsprpub directory anyway later on.
+    if not shell.buildOptions.isThreadsafe:
+        nsprConfigWrapper = normExpUserPath(os.path.join(shell.getRepoDir(), 'nsprpub', 'config', 'make-system-wrappers.pl'))
+        if os.path.isfile(nsprConfigWrapper):
+            nsprDest = os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir, 'nsprpub', 'config')
+            try:
+                # FIXME: os.makedirs does not like os.pardir, so we have to create nsprpub first
+                os.mkdir(os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir, 'nsprpub'))
+                os.mkdir(nsprDest)
+            except OSError:
+                raise Exception('Unable to create NSPR config dir.')
+        shutil.copy(nsprConfigWrapper, nsprDest)
+
+    # JS shell builds require the toplevel moz.build file to be present.
+    mozBuildFile = normExpUserPath(os.path.join(shell.getRepoDir(), 'moz.build'))
+    if os.path.isfile(mozBuildFile):
+        shutil.copy(mozBuildFile, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir))
+
+    # JS shell builds require the toplevel Makefile.in to be present.
+    makefileInFile = normExpUserPath(os.path.join(shell.getRepoDir(), 'Makefile.in'))
+    if os.path.isfile(makefileInFile):
+        shutil.copy(makefileInFile, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir))
 
     assert os.path.isdir(shell.getCompilePathJsSrc())
 
