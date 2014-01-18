@@ -155,7 +155,6 @@ javascript.options.ion.chrome
 javascript.options.ion.content
 javascript.options.ion.parallel_compilation
 javascript.options.ion.unsafe_eager_compilation
-javascript.options.jit_hardening
 javascript.options.jitprofiling.chrome
 javascript.options.jitprofiling.content
 javascript.options.mem.gc_dynamic_heap_growth
