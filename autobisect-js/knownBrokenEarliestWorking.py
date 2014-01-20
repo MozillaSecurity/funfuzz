@@ -66,9 +66,6 @@ def knownBrokenRanges(options):
         hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
         hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
         hgrange('b0678affef03', '77d06ee9ac48'), # broken standalone js shells with ICU
-        hgrange('d86f10836597', 'f6d5a48271b6'), # --disable-threadsafe was broken
-        hgrange('d633e3ff2013', 'bcbe93f41547'), # broken non-threadsafe (after ts became default)
-        hgrange('dbeea0e93b56', 'b980c2dee2e7'), # broken non-threadsafe (after ts became default)
     ]
 
     if isMac and macVer() >= [10, 7]:
@@ -113,6 +110,13 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('54c6c42eb219', 'fe8429f81df8'), # broken threadsafe builds
             hgrange('07606a1ebf5d', '43f17af3f704'), # --enable-threadsafe was removed
+        ])
+
+    if not options.isThreadsafe:
+        skips.extend([
+            hgrange('d86f10836597', 'f6d5a48271b6'), # broken non-threadsafe after ts became default
+            hgrange('d633e3ff2013', 'bcbe93f41547'), # broken non-threadsafe after ts became default
+            hgrange('dbeea0e93b56', 'b980c2dee2e7'), # broken non-threadsafe after ts became default
         ])
 
     # This has been moved to a global ignore range. JSBugMon passes in --disable-threadsafe directly
