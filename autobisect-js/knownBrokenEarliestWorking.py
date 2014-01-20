@@ -132,11 +132,14 @@ def knownBrokenRanges(options):
             hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
         ])
 
-    # --enable-gcgenerational requires --enable-exact-rooting, so just check for the latter.
-    if options.enableExactRooting:
+    if not options.disableExactRooting:
         skips.extend([
             hgrange('f8f0facf81ec', '492e87516012'), # broken exact rooting or GGC
             hgrange('541248fb29e4', 'b3f8eee3c389'), # broken exact rooting or GGC
+        ])
+
+    if not options.disableExactRooting and options.enableGcGenerational:
+        skips.extend([
             hgrange('eb89f19070ae', '6b466b03f5c0'), # broken GGC, 32-bit, assuming 64-bit as well
         ])
 
@@ -191,6 +194,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if options.disableExactRooting:
+        required.append('6f7227918e79') # 164088 on m-c, first rev that has a stable --disable-exact-rooting option
     if '--ion-check-thread-safety' in flags:
         required.append('3eb853546cff') # 161310 on m-c, first rev that has a stable --ion-check-thread-safety option
     if isWin:
@@ -223,18 +228,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('b4fa8b1f279d') # 114005 on m-c, first rev that has the --thread-count=N option
     if isMac and [10, 7] <= macVer() < [10, 9]:
         required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
-    if options.enableRootAnalysis or options.isThreadsafe or options.enableExactRooting:
-        required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
-    if ionEdgeCaseAnalysisFlag:
-        required.append('6c870a497ea4') # 106491 on m-c, first rev that supports --ion-edgecase-analysis=[on|off]
-    if '--no-ti' in flags or '--no-ion' in flags or '--no-jm' in flags:
-        required.append('300ac3d58291') # 106120 on m-c, See bug 724751: IonMonkey flag change
-    if '--ion' in flags:
-        required.append('43b55878da46') # 105662 on m-c, IonMonkey's approximate first stable rev w/ --ion -n
-    if '--ion-eager' in flags:
-        required.append('4ceb3e9961e4') # 105173 on m-c, see bug 683039 - Delay Ion compilation until a function is hot
     # if m-c 153666:81175b9cddcf is ever older than the base rev here, compile POSIX threadsafe shells using --enable-posix-nspr-emulation
-    required.append('e077c138cd5d') # 97464 on m-c, first rev that has the --disable-threadsafe option
+    required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 

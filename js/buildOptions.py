@@ -37,7 +37,7 @@ def parseShellOptions(inputArgs):
         buildWithAsan = False,
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
-        enableExactRooting = False,
+        disableExactRooting = False,
         enableGcGenerational = False,
     )
 
@@ -81,13 +81,13 @@ def parseShellOptions(inputArgs):
     parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
                       action='store_true',
                       help='Build shells with --enable-root-analysis. Defaults to "%default".')
-    parser.add_option('--enable-exact-rooting', dest='enableExactRooting',
+    parser.add_option('--disable-exact-rooting', dest='disableExactRooting',
                       action='store_true',
-                      help='Build shells with --enable-exact-rooting. Defaults to "%default".')
+                      help='Build shells with --disable-exact-rooting. Defaults to "%default".')
     parser.add_option('--enable-gcgenerational', dest='enableGcGenerational',
                       action='store_true',
                       help='Build shells with --enable-gcgenerational. Defaults to "%default". ' + \
-                           'Requires --enable-exact-rooting.')
+                           '--disable-exact-rooting cannot be turned on.')
 
     (options, args) = parser.parse_args(inputArgs.split())
 
@@ -118,11 +118,11 @@ def parseShellOptions(inputArgs):
         assert isLinux and isARMv7l
 
     if options.enableRootAnalysis:
-        assert not options.enableExactRooting
+        assert options.disableExactRooting
         assert not options.enableGcGenerational
 
     if options.enableGcGenerational:
-        assert options.enableExactRooting
+        assert not options.disableExactRooting
 
     if isWin:
         assert isMozBuild64 == (options.arch == '64')
@@ -143,7 +143,7 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('ts')
     if options.enableRootAnalysis:
         specialParamList.append('ra')
-    if options.enableExactRooting:
+    if not options.disableExactRooting:
         specialParamList.append('er')
     if options.enableGcGenerational:
         specialParamList.append('ggc')

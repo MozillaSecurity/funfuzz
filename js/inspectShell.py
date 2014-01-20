@@ -168,6 +168,6 @@ def verifyBinary(sh, options):
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
             options.enableRootAnalysis
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'exact-rooting') == \
-            options.enableExactRooting
+            (not options.disableExactRooting)
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'generational-gc') == \
             options.enableGcGenerational
