@@ -67,7 +67,8 @@ def knownBrokenRanges(options):
         hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
         hgrange('b0678affef03', '77d06ee9ac48'), # broken standalone js shells with ICU
         hgrange('d86f10836597', 'f6d5a48271b6'), # --disable-threadsafe was broken
-        hgrange('d633e3ff2013', 'bcbe93f41547'), # broken non-threadsafe builds
+        hgrange('d633e3ff2013', 'bcbe93f41547'), # broken non-threadsafe (after ts became default)
+        hgrange('dbeea0e93b56', 'b980c2dee2e7'), # broken non-threadsafe (after ts became default)
     ]
 
     if isMac and macVer() >= [10, 7]:
