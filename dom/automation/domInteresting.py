@@ -347,7 +347,8 @@ def knownChromeFailure(msg):
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
         ("search.xml" in msg and "this.updateDisplay is not a function" in msg) or # Bug 903274
         ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or # Bug 947404
-        ("webrtcUI.jsm" in msg and "can't access dead object" in msg) or # Bug 949907
+        ("webrtcUI.jsm" in msg and "can't access dead object" in msg) or # Bug 949907, but also check whether webrtc-js-dom still hits it
+        ("webrtcUI.jsm" in msg and "NS_ERROR_OUT_OF_MEMORY" in msg) or # Seems legit (webrtc-js-oom)
         ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or # Bug 949920
         ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or # Bug 950327
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
