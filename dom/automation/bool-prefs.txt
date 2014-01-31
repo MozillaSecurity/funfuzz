@@ -96,7 +96,6 @@ dom.experimental_forms
 dom.forms.color
 dom.forms.inputmode
 dom.forms.number
-dom.promise.enabled
 dom.gamepad.enabled
 dom.gamepad.non_standard_events.enabled
 dom.identity.enabled
