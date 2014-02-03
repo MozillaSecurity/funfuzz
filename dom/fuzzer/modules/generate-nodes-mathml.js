@@ -123,7 +123,7 @@ var fuzzerMathMLAttributes = (function() {
     "columnspan": fuzzValues.tableSpans,
 
     "notation": function() {
-      var notations = ["longdiv", "actuarial", "radical", "box", "roundedbox", "circle", "left", "right", "top", "bottom", "updiagonalstrike", "downdiagonalstrike", "verticalstrike", "horizontalstrike", "madruwb"];
+      var notations = ["longdiv", "actuarial", "radical", "box", "roundedbox", "circle", "left", "right", "top", "bottom", "updiagonalstrike", "downdiagonalstrike", "verticalstrike", "horizontalstrike", "madruwb", "updiagonalarrow"];
       var n = rnd(2) ? 1 : rnd(10);
       var a = [];
       for (var i = 0; i < n; ++i)
