@@ -38,7 +38,7 @@ var fuzzerURLObjects = (function() {
 
     var i = rnd(fields.length);
     if (rnd(10) == 0) {
-      return obj + "." + fields[i].field; // just read the field
+      return obj + "." + fields[i].field + ";"; // just read the field
     }
     var j = rnd(10) ? i : rnd(fields.length); // generate a value, usually for the correct field
     return obj + "." + fields[i].field + " = " + simpleSource(Random.pick(fields[j].values)) + ";"
