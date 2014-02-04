@@ -31,7 +31,7 @@ var fuzzerURLObjects = (function() {
       return makeURLObject();
     }
 
-    var obj = Things.instanceAny(["Location", "URL", "HTMLAnchorElement", "HTMLAreaElement"])
+    var obj = Things.instanceAny(["Location", "URL", "HTMLAnchorElement", "HTMLAreaElement"]);
     if (!obj) {
       return makeURLObject();
     }
@@ -41,14 +41,14 @@ var fuzzerURLObjects = (function() {
       return obj + "." + fields[i].field + ";"; // just read the field
     }
     var j = rnd(10) ? i : rnd(fields.length); // generate a value, usually for the correct field
-    return obj + "." + fields[i].field + " = " + simpleSource(Random.pick(fields[j].values)) + ";"
+    return obj + "." + fields[i].field + " = " + simpleSource(Random.pick(fields[j].values)) + ";";
   }
 
   function makeURLObject()
   {
     switch(rnd(5)) {
       case 0:
-        return Things.add('new URL(' + simpleSource(Random.pick(fuzzValues.URIs)) + ')')
+        return Things.add('new URL(' + simpleSource(Random.pick(fuzzValues.URIs)) + ')');
       case 1:
         return Things.add('document.createElementNS("http://www.w3.org/1999/xhtml", "a")');
       case 2:
