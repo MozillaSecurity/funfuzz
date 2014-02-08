@@ -594,7 +594,7 @@ def envDump(shell, log):
 
         f.write('Create another shell in autobisect-cache like this one:\n')
         f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
-            "-R", shell.getRepoDir(), "-b", shell.buildOptions.inputArgs]) + "\n\n")
+            "-b", shell.buildOptions.inputArgs]) + "\n\n")
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')
