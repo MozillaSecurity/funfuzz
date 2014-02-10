@@ -28,6 +28,7 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
+       && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("'strict") == -1             // see bug 743425
        && code.indexOf("Object.seal") == -1         // bug 937922
        && code.indexOf("RegExp") == -1              // bug 945512
