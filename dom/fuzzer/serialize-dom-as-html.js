@@ -4,13 +4,11 @@
 
 // This function turns an HTML DOM into either HTML or XHTML.
 
-// It might kinda work on XHTML DOMs too, but it's probably better to use
-//    (new XMLSerializer).serializeToString
-// rather than serializeHTML with outputXML=true if the document is XML.
-
 // If outputXML is false, attempt to output as HTML.  (HTML enables fast-and-loose reduction, but not all DOMs can be serialized as HTML.  serializeHTML will complain about some unserializable features in HTML mode, but it won't detect things like block-in-inline and missing table parts!)
 
-// If outputXML is true, output as XML.  (XML is more reliable in terms of re-creating an equivalent DOM.)
+// If outputXML is true, output as XML.
+// It should work on XHTML DOMs with "normal" use of MathML and SVG,
+// but serializeXML is more reliable.
 
 function serializeHTML(n, outputXML)
 {
@@ -140,6 +138,11 @@ function serializeHTML(n, outputXML)
   }
 
   return serializeSubtree(n || document.documentElement, outputXML);
+}
+
+function serializeXML(n)
+{
+  return (new XMLSerializer()).serializeToString(n || document.documentElement);
 }
 
 //setTimeout(function() { dumpln(serializeHTML(null, true)); }, 200);
