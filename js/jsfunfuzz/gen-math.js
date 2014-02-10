@@ -1,7 +1,7 @@
 const NUM_MATH_FUNCTIONS = 6;
 
 var binaryMathOps = [
-  " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ",
+  " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " /*NODIFF*/>>> ",  // bug 969705
   " < ", " > ", " <= ", " >= ",
   " == ", " != ",
   " === ", " !== ",
@@ -82,7 +82,7 @@ function generateMathExpr(d, b, i)
       case 0: return "(" + " + " + expr + ")";     // f64 (asm.js)
       case 1: return "Math.fround(" + expr + ")";  // f32
       case 2: return "(" + expr + " | 0)";         // i32 (asm.js)
-      case 3: return "(" + expr + " >>> 0)";       // u32
+      case 3: return "(" + expr + " /*NODIFF*/>>> 0)";       // u32  (bug 969705)
       default: return expr;
     }
   }
