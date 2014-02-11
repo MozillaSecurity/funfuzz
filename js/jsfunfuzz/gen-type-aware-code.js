@@ -180,7 +180,6 @@ var makeEvilCallback;
       s += "v" + i + " = null; ";
       s += "b" + i + " = new ArrayBuffer(64); ";
       s += "t" + i + " = new Uint8ClampedArray; ";
-      // don't initialize p (ParallelArray) here because we don't want initializeEverything to trip consistency exclusions
       // nothing for iterators, handlers
     }
     return s;
@@ -190,6 +189,7 @@ var makeEvilCallback;
     // a: Array
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "[]"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "new Array"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", makeArrayBuildParCall(d, b)); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", makeIterable(d, b)); } },
     { w: 1,  v: function(d, b) { return m("a") + ".length = " + rnd(ARRAY_SIZE) + ";"; } },
     { w: 8,  v: function(d, b) { return assign(d, b, "v", m("at") + ".length"); } },
@@ -222,22 +222,19 @@ var makeEvilCallback;
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ", " + m() + ");"; } },
 
-    // p: ParallelArray
-    // A parallel array can be constructed from (1) an array-like that has a length property, or (2) a length [possibly multi-dimensional] and elemental function
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", "new ParallelArray(" + m("at") + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", "new ParallelArray(" + makeParallelArraySizeAndInitializer(d, b) + ")"); } },
-    // Parallel arrays are immutable, but have some readable properties
-    { w: 3,  v: function(d, b) { return assign(d, b, "a", m("p") + ".shape"); } }, // what
-    // Parallel arrays have functional methods that will sometimes run in parallel.
-    { w: 3,  v: function(d, b) { return assign(d, b, "v", m("p") + ".get(" + m("v") + ")"); } },
-    { w: 3,  v: function(d, b) { return assign(d, b, "v", m("p") + ".get([" + m("v") + ", " + m("v") + "])"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", m("p") + ".map(" + Random.index(["1, ", "2, ", ""]) + (rnd(2)?m("f"):makeParallelMap(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", m("p") + ".filter(" + (rnd(2)?m("f"):makeParallelFilter(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "v", m("p") + ".reduce(" + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", m("p") + ".scan(" +   (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", m("p") + ".scatter([0,0,1,1,2,2], undefined," + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", m("p") + ".flatten()"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "p", m("p") + ".partition(" + (rnd(2)?m("v"):rnd(10)) + ")"); } },
+    // Parallel array methods
+    // http://wiki.ecmascript.org/doku.php?id=strawman:data_parallelism
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".mapPar(" + (rnd(2)?m("f"):makeParallelMap(d,b)) + Random.index([", 1", ", 2", ""]) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".filterPar(" + (rnd(2)?m("f"):makeParallelFilter(d,b)) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "v", m("a") + ".reducePar(" + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".scanPar(" +   (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".scatterPar([0,0,1,1,2,2], undefined," + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
+
+    // Typed Objects (aka Binary Data)
+    // http://wiki.ecmascript.org/doku.php?id=harmony:typed_objects (does not match what's in spidermonkey as of 2014-02-11)
+    // Do I need to keep track of 'types', 'objects of those types', and 'arrays of objects of those types'?
+    //{ w: 1,  v: function(d, b) { return assign(d, b, "d", m("d") + ".flatten()"); } },
+    //{ w: 1,  v: function(d, b) { return assign(d, b, "d", m("d") + ".partition(" + (rnd(2)?m("v"):rnd(10)) + ")"); } },
 
     // o: Object
     { w: 1,  v: function(d, b) { return assign(d, b, "o", "{}"); } },
@@ -383,11 +380,11 @@ var makeEvilCallback;
 })();
 
 
-function makeParallelArraySizeAndInitializer(d, b)
+function makeArrayBuildParCall(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  var dimensions = rnd(5) ? 1 : 2;
+  var dimensions = 1; // Todo: keep track of multi-dimensional ArrayType / TypedObject
   var sizes = [];
   var argList = [];
   for (var i = 0; i < dimensions; ++i) {
@@ -399,13 +396,14 @@ function makeParallelArraySizeAndInitializer(d, b)
   }
   var bv = b.concat(argList);
 
-  var sizeArg = (dimensions == 1 && rnd(2)) ? sizes[0] : "[" + sizes.join(", ") + "]";
+  // Array.buildPar requires the size argument to be a scalar
+  var sizeArg = (dimensions == 1) ? sizes[0] : "[" + sizes.join(", ") + "]";
 
   var elementalFunctionArg = rnd(2) ?
     makeFunction(d, bv) :
     "function(" + argList.join(", ") + ") { " + parallelBail(d, bv, argList) + "return " + (rnd(2) ? argList[0] : makeExpr(d, bv)) + "; }";
 
-  return sizeArg + ", " + elementalFunctionArg;
+  return "Array.buildPar(" + sizeArg + ", " + elementalFunctionArg + ")";
 }
 
 function makeParallelMap(d, b)

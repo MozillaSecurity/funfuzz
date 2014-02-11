@@ -20,7 +20,9 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("oomAfterAllocations") == -1
-       && code.indexOf("ParallelArray") == -1       // some parallel operations are non-deterministic (todo: only ignore those ones)
+       && code.indexOf("reducePar") == -1           // only deterministic for associative elemental-reducers
+       && code.indexOf("scanPar") == -1             // only deterministic for associative elemental-reducers
+       && code.indexOf("scatterPar") == -1          // only deterministic for associative conflict-resolvers
     ,
 
     expectConsistentOutputAcrossIter: true
