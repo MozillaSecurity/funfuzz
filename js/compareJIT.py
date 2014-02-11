@@ -54,7 +54,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOpt
         return (lithOps.HAPPY, None)
 
 
-def hitMemoryLimit(err, infilename, issues, lev, elapsedtime):
+def hitMemoryLimit(err, infilename, issues, lev, elapsedtime, stderrTooLong):
     """Does stderr indicate hitting a memory limit?"""
 
     def reportOOM(msg):
@@ -77,7 +77,7 @@ def hitMemoryLimit(err, infilename, issues, lev, elapsedtime):
         # malloc
         reportOOM("can't allocate region")
         return True
-    elif len(err) + 5 > lengthLimit:
+    elif stderrTooLong:
         # If the output was too long for Python to read it in, assume the worst.
         reportOOM("stderr too long")
         return True
@@ -107,6 +107,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         with open(prefix + "-err.txt") as f:
             r.err = f.read(lengthLimit)
 
+        stderrTooLong = (len(r.err) + 5 > lengthLimit)
         r.err = ignoreSomeOfStderr(r.err)
 
         if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
@@ -125,7 +126,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             jsInteresting.deleteLogs(prefix)
             if i == 0:
                 return jsInteresting.JS_FINE
-        elif hitMemoryLimit(r.err, infilename, issues, lev, r.elapsedtime):
+        elif hitMemoryLimit(r.err, infilename, issues, lev, r.elapsedtime, stderrTooLong):
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
             jsInteresting.deleteLogs(prefix)
