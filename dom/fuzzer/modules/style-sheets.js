@@ -298,6 +298,8 @@ var fuzzerRandomClasses = (function() {
 
     // flex
     "order": ["0", "1", "2", "3", "4", numbers],
+
+    "-moz-control-character-visibility": ["visible", "hidden"],
   };
 
   // 2. Extract information from property_database.js.
