@@ -86,6 +86,7 @@ def knownBrokenRanges(options):
     if isWin:
         skips.extend([
             hgrange('f6d5a48271b6', 'dc128b242d8a'), # broken Windows builds due to ICU
+            hgrange('17c463691232', 'f76b7bc18dbc'), # broken Windows builds due to build breakage
         ])
 
     if isMozBuild64:
