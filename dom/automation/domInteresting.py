@@ -173,6 +173,9 @@ class AmissLogHandler:
             if "ASSERTION: Appshell already destroyed" in msg:
                 print "Ignoring memory leaks (bug 933730)"
                 self.expectedToLeak = True
+            if "Did not receive all required callbacks" in msg:
+                print "Ignoring memory leaks (bug 973384)"
+                self.expectedToLeak = True
             if "Ran out of memory while building cycle collector graph" in msg or "AddPurpleRoot failed" in msg:
                 print "Ignoring memory leaks (CC OOM)"
                 self.expectedToLeak = True
