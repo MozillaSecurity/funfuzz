@@ -19,8 +19,11 @@ var fuzzTestingFunctions = (function(glob){
 
   function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
 
-  function global(d, b) { return browser ? Things.instance("Window") : makeExpr(d - 1, b); }
-  function object(d, b) { return browser ? Things.any() : makeExpr(d - 1, b); }
+  function global(d, b) { return ensureOneArg(browser ? Things.instance("Window") : makeExpr(d - 1, b)); }
+  function object(d, b) { return ensureOneArg(browser ? Things.any() : makeExpr(d - 1, b)); }
+
+  // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
+  function ensureOneArg(s) { return "(null || (" + s + "))"; }
 
   function enableGCZeal()
   {
