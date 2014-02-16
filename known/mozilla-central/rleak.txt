@@ -22,5 +22,5 @@ SIZE medium. when known to leak, allowed to entrain unknown objects.
 SIZE tiny. objects that should never entrain others. (last group is also the default for unknown objects)
 
        nsStringBuffer
-       nsTArray_base
+  LEAK nsTArray_base # Bug 963878
   LEAK HoldJSObjects
