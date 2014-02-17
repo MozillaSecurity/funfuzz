@@ -636,11 +636,28 @@ def main():
                       dest='buildOptions',
                       help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
 
+    parser.add_option('-r', '--rev',
+                      dest='revision',
+                      help='Specify revision to build')
+
     (options, args) = parser.parse_args()
     options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
-    shell = CompiledShell(options.buildOptions, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
-    compileStandalone(shell)
+
+    rev = options.revision
+
+    if rev:
+        shell = CompiledShell(options.buildOptions, rev, mkdtemp(prefix="cshell-" + rev + "-"))
+    else:
+        localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
+        shell = CompiledShell(options.buildOptions, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
+
+    if not os.path.exists(shell.getShellCacheFullPath()):
+        if rev:
+            captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev], ignoreStderr=True)
+            destroyPyc(options.buildOptions.repoDir)
+    
+        compileStandalone(shell)
+    
     print shell.getShellCacheFullPath()
 
 if __name__ == '__main__':
