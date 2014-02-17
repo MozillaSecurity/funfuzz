@@ -615,8 +615,9 @@ def rdfInit(args):
                         crashProcessor = "mac crash reporter"
                         expectAfterFunctionName = " + "
                     processedCorrectly = False
-                    for j in ["main", "XRE_main", "exit", "start"]:
+                    for j in ["main", "XRE_main", "exit"]:
                         if (" " + j + expectAfterFunctionName) in crashText:
+                            # We have enough symbols from Firefox
                             processedCorrectly = True
                             break
                     if not processedCorrectly:
