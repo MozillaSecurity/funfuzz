@@ -347,7 +347,6 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
         ("pageInfo.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949927
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
-        ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
         ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or # Bug 931286
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
@@ -361,7 +360,9 @@ def knownChromeFailure(msg):
         ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or # Bug 950327
         ("webrtcUI.jsm" in msg) or # Bug 973318
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
+        ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("SessionHistory.jsm" in msg and "webNavigation.document.body is null" in msg) or # Bug 973550
+        ("content-sessionStore.js" in msg and "nsIURI.userPass" in msg) or # Bug 973559
         "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
