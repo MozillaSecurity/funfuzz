@@ -356,6 +356,7 @@ def knownChromeFailure(msg):
         ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or # Bug 950327
         ("webrtcUI.jsm" in msg) or # Bug 973318
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
+        "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
         "nsIFeedWriter::close" in msg or # Bug 813408
