@@ -14,8 +14,10 @@ from subprocesses import captureStdout, normExpUserPath, shellify, vdump
 # Use curl/wget rather than urllib because urllib can't check certs.
 useCurl = False
 
-# A hack to work around a configuration problem (bug 803764) (see bug 950256)
-wgetMaybeNCC = ['--no-check-certificate'] if (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org") else []
+# A terrible hack to work around a configuration problem.
+# (bug 803764) (see bug 950256) -- (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org")
+# Another bug for Windows??
+wgetMaybeNCC = ['--no-check-certificate']
 
 def readFromURL(url):
     '''
