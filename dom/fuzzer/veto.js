@@ -113,6 +113,7 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spamming Notifications (bug 897367, bug 866653)
                 "peerconnection",    // bug 914015
                 "\\u",               // bug 963878
+                "MediaRecorder",     // bug 973522
             ]
         },
         {
