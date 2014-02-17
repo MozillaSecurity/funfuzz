@@ -615,7 +615,7 @@ def rdfInit(args):
                         crashProcessor = "mac crash reporter"
                         expectAfterFunctionName = " + "
                     processedCorrectly = False
-                    for j in ["main", "XRE_main", "exit"]:
+                    for j in ["main", "XRE_main", "exit", "start"]:
                         if (" " + j + expectAfterFunctionName) in crashText:
                             processedCorrectly = True
                             break
