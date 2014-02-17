@@ -9,6 +9,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -477,8 +478,12 @@ def assertSaneJsBinary(cacheF):
             assert os.path.isfile(normExpUserPath(os.path.join(cacheF, 'build', 'dist',
                                                                'js' + ('.exe' if isWin else ''))))
             try:
-                out, retCode = captureStdout([getTboxJsBinPath(cacheF), '-e', '42'],
-                    ignoreExitCode=True)
+                shellPath = getTboxJsBinPath(cacheF)
+                # Ensure we don't fail because the shell lacks u+x
+                if not os.access(shellPath, os.X_OK):
+                    os.chmod(shellPath, stat.S_IXUSR);
+
+                out, retCode = captureStdout([shellPath, '-e', '42'], ignoreExitCode=True)
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)
