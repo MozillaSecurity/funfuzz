@@ -300,7 +300,7 @@ def jsFailure(msg):
             "ReferenceError" in msg or
             "TypeError" in msg or
             "Full stack:" in msg or
-            "System JS : ERROR" in msg or
+#            "System JS : ERROR" in msg or
             False)
 
 def jsInChrome(msg):
@@ -314,7 +314,7 @@ def jsInChrome(msg):
             "resource://modules/" in msg or
             "resource://gre/modules/" in msg or
             "resource://gre/components/" in msg or
-            "System JS : ERROR" in msg or
+#            "System JS : ERROR" in msg or
             False)
 
 def knownChromeFailure(msg):
