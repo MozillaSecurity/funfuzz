@@ -314,19 +314,20 @@ def externalTestAndLabel(options, interestingness):
     '''Make use of interestingness scripts to decide whether the changeset is good or bad.'''
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
     conditionArgPrefix = interestingness[1:]
-    tempPrefix = os.path.join(mkdtemp(), "abExtTestAndLabel-")
 
     def inner(shellFilename, hgHash):
         conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList
+        tempDir = mkdtemp(prefix="abExtTestAndLabel-" + hgHash)
+        tempPrefix = os.path.join(tempDir, 't')
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
-        if conditionScript.interesting(conditionArgs, tempPrefix + hgHash):
+        if conditionScript.interesting(conditionArgs, tempPrefix):
             innerResult = ('bad', 'interesting')
         else:
             innerResult = ('good', 'not interesting')
-        if os.path.isdir(tempPrefix + hgHash):
-            shutil.rmtree(tempPrefix + hgHash)
+        if os.path.isdir(tempDir):
+            shutil.rmtree(tempDir)
         return innerResult
     return inner
 
