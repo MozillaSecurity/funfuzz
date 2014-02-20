@@ -1,7 +1,5 @@
 function start(glob)
 {
-  getListOfMakers(glob);
-
   var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);

@@ -149,8 +149,6 @@ function testAsmDifferential(stdlib, interior)
 // Call this instead of start() to run asm-differential tests
 function startAsmDifferential()
 {
-  getListOfMakers(this);
-
   var asmFuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
   dumpln("asmFuzzSeed: " + asmFuzzSeed);
   Random.init(asmFuzzSeed);

@@ -1,7 +1,7 @@
 // Randomly ignore the grammar 1 in TOTALLY_RANDOM times we generate any grammar node.
 var TOTALLY_RANDOM = 1000;
 
-var allMakers = [];
+var allMakers = getListOfMakers(this);
 
 function totallyRandom(d, b) {
   d = d + (rnd(5) - 2); // can increase!!
@@ -11,9 +11,13 @@ function totallyRandom(d, b) {
 
 function getListOfMakers(glob)
 {
-  for (var f in glob)
-    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver")
-      allMakers.push(glob[f]);
+  var r = [];
+  for (var f in glob) {
+    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver") {
+      r.push(glob[f]);
+    }
+  }
+  return r;
 }
 
 
