@@ -44,8 +44,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
-    if (shellSupportsFlag(shellPath, '--no-sse3') and shellSupportsFlag(shellPath, '--no-sse4')) \
-            and chance(.2):
+    if not isWin64 and (shellSupportsFlag(shellPath, '--no-sse3') \
+            and shellSupportsFlag(shellPath, '--no-sse4')) \
+            and chance(.2):  # bug 969702
         # --no-sse3 and --no-sse4 landed in m-c rev 526ba3ace37a.
         if chance(.5):
             args.append("--no-sse3")
@@ -158,7 +159,7 @@ def basicFlagSets(shellPath):
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-            if shellSupportsFlag(shellPath, '--no-sse3'):
+            if not isWin64 and shellSupportsFlag(shellPath, '--no-sse3'):  # bug 969702
                 basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         if shellSupportsFlag(shellPath, '--ion-check-thread-safety'):
