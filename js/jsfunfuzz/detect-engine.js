@@ -25,7 +25,11 @@ if (jsshell) {
       engine = ENGINE_SPIDERMONKEY_MOZILLA24;
     }
 
-    version(180); // 170: make "yield" and "let" work. 180: sane for..in.
+    // Avoid accidentally waiting for user input that will never come.
+    readline = function(){};
+
+    // 170: make "yield" and "let" work. 180: better for..in behavior.
+    version(180);
   } else if (typeof XPCNativeWrapper == "function") {
     // e.g. xpcshell or firefox
     engine = ENGINE_SPIDERMONKEY_TRUNK;
