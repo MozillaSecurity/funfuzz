@@ -119,6 +119,7 @@ def knownBrokenRanges(options):
             hgrange('d633e3ff2013', 'bcbe93f41547'), # broken non-threadsafe after ts became default
             hgrange('dbeea0e93b56', 'b980c2dee2e7'), # broken non-threadsafe after ts became default
             hgrange('995f7402235b', '6c899a1064f3'), # broken non-threadsafe after ts became default
+            hgrange('d2c4ae312b66', 'abfaf0ccae19'), # broken non-threadsafe after ts became default
         ])
 
     # This has been moved to a global ignore range. JSBugMon passes in --disable-threadsafe directly
