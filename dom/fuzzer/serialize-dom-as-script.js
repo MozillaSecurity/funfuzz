@@ -51,7 +51,6 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
   if (magic) {
     // Clear out the DOM.
     cs.push("var root = " + rootStr + "; while(root.firstChild) { root.removeChild(root.firstChild); }");
-    cs.push("createEmptyLists();"); // XXX this creates a dependency on fuzzer-combined.js
 
     if (root == document.documentElement) {
       cs.push(ensureIndexed(document.documentElement) + " = document.documentElement;");
