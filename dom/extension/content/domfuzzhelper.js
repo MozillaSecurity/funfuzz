@@ -556,6 +556,11 @@ function maybeInjectScript(event)
     return;
   }
 
+  if (doc.location === null) {
+    // Some weird situation with iframes and document.write and navigation can trigger this.
+    return;
+  }
+
   var hash = doc.location.hash;
   if (!hash.startsWith("#fuzz=")) {
     return;
