@@ -119,8 +119,10 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
                     # FIXME:     output everything between this line and "jsfunfuzz stopping due to finding a bug."
                     break
             else:
-                issues.append("jsfunfuzz didn't finish")
-                lev = JS_DID_NOT_FINISH
+                if '-dm-' in options.jsengineWithArgs[0]:  # This is faster than inspectShell.py
+                    # We do not know whether quit/terminate was called in non-deterministic builds
+                    issues.append("jsfunfuzz didn't finish")
+                    lev = JS_DID_NOT_FINISH
 
     # FIXME: if not quiet:
     # FIXME:     output the last tryItOut line
