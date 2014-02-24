@@ -1159,7 +1159,7 @@ function makeTypedArrayStatements(d, b)
   var numExtraStatements = rnd(d) + 1;
   var buffer = uniqueVarName();
   var bufferSize = (1 + rnd(2)) * (1 + rnd(2)) * (1 + rnd(2)) * rnd(5);
-  var statements = "var " + buffer + " = new ArrayBuffer(" + bufferSize + "); ";
+  var statements = "var " + buffer + " = new " + arrayBufferType() + "(" + bufferSize + "); ";
   var bv = b.concat([buffer]);
   for (var j = 0; j < numViews; ++j) {
     var view = buffer + "_" + j;
@@ -1771,5 +1771,5 @@ function makeAsmJSFunction(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior(["ff"]);
-  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + ' })(this, {ff: ' + makeFunction(d - 2, b) + '}, new ArrayBuffer(4096))';
+  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + ' })(this, {ff: ' + makeFunction(d - 2, b) + '}, new ' + arrayBufferType() + '(4096))';
 }

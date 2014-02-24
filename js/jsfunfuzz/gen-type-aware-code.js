@@ -269,7 +269,7 @@ var makeEvilCallback;
     { w: 3,  v: function(d, b) { return m("e") + ".delete(" + val(d, b) + ");"; } },
 
     // b: Buffer
-    { w: 1,  v: function(d, b) { return assign(d, b, "b", "new ArrayBuffer(" + bufsize() + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "b", "new " + arrayBufferType() + "(" + bufsize() + ")"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "b", m("t") + ".buffer"); } },
     { w: 1,  v: function(d, b) { return "neuter(" + m("b") + ");"; } },
 
@@ -443,3 +443,7 @@ function infrequentCondition(v, n)
     default: var mod = rnd(n) + 2; var target = rnd(mod); return "/*ICCD*/" + v + " % " + mod + (rnd(8) ? " == " : " != ") + target;
   }
 }
+
+var arrayBufferType = "SharedArrayBuffer" in this ?
+  function() { return rnd(2) ? "SharedArrayBuffer" : "ArrayBuffer"; } :
+  function() { return "ArrayBuffer"; };
