@@ -325,6 +325,7 @@ def knownChromeFailure(msg):
         ("nsIWebProgress.DOMWindow" in msg or "nsIWebProgress.isTopLevel" in msg) or # bug 732593
         "installStatus is null" in msg or # bug 693237
         "aTab is null" in msg or # bug 693239
+        "tab is null" in msg or  # bug 693239?
         "browser is null" in msg or # bug 693239?
         "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
         "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
