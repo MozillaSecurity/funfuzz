@@ -446,11 +446,12 @@ def copyJsSrcDirs(shell):
     if os.path.isdir(mcCfgDir):
         shutil.copytree(mcCfgDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
                                               'config'))
+
     # m-c changeset 119049:d2cce982a7c8 requires the python/ directory to be present.
     pyDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'python'))
     if os.path.isdir(pyDir):
-        shutil.copytree(pyDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
-                                              'python'))
+        shutil.copytree(pyDir, os.path.join(shell.getCompilePath(), 'python'))
+
     # m-c changeset 119049:d2cce982a7c8 requires the testing/mozbase/ directory to be present.
     mzBaseDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'testing', 'mozbase'))
     if os.path.isdir(mzBaseDir):
