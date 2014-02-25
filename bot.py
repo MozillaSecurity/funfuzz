@@ -24,7 +24,7 @@ import downloadBuild
 import lithOps
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isMac, isWin, \
-    normExpUserPath, shellify, vdump
+    normExpUserPath, rmTreeIfExists, shellify, vdump
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -34,7 +34,7 @@ path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
 import loopjsfunfuzz
-from compileShell import CompiledShell, copyJsSrcDirs, cfgJsCompileCopy, verifyBinary
+from compileShell import CompiledShell, cfgJsCompile
 
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
@@ -321,12 +321,7 @@ def parseOpts():
 
 
 def main():
-    options = parseOpts()
-    options.tempDir = tempfile.mkdtemp("fuzzbot")
-    print options.tempDir
-    botmain(options)
-    # Remove the main temp dir, which should be empty at this point
-    os.rmdir(options.tempDir)
+    botmain(parseOpts())
 
 def botmain(options):
     #####
@@ -337,7 +332,7 @@ def botmain(options):
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
         options.timeout = options.timeout or machineTimeoutDefaults(options)
         fuzzShell, cList = localCompileFuzzJsShell(options)
-        startDir = fuzzShell.getBaseTempDir()
+        startDir = fuzzShell.getDestDir()
 
         if options.noStart:
             print 'Exiting, --nostart is set.'
@@ -351,6 +346,9 @@ def botmain(options):
     #####
 
     else:
+        options.tempDir = tempfile.mkdtemp("fuzzbot")
+        print options.tempDir
+
         if options.remote_host:
             printMachineInfo()
             #sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
@@ -401,6 +399,9 @@ def botmain(options):
         # Remove build directory
         if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
             shutil.rmtree(buildDir)
+
+        # Remove the main temp dir, which should be empty at this point
+        os.rmdir(options.tempDir)
 
 
 def printMachineInfo():
@@ -650,10 +651,8 @@ def localCompileFuzzJsShell(options):
                        fuzzResultsDirStart)
     vdump('Base temporary directory is: ' + fullPath)
 
-    myShell = CompiledShell(options.buildOptions, localOrigHgHash, fullPath)
-
-    # Copy js src dirs to compilePath, to have a backup of shell source in case repo gets updated.
-    copyJsSrcDirs(myShell)
+    myShell = CompiledShell(options.buildOptions, localOrigHgHash)
+    myShell.setDestDir(fullPath)
 
     if options.patchDir:
         # Remove the patches from the codebase if they were applied.
@@ -669,9 +668,11 @@ def localCompileFuzzJsShell(options):
     # Ensure there is no applied patch remaining in the main repository.
     assert captureStdout(['hg', '-R', myShell.getRepoDir(), 'qapp'])[0] == ''
 
-    # Compile the shell to be fuzzed and verify it.
-    cfgJsCompileCopy(myShell, options.buildOptions)
-    verifyBinary(myShell, options.buildOptions)
+    try:
+        cfgJsCompile(myShell, options.buildOptions)
+    finally:
+        rmTreeIfExists(myShell.getJsObjdir())
+        rmTreeIfExists(myShell.getNsprObjdir())
 
     analysisPath = os.path.abspath(os.path.join(path0, 'jsfunfuzz', 'analysis.py'))
     if os.path.exists(analysisPath):
@@ -693,7 +694,7 @@ def localCompileFuzzJsShell(options):
     cmdList.append(myShell.getShellBaseTempDirWithName())
 
     # Write log files describing configuration parameters used during compilation.
-    localLog = normExpUserPath(os.path.join(myShell.getBaseTempDir(), 'log-localjsfunfuzz.txt'))
+    localLog = normExpUserPath(os.path.join(myShell.getDestDir(), 'log-localjsfunfuzz.txt'))
     envDump(myShell, localLog)
     cmdDump(myShell, cmdList, localLog)
 

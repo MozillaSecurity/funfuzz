@@ -25,8 +25,8 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
-from subprocesses import captureStdout, rmTreeIncludingReadOnly, isARMv7l, isLinux, isMac, isVM, \
-    isWin, macVer, normExpUserPath, shellify, vdump
+from subprocesses import captureStdout, rmTreeIfExists, isARMv7l, isLinux, isMac, isVM, isWin, \
+    macVer, normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
@@ -41,41 +41,40 @@ else:
 
 
 class CompiledShell(object):
-    def __init__(self, buildOpts, hgHash, baseTmpDir):
+    def __init__(self, buildOpts, hgHash):
         self.shellNameWithoutExt = buildOptions.computeShellName(buildOpts, hgHash)
         self.shellNameWithExt = self.shellNameWithoutExt + ('.exe' if isWin else '')
         self.hgHash = hgHash
         self.buildOptions = buildOpts
+
+        self.jsObjdir = ''
+        self.nsprObjdir = ''
+    def setDestDir(self, tDir):
+        self.destDir = tDir
+
         if os.name == 'nt':  # adapted from http://stackoverflow.com/a/3931799
-            winTmpDir = unicode(baseTmpDir)
+            winTmpDir = unicode(self.destDir)
             GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
             unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
             GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
-            self.baseTmpDir = normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
-        else:
-            self.baseTmpDir = baseTmpDir
-        assert '~' not in self.baseTmpDir
-        assert os.path.isdir(self.baseTmpDir)
-    def getBaseTempDir(self):
-        return self.baseTmpDir
+            self.destDir = normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
+
+        assert '~' not in self.destDir
+        assert os.path.isdir(self.destDir)
+    def getDestDir(self):
+        return self.destDir
     def setCfgCmdExclEnv(self, cfg):
         self.cfg = cfg
     def getCfgCmdExclEnv(self):
         return self.cfg
     def getJsCfgPath(self):
-        self.jsCfgFile = normExpUserPath(os.path.join(self.getCompilePathJsSrc(), 'configure'))
+        self.jsCfgFile = normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
         assert os.path.isfile(self.jsCfgFile)
         return self.jsCfgFile
     def getNsprCfgPath(self):
-        self.nsprCfgFile = normExpUserPath(os.path.join(self.getCompilePathNsprSrc(), 'configure'))
+        self.nsprCfgFile = normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
         assert os.path.isfile(self.nsprCfgFile)
         return self.nsprCfgFile
-    def getCompilePath(self):
-        return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath'))
-    def getCompilePathJsSrc(self):
-        return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'js', 'src'))
-    def getCompilePathNsprSrc(self):
-        return normExpUserPath(os.path.join(self.baseTmpDir, 'compilePath', 'nsprpub'))
     def setEnvAdded(self, addedEnv):
         self.addedEnv = addedEnv
     def getEnvAdded(self):
@@ -87,11 +86,21 @@ class CompiledShell(object):
     def getHgHash(self):
         return self.hgHash
     def getJsObjdir(self):
-        return normExpUserPath(os.path.join(self.getCompilePathJsSrc(), self.buildOptions.compileType + '-objdir'))
+        return self.jsObjdir
+    def createJsObjdir(self):
+        self.jsObjdir = mkdtemp(prefix='-'.join(['js', self.buildOptions.compileType, 'objdir',
+                                                 self.hgHash]) + '-')
     def getNsprObjdir(self):
-        return normExpUserPath(os.path.join(self.getCompilePathNsprSrc(), self.buildOptions.compileType + '-objdir'))
+        return self.nsprObjdir
+    def createNsprObjdir(self):
+        self.nsprObjdir = mkdtemp(prefix='-'.join(['nspr', self.buildOptions.compileType, 'objdir',
+                                                   self.hgHash]) + '-')
     def getRepoDir(self):
         return self.buildOptions.repoDir
+    def getRepoDirJsSrc(self):
+        return normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
+    def getRepoDirNsprSrc(self):
+        return normExpUserPath(os.path.join(self.getRepoDir(), 'nsprpub'))
     def getRepoName(self):
         return getRepoNameFromHgrc(self.buildOptions.repoDir)
     def getShellCacheDir(self):
@@ -107,7 +116,7 @@ class CompiledShell(object):
         ]
         return libsList
     def getShellBaseTempDirWithName(self):
-        return normExpUserPath(os.path.join(self.baseTmpDir, self.shellNameWithExt))
+        return normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
 
 
 def ensureCacheDir():
@@ -131,11 +140,13 @@ def ensureCacheDir():
     ensureDir(cacheDir)
     return cacheDir
 
+
 def ensureDir(dir):
     '''Creates a directory, if it does not already exist'''
     if not os.path.exists(dir):
         os.mkdir(dir)
     assert os.path.isdir(dir)
+
 
 def autoconfRun(cwd):
     '''Run autoconf binaries corresponding to the platform.'''
@@ -145,6 +156,7 @@ def autoconfRun(cwd):
         subprocess.check_call(['autoconf2.13'], cwd=cwd)
     elif isWin:
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
+
 
 def cfgAsanParams(currEnv, options):
     '''Configures parameters that Asan needs.'''
@@ -167,16 +179,13 @@ def cfgAsanParams(currEnv, options):
 
     return currEnv
 
-def cfgJsCompileCopy(shell, options):
+
+def cfgJsCompile(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     if options.isThreadsafe:
         compileNspr(shell, options)
-    autoconfRun(shell.getCompilePathJsSrc())
-    try:
-        os.mkdir(shell.getJsObjdir())
-    except OSError:
-        raise Exception('Unable to create js objdir.')
-
+    autoconfRun(shell.getRepoDirJsSrc())
+    shell.createJsObjdir()
     configureTryCount = 0
     while True:
         try:
@@ -192,14 +201,15 @@ def cfgJsCompileCopy(shell, options):
             if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
                 print 'Trying once more...'
                 continue
-    compileJsCopy(shell, options)
+    compileJs(shell, options)
+    verifyBinary(shell, options)
+
 
 def cfgBin(shell, options, binToBeCompiled):
     '''This function configures a binary according to required parameters.'''
     cfgCmdList = []
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
-    cfgEnvDt['MOZILLA_CENTRAL_PATH'] = shell.getCompilePath()  # Required by m-c 119049:d2cce982a7c8
     cfgEnvDt['AR'] = 'ar'
     if isARMv7l:
         # 32-bit shell on ARM boards, e.g. Pandaboards.
@@ -397,103 +407,8 @@ def cfgBin(shell, options, binToBeCompiled):
     shell.setEnvFull(cfgEnvDt)
     shell.setCfgCmdExclEnv(cfgCmdList)
 
-def copyJsSrcDirs(shell):
-    '''Copies required js source directories from the repoDir to the shell fuzzing path.'''
-    origJsSrc = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'src'))
-    try:
-        vdump('Copying the js source tree, which is located at ' + origJsSrc)
-        shutil.copytree(origJsSrc, shell.getCompilePathJsSrc(),
-                        ignore=shutil.ignore_patterns(
-                            'jit-test', 'jsapi-tests', 'parjs-benchmarks', 'tests',
-                            'trace-test', 'v8', 'xpconnect'))
-        vdump('Finished copying the js tree')
-    except OSError:
-        raise Exception('Does the js source directory or the destination exist?')
 
-    # Do not stop copying source files out until 119351:6b280e155484 is at least the minimum
-    #  version required to build on all platforms.
-    # m-c changeset 160361:67fa1478308e requires dom/bindings/ to be present.
-    domBindingsDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'dom', 'bindings'))
-    if os.path.isdir(domBindingsDir):
-        shutil.copytree(domBindingsDir, os.path.join(shell.getCompilePathJsSrc(),
-                                                     os.pardir, os.pardir, 'dom', 'bindings'))
-    # m-c changeset 160361:67fa1478308e requires other-licenses/ply/ply/ to be present.
-    plyDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'other-licenses/', 'ply', 'ply'))
-    if os.path.isdir(plyDir):
-        shutil.copytree(plyDir, os.path.join(shell.getCompilePathJsSrc(),
-            os.pardir, os.pardir, 'other-licenses/', 'ply', 'ply'))
-    # m-c changeset 160361:67fa1478308e requires media/webrtc/trunk/tools/gyp/ to be present.
-    gypDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'media', 'webrtc', 'trunk',
-                                          'tools', 'gyp'))
-    if os.path.isdir(gypDir):
-        shutil.copytree(gypDir, os.path.join(shell.getCompilePathJsSrc(),
-            os.pardir, os.pardir, 'media', 'webrtc', 'trunk', 'tools', 'gyp'))
-    # m-c changeset 130388:533d3fb8a7e9 requires the intl/ directory to be present.
-    intlDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'intl'))
-    if os.path.isdir(intlDir):
-        shutil.copytree(intlDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
-                                              'intl'))
-    # m-c changeset 119049:d2cce982a7c8 requires the build/ directory to be present.
-    vEnvDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'build'))
-    if os.path.isdir(vEnvDir):
-        shutil.copytree(vEnvDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
-                                              'build'))
-    # m-c changeset 119049:d2cce982a7c8 requires the config/ directory to be present.
-    mcCfgDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'config'))
-    if os.path.isdir(mcCfgDir):
-        shutil.copytree(mcCfgDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
-                                              'config'))
-
-    # m-c changeset 119049:d2cce982a7c8 requires the python/ directory to be present.
-    pyDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'python'))
-    if os.path.isdir(pyDir):
-        shutil.copytree(pyDir, os.path.join(shell.getCompilePath(), 'python'))
-
-    # m-c changeset 119049:d2cce982a7c8 requires the testing/mozbase/ directory to be present.
-    mzBaseDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'testing', 'mozbase'))
-    if os.path.isdir(mzBaseDir):
-        shutil.copytree(mzBaseDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
-                                              'testing', 'mozbase'))
-
-    # m-c changeset 78556:b9c673621e1e requires the js/public/ directory to be present.
-    jsPubDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'js', 'public'))
-    if os.path.isdir(jsPubDir):
-        shutil.copytree(jsPubDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, 'public'))
-
-    # m-c changeset 64572:91a8d742c509 requires the mfbt/ directory to be present.
-    mfbtDir = normExpUserPath(os.path.join(shell.getRepoDir(), 'mfbt'))
-    if os.path.isdir(mfbtDir):
-        shutil.copytree(mfbtDir, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir,
-                                              'mfbt'))
-
-    # JS shell builds require the nsprpub/config/make-system-wrappers.pl to be present.
-    # We only need to copy this if we are building a non-threadsafe build because
-    # threadsafe builds will require the whole nsprpub directory anyway later on.
-    if not shell.buildOptions.isThreadsafe:
-        nsprConfigWrapper = normExpUserPath(os.path.join(shell.getRepoDir(), 'nsprpub', 'config', 'make-system-wrappers.pl'))
-        if os.path.isfile(nsprConfigWrapper):
-            nsprDest = os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir, 'nsprpub', 'config')
-            try:
-                # FIXME: os.makedirs does not like os.pardir, so we have to create nsprpub first
-                os.mkdir(os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir, 'nsprpub'))
-                os.mkdir(nsprDest)
-            except OSError:
-                raise Exception('Unable to create NSPR config dir.')
-        shutil.copy(nsprConfigWrapper, nsprDest)
-
-    # JS shell builds require the toplevel moz.build file to be present.
-    mozBuildFile = normExpUserPath(os.path.join(shell.getRepoDir(), 'moz.build'))
-    if os.path.isfile(mozBuildFile):
-        shutil.copy(mozBuildFile, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir))
-
-    # JS shell builds require the toplevel Makefile.in to be present.
-    makefileInFile = normExpUserPath(os.path.join(shell.getRepoDir(), 'Makefile.in'))
-    if os.path.isfile(makefileInFile):
-        shutil.copy(makefileInFile, os.path.join(shell.getCompilePathJsSrc(), os.pardir, os.pardir))
-
-    assert os.path.isdir(shell.getCompilePathJsSrc())
-
-def compileJsCopy(shell, options):
+def compileJs(shell, options):
     '''This function compiles and copies a binary.'''
     try:
         cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
@@ -519,23 +434,19 @@ def compileJsCopy(shell, options):
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
         if options.isThreadsafe:
             for runLib in shell.getShellCompiledRunLibsPath():
-                shutil.copy2(runLib, shell.getBaseTempDir())
-            assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_NSPR_LIB)))
-            assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLDS_LIB)))
-            assert os.path.isfile(normExpUserPath(os.path.join(shell.getBaseTempDir(), RUN_PLC_LIB)))
+                shutil.copy2(runLib, shell.getDestDir())
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_NSPR_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_PLDS_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_PLC_LIB)))
     else:
         print out
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
 
+
 def compileNspr(shell, options):
     '''Compile a NSPR binary.'''
-    shutil.copytree(normExpUserPath(os.path.join(shell.getRepoDir(), 'nsprpub')),
-                    shell.getCompilePathNsprSrc())
-    autoconfRun(shell.getCompilePathNsprSrc())
-    try:
-        os.mkdir(shell.getNsprObjdir())
-    except OSError:
-        raise Exception('Unable to create NSPR objdir.')
+    autoconfRun(shell.getRepoDirNsprSrc())
+    shell.createNsprObjdir()
     cfgBin(shell, options, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
@@ -551,35 +462,34 @@ def compileNspr(shell, options):
 
     assert os.path.isdir(normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
+
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
 
     try:
-        copyJsSrcDirs(compiledShell)
-        cfgJsCompileCopy(compiledShell, compiledShell.buildOptions)
-        verifyBinary(compiledShell, compiledShell.buildOptions)
         if not os.path.exists(compiledShell.getShellCacheDir()):
             try:
                 os.mkdir(compiledShell.getShellCacheDir())
             except OSError:
                 raise Exception('Unable to create shell cache directory.')
-        shutil.copy2(compiledShell.getShellBaseTempDirWithName(), compiledShell.getShellCacheFullPath())
-        if compiledShell.buildOptions.isThreadsafe:
-            for runLib in compiledShell.getShellCompiledRunLibsPath():
-                shutil.copy2(runLib, compiledShell.getShellCacheDir())
-            assert os.path.isfile(normExpUserPath(os.path.join(
-                compiledShell.getShellCacheDir(), RUN_NSPR_LIB)))
-            assert os.path.isfile(normExpUserPath(os.path.join(
-                compiledShell.getShellCacheDir(), RUN_PLDS_LIB)))
-            assert os.path.isfile(normExpUserPath(os.path.join(
-                compiledShell.getShellCacheDir(), RUN_PLC_LIB)))
+        compiledShell.setDestDir(compiledShell.getShellCacheDir())
+
+        cfgJsCompile(compiledShell, compiledShell.buildOptions)
+
     finally:
-        rmTreeIncludingReadOnly(compiledShell.getBaseTempDir())
+        rmTreeIfExists(compiledShell.getJsObjdir())
+        rmTreeIfExists(compiledShell.getNsprObjdir())
+
+        # In the rare case that the cache dir is created but no binaries are present, probably due
+        # to harness exception.
+        if os.path.isdir(compiledShell.getShellCacheDir()):
+            if not os.listdir(compiledShell.getShellCacheDir()):  # True if dir is empty
+                os.rmdir(compiledShell.getShellCacheDir())
 
 
 def makeTestRev(options):
     def testRev(rev):
-        shell = CompiledShell(options.buildOptions, rev, mkdtemp(prefix="abtmp-" + rev + "-"))
+        shell = CompiledShell(options.buildOptions, rev)
         cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
         print "Rev " + rev + ":",
@@ -643,14 +553,16 @@ def main():
     rev = options.revision
 
     if rev:
-        shell = CompiledShell(options.buildOptions, rev, mkdtemp(prefix="cshell-" + rev + "-"))
+        shell = CompiledShell(options.buildOptions, rev)
     else:
-        localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
-        shell = CompiledShell(options.buildOptions, localOrigHgHash, mkdtemp(prefix="cshell-" + localOrigHgHash + "-"))
+        localOrigHgHash, localOrigHgNum, isOnDefault = \
+            getRepoHashAndId(options.buildOptions.repoDir)
+        shell = CompiledShell(options.buildOptions, localOrigHgHash)
 
     if not os.path.exists(shell.getShellCacheFullPath()):
         if rev:
-            captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev], ignoreStderr=True)
+            captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev],
+                ignoreStderr=True)
             destroyPyc(options.buildOptions.repoDir)
 
         compileStandalone(shell)

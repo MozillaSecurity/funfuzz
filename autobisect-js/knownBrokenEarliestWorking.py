@@ -161,25 +161,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     assert (not isMac) or (macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    #
-    # m-c Python packager changes
-    # 6b280e155484 is thus the latest version that can reliably work on all platforms without
-    # copying the source files out, i.e. by configuring and compiling in the destination objdir.
-    # Thus, consider not copying source files out only when 6b280e155484 at least becomes the
-    # minimum changeset that can reliably compile.
-    # 119351 - https://hg.mozilla.org/mozilla-central/rev/6b280e155484 works
-    # 119350 - https://hg.mozilla.org/mozilla-central/rev/204b95febb13 does not work due to:
-    #   "IndexError: list index out of range" error
-    # 119349 - https://hg.mozilla.org/mozilla-central/rev/ab31d2237244 does not work due to:
-    #   "ImportError: No module named buildconfig" error
-    # Note: One could bypass the 119349 error by fully removing the m-c repo, then re-cloning
-    #   everytime a build is requested this way, aka a full clobber build. We should investigate
-    #   to see what files get left behind that requires a full clobber. Destroying all .pyc files
-    #   might alleviate this.
-    # (See fuzzing repo revision ec77c645e97d and nearby for when we tried this in Jan 2013)
-    # Moreover, it is more difficult to debug without copying source (e.g. if the dev needs to
-    # make some quick modifications in the compilePath directory), or if we need the compilePath
-    # sources for gdb to correctly grab line numbers for coredumps after the repo has been updated.
 
     threadCountFlag = False
     # flags is a list of flags, and the option must exactly match.

@@ -10,7 +10,7 @@ path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
 from subprocesses import isARMv7l, isLinux, isMac, isMozBuild64, isWin, normExpUserPath
-from hgCmds import getMcRepoDir, getRepoNameFromHgrc
+from hgCmds import destroyPyc, getMcRepoDir, getRepoNameFromHgrc
 
 if platform.uname()[2] == 'XP':
     DEFAULT_MC_REPO_LOCATION = normExpUserPath(os.path.join(path0, '..', '..', 'trees', 'mozilla-central'))
@@ -97,7 +97,11 @@ def parseShellOptions(inputArgs):
             options.repoDir = getMcRepoDir()[1]
         else:  # options.repoDir is manually set.
             options.repoDir = os.path.expanduser(normExpUserPath(options.repoDir))
-            assert getRepoNameFromHgrc(options.repoDir) != '', 'Not a valid Mercurial repository!'
+
+        if getRepoNameFromHgrc(options.repoDir) == '':
+            raise Exception('Not a valid Mercurial repository!')
+
+        destroyPyc(options.repoDir)
 
     options.inputArgs = inputArgs
     assert len(args) == 0

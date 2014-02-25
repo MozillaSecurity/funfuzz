@@ -451,6 +451,13 @@ def getAbsPathForAdjacentFile(filename):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
+def rmTreeIfExists(dirTree):
+    '''Remove a directory with all sub-directories and files if the directory exists.'''
+    if os.path.isdir(dirTree):
+        rmTreeIncludingReadOnly(dirTree)
+    assert not os.path.isdir(dirTree)
+
+
 def rmTreeIncludingReadOnly(dirTree):
     shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
