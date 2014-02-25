@@ -407,6 +407,14 @@ def printMachineInfo():
     # Log information about the machine.
     print "Platform details: " + " ".join(platform.uname())
     print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
+
+    # In here temporarily to see if mock Linux slaves on TBPL have gdb installed
+    try:
+        print "gdb version: " + captureStdout(['gdb', '--version'], combineStderr=True,
+                                              ignoreStderr=True, ignoreExitCode=True)[0]
+    except Exception as e:
+        print('Error involving gdb is: ' + repr(e))
+
     # FIXME: Should have if os.path.exists(path to git) or something
     #print "git version: " + captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print "Python version: " + sys.version[:5]
