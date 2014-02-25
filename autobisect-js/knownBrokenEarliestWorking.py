@@ -196,8 +196,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
     if options.disableExactRooting:
         required.append('6f7227918e79') # 164088 on m-c, first rev that has a stable --disable-exact-rooting option
-    if '--ion-check-thread-safety' in flags:
-        required.append('3eb853546cff') # 161310 on m-c, first rev that has a stable --ion-check-thread-safety option
     if isWin:
         required.append('afae5911a1e0') # 150878 on m-c, first rev that builds with mozmake.exe on Windows successfully
     if isMac and macVer() >= [10, 9]:
