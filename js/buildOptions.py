@@ -143,8 +143,8 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('ts')
     if options.enableRootAnalysis:
         specialParamList.append('ra')
-    if not options.disableExactRooting:
-        specialParamList.append('er')
+    if options.disableExactRooting:
+        specialParamList.append('erDisabled')
     if options.enableGcGenerational:
         specialParamList.append('ggc')
     if isARMv7l:

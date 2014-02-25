@@ -352,11 +352,8 @@ def cfgBin(shell, options, binToBeCompiled):
             cfgCmdList.append('--enable-root-analysis')
         if options.disableExactRooting:
             cfgCmdList.append('--disable-exact-rooting')
-        else:
-            # Turned on by default, line is still here for backward compatibility reasons
-            cfgCmdList.append('--enable-exact-rooting')
-            if options.enableGcGenerational:
-                cfgCmdList.append('--enable-gcgenerational')
+        elif options.enableGcGenerational:  # GGC requires exact rooting to be enabled
+            cfgCmdList.append('--enable-gcgenerational')
         if options.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
 
