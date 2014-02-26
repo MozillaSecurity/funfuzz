@@ -82,6 +82,7 @@ browser.xul.error_pages.expert_bad_cert
 browser.zoom.full
 browser.zoom.siteSpecific
 browser.zoom.updateBackgroundTabs
+canvas.hitregions.enabled
 converter.html2txt.structs
 device.sensors.enabled
 dom.cycle_collector.incremental
