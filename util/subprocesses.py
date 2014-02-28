@@ -42,12 +42,14 @@ WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs
 #  Platform Detection  #
 ########################
 
+
 def macVer():
     '''
     If system is a Mac, return the mac type.
     '''
     assert platform.system() == 'Darwin'
     return [int(x) for x in platform.mac_ver()[0].split('.')]
+
 
 def isVM():
     '''
@@ -67,6 +69,7 @@ def isVM():
         vm = True
     return ('Windows' if isWin else platform.system(), vm)
 
+
 def getFreeSpace(folder, mulVar):
     '''
     Return folder/drive free space in bytes if mulVar is 0.
@@ -82,9 +85,11 @@ def getFreeSpace(folder, mulVar):
 
     return retVal / (1024 ** mulVar)
 
+
 #####################
 #  Shell Functions  #
 #####################
+
 
 def envWithPath(path, runningEnv=os.environ):
     '''Appends the path to the appropriate library path on various platforms.'''
@@ -103,6 +108,7 @@ def envWithPath(path, runningEnv=os.environ):
         env[libPath] = path
 
     return env
+
 
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                   currWorkingDir=os.getcwdu(), env='NOTSET', verbosity=False):
@@ -184,6 +190,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             print stderr
     return stdout.rstrip(), p.returncode
 
+
 def createWtmpDir(tmpDirBase):
     '''Create wtmp<number> directory, incrementing the number if one is already found.'''
     i = 1
@@ -198,12 +205,14 @@ def createWtmpDir(tmpDirBase):
     vdump(tmpDirWithNum + os.sep)  # Even if not verbose, wtmp<num> is also dumped: wtmp1/w1: NORMAL
     return tmpDirWithNum
 
+
 def dateStr():
     '''Equivalent of running `date` in bash, excluding the timezone.'''
     # Try not to add the timezone. Python does not seem to be accurate about DST switchovers.
     # assert captureStdout(['date'])[0] == currDateTime # This fails on Windows
     # On Windows, there is a leading zero in the day of the date in time.asctime()
     return time.asctime()
+
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     '''Finds the required crash log in the given crash reporter directory.'''
@@ -251,6 +260,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                 # clearly not The One.
                 pass
     return None
+
 
 def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
     '''Returns the crash log if found.'''
@@ -444,6 +454,7 @@ def getAbsPathForAdjacentFile(filename):
 def rmtreeIncludingReadOnly(dirTree):
     shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
+
 def test_rmtreeIncludingReadOnly():
     '''Run this function in the same directory as subprocesses.py to test.'''
     testDir = 'test_rmtreeIncludingReadOnly'
@@ -458,6 +469,7 @@ def test_rmtreeIncludingReadOnly():
     os.chmod(readOnlyDir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
     rmtreeIncludingReadOnly(testDir)  # Should pass here
+
 
 def handleRemoveReadOnly(func, path, exc):
     '''Handle read-only files. Adapted from http://stackoverflow.com/q/1213706'''
@@ -477,6 +489,7 @@ def handleRemoveReadOnly(func, path, exc):
 def normExpUserPath(p):
     return os.path.normpath(os.path.expanduser(p))
 
+
 def shellify(cmd):
     """Try to convert an arguments array to an equivalent string that can be pasted into a shell."""
     okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
@@ -493,6 +506,7 @@ def shellify(cmd):
             return ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
     return ' '.join(ssc)
 
+
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                    cwd=os.getcwdu(), env=os.environ, vb=False):
     '''
@@ -508,6 +522,7 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     print '`' + shellify(command) + '` took %.3f seconds.\n' % (endTime - startTime)
     return stdOutput, retVal
 
+
 class Unbuffered:
     '''From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u.'''
     def __init__(self, stream):
@@ -518,12 +533,14 @@ class Unbuffered:
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
+
 def vdump(inp):
     '''
     This function appends the word 'DEBUG' to any verbose output.
     '''
     if verbose:
         print 'DEBUG -', inp
+
 
 if __name__ == '__main__':
     pass
