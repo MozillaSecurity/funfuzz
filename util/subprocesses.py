@@ -441,8 +441,8 @@ def getAbsPathForAdjacentFile(filename):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def rmtreeIncludingReadOnly(dir):
-    shutil.rmtree(dir, onerror=handleRemoveReadOnly)
+def rmtreeIncludingReadOnly(dirTree):
+    shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
 def test_rmtreeIncludingReadOnly():
     '''Run this function in the same directory as subprocesses.py to test.'''
