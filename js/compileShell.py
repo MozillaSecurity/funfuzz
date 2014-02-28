@@ -25,7 +25,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
-from subprocesses import captureStdout, handleRemoveReadOnly, isARMv7l, isLinux, isMac, isVM, \
+from subprocesses import captureStdout, rmtreeIncludingReadOnly, isARMv7l, isLinux, isMac, isVM, \
     isWin, macVer, normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
@@ -574,8 +574,7 @@ def compileStandalone(compiledShell):
             assert os.path.isfile(normExpUserPath(os.path.join(
                 compiledShell.getShellCacheDir(), RUN_PLC_LIB)))
     finally:
-        shutil.rmtree(compiledShell.getBaseTempDir(), ignore_errors=False,
-                      onerror=handleRemoveReadOnly)
+        rmtreeIncludingReadOnly(compiledShell.getBaseTempDir())
 
 
 def makeTestRev(options):
@@ -653,9 +652,9 @@ def main():
         if rev:
             captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev], ignoreStderr=True)
             destroyPyc(options.buildOptions.repoDir)
-    
+
         compileStandalone(shell)
-    
+
     print shell.getShellCacheFullPath()
 
 if __name__ == '__main__':
