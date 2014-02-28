@@ -25,7 +25,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
-from subprocesses import captureStdout, rmtreeIncludingReadOnly, isARMv7l, isLinux, isMac, isVM, \
+from subprocesses import captureStdout, rmTreeIncludingReadOnly, isARMv7l, isLinux, isMac, isVM, \
     isWin, macVer, normExpUserPath, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
@@ -574,7 +574,7 @@ def compileStandalone(compiledShell):
             assert os.path.isfile(normExpUserPath(os.path.join(
                 compiledShell.getShellCacheDir(), RUN_PLC_LIB)))
     finally:
-        rmtreeIncludingReadOnly(compiledShell.getBaseTempDir())
+        rmTreeIncludingReadOnly(compiledShell.getBaseTempDir())
 
 
 def makeTestRev(options):

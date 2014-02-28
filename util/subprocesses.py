@@ -451,13 +451,13 @@ def getAbsPathForAdjacentFile(filename):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def rmtreeIncludingReadOnly(dirTree):
+def rmTreeIncludingReadOnly(dirTree):
     shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
 
-def test_rmtreeIncludingReadOnly():
+def test_rmTreeIncludingReadOnly():
     '''Run this function in the same directory as subprocesses.py to test.'''
-    testDir = 'test_rmtreeIncludingReadOnly'
+    testDir = 'test_rmTreeIncludingReadOnly'
     os.mkdir(testDir)
     readOnlyDir = os.path.join(testDir, 'nestedReadOnlyDir')
     os.mkdir(readOnlyDir)
@@ -468,7 +468,7 @@ def test_rmtreeIncludingReadOnly():
     os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     os.chmod(readOnlyDir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-    rmtreeIncludingReadOnly(testDir)  # Should pass here
+    rmTreeIncludingReadOnly(testDir)  # Should pass here
 
 
 def handleRemoveReadOnly(func, path, exc):
