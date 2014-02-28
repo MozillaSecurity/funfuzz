@@ -183,6 +183,7 @@ layers.force-active
 layout.css.background-blend-mode.enabled
 layout.css.flexbox.enabled
 layout.css.font-features.enabled
+layout.css.grid.enabled
 layout.css.masking.enabled
 layout.css.report_errors
 layout.css.sticky.enabled
