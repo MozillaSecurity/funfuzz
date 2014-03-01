@@ -9,10 +9,10 @@ import platform
 import re
 import sys
 import subprocess
-from ConfigParser import SafeConfigParser
-from traceback import format_exc
+from ConfigParser import SafeConfigParser, NoOptionError
 
 from subprocesses import captureStdout, isVM, normExpUserPath, vdump
+
 
 def destroyPyc(repoDir):
     # This is roughly equivalent to ['hg', 'purge', '--all', '--include=**.pyc'])
@@ -25,9 +25,25 @@ def destroyPyc(repoDir):
             # Don't visit .hg dir
             dirs.remove('.hg')
 
+
+def ensureMqEnabled():
+    '''Ensure that mq is enabled in the ~/.hgrc file.'''
+    usrHgrc = os.path.join(os.path.expanduser('~'), '.hgrc')
+    assert os.path.isfile(usrHgrc)
+
+    usrHgrcCfg = SafeConfigParser()
+    usrHgrcCfg.read(usrHgrc)
+
+    try:
+        usrHgrcCfg.get('extensions', 'mq')
+    except NoOptionError:
+        raise Exception('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
+
+
 def findCommonAncestor(repoDir, a, b):
     return captureStdout(['hg', '-R', repoDir, 'log', '-r', 'ancestor(' + a + ',' + b + ')',
                           '--template={node|short}'])[0]
+
 
 def getCsetHashFromBisectMsg(str):
     # Example bisect msg: "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
@@ -39,6 +55,7 @@ def getCsetHashFromBisectMsg(str):
 assert getCsetHashFromBisectMsg("x 12345:abababababab") == "abababababab"
 assert getCsetHashFromBisectMsg("x 12345:123412341234") == "123412341234"
 assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"
+
 
 def getMcRepoDir():
     '''Returns default m-c repository location and its base directory depending on machine.'''
@@ -52,6 +69,7 @@ def getMcRepoDir():
         baseDir = '~'
     mcRepoDir = normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
     return baseDir, mcRepoDir
+
 
 def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     '''
@@ -83,6 +101,7 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     vdump('Finished getting the hash and local id number of the repository.')
     return hgIdChangesetHash, hgIdLocalNum, onDefault
 
+
 def getRepoNameFromHgrc(repoDir):
     '''Looks in the hgrc file in the .hg directory of the repository and returns the name.'''
     hgrcpath = os.path.join(repoDir, '.hg', 'hgrc')
@@ -92,31 +111,51 @@ def getRepoNameFromHgrc(repoDir):
     # Not all default entries in [paths] end with "/".
     return [i for i in hgCfg.get('paths', 'default').split('/') if i][-1]
 
+
 def isAncestor(repoDir, a, b):
     return findCommonAncestor(repoDir, a, b) == a
 
-def patchHgRepoUsingMq(patchLoc, workingDir=os.getcwdu()):
+
+def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
     # We may have passed in the patch with or without the full directory.
-    p = os.path.abspath(normExpUserPath(patchLoc))
-    pname = os.path.basename(p)
-    assert (p, pname) != ('','')
-    subprocess.check_call(['hg', '-R', workingDir, 'qimport', p])
-    vdump("Patch qimport'ed.")
-    try:
-        qpushMsg = captureStdout(['hg', '-R', workingDir, 'qpush', pname], combineStderr=True,
-            ignoreStderr=True)[0]
-        assert ' is empty' not in qpushMsg, "Patch to be qpush'ed should not be empty."
-        print qpushMsg  # subprocess.check_call prints stdout of the other commands
-        vdump("Patch qpush'ed.")
-    except subprocess.CalledProcessError:
-        subprocess.check_call(['hg', '-R', workingDir, 'qpop'])
-        subprocess.check_call(['hg', '-R', workingDir, 'qdelete', pname])
-        print 'You may have untracked .rej files in the repository.'
-        print '`hg st` output of the repository in ' + workingDir + ' :'
-        subprocess.check_call(['hg', '-R', workingDir, 'st'])
-        hgPurgeAns = str(raw_input('Do you want to run `hg purge`? (y/n): '))
-        assert hgPurgeAns.lower() in ('y', 'n')
-        if hgPurgeAns == 'y':
-            subprocess.check_call(['hg', '-R', workingDir, 'purge'])
-        raise Exception(format_exc())
+    patchAbsPath = os.path.abspath(normExpUserPath(patchFile))
+    pname = os.path.basename(patchAbsPath)
+    assert pname != ''
+    qimportOutput, qimportRetCode = captureStdout(['hg', '-R', workingDir, 'qimport', patchAbsPath],
+                                                   combineStderr=True, ignoreStderr=True,
+                                                   ignoreExitCode=True)
+    if qimportRetCode != 0:
+        if 'already exists' in qimportOutput:
+            print "A patch with the same name has already been qpush'ed. Please qremove it first."
+        raise Exception('Return code from `hg qimport` is: ' + str(qimportRetCode))
+
+    print("Patch qimport'ed..."),
+
+    qpushOutput, qpushRetCode = captureStdout(['hg', '-R', workingDir, 'qpush', pname],
+        combineStderr=True, ignoreStderr=True)
+    assert ' is empty' not in qpushOutput, "Patch to be qpush'ed should not be empty."
+
+    if qpushRetCode != 0:
+        hgQpopQrmAppliedPatch(patchFile, workingDir)
+        print 'You may have untracked .rej or .orig files in the repository.'
+        print '`hg status` output of the repository of interesting files in ' + workingDir + ' :'
+        subprocess.check_call(['hg', '-R', workingDir, 'status', '--modified', '--added',
+                               '--removed', '--deleted'])
+        raise Exception('Return code from `hg qpush` is: ' + str(qpushRetCode))
+
+    print("Patch qpush'ed. Continuing..."),
     return pname
+
+
+def hgQpopQrmAppliedPatch(patchFile, repoDir):
+    '''Remove applied patch using `hg qpop` and `hg qdelete`.'''
+    qpopOutput, qpopRetCode = captureStdout(['hg', '-R', repoDir, 'qpop'],
+                                             combineStderr=True, ignoreStderr=True,
+                                             ignoreExitCode=True)
+    if qpopRetCode != 0:
+        print '`hg qpop` output is: ' + qpopOutput
+        raise Exception('Return code from `hg qpop` is: ' + str(qpopRetCode))
+
+    print("Patch qpop'ed..."),
+    subprocess.check_call(['hg', '-R', repoDir, 'qdelete', os.path.basename(patchFile)])
+    print("Patch qdelete'd.")

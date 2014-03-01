@@ -24,7 +24,8 @@ from inspectShell import verifyBinary
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
+from hgCmds import destroyPyc, getRepoNameFromHgrc, getRepoHashAndId, hgQpopQrmAppliedPatch, \
+    patchHgRepoUsingMq
 from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin, macVer, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
@@ -466,6 +467,9 @@ def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
     assert os.path.isdir(getLockDirPath())
     try:
+        if compiledShell.buildOptions.patchFile:
+            patchHgRepoUsingMq(compiledShell.buildOptions.patchFile, compiledShell.getRepoDir())
+
         if not os.path.exists(compiledShell.getShellCacheDir()):
             try:
                 os.mkdir(compiledShell.getShellCacheDir())
@@ -476,6 +480,9 @@ def compileStandalone(compiledShell):
         cfgJsCompile(compiledShell, compiledShell.buildOptions)
 
     finally:
+        if compiledShell.buildOptions.patchFile:
+            hgQpopQrmAppliedPatch(compiledShell.buildOptions.patchFile, compiledShell.getRepoDir())
+
         rmTreeIfExists(compiledShell.getJsObjdir())
         rmTreeIfExists(compiledShell.getNsprObjdir())
 
@@ -572,7 +579,7 @@ def main():
 
             compileStandalone(shell)
 
-    print shell.getShellCacheFullPath()
+        print shell.getShellCacheFullPath()
 
 if __name__ == '__main__':
     main()

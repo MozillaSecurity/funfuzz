@@ -17,13 +17,15 @@ import tempfile
 from multiprocessing import cpu_count, Process
 from optparse import OptionParser
 from tempfile import mkdtemp
+from traceback import format_exc
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
 sys.path.insert(0, path1)
 import downloadBuild
 import lithOps
-from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
+from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, hgQpopQrmAppliedPatch, \
+    patchHgRepoUsingMq
 from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isMac, isWin, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
@@ -218,7 +220,6 @@ def parseOpts():
         buildOptions = None,
         runLocalJsfunfuzz = False,
         useTinderboxShells = False,
-        patchDir = None,
         retestSkips = None
     )
 
@@ -275,19 +276,9 @@ def parseOpts():
                            'Defaults to taking into account the speed of the computer and ' + \
                            'debugger (if any).')
 
-    parser.add_option('-p', '--set-patchDir', dest='patchDir',
-                      #help='Define the path to a single patch or to a directory containing mq ' + \
-                      #     'patches. Must have a "series" file present, containing the names ' + \
-                      #     'of the patches, the first patch required at the bottom of the list.')
-                      help='Define the path to a single patch. Multiple patches are not yet ' + \
-                           'supported.')
-
     options, args = parser.parse_args()
     if len(args) > 0:
         print "Warning: bot.py does not use positional arguments"
-
-    if options.patchDir:
-        options.patchDir = normExpUserPath(options.patchDir)
 
     if options.useTinderboxShells:
         if not options.runLocalJsfunfuzz:
@@ -338,23 +329,30 @@ def botmain(options):
     if options.runLocalJsfunfuzz and not options.useTinderboxShells:
         if options.localJsfunfuzzTimeDelay != 0:
             time.sleep(options.localJsfunfuzzTimeDelay)
-        if not options.disableCompareJit:
-            options.buildOptions += " --enable-more-deterministic"
-        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-        options.timeout = options.timeout or machineTimeoutDefaults(options)
+
         with LockDir(getLockDirPath()):
-            fuzzShell, cList = localCompileFuzzJsShell(options)
-        startDir = fuzzShell.getDestDir()
+            try:
+                if not options.disableCompareJit:
+                    options.buildOptions += " --enable-more-deterministic"
+                options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+                options.timeout = options.timeout or machineTimeoutDefaults(options)
+                fuzzShell, cList = localCompileFuzzJsShell(options)
+                startDir = fuzzShell.getDestDir()
 
-        if options.noStart:
-            print 'Exiting, --nostart is set.'
-            sys.exit(0)
+                if options.noStart:
+                    print 'Exiting, --nostart is set.'
+                    sys.exit(0)
 
-        # Commands to simulate bash's `tee`.
-        tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=startDir)
+                # Commands to simulate bash's `tee`.
+                tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=startDir)
 
-        # Start fuzzing the newly compiled builds.
-        subprocess.call(cList, stdout=tee.stdin, cwd=startDir)
+                # Start fuzzing the newly compiled builds.
+                subprocess.call(cList, stdout=tee.stdin, cwd=startDir)
+
+            except Exception:
+                # This block should go away once this portion of code uses compileStandalone.
+                hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
+                raise Exception(format_exc())
     #####
 
     else:
@@ -633,18 +631,11 @@ def localCompileFuzzJsShell(options):
     print dateStr()
     localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
 
-    # Assumes that all patches that need to be applied will be done through --enable-patch-dir=FOO.
-    assert captureStdout(['hg', '-R', options.buildOptions.repoDir, 'qapp'])[0] == ''
-
-    if options.patchDir:  # Note that only JS patches are supported, not NSPR.
-        # Assume mq extension enabled. Series file should be optional if only one patch is needed.
-        assert not os.path.isdir(options.patchDir), \
-            'Support for multiple patches has not yet been added.'
-        assert os.path.isfile(options.patchDir)
-        p1name = patchHgRepoUsingMq(options.patchDir, options.buildOptions.repoDir)
+    if options.buildOptions.patchFile:
+        patchHgRepoUsingMq(options.buildOptions.patchFile, options.buildOptions.repoDir)
 
     appendStr = ''
-    if options.patchDir:
+    if options.buildOptions.patchFile:
         appendStr += '-patched'
     if isMac:
         appendStr += '.noindex'  # Prevents Spotlight in Mac from indexing these folders.
@@ -666,23 +657,12 @@ def localCompileFuzzJsShell(options):
     myShell = CompiledShell(options.buildOptions, localOrigHgHash)
     myShell.setDestDir(fullPath)
 
-    if options.patchDir:
-        # Remove the patches from the codebase if they were applied.
-        assert not os.path.isdir(options.patchDir), \
-            'Support for multiple patches has not yet been added.'
-        assert p1name != ''
-        if os.path.isfile(options.patchDir):
-            subprocess.check_call(['hg', '-R', myShell.getRepoDir(), 'qpop'])
-            vdump("First patch qpop'ed.")
-            subprocess.check_call(['hg', '-R', myShell.getRepoDir(), 'qdelete', p1name])
-            vdump("First patch qdelete'd.")
-
-    # Ensure there is no applied patch remaining in the main repository.
-    assert captureStdout(['hg', '-R', myShell.getRepoDir(), 'qapp'])[0] == ''
-
     try:
         cfgJsCompile(myShell, options.buildOptions)
     finally:
+        if options.buildOptions.patchFile:
+            hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
+
         rmTreeIfExists(myShell.getJsObjdir())
         rmTreeIfExists(myShell.getNsprObjdir())
 

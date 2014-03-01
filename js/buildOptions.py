@@ -3,6 +3,8 @@ import sys
 import optparse
 import platform
 
+from hashlib import sha512
+
 path0 = os.path.dirname(os.path.abspath(__file__))
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
@@ -10,7 +12,7 @@ path3 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
 from subprocesses import isARMv7l, isLinux, isMac, isMozBuild64, isWin, normExpUserPath
-from hgCmds import destroyPyc, getMcRepoDir, getRepoNameFromHgrc
+from hgCmds import destroyPyc, ensureMqEnabled, getMcRepoDir, getRepoNameFromHgrc
 
 if platform.uname()[2] == 'XP':
     DEFAULT_MC_REPO_LOCATION = normExpUserPath(os.path.join(path0, '..', '..', 'trees', 'mozilla-central'))
@@ -41,11 +43,13 @@ def parseShellOptions(inputArgs):
         enableGcGenerational = False,
     )
 
-    # Where to find the source dir and compiler
+    # Where to find the source dir and compiler, patching if necessary.
     parser.add_option('-R', '--repoDir', dest='repoDir',
                       help='Sets the source repository. Defaults to "%default".')
     parser.add_option('--llvm-root', dest='llvmRootSrcDir',
                       help='Specify the LLVM root source dir (for clang). Defaults to "%default".')
+    parser.add_option('-P', '--patch', dest='patchFile',
+                      help='Define the path to a single JS patch. Ensure mq is installed.')
 
     # Basic spidermonkey options
     parser.add_option('-a', '--arch', dest='arch',
@@ -128,6 +132,11 @@ def parseShellOptions(inputArgs):
     if options.enableGcGenerational:
         assert not options.disableExactRooting
 
+    if options.patchFile:
+        ensureMqEnabled()
+        options.patchFile = normExpUserPath(options.patchFile)
+        assert os.path.isfile(options.patchFile)
+
     if isWin:
         assert isMozBuild64 == (options.arch == '64')
 
@@ -157,9 +166,17 @@ def computeShellName(options, extraIdentifier):
         else:
             specialParamList.append('sfp')
     specialParam = '-'.join(specialParamList)
-    return '-'.join(x for x in ['js', options.compileType, options.arch, specialParam,
+
+    fileName = ['js', options.compileType, options.arch, specialParam,
                                 'windows' if isWin else platform.system().lower(),
-                                extraIdentifier] if x)
+                                extraIdentifier]
+    if options.patchFile:
+        # We take the name before the first dot, so Windows (hopefully) does not get confused.
+        fileName.append(os.path.basename(options.patchFile).split('.')[0])
+        # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
+        fileName.append(sha512(file(os.path.abspath(options.patchFile), 'rb').read()).hexdigest()[:12])
+
+    return '-'.join(x for x in fileName if x)
 
 if __name__ == "__main__":
     print "Running this file directly doesn't do anything, but here's the help for our subparser:"
