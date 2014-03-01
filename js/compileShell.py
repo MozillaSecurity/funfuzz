@@ -25,8 +25,8 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
-from subprocesses import captureStdout, rmTreeIfExists, isARMv7l, isLinux, isMac, isVM, isWin, \
-    macVer, normExpUserPath, shellify, vdump
+from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin, macVer, \
+    normExpUserPath, rmTreeIfExists, shellify, vdump
 
 CLANG_PARAMS = ' -Qunused-arguments'
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
