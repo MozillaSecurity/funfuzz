@@ -223,6 +223,8 @@ def parseOpts():
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
         help='Test type: "js", "dom", or "auto" (which is usually random).')
 
+    parser.add_option("--delay", dest="localJsfunfuzzTimeDelay",
+        help="Delay before local jsfunfuzz is run.")
     parser.add_option("--build", dest="existingBuildDir",
         help="Use an existing build directory.")
     parser.add_option("--retest", dest="retestRoot",
@@ -306,6 +308,11 @@ def parseOpts():
         if options.buildOptions is None and not options.useTinderboxShells:
             options.buildOptions = ''
 
+        if options.localJsfunfuzzTimeDelay is None:
+            options.localJsfunfuzzTimeDelay = 0
+        else:
+            options.localJsfunfuzzTimeDelay = int(options.localJsfunfuzzTimeDelay)
+
     if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
         # when we are trying to refer to a directory on another computer.
@@ -327,6 +334,8 @@ def botmain(options):
     #####
     # These only affect fuzzing the js shell on a local machine.
     if options.runLocalJsfunfuzz and not options.useTinderboxShells:
+        if options.localJsfunfuzzTimeDelay != 0:
+            time.sleep(options.localJsfunfuzzTimeDelay)
         if not options.disableCompareJit:
             options.buildOptions += " --enable-more-deterministic"
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
