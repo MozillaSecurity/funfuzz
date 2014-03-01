@@ -87,14 +87,12 @@ class CompiledShell(object):
         return self.hgHash
     def getJsObjdir(self):
         return self.jsObjdir
-    def createJsObjdir(self):
-        self.jsObjdir = mkdtemp(prefix='-'.join(['js', self.buildOptions.compileType, 'objdir',
-                                                 self.hgHash]) + '-')
+    def setJsObjdir(self, oDir):
+        self.jsObjdir = oDir
     def getNsprObjdir(self):
         return self.nsprObjdir
-    def createNsprObjdir(self):
-        self.nsprObjdir = mkdtemp(prefix='-'.join(['nspr', self.buildOptions.compileType, 'objdir',
-                                                   self.hgHash]) + '-')
+    def setNsprObjdir(self, oDir):
+        self.nsprObjdir = oDir
     def getRepoDir(self):
         return self.buildOptions.repoDir
     def getRepoDirJsSrc(self):
@@ -185,7 +183,8 @@ def cfgJsCompile(shell, options):
     if options.isThreadsafe:
         compileNspr(shell, options)
     autoconfRun(shell.getRepoDirJsSrc())
-    shell.createJsObjdir()
+    shell.setJsObjdir(mkdtemp(prefix='-'.join(['js', options.compileType, 'objdir',
+                                               shell.getHgHash()]) + '-'))
     configureTryCount = 0
     while True:
         try:
@@ -444,7 +443,8 @@ def compileJs(shell, options):
 def compileNspr(shell, options):
     '''Compile a NSPR binary.'''
     autoconfRun(shell.getRepoDirNsprSrc())
-    shell.createNsprObjdir()
+    shell.setNsprObjdir(mkdtemp(prefix='-'.join(['nspr', options.compileType, 'objdir',
+                                                 shell.getHgHash()]) + '-'))
     cfgBin(shell, options, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
