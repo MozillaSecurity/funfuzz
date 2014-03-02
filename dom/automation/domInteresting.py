@@ -365,6 +365,8 @@ def knownChromeFailure(msg):
         ("SessionHistory.jsm" in msg and "webNavigation.document.body is null" in msg) or # Bug 973550
         ("content-sessionStore.js" in msg and "nsIURI.userPass" in msg) or # Bug 973559
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or # bug 978524
+        ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or # bug 978629, bug 978630
+        ("nsDOMIdentity.js, line " in msg) or # These seem to be intentional messages about misusing the identity API
         "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
