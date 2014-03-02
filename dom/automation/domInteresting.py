@@ -372,6 +372,7 @@ def knownChromeFailure(msg):
         "SidebarUtils is not defined" in msg or # Bug 856250
         "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
         "pbu_privacyContextFromWindow" in msg or # bug 931304 whenfixed 'pb'
+        "System JS : ERROR (null):0" in msg or # Bug 978617 (errors) and bug 978618 (lack of filename / line number)
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
