@@ -364,6 +364,7 @@ def knownChromeFailure(msg):
         ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
         ("SessionHistory.jsm" in msg and "webNavigation.document.body is null" in msg) or # Bug 973550
         ("content-sessionStore.js" in msg and "nsIURI.userPass" in msg) or # Bug 973559
+        ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or # bug 978524
         "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
