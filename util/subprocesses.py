@@ -451,10 +451,17 @@ def getAbsPathForAdjacentFile(filename):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
+def rmDirIfEmpty(eDir):
+    '''Remove directory if empty.'''
+    assert os.path.isdir(eDir)
+    if not os.listdir(eDir):
+        os.rmdir(eDir)
+
+
 def rmTreeIfExists(dirTree):
-    '''Remove a directory with all sub-directories and files if the directory exists.'''
-    if os.path.isdir(dirTree):
-        rmTreeIncludingReadOnly(dirTree)
+    '''Remove a directory with all sub-directories and files.'''
+    assert os.path.isdir(dirTree)
+    rmTreeIncludingReadOnly(dirTree)
     assert not os.path.isdir(dirTree)
 
 
