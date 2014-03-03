@@ -37,6 +37,7 @@ import buildOptions
 from downloadBuild import defaultBuildType, downloadBuild, getBuildList
 from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor, destroyPyc
 from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, Unbuffered, vdump
+from LockDir import LockDir
 
 INCOMPLETE_NOTE = 'incompleteBuild.txt'
 
@@ -848,14 +849,8 @@ def main():
     options = parseOpts()
 
     isUsingTboxBins = 'Tbox' if options.useTinderboxBinaries else ''
-    lockDir = os.path.join(ensureCacheDir(), 'autoBisect' + isUsingTboxBins + 'Js-lock')
-    try:
-        os.mkdir(lockDir)
-    except OSError:
-        print "autoBisect is already running"
-        return
 
-    try:
+    with LockDir(os.path.join(ensureCacheDir(), 'autoBisect' + isUsingTboxBins + 'Js-lock')):
         if options.useTinderboxBinaries:
             bisectUsingTboxBins(options)
         else:
@@ -865,8 +860,6 @@ def main():
                                buildBrowser.makeTestRev(options))
             else:
                 findBlamedCset(options, options.buildOptions.repoDir, makeTestRev(options))
-    finally:
-        os.rmdir(lockDir)
 
 
 if __name__ == '__main__':
