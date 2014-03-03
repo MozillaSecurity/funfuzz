@@ -114,6 +114,7 @@ function fuzzInitBlacklists()
                 "peerconnection",    // bug 914015
                 "\\u",               // bug 963878
                 "MediaRecorder",     // bug 973522
+                "styleSheetSet",     // bug 978646
             ]
         },
         {
