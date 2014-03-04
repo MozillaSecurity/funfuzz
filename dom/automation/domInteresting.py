@@ -369,6 +369,7 @@ def knownChromeFailure(msg):
         ("nsDOMIdentity.js, line " in msg) or # These seem to be intentional messages about misusing the identity API
         ("NS_ERROR_XPC_SECURITY_MANAGER_VETO" in msg and "nsIDOMJSWindow.frames" in msg) or # Bug 978652
         ("tabbrowser.xml" in msg and "NS_ERROR_NOT_INITIALIZED" in msg) or # Bug 978652
+        ("browser.xml" in msg and "nsIWebNavigation.loadURI" in msg) or # Bug 979379
         "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581
