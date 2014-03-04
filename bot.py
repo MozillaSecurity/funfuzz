@@ -25,6 +25,7 @@ import lithOps
 from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, patchHgRepoUsingMq
 from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isMac, isWin, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
+from LockDir import LockDir
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
@@ -34,7 +35,7 @@ path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
 import loopjsfunfuzz
-from compileShell import CompiledShell, cfgJsCompile
+from compileShell import CompiledShell, cfgJsCompile, getLockDirPath
 
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
@@ -340,7 +341,8 @@ def botmain(options):
             options.buildOptions += " --enable-more-deterministic"
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
         options.timeout = options.timeout or machineTimeoutDefaults(options)
-        fuzzShell, cList = localCompileFuzzJsShell(options)
+        with LockDir(getLockDirPath()):
+            fuzzShell, cList = localCompileFuzzJsShell(options)
         startDir = fuzzShell.getDestDir()
 
         if options.noStart:

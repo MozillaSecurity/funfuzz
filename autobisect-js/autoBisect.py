@@ -25,7 +25,7 @@ sys.path.append(path1)
 import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
-from compileShell import CompiledShell, makeTestRev, ensureCacheDir
+from compileShell import getLockDirPath, makeTestRev, ensureCacheDir
 from inspectShell import testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'dom', 'automation'))
 sys.path.append(path3)
@@ -848,9 +848,8 @@ def main():
     sanityChecks()
     options = parseOpts()
 
-    isUsingTboxBins = 'Tbox' if options.useTinderboxBinaries else ''
-
-    with LockDir(os.path.join(ensureCacheDir(), 'autoBisect' + isUsingTboxBins + 'Js-lock')):
+    with LockDir(getLockDirPath(tboxIdentifier='Tbox') if options.useTinderboxBinaries else \
+                 getLockDirPath()):
         if options.useTinderboxBinaries:
             bisectUsingTboxBins(options)
         else:

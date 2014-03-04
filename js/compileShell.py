@@ -27,6 +27,7 @@ sys.path.append(path1)
 from hgCmds import getRepoNameFromHgrc, getRepoHashAndId, destroyPyc
 from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin, macVer, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
+from LockDir import LockDir
 
 CLANG_PARAMS = ' -Qunused-arguments'
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
@@ -463,7 +464,7 @@ def compileNspr(shell, options):
 
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
-
+    assert os.path.isdir(getLockDirPath())
     try:
         if not os.path.exists(compiledShell.getShellCacheDir()):
             try:
@@ -483,6 +484,10 @@ def compileStandalone(compiledShell):
         if os.path.isdir(compiledShell.getShellCacheDir()):
             if not os.listdir(compiledShell.getShellCacheDir()):  # True if dir is empty
                 os.rmdir(compiledShell.getShellCacheDir())
+
+
+def getLockDirPath(tboxIdentifier=''):
+    return os.path.join(ensureCacheDir(), 'autoBisect' + tboxIdentifier + 'Js-lock')
 
 
 def makeTestRev(options):
@@ -550,20 +555,21 @@ def main():
 
     rev = options.revision
 
-    if rev:
-        shell = CompiledShell(options.buildOptions, rev)
-    else:
-        localOrigHgHash, localOrigHgNum, isOnDefault = \
-            getRepoHashAndId(options.buildOptions.repoDir)
-        shell = CompiledShell(options.buildOptions, localOrigHgHash)
-
-    if not os.path.exists(shell.getShellCacheFullPath()):
+    with LockDir(getLockDirPath()):
         if rev:
-            captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev],
-                ignoreStderr=True)
-            destroyPyc(options.buildOptions.repoDir)
+            shell = CompiledShell(options.buildOptions, rev)
+        else:
+            localOrigHgHash, localOrigHgNum, isOnDefault = \
+                getRepoHashAndId(options.buildOptions.repoDir)
+            shell = CompiledShell(options.buildOptions, localOrigHgHash)
 
-        compileStandalone(shell)
+        if not os.path.exists(shell.getShellCacheFullPath()):
+            if rev:
+                captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev],
+                    ignoreStderr=True)
+                destroyPyc(options.buildOptions.repoDir)
+
+            compileStandalone(shell)
 
     print shell.getShellCacheFullPath()
 
