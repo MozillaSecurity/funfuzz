@@ -459,9 +459,9 @@ def rmDirIfEmpty(eDir):
 
 
 def rmTreeIfExists(dirTree):
-    '''Remove a directory with all sub-directories and files.'''
-    assert os.path.isdir(dirTree)
-    rmTreeIncludingReadOnly(dirTree)
+    '''Remove a directory with all sub-directories and files if the directory exists.'''
+    if os.path.isdir(dirTree):
+        rmTreeIncludingReadOnly(dirTree)
     assert not os.path.isdir(dirTree)
 
 
