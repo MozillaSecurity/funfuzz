@@ -347,6 +347,7 @@ def knownChromeFailure(msg):
         ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
         ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
         ("pageInfo.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949927
+        ("pageInfo.js" in msg and ": NS_ERROR_FAILURE" in msg) or # Bug 979400
         ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
         ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
         ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or # Bug 931286
