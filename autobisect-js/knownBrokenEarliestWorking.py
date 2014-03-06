@@ -44,24 +44,11 @@ def knownBrokenRanges(options):
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange('be9979b4c10b', '9f892a5a80fa'), # m-c 52501 - 53538: jm brokenness
-        hgrange('30ffa45f9a63', 'fff3dc9478ce'), # m-c 76465 - 76514: build broken after a gc patch
-        hgrange('c12c8651c10d', '723d44ef6eed'), # m-c to tm merge that broke compilation
-        hgrange('996cc657dfba', 'e41a37df3892'), # non-threadsafe build breakage
-        hgrange('ae22e27106b3', '785e4e86798b'), # --enable-more-deterministic and Win zlib breakage
-        hgrange('150159ee5c26', 'fed610aff637'), # broken ionmonkey
-        hgrange('300ac3d58291', 'bc1833f2111e'), # ion flags changed to ensure compatibility
-        hgrange('53d0ad70087b', '73e8ca73e5bd'), # broken ionmonkey
-        hgrange('b83b72d7fb86', '45315f6ccb19'), # broken ionmonkey
-        hgrange('23a84dbb258f', '08187a7ea897'), # broken ionmonkey
-        hgrange('4804d288adae', '9049a4c5c61a'), # broken ionmonkey
         hgrange('0a8867dd72a4', 'a765d833483a'), # Rivertrail work broke non-threadsafe/nspr builds
-        hgrange('7f1ecab23f6f', 'c8e06ab7a39d'), # broken spidermonkey
         hgrange('57449cdf45ad', 'ca0d05c99758'), # broken spidermonkey
         hgrange('8c6ec2899d89', '26653529ea8b'), # broken odinmonkey
         hgrange('d2cce982a7c8', '4a6b8dd4dfe3'), # broken virtualenv
         hgrange('e213c2a01ec2', 'cd67ffb5ca47'), # broken spidermonkey
-        hgrange('4ceb3e9961e4', '73e8ca73e5bd'), # broken spidermonkey
         hgrange('79a1f60d83df', 'a88f40be25e7'), # broken spidermonkey
         hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
         hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
@@ -70,11 +57,6 @@ def knownBrokenRanges(options):
 
     if isMac and macVer() >= [10, 7]:
         skips.extend([
-            hgrange('780888b1548c', 'ce10e78d030d'), # clang
-            hgrange('e4c82a6b298c', '036194408a50'), # clang
-            hgrange('996e96b4dbcf', '1902eff5df2a'), # broken ionmonkey
-            hgrange('7dcb2b6162e5', 'c4dc1640324c'), # broken ionmonkey
-            hgrange('242a9051f7e9', '14d9f14b129e'), # broken ionmonkey and clang
             hgrange('c054eef6ba77', 'e02f86260dad'), # clang
         ])
 
