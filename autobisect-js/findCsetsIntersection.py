@@ -3,8 +3,13 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-
+#
 # This file scans the revsets in ignoreAndEarliestWorkingLists and looks for overlaps.
+#
+# Usage: python findCsetsIntersection.py -R ~/trees/mozilla-central/
+#
+# (first go to knownBrokenEarliestWorking.py and comment out configuration-specific ignore ranges,
+# this file does not yet support those.)
 
 import os
 import sys
