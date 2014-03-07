@@ -35,7 +35,8 @@ sys.path.append(path4)
 from fileManipulation import firstLine
 import buildOptions
 from downloadBuild import defaultBuildType, downloadBuild, getBuildList
-from hgCmds import findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, isAncestor, destroyPyc
+from hgCmds import destroyPyc, findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, \
+    isAncestor
 from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, Unbuffered, vdump
 from LockDir import LockDir
 
