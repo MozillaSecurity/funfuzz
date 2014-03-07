@@ -487,6 +487,7 @@ def compileStandalone(compiledShell):
 
 
 def getLockDirPath(tboxIdentifier=''):
+    '''Returns the name of the lock directory, located in the cache directory by default.'''
     return os.path.join(ensureCacheDir(), 'autoBisect' + tboxIdentifier + 'Js-lock')
 
 
