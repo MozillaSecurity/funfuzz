@@ -351,7 +351,8 @@ def botmain(options):
 
             except Exception:
                 # This block should go away once this portion of code uses compileStandalone.
-                hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
+                if options.buildOptions.patchFile:
+                    hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
                 raise Exception(format_exc())
     #####
 
