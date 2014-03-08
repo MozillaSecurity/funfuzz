@@ -46,7 +46,7 @@ INCOMPLETE_NOTE = 'incompleteBuild.txt'
 def sanityChecks():
     # autoBisect uses temporary directory python APIs. On WinXP, these are located at
     # c:\docume~1\mozilla\locals~1\temp\ and the ~ in the shortened folders break pymake.
-    # This can be fixed by moving compilations to autobisect-cache, but we lose the benefit of
+    # This can be fixed by moving compilations to shell-cache, but we lose the benefit of
     # compiling in a temporary directory. Not worth it, for an OS that is on its way out.
     assert platform.uname()[2] != 'XP'
     # Disable autoBisect when running in a VM, even Linux. This has the possibility of interacting

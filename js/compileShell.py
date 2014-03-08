@@ -26,7 +26,7 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
 from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin
-from subprocesses import macVer, normExpUserPath, rmTreeIfExists, shellify, vdump
+from subprocesses import macVer, normExpUserPath, rmDirIfEmpty, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
 
 CLANG_PARAMS = ' -Qunused-arguments'
@@ -116,6 +116,8 @@ class CompiledShell(object):
         return libsList
     def getShellBaseTempDirWithName(self):
         return normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
+    def getShellNameWithExt(self):
+        return self.shellNameWithExt
 
 
 def ensureCacheDir():
@@ -135,7 +137,7 @@ def ensureCacheDir():
         # If ~/Desktop is not present, create it. ~/Desktop might not be present with
         # CLI/server versions of Linux.
         ensureDir(cacheDirBase)
-    cacheDir = os.path.join(cacheDirBase, 'autobisect-cache')
+    cacheDir = os.path.join(cacheDirBase, 'shell-cache')
     ensureDir(cacheDir)
     return cacheDir
 
@@ -184,8 +186,6 @@ def cfgJsCompile(shell):
     if shell.buildOptions.isThreadsafe:
         compileNspr(shell)
     autoconfRun(shell.getRepoDirJsSrc())
-    shell.setJsObjdir(mkdtemp(prefix='-'.join(['js', shell.buildOptions.compileType, 'objdir',
-                                               shell.getHgHash()]) + '-'))
     configureTryCount = 0
     while True:
         try:
@@ -203,6 +203,7 @@ def cfgJsCompile(shell):
                 continue
     compileJs(shell)
     verifyBinary(shell)
+    envDump(shell, normExpUserPath(os.path.join(shell.getDestDir(), 'compilation-parameters.txt')))
 
 
 def cfgBin(shell, binToBeCompiled):
@@ -444,8 +445,6 @@ def compileJs(shell):
 def compileNspr(shell):
     '''Compile a NSPR binary.'''
     autoconfRun(shell.getRepoDirNsprSrc())
-    shell.setNsprObjdir(mkdtemp(prefix='-'.join(['nspr', shell.buildOptions.compileType, 'objdir',
-                                                 shell.getHgHash()]) + '-'))
     cfgBin(shell, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
@@ -462,8 +461,25 @@ def compileNspr(shell):
     assert os.path.isdir(normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
 
-def compileStandalone(compiledShell):
-    """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
+def compileStandalone(compiledShell, isTboxBins=False):
+    '''Compile a standalone shell. Keep the objdir for now, especially .a files, for symbols.'''
+    cachedNoShell = compiledShell.getShellCacheFullPath() + ".busted"
+
+    if os.path.exists(compiledShell.getShellCacheFullPath()):
+        for content in os.listdir(compiledShell.getShellCacheDir()):
+            if os.path.isdir(os.path.join(normExpUserPath(compiledShell.getShellCacheDir()),
+                                                          content)) and 'objdir-js' in content:
+                print 'Found cached shell...',
+                return  # The objdir is present, so .a files, and thus, symbols should be present.
+    elif os.path.exists(cachedNoShell):
+        print "Found a cached shell that failed compilation...",
+        return
+
+    if os.path.isdir(compiledShell.getShellCacheDir()) and \
+            os.listdir(compiledShell.getShellCacheDir()):  # True if dir has something present
+        print 'Found cached shell, but js objdir is not present, so recompiling to get symbols...',
+        shutil.rmtree(compiledShell.getShellCacheDir())
+
     assert os.path.isdir(getLockDirPath(compiledShell.buildOptions.repoDir))
     try:
         if compiledShell.buildOptions.patchFile:
@@ -477,21 +493,27 @@ def compileStandalone(compiledShell):
                 raise Exception('Unable to create shell cache directory.')
         compiledShell.setDestDir(compiledShell.getShellCacheDir())
 
+        if compiledShell.buildOptions.isThreadsafe:
+            compiledShell.setNsprObjdir(mkdtemp(prefix='-'.join(['objdir', 'nspr',
+                compiledShell.buildOptions.compileType,
+                compiledShell.getHgHash()]) + '-', dir=compiledShell.getShellCacheDir()))
+        compiledShell.setJsObjdir(mkdtemp(prefix='-'.join(['objdir', 'js',
+            compiledShell.buildOptions.compileType,
+            compiledShell.getHgHash()]) + '-', dir=compiledShell.getShellCacheDir()))
+
         cfgJsCompile(compiledShell)
 
+    except (KeyboardInterrupt, Exception):
+        try:
+            rmTreeIfExists(compiledShell.getJsObjdir())
+            rmTreeIfExists(compiledShell.getNsprObjdir())
+        finally:
+            rmDirIfEmpty(compiledShell.getShellCacheDir())
+        raise
     finally:
         if compiledShell.buildOptions.patchFile:
             hgCmds.hgQpopQrmAppliedPatch(compiledShell.buildOptions.patchFile,
                                          compiledShell.getRepoDir())
-
-        rmTreeIfExists(compiledShell.getJsObjdir())
-        rmTreeIfExists(compiledShell.getNsprObjdir())
-
-        # In the rare case that the cache dir is created but no binaries are present, probably due
-        # to harness exception.
-        if os.path.isdir(compiledShell.getShellCacheDir()):
-            if not os.listdir(compiledShell.getShellCacheDir()):  # True if dir is empty
-                os.rmdir(compiledShell.getShellCacheDir())
 
 
 def envDump(shell, log):
@@ -499,7 +521,7 @@ def envDump(shell, log):
     with open(log, 'ab') as f:
         f.write('Information about shell:\n\n')
 
-        f.write('Create another shell in autobisect-cache like this one:\n')
+        f.write('Create another shell in shell-cache like this one:\n')
         f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
             "-b", shell.buildOptions.inputArgs]) + "\n\n")
 
@@ -539,14 +561,16 @@ def makeTestRev(options):
             hgCmds.destroyPyc(options.buildOptions.repoDir)
             try:
                 print "Compiling...",
-                compileStandalone(shell)
-            except Exception, e:
-                if not os.path.exists(normExpUserPath(shell.getShellCacheDir())):
+
+                if not os.path.exists(shell.getShellCacheDir()):
                     try:
                         os.mkdir(shell.getShellCacheDir())
                     except OSError:
-                        print 'Unable to create shell cache directory.'
-                        raise
+                        raise Exception('Unable to create shell cache directory.')
+                shell.setDestDir(shell.getShellCacheDir())
+
+                compileStandalone(shell, isTboxBins=options.useTinderboxBinaries)
+            except Exception as e:
                 with open(cachedNoShell, 'wb') as f:
                     f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
                     f.write("Backtrace:\n")
@@ -594,6 +618,13 @@ def main():
             localOrigHgHash, localOrigHgNum, isOnDefault = \
                 hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
             shell = CompiledShell(options.buildOptions, localOrigHgHash)
+
+        if not os.path.exists(shell.getShellCacheDir()):
+            try:
+                os.mkdir(shell.getShellCacheDir())
+            except OSError:
+                raise Exception('Unable to create shell cache directory.')
+        shell.setDestDir(shell.getShellCacheDir())
 
         if not os.path.exists(shell.getShellCacheFullPath()):
             if rev:

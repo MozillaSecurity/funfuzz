@@ -14,10 +14,10 @@ import time
 import uuid
 import tempfile
 
+from glob import iglob
 from multiprocessing import cpu_count, Process
 from optparse import OptionParser
 from tempfile import mkdtemp
-from traceback import format_exc
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
@@ -27,7 +27,7 @@ import hgCmds
 import lithOps
 from subprocesses import captureStdout, dateStr, getFreeSpace
 from subprocesses import isARMv7l, isLinux, isMac, isWin
-from subprocesses import normExpUserPath, rmTreeIfExists, shellify, vdump
+from subprocesses import normExpUserPath, shellify
 from LockDir import LockDir
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
@@ -213,7 +213,6 @@ def parseOpts():
         testType = "auto",
         existingBuildDir = None,
         retestRoot = None,
-        disableCompareJit = False,
         disableRndFlags = False,
         noStart = False,
         timeout = 0,
@@ -258,8 +257,6 @@ def parseOpts():
     parser.add_option('-T', '--use-tinderbox-shells', dest='useTinderboxShells', action='store_true',
                       help='Fuzz js using tinderbox shells. Requires -j.')
     # From the old localjsfunfuzz file.
-    parser.add_option('--disable-comparejit', dest='disableCompareJit', action='store_true',
-                      help='Disable comparejit fuzzing.')
     parser.add_option('--disable-random-flags', dest='disableRndFlags', action='store_true',
                       help='Disable random flag fuzzing.')
     parser.add_option('--nostart', dest='noStart', action='store_true',
@@ -330,32 +327,21 @@ def botmain(options):
         if options.localJsfunfuzzTimeDelay != 0:
             time.sleep(options.localJsfunfuzzTimeDelay)
 
-        if not options.disableCompareJit:
-            options.buildOptions += " --enable-more-deterministic"
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
         options.timeout = options.timeout or machineTimeoutDefaults(options)
 
         with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
-            try:
-                fuzzShell, cList = localCompileFuzzJsShell(options)
-                startDir = fuzzShell.getDestDir()
+            shell, fuzzPath, cList = localCompileFuzzJsShell(options)
 
-                if options.noStart:
-                    print 'Exiting, --nostart is set.'
-                    sys.exit(0)
+        if options.noStart:
+            print 'Exiting, --nostart is set.'
+            sys.exit(0)
 
-                # Commands to simulate bash's `tee`.
-                tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=startDir)
+        # Commands to simulate bash's `tee`.
+        tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=fuzzPath)
 
-                # Start fuzzing the newly compiled builds.
-                subprocess.call(cList, stdout=tee.stdin, cwd=startDir)
-
-            except Exception:
-                # This block should go away once this portion of code uses compileStandalone.
-                if options.buildOptions.patchFile:
-                    hgCmds.hgQpopQrmAppliedPatch(options.buildOptions.patchFile,
-                                                 options.buildOptions.repoDir)
-                raise Exception(format_exc())
+        # Start fuzzing the newly compiled builds.
+        subprocess.call(cList, stdout=tee.stdin, cwd=fuzzPath)
     #####
 
     else:
@@ -609,18 +595,9 @@ def cmdDump(shell, cmdList, log):
         f.write('========================================================\n\n')
 
 
-def localCompileFuzzJsShell(options):
-    '''Compiles and readies a js shell for fuzzing.'''
-    print dateStr()
-    localOrigHgHash, localOrigHgNum, isOnDefault = hgCmds.getRepoHashAndId(
-        options.buildOptions.repoDir)
-
-    if options.buildOptions.patchFile:
-        hgCmds.patchHgRepoUsingMq(options.buildOptions.patchFile, options.buildOptions.repoDir)
-
+def fuzzingPathName(options):
+    '''Returns the path of the directory where fuzzing is going to take place.'''
     appendStr = ''
-    if options.buildOptions.patchFile:
-        appendStr += '-patched'
     if isMac:
         appendStr += '.noindex'  # Prevents Spotlight in Mac from indexing these folders.
     userDesktopFolder = normExpUserPath(os.path.join('~', 'Desktop'))
@@ -629,61 +606,79 @@ def localCompileFuzzJsShell(options):
             os.mkdir(userDesktopFolder)
         except OSError:
             raise Exception('Unable to create ~/Desktop folder.')
-    # WinXP has spaces in the user directory.
-    fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder
+
+    localOrigHgHash, localOrigHgNum = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0:2]
     buildIdentifier = '-'.join([hgCmds.getRepoNameFromHgrc(options.buildOptions.repoDir),
                                 localOrigHgNum, localOrigHgHash])
-    fullPath = mkdtemp(appendStr + os.sep,
-                       buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
-                       fuzzResultsDirStart)
-    vdump('Base temporary directory is: ' + fullPath)
+    return mkdtemp(appendStr + os.sep,
+                   buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
+                   # WinXP has spaces in the user directory.
+                   'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder)
 
-    myShell = compileShell.CompiledShell(options.buildOptions, localOrigHgHash)
-    myShell.setDestDir(fullPath)
+def localCompileFuzzJsShell(options):
+    '''Compiles and readies a js shell for fuzzing.'''
+    print dateStr()
+    shell = compileShell.CompiledShell(options.buildOptions,
+                                       hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0])
 
-    try:
-        compileShell.cfgJsCompile(myShell)
-    finally:
-        if options.buildOptions.patchFile:
-            hgCmds.hgQpopQrmAppliedPatch(options.buildOptions.patchFile,
-                                         options.buildOptions.repoDir)
+    if not os.path.exists(shell.getShellCacheDir()):
+        try:
+            os.mkdir(shell.getShellCacheDir())
+        except OSError:
+            raise Exception('Unable to create shell cache directory.')
+    shell.setDestDir(shell.getShellCacheDir())
 
-        rmTreeIfExists(myShell.getJsObjdir())
-        rmTreeIfExists(myShell.getNsprObjdir())
+    compileShell.compileStandalone(shell)
 
-    analysisPath = os.path.abspath(os.path.join(path0, 'jsfunfuzz', 'analysis.py'))
-    if os.path.exists(analysisPath):
-        shutil.copy2(analysisPath, fullPath)
+    fullPath = fuzzingPathName(options)
+
+    # Copy only files over to fullPath, not the objdir.
+    # From http://stackoverflow.com/a/296184
+    compiledFiles = iglob(os.path.join(shell.getShellCacheDir(), "*"))
+    for cFile in compiledFiles:
+        if os.path.isfile(cFile):
+            shutil.copy2(cFile, fullPath)
+
+    if not options.noStart:
+        analysisPath = os.path.abspath(os.path.join(path0, 'jsfunfuzz', 'analysis.py'))
+        if os.path.exists(analysisPath):
+            shutil.copy2(analysisPath, fullPath)
 
     # Construct a command-line for running loopjsfunfuzz.py
     cmdList = [sys.executable, '-u']
     cmdList.append(normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
-    cmdList.append('--repo=' + myShell.getRepoDir())
+    cmdList.append('--repo=' + shell.getRepoDir())
     cmdList += ["--build", options.buildOptions.inputArgs]
     if options.buildOptions.runWithVg:
         cmdList.append('--valgrind')
-    if not options.disableCompareJit:
+    if options.buildOptions.enableMoreDeterministic:
         cmdList.append('--comparejit')
     if not options.disableRndFlags:
         cmdList.append('--random-flags')
     cmdList.append(str(options.timeout))
-    cmdList.append(lithOps.knownBugsDir(myShell.getRepoName()))
-    cmdList.append(myShell.getShellBaseTempDirWithName())
+    cmdList.append(lithOps.knownBugsDir(shell.getRepoName()))
+    cmdList.append(normExpUserPath(os.path.join(fullPath, shell.getShellNameWithExt())))
 
-    # Write log files describing configuration parameters used during compilation.
-    localLog = normExpUserPath(os.path.join(myShell.getDestDir(), 'log-localjsfunfuzz.txt'))
-    compileShell.envDump(myShell, localLog)
-    cmdDump(myShell, cmdList, localLog)
+    # Write log files describing commands to be run for fuzzing using jsfunfuzz.
+    runLog = normExpUserPath(os.path.join(fullPath, 'log-localjsfunfuzz.txt'))
+    cmdDump(shell, cmdList, runLog)
 
-    with open(localLog, 'rb') as f:
+    # Display compilation parameter and fuzz command logs prior to fuzzing.
+    compileLog = normExpUserPath(os.path.join(fullPath, 'compilation-parameters.txt'))
+    if os.path.isfile(compileLog):
+        with open(compileLog, 'rb') as f:
+            for line in f:
+                if 'Full environment is' not in line:
+                    print line,
+
+    with open(runLog, 'rb') as f:
         for line in f:
-            if 'Full environment is' not in line:
-                print line,
+            print line,
 
     # FIXME: Randomize logic should be developed later, possibly together with target time in
     # loopjsfunfuzz.py. Randomize Valgrind runs too.
 
-    return myShell, cmdList
+    return shell, fullPath, cmdList
 
 
 def machineTimeoutDefaults(options):
