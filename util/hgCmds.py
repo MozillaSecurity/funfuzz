@@ -117,12 +117,9 @@ def isAncestor(repoDir, a, b):
 
 
 def isCurrRevAnAncestorOfMcRev7cff27cb2845(repoDir):
-    # FIXME: Should make this function accept a repository revision hash instead, and remove the
-    # call to `hg identify`.
     # Once 172397:7cff27cb2845 is the ancestor of earliestKnownWorkingRev, function can be removed
-    hgIdResult = captureStdout(['hg', '-R', repoDir, 'identify', '-i'])[0]
     return ('7cff27cb2845105064b6029f456639ee42d6aee5' not in captureStdout([
-        'hg', '-R', repoDir, 'debugancestor', '7cff27cb2845', hgIdResult])[0])
+        'hg', '-R', repoDir, 'debugancestor', '7cff27cb2845', '.'])[0])
 
 
 def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
