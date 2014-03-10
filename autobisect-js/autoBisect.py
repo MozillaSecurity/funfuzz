@@ -275,7 +275,7 @@ def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
     def inner(shellFilename, _hgHash):
         (stdoutStderr, exitCode) = testBinary(shellFilename, options.paramList,
-            options.buildOptions.runWithVg, options.buildOptions.isThreadsafe)
+            options.buildOptions.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
