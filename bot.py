@@ -659,7 +659,7 @@ def localCompileFuzzJsShell(options):
     myShell.setDestDir(fullPath)
 
     try:
-        cfgJsCompile(myShell, options.buildOptions)
+        cfgJsCompile(myShell)
     finally:
         if options.buildOptions.patchFile:
             hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)

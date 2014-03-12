@@ -151,21 +151,21 @@ def testIsHardFpShellARM(s):
         raise Exception('readelf is not found.')
 
 
-def verifyBinary(sh, options):
+def verifyBinary(sh):
     '''Verifies that the binary is compiled as intended.'''
     assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.buildOptions.arch
     assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.buildOptions.compileType
     if isARMv7l:
-        assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == options.enableHardFp
+        assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == sh.buildOptions.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
         if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
             assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'threadsafe') == \
-                options.isThreadsafe
+                sh.buildOptions.isThreadsafe
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \
-            options.enableMoreDeterministic
+            sh.buildOptions.enableMoreDeterministic
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
-            options.buildWithAsan
+            sh.buildOptions.buildWithAsan
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
-            options.enableRootAnalysis
+            sh.buildOptions.enableRootAnalysis
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'generational-gc') == \
-            options.enableGcGenerational
+            sh.buildOptions.enableGcGenerational
