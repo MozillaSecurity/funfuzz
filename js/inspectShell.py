@@ -77,7 +77,7 @@ def shellSupports(shellPath, args):
     This function returns True if the shell likes the args.
     You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
     '''
-    output, retCode = testBinary(shellPath, args, False)
+    output, retCode = testBinary(shellPath, args, False, False)
     if retCode == 0:
         return True
     elif 1 <= retCode <= 3:
@@ -89,14 +89,23 @@ def shellSupports(shellPath, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
-def testBinary(shellPath, args, useValgrind):
+def testBinary(shellPath, args, useValgrind, threadsafeShell):
     '''Tests the given shell with the given args.'''
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     vdump('The testing command is: ' + shellify(testCmd))
 
+    newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
+    if threadsafeShell:
+        # The NSPR libraries needed to run threadsafe js shell should have already been be copied to
+        # the same destination as the shell.
+        assert os.path.isfile(normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), RUN_NSPR_LIB)))
+        assert os.path.isfile(normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), RUN_PLDS_LIB)))
+        assert os.path.isfile(normExpUserPath(os.path.join(
+            os.path.dirname(os.path.abspath(shellPath)), RUN_PLC_LIB)))
     out, rCode = captureStdout(testCmd, combineStderr=True, ignoreStderr=True, ignoreExitCode=True,
-                               env=envWithPath(os.path.dirname(os.path.abspath(shellPath))))
-
+                               env=newEnv)
     vdump('The exit code is: ' + str(rCode))
     return out, rCode
 
@@ -117,7 +126,7 @@ def testGetBuildConfigurationWithThreadsafe(s):
     See bug 791146 - getBuildConfiguration() returns the wrong value for gczeal and threadsafe
     '''
     ans = testBinary(s,
-            ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False)[0]
+            ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False, False)[0]
     return ans.find('true') != -1
 
 def testJsShellOrXpcshell(s):
@@ -127,7 +136,7 @@ def testJsShellOrXpcshell(s):
 def queryBuildConfiguration(s, parameter):
     '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
     ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'],
-                     False)[0]
+                     False, False)[0]
     return ans.find('true') != -1
 
 
@@ -142,21 +151,21 @@ def testIsHardFpShellARM(s):
         raise Exception('readelf is not found.')
 
 
-def verifyBinary(sh):
+def verifyBinary(sh, options):
     '''Verifies that the binary is compiled as intended.'''
     assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.buildOptions.arch
     assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.buildOptions.compileType
     if isARMv7l:
-        assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == sh.buildOptions.enableHardFp
+        assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == options.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
         if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
             assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'threadsafe') == \
-                sh.buildOptions.isThreadsafe
+                options.isThreadsafe
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \
-            sh.buildOptions.enableMoreDeterministic
+            options.enableMoreDeterministic
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
-            sh.buildOptions.buildWithAsan
+            options.buildWithAsan
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
-            sh.buildOptions.enableRootAnalysis
+            options.enableRootAnalysis
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'generational-gc') == \
-            sh.buildOptions.enableGcGenerational
+            options.enableGcGenerational

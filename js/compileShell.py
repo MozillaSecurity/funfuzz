@@ -25,7 +25,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 from hgCmds import destroyPyc, getRepoNameFromHgrc, getRepoHashAndId, hgQpopQrmAppliedPatch, \
-    isCurrRevAnAncestorOfMcRev7cff27cb2845, patchHgRepoUsingMq
+    patchHgRepoUsingMq
 from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin, macVer, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
@@ -109,15 +109,9 @@ class CompiledShell(object):
         return normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if isWin else '')))
-    def getShellRunLibsPathFromNsprObjdir(self):
+    def getShellCompiledRunLibsPath(self):
         libsList = [
             normExpUserPath(os.path.join(self.getNsprObjdir(), 'dist', 'lib', runLib)) \
-                for runLib in ALL_RUN_LIBS
-        ]
-        return libsList
-    def getShellRunLibsPathFromJsObjdir(self):
-        libsList = [
-            normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', runLib)) \
                 for runLib in ALL_RUN_LIBS
         ]
         return libsList
@@ -186,18 +180,17 @@ def cfgAsanParams(currEnv, options):
     return currEnv
 
 
-def cfgJsCompile(shell):
+def cfgJsCompile(shell, options):
     '''Configures, compiles and copies a js shell according to required parameters.'''
-    isAncestorOf7cff27cb2845 = isCurrRevAnAncestorOfMcRev7cff27cb2845(shell.buildOptions.repoDir)
-    if shell.buildOptions.isThreadsafe and isAncestorOf7cff27cb2845:
-        compileNspr(shell)
+    if options.isThreadsafe:
+        compileNspr(shell, options)
     autoconfRun(shell.getRepoDirJsSrc())
-    shell.setJsObjdir(mkdtemp(prefix='-'.join(['js', shell.buildOptions.compileType, 'objdir',
+    shell.setJsObjdir(mkdtemp(prefix='-'.join(['js', options.compileType, 'objdir',
                                                shell.getHgHash()]) + '-'))
     configureTryCount = 0
     while True:
         try:
-            cfgBin(shell, isAncestorOf7cff27cb2845, 'js')
+            cfgBin(shell, options, 'js')
             break
         except Exception, e:
             configureTryCount += 1
@@ -209,11 +202,11 @@ def cfgJsCompile(shell):
             if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
                 print 'Trying once more...'
                 continue
-    compileJs(shell, isAncestorOf7cff27cb2845)
-    verifyBinary(shell)
+    compileJs(shell, options)
+    verifyBinary(shell, options)
 
 
-def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
+def cfgBin(shell, options, binToBeCompiled):
     '''This function configures a binary according to required parameters.'''
     cfgCmdList = []
     cfgEnvDt = deepcopy(os.environ)
@@ -221,8 +214,8 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
     cfgEnvDt['AR'] = 'ar'
     if isARMv7l:
         # 32-bit shell on ARM boards, e.g. Pandaboards.
-        assert shell.buildOptions.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
-        if not shell.buildOptions.enableHardFp:
+        assert options.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
+        if not options.enableHardFp:
             cfgEnvDt['CC'] = 'gcc -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
             cfgEnvDt['CXX'] = 'g++ -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
         cfgCmdList.append('sh')
@@ -235,16 +228,16 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
             #cfgCmdList.append('--target=arm-linux-gnueabi')
             #cfgCmdList.append('--with-arch=armv7-a')
             #cfgCmdList.append('--with-thumb')
-        if not shell.buildOptions.enableHardFp:
+        if not options.enableHardFp:
             cfgCmdList.append('--target=arm-linux-gnueabi')
-    elif shell.buildOptions.arch == '32' and os.name == 'posix':
+    elif options.arch == '32' and os.name == 'posix':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
             cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang'
             cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++'
-            if shell.buildOptions.buildWithAsan:
-                cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
+            if options.buildWithAsan:
+                cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
             cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
             cfgEnvDt['HOST_CC'] = cfgEnvDt['HOST_CC'] + CLANG_PARAMS
@@ -261,7 +254,7 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
                 cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
             cfgCmdList.append('--enable-macos-target=10.5')
-            if shell.buildOptions.buildWithAsan:
+            if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on 32/64-bit x86 Linux
         elif isLinux and not isARMv7l:
@@ -270,8 +263,8 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
             cfgEnvDt['CC'] = 'gcc -m32'
             cfgEnvDt['CXX'] = 'g++ -m32'
             # We might still be using GCC on Linux 32-bit, don't use clang unless Asan is specified
-            if shell.buildOptions.buildWithAsan:
-                cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
+            if options.buildWithAsan:
+                cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
                 cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
                 cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
             cfgCmdList.append('sh')
@@ -280,7 +273,7 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
             else:
                 cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i686-pc-linux')
-            if shell.buildOptions.buildWithAsan:
+            if options.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
         else:
             cfgCmdList.append('sh')
@@ -289,11 +282,11 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
             else:
                 cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
-    elif isMac and macVer() >= [10, 7] and shell.buildOptions.arch == '64':
+    elif isMac and macVer() >= [10, 7] and options.arch == '64':
         cfgEnvDt['CC'] = 'clang'
         cfgEnvDt['CXX'] = 'clang++'
-        if shell.buildOptions.buildWithAsan:
-            cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
+        if options.buildWithAsan:
+            cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
         cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
         cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgCmdList.append('sh')
@@ -305,7 +298,7 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
         # 10.7.4 can still theoretically work as of end-Sep 2013, but we no longer have Lions.
         cfgCmdList.append('--target=x86_64-apple-darwin12.5.0')  # Mountain Lion 10.8.5
         # FIXME: This needs something about using the 10.8 SDK in 10.9? Ref bug 929686.
-        if shell.buildOptions.buildWithAsan:
+        if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
     elif isWin:
@@ -313,19 +306,19 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            if shell.buildOptions.arch == '32':
+            if options.arch == '32':
                 cfgCmdList.append('--enable-win32-target=WIN95')
             else:
                 cfgCmdList.append('--enable-64bit')
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        if shell.buildOptions.arch == '64':
+        if options.arch == '64':
             cfgCmdList.append('--host=x86_64-pc-mingw32')
             cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
-        if shell.buildOptions.buildWithAsan:
-            cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
+        if options.buildWithAsan:
+            cfgEnvDt = cfgAsanParams(cfgEnvDt, options)
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
             cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
         cfgCmdList.append('sh')
@@ -334,21 +327,21 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
             cfgCmdList.append('--enable-64bit')
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        if shell.buildOptions.buildWithAsan:
+        if options.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
-    if shell.buildOptions.buildWithAsan:
+    if options.buildWithAsan:
         assert 'clang' in cfgEnvDt['CC']
         assert 'clang++' in cfgEnvDt['CXX']
 
     # See https://hg.mozilla.org/mozilla-central/file/0a91da5f5eab/configure.in#l6894
     # Debug builds are compiled with --enable-optimize because --disable-optimize is not present.
-    if shell.buildOptions.buildWithVg:
+    if options.buildWithVg:
         cfgCmdList.append('--enable-optimize=-O1')
     else:
         cfgCmdList.append('--enable-optimize')
 
-    if shell.buildOptions.compileType == 'dbg':
+    if options.compileType == 'dbg':
         cfgCmdList.append('--enable-debug')
     else:
         cfgCmdList.append('--disable-debug')
@@ -361,31 +354,30 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
         cfgCmdList.append('--enable-gczeal')
         cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
         cfgCmdList.append('--disable-tests')
-        if shell.buildOptions.enableMoreDeterministic:
+        if options.enableMoreDeterministic:
             # Fuzzing tweaks for more useful output, implemented in bug 706433
             cfgCmdList.append('--enable-more-deterministic')
-        if shell.buildOptions.enableRootAnalysis:
+        if options.enableRootAnalysis:
             cfgCmdList.append('--enable-root-analysis')
-        if shell.buildOptions.disableExactRooting:
+        if options.disableExactRooting:
             cfgCmdList.append('--disable-exact-rooting')
-        elif shell.buildOptions.enableGcGenerational:  # GGC requires exact rooting to be enabled
+        elif options.enableGcGenerational:  # GGC requires exact rooting to be enabled
             cfgCmdList.append('--enable-gcgenerational')
-        if shell.buildOptions.buildWithVg:
+        if options.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
 
         if os.name == 'posix':
             cfgCmdList.append('--with-ccache')
-        if shell.buildOptions.isThreadsafe:
+        if options.isThreadsafe:
             cfgCmdList.append('--enable-threadsafe')
-            if isAncestorOf7cff27cb2845:
-                cfgCmdList.append('--with-nspr-prefix=' + \
-                    normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
-                cfgCmdList.append('--with-nspr-cflags=-I' + \
-                    normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
-                cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                    normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib))\
-                        for compileLib in ALL_COMPILE_LIBS
-                    ]))
+            cfgCmdList.append('--with-nspr-prefix=' + \
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+            cfgCmdList.append('--with-nspr-cflags=-I' + \
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
+            cfgCmdList.append('--with-nspr-libs=' + ' '.join([
+                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)) \
+                    for compileLib in ALL_COMPILE_LIBS
+                ]))
         else:
             cfgCmdList.append('--disable-threadsafe')
 
@@ -415,7 +407,7 @@ def cfgBin(shell, isAncestorOf7cff27cb2845, binToBeCompiled):
     shell.setCfgCmdExclEnv(cfgCmdList)
 
 
-def compileJs(shell, isAncestorOf7cff27cb2845):
+def compileJs(shell, options):
     '''This function compiles and copies a binary.'''
     try:
         cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
@@ -439,27 +431,23 @@ def compileJs(shell, isAncestorOf7cff27cb2845):
     if os.path.exists(shell.getShellCompiledPath()):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
-
-        if shell.buildOptions.isThreadsafe and isAncestorOf7cff27cb2845:
-            copyNsprLibs(shell.getShellRunLibsPathFromNsprObjdir(), shell.getDestDir())
-        elif isAncestorOf7cff27cb2845:
-            return  # Non-threadsafe shells prior to 7cff27cb2845 did not require libraries
-
-        # This feels like a regression from bug 975011.
-        # Why are NSPR libraries produced for non-threadsafe builds?
-        if not shell.buildOptions.isThreadsafe:
-            copyNsprLibs(shell.getShellRunLibsPathFromJsObjdir(), shell.getDestDir())
+        if options.isThreadsafe:
+            for runLib in shell.getShellCompiledRunLibsPath():
+                shutil.copy2(runLib, shell.getDestDir())
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_NSPR_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_PLDS_LIB)))
+            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_PLC_LIB)))
     else:
         print out
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
 
 
-def compileNspr(shell):
+def compileNspr(shell, options):
     '''Compile a NSPR binary.'''
     autoconfRun(shell.getRepoDirNsprSrc())
-    shell.setNsprObjdir(mkdtemp(prefix='-'.join(['nspr', shell.buildOptions.compileType, 'objdir',
+    shell.setNsprObjdir(mkdtemp(prefix='-'.join(['nspr', options.compileType, 'objdir',
                                                  shell.getHgHash()]) + '-'))
-    cfgBin(shell, shell.buildOptions, 'nspr')
+    cfgBin(shell, options, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
     # build during bisection. Maybe find the changeset that fixes this, and if before that, use -j1,
@@ -489,7 +477,7 @@ def compileStandalone(compiledShell):
                 raise Exception('Unable to create shell cache directory.')
         compiledShell.setDestDir(compiledShell.getShellCacheDir())
 
-        cfgJsCompile(compiledShell)
+        cfgJsCompile(compiledShell, compiledShell.buildOptions)
 
     finally:
         if compiledShell.buildOptions.patchFile:
@@ -503,15 +491,6 @@ def compileStandalone(compiledShell):
         if os.path.isdir(compiledShell.getShellCacheDir()):
             if not os.listdir(compiledShell.getShellCacheDir()):  # True if dir is empty
                 os.rmdir(compiledShell.getShellCacheDir())
-
-
-def copyNsprLibs(runLibPath, destDir):
-    '''Copies NSPR libraries from the objdir to the destination directory.'''
-    for runLib in runLibPath:
-        shutil.copy2(runLib, destDir)
-    assert os.path.isfile(normExpUserPath(os.path.join(destDir, RUN_NSPR_LIB)))
-    assert os.path.isfile(normExpUserPath(os.path.join(destDir, RUN_PLDS_LIB)))
-    assert os.path.isfile(normExpUserPath(os.path.join(destDir, RUN_PLC_LIB)))
 
 
 def getLockDirPath(tboxIdentifier=''):
