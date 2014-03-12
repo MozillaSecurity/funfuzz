@@ -194,8 +194,8 @@ def cfgJsCompile(shell):
             break
         except Exception, e:
             configureTryCount += 1
-            if configureTryCount > 5:
-                print 'Configuration of the js binary failed 5 times.'
+            if configureTryCount > 3:
+                print 'Configuration of the js binary failed 3 times.'
                 raise
             # This exception message is returned from captureStdout via cfgBin.
             # No idea why this is isLinux as well..
