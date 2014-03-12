@@ -53,6 +53,7 @@ def knownBrokenRanges(options):
         hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
         hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
         hgrange('b0678affef03', '77d06ee9ac48'), # broken standalone js shells with ICU
+        hgrange('7cff27cb2845', 'ff5ca7959511'), # broken build config w/ NSPR
     ]
 
     if isMac and macVer() >= [10, 7]:
