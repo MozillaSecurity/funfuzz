@@ -38,7 +38,7 @@ path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
 import loopjsfunfuzz
-from compileShell import CompiledShell, cfgJsCompile, getLockDirPath
+from compileShell import CompiledShell, cfgJsCompile, envDump, getLockDirPath
 
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
@@ -605,26 +605,6 @@ def cmdDump(shell, cmdList, log):
                      (shell.getRepoName() ))
         f.write('|  DATE: %s\n' % dateStr())
         f.write('========================================================\n\n')
-
-
-def envDump(shell, log):
-    '''Dumps environment to file.'''
-    with open(log, 'ab') as f:
-        f.write('Information about shell:\n\n')
-
-        f.write('Create another shell in autobisect-cache like this one:\n')
-        f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
-            "-b", shell.buildOptions.inputArgs]) + "\n\n")
-
-        f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
-        f.write('Environment variables added are:\n')
-        f.write(shellify(shell.getEnvAdded()) + '\n\n')
-
-        f.write('Configuration command was:\n')
-        f.write(shellify(shell.getCfgCmdExclEnv()) + '\n\n')
-
-        f.write('Full configuration command with needed environment variables is:\n')
-        f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
 
 def localCompileFuzzJsShell(options):

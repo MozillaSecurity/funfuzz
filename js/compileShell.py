@@ -493,6 +493,26 @@ def compileStandalone(compiledShell):
                 os.rmdir(compiledShell.getShellCacheDir())
 
 
+def envDump(shell, log):
+    '''Dumps environment to file.'''
+    with open(log, 'ab') as f:
+        f.write('Information about shell:\n\n')
+
+        f.write('Create another shell in autobisect-cache like this one:\n')
+        f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
+            "-b", shell.buildOptions.inputArgs]) + "\n\n")
+
+        f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
+        f.write('Environment variables added are:\n')
+        f.write(shellify(shell.getEnvAdded()) + '\n\n')
+
+        f.write('Configuration command was:\n')
+        f.write(shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+
+        f.write('Full configuration command with needed environment variables is:\n')
+        f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+
+
 def getLockDirPath(tboxIdentifier=''):
     '''Returns the name of the lock directory, located in the cache directory by default.'''
     return os.path.join(ensureCacheDir(), 'autoBisect' + tboxIdentifier + 'Js-lock')
