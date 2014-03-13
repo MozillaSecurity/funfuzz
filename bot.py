@@ -23,9 +23,8 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
 sys.path.insert(0, path1)
 import downloadBuild
+import hgCmds
 import lithOps
-from hgCmds import getRepoHashAndId, getRepoNameFromHgrc, hgQpopQrmAppliedPatch, \
-    patchHgRepoUsingMq
 from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isMac, isWin, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
@@ -352,7 +351,8 @@ def botmain(options):
             except Exception:
                 # This block should go away once this portion of code uses compileStandalone.
                 if options.buildOptions.patchFile:
-                    hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
+                    hgCmds.hgQpopQrmAppliedPatch(options.buildOptions.patchFile,
+                                                 options.buildOptions.repoDir)
                 raise Exception(format_exc())
     #####
 
@@ -543,7 +543,7 @@ def ensureBuild(options):
             options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
             buildDir = options.buildOptions.objDir
             buildType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
-            buildSrc = repr(getRepoHashAndId(options.buildOptions.repoDir))
+            buildSrc = repr(hgCmds.getRepoHashAndId(options.buildOptions.repoDir))
             success = buildBrowser.tryCompiling(options.buildOptions)
     else:
         # Download from Tinderbox and call it 'build'
@@ -610,10 +610,11 @@ def cmdDump(shell, cmdList, log):
 def localCompileFuzzJsShell(options):
     '''Compiles and readies a js shell for fuzzing.'''
     print dateStr()
-    localOrigHgHash, localOrigHgNum, isOnDefault = getRepoHashAndId(options.buildOptions.repoDir)
+    localOrigHgHash, localOrigHgNum, isOnDefault = hgCmds.getRepoHashAndId(
+        options.buildOptions.repoDir)
 
     if options.buildOptions.patchFile:
-        patchHgRepoUsingMq(options.buildOptions.patchFile, options.buildOptions.repoDir)
+        hgCmds.patchHgRepoUsingMq(options.buildOptions.patchFile, options.buildOptions.repoDir)
 
     appendStr = ''
     if options.buildOptions.patchFile:
@@ -628,8 +629,8 @@ def localCompileFuzzJsShell(options):
             raise Exception('Unable to create ~/Desktop folder.')
     # WinXP has spaces in the user directory.
     fuzzResultsDirStart = 'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder
-    buildIdentifier = '-'.join([getRepoNameFromHgrc(options.buildOptions.repoDir), localOrigHgNum, \
-        localOrigHgHash])
+    buildIdentifier = '-'.join([hgCmds.getRepoNameFromHgrc(options.buildOptions.repoDir),
+                                localOrigHgNum, localOrigHgHash])
     fullPath = mkdtemp(appendStr + os.sep,
                        buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
                        fuzzResultsDirStart)
@@ -642,7 +643,8 @@ def localCompileFuzzJsShell(options):
         compileShell.cfgJsCompile(myShell)
     finally:
         if options.buildOptions.patchFile:
-            hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
+            hgCmds.hgQpopQrmAppliedPatch(options.buildOptions.patchFile,
+                                         options.buildOptions.repoDir)
 
         rmTreeIfExists(myShell.getJsObjdir())
         rmTreeIfExists(myShell.getNsprObjdir())

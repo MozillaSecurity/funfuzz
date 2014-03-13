@@ -35,8 +35,7 @@ sys.path.append(path4)
 from fileManipulation import firstLine
 import buildOptions
 from downloadBuild import defaultBuildType, downloadBuild, getBuildList
-from hgCmds import destroyPyc, findCommonAncestor, getCsetHashFromBisectMsg, getRepoHashAndId, \
-    isAncestor
+import hgCmds
 from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, Unbuffered, vdump
 from LockDir import LockDir
 
@@ -192,8 +191,8 @@ def findBlamedCset(options, repoDir, testRev):
     hgPrefix = ['hg', '-R', repoDir]
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
-    realStartRepo = sRepo = getRepoHashAndId(repoDir, repoRev=options.startRepo)[0]
-    realEndRepo = eRepo = getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]
+    realStartRepo = sRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.startRepo)[0]
+    realEndRepo = eRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]
     vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
@@ -215,7 +214,7 @@ def findBlamedCset(options, repoDir, testRev):
         labels[sRepo] = ('good', 'assumed start rev is good')
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
-        currRev = getCsetHashFromBisectMsg(firstLine(
+        currRev = hgCmds.getCsetHashFromBisectMsg(firstLine(
             captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
     iterNum = 1
@@ -267,7 +266,7 @@ def findBlamedCset(options, repoDir, testRev):
 
     vdump("Resetting working directory")
     captureStdout(hgPrefix + ['update', '-r', 'default'], ignoreStderr=True)
-    destroyPyc(repoDir)
+    hgCmds.destroyPyc(repoDir)
 
     print dateStr()
 
@@ -351,8 +350,8 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
             print ""
             print ("Oops! We didn't test rev %s, a parent of the blamed revision! " + \
                 "Let's do that now.") % str(p)
-            if not isAncestor(repoDir, startRepo, p) and \
-                    not isAncestor(repoDir, endRepo, p):
+            if not hgCmds.isAncestor(repoDir, startRepo, p) and \
+                    not hgCmds.isAncestor(repoDir, endRepo, p):
                 print ('We did not test rev %s because it is not a descendant of either ' + \
                     '%s or %s.') % (str(p), startRepo, endRepo)
                 # Note this in case we later decide the bisect result is wrong.
@@ -375,7 +374,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
     # Explain why bisect blamed the merge.
     if bisectLied:
         if missedCommonAncestor:
-            ca = findCommonAncestor(repoDir, parents[0], parents[1])
+            ca = hgCmds.findCommonAncestor(repoDir, parents[0], parents[1])
             print ""
             print "Bisect blamed the merge because our initial range did not include one"
             print "of the parents."
@@ -425,7 +424,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
         print '\n\nautoBisect shows this is probably related to the following changeset:\n'
         print(sanitizeCsetMsg(outputResult, repoDir) + '\n')
         blamedGoodOrBad = m.group(1)
-        blamedRev = getCsetHashFromBisectMsg(outputLines[1])
+        blamedRev = hgCmds.getCsetHashFromBisectMsg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
 
     if options.testInitialRevs:
@@ -434,11 +433,11 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
     vdump(outputLines[0])
 
-    currRev = getCsetHashFromBisectMsg(outputLines[0])
+    currRev = hgCmds.getCsetHashFromBisectMsg(outputLines[0])
     if currRev is None:
         print 'Resetting to default revision...'
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
-        destroyPyc(repoDir)
+        hgCmds.destroyPyc(repoDir)
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.

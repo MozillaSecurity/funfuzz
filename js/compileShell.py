@@ -24,8 +24,7 @@ from inspectShell import verifyBinary
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from hgCmds import destroyPyc, getRepoNameFromHgrc, getRepoHashAndId, hgQpopQrmAppliedPatch, \
-    patchHgRepoUsingMq
+import hgCmds
 from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin, macVer, \
     normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
@@ -102,7 +101,7 @@ class CompiledShell(object):
     def getRepoDirNsprSrc(self):
         return normExpUserPath(os.path.join(self.getRepoDir(), 'nsprpub'))
     def getRepoName(self):
-        return getRepoNameFromHgrc(self.buildOptions.repoDir)
+        return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
     def getShellCacheDir(self):
         return normExpUserPath(os.path.join(ensureCacheDir(), self.shellNameWithoutExt))
     def getShellCacheFullPath(self):
@@ -468,7 +467,8 @@ def compileStandalone(compiledShell):
     assert os.path.isdir(getLockDirPath())
     try:
         if compiledShell.buildOptions.patchFile:
-            patchHgRepoUsingMq(compiledShell.buildOptions.patchFile, compiledShell.getRepoDir())
+            hgCmds.patchHgRepoUsingMq(compiledShell.buildOptions.patchFile,
+                                      compiledShell.getRepoDir())
 
         if not os.path.exists(compiledShell.getShellCacheDir()):
             try:
@@ -481,7 +481,8 @@ def compileStandalone(compiledShell):
 
     finally:
         if compiledShell.buildOptions.patchFile:
-            hgQpopQrmAppliedPatch(compiledShell.buildOptions.patchFile, compiledShell.getRepoDir())
+            hgCmds.hgQpopQrmAppliedPatch(compiledShell.buildOptions.patchFile,
+                                         compiledShell.getRepoDir())
 
         rmTreeIfExists(compiledShell.getJsObjdir())
         rmTreeIfExists(compiledShell.getNsprObjdir())
@@ -532,7 +533,7 @@ def makeTestRev(options):
         else:
             print "Updating...",
             captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev], ignoreStderr=True)
-            destroyPyc(options.buildOptions.repoDir)
+            hgCmds.destroyPyc(options.buildOptions.repoDir)
             try:
                 print "Compiling...",
                 compileStandalone(shell)
@@ -588,14 +589,14 @@ def main():
             shell = CompiledShell(options.buildOptions, rev)
         else:
             localOrigHgHash, localOrigHgNum, isOnDefault = \
-                getRepoHashAndId(options.buildOptions.repoDir)
+                hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
             shell = CompiledShell(options.buildOptions, localOrigHgHash)
 
         if not os.path.exists(shell.getShellCacheFullPath()):
             if rev:
                 captureStdout(["hg", "-R", options.buildOptions.repoDir] + ['update', '-r', rev],
                     ignoreStderr=True)
-                destroyPyc(options.buildOptions.repoDir)
+                hgCmds.destroyPyc(options.buildOptions.repoDir)
 
             compileStandalone(shell)
 
