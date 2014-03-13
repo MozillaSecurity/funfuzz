@@ -25,7 +25,7 @@ sys.path.append(path1)
 import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
-from compileShell import getLockDirPath, makeTestRev, ensureCacheDir
+import compileShell
 from inspectShell import testBinary
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'dom', 'automation'))
 sys.path.append(path3)
@@ -683,7 +683,7 @@ def getOneBuild(isJsShell, url, buildType, testedIDs):
     Try to get a complete working build.
     '''
     idNum = getIdFromTboxUrl(url)
-    tboxCacheFolder = normExpUserPath(os.path.join(ensureCacheDir(),
+    tboxCacheFolder = normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
                                                    'tboxjs-' + buildType + '-' + idNum))
     createTboxCacheFolder(tboxCacheFolder)
 
@@ -849,8 +849,8 @@ def main():
     sanityChecks()
     options = parseOpts()
 
-    with LockDir(getLockDirPath(tboxIdentifier='Tbox') if options.useTinderboxBinaries else \
-                 getLockDirPath()):
+    with LockDir(compileShell.getLockDirPath(tboxIdentifier='Tbox') \
+                 if options.useTinderboxBinaries else compileShell.getLockDirPath()):
         if options.useTinderboxBinaries:
             bisectUsingTboxBins(options)
         else:
@@ -859,7 +859,8 @@ def main():
                 findBlamedCset(options, options.browserOptions.repoDir,
                                buildBrowser.makeTestRev(options))
             else:
-                findBlamedCset(options, options.buildOptions.repoDir, makeTestRev(options))
+                findBlamedCset(options, options.buildOptions.repoDir,
+                               compileShell.makeTestRev(options))
 
 
 if __name__ == '__main__':

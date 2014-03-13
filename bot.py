@@ -37,8 +37,8 @@ import buildBrowser
 path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
+import compileShell
 import loopjsfunfuzz
-from compileShell import CompiledShell, cfgJsCompile, envDump, getLockDirPath
 
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
@@ -330,7 +330,7 @@ def botmain(options):
         if options.localJsfunfuzzTimeDelay != 0:
             time.sleep(options.localJsfunfuzzTimeDelay)
 
-        with LockDir(getLockDirPath()):
+        with LockDir(compileShell.getLockDirPath()):
             try:
                 if not options.disableCompareJit:
                     options.buildOptions += " --enable-more-deterministic"
@@ -635,11 +635,11 @@ def localCompileFuzzJsShell(options):
                        fuzzResultsDirStart)
     vdump('Base temporary directory is: ' + fullPath)
 
-    myShell = CompiledShell(options.buildOptions, localOrigHgHash)
+    myShell = compileShell.CompiledShell(options.buildOptions, localOrigHgHash)
     myShell.setDestDir(fullPath)
 
     try:
-        cfgJsCompile(myShell)
+        compileShell.cfgJsCompile(myShell)
     finally:
         if options.buildOptions.patchFile:
             hgQpopQrmAppliedPatch(options.buildOptions.patchFile, options.buildOptions.repoDir)
@@ -668,7 +668,7 @@ def localCompileFuzzJsShell(options):
 
     # Write log files describing configuration parameters used during compilation.
     localLog = normExpUserPath(os.path.join(myShell.getDestDir(), 'log-localjsfunfuzz.txt'))
-    envDump(myShell, localLog)
+    compileShell.envDump(myShell, localLog)
     cmdDump(myShell, cmdList, localLog)
 
     with open(localLog, 'rb') as f:
