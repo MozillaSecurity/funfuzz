@@ -17,7 +17,8 @@ import time
 from optparse import OptionParser
 from tempfile import mkdtemp
 
-from knownBrokenEarliestWorking import knownBrokenRanges, knownBrokenRangesBrowser, earliestKnownWorkingRev, earliestKnownWorkingRevForBrowser
+from knownBrokenEarliestWorking import knownBrokenRanges, knownBrokenRangesBrowser, \
+    earliestKnownWorkingRev, earliestKnownWorkingRevForBrowser
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
