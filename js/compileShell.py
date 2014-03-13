@@ -464,7 +464,7 @@ def compileNspr(shell):
 
 def compileStandalone(compiledShell):
     """Compile a shell, not keeping the intermediate object files around. Used by autoBisect."""
-    assert os.path.isdir(getLockDirPath())
+    assert os.path.isdir(getLockDirPath(compiledShell.buildOptions.repoDir))
     try:
         if compiledShell.buildOptions.patchFile:
             hgCmds.patchHgRepoUsingMq(compiledShell.buildOptions.patchFile,
@@ -514,9 +514,12 @@ def envDump(shell, log):
         f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
 
-def getLockDirPath(tboxIdentifier=''):
+def getLockDirPath(repoDir, tboxIdentifier=''):
     '''Returns the name of the lock directory, located in the cache directory by default.'''
-    return os.path.join(ensureCacheDir(), 'autoBisect' + tboxIdentifier + 'Js-lock')
+    lockDirNameList = ['shell', os.path.basename(repoDir), 'lock']
+    if tboxIdentifier:
+        lockDirNameList.append(tboxIdentifier)
+    return os.path.join(ensureCacheDir(), '-'.join(lockDirNameList))
 
 
 def makeTestRev(options):
@@ -584,7 +587,7 @@ def main():
 
     rev = options.revision
 
-    with LockDir(getLockDirPath()):
+    with LockDir(getLockDirPath(options.buildOptions.repoDir)):
         if rev:
             shell = CompiledShell(options.buildOptions, rev)
         else:

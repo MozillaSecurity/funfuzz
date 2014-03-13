@@ -330,12 +330,13 @@ def botmain(options):
         if options.localJsfunfuzzTimeDelay != 0:
             time.sleep(options.localJsfunfuzzTimeDelay)
 
-        with LockDir(compileShell.getLockDirPath()):
+        if not options.disableCompareJit:
+            options.buildOptions += " --enable-more-deterministic"
+        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+        options.timeout = options.timeout or machineTimeoutDefaults(options)
+
+        with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
             try:
-                if not options.disableCompareJit:
-                    options.buildOptions += " --enable-more-deterministic"
-                options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-                options.timeout = options.timeout or machineTimeoutDefaults(options)
                 fuzzShell, cList = localCompileFuzzJsShell(options)
                 startDir = fuzzShell.getDestDir()
 
