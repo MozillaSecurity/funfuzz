@@ -11,6 +11,14 @@ var makeEvilCallback;
   var OBJECTS_PER_TYPE = 3;
   var smallPowersOfTwo = [1, 2, 4, 8]; // The largest typed array views are 64-bit aka 8-byte
   function bufsize() { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); }
+  function arrayIndex(d, b) {
+    switch(rnd(8)) {
+      case 0:  return m("v");
+      case 1:  return makeExpr(d - 1, b);
+      case 2:  return "({valueOf: function() { " + makeStatement(d, b) + "return " + rnd(ARRAY_SIZE) + "; }})"
+      default: return "" + rnd(ARRAY_SIZE);
+    }
+  }
 
   // Emit a variable name for type-abbreviation t.
   function m(t)
@@ -191,12 +199,12 @@ var makeEvilCallback;
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "new Array"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", makeArrayBuildParCall(d, b)); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", makeIterable(d, b)); } },
-    { w: 1,  v: function(d, b) { return m("a") + ".length = " + rnd(ARRAY_SIZE) + ";"; } },
+    { w: 1,  v: function(d, b) { return m("a") + ".length = " + arrayIndex(d, b) + ";"; } },
     { w: 8,  v: function(d, b) { return assign(d, b, "v", m("at") + ".length"); } },
-    { w: 4,  v: function(d, b) { return m("at") + "[" + rnd(ARRAY_SIZE) + "]" + " = " + val(d, b) + ";"; } },
-    { w: 4,  v: function(d, b) { return val(d, b) + " = " + m("at") + "[" + rnd(ARRAY_SIZE) + "]" + ";"; } },
-    { w: 4,  v: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
-    { w: 4,  v: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + rnd(ARRAY_SIZE) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
+    { w: 4,  v: function(d, b) { return m("at") + "[" + arrayIndex(d, b) + "]" + " = " + val(d, b) + ";"; } },
+    { w: 4,  v: function(d, b) { return val(d, b) + " = " + m("at") + "[" + arrayIndex(d, b) + "]" + ";"; } },
+    { w: 4,  v: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + arrayIndex(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
+    { w: 4,  v: function(d, b) { return "/*ADP*/Object.defineProperty(" + m("at") + ", " + arrayIndex(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", makeFunOnCallChain(d, b) + ".arguments"); } }, // a read-only arguments object
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "arguments"); } }, // a read-write arguments object
 
@@ -210,13 +218,13 @@ var makeEvilCallback;
     { w: 5,  v: function(d, b) { return "Array.prototype.shift.call("   + m("a") + ");"; } },
     { w: 3,  v: function(d, b) { return "Array.prototype.reverse.call(" + m("a") + ");"; } },
     { w: 3,  v: function(d, b) { return "Array.prototype.sort.call("    + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
-    { w: 1,  v: function(d, b) { return "Array.prototype.splice.call("  + m("a") + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + rnd(ARRAY_SIZE) + ");" ; } },
+    { w: 1,  v: function(d, b) { return "Array.prototype.splice.call("  + m("a") + ", " + (arrayIndex(d, b) - arrayIndex(d, b)) + ", " + arrayIndex(d, b) + ");" ; } },
 
     // Array accessors
     { w: 1,  v: function(d, b) { return assign(d, b, "s", m("a") + ".join('')"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "s", m("a") + ".join(', ')"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".concat(" + m("at") + ")"); } }, // can actually take multiple arrays
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".slice(" + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ", " + (rnd(ARRAY_SIZE) - rnd(ARRAY_SIZE)) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".slice(" + (arrayIndex(d, b) - arrayIndex(d, b)) + ", " + (arrayIndex(d, b) - arrayIndex(d, b)) + ")"); } },
     // Array iterators
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["filter", "forEach", "every", "map", "some"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
@@ -246,7 +254,7 @@ var makeEvilCallback;
     { w: 1,  v: function(d, b) { return assign(d, b, "s", "''"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "s", "new String"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "s", "new String(" + m() + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "s", m("s") + ".charAt(" + rnd(ARRAY_SIZE) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "s", m("s") + ".charAt(" + arrayIndex(d, b) + ")"); } },
     { w: 5,  v: function(d, b) { return m("s") + " += 'x';"; } },
     { w: 5,  v: function(d, b) { return m("s") + " += " + m("s") + ";"; } },
     // Should add substr, substring, replace
@@ -275,12 +283,12 @@ var makeEvilCallback;
 
     // t: Typed arrays, aka ArrayBufferViews
     // Can be constructed using a length, typed array, sequence (e.g. array), or buffer with optional offsets!
-    { w: 1,  v: function(d, b) { return assign(d, b, "t", "new " + Random.index(typedArrayConstructors) + "(" + rnd(ARRAY_SIZE) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "t", "new " + Random.index(typedArrayConstructors) + "(" + arrayIndex(d, b) + ")"); } },
     { w: 3,  v: function(d, b) { return assign(d, b, "t", "new " + Random.index(typedArrayConstructors) + "(" + m("abt") + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "t", "new " + Random.index(typedArrayConstructors) + "(" + m("b") + ", " + bufsize() + ", " + rnd(ARRAY_SIZE) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "t", m("t") + ".subarray(" + rnd(ARRAY_SIZE) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "t", m("t") + ".subarray(" + rnd(ARRAY_SIZE) + ", " + rnd(ARRAY_SIZE) + ")"); } },
-    { w: 3,  v: function(d, b) { return m("t") + ".set(" + m("at") + ", " + rnd(ARRAY_SIZE) + ");"; } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "t", "new " + Random.index(typedArrayConstructors) + "(" + m("b") + ", " + bufsize() + ", " + arrayIndex(d, b) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "t", m("t") + ".subarray(" + arrayIndex(d, b) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "t", m("t") + ".subarray(" + arrayIndex(d, b) + ", " + arrayIndex(d, b) + ")"); } },
+    { w: 3,  v: function(d, b) { return m("t") + ".set(" + m("at") + ", " + arrayIndex(d, b) + ");"; } },
     { w: 1,  v: function(d, b) { return assign(d, b, "v", m("tb") + ".byteLength"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "v", m("t") + ".byteOffset"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "v", m("t") + ".BYTES_PER_ELEMENT"); } },
