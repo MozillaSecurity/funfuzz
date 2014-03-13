@@ -25,8 +25,8 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
-from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin, macVer, \
-    normExpUserPath, rmTreeIfExists, shellify, vdump
+from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin
+from subprocesses import macVer, normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
 
 CLANG_PARAMS = ' -Qunused-arguments'

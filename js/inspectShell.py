@@ -11,8 +11,8 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import envWithPath, captureStdout, isARMv7l, isMac, isWin, isMozBuild64, \
-    normExpUserPath, shellify, vdump
+from subprocesses import envWithPath, captureStdout, isARMv7l, isMac, isWin, isMozBuild64
+from subprocesses import normExpUserPath, shellify, vdump
 
 if os.name == 'nt':
     COMPILE_NSPR_LIB = 'libnspr4.lib' if isMozBuild64 else 'nspr4.lib'

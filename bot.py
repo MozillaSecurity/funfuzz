@@ -25,8 +25,9 @@ sys.path.insert(0, path1)
 import downloadBuild
 import hgCmds
 import lithOps
-from subprocesses import captureStdout, dateStr, getFreeSpace, isARMv7l, isLinux, isMac, isWin, \
-    normExpUserPath, rmTreeIfExists, shellify, vdump
+from subprocesses import captureStdout, dateStr, getFreeSpace
+from subprocesses import isARMv7l, isLinux, isMac, isWin
+from subprocesses import normExpUserPath, rmTreeIfExists, shellify, vdump
 from LockDir import LockDir
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
