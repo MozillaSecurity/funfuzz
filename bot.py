@@ -595,7 +595,7 @@ def cmdDump(shell, cmdList, log):
         f.write('========================================================\n\n')
 
 
-def fuzzingPathName(options):
+def fuzzingPathName(options, repoHash, repoId):
     '''Returns the path of the directory where fuzzing is going to take place.'''
     appendStr = ''
     if isMac:
@@ -607,19 +607,19 @@ def fuzzingPathName(options):
         except OSError:
             raise Exception('Unable to create ~/Desktop folder.')
 
-    localOrigHgHash, localOrigHgNum = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0:2]
-    buildIdentifier = '-'.join([hgCmds.getRepoNameFromHgrc(options.buildOptions.repoDir),
-                                localOrigHgNum, localOrigHgHash])
+    buildId = '-'.join([hgCmds.getRepoNameFromHgrc(options.buildOptions.repoDir), repoHash, repoId])
     return mkdtemp(appendStr + os.sep,
-                   buildOptions.computeShellName(options.buildOptions, buildIdentifier) + "-",
+                   buildOptions.computeShellName(options.buildOptions, buildId) + "-",
                    # WinXP has spaces in the user directory.
                    'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder)
+
 
 def localCompileFuzzJsShell(options):
     '''Compiles and readies a js shell for fuzzing.'''
     print dateStr()
-    shell = compileShell.CompiledShell(options.buildOptions,
-                                       hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0])
+    (repoHash, repoId, isOnDefault) = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
+
+    shell = compileShell.CompiledShell(options.buildOptions, repoHash)
 
     if not os.path.exists(shell.getShellCacheDir()):
         try:
@@ -630,7 +630,7 @@ def localCompileFuzzJsShell(options):
 
     compileShell.compileStandalone(shell)
 
-    fullPath = fuzzingPathName(options)
+    fullPath = fuzzingPathName(options, repoHash, repoId)
 
     # Copy only files over to fullPath, not the objdir.
     # From http://stackoverflow.com/a/296184
