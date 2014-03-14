@@ -70,8 +70,8 @@ var makeEvilCallback;
         "return function() { " +
           "++" + v + "; " +
             (rnd(3) ?
-              "if (" + infrequently + ") { dumpln('hit!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } " +
-              "else { dumpln('miss!'); " + makeBuilderStatement(d - 1, b) + makeBuilderStatement(d - 1, b) + " } "
+              "if (" + infrequently + ") { dumpln('hit!'); " + makeBuilderStatements(d, b) + " } " +
+              "else { dumpln('miss!'); " + makeBuilderStatements(d, b) + " } "
             : m("f") + "(" + infrequently + ");"
             ) +
         "};" +
@@ -85,12 +85,23 @@ var makeEvilCallback;
     return "function " + m("f") + "(" + argName + ") " + makeFunctionBody(d, bv);
   }
 
+  function makeBuilderStatements(d, b)
+  {
+    var s = "";
+    var extras = rnd(4);
+    for (var i = 0; i < extras; ++i) {
+      s += "try { " + makeBuilderStatement(d - 2, b) +  " } catch(e" + i + ") { } ";
+    }
+    s += makeBuilderStatement(d - 1, b);
+    return s;
+  }
+
   var builderFunctionMakers = Random.weighted([
-    { w: 9,  v: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " return " + m() + "; })"; } },
-    { w: 1,  v: function(d, b) { return "(function() { " + makeBuilderStatement(d - 1, b) + " throw " + m() + "; })"; } },
+    { w: 9,  v: function(d, b) { return "(function() { " + makeBuilderStatements(d, b) + " return " + m() + "; })"; } },
+    { w: 1,  v: function(d, b) { return "(function() { " + makeBuilderStatements(d, b) + " throw " + m() + "; })"; } },
     { w: 1,  v: function(d, b) { return "(function(j) { " + m("f") + "(j); })"; } }, // a function that just makes one call is begging to be inlined
     // The following pair create and use boolean-using functions.
-    { w: 4,  v: function(d, b) { return "(function(j) { if (j) { " + makeBuilderStatement(d - 1, b) + " } else { " + makeBuilderStatement(d - 1, b) + " } })"; } },
+    { w: 4,  v: function(d, b) { return "(function(j) { if (j) { " + makeBuilderStatements(d, b) + " } else { " + makeBuilderStatements(d, b) + " } })"; } },
     { w: 4,  v: function(d, b) { return "(function() { for (var j=0;j<" + loopCount() + ";++j) { " + m("f") + "(j%"+(2+rnd(4))+"=="+rnd(2)+"); } })"; } },
     { w: 1,  v: function(d, b) { return Random.index(builtinFunctions) + ".bind(" + m() + ")"; } },
     { w: 5,  v: function(d, b) { return m("f"); } },
@@ -368,8 +379,8 @@ var makeEvilCallback;
     { w: 1,  v: function(d, b) { return m() + " = wrapWithProto(" + val(d, b) + ", " + val(d, b) + ");"; } },
     { w: 1,  v: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
     { w: 5,  v: function(d, b) { return m() + ".__proto__ = " + m() + ";"; } },
-    { w: 10, v: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
-    { w: 10, v: function(d, b) { return "for (var v of " + m() + ") { " + makeBuilderStatement(d - 1, b) + " " + makeBuilderStatement(d - 1, b) + " }"; } },
+    { w: 10, v: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
+    { w: 10, v: function(d, b) { return "for (var v of " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
     { w: 10, v: function(d, b) { return m() + " + " + m() + ";"; } }, // valueOf
     { w: 10, v: function(d, b) { return m() + " + '';"; } }, // toString
     { w: 10, v: function(d, b) { return m("v") + " = (" + m() + " instanceof " + m() + ");"; } },
