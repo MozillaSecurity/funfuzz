@@ -39,7 +39,6 @@ def randomFlagSet(shellPath):
     args = []
 
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
-    infer = chance(.7)
 
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
@@ -76,9 +75,6 @@ def randomFlagSet(shellPath):
             args.append('--thread-count=' + str(totalThreads))
         # else:
         #   The default is to have --ion-parallel-compile=on and --thread-count=<some default value>
-
-    if not infer:
-        args.append("--no-ti")
 
     if ion:
         if chance(.6):
@@ -146,13 +142,12 @@ def basicFlagSets(shellPath):
             # as well as other interesting flag combinations that have found / may find new bugs.
             ['--fuzzing-safe', '--ion-parallel-compile=off'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline'],  # Not in jit_test.py though...
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--no-ion', '--no-ti'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--no-ion'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ti', '--no-fpu'],
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
