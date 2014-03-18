@@ -41,6 +41,7 @@ from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, U
 from LockDir import LockDir
 
 INCOMPLETE_NOTE = 'incompleteBuild.txt'
+MAX_ITERATIONS = 100
 
 
 def sanityChecks():
@@ -545,7 +546,7 @@ def bisectUsingTboxBins(options):
 
     count = 0
     print '\nStarting bisection...\n'
-    while True:
+    while count < MAX_ITERATIONS:
         vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
         count += 1
         print 'Test number ' + str(count) + ':'
