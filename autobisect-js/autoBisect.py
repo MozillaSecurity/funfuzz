@@ -850,7 +850,7 @@ def main():
     sanityChecks()
     options = parseOpts()
 
-    with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir, tboxIdentifier='Tbox') \
+    with LockDir(compileShell.getLockDirPath(options.nameOfTinderboxBranch, tboxIdentifier='Tbox') \
                  if options.useTinderboxBinaries else \
                  compileShell.getLockDirPath(options.buildOptions.repoDir)):
         if options.useTinderboxBinaries:
