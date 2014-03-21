@@ -115,6 +115,9 @@ def parseShellOptions(inputArgs):
 
     if options.buildWithVg:
         assert isLinux or isMac
+        if isLinux and isARMv7l:
+            assert options.enableHardFp, 'libc6-dbg packages needed for Valgrind are only ' + \
+                'available via hardfp, tested on Ubuntu on a pandaboard.'
     if options.runWithVg:
         assert options.buildWithVg
         assert not options.buildWithAsan
