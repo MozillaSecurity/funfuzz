@@ -620,14 +620,6 @@ def localCompileFuzzJsShell(options):
     (repoHash, repoId, isOnDefault) = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
 
     shell = compileShell.CompiledShell(options.buildOptions, repoHash)
-
-    if not os.path.exists(shell.getShellCacheDir()):
-        try:
-            os.mkdir(shell.getShellCacheDir())
-        except OSError:
-            raise Exception('Unable to create shell cache directory.')
-    shell.setDestDir(shell.getShellCacheDir())
-
     compileShell.compileStandalone(shell)
 
     fullPath = fuzzingPathName(options, repoHash, repoId)
