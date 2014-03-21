@@ -118,17 +118,6 @@ def knownBrokenRanges(options):
             hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
         ])
 
-    if not options.disableExactRooting:
-        skips.extend([
-            hgrange('f8f0facf81ec', '492e87516012'), # broken exact rooting or GGC
-            hgrange('541248fb29e4', 'b3f8eee3c389'), # broken exact rooting or GGC
-        ])
-
-    if not options.disableExactRooting and options.enableGcGenerational:
-        skips.extend([
-            hgrange('eb89f19070ae', '6b466b03f5c0'), # broken GGC, 32-bit, assuming 64-bit as well
-        ])
-
     return skips
 
 def earliestKnownWorkingRevForBrowser(options):
@@ -158,8 +147,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
-    if options.disableExactRooting:
-        required.append('6f7227918e79') # 164088 on m-c, first rev that has a stable --disable-exact-rooting option
+    if options.disableExactRooting or options.enableGcGenerational:
+        required.append('6f7227918e79') # 164088 on m-c, first rev that has stable forward-compatible compilation options for GGC
     if isWin:
         required.append('1a1968da61b3') # 163224 on m-c, first rev that builds on Windows successfully after build config changes
     if isMac and macVer() >= [10, 9]:
@@ -179,11 +168,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
     if '--no-asmjs' in flags:
         required.append('b3d85b68449d') # 124920 on m-c, first rev that has the --no-asmjs option
-    if options.enableGcGenerational:
-        if options.arch == '32':
-            required.append('8d65f437c771') # 124553 on m-c, first rev with working 32-bit Generational GC builds
-        elif options.arch == '64':
-            required.append('f12876112a28') # 123661 on m-c, first rev with working 64-bit Generational GC builds
     if '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
         required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
     if threadCountFlag:
