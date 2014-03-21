@@ -21,6 +21,12 @@ def scanLine(knownPath, line):
 
     line = line.strip("\x07").rstrip("\n")
 
+    if "Aborting on channel error" in line:
+        # A child is aborting due to a crash in the parent.
+        # It would be great if we could correctly detect both assertions and crashes in both parent and child processes,
+        # but I have no clue how to do either.
+        # (See bug 986379 for an example of a bug that can trigger it -- but only if privacy.sanitize.sanitizeOnShutdown is true??)
+        return (NON_FATAL_ASSERT, False)
     severity = assertionSeverity(line)
     if severity == NO_ASSERT:
         return (NO_ASSERT, False)
