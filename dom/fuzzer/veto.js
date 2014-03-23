@@ -68,6 +68,7 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
                 "generateCRMFRequest", // bug 922034 (master password dialog, especially when it interferes with quitting)
                 "strokeText",        // bug 943622
+                "strokeRect",        // bug 986902
                 ".arc",              // bug 943587
             ]
         },
