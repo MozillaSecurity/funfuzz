@@ -380,6 +380,7 @@ def knownChromeFailure(msg):
         "pbu_privacyContextFromWindow" in msg or # bug 931304 whenfixed 'pb'
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or # Bug 978617
         ("System JS : ERROR (null):0" in msg) or # Bug 987048
+        ("System JS" in msg) or # Bug 987222
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
