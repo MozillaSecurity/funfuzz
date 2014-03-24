@@ -49,6 +49,15 @@ var fuzzerSlurpFrames = (function() {
     slurpQueue.push(frameExpr);
   }
 
+  function sanitize(s)
+  {
+    if (s.indexOf("fuzz") != -1)
+      s = "";
+    if (s.indexOf("window.__proto__ = null") != -1)
+      s =  "fuzzExpectSanity = false; " + s;
+    return "/*slurped*/ " + s;
+  }
+
   function slurp(frameObj)
   {
     try {
@@ -63,9 +72,7 @@ var fuzzerSlurpFrames = (function() {
       }
 
       for (var i = 0; i < cs.length; ++i) {
-        if (cs[i].indexOf("fuzz") != -1)
-          cs[i] = "";
-        cs[i] = "/*slurped*/ " + cs[i];
+        cs[i] = sanitize(cs[i]);
       }
       commandQueue.push(cs);
       if (rnd(2)) {
