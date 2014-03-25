@@ -475,13 +475,15 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
     if os.path.exists(shell.getShellCacheFullPath()):
-        print 'Found cached shell...',
+        # Don't remove the comma at the end of this line, and thus remove the newline printed.
+        # We would break JSBugMon.
+        print 'Found cached shell...'
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
         return
     elif os.path.exists(cachedNoShell):
         raise Exception("Found a cached shell that failed compilation...")
     elif not compileStandaloneCreatedCacheDir and os.path.exists(shell.getShellCacheDir()):
-        print 'Found a cache dir without a successful/failed shell, so recompiling...',
+        print 'Found a cache dir without a successful/failed shell, so recompiling...'
         shutil.rmtree(shell.getShellCacheDir())
 
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
