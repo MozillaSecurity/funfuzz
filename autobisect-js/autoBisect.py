@@ -514,11 +514,12 @@ def bisectUsingTboxBins(options):
     Downloads tinderbox binaries and bisects them.
     '''
     testedIDs = {}
+    # "arch: None" will select the default architecture depending on the system, if none is specified.
+    desiredArch = options.buildOptions.arch if options.buildOptions.arch else None
 
     # Get list of tinderbox IDs
-    # Note that "arch: None" will select the default architecture depending on the system.
     buildType = defaultBuildType(CustomDict(
-        arch = None,
+        arch = desiredArch,
         compileType = options.buildOptions.compileType,
         repoName = options.nameOfTinderboxBranch,
     ))
