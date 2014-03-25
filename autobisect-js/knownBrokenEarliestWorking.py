@@ -174,7 +174,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('b4fa8b1f279d') # 114005 on m-c, first rev that has the --thread-count=N option
     if isMac and [10, 7] <= macVer() < [10, 9]:
         required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
-    # if m-c 153666:81175b9cddcf is ever older than the base rev here, compile POSIX threadsafe shells using --enable-posix-nspr-emulation
     required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
