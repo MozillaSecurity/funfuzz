@@ -276,7 +276,7 @@ def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
     def inner(shellFilename, _hgHash):
         (stdoutStderr, exitCode) = testBinary(shellFilename, options.paramList,
-            options.buildOptions.runWithVg, options.buildOptions.isThreadsafe)
+            options.buildOptions.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
@@ -490,7 +490,7 @@ def assertSaneJsBinary(cacheF):
                 # tbpl binaries are always:
                 # * run without Valgrind (they are not compiled with --enable-valgrind)
                 # * threadsafe           (they are compiled with --enable-threadsafe)
-                out, retCode = testBinary(shellPath, ['-e', '42'], False, False)
+                out, retCode = testBinary(shellPath, ['-e', '42'], False)
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)
