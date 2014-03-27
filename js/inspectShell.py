@@ -89,13 +89,13 @@ def shellSupports(shellPath, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
-def testBinary(shellPath, args, useValgrind, threadsafeShell):
+def testBinary(shellPath, args, useValgrind, isLocalCompiledThreadsafe):
     '''Tests the given shell with the given args.'''
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     vdump('The testing command is: ' + shellify(testCmd))
 
     newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
-    if threadsafeShell:
+    if isLocalCompiledThreadsafe:
         # The NSPR libraries needed to run threadsafe js shell should have already been be copied to
         # the same destination as the shell.
         assert os.path.isfile(normExpUserPath(os.path.join(
