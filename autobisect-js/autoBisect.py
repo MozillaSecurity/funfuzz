@@ -490,7 +490,7 @@ def assertSaneJsBinary(cacheF):
                 # tbpl binaries are always:
                 # * run without Valgrind (they are not compiled with --enable-valgrind)
                 # * threadsafe           (they are compiled with --enable-threadsafe)
-                out, retCode = testBinary(shellPath, ['-e', '42'], False, True, isTbplShell=True)
+                out, retCode = testBinary(shellPath, ['-e', '42'], False, True)
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)

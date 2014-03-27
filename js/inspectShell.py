@@ -89,16 +89,15 @@ def shellSupports(shellPath, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
-def testBinary(shellPath, args, useValgrind, threadsafeShell, isTbplShell=False):
+def testBinary(shellPath, args, useValgrind, threadsafeShell):
     '''Tests the given shell with the given args.'''
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     vdump('The testing command is: ' + shellify(testCmd))
 
     newEnv = envWithPath(os.path.dirname(os.path.abspath(shellPath)))
-    if threadsafeShell and not isTbplShell:
+    if threadsafeShell:
         # The NSPR libraries needed to run threadsafe js shell should have already been be copied to
         # the same destination as the shell.
-        # Downloaded tbpl js shells use the libmozglue and libnss3 libraries instead.
         assert os.path.isfile(normExpUserPath(os.path.join(
             os.path.dirname(os.path.abspath(shellPath)), RUN_NSPR_LIB)))
         assert os.path.isfile(normExpUserPath(os.path.join(
