@@ -364,10 +364,11 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--enable-more-deterministic')
         if shell.buildOptions.enableRootAnalysis:
             cfgCmdList.append('--enable-root-analysis')
-        if shell.buildOptions.disableExactRooting:
-            cfgCmdList.append('--disable-exact-rooting')
-        elif shell.buildOptions.enableGcGenerational:  # GGC requires exact rooting to be enabled
-            cfgCmdList.append('--enable-gcgenerational')
+        # GGC requires exact rooting to be enabled
+        if shell.buildOptions.disableGcGenerational or shell.buildOptions.disableExactRooting:
+            cfgCmdList.append('--disable-gcgenerational')
+            if shell.buildOptions.disableExactRooting:
+                cfgCmdList.append('--disable-exact-rooting')
         if shell.buildOptions.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
 

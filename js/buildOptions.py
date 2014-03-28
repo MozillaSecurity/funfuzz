@@ -40,7 +40,7 @@ def parseShellOptions(inputArgs):
         enableMoreDeterministic = False,
         enableRootAnalysis = False,
         disableExactRooting = False,
-        enableGcGenerational = False,
+        disableGcGenerational = False,
     )
 
     # Where to find the source dir and compiler, patching if necessary.
@@ -87,11 +87,11 @@ def parseShellOptions(inputArgs):
                       help='Build shells with --enable-root-analysis. Defaults to "%default".')
     parser.add_option('--disable-exact-rooting', dest='disableExactRooting',
                       action='store_true',
-                      help='Build shells with --disable-exact-rooting. Defaults to "%default".')
-    parser.add_option('--enable-gcgenerational', dest='enableGcGenerational',
+                      help='Build shells with --disable-exact-rooting. Defaults to "%default".' + \
+                           'Implies --disable-gcgenerational.')
+    parser.add_option('--disable-gcgenerational', dest='disableGcGenerational',
                       action='store_true',
-                      help='Build shells with --enable-gcgenerational. Defaults to "%default". ' + \
-                           '--disable-exact-rooting cannot be turned on.')
+                      help='Build shells with --disable-gcgenerational. Defaults to "%default".')
 
     (options, args) = parser.parse_args(inputArgs.split())
 
@@ -130,10 +130,10 @@ def parseShellOptions(inputArgs):
 
     if options.enableRootAnalysis:
         assert options.disableExactRooting
-        assert not options.enableGcGenerational
+        assert options.disableGcGenerational
 
-    if options.enableGcGenerational:
-        assert not options.disableExactRooting
+    if options.disableExactRooting:
+        options.disableGcGenerational = True
 
     if options.patchFile:
         hgCmds.ensureMqEnabled()
@@ -161,8 +161,8 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('ra')
     if options.disableExactRooting:
         specialParamList.append('erDisabled')
-    if options.enableGcGenerational:
-        specialParamList.append('ggc')
+    if options.disableGcGenerational:
+        specialParamList.append('ggcDisabled')
     if isARMv7l:
         if options.enableHardFp:
             specialParamList.append('hfp')

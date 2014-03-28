@@ -156,5 +156,3 @@ def verifyBinary(sh):
             sh.buildOptions.buildWithAsan
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'rooting-analysis') == \
             sh.buildOptions.enableRootAnalysis
-        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'generational-gc') == \
-            sh.buildOptions.enableGcGenerational

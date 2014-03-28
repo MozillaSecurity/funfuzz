@@ -147,7 +147,9 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
-    if options.disableExactRooting or options.enableGcGenerational:
+    if options.disableGcGenerational:
+        required.append('52f43e3f552f') # XXXXXX on m-c, first rev that has the --disable-gcgenerational option
+    if options.disableExactRooting:
         required.append('6f7227918e79') # 164088 on m-c, first rev that has stable forward-compatible compilation options for GGC
     if isWin:
         required.append('1a1968da61b3') # 163224 on m-c, first rev that builds on Windows successfully after build config changes
