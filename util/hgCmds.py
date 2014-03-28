@@ -116,6 +116,14 @@ def isAncestor(repoDir, a, b):
     return findCommonAncestor(repoDir, a, b) == a
 
 
+def isCurrRevAnAncestorOfMcRev1bb7e442dfbb(repoDir):
+    # Once 175505:1bb7e442dfbb is the ancestor of earliestKnownWorkingRev, function can be removed
+    # This changeset is when NSPR switched to require autoconf 2.56+, and this broke running with
+    # autoconf 2.13. The fuzzing harness was tested to work with autoconf 2.69.
+    return ('1bb7e442dfbb1e2febe6d1bf47a59316e9acd53d' not in captureStdout([
+        'hg', '-R', repoDir, 'debugancestor', '1bb7e442dfbb', '.'])[0])
+
+
 def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
     # We may have passed in the patch with or without the full directory.
     patchAbsPath = os.path.abspath(normExpUserPath(patchFile))

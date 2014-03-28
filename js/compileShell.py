@@ -149,14 +149,19 @@ def ensureDir(dir):
     assert os.path.isdir(dir)
 
 
-def autoconfRun(cwd):
+def autoconfRun(cwd, isAutoconf213ForJsOrOldNspr=True):
     '''Run autoconf binaries corresponding to the platform.'''
-    if isMac:
-        subprocess.check_call(['autoconf213'], cwd=cwd)
-    elif isLinux:
-        subprocess.check_call(['autoconf2.13'], cwd=cwd)
+    if isAutoconf213ForJsOrOldNspr:
+        if isMac:
+            subprocess.check_call(['autoconf213'], cwd=cwd)
+        elif isLinux:
+            subprocess.check_call(['autoconf2.13'], cwd=cwd)
+        elif isWin:
+            subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
     elif isWin:
-        subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
+        subprocess.check_call(['sh', 'autoconf'], cwd=cwd)
+    else:
+        subprocess.check_call(['autoconf'], cwd=cwd)
 
 
 def cfgAsanParams(currEnv, options):
@@ -444,7 +449,8 @@ def compileJs(shell):
 
 def compileNspr(shell):
     '''Compile a NSPR binary.'''
-    autoconfRun(shell.getRepoDirNsprSrc())
+    autoconfRun(shell.getRepoDirNsprSrc(), isAutoconf213ForJsOrOldNspr=\
+                hgCmds.isCurrRevAnAncestorOfMcRev1bb7e442dfbb(shell.getRepoDir()))
     cfgBin(shell, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
