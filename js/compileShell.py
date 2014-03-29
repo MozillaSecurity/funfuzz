@@ -362,8 +362,6 @@ def cfgBin(shell, binToBeCompiled):
         if shell.buildOptions.enableMoreDeterministic:
             # Fuzzing tweaks for more useful output, implemented in bug 706433
             cfgCmdList.append('--enable-more-deterministic')
-        if shell.buildOptions.enableRootAnalysis:
-            cfgCmdList.append('--enable-root-analysis')
         # GGC requires exact rooting to be enabled
         if shell.buildOptions.disableGcGenerational or shell.buildOptions.disableExactRooting:
             cfgCmdList.append('--disable-gcgenerational')

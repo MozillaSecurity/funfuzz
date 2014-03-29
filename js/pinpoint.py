@@ -67,8 +67,6 @@ def guessBuildOptions(jsEngine):
     opts = ["-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)]
     if '-dm-' in jsEngine:
         opts.append('--enable-more-deterministic')
-    elif '-ra-' in jsEngine:
-        opts.append('--enable-root-analysis')
     # XXX: Add threadsafe detection
     return ' '.join(opts)
 

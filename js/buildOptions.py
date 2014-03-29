@@ -38,7 +38,6 @@ def parseShellOptions(inputArgs):
         buildWithVg = False,
         buildWithAsan = False,
         enableMoreDeterministic = False,
-        enableRootAnalysis = False,
         disableExactRooting = False,
         disableGcGenerational = False,
     )
@@ -82,9 +81,6 @@ def parseShellOptions(inputArgs):
     parser.add_option('--enable-more-deterministic', dest='enableMoreDeterministic',
                       action='store_true',
                       help='Build shells with --enable-more-deterministic. Defaults to "%default".')
-    parser.add_option('--enable-root-analysis', dest='enableRootAnalysis',
-                      action='store_true',
-                      help='Build shells with --enable-root-analysis. Defaults to "%default".')
     parser.add_option('--disable-exact-rooting', dest='disableExactRooting',
                       action='store_true',
                       help='Build shells with --disable-exact-rooting. Defaults to "%default".' + \
@@ -128,10 +124,6 @@ def parseShellOptions(inputArgs):
     if options.enableHardFp:
         assert isLinux and isARMv7l
 
-    if options.enableRootAnalysis:
-        assert options.disableExactRooting
-        assert options.disableGcGenerational
-
     if options.disableExactRooting:
         options.disableGcGenerational = True
 
@@ -157,8 +149,6 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('vg')
     if options.isThreadsafe:
         specialParamList.append('ts')
-    if options.enableRootAnalysis:
-        specialParamList.append('ra')
     if options.disableExactRooting:
         specialParamList.append('erDisabled')
     if options.disableGcGenerational:

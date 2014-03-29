@@ -85,11 +85,6 @@ def knownBrokenRanges(options):
             hgrange('7c148efceaf9', '541248fb29e4'), # missing #include -> compile failure
         ])
 
-    if options.enableRootAnalysis:
-        skips.extend([
-            hgrange('7b516748a65c', '72859dc0fefd'), # broken root analysis builds
-        ])
-
     if options.isThreadsafe:
         skips.extend([
             hgrange('54c6c42eb219', 'fe8429f81df8'), # broken threadsafe builds
@@ -113,7 +108,7 @@ def knownBrokenRanges(options):
     #        hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
     #    ])
 
-    if options.enableRootAnalysis and options.isThreadsafe and options.enableMoreDeterministic:
+    if options.isThreadsafe and options.enableMoreDeterministic:
         skips.extend([
             hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
         ])
