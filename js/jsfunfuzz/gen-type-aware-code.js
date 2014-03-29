@@ -170,8 +170,8 @@ var makeEvilCallback;
       ", catchTermination: " + makeBoolean(d, b) +
       ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) +
       ((rnd(5) == 0) ? (
-        // ((rnd(2) == 0) ? (", element: " + m("o")) : "") + // bug 952885
-        // ((rnd(2) == 0) ? (", elementProperty: " + m("s")) : "") + // bug 952780, bug 952409
+        ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
+        ((rnd(2) == 0) ? (", elementProperty: " + m("s")) : "") +
         ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "") +
         ((rnd(2) == 0) ? (", sourcePolicy: " + Random.index(["'NO_SOURCE'", "'LAZY_SOURCE'", "'SAVE_SOURCE'"])) : "")
         ) : ""

@@ -244,7 +244,6 @@ var doubleExpr = autoExpr(Random.weighted([
     {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, Random.index(["atan2", "pow"])) + "(" + doublishExpr(d - 2, e) + ", " + doublishExpr(d - 2, e) + ")"; }},
     {w: 1,  v: function(d, e) { return ensureImport(e, "Infinity"); }},
     {w: 1,  v: function(d, e) { return ensureImport(e, "NaN"); }},
-// "E", "LN10", "LN2", "LOG2E", "LOG10E", "PI", "SQRT1_2", "SQRT2" // bug 878488
 ]));
 
 var externExpr = autoExpr(Random.weighted([

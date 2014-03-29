@@ -339,7 +339,6 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "this.UIModule is undefined" in msg) or  # Bug 877013
         ("browser.js" in msg and "this._cps2 is undefined" in msg) or     # Bug 877013
         ("browser.js" in msg and "this.button is null" in msg) or         # Bug 877013
-        ("browser.js" in msg and "aBrowser is null" in msg) or            # Bug 957922
         ("browser.xml" in msg and "this.docShell is null" in msg) or      # Bug 919362
         ("places.js" in msg and "PlacesUIUtils is not defined" in msg) or # Bug 801436
         ("places.js" in msg and "this._places is null" in msg) or         # Bug 893322
@@ -354,22 +353,15 @@ def knownChromeFailure(msg):
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
         ("urlbarBindings.xml" in msg and "aUrl is undefined" in msg) or # Bug 931622
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
-        ("search.xml" in msg and "this.updateDisplay is not a function" in msg) or # Bug 903274
         ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or # Bug 947404
-        ("webrtcUI.jsm" in msg and "can't access dead object" in msg) or # Bug 949907, but also check whether webrtc-js-dom still hits it
-        ("webrtcUI.jsm" in msg and "NS_ERROR_OUT_OF_MEMORY" in msg) or # Seems legit (webrtc-js-oom)
+        ("webrtcUI.jsm" in msg and "NS_ERROR_OUT_OF_MEMORY" in msg) or # Seems legit: whenfixed-local/webrtc-js-oom/
         ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or # Bug 949920
         ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or # Bug 950327
         ("webrtcUI.jsm" in msg) or # Bug 973318
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
-        ("SessionStore.jsm" in msg and "browser.contentDocument.body is null" in msg) or # Bug 883014
-        ("SessionHistory.jsm" in msg and "webNavigation.document.body is null" in msg) or # Bug 973550
-        ("content-sessionStore.js" in msg and "nsIURI.userPass" in msg) or # Bug 973559
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or # bug 978524
-        ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or # bug 978629, bug 978630
+        ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or # bug 978629
         ("nsDOMIdentity.js, line " in msg) or # These seem to be intentional messages about misusing the identity API
-        ("NS_ERROR_XPC_SECURITY_MANAGER_VETO" in msg and "nsIDOMJSWindow.frames" in msg) or # Bug 978652
-        ("tabbrowser.xml" in msg and "NS_ERROR_NOT_INITIALIZED" in msg) or # Bug 978652
         ("browser.xml" in msg and "nsIWebNavigation.loadURI" in msg) or # Bug 979379
         "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113

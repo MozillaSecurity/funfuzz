@@ -106,7 +106,6 @@ function fuzzInitBlacklists()
                 "object\"",          // bug 860482
                 "trustedKeyEvent",   // leak with search bar (bug 867290)
                 "window.open",       // bug 867307
-                "promise",           // bug 887687
                 "@media",            // bug 884212
                 "/*charCode*/73",    // leak with page info (bug 829831)
                 "/*charCode*/105",   // leak with page info (bug 829831)
@@ -114,8 +113,6 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spamming Notifications (bug 897367, bug 866653)
                 "peerconnection",    // bug 914015
                 "\\u",               // bug 963878
-                "MediaRecorder",     // bug 973522
-                "styleSheetSet",     // bug 978646
             ]
         },
         {
@@ -185,7 +182,6 @@ function fuzzInitBlacklists()
                 "textIndent",       // bug 718157
                 "-moz-grid",        // bug 521600
                 "-moz-inline-grid", // bug 521600
-                "mathml",           // bug 522393 :(
                 "rules",            // bug 543791
                 "overflow",         // bug 718037, bug 718123
                 "-moz-box",         // bug 718211, bug 726548

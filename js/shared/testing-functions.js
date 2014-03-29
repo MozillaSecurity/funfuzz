@@ -40,9 +40,8 @@ var fuzzTestingFunctions = (function(glob){
     { w: 5,  v: function(d, b) { return "(void " + tf("gc") + "(" + global(d, b) + ")" + ")"; } },
 
     // Run a minor garbage collection on the nursery.
-    // (void is for bug 940253)
-    { w: 20, v: function(d, b) { return "(void " + tf("minorgc") + "(false)" + ")"; } },
-    { w: 20, v: function(d, b) { return "(void " + tf("minorgc") + "(true)" + ")"; } },
+    { w: 20, v: function(d, b) { return "(" + tf("minorgc") + "(false)" + ")"; } },
+    { w: 20, v: function(d, b) { return "(" + tf("minorgc") + "(true)" + ")"; } },
 
     // Invoke an incremental garbage collection slice.
     { w: 20, v: function(d, b) { return "(" + tf("gcslice") + "(" + Math.floor(Math.pow(2, Random.float() * 32)) + ")" + ")"; } },
