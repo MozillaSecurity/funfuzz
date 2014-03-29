@@ -29,6 +29,7 @@ import subprocess
 
 # could also use sys._getframe().f_code.co_filename, but this seems cleaner
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+import randomPrefs
 
 p1 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'detect'))
 sys.path.insert(0, p1)
@@ -452,18 +453,7 @@ def deCygPath(p):
         p = "c:\\" + p.replace("/", "\\")[3:]
     return p
 
-def grabExtraPrefs(p):
-    basename = os.path.basename(p)
-    if os.path.exists(p):
-        hyphen = basename.find("-")
-        if hyphen != -1:
-            prefsFile = os.path.join(os.path.dirname(p), basename[0:hyphen] + "-prefs.txt")
-            #print "Looking for prefsFile: " + prefsFile
-            if os.path.exists(prefsFile):
-                #print "Found prefs.txt"
-                with open(prefsFile) as f:
-                    return f.read()
-    return ""
+
 
 def removeIfExists(filename):
     if os.path.exists(filename):
@@ -694,7 +684,8 @@ def init(args):
     minimumInterestingLevel = options.minimumInterestingLevel
     lithiumURL = options.argURL
 def interesting(args, tempPrefix):
-    extraPrefs = grabExtraPrefs(lithiumURL) # Here in case Lithium is reducing the prefs file
+    global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
+    extraPrefs = randomPrefs.grabExtraPrefs(lithiumURL) # Re-scan testcase (and prefs file) in case Lithium changed them
     actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix, extraPrefs = extraPrefs)
     return actualLevel >= minimumInterestingLevel
 
@@ -704,7 +695,7 @@ def directMain():
     print logPrefix
     levelAndLines, options = rdfInit(sys.argv[1:])
     if options.argURL:
-        extraPrefs = grabExtraPrefs(options.argURL)
+        extraPrefs = randomPrefs.grabExtraPrefs(options.argURL)
     else:
         extraPrefs = ""
     level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)

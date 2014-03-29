@@ -33,6 +33,7 @@ path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
 import loopdomfuzz
 import domInteresting
+import randomPrefs
 import buildBrowser
 path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
@@ -484,7 +485,7 @@ def retestAll(options, buildDir):
         print testcase
         i += 1
         logPrefix = os.path.join(tempDir, str(i))
-        extraPrefs = domInteresting.grabExtraPrefs(testcase)
+        extraPrefs = randomPrefs.grabExtraPrefs(testcase)
         testcaseURL = loopdomfuzz.asFileURL(testcase)
         level, lines = levelAndLines(testcaseURL, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=True)
 

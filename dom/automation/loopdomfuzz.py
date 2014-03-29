@@ -63,6 +63,7 @@ def many_timed_runs(targetTime, tempDir, args):
 
         url = options.argURL or (random.choice(reftestURLs) + randomHash())
         extraPrefs = randomPrefs.randomPrefs()
+        print extraPrefs
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
@@ -71,12 +72,9 @@ def many_timed_runs(targetTime, tempDir, args):
 
         if level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
-            rFN = createReproFile(fuzzerJS, lines, logPrefix)
+            rFN = createReproFile(fuzzerJS, extraPrefs, lines, logPrefix)
             if platform.system() == "Windows":
                 rFN = rFN.replace("/","\\") # Ensure both Lithium and Firefox understand the filename
-            with open(logPrefix + "-prefs.txt", "w") as f:
-                 # domInteresting.py will look for this file when invoked by Lithium or directly
-                 f.write(extraPrefs)
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
             lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
             (lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
@@ -105,7 +103,7 @@ def many_timed_runs(targetTime, tempDir, args):
 
 # Stuffs "lines" into a fresh file, which Lithium should be able to reduce.
 # Returns the name of the repro file.
-def createReproFile(fuzzerJS, lines, logPrefix):
+def createReproFile(fuzzerJS, extraPrefs, lines, logPrefix):
     contentTypes = linesStartingWith(lines, "FRCX Content type: ")
     contentType = afterColon(contentTypes[0]) if len(contentTypes) > 0 else "text/html"
 
@@ -143,9 +141,12 @@ def createReproFile(fuzzerJS, lines, logPrefix):
             "// DDBEGIN\n"
         ]
     quittage = [
+      extraPrefs,
       "// DDEND\n",
       "fuzzCommands.push({origCount: 8888, rest: true, timeout: 3000});\n",
       "fuzzCommands.push({origCount: 9999, fun: function() { fuzzPriv.quitApplication(); } });\n"
+      "\n",
+      "function user_pref() { /* Allow randomPrefs.py to parse user_pref lines from this file */ }\n",
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + wafter
 
@@ -190,7 +191,7 @@ def randomHash():
     #   Small variations on initial reftests are often the most interesting
     #   Less chance for the fuzzer to tie itself in exponential knots, and hang unexpectedly (e.g. repeated cloneNode)
     #
-    # Want it large
+    # Want it large:
     #   Depth is more important as we scale
     #   Depth is important to fuzzerRandomJS
     #   Waste less time in startup, shutdown
