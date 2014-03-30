@@ -24,3 +24,4 @@ SIZE tiny. objects that should never entrain others. (last group is also the def
        nsStringBuffer
   LEAK nsTArray_base # Bug 963878
   LEAK HoldJSObjects
+  LEAK MacIOSurface # Bug 989705
