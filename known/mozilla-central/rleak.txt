@@ -25,3 +25,6 @@ SIZE tiny. objects that should never entrain others. (last group is also the def
   LEAK nsTArray_base # Bug 963878
   LEAK HoldJSObjects
   LEAK MacIOSurface # Bug 989705
+  LEAK VolatileBuffer # Bug 989760
+  LEAK gfxASurface    # Bug 989760
+  LEAK DataSourceSurfaceAlignedRawData # Bug 989763
