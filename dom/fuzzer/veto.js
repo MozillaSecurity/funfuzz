@@ -70,6 +70,7 @@ function fuzzInitBlacklists()
                 "strokeText",        // bug 943622
                 "strokeRect",        // bug 986902
                 ".arc",              // bug 943587
+                "isPointInStroke",   // bug 989669
             ]
         },
         {
@@ -113,6 +114,7 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spamming Notifications (bug 897367, bug 866653)
                 "peerconnection",    // bug 914015
                 "\\u",               // bug 963878
+                "Worker",            // annoying timing-depenent leaks
             ]
         },
         {
