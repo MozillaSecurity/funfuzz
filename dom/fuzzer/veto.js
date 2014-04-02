@@ -114,6 +114,7 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spamming Notifications (bug 897367, bug 866653)
                 "\\u",               // bug 963878
                 "Worker",            // annoying timing-depenent leaks
+                "color",             // bug 991373
             ]
         },
         {
