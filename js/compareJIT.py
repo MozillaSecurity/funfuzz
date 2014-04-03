@@ -140,7 +140,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
 
             def fpuOptionDisabledAsmOnOneSide():
                 # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
-                # This changes asm.js behavior (asm.js diagnostics on stderr; output of decompilation due to bug 878399)
+                # This should only affect asm.js diagnostics on stderr.
                 fpuAsmMsg = "asm.js type error: Disabled by lack of floating point support"
                 fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
@@ -159,9 +159,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 showDifferences(prefix0 + "-err.txt", prefix + "-err.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
-            elif r.err != r0.err:
-                #print "compareJIT: Ignoring both stderr and stdout differences (bug 878399) (see bug 908608)
-                jsInteresting.deleteLogs(prefix)
             elif r.out != r0.out:
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stdout"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
                 print "  " + shellify(commands[0])
