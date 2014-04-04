@@ -496,7 +496,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
     if updateToRev:
         print "Updating...",
         captureStdout(["hg", "-R", shell.buildOptions.repoDir] + \
-            ['update', '-r', updateToRev], ignoreStderr=True)
+            ['update', '-C', '-r', updateToRev], ignoreStderr=True)
         print "Compiling...",
     hgCmds.destroyPyc(shell.buildOptions.repoDir)
 

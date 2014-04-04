@@ -267,7 +267,7 @@ def findBlamedCset(options, repoDir, testRev):
     subprocess.check_call(hgPrefix + ['bisect', '-U', '-r'])
 
     vdump("Resetting working directory")
-    captureStdout(hgPrefix + ['update', '-r', 'default'], ignoreStderr=True)
+    captureStdout(hgPrefix + ['update', '-C', '-r', 'default'], ignoreStderr=True)
     hgCmds.destroyPyc(repoDir)
 
     print dateStr()
