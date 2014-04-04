@@ -404,7 +404,17 @@ def cfgBin(shell, binToBeCompiled):
 
     wDir = shell.getNsprObjdir() if binToBeCompiled == 'nspr' else shell.getJsObjdir()
     assert os.path.isdir(wDir)
-    captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
+
+    if isWin and binToBeCompiled == 'nspr':
+        nsprCfgCmdList = []
+        for entry in cfgCmdList:
+            # See bug 986715 comment 6 as to why we need forward slashes.
+            if 'nsprpub' in entry and 'configure' in entry:
+                entry = entry.replace('\\', '/')
+            nsprCfgCmdList.append(entry)
+        captureStdout(nsprCfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
+    else:
+        captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
     shell.setEnvFull(cfgEnvDt)
