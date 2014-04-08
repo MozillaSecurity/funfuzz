@@ -331,6 +331,7 @@ def knownChromeFailure(msg):
         "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
         "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
         "prompt aborted by user" in msg or # thrown intentionally in nsPrompter.js
+        "newPrompt.abortPrompt is not a function" in msg or # trying to do things after closing the window
         "nsIIOService.getProtocolHandler" in msg or # bug 746878
         "tipElement is null" in msg or # bug 746893
         ("browser.xul" in msg and "gBrowserInit is not defined" in msg) or # Bug 897867
