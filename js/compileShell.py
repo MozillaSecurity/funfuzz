@@ -129,9 +129,6 @@ def ensureCacheDir():
         # This might fail on a Vista or Win7 VM due to lack of permissions.
         # It would be good to get this machine-specific hack out of the shared file, eventually.
         cacheDirBase = os.path.join('c:', os.sep)
-    # This particular machine has insufficient disk space on the main drive.
-    elif isLinux and os.path.exists(os.sep + 'hddbackup'):
-        cacheDirBase = os.path.join(os.sep + 'hddbackup')
     else:
         cacheDirBase = normExpUserPath(os.path.join('~', 'Desktop'))
         # If ~/Desktop is not present, create it. ~/Desktop might not be present with
