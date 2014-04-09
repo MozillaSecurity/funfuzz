@@ -155,9 +155,15 @@ def autoconfRun(shell, jsOrNspr, isAutoconf213ForJsOrOldNspr=True):
         elif isLinux:
             subprocess.check_call(['autoconf2.13'], cwd=cwDir)
         elif isWin:
-            subprocess.check_call(['autoconf-2.13'], cwd=cwDir)
+            # Windows needs to call sh to be able to find autoconf.
+            subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
     else:
-        subprocess.check_call(['autoconf'], cwd=cwDir)
+        if isWin:
+            # Windows needs to call sh to be able to find autoconf.
+            subprocess.check_call(['sh', 'autoconf'], cwd=cwDir)
+        else:
+            subprocess.check_call(['autoconf'], cwd=cwDir)
+
         if jsOrNspr == 'nspr':
             shutil.rmtree(normExpUserPath(os.path.join(
                 shell.getRepoDirNsprSrc(), 'autom4te.cache')))
