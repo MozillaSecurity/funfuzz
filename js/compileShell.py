@@ -146,17 +146,18 @@ def ensureDir(dir):
     assert os.path.isdir(dir)
 
 
-def autoconfRun(cwd, isAutoconf213ForJsOrOldNspr=True):
+def autoconfRun(shell, jsOrNspr, isAutoconf213ForJsOrOldNspr=True):
     '''Run autoconf binaries corresponding to the platform.'''
+    cwDir = shell.getRepoDirJsSrc() if jsOrNspr == 'js' else shell.getRepoDirNsprSrc()
     if isAutoconf213ForJsOrOldNspr:
         if isMac:
-            subprocess.check_call(['autoconf213'], cwd=cwd)
+            subprocess.check_call(['autoconf213'], cwd=cwDir)
         elif isLinux:
-            subprocess.check_call(['autoconf2.13'], cwd=cwd)
+            subprocess.check_call(['autoconf2.13'], cwd=cwDir)
         elif isWin:
-            subprocess.check_call(['autoconf-2.13'], cwd=cwd)
+            subprocess.check_call(['autoconf-2.13'], cwd=cwDir)
     else:
-        subprocess.check_call(['autoconf'], cwd=cwd)
+        subprocess.check_call(['autoconf'], cwd=cwDir)
 
 
 def cfgAsanParams(currEnv, options):
@@ -185,7 +186,7 @@ def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     if shell.buildOptions.isThreadsafe:
         compileNspr(shell)
-    autoconfRun(shell.getRepoDirJsSrc())
+    autoconfRun(shell, 'js')
     configureTryCount = 0
     while True:
         try:
@@ -453,7 +454,7 @@ def compileJs(shell):
 
 def compileNspr(shell):
     '''Compile a NSPR binary.'''
-    autoconfRun(shell.getRepoDirNsprSrc(), isAutoconf213ForJsOrOldNspr=\
+    autoconfRun(shell, 'nspr', isAutoconf213ForJsOrOldNspr=\
                 hgCmds.isCurrRevAnAncestorOfMcRev1bb7e442dfbb(shell.getRepoDir()))
     cfgBin(shell, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
