@@ -158,6 +158,12 @@ def autoconfRun(shell, jsOrNspr, isAutoconf213ForJsOrOldNspr=True):
             subprocess.check_call(['autoconf-2.13'], cwd=cwDir)
     else:
         subprocess.check_call(['autoconf'], cwd=cwDir)
+        if jsOrNspr == 'nspr':
+            shutil.rmtree(normExpUserPath(os.path.join(
+                shell.getRepoDirNsprSrc(), 'autom4te.cache')))
+            if isWin:
+                captureStdout(['hg', '-R', shell.getRepoDir(), 'revert',
+                    normExpUserPath(os.path.join(shell.getRepoDirNsprSrc(), 'configure'))])
 
 
 def cfgAsanParams(currEnv, options):
