@@ -154,9 +154,7 @@ def autoconfRun(cwd, isAutoconf213ForJsOrOldNspr=True):
         elif isLinux:
             subprocess.check_call(['autoconf2.13'], cwd=cwd)
         elif isWin:
-            subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwd)
-    elif isWin:
-        subprocess.check_call(['sh', 'autoconf'], cwd=cwd)
+            subprocess.check_call(['autoconf-2.13'], cwd=cwd)
     else:
         subprocess.check_call(['autoconf'], cwd=cwd)
 
