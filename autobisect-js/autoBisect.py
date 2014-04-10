@@ -854,18 +854,20 @@ def main():
     sanityChecks()
     options = parseOpts()
 
+    repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
+
     with LockDir(compileShell.getLockDirPath(options.nameOfTinderboxBranch, tboxIdentifier='Tbox') \
                  if options.useTinderboxBinaries else \
-                 compileShell.getLockDirPath(options.buildOptions.repoDir)):
+                 compileShell.getLockDirPath(repoDir)):
         if options.useTinderboxBinaries:
             bisectUsingTboxBins(options)
         else:
             # Bisect using local builds
             if options.browserOptions:
-                findBlamedCset(options, options.browserOptions.repoDir,
+                findBlamedCset(options, repoDir,
                                buildBrowser.makeTestRev(options))
             else:
-                findBlamedCset(options, options.buildOptions.repoDir,
+                findBlamedCset(options, repoDir,
                                compileShell.makeTestRev(options))
 
 
