@@ -158,8 +158,7 @@ javascript.options.mem.gc_dynamic_heap_growth
 javascript.options.mem.gc_dynamic_mark_slice
 javascript.options.mem.gc_incremental
 javascript.options.mem.gc_per_compartment
-javascript.options.xml.content
-javascript.options.xml.chrome
+javascript.options.parallel_parsing
 keyword.enabled
 layers.acceleration.disabled
 #layers.acceleration.force-enabled # Bug 868787
