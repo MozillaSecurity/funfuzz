@@ -115,6 +115,8 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "Worker",            // annoying timing-depenent leaks
                 "color",             // bug 991373
+                "innerHTML",         // bug 994740
+                "insertAdjacentHTML",// bug 994740
             ]
         },
         {
