@@ -33,6 +33,18 @@ var fuzzTestingFunctions = (function(glob){
     return "(" + tf("gczeal") + "(" + level + ", " + period + ")" + ")";
   }
 
+  function setGcparam() {
+    switch(rnd(2)) {
+      case 0:  return c("sliceTimeBudget", rnd(100));
+      default: return c("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
+    }
+
+    function c(name, value) {
+      // try..catch because gcparam may throw, depending on GC state (see bug 973571)
+      return "try { " + tf("gcparam") + "('" + name + "', " + value + ");" + " } catch(e) { }";
+    }
+  }
+
   var testingFunctions = Random.weighted([
     // Force garbage collection (global or specific compartment)
     { w: 10, v: function(d, b) { return "(void " + tf("gc") + "()" + ")"; } },
@@ -54,6 +66,9 @@ var fuzzTestingFunctions = (function(glob){
 
     // Schedule a GC for after N allocations.
     { w: 10, v: function(d, b) { return "(" + tf("schedulegc") + "(" + numberOfAllocs() + ")" + ")"; } },
+
+    // Change a GC parameter.
+    { w: 10, v: setGcparam },
 
     // Make garbage collection extremely frequent (SLOW)
     { w: 1,  v: function(d, b) { return (!browser || rnd(100) == 0) ? (enableGCZeal()) : "0"; } },
