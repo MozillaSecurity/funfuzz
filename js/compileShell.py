@@ -214,8 +214,8 @@ def cfgBin(shell, binToBeCompiled):
         # 32-bit shell on ARM boards, e.g. Pandaboards.
         assert shell.buildOptions.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not shell.buildOptions.enableHardFp:
-            cfgEnvDt['CC'] = 'gcc -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
-            cfgEnvDt['CXX'] = 'g++ -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
+            cfgEnvDt['CC'] = 'gcc -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7 -msse2 -mfpmath=sse'  # See bug 948321
+            cfgEnvDt['CXX'] = 'g++ -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7 -msse2 -mfpmath=sse'  # See bug 948321
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
@@ -232,8 +232,8 @@ def cfgBin(shell, binToBeCompiled):
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
-            cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang'
-            cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++'
+            cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang -msse2 -mfpmath=sse'  # See bug 948321
+            cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++ -msse2 -mfpmath=sse'  # See bug 948321
             if shell.buildOptions.buildWithAsan:
                 cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
@@ -258,8 +258,8 @@ def cfgBin(shell, binToBeCompiled):
         elif isLinux and not isARMv7l:
             # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
-            cfgEnvDt['CC'] = 'gcc -m32'
-            cfgEnvDt['CXX'] = 'g++ -m32'
+            cfgEnvDt['CC'] = 'gcc -m32 -msse2 -mfpmath=sse'  # See bug 948321
+            cfgEnvDt['CXX'] = 'g++ -m32 -msse2 -mfpmath=sse'  # See bug 948321
             # We might still be using GCC on Linux 32-bit, don't use clang unless Asan is specified
             if shell.buildOptions.buildWithAsan:
                 cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
