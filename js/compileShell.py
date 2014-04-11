@@ -524,7 +524,11 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
         shutil.rmtree(shell.getShellCacheDir())
         raise
     except Exception as e:
-        shutil.rmtree(shell.getShellCacheDir())
+        try:
+            shutil.rmtree(shell.getShellCacheDir())
+        except WindowsError:
+            # Sometimes Windows file/dir locks trips over itself, so try again.
+            shutil.rmtree(shell.getShellCacheDir())
 
         # Remove the cache dir, but recreate it with only the .busted file.
         try:
