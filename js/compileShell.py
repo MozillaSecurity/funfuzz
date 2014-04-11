@@ -26,7 +26,7 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
 from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin
-from subprocesses import macVer, normExpUserPath, rmDirIfEmpty, rmTreeIfExists, shellify, vdump
+from subprocesses import macVer, normExpUserPath, rmTreeIncludingReadOnly, shellify, vdump
 from LockDir import LockDir
 
 CLANG_PARAMS = ' -Qunused-arguments'
@@ -490,7 +490,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
         raise Exception("Found a cached shell that failed compilation...")
     elif not compileStandaloneCreatedCacheDir and os.path.exists(shell.getShellCacheDir()):
         print 'Found a cache dir without a successful/failed shell, so recompiling...'
-        shutil.rmtree(shell.getShellCacheDir())
+        rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
 
@@ -521,10 +521,10 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
 
         cfgJsCompile(shell)
     except KeyboardInterrupt:
-        shutil.rmtree(shell.getShellCacheDir())
+        rmTreeIncludingReadOnly(shell.getShellCacheDir())
         raise
     except Exception as e:
-        shutil.rmtree(shell.getShellCacheDir())
+        rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
         # Remove the cache dir, but recreate it with only the .busted file.
         try:
