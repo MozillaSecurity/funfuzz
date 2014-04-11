@@ -146,30 +146,15 @@ def ensureDir(dir):
     assert os.path.isdir(dir)
 
 
-def autoconfRun(shell, jsOrNspr, isAutoconf213ForJsOrOldNspr=True):
+def autoconfRun(cwDir):
     '''Run autoconf binaries corresponding to the platform.'''
-    cwDir = shell.getRepoDirJsSrc() if jsOrNspr == 'js' else shell.getRepoDirNsprSrc()
-    if isAutoconf213ForJsOrOldNspr:
-        if isMac:
-            subprocess.check_call(['autoconf213'], cwd=cwDir)
-        elif isLinux:
-            subprocess.check_call(['autoconf2.13'], cwd=cwDir)
-        elif isWin:
-            # Windows needs to call sh to be able to find autoconf.
-            subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
-    else:
-        if isWin:
-            # Windows needs to call sh to be able to find autoconf.
-            subprocess.check_call(['sh', 'autoconf'], cwd=cwDir)
-        else:
-            subprocess.check_call(['autoconf'], cwd=cwDir)
-
-        if jsOrNspr == 'nspr':
-            shutil.rmtree(normExpUserPath(os.path.join(
-                shell.getRepoDirNsprSrc(), 'autom4te.cache')))
-            if isWin:
-                captureStdout(['hg', '-R', shell.getRepoDir(), 'revert',
-                    normExpUserPath(os.path.join(shell.getRepoDirNsprSrc(), 'configure'))])
+    if isMac:
+        subprocess.check_call(['autoconf213'], cwd=cwDir)
+    elif isLinux:
+        subprocess.check_call(['autoconf2.13'], cwd=cwDir)
+    elif isWin:
+        # Windows needs to call sh to be able to find autoconf.
+        subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
 
 
 def cfgAsanParams(currEnv, options):
@@ -198,7 +183,7 @@ def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     if shell.buildOptions.isThreadsafe:
         compileNspr(shell)
-    autoconfRun(shell, 'js')
+    autoconfRun(shell.getRepoDirJsSrc())
     configureTryCount = 0
     while True:
         try:
@@ -466,8 +451,6 @@ def compileJs(shell):
 
 def compileNspr(shell):
     '''Compile a NSPR binary.'''
-    autoconfRun(shell, 'nspr', isAutoconf213ForJsOrOldNspr=\
-                hgCmds.isCurrRevAnAncestorOfMcRev1bb7e442dfbb(shell.getRepoDir()))
     cfgBin(shell, 'nspr')
     # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
     # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
