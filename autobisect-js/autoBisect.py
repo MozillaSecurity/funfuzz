@@ -8,7 +8,6 @@ import math
 import os
 import platform
 import re
-import shutil
 import stat
 import subprocess
 import sys
@@ -37,7 +36,8 @@ from fileManipulation import firstLine
 import buildOptions
 from downloadBuild import defaultBuildType, downloadBuild, getBuildList
 import hgCmds
-from subprocesses import captureStdout, dateStr, isVM, isWin, normExpUserPath, Unbuffered, vdump
+from subprocesses import captureStdout, dateStr, isVM, isWin
+from subprocesses import rmTreeIncludingReadOnly, normExpUserPath, Unbuffered, vdump
 from LockDir import LockDir
 
 INCOMPLETE_NOTE = 'incompleteBuild.txt'
@@ -330,7 +330,7 @@ def externalTestAndLabel(options, interestingness):
         else:
             innerResult = ('good', 'not interesting')
         if os.path.isdir(tempDir):
-            shutil.rmtree(tempDir)
+            rmTreeIncludingReadOnly(tempDir)
         return innerResult
     return inner
 
@@ -610,7 +610,7 @@ def createTboxCacheFolder(cacheFolder):
         ensureCacheDirHasCorrectIdNum(cacheFolder)
     except Exception, e:
         if 'Folder name numeric ID not equal to source URL numeric ID.' in repr(e):
-            shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
+            rmTreeIncludingReadOnly(normExpUserPath(os.path.join(cacheFolder, 'build')))
 
 
 def ensureCacheDirHasCorrectIdNum(cacheFolder):
@@ -839,7 +839,7 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
     '''
     if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
             os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
-        shutil.rmtree(normExpUserPath(os.path.join(cacheFolder, 'build')))
+        rmTreeIncludingReadOnly(normExpUserPath(os.path.join(cacheFolder, 'build')))
     assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
     with open(txtFile, 'wb') as f:
         f.write('This build with numeric ID ' + num + ' is incomplete.')
