@@ -214,8 +214,8 @@ def cfgBin(shell, binToBeCompiled):
         # 32-bit shell on ARM boards, e.g. Pandaboards.
         assert shell.buildOptions.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not shell.buildOptions.enableHardFp:
-            cfgEnvDt['CC'] = 'gcc -msse2 -mfpmath=sse -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'  # See bug 948321
-            cfgEnvDt['CXX'] = 'g++ -msse2 -mfpmath=sse -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'  # See bug 948321
+            cfgEnvDt['CC'] = 'gcc -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
+            cfgEnvDt['CXX'] = 'g++ -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
