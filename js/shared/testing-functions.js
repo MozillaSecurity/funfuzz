@@ -68,7 +68,7 @@ var fuzzTestingFunctions = (function(glob){
     { w: 10, v: function(d, b) { return "(" + tf("schedulegc") + "(" + numberOfAllocs() + ")" + ")"; } },
 
     // Change a GC parameter.
-    { w: 10, v: setGcparam },
+    //{ w: 10, v: setGcparam },  // bug 995657
 
     // Make garbage collection extremely frequent (SLOW)
     { w: 1,  v: function(d, b) { return (!browser || rnd(100) == 0) ? (enableGCZeal()) : "0"; } },
