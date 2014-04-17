@@ -1,7 +1,7 @@
 const NUM_MATH_FUNCTIONS = 6;
 
 var binaryMathOps = [
-  " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ",
+  " * ", " /*NODIFF*/ / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", // division issues: bug 997546
   " < ", " > ", " <= ", " >= ",
   " == ", " != ",
   " === ", " !== ",
@@ -103,5 +103,3 @@ function generateMathExpr(d, b, i)
     default: return mc("Math." + Random.index(binaryMathFunctions) + "(" + mc(r()) + ", " + mc(r()) + ")");
   }
 }
-
-
