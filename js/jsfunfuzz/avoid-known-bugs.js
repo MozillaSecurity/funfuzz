@@ -40,7 +40,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("ArrayBuffer") == -1         // bug 995679
        && code.indexOf("neuter") == -1              // bug 995679
        && code.indexOf("gc") == -1                  // bug 995816
-       && code.indexOf("usecount.trigger") == -1    // bug 995817
        && code.indexOf("Math.round") == -1          // bug 995826
        && code.indexOf("Math.tan") == -1            // bug 995826
        && code.indexOf("use strict") == -1          // bug 996881
