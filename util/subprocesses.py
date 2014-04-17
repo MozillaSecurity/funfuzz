@@ -262,8 +262,10 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     return None
 
 
-def grabCrashLog(progname, progfullname, crashedPID, logPrefix, wantStack):
+def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
     '''Returns the crash log if found.'''
+    progname = os.path.basename(progfullname)
+
     useLogFiles = isinstance(logPrefix, str)
     if useLogFiles:
         if os.path.exists(logPrefix + "-crash.txt"):
@@ -336,7 +338,7 @@ def constructCdbCommand(progfullname, crashedPID):
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdbPath = os.path.join(win64bitDebuggerFolder, 'cdb.exe')
     if not os.path.exists(cdbPath):
-        print '\nWARNING: cdb.exe is not found - all crashes will be uninteresting.\n'
+        print '\nWARNING: cdb.exe is not found - all crashes will be interesting.\n'
         return None
 
     if isWinDumpingToDefaultLocation():
@@ -360,7 +362,7 @@ def constructCdbCommand(progfullname, crashedPID):
             loops += 1
             if loops > maxLoops:
                 # Windows may take some time to generate the dump.
-                print "grabCrashLog waited a long time, but " + dumpFilename + " never appeared!"
+                print "constructCdbCommand waited a long time, but " + dumpFilename + " never appeared!"
                 return None
     else:
         return None

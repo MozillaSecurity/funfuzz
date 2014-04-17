@@ -35,12 +35,12 @@ p1 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, '
 sys.path.insert(0, p1)
 import detect_assertions
 import detect_malloc_errors
-import detect_interesting_crashes
+import detect_crashes
 import detect_leaks
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import grabCrashLog, isMac, isWin
+from subprocesses import isWin, grabCrashLog
 
 close_fds = sys.platform != 'win32'
 
@@ -111,23 +111,22 @@ class AmissLogHandler:
         self.nsassertionCount = 0
         self.sawFatalAssertion = False
         self.fuzzerComplained = False
-        self.crashProcessor = None
-        self.crashBoringBits = False
-        self.crashMightBeTooMuchRecursion = False
-        self.crashIsKnown = False
-        self.crashIsExploitable = False
         self.timedOut = False
         self.goingDownHard = False
         self.sawValgrindComplaint = False
         self.expectChromeFailure = False
         self.sawChromeFailure = False
-        self.outOfMemory = False
-        detect_interesting_crashes.resetCounts()
-        self.crashSignature = ""
+
+        self.crashWatcher = detect_crashes.CrashWatcher(knownPath, True, lambda note: self.printAndLog("%%% " + note))
 
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
         msg = msgLF.rstrip("\n")
+
+        self.crashWatcher.processOutputLine(msg)
+        if self.crashWatcher.crashProcessor and len(self.summaryLog) < 300:
+            self.summaryLog.append(msgLF)
+
         if len(self.fullLogHead) < 100000:
             self.fullLogHead.append(msgLF)
         pidprefix = "INFO | automation.py | Application pid:"
@@ -163,6 +162,7 @@ class AmissLogHandler:
             #   Debug: [object nsXPCComponents_Classes @ 0x12036b880 (native @ 0x1203678d0)]
             self.fuzzerComplained = True
             self.printAndLog("@@@ " + msg)
+
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
@@ -209,7 +209,7 @@ class AmissLogHandler:
             self.sawFatalAssertion = True
             self.goingDownHard = True
             if not overlyGenericAssertion:
-                self.crashIsKnown = True
+                self.crashWatcher.crashIsKnown = True
 
         if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF) and not "bug 931331":
             self.mallocFailure = True
@@ -224,60 +224,7 @@ class AmissLogHandler:
            msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
             self.timedOut = True
             self.goingDownHard = True
-            self.crashIsKnown = True
-
-        if msg.startswith("PROCESS-CRASH | automation.py | application crashed"):
-            print "We have a crash on our hands!"
-            self.crashProcessor = "minidump_stackwalk"
-            self.crashSignature = msg[len("PROCESS-CRASH | automation.py | application crashed") : ]
-
-        if "ERROR: AddressSanitizer" in msg:
-            print "We have an asan crash on our hands!"
-            self.crashProcessor = "asan"
-            m = re.search("on unknown address (0x\S+)", msg)
-            if m and int(m.group(1), 16) < 0x10000:
-                # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
-                # It would be good to know if it were a read, write, or execute.  But ASan doesn't have that info for SEGVs, I guess?
-                if self.outOfMemory:
-                    self.printAndLog("%%% We ran out of memory, then dereferenced null.")
-                    self.crashIsKnown = True
-                else:
-                    self.printAndLog("%%% This looks like a null deref bug.")
-            else:
-                # Not a null dereference.
-                self.printAndLog("%%% Assuming this ASan crash is exploitable")
-                self.crashIsExploitable = True
-
-        if "WARNING: AddressSanitizer failed to allocate" in msg:
-            self.outOfMemory = True
-
-        if msg.startswith("freed by thread") or msg.startswith("previously allocated by thread"):
-            # We don't want to treat these as part of the stack trace for the purpose of detect_interesting_crashes.
-            self.crashBoringBits = True
-
-        if self.crashProcessor and len(self.summaryLog) < 300:
-            self.summaryLog.append(msgLF)
-        if self.crashProcessor and not self.crashBoringBits and detect_interesting_crashes.isKnownCrashSignature(msg, self.crashIsExploitable):
-            self.printAndLog("%%% Known crash signature: " + msg)
-            self.crashIsKnown = True
-
-        if isMac:
-            # There are several [TMR] bugs listed in crashes.txt
-            # Bug 507876 is a breakpad issue that means too-much-recursion crashes don't give me stack traces on Mac
-            # (and Linux, but differently).
-            # The combination means we lose.
-            if (msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
-                self.printAndLog("%%% This crash is at the Mac stack guard page. It is probably a too-much-recursion crash or a stack buffer overflow.")
-                self.crashMightBeTooMuchRecursion = True
-            if self.crashMightBeTooMuchRecursion and msg.startswith(" 3 ") and not self.crashIsKnown:
-                self.printAndLog("%%% The stack trace is not broken, so it's more likely to be a stack buffer overflow.")
-                self.crashMightBeTooMuchRecursion = False
-            if self.crashMightBeTooMuchRecursion and msg.startswith("Thread 1"):
-                self.printAndLog("%%% The stack trace is broken, so it's more likely to be a too-much-recursion crash.")
-                self.crashIsKnown = True
-            if msg.endswith(".dmp has no thread list"):
-                self.printAndLog("%%% This crash report is totally busted. Giving up.")
-                self.crashIsKnown = True
+            self.crashWatcher.crashIsKnown = True
 
         if "goQuitApplication" in msg:
             self.expectChromeFailure = True
@@ -501,7 +448,6 @@ def rdfInit(args):
     runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
     knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, "known", "mozilla-central")
-    detect_interesting_crashes.readIgnoreLists(knownPath)
 
     if options.valgrind:
         runBrowserOptions.append("--valgrind")
@@ -561,6 +507,16 @@ def rdfInit(args):
             else:
                 break
 
+        if status < 0 and os.name == 'posix':
+            # The program was terminated by a signal, which usually indicates a crash.
+            signum = -status
+            if signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashWatcher.crashProcessor:
+                # We did not detect a breakpad/ASan crash in the output, but it looks like the process crashed.
+                # Look for a core file (to feed to gdb) or log from the Mac crash reporter.
+                wantStack = True
+                crashLog = grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
+                alh.crashWatcher.readCrashLog(crashLog)
+
         lev = DOM_FINE
 
         if alh.newAssertionFailure:
@@ -578,11 +534,11 @@ def rdfInit(args):
             else:
                 alh.printAndLog("@@@ Unexpected hang")
                 lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
-        elif alh.crashProcessor:
-            if alh.crashIsKnown:
-                alh.printAndLog("%%% Known crash (from " + alh.crashProcessor + ")" + alh.crashSignature)
+        elif alh.crashWatcher.crashProcessor:
+            if alh.crashWatcher.crashIsKnown:
+                alh.printAndLog("%%% Known crash (from " + alh.crashWatcher.crashProcessor + ")" + alh.crashWatcher.crashSignature)
             else:
-                alh.printAndLog("@@@ New crash (from " + alh.crashProcessor + ")" + alh.crashSignature)
+                alh.printAndLog("@@@ New crash (from " + alh.crashWatcher.crashProcessor + ")" + alh.crashWatcher.crashSignature)
                 lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
         elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
             # Disabled due to leaks in the glxtest process that Firefox forks on Linux.
@@ -592,47 +548,8 @@ def rdfInit(args):
             #lev = max(lev, DOM_VG_AMISS)
             pass
         elif status < 0 and os.name == 'posix':
-            # The program was terminated by a signal, which usually indicates a crash.
-            signum = -status
             signame = getSignalName(signum, "unknown signal")
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
-            if signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashProcessor:
-                # Well, maybe we have a core file or log from the Mac crash reporter.
-                wantStack = True
-                crashlog = grabCrashLog(os.path.basename(alh.theapp), alh.theapp, alh.pid, logPrefix, wantStack)
-                if crashlog:
-                    with open(crashlog) as f:
-                        crashText = f.read()
-                    if not quiet:
-                        print "== " + crashlog + " =="
-                        print crashText
-                        print "== " + crashlog + " =="
-                    if "Reading symbols for shared libraries" in crashText:
-                        crashProcessor = "gdb"
-                        expectAfterFunctionName = " ("
-                    else:
-                        crashProcessor = "mac crash reporter"
-                        expectAfterFunctionName = " + "
-                    processedCorrectly = False
-                    for j in ["main", "XRE_main", "exit"]:
-                        if (" " + j + expectAfterFunctionName) in crashText:
-                            # We have enough symbols from Firefox
-                            processedCorrectly = True
-                            break
-                    if not processedCorrectly:
-                        # Lack of 'main' could mean:
-                        #   * This build only has breakpad symbols, not native symbols
-                        #   * This was a too-much-recursion crash
-                        # This code does not handle too-much-recursion crashes well.
-                        # But it only matters for the rare case of too-much-recursion crashes on Mac/Linux without breakpad.
-                        alh.printAndLog("%%% Busted or too-much-recursion crash report (from " + crashProcessor + ")")
-                    elif alh.crashIsKnown:
-                        alh.printAndLog("%%% Ignoring crash report (from " + crashProcessor + ")")
-                    elif detect_interesting_crashes.amiss(knownPath, crashlog, True):
-                        alh.printAndLog("@@@ New crash (from " + crashProcessor + ")")
-                        lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-                    else:
-                        alh.printAndLog("%%% Known crash (from " + crashProcessor + ")")
         elif status == 1:
             alh.printAndLog("%%% Exited with status 1 (OOM or plugin crash?)")
         elif status == -2147483645 and isWin:

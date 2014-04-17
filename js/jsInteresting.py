@@ -13,7 +13,7 @@ import timedRun
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
 sys.path.append(p2)
 import detect_assertions
-import detect_interesting_crashes
+import detect_crashes
 import detect_malloc_errors
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
@@ -64,9 +64,14 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     else:
         valgrindErrorPrefix = None
 
+    def printNote(note):
+        print "%%% " + note
+    crashWatcher = detect_crashes.CrashWatcher(knownPath, False, printNote)
+
     with open(logPrefix + "-err.txt", "rb") as err:
         for line in err:
             assertionSeverity, assertionIsNew = detect_assertions.scanLine(knownPath, line)
+            crashWatcher.processOutputLine(line.rstrip())
             if assertionIsNew:
                 issues.append(line.rstrip())
                 lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
@@ -76,16 +81,20 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
             if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                 issues.append(line.rstrip())
 
+    if sta == timedRun.CRASHED and not sawAssertion:
+        crashWatcher.readCrashLog(logPrefix + "-crash.txt")
+
     if sawAssertion:
         # Ignore the crash log, since we've already seen a new assertion failure.
         pass
-    elif sta == timedRun.CRASHED:
-        if detect_interesting_crashes.amiss(knownPath, logPrefix + "-crash.txt", True):
-            issues.append("unknown crash")
-            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-        else:
-            issues.append("known crash")
+    elif crashWatcher.crashProcessor:
+        crashFrom = " (from " + crashWatcher.crashProcessor + ")"
+        if crashWatcher.crashIsKnown:
+            issues.append("known crash" + crashFrom)
             lev = max(lev, JS_KNOWN_CRASH)
+        else:
+            issues.append("unknown crash" + crashFrom)
+            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
     elif sta == timedRun.TIMED_OUT:
         issues.append("timed out")
         lev = max(lev, JS_TIMED_OUT)
