@@ -35,14 +35,8 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Object.seal") == -1         // bug 937922
        && code.indexOf("Math.fround") == -1         // bug 995673
        && code.indexOf("valueOf") == -1             // bug 995673
-       && code.indexOf("Math.cos") == -1            // bug 995675
-       && code.indexOf("Math.pow") == -1            // bug 995675
        && code.indexOf("ArrayBuffer") == -1         // bug 995679
        && code.indexOf("neuter") == -1              // bug 995679
-       && code.indexOf("gc") == -1                  // bug 995816
-       && code.indexOf("Math.round") == -1          // bug 995826
-       && code.indexOf("Math.tan") == -1            // bug 995826
-       && code.indexOf("use strict") == -1          // bug 996881
        && code.indexOf("filterPar") == -1           // bug 996895
        && code.indexOf("defineProperty") == -1      // bug 998059
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
