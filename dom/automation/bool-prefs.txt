@@ -169,6 +169,7 @@ layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 #layers.offmainthreadcomposition.async-animations
 layout.css.background-blend-mode.enabled
+layout.css.box-decoration-break.enabled
 layout.css.flexbox.enabled
 layout.css.font-features.enabled
 layout.css.grid.enabled
