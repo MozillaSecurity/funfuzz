@@ -16,7 +16,7 @@ interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
 from subprocesses import createWtmpDir
-from fileManipulation import fuzzSplice, linesWith, writeLinesToFile
+from fileManipulation import fuzzSplice, linesStartingWith, writeLinesToFile
 from inspectShell import queryBuildConfiguration
 import lithOps
 import linkJS
@@ -118,7 +118,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
             [before, after] = fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + [l.replace('/*FRC*/', '') for l in linesWith(f, "FRC")] + after
+                newfileLines = before + [l.replace('/*FRC*/', '') for l in linesStartingWith(f, "/*FRC*/")] + after
             writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             writeLinesToFile(newfileLines, filenameToReduce)
 
@@ -142,7 +142,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
                 with open(logPrefix + '-out.txt', 'rb') as f:
                     jitcomparelines = (
                         ["dumpObject = function() { };\n", "// DDBEGIN\n"] +
-                        [l.replace('/*FCM*/', '') for l in linesWith(f, "/*FCM*/")] +
+                        [l.replace('/*FCM*/', '') for l in linesStartingWith(f, "/*FCM*/")] +
                         ["\ntry{print(uneval(this));}catch(e){}\n", "// DDEND\n"]
                     )
                 jitcomparefilename = logPrefix + "-cj-in.js"
