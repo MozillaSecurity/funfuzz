@@ -38,7 +38,7 @@ class CrashWatcher:
         '''Detect signs of crashes from stderr (breakpad, asan)'''
 
         if msg.startswith("PROCESS-CRASH | automation.py | application crashed"):
-            self.noteCallback("We have a crash on our hands!")
+            #self.noteCallback("We have a crash on our hands!")
             self.crashProcessor = "minidump_stackwalk"
             self.crashSignature = msg[len("PROCESS-CRASH | automation.py | application crashed") : ]
 
@@ -46,21 +46,22 @@ class CrashWatcher:
             self.outOfMemory = True
 
         if "ERROR: AddressSanitizer" in msg:
-            self.noteCallback("We have an asan crash on our hands!")
+            #self.noteCallback("We have an asan crash on our hands!")
             self.crashProcessor = "asan"
             m = re.search("on unknown address 0x(\S+)", msg)
             if m and int(m.group(1), 16) < 0x10000:
                 # A null dereference. Ignore the crash if it was preceded by malloc returning null due to OOM.
                 # It would be good to know if it were a read, write, or execute.  But ASan doesn't have that info for SEGVs, I guess?
                 if self.outOfMemory:
-                    self.noteCallback("We ran out of memory, then dereferenced null.")
+                    #self.noteCallback("We ran out of memory, then dereferenced null.")
                     if self.ignoreASanOOM:
                         self.crashIsKnown = True
                 else:
-                    self.noteCallback("This looks like a null deref bug.")
+                    #self.noteCallback("This looks like a null deref bug.")
+                    pass
             else:
                 # Not a null dereference.
-                self.noteCallback("Assuming this ASan crash is exploitable")
+                #self.noteCallback("Assuming this ASan crash is exploitable")
                 self.crashIsExploitable = True
 
         if msg.startswith("freed by thread") or msg.startswith("previously allocated by thread"):
@@ -77,16 +78,16 @@ class CrashWatcher:
             # (and Linux, but differently).
             # The combination means we lose.
             if (msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
-                self.noteCallback("This crash is at the Mac stack guard page. It is probably a too-much-recursion crash or a stack buffer overflow.")
+                #self.noteCallback("This crash is at the Mac stack guard page. It is probably a too-much-recursion crash or a stack buffer overflow.")
                 self.crashMightBeTooMuchRecursion = True
             if self.crashMightBeTooMuchRecursion and msg.startswith(" 3 ") and not self.crashIsKnown:
-                self.noteCallback("The stack trace is not broken, so it's more likely to be a stack buffer overflow.")
+                #self.noteCallback("The stack trace is not broken, so it's more likely to be a stack buffer overflow.")
                 self.crashMightBeTooMuchRecursion = False
             if self.crashMightBeTooMuchRecursion and msg.startswith("Thread 1"):
-                self.noteCallback("The stack trace is broken, so it's more likely to be a too-much-recursion crash.")
+                #self.noteCallback("The stack trace is broken, so it's more likely to be a too-much-recursion crash.")
                 self.crashIsKnown = True
             if msg.endswith(".dmp has no thread list"):
-                self.noteCallback("This crash report is totally busted. Giving up.")
+                #self.noteCallback("This crash report is totally busted. Giving up.")
                 self.crashIsKnown = True
 
     def readCrashLog(self, crashlog):
@@ -107,10 +108,11 @@ class CrashWatcher:
             expectAfterFunctionName = " + "
 
         if self.crashProcessor != "cdb" and not crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
-            self.noteCallback("Busted or too-much-recursion crash report (from " + self.crashProcessor + ")")
+            #self.noteCallback("Busted or too-much-recursion crash report (from " + self.crashProcessor + ")")
             self.crashIsKnown = True
         elif self.crashIsKnown:
-            self.noteCallback("Ignoring crash report (from " + self.crashProcessor + ")")
+            #self.noteCallback("Ignoring crash report (from " + self.crashProcessor + ")")
+            pass
         elif not detect_interesting_crashes.amiss(self.knownPath, crashlog, True):
             self.crashIsKnown = True
 
