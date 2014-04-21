@@ -287,9 +287,7 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--enable-64bit')
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        # 10.7.4 can still theoretically work as of end-Sep 2013, but we no longer have Lions.
         cfgCmdList.append('--target=x86_64-apple-darwin12.5.0')  # Mountain Lion 10.8.5
-        # FIXME: This needs something about using the 10.8 SDK in 10.9? Ref bug 929686.
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
