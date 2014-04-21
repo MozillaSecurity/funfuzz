@@ -214,6 +214,29 @@ def dateStr():
     return time.asctime()
 
 
+def findLlvmBinPath():
+    '''Returns the path to compiled LLVM binaries, which differs depending on compilation method.'''
+    # https://developer.mozilla.org/en-US/docs/Building_Firefox_with_Address_Sanitizer#Manual_Build
+    vdump('Assumed LLVM SVN version is: 200213')
+    # FIXME: It would be friendlier to show instructions (or even offer to set up LLVM for the user,
+    # with the right LLVM revision and build options). See MDN article on Firefox and Asan above.
+
+    LLVM_ROOT = normExpUserPath(os.path.join('~', 'llvm'))
+    assert os.path.isdir(LLVM_ROOT)
+    LLVM_BUILD_DIR = normExpUserPath(os.path.join(LLVM_ROOT, 'build'))
+
+    BIN_PATH = normExpUserPath(os.path.join(LLVM_BUILD_DIR, 'bin'))
+    if not os.path.isdir(BIN_PATH):
+        BIN_PATH = normExpUserPath(os.path.join(LLVM_BUILD_DIR, 'Release', 'bin'))
+    if not os.path.isdir(BIN_PATH):
+        BIN_PATH = normExpUserPath(os.path.join(LLVM_BUILD_DIR, 'Release+Asserts', 'bin'))
+
+    assert os.path.isfile(normExpUserPath(os.path.join(BIN_PATH, 'clang')))
+    assert os.path.isfile(normExpUserPath(os.path.join(BIN_PATH, 'clang++')))
+    assert os.path.isfile(normExpUserPath(os.path.join(BIN_PATH, 'llvm-symbolizer')))
+    return BIN_PATH
+
+
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     '''Finds the required crash log in the given crash reporter directory.'''
     assert platform.system() == 'Darwin' and macVer() >= [10, 6]

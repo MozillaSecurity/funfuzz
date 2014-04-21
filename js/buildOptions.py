@@ -29,7 +29,6 @@ def parseShellOptions(inputArgs):
 
     parser.set_defaults(
         repoDir = None,
-        llvmRootSrcDir = normExpUserPath('~/llvm'),
         arch = '64' if mozPlatformDetails()[2] else '32',
         compileType = 'dbg',
         enableHardFp = False,
@@ -45,8 +44,6 @@ def parseShellOptions(inputArgs):
     # Where to find the source dir and compiler, patching if necessary.
     parser.add_option('-R', '--repoDir', dest='repoDir',
                       help='Sets the source repository. Defaults to "%default".')
-    parser.add_option('--llvm-root', dest='llvmRootSrcDir',
-                      help='Specify the LLVM root source dir (for clang). Defaults to "%default".')
     parser.add_option('-P', '--patch', dest='patchFile',
                       help='Define the path to a single JS patch. Ensure mq is installed.')
 

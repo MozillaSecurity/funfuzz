@@ -25,14 +25,21 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
-from subprocesses import captureStdout, isARMv7l, isLinux, isMac, isVM, isWin
+from subprocesses import captureStdout, findLlvmBinPath, isARMv7l, isLinux, isMac, isVM, isWin
 from subprocesses import macVer, normExpUserPath, rmTreeIncludingReadOnly, shellify, vdump
 from LockDir import LockDir
 
-CLANG_PARAMS = ' -Qunused-arguments'
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
 # MSVC 2010, change "mozmake" in the line below back to "make".
-MAKE_BINARY = 'mozmake' if isWin else 'make'
+if isWin:
+    MAKE_BINARY = 'mozmake'
+else:
+    MAKE_BINARY = 'make'
+    CLANG_PARAMS = ' -Qunused-arguments'
+    CLANG_ASAN_PARAMS = ' -fsanitize=address -Dxmalloc=myxmalloc'
+    SSE2_FLAGS = ' -msse2 -mfpmath=sse'  # See bug 948321
+    CLANG_X86_FLAG = ' -arch i386'
+
 if cpu_count() > 2:
     COMPILATION_JOBS = ((cpu_count() * 5) // 4)
 elif isARMv7l:
@@ -157,28 +164,6 @@ def autoconfRun(cwDir):
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
 
 
-def cfgAsanParams(currEnv, options):
-    '''Configures parameters that Asan needs.'''
-    # https://developer.mozilla.org/en-US/docs/Building_Firefox_with_Address_Sanitizer#Manual_Build
-    vdump('Assumed LLVM SVN version is: 185949')
-
-    llvmRoot = normExpUserPath(options.llvmRootSrcDir)
-    # FIXME: It would be friendlier to show instructions (or even offer to set up LLVM for the user,
-    # with the right LLVM revision and build options). See MDN article on Firefox and Asan above.
-    assert os.path.isdir(llvmRoot)
-    currEnv['LLVM_ROOT'] = llvmRoot
-
-    ccClang = os.path.join(llvmRoot, 'build', 'bin', 'clang')
-    assert os.path.isfile(ccClang)
-    currEnv['CC'] = ccClang + ' -fsanitize=address -Dxmalloc=myxmalloc'
-
-    cxxClang = os.path.join(llvmRoot, 'build', 'bin', 'clang++')
-    assert os.path.isfile(cxxClang)
-    currEnv['CXX'] = cxxClang + ' -fsanitize=address -Dxmalloc=myxmalloc'
-
-    return currEnv
-
-
 def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     if shell.buildOptions.isThreadsafe:
@@ -210,6 +195,11 @@ def cfgBin(shell, binToBeCompiled):
     cfgEnvDt = deepcopy(os.environ)
     origCfgEnvDt = deepcopy(os.environ)
     cfgEnvDt['AR'] = 'ar'
+    if shell.buildOptions.buildWithAsan:
+        llvmPath = findLlvmBinPath()
+        CLANG_PATH = normExpUserPath(os.path.join(llvmPath, 'clang'))
+        CLANGPP_PATH = normExpUserPath(os.path.join(llvmPath, 'clang++'))
+
     if isARMv7l:
         # 32-bit shell on ARM boards, e.g. Pandaboards.
         assert shell.buildOptions.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
@@ -232,14 +222,16 @@ def cfgBin(shell, binToBeCompiled):
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
-            cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang -msse2 -mfpmath=sse'  # See bug 948321
-            cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++ -msse2 -mfpmath=sse'  # See bug 948321
-            if shell.buildOptions.buildWithAsan:
-                cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
-            cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
-            cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
-            cfgEnvDt['HOST_CC'] = cfgEnvDt['HOST_CC'] + CLANG_PARAMS
-            cfgEnvDt['HOST_CXX'] = cfgEnvDt['HOST_CXX'] + CLANG_PARAMS
+            if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
+                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
+                    CLANG_ASAN_PARAMS + SSE2_FLAGS
+                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = CLANGPP_PATH + CLANG_PARAMS + \
+                    CLANG_ASAN_PARAMS + SSE2_FLAGS
+            else:  # Uses system clang
+                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang' + CLANG_PARAMS + SSE2_FLAGS
+                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++' + CLANG_PARAMS + SSE2_FLAGS
+            cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_X86_FLAG  # only needed for CC, not HOST_CC
+            cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_X86_FLAG  # only needed for CXX, not HOST_CXX
             cfgEnvDt['RANLIB'] = 'ranlib'
             cfgEnvDt['AS'] = '$CC'
             cfgEnvDt['LD'] = 'ld'
@@ -256,15 +248,17 @@ def cfgBin(shell, binToBeCompiled):
                 cfgCmdList.append('--enable-address-sanitizer')
         # 32-bit shell on 32/64-bit x86 Linux
         elif isLinux and not isARMv7l:
-            # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
-            cfgEnvDt['CC'] = 'gcc -m32 -msse2 -mfpmath=sse'  # See bug 948321
-            cfgEnvDt['CXX'] = 'g++ -m32 -msse2 -mfpmath=sse'  # See bug 948321
-            # We might still be using GCC on Linux 32-bit, don't use clang unless Asan is specified
-            if shell.buildOptions.buildWithAsan:
-                cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
-                cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS + ' -arch i386'
-                cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS + ' -arch i386'
+            if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
+                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
+                    CLANG_ASAN_PARAMS + SSE2_FLAGS + CLANG_X86_FLAG
+                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = CLANGPP_PATH + CLANG_PARAMS + \
+                    CLANG_ASAN_PARAMS + SSE2_FLAGS + CLANG_X86_FLAG
+            else:  # Uses system clang
+                # We might still be using GCC on Linux 32-bit, use clang only if we specify ASan
+                # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
+                cfgEnvDt['CC'] = 'gcc -m32' + SSE2_FLAGS
+                cfgEnvDt['CXX'] = 'g++ -m32' + SSE2_FLAGS
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
                 cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
@@ -281,12 +275,12 @@ def cfgBin(shell, binToBeCompiled):
                 cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
     elif isMac and macVer() >= [10, 7] and shell.buildOptions.arch == '64':
-        cfgEnvDt['CC'] = 'clang'
-        cfgEnvDt['CXX'] = 'clang++'
-        if shell.buildOptions.buildWithAsan:
-            cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
-        cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
-        cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
+        if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
+            cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
+            cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
+        else:  # Uses system clang
+            cfgEnvDt['CC'] = 'clang' + CLANG_PARAMS
+            cfgEnvDt['CXX'] = 'clang++' + CLANG_PARAMS
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
@@ -315,10 +309,9 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
-        if shell.buildOptions.buildWithAsan:
-            cfgEnvDt = cfgAsanParams(cfgEnvDt, shell.buildOptions)
-            cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_PARAMS
-            cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_PARAMS
+        if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
+            cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
+            cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
