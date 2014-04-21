@@ -107,7 +107,10 @@ class CrashWatcher:
             self.crashProcessor = "mac crash reporter"
             expectAfterFunctionName = " + "
 
-        if self.crashProcessor != "cdb" and not crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
+        if False: # self.crashProcessor != "cdb" and not crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
+            # TODO: if dom fuzzer keeps hitting this kind of problem, look for a more specific way to ignore these bogus crashes
+            # that does not also ignore anything that just fails to, for example, trace the stack up through JIT code.
+            # (See email thread between Jesse and Gary titled "Mac crashes not being detected as interesting")
             #self.noteCallback("Busted or too-much-recursion crash report (from " + self.crashProcessor + ")")
             self.crashIsKnown = True
         elif self.crashIsKnown:
