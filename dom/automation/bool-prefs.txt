@@ -91,6 +91,7 @@ dom.mozContacts.enabled
 dom.navigator-property.disable.mozContacts
 dom.archivereader.enabled
 dom.disable_image_src_set
+dom.enable_resource_timing
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
