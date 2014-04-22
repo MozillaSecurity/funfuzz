@@ -1120,7 +1120,6 @@ var functionMakers = [
   function(d, b) { return "new Function"; }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
   function(d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
   function(d, b) { return "Function"; }, // without "new"
-  function(d, b) { return "gc"; },
   function(d, b) { return "decodeURI"; },
   function(d, b) { return "decodeURIComponent"; },
   function(d, b) { return "encodeURI"; },
