@@ -140,8 +140,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
-    #if options.buildWithAsan:
-    #    required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
     if options.disableGcGenerational:
@@ -167,6 +165,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
     if '--no-asmjs' in flags:
         required.append('b3d85b68449d') # 124920 on m-c, first rev that has the --no-asmjs option
+    if options.buildWithAsan:
+        required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details, including x86/x64 ones.
     if '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
         required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
     if threadCountFlag:
