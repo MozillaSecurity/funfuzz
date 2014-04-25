@@ -71,6 +71,7 @@ function fuzzInitBlacklists()
                 "strokeRect",        // bug 986902
                 ".arc",              // bug 943587
                 "isPointInStroke",   // bug 989669
+                "location.reload",   // accidentally reloading the main testcase would cancel the quit timer
             ]
         },
         {
