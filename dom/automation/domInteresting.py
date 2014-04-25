@@ -331,6 +331,8 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "gBrowser.browsers is undefined" in msg) or
         "devtools" in msg or # most devtools js errors I hit are uninteresting races
 
+        True or # bug 878543 makes all chrome errors suspect
+
         False
     )
 
