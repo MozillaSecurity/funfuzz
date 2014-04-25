@@ -63,7 +63,8 @@ def constructVgCmdList(errorCode=77):
     if isMac:
         vgCmdList.append('--dsymutil=yes')
     vgCmdList.append('--error-exitcode=' + str(errorCode))
-    vgCmdList.append('--smc-check=all-non-file')
+    if not isARMv7l:  # jseward mentioned that ARM does not need --smc-check=<something>
+        vgCmdList.append('--smc-check=all-non-file')
     # See bug 913876 comment 18:
     vgCmdList.append('--vex-iropt-register-updates=allregs-at-mem-access')
     vgCmdList.append('--gen-suppressions=all')
