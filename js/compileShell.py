@@ -486,10 +486,12 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
 
     if updateToRev:
-        print "Updating...",
+        # We should not print here without a trailing newline to avoid breaking other stuff:
+        print "Updating..."
         captureStdout(["hg", "-R", shell.buildOptions.repoDir] + \
             ['update', '-C', '-r', updateToRev], ignoreStderr=True)
-        print "Compiling...",
+        # We should not print here without a trailing newline to avoid breaking other stuff:
+        print "Compiling..."
     hgCmds.destroyPyc(shell.buildOptions.repoDir)
 
     try:
