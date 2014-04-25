@@ -53,8 +53,12 @@ var fuzzerSlurpFrames = (function() {
   {
     if (s.indexOf("fuzz") != -1)
       s = "";
-    if (s.indexOf("window.__proto__ = null") != -1)
+
+    // Setting window.__proto__ to null can cause errors easily.
+    // Setting window.__proto__ to an Element can cause more subtle errors.
+    if (s.indexOf("window.__proto__ =") != -1)
       s =  "fuzzExpectSanity = false; " + s;
+
     return "/*slurped*/ " + s;
   }
 
