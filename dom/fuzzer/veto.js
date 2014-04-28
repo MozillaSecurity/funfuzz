@@ -97,7 +97,6 @@ function fuzzInitBlacklists()
                 "99776",             // bug 728933
                 "getUserMedia",      // bug 826538
                 "@import",           // bug 842309
-                "SVGZoomEvents",     // bug 847138
                 "undoManager",       // bug 851638
                 "webgl",             // bug 859542
                 "history",           // bug 860482
@@ -116,8 +115,6 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "Worker",            // annoying timing-depenent leaks
                 "color",             // bug 991373
-                "innerHTML",         // bug 994740
-                "insertAdjacentHTML",// bug 994740
             ]
         },
         {
