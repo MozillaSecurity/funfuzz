@@ -15,7 +15,7 @@ function simpleSource(s)
 
   var r;
   if (typeof s == "string") {
-    if (/^[\n\x20-\x7f]*$/.exec(s) || !window.uneval) {
+    if (/^[\n\x20-\x7f]*$/.exec(s) || !self.uneval) {
       // Printable ASCII characters and line breaks: try to make it pretty.
       r = escapeString(s);
     } else {

@@ -84,6 +84,7 @@ var Things = {
   },
 
   init: function() {
-    o = [0, null, undefined, window, document, function(){}, "", []];
+    // NB: using 'self' instead of 'window' because this can also be used from workers
+    o = [0, null, undefined, self, self.document, function(){}, "", []];
   }
 }

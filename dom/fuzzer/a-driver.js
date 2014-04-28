@@ -259,6 +259,7 @@ function immedStep()
   }
 }
 
+var fuzzMirrors = [];
 
 function fuzzTryCommand(fun, note)
 {
@@ -274,6 +275,13 @@ function fuzzTryCommand(fun, note)
   }
 
   var failtimer = setTimeout(fail, 0);
+
+  for (var i = 0; i < fuzzMirrors.length; ++i) {
+    try {
+      fuzzMirrors[i](fun, note);
+    } catch(e) {
+    }
+  }
 
   try {
     fun();
@@ -474,9 +482,9 @@ function fuzzRecord(prefix, count, x)
 
 function dumpln(s)
 {
-  if (window.dump) // Firefox debug
+  if (self.dump) // Firefox debug
     dump((""+s).replace(/\0/g, "\\0") + "\n"); // bug 359433
-  else if (window.console) // Safari 2
+  else if (self.console) // Safari 2
     console.log((""+s).replace(/%/g, "%%"));
 }
 
