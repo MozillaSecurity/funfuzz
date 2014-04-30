@@ -37,12 +37,12 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("neuter") == -1              // bug 995679
        && code.indexOf("filterPar") == -1           // bug 996895
        && code.indexOf("defineProperty") == -1      // bug 998059
+       && code.indexOf("__proto__") == -1           // bug 998059
        && code.indexOf("buildPar") == -1            // bug 998262
        && code.indexOf("with") == -1                // bug 998580
        && code.indexOf("Math.imul") == -1           // bug 998580
-       && code.indexOf("__proto__") == -1           // bug 998709
        && code.indexOf("new") == -1                 // bug 999790
-       && code.indexOf("prototype") == -1           // bug 999849
+       && code.indexOf("prototype") == -1           // bug 999790
        && code.indexOf("Math.ceil") == -1           // bug 1000605
        && code.indexOf("Math.round") == -1          // bug 1000606
        && code.indexOf("Math.fround") == -1         // bug 1000606
