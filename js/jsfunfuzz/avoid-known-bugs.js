@@ -41,8 +41,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("buildPar") == -1            // bug 998262
        && code.indexOf("with") == -1                // bug 998580
        && code.indexOf("Math.imul") == -1           // bug 998580
-       && code.indexOf("new") == -1                 // bug 999790
-       && code.indexOf("prototype") == -1           // bug 999790
        && code.indexOf("Math.ceil") == -1           // bug 1000605
        && code.indexOf("Math.round") == -1          // bug 1000606
        && code.indexOf("Math.fround") == -1         // bug 1000606
