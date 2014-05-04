@@ -79,20 +79,24 @@ function makeDOMFuzzHelper(aWindow) {
       MP: sendMemoryPressureNotification.bind(this),
 
       // Using the apply/arguments pattern because some of these functions (GC, gcslice) vary their behavior based on the number of arguments
-      GC:                           function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
-      gc:                           function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
-      deterministicgc:              function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
-      schedulegc:                   function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
-      selectforgc:                  function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
-      gczeal:                       function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
-      gcslice:                      function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
-      setIonCheckGraphCoherency:    function() { Components.utils.getJSTestingFunctions().setIonCheckGraphCoherency.apply(this, arguments); },
-      enableOsiPointRegisterChecks: function() { Components.utils.getJSTestingFunctions().enableOsiPointRegisterChecks.apply(this, arguments); },
-      gcPreserveCode:               function() { Components.utils.getJSTestingFunctions().gcPreserveCode.apply(this, arguments); },
-      minorgc:                      function() { Components.utils.getJSTestingFunctions().minorgc.apply(this, arguments); },
-      gcparam:                      function() { return Components.utils.getJSTestingFunctions().gcparam.apply(this, arguments); },
-      countHeap:                    function() { return Components.utils.getJSTestingFunctions().countHeap.apply(this, arguments); },
-      setJitCompilerOption:         function() { Components.utils.getJSTestingFunctions().setJitCompilerOption.apply(this, arguments); },
+      // XXX can I somehow change this to be just a list of functions that we allow to be forwarded?
+      GC:                                    function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
+      gc:                                    function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
+      deterministicgc:                       function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
+      schedulegc:                            function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
+      selectforgc:                           function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
+      gczeal:                                function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
+      gcslice:                               function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
+      setIonCheckGraphCoherency:             function() { Components.utils.getJSTestingFunctions().setIonCheckGraphCoherency.apply(this, arguments); },
+      enableOsiPointRegisterChecks:          function() { Components.utils.getJSTestingFunctions().enableOsiPointRegisterChecks.apply(this, arguments); },
+      gcPreserveCode:                        function() { Components.utils.getJSTestingFunctions().gcPreserveCode.apply(this, arguments); },
+      minorgc:                               function() { Components.utils.getJSTestingFunctions().minorgc.apply(this, arguments); },
+      gcparam:                               function() { return Components.utils.getJSTestingFunctions().gcparam.apply(this, arguments); },
+      countHeap:                             function() { return Components.utils.getJSTestingFunctions().countHeap.apply(this, arguments); },
+      setJitCompilerOption:                  function() { Components.utils.getJSTestingFunctions().setJitCompilerOption.apply(this, arguments); },
+      enableSPSProfiling:                    function() { Components.utils.getJSTestingFunctions().enableSPSProfiling.apply(this, arguments); },
+      enableSPSProfilingWithSlowAssertions:  function() { Components.utils.getJSTestingFunctions().enableSPSProfilingWithSlowAssertions().apply(this, arguments); },
+      disableSPSProfiling:                   function() { Components.utils.getJSTestingFunctions().disableSPSProfiling.apply(this, arguments); },
 
       verifyprebarriers:            function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
       verifypostbarriers:           function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
@@ -171,6 +175,9 @@ function makeDOMFuzzHelper(aWindow) {
         gcPreserveCode: 'r',
         minorgc: 'r',
         setJitCompilerOption: 'r',
+        enableSPSProfiling: 'r',
+        enableSPSProfilingWithSlowAssertions: 'r',
+        disableSPSProfiling: 'r',
       }
   };
 };

@@ -109,15 +109,6 @@ def randomFlagSet(shellPath):
     else:
         args.append("--no-ion")
 
-    # This is here because of bug 830508
-    if shellSupportsFlag(shellPath, "--execute=enableSPSProfilingAssertions(true)") and chance(.5):
-        if chance(.5):
-            # Enable both fast and slow SPS profiling assertions.
-            args.append("--execute=enableSPSProfilingAssertions(true)")
-        else:
-            # Enable only fast SPS profiling assertions, not the slow ones.
-            args.append("--execute=enableSPSProfilingAssertions(false)")
-
     #if chance(.05):
     #    args.append("--execute=verifyprebarriers()")
     #if chance(.05):
