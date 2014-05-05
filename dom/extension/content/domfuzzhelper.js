@@ -94,9 +94,10 @@ function makeDOMFuzzHelper(aWindow) {
       gcparam:                               function() { return Components.utils.getJSTestingFunctions().gcparam.apply(this, arguments); },
       countHeap:                             function() { return Components.utils.getJSTestingFunctions().countHeap.apply(this, arguments); },
       setJitCompilerOption:                  function() { Components.utils.getJSTestingFunctions().setJitCompilerOption.apply(this, arguments); },
-      enableSPSProfiling:                    function() { Components.utils.getJSTestingFunctions().enableSPSProfiling.apply(this, arguments); },
-      enableSPSProfilingWithSlowAssertions:  function() { Components.utils.getJSTestingFunctions().enableSPSProfilingWithSlowAssertions().apply(this, arguments); },
-      disableSPSProfiling:                   function() { Components.utils.getJSTestingFunctions().disableSPSProfiling.apply(this, arguments); },
+      // Disabled: bug 1005777
+      //enableSPSProfiling:                    function() { Components.utils.getJSTestingFunctions().enableSPSProfiling.apply(this, arguments); },
+      //enableSPSProfilingWithSlowAssertions:  function() { Components.utils.getJSTestingFunctions().enableSPSProfilingWithSlowAssertions().apply(this, arguments); },
+      //disableSPSProfiling:                   function() { Components.utils.getJSTestingFunctions().disableSPSProfiling.apply(this, arguments); },
 
       verifyprebarriers:            function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
       verifypostbarriers:           function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
@@ -175,9 +176,10 @@ function makeDOMFuzzHelper(aWindow) {
         gcPreserveCode: 'r',
         minorgc: 'r',
         setJitCompilerOption: 'r',
-        enableSPSProfiling: 'r',
-        enableSPSProfilingWithSlowAssertions: 'r',
-        disableSPSProfiling: 'r',
+        // Disabled: bug 1005777
+        //enableSPSProfiling: 'r',
+        //enableSPSProfilingWithSlowAssertions: 'r',
+        //disableSPSProfiling: 'r',
       }
   };
 };
