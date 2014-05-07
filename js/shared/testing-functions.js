@@ -99,7 +99,7 @@ var fuzzTestingFunctions = (function(glob){
 
     // Toggle the built-in profiler.
     { w: 1,  v: function(d, b) { return "(" + tf("enableSPSProfiling") + "()" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("enableSPSProfilingWithSlowAssertions") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(" + "void" + "(" + tf("enableSPSProfilingWithSlowAssertions") + "()" + ")" + ")"; } }, // void -- bug 1007187
     { w: 5,  v: function(d, b) { return "(" + "void" + "(" + tf("disableSPSProfiling") + "()" + ")" + ")"; } }, // void -- bug 1006894
 
     // I'm not sure what this does in the shell.
