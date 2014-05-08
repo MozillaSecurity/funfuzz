@@ -1399,7 +1399,7 @@ var lvalueMakers = [
   function(d, b) { return Random.index(builtinObjectNames); },
 
   // Arguments object, which can alias named parameters to the function
-  function(d, b) { "arguments"; },
+  function(d, b) { return "arguments"; },
   function(d, b) { return cat(["arguments", "[", makePropertyName(d, b), "]"]); },
   function(d, b) { return makeFunOnCallChain(d, b) + ".arguments"; }, // read-only arguments object
 
