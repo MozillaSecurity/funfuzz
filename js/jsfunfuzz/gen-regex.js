@@ -3,6 +3,9 @@
  * GENERATING REGEXPS AND INPUTS *
  *********************************/
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+
 // The basic data structure returned by most of the regex* functions is a tuple:
 //   [ regex string, array of potential matches ]
 // For example:
@@ -18,8 +21,16 @@ var POTENTIAL_MATCHES = 10;
 
 // Stored captures
 var backrefHack = [];
-for (var i = 0; i < POTENTIAL_MATCHES; ++i)
+for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
   backrefHack[i] = "";
+}
+
+function regexNumberOfMatches()
+{
+  if (rnd(10))
+    return rnd(5);
+  return Math.pow(2, rnd(40)) + rnd(3) - 1;
+}
 
 function regexPattern(depth, parentWasQuantifier)
 {
@@ -42,9 +53,9 @@ var regexMakers =
     function(dr) { return regexQuantified(dr, "?", 0, 1); },
     function(dr) { return regexQuantified(dr, "+?", 1, 1); },
     function(dr) { return regexQuantified(dr, "*?", 0, 1); },
-    function(dr) { var x = rnd(5); return regexQuantified(dr, "{" + x + "}", x, x); },
-    function(dr) { var x = rnd(5); return regexQuantified(dr, "{" + x + ",}", x, x + rnd(10)); },
-    function(dr) { var min = rnd(5); var max = min + rnd(5); return regexQuantified(dr, "{" + min + "," + max + "}", min, max); }
+    function(dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + "}", x, x); },
+    function(dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + ",}", x, x + rnd(10)); },
+    function(dr) { var min = regexNumberOfMatches(); var max = min + regexNumberOfMatches(); return regexQuantified(dr, "{" + min + "," + max + "}", min, max); }
   ],
   [
     // Combinations: concatenation, disjunction
@@ -64,17 +75,7 @@ var regexMakers =
 
 function quantifierHelper(pm, min, max, pms)
 {
-  var actualMin = min + rnd(5) - 2;
-  if (actualMin < 0 || rnd(100) < 10) actualMin = 0;
-
-  var actualMax = max + rnd(5) - 2;
-  if (actualMax < 0 || rnd(100) < 10)
-  {
-    actualMax = 0;
-    actualMin = 0;
-  }
-
-  var repeats = min + rnd(max - min + 5) - 2;
+  var repeats = Math.min(min + rnd(max - min + 5) - 2, 10);
   var returnValue = "";
   for (var i = 0; i < repeats; i++)
   {
@@ -176,55 +177,148 @@ function regexTerm()
   return [re, strings];
 }
 
-function regexTermPair()
+function regexCharCode()
 {
-  if (rnd(8)) {
-    var cc1 = 32 + rnd(128-32);
-    //var cc2 = String.fromCharCode(
-    var c1 = String.fromCharCode(cc1);
-    var c2 = rnd(10) ? c1 : rnd(2) ? c1.toLowerCase() : c1.toUpperCase();
-    return [c1, c2];
+  return rnd(2) ? rnd(256) : rnd(65536);
+}
+
+// These return matching pairs: [regex fragment, charcode for a matching one-character string].
+var regexCharacterMakers = Random.weighted([
+  // Possibly incorrect
+  { w:20, v: function() { var cc = regexCharCode(); return [       String.fromCharCode(cc), cc]; } }, // literal that doesn't need to be escaped (OR wrong)
+  { w: 4, v: function() { var cc = regexCharCode(); return ["\\" + String.fromCharCode(cc), cc]; } }, // escaped special character OR unnecessary escape (OR wrong)
+  { w: 1, v: function() { return ["\\0",  0]; } },  // null [ignoring the "do not follow this with another digit" rule which would turn it into an octal escape]
+  { w: 1, v: function() { return ["\\B", 66]; } },  // literal B -- ONLY within a character class. (Elsewhere, it's a "zero-width non-word boundary".)
+  { w: 1, v: function() { return ["\\b",  8]; } },  // backspace -- ONLY within a character class. (Elsewhere, it's a "zero-width word boundary".)
+
+  // Correct, unless I screwed up
+  { w: 1, v: function() { return ["\\t",  9]; } },  // tab
+  { w: 1, v: function() { return ["\\n", 10]; } },  // line break
+  { w: 1, v: function() { return ["\\v", 11]; } },  // vertical tab
+  { w: 1, v: function() { return ["\\f", 12]; } },  // form feed
+  { w: 1, v: function() { return ["\\r", 13]; } },  // carriage return
+  { w: 5, v: function() { var controlCharacterCode = rnd(26) + 1; return ["\\c" + String.fromCharCode(64 + controlCharacterCode), controlCharacterCode]; } },
+  //{ w: 5, v: function() { var cc = regexCharCode(); return ["\\0" + cc.toString(8), cc] } }, // octal escape
+  { w: 5, v: function() { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\x" + twoHex, parseInt(twoHex, 16)]; } },
+  { w: 5, v: function() { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\u00" + twoHex, parseInt(twoHex, 16)]; } },
+  { w: 5, v: function() { var fourHex = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return ["\\u" + fourHex, parseInt(fourHex, 16)]; } },
+]);
+
+function regexCharacter()
+{
+  var [matcher, charcode] = Random.index(regexCharacterMakers)();
+  switch(rnd(10)) {
+    case 0:  return [matcher, charcode + 32]; // lowercase
+    case 1:  return [matcher, charcode - 32]; // uppercase
+    case 2:  return [matcher, regexCharCode()]; // some other character
+    default: return [matcher, charcode];
+  }
+}
+
+
+var regexBuiltInCharClasses = [
+    "\\d", "\\D", // digit
+    "\\s", "\\S", // space
+    "\\w", "\\W", // "word" character (alphanumeric plus underscore)
+];
+
+// Returns POTENTIAL_MATCHES one-character strings, mostly consisting of the input characters
+function regexOneCharStringsWith(frequentChars) {
+  var matches = [];
+  for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
+    matches.push(rnd(8) ? Random.index(frequentChars) : String.fromCharCode(regexCharCode()));
+  }
+  return matches;
+}
+
+// Returns POTENTIAL_MATCHES short strings, using the input characters a lot.
+function regexShortStringsWith(frequentChars) {
+  var matches = [];
+  for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
+    var s = "";
+    while (rnd(3)) {
+      s += rnd(4) ? Random.index(frequentChars) : String.fromCharCode(regexCharCode());
+    }
+    matches.push(s);
+  }
+  return matches;
+}
+
+var regexTermMakers =
+  [
+    function() { return regexCharacterClass(); },
+    function() { var [re, cc] = regexCharacter();   return [re, regexOneCharStringsWith([String.fromCharCode(cc)])]; },
+    function() { return [Random.index(regexBuiltInCharClasses), regexOneCharStringsWith(["0", "a", "_"])]; },
+    function() { return ["[^]",                                 regexOneCharStringsWith(["\n"])];     },
+    function() { return [".",                                   regexOneCharStringsWith(["\n"])];     },
+    function() { return [Random.index(["^", "$"]),              regexShortStringsWith(["\n"])];     },            // string boundaries or line boundaries (with /m)
+    function() { return [Random.index(["\\b", "\\B"]),          regexShortStringsWith([" ", "\n", "a", "1"])]; }, // word boundaries
+  ];
+
+function regexTerm()
+{
+  return Random.index(regexTermMakers)();
+}
+
+// Returns a pair: [(regex char class), (POTENTIAL_MATCHES number of strings that might match)]
+// e.g. ["[a-z0-9]", ["a", "8", ...]]
+function regexCharacterClass()
+{
+  var ranges = rnd(5);
+  var inRange = rnd(2);
+  var charBucket = [String.fromCharCode(regexCharCode())]; // from which potenial matches will be drawn
+
+  var re = "[";
+  if (!inRange) {
+    re += "^";
   }
 
-  var y = [
-    function(dr) { var index = rnd(26); return ["\\c" + letters[index], String.fromCharCode(index+1)]; },
-    function(dr) { var hexDigs = Random.index(hexDigits) + Random.index(hexDigits); return ["\\u00" + hexDigs, String.fromCharCode(parseInt(hexDigs, 16))]; },
-    function(dr) { var hexDigs = Random.index(hexDigits) + Random.index(hexDigits); return ["\\x" + hexDigs, String.fromCharCode(parseInt(hexDigs, 16))]; },
-    function(dr) { var hexDigs = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return ["\\u" + hexDigs, String.fromCharCode(parseInt(hexDigs, 16))]; },
-    function(dr) { var chr = String.fromCharCode(rnd(256)); return [chr, chr]; },
-    function(dr) { var chr = String.fromCharCode(rnd(65536)); return [chr, chr]; },
-    function(dr) { var octal = String.fromCharCode(rnd(256)); return ["\\" + octal, String.fromCharCode(parseInt(octal, 8))]; },
-    function(dr) { var pair = regexCharacterClassData(dr, true); return ["[" + pair[0] + "]", pair[1] ]; },
-    function(dr) { var pair = regexCharacterClassData(dr, false); return ["[^" + pair[0] + "]", pair[1] ]; },
-    function(dr) { return [".", String.fromCharCode(rnd(65536))]; },
-    function(dr) { return Random.index([ ["[\\b]", "\b"], ["\\", "\\"], ["\\\\", "\\"], ["\\\\\\\\", "\\\\"], ["\"", "\""], ["\\\"", "\""], ["\[", "["], ["\]", "]"], ["\(", "("], ["\)", ")"], ["\}", "}"], ["\{", "{"], ["\|", "|"], ["\+", "+"], ["\*", "*"], ["\?", "?"], ["\:", ":"], ["\=", "="], ["\\0" /* regexp match null */, "\0" /* actual null */], ["\0", "\0"], ["%n", "%n"], ["\\n", "\n"] ]); },
-    function(dr) { var term = Random.index(["\\1", "\\2", "\\3", "\\4", "\\5", "\\10"]); return [term, regexTermPair()[1] ]; }, // reference other parts of regexp
-    function(dr) { var term = Random.index(["^", "$", ]); return [term, ""]; }, // beginning or end of string
-    function(dr) { var term = Random.index(["\\b", "\\B", "\\d", "\\D", "\\s", "\\S", "\\w", "\\W", "\\f", "\\t"]); return [term, regexTermPair()[1] ]; }, // words, boundaries, etc.
-  ];
+  for (var i = 0; i < ranges; ++i) {
+    if (rnd(100) == 0) {
+      // Confuse things by tossing in an extra "-"
+      re += "-";
+      if (rnd(2)) {
+        re += String.fromCharCode(regexCharCode())
+      }
+    }
 
-  var term = Random.index(y)();
+    if (rnd(3) == 1) {
+      // Add a built-in class, like "\d"
+      re += Random.index(regexBuiltInCharClasses);
+      charBucket.push("a");
+      charBucket.push("0");
+      charBucket.push("_");
+    } else if (rnd(2)) {
+      // Add a range, like "a-z"
+      var a = regexCharacter();
+      var b = regexCharacter();
+      if ((a[1] <= b[1]) == !!rnd(10)) {
+        [lo, hi] = [a, b];
+      } else {
+        [lo, hi] = [b, a];
+      }
 
-  return term;
+      re += lo[0] + "-" + hi[0];
+      charBucket.push(String.fromCharCode(lo[1] + rnd(3) - 1));
+      charBucket.push(String.fromCharCode(hi[1] + rnd(3) - 1));
+      charBucket.push(String.fromCharCode(lo[1] + rnd(Math.max(hi[1] - lo[1], 1)))); // something in the middle
+    } else {
+      // Add a single character
+      var a = regexCharacter();
+      re += a[0];
+      charBucket.push(String.fromCharCode(a[1]));
+    }
+  }
 
+  re += "]"
+  return [re, pickN(charBucket, POTENTIAL_MATCHES)];
 }
 
-function regexCharacterClassData(dr, inRange)
+function pickN(bucket, picks)
 {
-  if (dr < 0)
-    return "";
-
-  var y = [
-    function(dr) { var start = rnd(256); var end = rnd(256); if (end < start) { var tmp = start ; start = end ; end = tmp; } var middle; if (inRange) middle = rnd(start - end) + start; else middle = rnd(start); return [String.fromCharCode(start) + "-" + String.fromCharCode(end), String.fromCharCode(middle)]; },
-    function(dr) { var start = rnd(65536); var end = rnd(65536); if (end < start) { var tmp = start ; start = end ; end = tmp; } var middle; if (inRange) middle = rnd(start - end) + start; else middle = rnd(start); return [String.fromCharCode(start) + "-" + String.fromCharCode(end), String.fromCharCode(middle)]; },
-    function(dr) { var start = rnd(256); var end = rnd(65536); if (end < start) { var tmp = start ; start = end ; end = tmp; } var middle; if (inRange) middle = rnd(start - end) + start; else middle = rnd(start); return [String.fromCharCode(start) + "-" + String.fromCharCode(end), String.fromCharCode(middle)]; },
-    function(dr) { var pair1 = regexTermPair(); var pair2 = regexTermPair(); return [ pair1[0] + "-" + pair2[0], pair1[1] ]; },
-    function(dr) { var pair1 = regexTermPair(); var pair2 = regexTermPair(); return [ pair1[0] + "-" + pair2[0], pair2[1] ]; },
-    function(dr) { return regexTermPair(); },
-    function(dr) { var pair1 = regexCharacterClassData(dr-1, inRange); var pair2 = regexCharacterClassData(dr-1, inRange); return [ pair1[0] + pair2[0], pair1[1] ]; },
-    function(dr) { var pair1 = regexCharacterClassData(dr-1, inRange); var pair2 = regexCharacterClassData(dr-1, inRange); return [ pair1[0] + pair2[0], pair2[1] ]; }
-  ];
-
-  return (Random.index(y))();
+  var picked = [];
+  for (var i = 0; i < picks; ++i) {
+    picked.push(Random.index(bucket));
+  }
+  return picked;
 }
-
