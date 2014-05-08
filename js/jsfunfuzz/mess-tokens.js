@@ -31,10 +31,9 @@ function cat(toks)
     //   return "/*foo*/" + ...
     // Unary plus in the first one coerces the string that follows to number!
     if (typeof(toks[i]) != "string") {
-      dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
+      dumpln("Strange item in the array passed to cat: typeof toks[" + i + "] == " + typeof(toks[i]));
       dumpln(cat.caller);
       dumpln(cat.caller.caller);
-      dumpln("Strange item in the array passed to cat: toks[" + i + "] == " + typeof(toks[i]));
     }
 
     if (!(torture && rnd(12) === 0))
