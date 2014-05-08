@@ -35,7 +35,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Object.seal") == -1         // bug 937922
        && code.indexOf("ArrayBuffer") == -1         // bug 995679
        && code.indexOf("neuter") == -1              // bug 995679
-       && code.indexOf("filterPar") == -1           // bug 996895
        && code.indexOf("defineProperty") == -1      // bug 998059
        && code.indexOf("__proto__") == -1           // bug 998059
        && code.indexOf("buildPar") == -1            // bug 998262
