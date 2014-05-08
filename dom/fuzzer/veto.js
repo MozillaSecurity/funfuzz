@@ -26,6 +26,7 @@ function fuzzInitBlacklists()
                 "uneval",            // Gigantic arrays are sadmaking
                 "frame",             // setting src can toss up a dialog (bug 331334)
                 "iframe",            // setting src can toss up a dialog (bug 331334)
+                "ftp:",              // bug 250098 (modal dialog interpreted as a hang)
                 "beforeunload",      // dialog on attempt to quit
                 "defineProperty",    // can accidentally create multiple-infinite-recursion
                 "defineSetter",      // can accidentally create multiple-infinite-recursion
@@ -72,6 +73,7 @@ function fuzzInitBlacklists()
                 ".arc",              // bug 943587
                 "isPointInStroke",   // bug 989669
                 "location.reload",   // accidentally reloading the main testcase would cancel the quit timer
+                "-moz-column",       // bug 1007312
             ]
         },
         {
