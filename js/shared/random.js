@@ -28,7 +28,7 @@ var Random = {
     return Random.number(limit - start + 1) + start;
   },
   index: function (list, emptyr) {
-    if (!(list instanceof Array || ("length" in list && typeof list != "string"))) {
+    if (!(list instanceof Array || (typeof list != "string" && "length" in list))) {
       Utils.traceback();
       throw new TypeError("Random.index() received a non array type: '" + list + "'");
     }
