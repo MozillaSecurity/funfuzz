@@ -210,7 +210,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
 
                 # Hack #2 to make os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
-                os.rename(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
+                shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
                 stackwalkUrl = \
             'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk' \
@@ -227,7 +227,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
 
                 # Hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
-                os.rename(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
+                shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
                 for filename in ['minidump_stackwalk.exe', 'cyggcc_s-1.dll',
                                  'cygstdc++-6.dll', 'cygwin1.dll']:
                     remoteURL = \
@@ -262,7 +262,7 @@ def moveCrashInjector(tests):
     testsBin = os.path.join(tests, "bin")
     crashinject = os.path.join(testsBin, "crashinject.exe")
     if os.path.exists(crashinject):
-        os.rename(crashinject, os.path.join(testsBin, "crashinject-disabled.exe"))
+        shutil.move(crashinject, os.path.join(testsBin, "crashinject-disabled.exe"))
 
 def isNumericSubDir(n):
     '''

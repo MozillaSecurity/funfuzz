@@ -105,7 +105,7 @@ def grabJob(options, desiredJobType):
                 jobWithPostfix = copyFiles(options.remote_host, options.remote_prefix + takenNameOnServer + options.remoteSep, options.tempDir + localSep)
                 oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part after the "_"
                 job = options.tempDir + localSep + oldjobname + localSep
-                os.rename(jobWithPostfix, job)
+                shutil.move(jobWithPostfix, job)
                 print repr((job, oldjobname, takenNameOnServer))
                 return (job, oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
@@ -142,7 +142,7 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     print "Uploading as: " + newjobname
     newjobnameTmp = newjobname + ".uploading"
     newjobTmp = options.tempDir + localSep + newjobnameTmp
-    os.rename(job, newjobTmp)
+    shutil.move(job, newjobTmp)
     copyFiles(options.remote_host, newjobTmp + localSep, options.remote_prefix + options.relevantJobsDir + options.remoteSep)
     runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
     shutil.rmtree(newjobTmp)

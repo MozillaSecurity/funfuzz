@@ -7,9 +7,9 @@
 import ctypes
 import errno
 import os
-import shutil
 import platform
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -320,7 +320,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
         )
         if useLogFiles:
             # Path to memory dump is the last element of debuggerCmd.
-            os.rename(debuggerCmd[-1], logPrefix + "-core")
+            shutil.move(debuggerCmd[-1], logPrefix + "-core")
             subprocess.call(["gzip", '-f', logPrefix + "-core"])
             # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
             subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
