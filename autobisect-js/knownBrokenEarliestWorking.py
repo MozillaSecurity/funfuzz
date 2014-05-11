@@ -65,6 +65,7 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('743204c6b245', 'fbd476579542'), # broken ARM builds
             hgrange('688d526f9313', '280aa953c868'), # broken ARM builds
+            hgrange('35e7af3e86fd', 'a393ec07bc6a'), # broken ARM builds
         ])
 
     if isWin:
