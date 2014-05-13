@@ -80,7 +80,7 @@ var Things = {
   },
 
   anyFunction: function() {
-    return "o[" + Things.any(function(v) { return (typeof v == "function"); }) + "]";
+    return Things.any(function(v) { return (typeof v == "function"); });
   },
 
   init: function() {
