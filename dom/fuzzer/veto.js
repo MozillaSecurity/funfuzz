@@ -117,6 +117,7 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "Worker",            // annoying timing-depenent leaks
                 "color",             // bug 991373
+                "Path2D",            // bug 1009685
             ]
         },
         {
