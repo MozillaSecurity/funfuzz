@@ -118,6 +118,7 @@ dom.storage.enabled
 dom.telephony.enabled
 dom.undo_manager.enabled
 dom.wakelock.enabled
+dom.window_experimental_bindings
 dom.workers.enabled
 editor.use_css
 editor.use_custom_colors
