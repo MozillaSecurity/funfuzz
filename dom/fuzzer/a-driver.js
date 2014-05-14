@@ -272,6 +272,7 @@ function fuzzTryCommand(fun, note)
     // So, no "FAILURE:".
     dumpln("Uncatchable exception from " + note + "!?");
     fuzzPriv.quitApplicationSoon();
+    fuzzExpectSanity = false;
   }
 
   var failtimer = setTimeout(fail, 0);
