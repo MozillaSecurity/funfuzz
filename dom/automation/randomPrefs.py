@@ -32,7 +32,7 @@ intPrefs = {
 }
 
 strPrefs = {
-    "layout.css.devPixelsPerPx":                  lambda: random.choice(['"-1.0"', '"1.0"', '"2.0"']), # float prefs are string prefs
+    "layout.css.devPixelsPerPx":                  lambda: random.choice(["-1.0", "1.0", "2.0"]), # float prefs are string prefs
     "intl.uidirection.en":                        lambda: "rtl",
     "gfx.canvas.azure.backends":                  lambda: "skia", # cg, direct2d, skia, cairo
 }
