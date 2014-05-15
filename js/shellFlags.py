@@ -38,7 +38,7 @@ def randomFlagSet(shellPath):
 
     args = []
 
-    ion = shellSupportsFlag(shellPath, "--ion") and chance(.7)
+    ion = shellSupportsFlag(shellPath, "--ion") and chance(.8)
 
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
