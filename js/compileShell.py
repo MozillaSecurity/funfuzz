@@ -201,11 +201,12 @@ def cfgBin(shell, binToBeCompiled):
         CLANGPP_PATH = normExpUserPath(os.path.join(llvmPath, 'clang++'))
 
     if isARMv7l:
-        # 32-bit shell on ARM boards, e.g. Pandaboards.
+        # 32-bit shell on ARM boards, e.g. odroid boards.
+        # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
         assert shell.buildOptions.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not shell.buildOptions.enableHardFp:
-            cfgEnvDt['CC'] = 'gcc -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
-            cfgEnvDt['CXX'] = 'g++ -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
+            cfgEnvDt['CC'] = 'gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
+            cfgEnvDt['CXX'] = 'g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
