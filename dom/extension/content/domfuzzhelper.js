@@ -110,8 +110,10 @@ function makeDOMFuzzHelper(aWindow) {
       schedulePreciseShrinkingGC: function() { Cu.schedulePreciseShrinkingGC(function() { dumpln("precise shrinking GC complete"); }); },
 
       fontList: fontList.bind(this),
-
+      reftestFilesDirectory: reftestFilesDirectory.bind(this),
       reftestList: reftestList.bind(this),
+      cssPropertyDatabase: cssPropertyDatabase.bind(this),
+      webidlDatabase: webidlDatabase.bind(this),
 
       printToFile: printToFile(aWindow),
 
@@ -121,15 +123,12 @@ function makeDOMFuzzHelper(aWindow) {
 
       openAboutNewtab: function() { aWindow.open("about:newtab"); },
 
-      cssPropertyDatabase: cssPropertyDatabase.bind(this),
 
       comparePixels: comparePixels(aWindow),
 
       callDrawWindow: callDrawWindow(aWindow),
 
       resizeTo: safeResizeTo(aWindow),
-
-      reftestFilesDirectory: reftestFilesDirectory.bind(this),
 
       trustedKeyEvent: trustedKeyEvent(aWindow),
 
@@ -156,6 +155,7 @@ function makeDOMFuzzHelper(aWindow) {
         'openAboutNewtab': 'r',
         'reftestList': 'r',
         'cssPropertyDatabase': 'r',
+        'webidlDatabase': 'r',
         'comparePixels': 'r',
         'callDrawWindow': 'r',
         'resizeTo': 'r',
@@ -457,6 +457,13 @@ function reftestList()
   var dir = extensionLocation().parent;
   dir.append("automation");
   return readFile(indir(dir, "urls-reftests"));
+}
+
+function webidlDatabase()
+{
+  var dir = extensionLocation().parent;
+  dir.append("webidl");
+  return readFile(indir(dir, "webidl.json"));
 }
 
 function cssPropertyDatabase()

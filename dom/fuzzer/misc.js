@@ -11,6 +11,13 @@ function getKeysFromHash(h)
   return a;
 }
 
+function isPrimitive(v)
+{
+// NB: document.all is == but not ===
+// NB: typeof== is optimized by spidermonkey
+return (v === null || v === undefined || typeof v == "boolean" || typeof v == "number" || typeof v == "string");
+}
+
 
 /*
 
