@@ -143,6 +143,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if options.enableArmSimulator:
+        required.append('5ad5f92387a2') # 179476 on m-c, first rev with relevant getBuildConfiguration entry
     if options.disableGcGenerational:
         required.append('52f43e3f552f') # 175600 on m-c, first rev that has the --disable-gcgenerational option
     if options.disableExactRooting:

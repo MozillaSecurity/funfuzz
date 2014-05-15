@@ -1,14 +1,7 @@
 import random
-import os
-import sys
 from multiprocessing import cpu_count
 
-from inspectShell import shellSupports
-
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path1)
-from subprocesses import isARMv7l, isWin64
+from inspectShell import queryBuildConfiguration, shellSupports, testBinary
 
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
@@ -42,6 +35,9 @@ def randomFlagSet(shellPath):
 
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
+
+    if queryBuildConfiguration(shellPath, 'arm-simulator') and chance(.4):
+        args.append('--arm-sim-icache-checks')
 
     if (shellSupportsFlag(shellPath, '--no-sse3') and shellSupportsFlag(shellPath, '--no-sse4')) \
             and chance(.2):

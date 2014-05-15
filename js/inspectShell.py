@@ -155,3 +155,5 @@ def verifyBinary(sh):
             sh.buildOptions.enableMoreDeterministic
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
             sh.buildOptions.buildWithAsan
+        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'arm-simulator') == \
+            sh.buildOptions.enableArmSimulator

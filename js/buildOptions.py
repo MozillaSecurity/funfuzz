@@ -39,6 +39,7 @@ def parseShellOptions(inputArgs):
         enableMoreDeterministic = False,
         disableExactRooting = False,
         disableGcGenerational = False,
+        enableArmSimulator = False,
     )
 
     # Where to find the source dir and compiler, patching if necessary.
@@ -85,6 +86,10 @@ def parseShellOptions(inputArgs):
     parser.add_option('--disable-gcgenerational', dest='disableGcGenerational',
                       action='store_true',
                       help='Build shells with --disable-gcgenerational. Defaults to "%default".')
+    parser.add_option('--enable-arm-simulator', dest='enableArmSimulator',
+                      action='store_true',
+                      help='Build shells with --enable-arm-simulator, only applicable to 32-bit' + \
+                           'shells. Defaults to "%default".')
 
     (options, args) = parser.parse_args(inputArgs.split())
 
@@ -124,6 +129,10 @@ def parseShellOptions(inputArgs):
     if options.disableExactRooting:
         options.disableGcGenerational = True
 
+    if options.enableArmSimulator:
+        # Remove this when we have the ARM64 simulator builds
+        assert options.arch == '32', 'The ARM simulator builds are only for 32-bit binaries.'
+
     if options.patchFile:
         hgCmds.ensureMqEnabled()
         options.patchFile = normExpUserPath(options.patchFile)
@@ -150,6 +159,8 @@ def computeShellName(options, extraIdentifier):
         specialParamList.append('erDisabled')
     if options.disableGcGenerational:
         specialParamList.append('ggcDisabled')
+    if options.enableArmSimulator:
+        specialParamList.append('armSim')
     if isARMv7l:
         if options.enableHardFp:
             specialParamList.append('hfp')

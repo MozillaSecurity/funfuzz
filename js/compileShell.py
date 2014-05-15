@@ -247,6 +247,8 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--enable-macos-target=10.5')
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
+            if shell.buildOptions.enableArmSimulator:
+                cfgCmdList.append('--enable-arm-simulator')
         # 32-bit shell on 32/64-bit x86 Linux
         elif isLinux and not isARMv7l:
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
@@ -268,6 +270,8 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--target=i686-pc-linux')
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
+            if shell.buildOptions.enableArmSimulator:
+                cfgCmdList.append('--enable-arm-simulator')
         else:
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
@@ -303,7 +307,10 @@ def cfgBin(shell, binToBeCompiled):
                 cfgCmdList.append('--enable-64bit')
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        if shell.buildOptions.arch == '64':
+        if shell.buildOptions.arch == '32':
+            if shell.buildOptions.enableArmSimulator:
+                cfgCmdList.append('--enable-arm-simulator')
+        else:
             cfgCmdList.append('--host=x86_64-pc-mingw32')
             cfgCmdList.append('--target=x86_64-pc-mingw32')
     else:
