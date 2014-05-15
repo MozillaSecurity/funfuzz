@@ -74,6 +74,9 @@ function fuzzInitBlacklists()
                 "isPointInStroke",   // bug 989669
                 "location.reload",   // accidentally reloading the main testcase would cancel the quit timer
                 "-moz-column",       // bug 1007312
+                "VTTCue",            // bug 1010707
+                "addCue",            // bug 1010707
+                "addTextTrack",      // bug 1010707
             ]
         },
         {
