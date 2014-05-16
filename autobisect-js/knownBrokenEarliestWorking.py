@@ -152,6 +152,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('6f7227918e79') # 164088 on m-c, first rev that has stable forward-compatible compilation options for GGC
     if isWin:
         required.append('1a1968da61b3') # 163224 on m-c, first rev that builds on Windows successfully after build config changes
+    if not options.isThreadsafe:
+        required.append('df3c2a1e86d3') # 160479 on m-c, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs
     if isMac and macVer() >= [10, 9]:
         required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
