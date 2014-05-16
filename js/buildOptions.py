@@ -130,6 +130,7 @@ def parseShellOptions(inputArgs):
         options.disableGcGenerational = True
 
     if options.enableArmSimulator:
+        assert not isARMv7l, 'We cannot run the ARM simulator in an ARM build.'
         # Remove this when we have the ARM64 simulator builds
         assert options.arch == '32', 'The ARM simulator builds are only for 32-bit binaries.'
 
