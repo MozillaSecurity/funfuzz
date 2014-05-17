@@ -69,6 +69,8 @@ def constructVgCmdList(errorCode=77):
     vgCmdList.append('--vex-iropt-register-updates=allregs-at-mem-access')
     vgCmdList.append('--gen-suppressions=all')
     vgCmdList.append('--leak-check=full')
+    vgCmdList.append('--errors-for-leak-kinds=definite')
+    vgCmdList.append('--show-leak-kinds=definite')
     vgCmdList.append('--show-possibly-lost=no')
     vgCmdList.append('--num-callers=50')
     return vgCmdList
