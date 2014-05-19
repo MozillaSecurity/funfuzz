@@ -43,7 +43,13 @@ class CrashWatcher:
             self.crashSignature = msg[len("PROCESS-CRASH | automation.py | application crashed") : ]
 
         if "WARNING: AddressSanitizer failed to allocate" in msg:
+            # ASan will return null and the program will continue (?)
+            # We will ignore subsequent null derefs if ignoreASanOOM is true.
             self.outOfMemory = True
+
+        if "ERROR: AddressSanitizer failed to allocate" in msg:
+            # ASan will immediately abort the program (?)
+            self.crashIsKnown = True
 
         if "ERROR: AddressSanitizer" in msg:
             #self.noteCallback("We have an asan crash on our hands!")
