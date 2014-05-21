@@ -174,7 +174,7 @@ def cfgJsCompile(shell):
         try:
             cfgBin(shell, 'js')
             break
-        except Exception, e:
+        except (KeyboardInterrupt, Exception) as e:
             configureTryCount += 1
             if configureTryCount > 3:
                 print 'Configuration of the js binary failed 3 times.'
@@ -419,7 +419,7 @@ def compileJs(shell):
         cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
         out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                             currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
-    except Exception, e:
+    except (KeyboardInterrupt, Exception) as e:
         # This exception message is returned from captureStdout via cmdList.
         if (isLinux or isMac) and \
             ('GCC running out of memory' in repr(e) or 'Clang running out of memory' in repr(e)):
@@ -524,7 +524,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
     except KeyboardInterrupt:
         rmTreeIncludingReadOnly(shell.getShellCacheDir())
         raise
-    except Exception as e:
+    except (KeyboardInterrupt, Exception) as e:
         rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
         # Remove the cache dir, but recreate it with only the .busted file.
@@ -582,7 +582,7 @@ def makeTestRev(options):
 
         try:
             compileStandalone(shell, updateToRev=rev, isTboxBins=options.useTinderboxBinaries)
-        except Exception:
+        except (KeyboardInterrupt, Exception):
             return (options.compilationFailedLabel, 'compilation failed')
 
         print "Testing...",

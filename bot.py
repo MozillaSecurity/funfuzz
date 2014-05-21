@@ -413,7 +413,7 @@ def printMachineInfo():
     try:
         print "gdb version: " + captureStdout(['gdb', '--version'], combineStderr=True,
                                               ignoreStderr=True, ignoreExitCode=True)[0]
-    except Exception as e:
+    except (KeyboardInterrupt, Exception) as e:
         print('Error involving gdb is: ' + repr(e))
 
     # FIXME: Should have if os.path.exists(path to git) or something

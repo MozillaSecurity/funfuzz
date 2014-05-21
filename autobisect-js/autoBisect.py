@@ -608,7 +608,7 @@ def createTboxCacheFolder(cacheFolder):
 
     try:
         ensureCacheDirHasCorrectIdNum(cacheFolder)
-    except Exception, e:
+    except (KeyboardInterrupt, Exception) as e:
         if 'Folder name numeric ID not equal to source URL numeric ID.' in repr(e):
             rmTreeIncludingReadOnly(normExpUserPath(os.path.join(cacheFolder, 'build')))
 
@@ -666,7 +666,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
         if isWorking:
             try:
                 assertSaneJsBinary(tboxCacheFolder)
-            except Exception, e:
+            except (KeyboardInterrupt, Exception) as e:
                 if 'Shell startup error' in repr(e):
                     writeIncompleteBuildTxtFile(urls[newIndex], tboxCacheFolder,
                         normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE)), idNum)
