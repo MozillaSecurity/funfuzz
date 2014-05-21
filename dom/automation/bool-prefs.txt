@@ -208,6 +208,7 @@ media.raw.enabled
 media.wave.enabled
 media.webm.enabled
 media.webspeech.recognition.enable
+media.webspeech.synth.enabled
 media.navigator.enabled
 media.navigator.permission.disabled
 media.navigator.load_adapt
