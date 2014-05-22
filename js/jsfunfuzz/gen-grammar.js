@@ -784,6 +784,7 @@ var exprMakers =
   makeShapeyValue,
   makeIterable,
   makeTestingFunctionCall,
+  function(d, b) { return makeMathExpr(d + rnd(3), b); },
 
   function(d, b) { return cat(["(", makeTestingFunctionCall(d - 1, b), ", ", makeExpr(d - 1, b), ")"]); },
 ];
@@ -1067,6 +1068,8 @@ var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
 
   makeFunOnCallChain,
+  makeMathFunction,
+  makeMathyFunRef,
 
   // Functions and expression closures
   function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },

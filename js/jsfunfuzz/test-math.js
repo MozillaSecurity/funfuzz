@@ -90,7 +90,7 @@ function makeMathyFunAndTest(d, b)
 
   if (rnd(5)) {
     if (rnd(8)) {
-      s += "mathy" + i + " = " + generateMathFunction(6, b, i) + "; ";
+      s += "mathy" + i + " = " + makeMathFunction(6, b, i) + "; ";
     } else {
       s += "mathy" + i + " = " + makeAsmJSFunction(6, b) + "; ";
     }
@@ -108,4 +108,11 @@ function makeMathyFunAndTest(d, b)
   }
 
   return s;
+}
+
+function makeMathyFunRef(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  return "mathy" + rnd(NUM_MATH_FUNCTIONS);
 }

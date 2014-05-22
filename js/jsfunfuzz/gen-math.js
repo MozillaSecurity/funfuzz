@@ -54,25 +54,34 @@ var binaryMathFunctions = [
   "pow",
 ];
 
-function generateMathFunction(d, b, i)
+function makeMathFunction(d, b, i)
 {
-  return "(function(x, y) { " + directivePrologue() + "return " + generateMathExpr(d, b, i) + "; })"
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  var ivars = ["x", "y"];
+  if (rnd(10) == 0) {
+    // Also use variables from the enclosing scope
+    ivars = ivars.concat(b);
+  }
+  return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })"
 }
 
-function generateMathExpr(d, b, i)
+function makeMathExpr(d, b, i)
 {
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
   // As depth decreases, make it more likely to bottom out
   if (d < rnd(5)) {
     if (rnd(4)) {
-      return Random.index(["x", "y"]);
+      return Random.index(b);
     }
     return Random.index(numericVals);
   }
 
-  if (rnd(500) == 0)
+  if (rnd(500) == 0 && d > 0)
     return makeExpr(d - 1, b);
 
-  function r() { return generateMathExpr(d - 1, b, i); }
+  function r() { return makeMathExpr(d - 1, b, i); }
 
   // Frequently, coerce both the inputs and outputs to the same "numeric sub-type"
   // (asm.js formalizes this concept, but JITs may have their own variants)
