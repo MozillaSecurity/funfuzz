@@ -421,7 +421,11 @@ function makeArrayBuildParCall(d, b)
 
   var elementalFunctionArg = rnd(2) ?
     makeFunction(d, bv) :
-    "function(" + argList.join(", ") + ") { " + parallelBail(d, bv, argList) + "return " + (rnd(2) ? argList[0] : makeExpr(d, bv)) + "; }";
+    "function(" + argList.join(", ") + ") { " +
+      directivePrologue() +
+      parallelBail(d, bv, argList) +
+      "return " + (rnd(2) ? makeMathExpr(d - 1, bv, rnd(2)) : makeExpr(d - 1, bv)) + "; " +
+    "}";
 
   return "Array.buildPar(" + sizeArg + ", " + elementalFunctionArg + ")";
 }
