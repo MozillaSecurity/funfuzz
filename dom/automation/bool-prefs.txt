@@ -114,6 +114,7 @@ dom.network.metered
 dom.placeholder.show_on_focus
 dom.send_after_paint_to_content
 dom.server-events.enabled
+dom.serviceWorkers.enabled
 dom.sms.enabled
 dom.storage.enabled
 dom.telephony.enabled
