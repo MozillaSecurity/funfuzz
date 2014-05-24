@@ -77,6 +77,7 @@ function fuzzInitBlacklists()
                 "VTTCue",            // bug 1010707
                 "addCue",            // bug 1010707
                 "addTextTrack",      // bug 1010707
+                "rowspan",           // slow enough to "hang" a debug build, but not an opt build
             ]
         },
         {
