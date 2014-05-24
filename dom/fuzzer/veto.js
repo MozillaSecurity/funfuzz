@@ -123,6 +123,7 @@ function fuzzInitBlacklists()
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
                 "Path2D",            // bug 1009685
+                "insertItemBefore",  // bug 1015551
             ]
         },
         {
