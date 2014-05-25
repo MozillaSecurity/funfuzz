@@ -60,7 +60,7 @@ var fuzzerWebIDL = (function () {
     switch(item.type) {
       case "callback": return whateverFunction() + note;
       case "callback interface": return whatever() + note; // XXX make a matching object!
-      case "dictionary": return whatever() + note; // XXX make a matching object!
+      case "dictionary": return genDictionary(name) + note;
       case "enum": return simpleSource(Random.index(item.values)) + note;
       case "typedef": return gimmei(item.idlType) + note;
       case "interface": return (rnd(10) ? Things.instance(name) : null) + note;
@@ -85,6 +85,37 @@ var fuzzerWebIDL = (function () {
     }
     dumpln(uneval(k));
     return Things.any() + "/* whuck */";
+  }
+
+  function genDictionary(name)
+  {
+    var s = "{ ";
+    var fill = rnd(4); // 0 = omit all fields, 3 = include all fields
+    var maybeComma = "";
+
+    while (name) {
+      //s += "/* members of dictionary " + name + ": */ "
+      item = db[name];
+      for (var i = 0; member = item.members[i]; ++i) {
+        if (rnd(3) < fill) {
+          s += maybeComma + genDictionaryMember(simpleSource(member.name), gimmei(member.idlType));
+          maybeComma = ", ";
+        }
+      }
+      name = item.inheritance;
+    }
+
+    s += " }";
+    return s;
+  }
+
+  function genDictionaryMember(quotedName, value)
+  {
+    if (rnd(5)) {
+      return quotedName + ": " + value;
+    } else {
+      return "get " + quotedName + "() { " + fuzzSubCommand("dictget") + "return " + value + "; }"
+    }
   }
 
   function several(f)
