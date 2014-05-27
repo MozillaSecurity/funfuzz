@@ -95,7 +95,7 @@ var fuzzerWebIDL = (function () {
 
     while (name) {
       //s += "/* members of dictionary " + name + ": */ "
-      item = db[name];
+      var item = db[name];
       for (var i = 0; member = item.members[i]; ++i) {
         if (rnd(3) < fill) {
           s += maybeComma + genDictionaryMember(simpleSource(member.name), gimmei(member.idlType));
