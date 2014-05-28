@@ -14,7 +14,7 @@ var fuzzerHTMLAttributes = (function() {
   }
 
   // Attribute values (specific to HTML)
-  var relations = ["alternate", "stylesheet", "icon", "prefetch", "next", "prev", "search"];
+  var relations = ["alternate", "stylesheet", "icon", "prefetch", "next", "prev", "search", "import"];
   var listOfFrameSizes = ["100,*", "*,100", "100,100,100,100,100", "*", "30%,20%,50%", "100%,*"];
 
   var commonAttributes = ["id", "name", "width", "height", "lang", "spellcheck", "dir", "hidden"];
