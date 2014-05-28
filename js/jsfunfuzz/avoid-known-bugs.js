@@ -33,8 +33,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("'strict") == -1             // see bug 743425
        && code.indexOf("Object.seal") == -1         // bug 937922
-       && code.indexOf("ArrayBuffer") == -1         // bug 995679
-       && code.indexOf("neuter") == -1              // bug 995679
        && code.indexOf("defineProperty") == -1      // bug 998059
        && code.indexOf("__proto__") == -1           // bug 998059
        && code.indexOf("Math.round") == -1          // bug 1000606
