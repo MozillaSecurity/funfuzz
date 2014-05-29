@@ -168,30 +168,47 @@ var fuzzValues = {
   charsets: ["UTF-8", ["ISO-8859-1", "windows-1252", "x-mac-roman", "UTF-8", "us-ascii", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", "ISO-8859-5", "ISO-8859-6", "ISO-8859-6-I", "ISO-8859-6-E", "ISO-8859-7", "ISO-8859-8", "ISO-8859-8-I", "ISO-8859-8-E", "ISO-8859-9", "ISO-8859-10", "ISO-8859-13", "ISO-8859-14", "ISO-8859-15", "ISO-8859-16", "ISO-IR-111", "windows-1250", "windows-1251", "windows-1253", "windows-1254", "windows-1255", "windows-1256", "windows-1257", "windows-1258", "TIS-620", "windows-874", "ISO-8859-11", "IBM866", "KOI8-R", "KOI8-U", "x-mac-ce", "x-mac-greek", "x-mac-turkish", "x-mac-croatian", "x-mac-romanian", "x-mac-cyrillic", "x-mac-icelandic", "GEOSTD8", "armscii-8", "x-viet-tcvn5712", "VISCII", "x-viet-vps", "UTF-7", "x-imap4-modified-utf7", "UTF-16", "UTF-16BE", "UTF-16LE", "T.61-8bit", "x-user-defined", "x-mac-arabic", "x-mac-devanagari", "x-mac-farsi", "x-mac-gurmukhi", "x-mac-gujarati", "x-mac-hebrew", "Adobe-Symbol-Encoding", "x-zapf-dingbats", "x-tscii", "x-tamilttf-0", "IBM850", "IBM852", "IBM855", "IBM857", "IBM862", "IBM864", "IBM864i", "IBM869", "IBM1125", "IBM1131", "Shift_JIS", "ISO-2022-JP", "EUC-JP", "jis_0201", "x-euc-tw", "Big5", "Big5-HKSCS", "hkscs-1", "EUC-KR", "x-johab", "x-windows-949", "ISO-2022-KR", "GB2312", "gbk", "HZ-GB-2312", "gb18030", "ISO-2022-CN"]],
 
   mimeTypes: [
+    function() { return Random.pick(fuzzValues.miscMimeTypes); },
+    function() { return Random.pick(fuzzValues.imageMimeTypes); },
+    function() { return Random.pick(fuzzValues.mediaMimeTypes); },
+    function() { return Random.pick(fuzzValues.xmlMimeTypes); },
+    function() { return Random.pick(fuzzValues.formEncTypes); },
+  ],
+
+  miscMimeTypes: [
     "text/html",
     "text/html; charset=utf-8",
     "text/plain",
     "text/css",
     "text/javascript",
-    "image/jpeg",
-    "image/gif",
-    "image/png",
-    "image/mng",
-    "image/*", // valid in some contexts, such as the "accept" attribute of a file upload control
-    // XML
-    "text/xml",
-    "application/xml",
-    "application/rss+xml",
-    "application/xslt+xml",
-    "application/vnd.mozilla.xul+xml",
-    "application/xhtml+xml",
     // Not handled by the browser
     "foo/bar",
     "application/octet-stream",
     // Plugins
     "application/x-shockwave-flash",
     "application/x-test", // Mozilla's test plugin
-    // Media
+  ],
+
+  xmlMimeTypes: [
+    "application/xml",
+    "text/xml",
+    "application/xhtml+xml",
+    "image/svg+xml",
+    "application/vnd.mozilla.xul+xml",
+    "application/rss+xml",
+    "application/rdf+xml",
+    "application/xslt+xml",
+  ],
+
+  imageMimeTypes: [
+    "image/jpeg",
+    "image/gif",
+    "image/png",
+    "image/mng",
+    "image/*", // valid in some contexts, such as the "accept" attribute of a file upload control
+  ],
+
+  mediaMimeTypes: [
     "audio/mpeg",
     "audio/ogg",
     "audio/ogg; codecs=vorbis",
@@ -199,10 +216,13 @@ var fuzzValues = {
     "video/ogg; codecs=\"theora, vorbis\"",
     "video/mp4",
     "video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"",
-    function() { return Random.pick(fuzzValues.formEncTypes); },
   ],
 
-  formEncTypes: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
+  formEncTypes: [
+    "application/x-www-form-urlencoded",
+    "multipart/form-data",
+    "text/plain"
+  ],
 
   names:       [ "a", "b", "c" ], // XXX also grab IDs from Things.instance("Element")
   namerefs:    function() { return "#" + Random.pick(fuzzValues.names); },
@@ -465,7 +485,7 @@ var fuzzValues = {
   },
 
   dataXMLURIs: function() {
-    var xmlMimeType = Random.index(["application/xml", "text/xml", "application/xhtml+xml", "image/svg+xml", "application/vnd.mozilla.xul+xml"]);
+    var xmlMimeType = Random.index(fuzzValues.xmlMimeTypes);
     var xml = Random.pick(fuzzValues.xmlMarkup);
     return fuzzTextDataURI(xmlMimeType, xml);
   },
