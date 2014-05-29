@@ -106,7 +106,7 @@ var fuzzerHTMLAttributes = (function() {
     "autostart": fuzzValues.booleans,
 
     "cite": fuzzValues.URIs,
-    "datetime": "2006-06-04", // ?
+    "datetime": ["2006-06-04", "2001-05-15 19:00"], // ?
 
     // meta
     "http-equiv": ["content-language", "content-type", "default-style", "refresh", "set-cookie"],
@@ -344,7 +344,8 @@ var fuzzerHTMLAttributes = (function() {
     "figcaption": [],
 
     // New "text-level semantics" elements in HTML5
-    "time": [],
+    "time": ["datetime"],
+    "data": ["value"],
     "mark": [],
     "ruby": [],
     "rt": [],
