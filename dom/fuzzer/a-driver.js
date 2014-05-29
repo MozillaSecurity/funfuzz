@@ -190,8 +190,9 @@ function fuzzTryMakeCommand()
   }
 
   // Call makeCommand, checking that it doesn't throw.
+  var commandStrings;
   try {
-    var commandStrings = makeCommand();
+    commandStrings = makeCommand();
   } catch(e) {
     try {
       if (!dumpEachSeed) {
