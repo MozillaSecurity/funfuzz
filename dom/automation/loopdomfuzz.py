@@ -63,7 +63,6 @@ def many_timed_runs(targetTime, tempDir, args):
 
         url = options.argURL or (random.choice(reftestURLs) + randomHash())
         extraPrefs = randomPrefs.randomPrefs()
-        print extraPrefs
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
