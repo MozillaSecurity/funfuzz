@@ -350,6 +350,11 @@ var fuzzerHTMLAttributes = (function() {
     "rt": [],
     "rb": [],
     "bdi": ["dir"],
+
+    // Shadow DOM
+    "content": [], // ???
+    "shadow": [], // ???
+    "template": [], // ???
   };
 
 
