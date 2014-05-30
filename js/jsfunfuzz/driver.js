@@ -25,6 +25,7 @@ function start(glob)
     // If another script specified a "maxRunTime" argument, use it; otherwise, run forever
     var MAX_TOTAL_TIME = (glob.maxRunTime) || (Infinity);
     var startTime = new Date();
+    var lastTime;
 
     do {
       testOne();
@@ -32,7 +33,7 @@ function start(glob)
       if (elapsed1 > 1000) {
         print("That took " + elapsed1 + "ms!");
       }
-      var lastTime = new Date();
+      lastTime = new Date();
     } while(lastTime - startTime < MAX_TOTAL_TIME);
   } else {
     setTimeout(testStuffForAWhile, 200);
@@ -90,7 +91,8 @@ function start(glob)
 function failsToCompileInTry(code) {
   // Why would this happen? One way is "let x, x"
   try {
-    new Function(" try { " + code + " } catch(e) { }");
+    var codeInTry = "try { " + code + " } catch(e) { }";
+    void new Function(codeInTry);
     return false;
   } catch(e) {
     return true;
