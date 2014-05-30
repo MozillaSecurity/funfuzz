@@ -183,7 +183,7 @@ function quitWithLeakCheck(leaveWindowsOpen)
       'nsGenericElement':        1927,
       'nsHTMLDivElement':        4,
       'xpc::CompartmentPrivate': 3,
-    }
+    };
 
     for (var p in expected) {
       if (objectCounts[p] > expected[p]) {
@@ -238,7 +238,7 @@ function mpUntilDone(callback)
     if (j > 9)
       runSoon(callback);
     else if (j % 2 == 1 && typeof Components.utils.schedulePreciseGC == "function")
-      Components.utils.schedulePreciseGC(mpUntilDoneInner)
+      Components.utils.schedulePreciseGC(mpUntilDoneInner);
     else
       runSoon(mpUntilDoneInner);
   }
@@ -292,7 +292,7 @@ function bloatStats(callback)
 
   function callCallback()
   {
-    callback(objectCounts)
+    callback(objectCounts);
   }
 }
 

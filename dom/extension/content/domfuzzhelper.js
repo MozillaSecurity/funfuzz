@@ -182,7 +182,7 @@ function makeDOMFuzzHelper(aWindow) {
         //disableSPSProfiling: 'r',
       }
   };
-};
+}
 
 
 /***********************************************
@@ -242,7 +242,7 @@ function cycleCollect(window)
     window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
           .getInterface(Components.interfaces.nsIDOMWindowUtils)
           .cycleCollect(null, aExtraForgetSkippableCalls);
-  }
+  };
 }
 
 function cycleCollectLog(window)
@@ -284,7 +284,7 @@ function callDrawWindow(aWindow)
                    h,
                    "rgb(255,255,255)",
                    +flags);
-  }
+  };
 }
 
 function comparePixels(aWindow)
@@ -329,8 +329,8 @@ function comparePixels(aWindow)
         "Before:\n" + canvas1.toDataURL() + "\n" +
         "After:\n" + canvas2.toDataURL() + "\n"
       );
-    }
-  }
+    };
+  };
 }
 
 /*
@@ -423,7 +423,7 @@ function printToFile(window)
 
         webBrowserPrint.print(printSettings, null);
     });
-  }
+  };
 }
 
 
@@ -439,7 +439,7 @@ function cycleCollect()
       catch(e) {
         dumpln("cycle collect failed " + e);
       }
-  }
+  };
 }
 
 
