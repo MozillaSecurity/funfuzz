@@ -36,7 +36,7 @@ def linkFuzzer(target_fn):
 # If targetTime is None, this loops forever.
 # If targetTime is a number, tries not to run for more than targetTime seconds.
 #   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
-def many_timed_runs(targetTime, tempDir, args):
+def many_timed_runs(targetTime, tempDir, args, quiet=True):
     startTime = time.time()
     iteration = 0
 
@@ -67,7 +67,7 @@ def many_timed_runs(targetTime, tempDir, args):
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
-        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=True)
+        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=quiet)
 
         if level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
@@ -206,4 +206,4 @@ def afterColon(s):
     return tail.strip()
 
 if __name__ == "__main__":
-    many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:])
+    many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:], quiet=False)
