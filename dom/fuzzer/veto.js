@@ -72,6 +72,8 @@ function fuzzInitBlacklists()
                 "strokeRect",        // bug 986902
                 ".arc",              // bug 943587
                 "isPointInStroke",   // bug 989669
+                "scale",             // bug 1017942
+                "quadraticCurveTo",  // bug 1017942
                 "location.reload",   // accidentally reloading the main testcase would cancel the quit timer
                 "-moz-column",       // bug 1007312
                 "VTTCue",            // bug 1010707
