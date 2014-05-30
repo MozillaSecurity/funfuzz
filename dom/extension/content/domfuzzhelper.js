@@ -323,7 +323,7 @@ function comparePixels(aWindow)
       var wu = aWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
       var o = {};
       var n = wu.compareCanvases(canvas1, canvas2, o);
-      if (n == 0) { return ""; }
+      if (n === 0) { return ""; }
       return (
         n + " pixel" + (n == 1 ? "" : "s") + " differ (max channel difference: " + o.value + ")\n" +
         "Before:\n" + canvas1.toDataURL() + "\n" +
@@ -427,22 +427,6 @@ function printToFile(window)
 }
 
 
-function cycleCollect()
-{
-  return function cycleCollectInner() {
-      try {
-        content.QueryInterface(Ci.nsIInterfaceRequestor)
-              .getInterface(Ci.nsIDOMWindowUtils)
-              .cycleCollect();
-      }
-
-      catch(e) {
-        dumpln("cycle collect failed " + e);
-      }
-  };
-}
-
-
 function fontList()
 {
     return Components.classes["@mozilla.org/gfx/fontenumerator;1"]
@@ -514,9 +498,8 @@ function extensionLocation()
   d.append("extensions");
   d.append("domfuzz@squarefree.com");
 
-  var extensionLocation = readFile(d).replace(/\s*$/, "");
-
-  return fileObject(extensionLocation);
+  var loc = readFile(d).replace(/\s*$/, "");
+  return fileObject(loc);
 }
 
 
@@ -590,10 +573,10 @@ function maybeInjectScript(event)
   }
 
   var scriptToInject =
-    readFile(fileObject(domFuzzerScript)) + "\n"
+    (readFile(fileObject(domFuzzerScript)) + "\n"
   + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
   + "fuzzSettings = [" + fuzzSettings.join(",") + "];\n"
-  + "fuzzOnload();\n";
+  + "fuzzOnload();\n");
 
   var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
   if (!insertionPoint) {
