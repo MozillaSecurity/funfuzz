@@ -278,7 +278,7 @@ function regexCharacterClass()
       // Confuse things by tossing in an extra "-"
       re += "-";
       if (rnd(2)) {
-        re += String.fromCharCode(regexCharCode())
+        re += String.fromCharCode(regexCharCode());
       }
     }
 
@@ -310,7 +310,7 @@ function regexCharacterClass()
     }
   }
 
-  re += "]"
+  re += "]";
   return [re, pickN(charBucket, POTENTIAL_MATCHES)];
 }
 

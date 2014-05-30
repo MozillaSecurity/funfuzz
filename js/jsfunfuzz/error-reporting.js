@@ -32,5 +32,7 @@ function errorToString(e)
 function errorstack()
 {
   print("EEE");
-  try { [].qwerty.qwerty; } catch(e) { print(e.stack); }
+  try {
+    [].qwerty.qwerty; // jshint ignore:line
+  } catch(e) { print(e.stack); }
 }

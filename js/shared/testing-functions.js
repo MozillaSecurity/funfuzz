@@ -110,6 +110,6 @@ var fuzzTestingFunctions = (function(glob){
     { w: 5,  v: function(d, b) { return "(" + tf("gcPreserveCode") + "()" + ")"; } },
   ]);
 
-  return { testingFunctions: testingFunctions, enableGCZeal: enableGCZeal }
+  return { testingFunctions: testingFunctions, enableGCZeal: enableGCZeal };
 
 })(this);

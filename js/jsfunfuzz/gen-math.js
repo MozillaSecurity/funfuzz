@@ -63,7 +63,7 @@ function makeMathFunction(d, b, i)
     // Also use variables from the enclosing scope
     ivars = ivars.concat(b);
   }
-  return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })"
+  return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })";
 }
 
 function makeMathExpr(d, b, i)
