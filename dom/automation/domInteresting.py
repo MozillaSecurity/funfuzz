@@ -311,7 +311,6 @@ def knownChromeFailure(msg):
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or # bug 978524
         ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or # bug 978629
         ("nsDOMIdentity.js, line " in msg) or # These seem to be intentional messages about misusing the identity API
-        ("browser.xml" in msg and "nsIWebNavigation.loadURI" in msg) or # Bug 979379
         "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
         "abouthealth.js" in msg or # Bug 895113
         "WindowsPrefSync.jsm" in msg or # Bug 947581

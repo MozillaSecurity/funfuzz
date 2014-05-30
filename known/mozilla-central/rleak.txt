@@ -27,4 +27,3 @@ SIZE tiny. objects that should never entrain others. (last group is also the def
   LEAK VolatileBuffer # Bug 989760
   LEAK gfxASurface    # Bug 989760
   LEAK DataSourceSurfaceAlignedRawData # Bug 989763
-  LEAK nsHttpConnectionMgr::nsConnectionHandle # Bug 1013623

@@ -98,7 +98,7 @@ dom.event.contextmenu.enabled
 dom.experimental_forms
 dom.forms.color
 dom.forms.inputmode
-# dom.forms.number # bug 1016131
+dom.forms.number
 dom.gamepad.enabled
 dom.gamepad.non_standard_events.enabled
 dom.identity.enabled
