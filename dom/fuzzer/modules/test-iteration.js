@@ -1,4 +1,4 @@
-var fuzzerTestIteration = (function() {
+  var fuzzerTestIteration = (function() {
   function makeCommand()
   {
     if (rnd(3000) === 0)
@@ -32,7 +32,7 @@ var fuzzerTestIteration = (function() {
         for (var p in obj) {
           var j = null;
           try { j = obj[p]; } catch(e) { }
-          try { "" + j; } catch(e) { }
+          try { "" + j; } catch(e) { } // jshint ignore:line
           try { uneval(j); } catch(e) { }
         }
       } catch(e) {

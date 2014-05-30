@@ -163,7 +163,7 @@ function immedChunk(changes)
       location.search = location.search.replace("fuzz=" + fuzzSeed, "fuzz=" + (fuzzSeed + 1));
     }
   }
-  else if (stepsPerInterval != 0)
+  else if (stepsPerInterval !== 0)
     setTimeout(function() { immedChunk(stepsPerInterval); }, interval);
 }
 
@@ -249,7 +249,7 @@ function fuzzTryMakeCommand()
 
 function immedStep()
 {
-  if (!dumpEachCommand && immedCount % (100) == 0) {
+  if (!dumpEachCommand && immedCount % (100) === 0) {
     // Dump stuff occasionally so that if we hit a crash, we have a hint as to where we hit it.
     dumpln(fuzzerName + ": " + immedCount);
   }
@@ -406,10 +406,10 @@ function playFuns()
 
   ++fuzzCount;
 
-  if (command == undefined)
+  if (command == null)
     return false;
 
-  if (command.origCount != undefined)
+  if (command.origCount != null)
     dumpln("origCount: " + command.origCount);
 
   if (command.fun) {
@@ -455,7 +455,7 @@ function recordFuns()
       output += fuzzRecord(oPrefix, fuzzCount + "fun: function() { " + commands[i].str + " }") + "\n";
 
     var countAfterImmed = fuzzCount - numImmediate;
-    if((countAfterImmed >= 0) && (countAfterImmed % stepsPerInterval == 0)) {
+    if((countAfterImmed >= 0) && (countAfterImmed % stepsPerInterval === 0)) {
       output += fuzzRecord(oPrefix, fuzzCount, "rest: true") + "\n";
     }
   }

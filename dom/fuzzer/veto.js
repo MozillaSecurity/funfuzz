@@ -255,7 +255,7 @@ function fuzzInitBlacklists()
 
     var HANG_TOO_LONG = 5000;
 
-    var xml = document.documentElement ? (new XMLSerializer).serializeToString(document.documentElement).toLowerCase() : "";
+    var xml = document.documentElement ? (new XMLSerializer()).serializeToString(document.documentElement).toLowerCase() : "";
 
     function shouldEnableBlacklist(list, magicString)
     {

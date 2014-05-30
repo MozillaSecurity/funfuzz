@@ -309,6 +309,7 @@ var fuzzerRandomClasses = (function() {
   // Dis: Gecko only (and requires a source tree).
   function importPropertyDatabase()
   {
+    var pd;
     try {
       var pdScript = fuzzPriv.cssPropertyDatabase();
 
@@ -318,10 +319,10 @@ var fuzzerRandomClasses = (function() {
         "return gCSSProperties;"
       );
 
-      var pd = pdFunc();
+      pd = pdFunc();
 
       // Sanity check
-      pd["float"].other_values[0];
+      pd["float"].other_values[0]; // jshint ignore:line
     } catch(e) {
       dumpln("Error importing the CSS property database: " + e);
       return false;

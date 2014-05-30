@@ -18,16 +18,16 @@ var fuzzerURLObjects = (function() {
     { field: "origin",   values: "" }, // should be read-only
     { field: "port",     values: [ports, ""] },
     { field: "host",     values: function() { return Random.index(hostnames) + (rnd(2) ? ":"+Random.index(ports) : ""); } },
-    { field: "pathname", values: ["/", "/index.html",        function() { return "/" + Random.pick(fuzzValues.texts) }] },
-    { field: "search",   values: ["", "?", "?foo=bar",       function() { return "?" + Random.pick(fuzzValues.texts) }] },
-    { field: "hash",     values: ["", "#", "#main-content",  function() { return "#" + Random.pick(fuzzValues.texts) }] },
+    { field: "pathname", values: ["/", "/index.html",        function() { return "/" + Random.pick(fuzzValues.texts); }] },
+    { field: "search",   values: ["", "?", "?foo=bar",       function() { return "?" + Random.pick(fuzzValues.texts); }] },
+    { field: "hash",     values: ["", "#", "#main-content",  function() { return "#" + Random.pick(fuzzValues.texts); }] },
     { field: "username", values: ["", fuzzValues.texts] },
     { field: "password", values: ["", fuzzValues.texts] },
   ];
 
   function makeCommand()
   {
-    if (rnd(20) == 0) {
+    if (rnd(20) === 0) {
       return makeURLObject();
     }
 
@@ -37,7 +37,7 @@ var fuzzerURLObjects = (function() {
     }
 
     var i = rnd(fields.length);
-    if (rnd(10) == 0) {
+    if (rnd(10) === 0) {
       return obj + "." + fields[i].field + ";"; // just read the field
     }
     var j = rnd(10) ? i : rnd(fields.length); // generate a value, usually for the correct field
@@ -59,9 +59,10 @@ var fuzzerURLObjects = (function() {
         if (frame) {
           return Things.add(frame + ".location");
         }
+        return [];
       default:
         // It may be self-destructive to play with this document's location.
-        if (rnd(100) == 0) {
+        if (rnd(100) === 0) {
           return "/*selfdestruct*/ " + Things.add("location");
         }
         return [];

@@ -18,7 +18,7 @@ var fuzzerWebIDL = (function () {
 
   function gimmea(name)
   {
-    if (rnd(200) == 0) {
+    if (rnd(200) === 0) {
       return Things.any() + " /*messin*/";
     }
 
@@ -45,7 +45,7 @@ var fuzzerWebIDL = (function () {
         return simpleSource(Random.pick([fuzzValues.texts, fuzzValues.URIs]));
       case "WindowProxy":
         return Things.instance("Window");
-      default:;
+      default:
     }
 
     if (!(name in db)) {
@@ -70,7 +70,7 @@ var fuzzerWebIDL = (function () {
 
   // Call this with objects that look like { union: ..., array: ... }
   function gimmei(k) {
-    if (rnd(200) == 0) {
+    if (rnd(200) === 0) {
       return Things.any() + " /*messing*/";
     }
 
@@ -78,7 +78,7 @@ var fuzzerWebIDL = (function () {
       return gimmei(Random.index(k.idlType));
     }
     if (k.array || k.sequence) {
-      return "[" + several(function(){return gimmei(k.idlType)}).join(", ") + "]" + "/*idl_seq*/";
+      return "[" + several(function(){return gimmei(k.idlType);}).join(", ") + "]" + "/*idl_seq*/";
     }
     if (typeof k.idlType == "string") {
       return gimmea(k.idlType);
@@ -96,7 +96,7 @@ var fuzzerWebIDL = (function () {
     while (name) {
       //s += "/* members of dictionary " + name + ": */ "
       var item = db[name];
-      for (var i = 0; member = item.members[i]; ++i) {
+      for (var i = 0; (member = item.members[i]); ++i) {
         if (rnd(3) < fill) {
           s += maybeComma + genDictionaryMember(simpleSource(member.name), gimmei(member.idlType));
           maybeComma = ", ";
@@ -114,7 +114,7 @@ var fuzzerWebIDL = (function () {
     if (rnd(5)) {
       return quotedName + ": " + value;
     } else {
-      return "get " + quotedName + "() { " + fuzzSubCommand("dictget") + "return " + value + "; }"
+      return "get " + quotedName + "() { " + fuzzSubCommand("dictget") + "return " + value + "; }";
     }
   }
 
@@ -143,7 +143,7 @@ var fuzzerWebIDL = (function () {
         constructors.push(a);
       }
     }
-    if (constructors.length == 0) {
+    if (constructors.length === 0) {
       return "/* no webidl constructor for " + ifaceName + " */";
     }
     if (ifaceName == "OfflineAudioContext" && rnd(20)) {
@@ -159,15 +159,15 @@ var fuzzerWebIDL = (function () {
     var iface = db[ifaceName];
     var members = allMembers(iface);
     // dumpln(ifaceName + ": " + uneval(members));
-    if (members.length == 0) {
-      return "/* no members on " + ifaceName + " */"
+    if (members.length === 0) {
+      return "/* no members on " + ifaceName + " */";
     }
 
     return function() {
       var member = Random.index(members);
       if (!member.name) {
         // e.g. with "setter": true
-        return "/* " + ifaceName + " has a weird member */"
+        return "/* " + ifaceName + " has a weird member */";
       }
 
       if (fuzzerRandomJS.destructiveAndAnnoying[member.name]) {
@@ -195,7 +195,7 @@ var fuzzerWebIDL = (function () {
         return memberExpr + ";";
       }
       return "/* bwuh? " + member.type + " */";
-    }
+    };
   }
 
   function argumentList(args)
@@ -207,7 +207,7 @@ var fuzzerWebIDL = (function () {
     var s = "";
     for (var i = 0; i < args.length; ++i) {
       var arg = args[i];
-      if (arg.optional && rnd(10) == 0) {
+      if (arg.optional && rnd(10) === 0) {
         break;
       }
       if (s.length > 0) {
@@ -248,10 +248,10 @@ var fuzzerWebIDL = (function () {
     }
 
     if (favoriteTweakers.length && rnd(100)) {
-      if (rnd(500) == 0) {
+      if (rnd(500) === 0) {
         favoriteTweakers.length = 0;
       } else {
-        return Random.index(favoriteTweakers)()
+        return Random.index(favoriteTweakers)();
       }
     }
 
@@ -259,7 +259,7 @@ var fuzzerWebIDL = (function () {
     if (i == "CSS") {
       return "/* nope */"; // XXX do something useful with statics
     }
-    if (rnd(10) == 0) {
+    if (rnd(10) === 0) {
       return construct(i);
     }
     var instance = rnd(100) ? Things.instance(i) : Things.any();
@@ -269,7 +269,7 @@ var fuzzerWebIDL = (function () {
 
     var tweaker = createInstanceTweaker(i, instance);
     if (typeof tweaker == "function") {
-      if (rnd(30) == 0) {
+      if (rnd(30) === 0) {
         favoriteTweakers.push(tweaker);
       }
       return tweaker();

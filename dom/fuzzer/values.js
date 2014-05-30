@@ -504,7 +504,7 @@ var fuzzValues = {
       return "<script xmlns='http://www.w3.org/1999/xhtml'><![CDATA[" + fuzzSubCommand("xmlscript") + "]]" + "><\/script>";
     }
     try {
-      x = (new XMLSerializer).serializeToString(o[Things.instanceIndex("Element")]);
+      x = (new XMLSerializer()).serializeToString(o[Things.instanceIndex("Element")]);
     } catch(e) {
       x = "<oops/>";
     }
@@ -994,10 +994,10 @@ function fuzzTextDataURI(mime, text)
 {
   // Creates a data: URL with a random charset
 
-  if (mime == undefined || rnd(10) === 0)
+  if (mime == null || rnd(10) === 0)
     mime = Random.pick(fuzzValues.mimeTypes);
 
-  if (text == undefined) {
+  if (text == null) {
     text = Random.pick(fuzzValues.texts);
   } else if (rnd(10) === 0) {
     text = fuzzValues.modifyText(text);
@@ -1041,7 +1041,7 @@ function fuzzTextDataURI(mime, text)
 
   function echoServerURI(fullMime, responseBody)
   {
-    return fuzzEchoRequest('200 OK', ['Content-Type: ' + fullMime, 'Connection: Close'], responseBody)
+    return fuzzEchoRequest('200 OK', ['Content-Type: ' + fullMime, 'Connection: Close'], responseBody);
   }
 
   function fuzzHTTPRedirect(uri)
@@ -1055,11 +1055,11 @@ function fuzzTextDataURI(mime, text)
 
   function fuzzEchoRequest(responseStatus, responseHeaders, responseBody)
   {
-    if (rnd(10) == 0) {
+    if (rnd(10) === 0) {
       // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
       // http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
       responseStatus = Random.index([100, 101, 200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 305, 306, 307, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 500, 501, 502, 503, 504, 505]);
-    } else if (rnd(300) == 0) {
+    } else if (rnd(300) === 0) {
       if (rnd(20)) responseStatus = '401 Not Authorized';
       if (rnd(20)) responseHeaders.push('WWW-Authenticate: Basic realm="Fuzzland"');
     }
@@ -1068,7 +1068,7 @@ function fuzzTextDataURI(mime, text)
     // TODO: Add random nonsense headers
 
     for (var i = 0; i < responseHeaders.length; ++i) {
-      if (rnd(10) == 0) {
+      if (rnd(10) === 0) {
         responseHeaders[i] = fuzzValues.modifyText(responseHeaders[i]);
       }
     }
@@ -1101,7 +1101,7 @@ function fuzzTextDataURI(mime, text)
 
   var uri = f();
   while (uri.length < 100000 && rnd(2))
-    uri = fuzzHTTPRedirect(uri)
+    uri = fuzzHTTPRedirect(uri);
   return uri;
 }
 

@@ -123,7 +123,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
       } catch(e) {
         /* A native anonymous node? */
       }
-      var description = "???"
+      var description = "???";
       try {
         description = Object.prototype.toString.call(n);
       } catch(e) {

@@ -39,7 +39,7 @@ function parseAll()
         }
         leaf = last(fn.split("/"));
         if (generated[leaf]) {
-            continue
+            continue;
         }
         idlTrees.push(parse(fn));
     }
@@ -60,7 +60,7 @@ function parse(fullFn)
         linematch = /line (\d+)/.exec(e);
         if (linematch) {
             linenum = parseInt(linematch[1]);
-            print(idlText.split(/\n/)[linenum - 1])
+            print(idlText.split(/\n/)[linenum - 1]);
         }
         print(e);
         return null;
@@ -79,7 +79,7 @@ function flattenIDL(idlTrees)
             if ("name" in item && !item.partial) {
                 assert(!(item.name in items));
                 if (item.name in items) {
-                    items[item.name] = zipPartial(items[item.name], item)
+                    items[item.name] = zipPartial(items[item.name], item);
                 } else {
                     items[item.name] = item;
                 }
@@ -98,7 +98,7 @@ function flattenIDL(idlTrees)
                 if (!("implements" in target)) {
                     target.implements = [];
                 }
-                target.implements.push(item.implements)
+                target.implements.push(item.implements);
             }
             if (item.partial) {
                 items[item.name].members = items[item.name].members.concat(item.members);

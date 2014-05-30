@@ -175,7 +175,7 @@ var fuzzerStirTable = (function() {
     if (elemVar == rootD) {
       childTag = "table";
     } else {
-      if (preferredChildTags.length != 0 && rnd(5) !== 1)
+      if (preferredChildTags.length !== 0 && rnd(5) !== 1)
         childTag = Random.index(preferredChildTags);
       else
         childTag = Random.index(tableRelatedTags);
@@ -315,7 +315,7 @@ var fuzzerStirTable = (function() {
 
     var elem, elemVar, elemIndex, op;
 
-    if (document.getElementsByTagName("table").length == 0) {
+    if (document.getElementsByTagName("table").length === 0) {
       // Create a top-level table?
       elem = rootDE();
       elemVar = rootD;

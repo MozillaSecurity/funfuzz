@@ -82,7 +82,7 @@ var fuzzerChars = (function() {
       return commandn1 + ".data = " + randomQuotedString() + ";";
     case 2:
       // Remove a character from its text.
-      if (n1.data.length == 0)
+      if (n1.data.length === 0)
         return [];
       var ix = rnd(n1.data.length);
       return "var d = " + commandn1 + ".data; " +

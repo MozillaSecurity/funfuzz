@@ -6,7 +6,7 @@ var fuzzerMathMLAttributes = (function() {
       var num = Random.pick([0, 1, [2, 4, 8, 16, 1024]]);
       var s = "";
       for (var i = 0; i < num; ++i) {
-        if (i != 0)
+        if (i !== 0)
           s += " ";
         s += Random.pick(pickArg);
       }

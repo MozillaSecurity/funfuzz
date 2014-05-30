@@ -18,16 +18,16 @@ var fuzzerTestingFunctions = (function() {
       return [];
     }
 
-    if (rnd(100) == 0) {
+    if (rnd(100) === 0) {
       return fuzzTestingFunctions.enableGCZeal() + "; try { " + fuzzSubCommand() + " } finally { fuzzPriv.gczeal(0); }";
     }
 
-    if (rnd(3) == 0) {
+    if (rnd(3) === 0) {
       return Random.index(browserTestingFunctions)();
     }
 
     return Random.index(fuzzTestingFunctions.testingFunctions)() + ";";
   }
 
-  return { makeCommand: makeCommand }
+  return { makeCommand: makeCommand };
 })();

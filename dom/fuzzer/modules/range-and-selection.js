@@ -93,15 +93,15 @@ var fuzzerRangeAndSelection = (function() {
   {
     var args = method.args;
 
-    var callStr = subject + "." + method.name + "(";
+    var s = subject + "." + method.name + "(";
     for (var b = 0; b < args.length; ++b)
-      callStr += Random.pick(args[b]) + (b+1 == args.length ? "" : ", ");
-    callStr += ")";
+      s += Random.pick(args[b]) + (b+1 == args.length ? "" : ", ");
+    s += ")";
 
     if (method.retobj) {
-      return Things.add(callStr);
+      return Things.add(s);
     } else {
-      return callStr + ";";
+      return s + ";";
     }
   }
 
@@ -119,7 +119,7 @@ var fuzzerRangeAndSelection = (function() {
 
     case 2:
       // Grab a Selection.
-      return Things.add(Things.instance("Window") + ".getSelection()")
+      return Things.add(Things.instance("Window") + ".getSelection()");
 
     case 3:
       // Call a random method of a Selection.

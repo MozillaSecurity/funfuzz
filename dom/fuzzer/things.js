@@ -87,4 +87,4 @@ var Things = {
     // NB: using 'self' instead of 'window' because this can also be used from workers
     o = [0, null, undefined, self, self.document, function(){}, "", []];
   }
-}
+};

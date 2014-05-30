@@ -32,7 +32,7 @@ var fuzzerStirAttributes = (function() {
     // but setAttributeNS wants a qualified name (.name).
 
     try {
-      var n2has = typeof n2.hasAttributeNS == "function" && !!n2.hasAttributeNS(attr.namespaceURI, attr.localName);
+      n2has = typeof n2.hasAttributeNS == "function" && !!n2.hasAttributeNS(attr.namespaceURI, attr.localName);
       if (n2has) {
         n2val = "" + n2.getAttributeNS(attr.namespaceURI, attr.localName);
       }

@@ -92,10 +92,10 @@ function eaCommandMaker(namespaceURI, tagToAttrs, attrToValueRT, commonAttribute
 
         // Change an attribute on n1, based on n1's tagName.
 
-        if (n1.tagName)
+        if (n1.tagName) {
           return (commandn1 + makeSetAttribute(n1.tagName));
-        else
-          break;
+        }
+        break;
 
       case 3:
 
