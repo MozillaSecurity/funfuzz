@@ -125,6 +125,7 @@ function fuzzInitBlacklists()
                 "Path2D",            // bug 1009685
                 "insertItemBefore",  // bug 1015551
                 "track",             // bug 1015662
+                "generateCRMFRequest", // dialog does weird things to shutdown sequence
             ]
         },
         {
