@@ -65,9 +65,12 @@ class CrashWatcher:
                 else:
                     #self.noteCallback("This looks like a null deref bug.")
                     pass
+            elif isMac and "stack-overflow on address 0x7fff" in msg:
+                # self.noteCallback("This ASan crash may be a too-much-recursion bug")
+                pass
             else:
-                # Not a null dereference.
-                #self.noteCallback("Assuming this ASan crash is exploitable")
+                # A memory error that is NOT on one of our well-known guard pages (null, stack limit)!
+                # self.noteCallback("Assuming this ASan crash is exploitable")
                 self.crashIsExploitable = True
 
         if msg.startswith("freed by thread") or msg.startswith("previously allocated by thread"):
