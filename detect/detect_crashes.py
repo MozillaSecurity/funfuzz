@@ -43,12 +43,17 @@ class CrashWatcher:
             self.crashSignature = msg[len("PROCESS-CRASH | automation.py | application crashed") : ]
 
         if "WARNING: AddressSanitizer failed to allocate" in msg:
-            # ASan will return null and the program will continue (?)
+            # ASan will return null and the program may continue (?)
             # We will ignore subsequent null derefs if ignoreASanOOM is true.
             self.outOfMemory = True
 
-        if "ERROR: AddressSanitizer failed to allocate" in msg:
-            # ASan will immediately abort the program (?)
+        if "ERROR: AddressSanitizer failed to allocate" in msg or "AddressSanitizer's allocator is terminating the process instead of returning 0" in msg:
+            # ASan will immediately abort the program.
+            # As of LLVM r190127, this looks like:
+            #     WARNING: AddressSanitizer failed to allocate 0x0fffffffffff bytes
+            #     AddressSanitizer's allocator is terminating the process instead of returning 0
+            #     If you don't like this behavior set allocator_may_return_null=1
+            # If you're interested in OOM crashes, you can set ASAN_OPTIONS=allocator_may_return_null=1
             self.crashIsKnown = True
 
         if "ERROR: AddressSanitizer" in msg:
