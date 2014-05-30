@@ -1,8 +1,11 @@
 var fuzzerTestingFunctions = (function() {
 
   function bool() { return rnd(2) ? "true" : "false"; }
+  function budget() { return Math.pow(2, rnd(30)); }
 
   var browserTestingFunctions = Random.weighted([
+    { w: 25,v: function() { return "fuzzPriv.ccSlice(" + budget() + ");"; } },
+    { w: 5, v: function() { return "fuzzPriv.finishCC();"; } },
     { w: 5, v: function() { return "fuzzPriv.CC(" + (rnd(7)-1) + ");"; } }, // the argument is aExtraForgetSkippableCalls
     { w: 5, v: function() { return "fuzzPriv.MP();"; } },
     { w: 5, v: function() { return "fuzzPriv.forceShrinkingGC();"; } },

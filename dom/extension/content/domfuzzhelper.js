@@ -73,6 +73,8 @@ function makeDOMFuzzHelper(aWindow) {
       forceGC: function() { Cu.forceGC(); },
 
       CC: cycleCollect(aWindow),
+      finishCC: function() { Cu.finishCC(); },
+      ccSlice: function(budget) { Cu.ccSlice(budget); },
 
       CCLog: cycleCollectLog(aWindow),
 
@@ -145,6 +147,8 @@ function makeDOMFuzzHelper(aWindow) {
         'gc': 'r',
         'CC': 'r',
         'CCLog': 'r',
+        'finishCC': 'r',
+        'ccSlice': 'r',
         'MP': 'r',
         'forceShrinkingGC': 'r',
         'schedulePreciseGC': 'r',
