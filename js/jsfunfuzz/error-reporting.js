@@ -33,6 +33,6 @@ function errorstack()
 {
   print("EEE");
   try {
-    [].qwerty.qwerty; // jshint ignore:line
+    void ([].qwerty.qwerty);
   } catch(e) { print(e.stack); }
 }

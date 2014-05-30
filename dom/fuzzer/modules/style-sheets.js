@@ -322,7 +322,7 @@ var fuzzerRandomClasses = (function() {
       pd = pdFunc();
 
       // Sanity check
-      pd["float"].other_values[0]; // jshint ignore:line
+      void (pd["float"].other_values[0]);
     } catch(e) {
       dumpln("Error importing the CSS property database: " + e);
       return false;

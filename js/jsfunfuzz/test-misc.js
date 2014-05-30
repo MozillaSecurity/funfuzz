@@ -114,7 +114,7 @@ function tryHalves(code)
     if (verbose)
       dumpln("First half: " + firstHalf);
     f = new Function(firstHalf);
-    "" + f; // jshint ignore:line
+    void ("" + f);
   }
   catch(e) {
     if (verbose)
@@ -126,7 +126,7 @@ function tryHalves(code)
     if (verbose)
       dumpln("Second half: " + secondHalf);
     f = new Function(secondHalf);
-    "" + f; // jshint ignore:line
+    void ("" + f);
   }
   catch(e) {
     if (verbose)

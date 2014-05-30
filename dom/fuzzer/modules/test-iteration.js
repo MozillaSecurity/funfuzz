@@ -32,7 +32,7 @@
         for (var p in obj) {
           var j = null;
           try { j = obj[p]; } catch(e) { }
-          try { "" + j; } catch(e) { } // jshint ignore:line
+          try { void ("" + j); } catch(e) { }
           try { uneval(j); } catch(e) { }
         }
       } catch(e) {
