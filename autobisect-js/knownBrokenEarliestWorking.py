@@ -34,7 +34,7 @@ def knownBrokenRangesBrowser(options):
 
 def knownBrokenRanges(options):
     '''Returns a list of revsets corresponding to known-busted revisions'''
-    # Paste numbers into: http://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
+    # Paste numbers into: https://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
     # - (1) autoBisect.py --compilationFailedLabel=bad -e FAILINGREV
