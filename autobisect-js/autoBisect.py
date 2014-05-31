@@ -403,7 +403,7 @@ def sanitizeCsetMsg(msg, repo):
         if line.find('<') != -1 and line.find('@') != -1 and line.find('>') != -1:
             line = ' '.join(line.split(' ')[:-1])
         elif line.startswith('changeset:') and 'mozilla-central' in repo:
-            line = 'changeset:   http://hg.mozilla.org/mozilla-central/rev/' + line.split(':')[-1]
+            line = 'changeset:   https://hg.mozilla.org/mozilla-central/rev/' + line.split(':')[-1]
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
