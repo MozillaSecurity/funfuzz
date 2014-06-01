@@ -39,6 +39,7 @@ else:
 ALL_COMPILE_LIBS = (COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB)
 ALL_RUN_LIBS = (RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
 
+
 def archOfBinary(binary):
     '''This function tests if a binary is 32-bit or 64-bit.'''
     unsplitFiletype = captureStdout(['file', binary])[0]
@@ -55,6 +56,7 @@ def archOfBinary(binary):
         if '64-bit' in filetype:
             assert '32-bit' not in filetype
             return '64'
+
 
 def constructVgCmdList(errorCode=77):
     '''Constructs default parameters needed to run valgrind with.'''
@@ -75,6 +77,7 @@ def constructVgCmdList(errorCode=77):
     vgCmdList.append('--num-callers=50')
     return vgCmdList
 
+
 def shellSupports(shellPath, args):
     '''
     This function returns True if the shell likes the args.
@@ -92,6 +95,7 @@ def shellSupports(shellPath, args):
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
 
+
 def testBinary(shellPath, args, useValgrind):
     '''Tests the given shell with the given args.'''
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
@@ -101,6 +105,7 @@ def testBinary(shellPath, args, useValgrind):
     vdump('The exit code is: ' + str(rCode))
     return out, rCode
 
+
 def testDbgOrOpt(s):
     '''This function tests if a binary is a debug or optimized shell.'''
     # Do not use disassemble(), old shells prior to cc4fdccc1135 did not have disassemble(), and
@@ -108,9 +113,11 @@ def testDbgOrOpt(s):
     # The changeset's patch date is not reflective of its actual landing date.
     return 'dbg' if shellSupports(s, ['-e', 'dis()']) else 'opt'
 
+
 def testGetBuildConfiguration(s):
     '''This function tests if a binary supports getBuildConfiguration().'''
     return shellSupports(s, ['-e', 'getBuildConfiguration()'])
+
 
 def testGetBuildConfigurationWithThreadsafe(s):
     '''
@@ -121,9 +128,11 @@ def testGetBuildConfigurationWithThreadsafe(s):
             ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False)[0]
     return ans.find('true') != -1
 
+
 def testJsShellOrXpcshell(s):
     '''This function tests if a binary is a js shell or xpcshell.'''
     return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
+
 
 def queryBuildConfiguration(s, parameter):
     '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
