@@ -26,7 +26,6 @@ intPrefs = {
     "layout.scrollbar.side":                      lambda: random.choice([0, 1, 2, 3]),
     "permissions.default.image":                  lambda: random.choice([1, 2, 3]),
     "accessibility.force_disabled":               lambda: random.choice([-1, 0, 1]),
-    "gfx.font_rendering.harfbuzz.scripts":        lambda: random.randrange(0, 0x100), # gfx/thebes/gfxUnicodeProperties.h ShapingType bitfield
     "gfx.hidpi.enabled":                          lambda: random.choice([0, 1, 2]),
     "image.mem.hard_limit_decoded_image_kb":      lambda: random.randrange(0, 66560),
     "dom.max_script_run_time":                    lambda: random.choice([0, 5, 60, 60, 60, 60]), # NB: constant-prefs.js also usually sets it to 60
