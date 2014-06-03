@@ -297,6 +297,7 @@ svg.display-lists.hit-testing.enabled
 svg.marker-improvements.enabled
 svg.paint-order.enabled
 svg.smil.enabled
+svg.svg-iframe.enabled
 toolkit.identity.debug
 toolkit.telemetry.enabled
 view_source.syntax_highlight

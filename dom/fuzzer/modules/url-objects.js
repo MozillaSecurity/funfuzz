@@ -55,7 +55,7 @@ var fuzzerURLObjects = (function() {
         return Things.add('document.createElementNS("http://www.w3.org/1999/xhtml", "area")');
       case 3:
         // It is safe to play with a frame's location.
-        var frame = Things.instanceAny(["HTMLFrameElement", "HTMLIFrameElement"]);
+        var frame = Things.instanceAny(["HTMLObjectElement", "HTMLFrameElement", "HTMLIFrameElement", "SVGIFrameElement"]);
         if (frame) {
           return Things.add(frame + ".contentDocument.location");
         }

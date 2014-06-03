@@ -198,9 +198,13 @@ var fuzzerSVGAttributes = (function() {
     "targetX": ["-1", "3", fuzzValues.numbers],
     "targetY": ["-1", "3", fuzzValues.numbers],
     "kernelUnitLength": [fuzzValues.twoNumbers, fuzzValues.numbers],
-    "preserveAlpha": fuzzValues.booleans
+    "preserveAlpha": fuzzValues.booleans,
 
-
+    // iframe
+    "src": fuzzValues.URIs,
+    "srcdoc": fuzzValues.htmlMarkup,
+    "sandbox": fuzzValues.iframeSandboxAttribute,
+    "seamless": ["true"],
   };
 
 
@@ -251,6 +255,7 @@ var fuzzerSVGAttributes = (function() {
     "pattern": ["patternUnits", "patternContentUnits", "patternTransform", "x", "y", "width", "height", ["id", patternIDs], ["xlink:href", idAsCssRef(patternIDs)], "overflow", "clip"],
 
     "foreignObject": ["x", "y", "width", "height", "requiredExtensions", "overflow", "clip"],
+    "iframe": ["x", "y", "width", "height", "preserveAspectRatio", "name", "src", "srcdoc", "sandbox", "seamless"], // "postpone" ?
 
     // filters?
 
