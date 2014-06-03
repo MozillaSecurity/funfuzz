@@ -1,18 +1,5 @@
 var fuzzerHTMLAttributes = (function() {
 
-  function spaceSepSubset(a)
-  {
-    var subset = [];
-    for (var i = 0; i < a.length; ++i) {
-      if (rnd(2)) {
-        subset.push(a[i]);
-      }
-    }
-    // Wouldn't hurt to sometimes shuffle, repeat, include bogus things, etc.
-    // And weight toward all or none
-    return subset.join(" ");
-  }
-
   // Attribute values (specific to HTML)
   var relations = ["alternate", "stylesheet", "icon", "prefetch", "next", "prev", "search", "import"];
   var listOfFrameSizes = ["100,*", "*,100", "100,100,100,100,100", "*", "30%,20%,50%", "100%,*"];
@@ -177,9 +164,9 @@ var fuzzerHTMLAttributes = (function() {
     // frames
     "mozbrowser": ["true"],
     "allowfullscreen": ["true"],
-    "sandbox": function() { return spaceSepSubset(["allow-forms", "allow-pointer-lock", "allow-popups", "allow-same-origin", "allow-scripts", "allow-top-navigation"]); },
     "seamless": ["true"],
     "srcdoc": fuzzValues.htmlMarkup,
+    "sandbox": fuzzValues.iframeSandboxAttribute,
 
     // embed
     "allowscriptaccess": ["always"],

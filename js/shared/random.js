@@ -118,6 +118,18 @@ var Random = {
     Random.shuffle(newArray);
     return newArray;
   },
+  subset: function(a) {
+    // TODO: shuffle, repeat, include bogus things [see also https://github.com/mozilla/rust/blob/d0ddc69298c41df04b0488d91d521eb531d79177/src/fuzzer/ivec_fuzz.rs]
+    // Consider adding a weight argument, or swarming on inclusion/exclusion to make 'all' and 'none' more likely
+    var subset = [];
+    for (var i = 0; i < a.length; ++i) {
+      if (rnd(2)) {
+        subset.push(a[i]);
+      }
+    }
+    return subset;
+  },
+
 };
 
 function rnd(n) { return Random.number(n); }

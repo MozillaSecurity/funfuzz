@@ -514,6 +514,10 @@ var fuzzValues = {
     return x;
   },
 
+  iframeSandboxAttribute: function() {
+    return Random.subset(["allow-forms", "allow-pointer-lock", "allow-popups", "allow-same-origin", "allow-scripts", "allow-top-navigation"]).join(" ");
+  },
+
   texts: [
     [
       "",
