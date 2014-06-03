@@ -111,7 +111,6 @@ var fuzzerSVGAttributes = (function() {
     "marker-mid": ["", idAsCssRef(markerIDs)],
     "marker": ["", idAsCssRef(markerIDs)],
 
-
     // marker
     "markerUnits": ["strokeWidth", "userSpaceOnUse"],
     "markerWidth": svgLengths,
@@ -193,13 +192,13 @@ var fuzzerSVGAttributes = (function() {
        "-2 0 0 0 1 0 0 0 2",
        "0.3333 0.3333 0.3333",
        "0.3333 0.3333 0.3333"],
-     "egdeMode": ["none", "duplicate", "wrap"],
-     "divisor": ["1.3", "0.5", "0", "-1", "1", fuzzValues.numbers],
-     "bias": ["1.3", "0.5", "0", "-1", "1", fuzzValues.numbers],
-     "targetX": ["-1", "3", fuzzValues.numbers],
-     "targetY": ["-1", "3", fuzzValues.numbers],
-     "kernelUnitLength": [fuzzValues.twoNumbers, fuzzValues.numbers],
-     "preserveAlpha": fuzzValues.booleans
+    "egdeMode": ["none", "duplicate", "wrap"],
+    "divisor": ["1.3", "0.5", "0", "-1", "1", fuzzValues.numbers],
+    "bias": ["1.3", "0.5", "0", "-1", "1", fuzzValues.numbers],
+    "targetX": ["-1", "3", fuzzValues.numbers],
+    "targetY": ["-1", "3", fuzzValues.numbers],
+    "kernelUnitLength": [fuzzValues.twoNumbers, fuzzValues.numbers],
+    "preserveAlpha": fuzzValues.booleans
 
 
   };
