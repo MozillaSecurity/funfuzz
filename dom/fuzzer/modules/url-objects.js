@@ -57,7 +57,7 @@ var fuzzerURLObjects = (function() {
         // It is safe to play with a frame's location.
         var frame = Things.instanceAny(["HTMLFrameElement", "HTMLIFrameElement"]);
         if (frame) {
-          return Things.add(frame + ".location");
+          return Things.add(frame + ".contentDocument.location");
         }
         return [];
       default:
