@@ -3,9 +3,11 @@
 # Filenames that should be ignored wherever they appear
 ~$
 \.pyc$
-\.DS_Store
-\.gdb_history
-\.orig
+\.DS_Store$
+\.gdb_history$
+\.orig$
+\.rej$
+
 badmatch.log
 refdyn.log
 autoconf.js
