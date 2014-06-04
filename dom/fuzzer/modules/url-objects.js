@@ -31,6 +31,7 @@ var fuzzerURLObjects = (function() {
       return makeURLObject();
     }
 
+    // http://dxr.mozilla.org/mozilla-central/search?q=implements+URLUtils+path%3Awebidl&case=true&redirect=true
     var obj = Things.instanceAny(["Location", "URL", "HTMLAnchorElement", "HTMLAreaElement"]);
     if (!obj) {
       return makeURLObject();
