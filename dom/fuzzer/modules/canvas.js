@@ -163,7 +163,7 @@ var fuzzerCanvas = (function() {
     // XXX some of these are strings, some of them are not. are they all getting escaped?
     var attributes = {
       "fillStyle": CreateStyle,
-      "font": function() { return simpleSource(Random.pick(fuzzValues.numbersWithUnits) + " " + Random.pick(fuzzValues.fontFaces)); },
+      "font": function() { return simpleSource(fuzzerRandomClasses.propertyValue("font")); },
       "globalAlpha": numbersZeroOne,
       "globalCompositeOperation": ["'copy'", "'darker'", "'destination-atop'", "'destination-in'", "'destination-out'", "'destination-over'", "'lighter'", "'source-atop'", "'source-in'", "'source-out'", "'source-over'", "'xor'"],
       "lineCap": ["'butt'", "'round'", "'square'"],

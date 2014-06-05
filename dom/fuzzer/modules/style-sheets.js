@@ -631,5 +631,6 @@ var fuzzerRandomClasses = (function() {
     randomDeclaration: randomDeclaration,    // Used by fuzzerRandomStyles
     randomRule: randomRule,                  // Used by fuzzerDOMCSS
     randomProperty: randomProperty,          // Used by fuzzerDOMStyle
+    propertyValue: propertyValue,            // Used by fuzzerCanvas
   };
 })();
