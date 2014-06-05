@@ -24,11 +24,11 @@ var fuzzerDOMStyle = (function() {
         return Things.add(Things.instance("CSSStyleRule") + ".style");
       case 3:
         // Grab a property value.
-        return Things.add(Things.instance("CSSStyleDeclaration") + ".getPropertyValue(" + simpleSource(Random.index(fuzzerRandomClasses.CSSPropList)) + ")");
+        return Things.add(Things.instance("CSSStyleDeclaration") + ".getPropertyValue(" + simpleSource(fuzzerRandomClasses.randomProperty()) + ")");
       default:
         // Grab a CSSPrimitiveValue object. (Only works for computed styles, and for non-shorthands)
         // Note: I'm not really sure what to do with the CSSPrimitiveValue object, so I'm letting fuzzerRandomJS have at it.
-        return Things.add(Things.instance("CSSStyleDeclaration") + ".getPropertyCSSValue(" + simpleSource(Random.index(fuzzerRandomClasses.CSSPropList)) + ")");
+        return Things.add(Things.instance("CSSStyleDeclaration") + ".getPropertyCSSValue(" + simpleSource(fuzzerRandomClasses.randomProperty()) + ")");
     }
   }
 

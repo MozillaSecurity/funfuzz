@@ -610,6 +610,6 @@ var fuzzerRandomClasses = (function() {
     setHammer: setHammer,                    // Random Classes callback
     randomDeclaration: randomDeclaration,    // Used by fuzzerRandomStyles
     randomRule: randomRule,                  // Used by fuzzerDOMCSS
-    CSSPropList: CSSPropList,                // Used by fuzzerDOMStyle
+    randomProperty: randomProperty,          // Used by fuzzerDOMStyle
   };
 })();
