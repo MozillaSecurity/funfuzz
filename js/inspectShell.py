@@ -166,5 +166,9 @@ def verifyBinary(sh):
             sh.buildOptions.enableMoreDeterministic
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
             sh.buildOptions.buildWithAsan
-        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'arm-simulator') == \
-            sh.buildOptions.enableArmSimulator
+        # Apparently the entry for getBuildConfiguration landed in April 2014, months after the
+        # actual ARM32 simulator landed. We can uncomment this maybe arbitrarily in Sep 2014.
+        # If people still bisect till the range ~Feb 2014 to April 2014 for ARM32 simulator bugs,
+        # then we'll think about testing flags only for this range.
+        #assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'arm-simulator') == \
+        #    sh.buildOptions.enableArmSimulator
