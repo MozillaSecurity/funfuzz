@@ -132,7 +132,7 @@ var fuzzerRandomClasses = (function() {
   {
     if (rnd(3) !== 0)
       return "";
-    return ", " + Random.pick(CSSPropHash["list-style-type"]);
+    return ", " + propertyValue("list-style-type");
   }
 
   function cssURLs() {
@@ -243,7 +243,7 @@ var fuzzerRandomClasses = (function() {
       fuzzValues.fontFaces,
       function() { return cssLiteralString(Random.pick(fuzzValues.fontFaces)); },
       "-moz-use-system-font", // "-moz-use-system-font is the value we use for all the 'font' subproperties to say that 'font' was set to one of the system font values"
-      // Or a comma-separated list of such...
+      function() { return propertyValue("font-family") + ", " + propertyValue("font-family"); }
     ],
     "-moz-font-feature-settings":
       function() {
@@ -404,6 +404,10 @@ var fuzzerRandomClasses = (function() {
 
   function setHammer(h) { hammer = "" + h; }
 
+  function propertyValue(prop) {
+    return rnd(10) ? Random.pick(CSSPropHash[prop]) : randomCSSValue();
+  }
+
   function randomProperty()
   {
     if (rnd(2) === 0) {
@@ -422,15 +426,14 @@ var fuzzerRandomClasses = (function() {
   function randomDeclaration()
   {
     var prop = randomProperty();
-
-    var value = rnd(6) ? Random.pick(CSSPropHash[prop]) : randomCSSValue();
+    var value = propertyValue(prop);
 
     if (typeof value == "number")
       value = "" + value;
 
     if (rnd(10) === 0) {
-      var value2 = rnd(6) ? Random.pick(CSSPropHash[prop]) : randomCSSValue();
-      value = value + Random.index(["", " ", ", "]) + value2;
+      // Append another value for the same property
+      value = value + Random.index(["", " ", ", "]) + propertyValue(prop);
     }
 
     if (typeof value != "string") {
