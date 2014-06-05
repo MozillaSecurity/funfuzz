@@ -381,7 +381,7 @@ var fuzzerRandomClasses = (function() {
 
   function randomCSSValue() {
     return rnd(2) ?
-      Random.index(["", "inherit", "initial", "auto"]) :
+      Random.index(["", "inherit", "initial", "unset", "auto"]) :
       Random.pick(CSSPropHash[Random.index(CSSPropList)]);
   }
 
