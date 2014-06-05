@@ -237,6 +237,23 @@ var fuzzerRandomClasses = (function() {
     "word-spacing": lengths,
     "text-align": ["left", "right", "center", "justify", "-moz-left", "-moz-right", "-moz-center", "start", "end"],
     "vertical-align": ["baseline", "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom", lengths],
+    "font": function() {
+      var features = [];
+      // Font-family is weird. The first few sub-properties can be ordered in various ways...
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/font
+      for (let sub of ["font-style", "font-variant", "font-weight", "font-stretch"]) {
+        if (rnd(2)) {
+          features.push(propertyValue(sub));
+        }
+      }
+      Random.shuffle(features);
+      features.push(propertyValue("font-size") + rnd(2) ? "" : "/" + propertyValue("line-height"));
+      features.push(propertyValue("font-family"));
+      if (rnd(30) === 0) {
+        Random.shuffle(features);
+      }
+      return features.join(" ");
+    },
     "font-size": lengths,
     "font-size-adjust": fuzzValues.numbers,
     "font-family": [
