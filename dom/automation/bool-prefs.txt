@@ -296,6 +296,7 @@ stagefright.disabled
 #stagefright.force-enabled # i don't know what this does
 svg.display-lists.hit-testing.enabled
 svg.marker-improvements.enabled
+svg.new-getBBox.enabled
 svg.paint-order.enabled
 svg.smil.enabled
 svg.svg-iframe.enabled
