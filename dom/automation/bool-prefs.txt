@@ -96,6 +96,7 @@ dom.enable_resource_timing
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
 dom.experimental_forms
+dom.forms.autocomplete.experimental
 dom.forms.color
 dom.forms.inputmode
 dom.forms.number
