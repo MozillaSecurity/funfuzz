@@ -40,7 +40,7 @@ var fuzzerHTMLAttributes = (function() {
     "readonly": "readonly",
     "indeterminate": "indeterminate",
     "autofocus": "autofocus",
-    "autocomplete": "autocomplete",
+    "autocomplete": ["autocomplete", "off", "on", "name", "email"],
     "novalidate": "novalidate",
     "formnovalidate": "formnovalidate",
     "required": "required",
