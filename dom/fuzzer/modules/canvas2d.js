@@ -8,6 +8,11 @@
 **/
 var fuzzerCanvas2D = (function() {
 
+  function contextAttributes() {
+    // Generate a 'dictionary ContextAttributes2D'
+    return "{ willReadFrequently: " + Make.bool() + ", alpha: " + Make.bool() + " }";
+  }
+
   function makeCommand()
   {
     if (!Things.hasInstance("HTMLCanvasElement") || rnd(20) == 0) {
@@ -19,7 +24,7 @@ var fuzzerCanvas2D = (function() {
     }
 
     if (!Things.hasInstance("CanvasRenderingContext2D") || rnd(20) == 0) {
-      return Things.add(Things.instance("HTMLCanvasElement") + ".getContext('2d')");
+      return Things.add(Things.instance("HTMLCanvasElement") + ".getContext('2d', " + contextAttributes() + ")");
     }
 
     if (!Things.hasInstance("HTMLImageElement")) {
