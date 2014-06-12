@@ -38,7 +38,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Math.fround") == -1         // bug 1000606
        && code.indexOf("Math.log2") == -1           // bug 1000606
        && code.indexOf("Math.asinh") == -1          // bug 1007213
-       && code.indexOf("Array.buildPar") == -1      // bug 1022948
        && code.indexOf("arguments") == -1           // bug 1024444
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
