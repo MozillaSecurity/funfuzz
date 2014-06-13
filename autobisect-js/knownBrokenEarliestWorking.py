@@ -73,6 +73,7 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('f6d5a48271b6', 'dc128b242d8a'), # broken Windows builds due to ICU
             hgrange('17c463691232', 'f76b7bc18dbc'), # broken Windows builds due to build breakage
+            hgrange('d959285c827e', 'edf5e2dc9198'), # Fx33, build breakage
         ])
 
     if isMozBuild64:
@@ -102,6 +103,7 @@ def knownBrokenRanges(options):
             hgrange('995f7402235b', '6c899a1064f3'), # broken non-threadsafe after ts became default
             hgrange('d2c4ae312b66', 'abfaf0ccae19'), # broken non-threadsafe after ts became default
             hgrange('07c0cf637290', 'f2adbe2a41c0'), # broken non-threadsafe after ts became default
+            hgrange('573458d10426', '5a50315d4d7d'), # Fx33, broken non-threadsafe
         ])
 
     # This has been moved to a global ignore range. JSBugMon passes in --disable-threadsafe directly
