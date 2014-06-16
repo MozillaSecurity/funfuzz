@@ -132,7 +132,7 @@ def basicFlagSets(shellPath):
     compareJIT uses these combinations of flags (as well as the original set of flags) when run
     through Lithium and autoBisect.
     '''
-    if shellSupportsFlag(shellPath, "--fuzzing-safe"):
+    if shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
@@ -151,6 +151,27 @@ def basicFlagSets(shellPath):
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
             if shellSupportsFlag(shellPath, '--no-sse3'):
                 basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off',
+                                      '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        return basicFlagList
+    elif shellSupportsFlag(shellPath, "--fuzzing-safe"):
+        basicFlagList = [
+            # Parts of this flag permutation come from:
+            # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
+            # as well as other interesting flag combinations that have found / may find new bugs.
+            ['--fuzzing-safe', '--ion-parallel-compile=off'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--no-ion'],
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
+        ]
+        if shellSupportsFlag(shellPath, "--thread-count=1"):
+            basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
+            # Range analysis had only started to stabilize around the time when --no-sse3 landed.
+            if shellSupportsFlag(shellPath, '--no-sse3'):
+                basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--baseline-eager"):
