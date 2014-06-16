@@ -146,6 +146,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if '--ion-offthread-compile=' in flags:
+        required.append('f0d67b1ccff9') # 188901 on m-c, first rev that has the --ion-offthread-compile=off option
     if options.enableArmSimulator:
         required.append('5ad5f92387a2') # 179476 on m-c, first rev with relevant getBuildConfiguration entry
     if options.disableGcGenerational:
