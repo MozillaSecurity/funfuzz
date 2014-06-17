@@ -141,7 +141,9 @@ def many_timed_runs(targetTime, wtmpDir, args):
                     shellIsDeterministic and flagsAreDeterministic:
                 with open(logPrefix + '-out.txt', 'rb') as f:
                     jitcomparelines = (
-                        ["dumpObject = function() { };\n", "// DDBEGIN\n"] +
+                        ["dumpObject = function() { };\n",
+                         "dumpHeapComplete = function() { };\n",
+                         "// DDBEGIN\n"] +
                         [l.replace('/*FCM*/', '') for l in linesStartingWith(f, "/*FCM*/")] +
                         ["\ntry{print(uneval(this));}catch(e){}\n", "// DDEND\n"]
                     )
