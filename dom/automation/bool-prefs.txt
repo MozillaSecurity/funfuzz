@@ -160,7 +160,7 @@ javascript.options.baselinejit
 javascript.options.baselinejit.unsafe_eager_compilation
 javascript.options.gc_on_memory_pressure
 javascript.options.ion
-javascript.options.ion.parallel_compilation
+javascript.options.ion.offthread_compilation
 javascript.options.ion.unsafe_eager_compilation
 javascript.options.mem.gc_dynamic_heap_growth
 javascript.options.mem.gc_dynamic_mark_slice
