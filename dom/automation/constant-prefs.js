@@ -44,6 +44,7 @@ user_pref("toolkit.startup.max_resumed_crashes", -1);
 user_pref("browser.safebrowsing.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
 user_pref("browser.search.update", false);
+user_pref("browser.webapps.checkForUpdates", 0);
 user_pref("app.update.enabled", false);
 user_pref("app.update.stage.enabled", false);
 user_pref("app.update.staging.enabled", false);
