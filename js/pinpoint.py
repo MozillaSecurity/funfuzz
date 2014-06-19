@@ -43,13 +43,13 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
     print "\nDone running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
     print shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
 
-    if bisectRepo is not "none" and targetTime is None:
+    if bisectRepo is not "none" and targetTime is None and buildOptionsStr is not None:
         if platform.uname()[2] == 'XP':
             print 'Not pinpointing to exact changeset since autoBisect does not work well in WinXP.'
         elif testJsShellOrXpcshell(jsEngine) != "xpcshell":
             autobisectCmd = (
                 [sys.executable, autobisectpy] +
-                ["-b", buildOptionsStr if (buildOptionsStr is not None) else guessBuildOptions(jsEngine)] +
+                ["-b", buildOptionsStr] +
                 ["-p", ' '.join(engineFlags + [infilename])] +
                 ["-i"] + itest
             )
@@ -58,17 +58,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
 
     return (lithResult, lithDetails)
-
-
-def guessBuildOptions(jsEngine):
-    # It might be more accurate to use [./js -e "print(JSON.stringify(getBuildConfiguration()))"] or something in inspectShell.py
-    # FIXME: -R is not specified here. Please be sure that the repository to be worked on is as intended.
-    # This function is only used when calling loopjsfunfuzz.py without --build
-    opts = ["-a", archOfBinary(jsEngine), "-c", testDbgOrOpt(jsEngine)]
-    if '-dm-' in jsEngine:
-        opts.append('--enable-more-deterministic')
-    # XXX: Add threadsafe detection
-    return ' '.join(opts)
 
 
 def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptionsStr, targetTime, lev):
