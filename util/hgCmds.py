@@ -104,16 +104,20 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
 
 def getRepoNameFromHgrc(repoDir):
     '''Looks in the hgrc file in the .hg directory of the repository and returns the name.'''
-    hgrcpath = os.path.join(repoDir, '.hg', 'hgrc')
-    assert os.path.isfile(hgrcpath)
+    assert isRepoValid(repoDir)
     hgCfg = SafeConfigParser()
-    hgCfg.read(hgrcpath)
+    hgCfg.read(normExpUserPath(os.path.join(repoDir, '.hg', 'hgrc')))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgCfg.get('paths', 'default').split('/') if i][-1]
 
 
 def isAncestor(repoDir, a, b):
     return findCommonAncestor(repoDir, a, b) == a
+
+
+def isRepoValid(repo):
+    '''Checks that a repository is valid by ensuring that the hgrc file exists.'''
+    return os.path.isfile(normExpUserPath(os.path.join(repo, '.hg', 'hgrc')))
 
 
 def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
