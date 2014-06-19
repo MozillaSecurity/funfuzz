@@ -209,7 +209,6 @@ def parseOpts():
         remote_host = None,
         baseDir = os.path.expanduser("~") + localSep + "fuzzingjobs" + localSep,
         repoName = 'mozilla-central',
-        compileType = 'dbg',
         targetTime = 15*60,       # 15 minutes
         testType = "auto",
         existingBuildDir = None,
@@ -237,13 +236,6 @@ def parseOpts():
 
     parser.add_option('--repotype', dest='repoName',
         help='Sets the repository to be fuzzed. Defaults to "%default".')
-    parser.add_option('--compiletype', dest='compileType',
-        help='Sets the compile type to be fuzzed. Defaults to "%default".')
-    parser.add_option('-a', '--architecture',
-                      dest='arch',
-                      type='choice',
-                      choices=['32', '64'],
-                      help='Test architecture. Only accepts "32" or "64"')
 
     parser.add_option("--remote-host", dest="remote_host",
         help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
