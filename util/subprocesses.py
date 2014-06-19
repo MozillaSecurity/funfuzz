@@ -476,6 +476,12 @@ def getAbsPathForAdjacentFile(filename):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
+def isProgramInstalled(program):
+    '''Checks if the specified program is installed.'''
+    return (captureStdout(['which', program],
+        ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1] == 0)
+
+
 def rmDirIfEmpty(eDir):
     '''Remove directory if empty.'''
     assert os.path.isdir(eDir)
@@ -581,5 +587,12 @@ def vdump(inp):
         print 'DEBUG -', inp
 
 
+###########
+#  Tests  #
+###########
+
 if __name__ == '__main__':
-    pass
+    vdump('Running tests...')
+    assert isProgramInstalled('date')
+    assert not isProgramInstalled('FOOBARFOOBAR')
+    vdump('Done')
