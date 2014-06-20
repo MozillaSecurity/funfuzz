@@ -331,17 +331,24 @@ def cfgBin(shell, binToBeCompiled):
         assert 'clang' in cfgEnvDt['CC']
         assert 'clang++' in cfgEnvDt['CXX']
 
-    # See https://hg.mozilla.org/mozilla-central/file/0a91da5f5eab/configure.in#l6894
-    # Debug builds are compiled with --enable-optimize because --disable-optimize is not present.
-    if shell.buildOptions.buildWithVg:
-        cfgCmdList.append('--enable-optimize=-O1')
+    if binToBeCompiled == 'nspr':
+        # NSPR build generates a debug build by default - so do not specify any options
+        if shell.buildOptions.compileType == 'opt':
+            cfgCmdList.append('--disable-debug')
+            if shell.buildOptions.buildWithVg:
+                cfgCmdList.append('--enable-optimize=-O1')
+            else:
+                cfgCmdList.append('--enable-optimize')
     else:
-        cfgCmdList.append('--enable-optimize')
+        if shell.buildOptions.buildWithVg:
+            cfgCmdList.append('--enable-optimize=-O1')
+        else:
+            cfgCmdList.append('--enable-optimize')
 
-    if shell.buildOptions.compileType == 'dbg':
-        cfgCmdList.append('--enable-debug')
-    else:
-        cfgCmdList.append('--disable-debug')
+        if shell.buildOptions.compileType == 'dbg':
+            cfgCmdList.append('--enable-debug')
+        else:
+            cfgCmdList.append('--disable-debug')
 
     if binToBeCompiled == 'nspr':
         cfgCmdList.append('--prefix=' + \
