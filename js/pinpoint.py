@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import sys
 from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
-from inspectShell import archOfBinary, testDbgOrOpt, testJsShellOrXpcshell
+from inspectShell import testJsShellOrXpcshell
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, 'lithium', 'lithium.py'))
