@@ -145,10 +145,12 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--no-ion'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager'],
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager'],  # Not in jit_test.py after bug 1028867 landed though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager', '--no-fpu'],
         ]
+        if shellSupportsFlag(shellPath, "--latin1-strings"):  # See bug 1028867
+            basicFlagList.append(['--fuzzing-safe', '--baseline-eager', '--latin1-strings'])
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-offthread-compile=off'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
