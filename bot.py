@@ -633,7 +633,7 @@ def localCompileFuzzJsShell(options):
     cmdList = [sys.executable, '-u']
     cmdList.append(normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + shell.getRepoDir())
-    cmdList += ["--build", options.buildOptions.inputArgs]
+    cmdList += ["--build", options.buildOptions.buildOptionsStr]
     if options.buildOptions.runWithVg:
         cmdList.append('--valgrind')
     if options.buildOptions.enableMoreDeterministic:

@@ -203,7 +203,7 @@ def cfgBin(shell, binToBeCompiled):
     if isARMv7l:
         # 32-bit shell on ARM boards, e.g. odroid boards.
         # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
-        assert shell.buildOptions.arch == '32', 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
+        assert shell.buildOptions.enable32, 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not shell.buildOptions.enableHardFp:
             cfgEnvDt['CC'] = 'gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
             cfgEnvDt['CXX'] = 'g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
@@ -219,7 +219,7 @@ def cfgBin(shell, binToBeCompiled):
             #cfgCmdList.append('--with-thumb')
         if not shell.buildOptions.enableHardFp:
             cfgCmdList.append('--target=arm-linux-gnueabi')
-    elif shell.buildOptions.arch == '32' and os.name == 'posix':
+    elif shell.buildOptions.enable32 and os.name == 'posix':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
         if isMac:
             assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
@@ -279,7 +279,7 @@ def cfgBin(shell, binToBeCompiled):
             else:
                 cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
-    elif isMac and macVer() >= [10, 7] and shell.buildOptions.arch == '64':
+    elif isMac and macVer() >= [10, 7] and not shell.buildOptions.enable32:
         if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
             cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
             cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
@@ -301,13 +301,13 @@ def cfgBin(shell, binToBeCompiled):
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            if shell.buildOptions.arch == '32':
+            if shell.buildOptions.enable32:
                 cfgCmdList.append('--enable-win32-target=WIN95')
             else:
                 cfgCmdList.append('--enable-64bit')
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        if shell.buildOptions.arch == '32':
+        if shell.buildOptions.enable32:
             if shell.buildOptions.enableArmSimulator:
                 cfgCmdList.append('--enable-arm-simulator')
         else:
@@ -331,24 +331,20 @@ def cfgBin(shell, binToBeCompiled):
         assert 'clang' in cfgEnvDt['CC']
         assert 'clang++' in cfgEnvDt['CXX']
 
-    if binToBeCompiled == 'nspr':
-        # NSPR build generates a debug build by default - so do not specify any options
-        if shell.buildOptions.compileType == 'opt':
-            cfgCmdList.append('--disable-debug')
-            if shell.buildOptions.buildWithVg:
-                cfgCmdList.append('--enable-optimize=-O1')
-            else:
-                cfgCmdList.append('--enable-optimize')
-    else:
-        if shell.buildOptions.buildWithVg:
-            cfgCmdList.append('--enable-optimize=-O1')
-        else:
-            cfgCmdList.append('--enable-optimize')
-
-        if shell.buildOptions.compileType == 'dbg':
+    # For NSPR, specify "--disable-debug --enable-optimize" to generate an opt build.
+    # They can actually be used independently, but it's not recommended.
+    # https://developer.mozilla.org/en-US/docs/NSPR_build_instructions#Configure_options
+    if shell.buildOptions.enableDbg:
+        # NSPR configure without options compiles debug by default
+        if binToBeCompiled == 'js':
             cfgCmdList.append('--enable-debug')
-        else:
-            cfgCmdList.append('--disable-debug')
+    else:
+        cfgCmdList.append('--disable-debug')
+
+    if shell.buildOptions.enableOpt:
+        cfgCmdList.append('--enable-optimize' + ('=-O1' if shell.buildOptions.buildWithVg else ''))
+    elif binToBeCompiled == 'js':  # NSPR configure without options compiles debug by default
+        cfgCmdList.append('--disable-optimize')
 
     if binToBeCompiled == 'nspr':
         cfgCmdList.append('--prefix=' + \
@@ -521,13 +517,20 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
         shell.setDestDir(shell.getShellCacheDir())
 
         if shell.buildOptions.isThreadsafe:
-            shell.setNsprObjdir(mkdtemp(prefix='-'.join(['objdir', 'nspr',
-                shell.buildOptions.compileType,
-                shell.getHgHash()]) + '-', dir=shell.getShellCacheDir()))
-        shell.setJsObjdir(mkdtemp(prefix='-'.join(['objdir', 'js', shell.buildOptions.compileType,
-            shell.getHgHash()]) + '-', dir=shell.getShellCacheDir()))
+            try:
+                os.mkdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
+            except OSError:
+                raise Exception('Unable to create nspr objdir directory.')
+            shell.setNsprObjdir(normExpUserPath(os.path.join(shell.getShellCacheDir(),
+                                                             'objdir-nspr')))
 
+        try:
+            os.mkdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+        except OSError:
+            raise Exception('Unable to create js objdir directory.')
+        shell.setJsObjdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
         cfgJsCompile(shell)
+
     except KeyboardInterrupt:
         rmTreeIncludingReadOnly(shell.getShellCacheDir())
         raise
@@ -561,7 +564,7 @@ def envDump(shell, log):
 
         f.write('Create another shell in shell-cache like this one:\n')
         f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
-            "-b", shell.buildOptions.inputArgs]) + "\n\n")
+            "-b", shell.buildOptions.buildOptionsStr]) + "\n\n")
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')

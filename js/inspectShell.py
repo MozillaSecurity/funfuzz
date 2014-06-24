@@ -106,14 +106,6 @@ def testBinary(shellPath, args, useValgrind):
     return out, rCode
 
 
-def testDbgOrOpt(s):
-    '''This function tests if a binary is a debug or optimized shell.'''
-    # Do not use disassemble(), old shells prior to cc4fdccc1135 did not have disassemble(), and
-    # it landed fairly recently on March 31, 2011. See bug 396512 comment 36.
-    # The changeset's patch date is not reflective of its actual landing date.
-    return 'dbg' if shellSupports(s, ['-e', 'dis()']) else 'opt'
-
-
 def testGetBuildConfiguration(s):
     '''This function tests if a binary supports getBuildConfiguration().'''
     return shellSupports(s, ['-e', 'getBuildConfiguration()'])
@@ -154,8 +146,13 @@ def testIsHardFpShellARM(s):
 
 def verifyBinary(sh):
     '''Verifies that the binary is compiled as intended.'''
-    assert archOfBinary(sh.getShellBaseTempDirWithName()) == sh.buildOptions.arch
-    assert testDbgOrOpt(sh.getShellBaseTempDirWithName()) == sh.buildOptions.compileType
+    assert archOfBinary(sh.getShellBaseTempDirWithName()) == \
+        ('32' if sh.buildOptions.enable32 else '64')
+
+    # Testing for debug or opt builds are different because there can be hybrid debug-opt builds.
+    assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'debug') == \
+        sh.buildOptions.enableDbg
+
     if isARMv7l:
         assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == sh.buildOptions.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
