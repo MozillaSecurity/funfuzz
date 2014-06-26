@@ -173,6 +173,7 @@ layers.acceleration.disabled
 #layers.async-video.enabled # requires OMTC
 layers.bufferrotation.enabled
 layers.composer2d.enabled
+layout.css.DOMMatrix.enabled
 layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 #layers.offmainthreadcomposition.async-animations
