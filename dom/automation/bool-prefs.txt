@@ -316,7 +316,8 @@ webgl.enable-prototype-webgl2
 webgl.force-enabled
 webgl.force-layers-readback
 webgl.force_osmesa
-webgl.lose-context-on-heap-minimize
+webgl.lose-context-on-memory-preasure
+webgl.restore-context-when-visible
 webgl.min_capability_mode
 webgl.prefer-native-gl
 webgl.prefer-16bpp
