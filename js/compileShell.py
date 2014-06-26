@@ -351,7 +351,8 @@ def cfgBin(shell, binToBeCompiled):
         cfgCmdList.append('--prefix=' + \
             normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
     else:
-        cfgCmdList.append('--enable-profiling')  # needed to obtain backtraces on opt shells
+        if shell.buildOptions.enableProfiling:
+            cfgCmdList.append('--enable-profiling')
         cfgCmdList.append('--enable-gczeal')
         cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
         cfgCmdList.append('--disable-tests')

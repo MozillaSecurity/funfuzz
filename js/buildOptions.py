@@ -87,6 +87,10 @@ def addParserOptions():
         dest = 'disableOpt',
         help = 'Build shells with --disable-optimize. Defaults to "%(default)s".'
     )
+    randomizeBool(['--enable-profiling'], 0.5,
+        dest = 'enableProfiling',
+        help = 'Build shells with --enable-profiling. Defaults to "%(default)s".'
+    )
 
     # Memory debuggers
     randomizeBool(['--build-with-asan'], 0.3,
