@@ -21,7 +21,7 @@ import time
 
 class Server:
     # Based on http://ilab.cs.byu.edu/python/threadingmodule.html
-    # which is CC-NC-ND
+    # which is CC (by-nc-nd)
 
     def __init__(self):
         self.host = ''
