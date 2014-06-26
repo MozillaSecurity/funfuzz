@@ -338,12 +338,13 @@ def cfgBin(shell, binToBeCompiled):
         # NSPR configure without options compiles debug by default
         if binToBeCompiled == 'js':
             cfgCmdList.append('--enable-debug')
-    else:
+    elif shell.buildOptions.disableDbg or binToBeCompiled == 'nspr':
         cfgCmdList.append('--disable-debug')
 
     if shell.buildOptions.enableOpt:
         cfgCmdList.append('--enable-optimize' + ('=-O1' if shell.buildOptions.buildWithVg else ''))
-    elif binToBeCompiled == 'js':  # NSPR configure without options compiles debug by default
+    elif binToBeCompiled == 'js' and shell.buildOptions.disableOpt:
+        # NSPR configure without options compiles debug by default
         cfgCmdList.append('--disable-optimize')
 
     if binToBeCompiled == 'nspr':
@@ -615,7 +616,8 @@ def main():
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify build options, e.g. -b "-d -o --32" (python buildOptions.py --help)')
+                      help='Specify build options, e.g. -b "--disable-debug --enable-optimize" ' + \
+                           '(python buildOptions.py --help)')
 
     parser.add_option('-r', '--rev',
                       dest='revision',

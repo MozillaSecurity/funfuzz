@@ -71,13 +71,21 @@ def addParserOptions():
         dest = 'enable32',
         help = 'Build 32-bit shells, but if not enabled, 64-bit shells are built.'
     )
-    randomizeBool(['-d', '--enable-debug'], 0.5,
+    randomizeBool(['--enable-debug'], 0.5,
         dest = 'enableDbg',
-        help = 'Build debug shells. Defaults to "%(default)s".'
+        help = 'Build shells with --enable-debug. Defaults to "%(default)s".'
     )
-    randomizeBool(['-o', '--enable-optimize'], 0.8,
+    randomizeBool(['--disable-debug'], 0.25,
+        dest = 'disableDbg',
+        help = 'Build shells with --disable-debug. Defaults to "%(default)s".'
+    )
+    randomizeBool(['--enable-optimize'], 0.8,
         dest = 'enableOpt',
-        help = 'Build opt shells. Defaults to "%(default)s".'
+        help = 'Build shells with --enable-optimize. Defaults to "%(default)s".'
+    )
+    randomizeBool(['--disable-optimize'], 0.1,
+        dest = 'disableOpt',
+        help = 'Build shells with --disable-optimize. Defaults to "%(default)s".'
     )
 
     # Memory debuggers
