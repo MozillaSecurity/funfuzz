@@ -615,7 +615,7 @@ def main():
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+                      help='Specify build options, e.g. -b "-d -o --32" (python buildOptions.py --help)')
 
     parser.add_option('-r', '--rev',
                       dest='revision',
