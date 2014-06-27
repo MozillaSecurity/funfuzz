@@ -178,9 +178,15 @@ def computeShellName(buildOptions, extraIdentifier):
     fileName = ['js']
     if buildOptions.enableDbg:
         fileName.append('dbg')
+    if buildOptions.disableDbg:
+        fileName.append('dbgDisabled')
     if buildOptions.enableOpt:
         fileName.append('opt')
+    if buildOptions.disableOpt:
+        fileName.append('optDisabled')
     fileName.append('32' if buildOptions.enable32 else '64')
+    if buildOptions.enableProfiling:
+        fileName.append('prof')
     if buildOptions.enableMoreDeterministic:
         fileName.append('dm')
     if buildOptions.buildWithAsan:
