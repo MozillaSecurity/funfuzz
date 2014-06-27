@@ -87,6 +87,7 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('9ab1119d4596', 'e963546ec749'), # missing #include -> compile failure
             hgrange('7c148efceaf9', '541248fb29e4'), # missing #include -> compile failure
+            hgrange('4a04ca5ed7d3', '406904577dfc'), # Fx33, see bug 1030014
         ])
 
     if options.isThreadsafe:
