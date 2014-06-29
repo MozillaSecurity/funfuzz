@@ -248,9 +248,6 @@ var fuzzValues = {
     if (rnd(100) === 0) {
       return fuzzTextDataURI(null, null);
     }
-    if (rnd(60) === 0) {
-      return Random.pick(fuzzValues.networkURIs);
-    }
 
     if (rnd(6) === 0) {
       return Random.pick(fuzzValues.URIs) + "#" + Random.pick(fuzzValues.names);
@@ -393,18 +390,10 @@ var fuzzValues = {
   ],
 
   annoyingURIs: [
-    "http://www.squarefree.com/stats/fuzz", // often triggers an http auth dialog
-    "https://www.squarefree.com/stats/fuzz", // often triggers an http auth dialog
     "aim:yaz", // often triggers an "external protocol request" dialog
     "foop:yaz", // often triggers an unknown protocol thingie
-    "http://htmledit.squarefree.com/special_files/empty.zip",
-    "http://htmledit.squarefree.com/flashAbout_info_small.swf",
-    "http://www.squarefree.com/spampede/Spampede.class", // java
-    "http://www.squarefree.com/spampede/", // page that uses java
     "about:memory", // content is not allowed to link or load
-    "ws://example.mozilla.com/", // WebSocket protocol
-    "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/0.9.2/shellblock.xpi",
-    "ftp://ftp.mozilla.org/pub/l10n-kits/netHelp-4x-tools.zip",
+    "ws://localhost/", // WebSocket protocol
   ],
 
   boringURIs: [
@@ -420,21 +409,6 @@ var fuzzValues = {
     "javascript:5555",
     "javascript:" + escalationAttempt,
     "javascript:'QQQQ' + String.fromCharCode(0) + 'UUUU'",
-  ],
-
-  networkURIs: [
-    // Use the network, have a different origin
-    "http://htmledit.squarefree.com/", // frames and scripts
-    "http://www.squarefree.com/shell", // redirect
-    "http://squarefree.com/shell", // two redirects
-    "http://squarefree.com/bookmarklets", // three redirects, the last going to https
-    "http://www.squarefree.com/bookmarklets", // two redirects, the last going to https
-    "http://www.squarefree.com/bookmarklets/",
-    "https://www.squarefree.com/bookmarklets/",
-    "http://ftp.mozilla.org/",
-    "ftp://ftp.mozilla.org/",
-    "about:credits", // secretly loads from mozilla.org
-    "about:home", // loads snippets from mozilla.org?
   ],
 
   // URLs that are safe to load as frames, in new tabs, etc.
@@ -957,28 +931,17 @@ function fuzzTotallyRandomValue()
 
 function fuzzSrcTreePathToURI(path)
 {
-  if (rnd(20) && location.protocol == "file:") {
-    // Try to load the file locally.
+  // TODO: also run a local server that serves these files (with appropriate MIME type, or omitting the content-type header)
 
+  if (location.protocol == "file:") {
     try {
       return "file:///" + fuzzPriv.reftestFilesDirectory() + "/" + path;
     } catch(e) {
-      dumpln("reftestFilesDirectory() threw, so we'll load the file from hgweb or mxr");
+      dumpln("reftestFilesDirectory() threw");
     }
   }
 
-  // We decided not to load the file locally (or were unable to).
-  // XXX it would be more polite to use a local server than pounding mxr/hg
-  // XXX that would also allow supporting multipart/x-mixed-replace (e.g. image/test/reftest/jpeg/webcam-simulacrum.mjpg and custom evil)
-
-  var protocol = Random.index(["http", "https"]);
-  if (rnd(3)) {
-    // hgweb gives the right mime type for most files
-    return protocol + "://hg.mozilla.org/mozilla-central/raw-file/default/" + path;
-  } else {
-    // MXR gives text/plain for most files
-    return protocol + "://mxr.mozilla.org/mozilla-central/source/" + path + "?raw=1";
-  }
+  return "";
 }
 
 function fuzzCodePointToUTF16(c)
