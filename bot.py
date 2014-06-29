@@ -530,7 +530,7 @@ def ensureBuild(options):
         # Download from Tinderbox and call it 'build'
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         buildDir = 'build'
-        buildType = downloadBuild.defaultBuildType(options)
+        buildType = downloadBuild.defaultBuildType(options.repoName, None, True)
         buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=(options.testType == 'js'))
         success = True
     return buildDir, buildSrc, buildType, success

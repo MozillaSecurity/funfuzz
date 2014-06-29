@@ -460,12 +460,6 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 #############################################
 
 
-# From http://stackoverflow.com/a/3337198/3011305
-class CustomDict(dict):
-    def __getattr__(self, name):
-        return self[name]
-
-
 def assertSaneJsBinary(cacheF):
     '''
     If the cache folder is present, check that the js binary is working properly.
@@ -518,14 +512,9 @@ def bisectUsingTboxBins(options):
     '''
     testedIDs = {}
     desiredArch = '32' if options.buildOptions.enable32 else '64'
+    buildType = defaultBuildType(options.nameOfTinderboxBranch, desiredArch, options.buildOptions.enableDbg)
 
     # Get list of tinderbox IDs
-    buildType = defaultBuildType(CustomDict(
-        arch = desiredArch,  # "arch: None" will select the default architecture depending on system
-        compileType = 'dbg' if options.buildOptions.enableDbg else 'opt',  # Use 'dbg' for dbg-opt
-        repoName = options.nameOfTinderboxBranch,
-    ))
-
     urlsTbox = getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
 
     # Download and test starting point.

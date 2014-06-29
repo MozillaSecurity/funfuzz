@@ -342,17 +342,17 @@ def mozPlatform(arch):
     else:
         raise Exception("The arch passed to mozPlatform must be '64', '32', or None")
 
-def defaultBuildType(options):
+def defaultBuildType(repoName, arch, debug):
     '''Returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug.'''
-    return options.repoName + '-' + mozPlatform(options.arch) + \
-        ('-debug' if options.compileType == 'dbg' else '')
+    return repoName + '-' + mozPlatform(arch) + ('-debug' if debug else '')
 
 def main():
     options = parseOptions()
     if options.remoteDir is not None:
         print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell)
     else:
-        downloadLatestBuild(defaultBuildType(options), options.downloadFolder,
+        buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
+        downloadLatestBuild(buildType, options.downloadFolder,
                             getJsShell=options.enableJsShell)
 
 if __name__ == "__main__":
