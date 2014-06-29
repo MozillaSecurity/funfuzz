@@ -617,7 +617,7 @@ def directMain():
         extraPrefs = randomPrefs.grabExtraPrefs(options.argURL)
     else:
         extraPrefs = ""
-    level, lines = levelAndLines(options.argURL or "https://bugzilla.mozilla.org/", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
+    level, lines = levelAndLines(options.argURL or "about:blank", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
     print level
     sys.exit(level)
 

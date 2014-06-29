@@ -59,8 +59,16 @@ user_pref("toolkit.telemetry.server", "");
 user_pref("plugins.update.url", "");
 user_pref("datareporting.healthreport.service.enabled", false);
 
-// Looking up the system proxy settings can cause problems (see bug 794174, see bug 793016)
-user_pref("network.proxy.type", 0);
+// Prevent the fuzzer from accidentally contacting servers.
+//   Note: I'm not sure why localhost / 127.0.0.1 even calls the PAC (see https://bugzilla.mozilla.org/show_bug.cgi?id=31510)
+//   Note: If I want to make a real proxy, look at:
+//     https://hg.mozilla.org/mozilla-central/file/f78e532e8a10/testing/mochitest/runtests.py#l984
+//     https://hg.mozilla.org/mozilla-central/file/f78e532e8a10/testing/mozbase/mozprofile/mozprofile/permissions.py#l284
+//   Note: If I remove the proxy entirely, network.proxy.type should be set to 0 because
+//     looking up the system proxy settings can cause problems (see bug 794174, see bug 793016)
+user_pref("network.proxy.share_proxy_settings", true);
+user_pref("network.proxy.type", 2);
+user_pref("network.proxy.autoconfig_url", "data:text/plain,function FindProxyForURL(url, host) { if (host == 'localhost' || host == '127.0.0.1') { return 'DIRECT'; } else { return 'PROXY 127.0.0.1:6'; } }");
 
 // Prefs from Christoph (?)
 user_pref("network.jar.open-unsafe-types", true);
