@@ -193,7 +193,7 @@ var fuzzValues = {
     "application/xml",
     "text/xml",
     "application/xhtml+xml",
-    // "image/svg+xml", // bug 1016145
+    "image/svg+xml",
     "application/vnd.mozilla.xul+xml",
     "application/rss+xml",
     "application/rdf+xml",
