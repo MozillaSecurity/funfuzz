@@ -154,7 +154,7 @@ var fuzzerWebIDL = (function () {
     return Things.reserve() + " = " + (rnd(10) ? "new " : "") + ifaceName + "(" + argumentList(Random.index(constructors).arguments) + ")" + ";";
   }
 
-  function createInstanceTweaker(ifaceName, instance)
+  function createInstanceTweaker(ifaceName, instance, reasonable)
   {
     var iface = db[ifaceName];
     var members = allMembers(iface);
@@ -185,7 +185,8 @@ var fuzzerWebIDL = (function () {
         if (rnd(2)) {
           return "fuzzerWebIDL.rv = " + memberExpr + ";";
         } else {
-          return memberExpr + " = " + gimmei(member.idlType) + ";";
+          var prefix = reasonable ? "" : "fuzzExpectSanity = false; "; // We might be overwriting something important on |window|
+          return prefix + memberExpr + " = " + gimmei(member.idlType) + ";";
         }
       }
       if (member.type == "operation") {
@@ -262,12 +263,20 @@ var fuzzerWebIDL = (function () {
     if (rnd(10) === 0) {
       return construct(i);
     }
-    var instance = rnd(100) ? Things.instance(i) : Things.any();
+    var instance;
+    var reasonable;
+    if (rnd(100)) {
+      instance = Things.instance(i);
+      reasonable = true;
+    } else {
+      instance = Things.any();
+      reasonable = false;
+    }
     if (instance == "o[-1]") {
       return construct(i);
     }
 
-    var tweaker = createInstanceTweaker(i, instance);
+    var tweaker = createInstanceTweaker(i, instance, reasonable);
     if (typeof tweaker == "function") {
       if (rnd(30) === 0) {
         favoriteTweakers.push(tweaker);
