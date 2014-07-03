@@ -173,7 +173,7 @@ var fuzzerHTMLAttributes = (function() {
 
     // applet
     "code": ["Spampede.class"],
-    "codebase": ["http://www.squarefree.com/spampede/", "https://www.squarefree.com/spampede/", fuzzValues.URIs],
+    "codebase": fuzzValues.URIs,
     "object": [fuzzValues.URIs],
 
     // video and audio

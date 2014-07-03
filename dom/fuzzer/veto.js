@@ -65,7 +65,6 @@ function fuzzInitBlacklists()
                 "__proto__",         // bug 801914 (too-much-recursion stops the fuzzer, which is interpreted by the python harness as a hang)
                 "202E",              // bug 812826 (RLO causes a hang in CoreText)
                 "MediaSource",       // bug 931388
-                "squarefree.com/stats", // http auth dialog
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
                 "generateCRMFRequest", // bug 922034 (master password dialog, especially when it interferes with quitting)
                 "strokeText",        // bug 943622
