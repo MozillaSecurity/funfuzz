@@ -127,6 +127,7 @@ function fuzzInitBlacklists()
                 "insertItemBefore",  // bug 1015551
                 "generateCRMFRequest", // dialog does weird things to shutdown sequence
                 "animVal",           // bug 1033301
+                "TrackEvent",        // bug 1035654
             ]
         },
         {
