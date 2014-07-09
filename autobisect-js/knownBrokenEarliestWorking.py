@@ -147,6 +147,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if '--latin1-strings' in flags:
+        required.append('5c88c5b4fe07') # 191353 on m-c, first rev that has the --latin1-strings option
     if '--ion-offthread-compile=' in flags:
         required.append('f0d67b1ccff9') # 188901 on m-c, first rev that has the --ion-offthread-compile=off option
     if options.enableArmSimulator:
