@@ -219,8 +219,6 @@ function fuzzInitBlacklists()
                 "\"li",             // bug 721027
                 "list-item",        // bug 721027
                 "svg",              // the combination of bug 723376 and bug 475216
-                "text-shadow",      // bug 723669
-                "textShadow",       // bug 723669
                 "float",            // bug 725928 :(
                 "relative",         // bug 728100 :(
                 "absolute",         // bug 728100 :(
