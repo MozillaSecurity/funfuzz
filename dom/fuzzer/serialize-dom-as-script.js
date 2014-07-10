@@ -91,14 +91,16 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
 
     // Add selections
     var sel = window.getSelection();
-    cs.push("window.getSelection().removeAllRanges();");
-    for (var i = 0; i < sel.rangeCount; ++i) {
-      var range = sel.getRangeAt(i);
-      var rangeStr = ensureIndexed(range);
-      cs.push(rangeStr + " = document.createRange();");
-      cs.push(rangeStr + ".setStart(" + ensureIndexed(range.startContainer) + ", " + range.startOffset + ");");
-      cs.push(rangeStr + ".setEnd(" + ensureIndexed(range.endContainer) + ", " + range.endOffset + ");");
-      cs.push("window.getSelection().addRange(" + rangeStr + ");");
+    if (sel.rangeCount > 0) {
+      cs.push("window.getSelection().removeAllRanges();");
+      for (var i = 0; i < sel.rangeCount; ++i) {
+        var range = sel.getRangeAt(i);
+        var rangeStr = ensureIndexed(range);
+        cs.push(rangeStr + " = document.createRange();");
+        cs.push(rangeStr + ".setStart(" + ensureIndexed(range.startContainer) + ", " + range.startOffset + ");");
+        cs.push(rangeStr + ".setEnd(" + ensureIndexed(range.endContainer) + ", " + range.endOffset + ");");
+        cs.push("window.getSelection().addRange(" + rangeStr + ");");
+      }
     }
   }
 
