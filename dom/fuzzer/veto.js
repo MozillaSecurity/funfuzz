@@ -232,6 +232,7 @@ function fuzzInitBlacklists()
                 "border",           // bug 763560
                 "transform-style",  // bug 767233
                 "transformStyle",   // bug 767233
+                "position",         // bug 1036750
 
                 // Mutation events might be triggered by the test itself
                 "DOMSubtreeModified",
