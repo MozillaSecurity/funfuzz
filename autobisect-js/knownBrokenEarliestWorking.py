@@ -151,6 +151,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('5c88c5b4fe07') # 191353 on m-c, first rev that has the --latin1-strings option
     if '--ion-offthread-compile=' in flags:
         required.append('f0d67b1ccff9') # 188901 on m-c, first rev that has the --ion-offthread-compile=off option
+    if '--no-native-regexp' in flags:
+        required.append('43acd23f5a98') # 183413 on m-c, first rev that has the --no-native-regexp option
     if options.enableArmSimulator:
         required.append('5ad5f92387a2') # 179476 on m-c, first rev with relevant getBuildConfiguration entry
     if options.disableGcGenerational:

@@ -36,6 +36,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
+        args.append("--no-native-regexp")  # See bug 976446
+
     if shellSupportsFlag(shellPath, '--latin1-strings') and chance(.2):
         args.append("--latin1-strings")  # See bug 1028867
 
