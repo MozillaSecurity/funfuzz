@@ -50,7 +50,9 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.quitWithLeakCheck", this);
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
       messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
-      messageManager.loadFrameScript(CHILD_SCRIPT, true);
+
+      messageManager.loadFrameScript("chrome://domfuzzhelper/content/fuzzPriv.js", true);
+      messageManager.loadFrameScript("chrome://domfuzzhelper/content/inject.js", true);
 
       this.isFrameScriptLoaded = true;
 

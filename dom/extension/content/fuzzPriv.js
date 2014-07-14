@@ -7,7 +7,7 @@ const Cu = Components.utils;
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-function dumpln(s) { dump(s + "\n"); }
+Cu.import("chrome://domfuzzhelper/content/file.jsm"); // How does this interact with the scope created to work around bug 673569??
 
 // content script for e10s support
 
@@ -24,10 +24,6 @@ DOMFuzzHelperManager.prototype = {
   handleEvent: function handleEvent(aEvent) {
     var window = aEvent.target.defaultView;
     window.wrappedJSObject.fuzzPriv = makeDOMFuzzHelper(window);
-
-    // "DOMWindowCreated" is too early to inject <script> elements (there is no document.documentElement)
-    // "load" is too late to trigger some bugs (see bug 790252 comment 5)
-    window.addEventListener("DOMContentLoaded", maybeInjectScript, false);
   }
 };
 
@@ -465,25 +461,6 @@ function cssPropertyDatabase()
 }
 
 
-/**********************
- * FILESYSTEM HELPERS *
- **********************/
-
-function getEnv(key)
-{
-  var env = Components.classes["@mozilla.org/process/environment;1"]
-                      .getService(Components.interfaces.nsIEnvironment);
-  return env.get(key);
-}
-
-function fileObject(path)
-{
-  var f = Components.classes["@mozilla.org/file/local;1"]
-                    .createInstance(Components.interfaces.nsILocalFile);
-  f.initWithPath(path);
-  return f;
-}
-
 function reftestFilesDirectory()
 {
   return getEnv("REFTEST_FILES_DIR");
@@ -506,92 +483,5 @@ function extensionLocation()
   return fileObject(loc);
 }
 
-
-// readFile function from logan
-// http://www.gozer.org/mozilla/userChrome.js/scripts/userScripts.uc.js
-// |file| must be an nsIFile.
-// Returns the contents of the file as a string.
-function readFile(file)
-{
-  var content = '';
-
-  var stream = Components.classes['@mozilla.org/network/file-input-stream;1']
-                    .createInstance(Components.interfaces.nsIFileInputStream);
-  stream.init(file, 0x01, 0, 0);
-
-  var script = Components.classes['@mozilla.org/scriptableinputstream;1']
-              .createInstance(Components.interfaces.nsIScriptableInputStream);
-  script.init(stream);
-
-  if (stream.available()) {
-    var data = script.read(4096);
-
-    while (data.length > 0) {
-      content += data;
-      data = script.read(4096);
-    }
-  }
-
-  stream.close();
-  script.close();
-
-  return content;
-}
-
-
-function indir(dir, filename)
-{
-  var d = dir.clone();
-  d.append(filename);
-  return d;
-}
-
-
-/*************************
- * FUZZ SCRIPT INJECTION *
- *************************/
-
-
-function maybeInjectScript(event)
-{
-  var doc = event.originalTarget;
-  if (doc.nodeName != "#document") {
-    return;
-  }
-
-  if (doc.location === null) {
-    // Some weird situation with iframes and document.write and navigation can trigger this.
-    return;
-  }
-
-  var hash = doc.location.hash;
-  if (!hash.startsWith("#fuzz=")) {
-    return;
-  }
-
-  var fuzzSettings = hash.slice(6).split(",").map(function(s) { return parseInt(s); });
-
-  var domFuzzerScript = getEnv("DOM_FUZZER_SCRIPT");
-  if (!domFuzzerScript) {
-    return;
-  }
-
-  var scriptToInject =
-    (readFile(fileObject(domFuzzerScript)) + "\n"
-  + "document.getElementById('fuzz1').parentNode.removeChild(document.getElementById('fuzz1'));\n"
-  + "fuzzSettings = [" + fuzzSettings.join(",") + "];\n"
-  + "fuzzOnload();\n");
-
-  var insertionPoint = doc.getElementsByTagName("head")[0] || doc.documentElement;
-  if (!insertionPoint) {
-    return;
-  }
-
-  var script = doc.createElementNS("http://www.w3.org/1999/xhtml", "script");
-  script.setAttribute("id", "fuzz1");
-  script.setAttribute("type", "text/javascript;version=1.7");
-  script.textContent = scriptToInject;
-  insertionPoint.appendChild(script);
-}
 
 })();
