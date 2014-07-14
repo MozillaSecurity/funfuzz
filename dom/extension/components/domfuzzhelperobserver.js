@@ -26,10 +26,6 @@ function DOMFuzzHelperObserver() {
   this._isFrameScriptLoaded = false;
 }
 
-// Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
-function quitFromContent() { dumpln("Page called quitApplication."); runSoon(quitOnce); }
-function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); runOnTimer(quitOnce); }
-
 DOMFuzzHelperObserver.prototype = {
   classDescription: "DOM fuzz helper observer",
   classID:          Components.ID("{73DD0F4A-B201-44A1-8C56-D1D72432B02A}"),
@@ -393,6 +389,11 @@ function goQuitApplication()
 
   return true;
 }
+
+
+// Use runSoon to avoid false-positive leaks due to content JS on the stack (?)
+function quitFromContent() { dumpln("Page called quitApplication."); runSoon(quitOnce); }
+function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); runOnTimer(quitOnce); }
 
 var alreadyQuitting = false;
 function quitOnce()
