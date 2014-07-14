@@ -23,6 +23,8 @@ function DOMFuzzHelperManager() {
 DOMFuzzHelperManager.prototype = {
   handleEvent: function handleEvent(aEvent) {
     var window = aEvent.target.defaultView;
+
+    // XXX This is probably insecure; check with bholley.
     window.wrappedJSObject.fuzzPriv = makeDOMFuzzHelper(window);
   }
 };
