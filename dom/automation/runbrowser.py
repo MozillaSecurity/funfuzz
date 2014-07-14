@@ -90,10 +90,14 @@ def runBrowser():
   removeDirIfExists(os.path.expanduser("~/Library/Saved Application State/org.mozilla.nightly.savedState"))
   removeDirIfExists(os.path.expanduser("~/Library/Saved Application State/org.mozilla.nightlydebug.savedState"))
 
+  cmdLineArgs = []
+  if "#fuzz=" in url:
+    cmdLineArgs.append("-fuzzinject")
+  cmdLineArgs.append(url)
+
   print("RUNBROWSER INFO | runbrowser.py | runApp: start.")
   print("RUNBROWSER INFO | runbrowser.py | " + url)
-  status = automation.runApp(None, browserEnv, theapp, profileDir,
-                             [url],
+  status = automation.runApp(None, browserEnv, theapp, profileDir, cmdLineArgs,
                              utilityPath = utilityDir,
                              xrePath=aOptions.xrePath,
                              symbolsPath=options.symbolsDir,

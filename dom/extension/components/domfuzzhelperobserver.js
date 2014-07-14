@@ -10,8 +10,6 @@ Cu.import("resource://gre/modules/NetUtil.jsm");
 
 function dumpln(s) { dump(s + "\n"); }
 
-const CHILD_SCRIPT = "chrome://domfuzzhelper/content/domfuzzhelper.js";
-
 /*****************
  * API INJECTION *
  *****************/
@@ -21,6 +19,7 @@ const CHILD_SCRIPT = "chrome://domfuzzhelper/content/domfuzzhelper.js";
 // https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_1.9.3
 // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/console/hudservice/HUDService.jsm#3240
 // https://developer.mozilla.org/en/how_to_build_an_xpcom_component_in_javascript
+// https://developer.mozilla.org/en-US/docs/Command_Line (nsICommandLineHandler)
 
 function DOMFuzzHelperObserver() {
 }
@@ -29,13 +28,18 @@ DOMFuzzHelperObserver.prototype = {
   classDescription: "DOM fuzz helper observer",
   classID:          Components.ID("{73DD0F4A-B201-44A1-8C56-D1D72432B02A}"),
   contractID:       "@squarefree.com/dom-fuzz-helper-observer;1",
-  _xpcom_categories: [{category: "profile-after-change", service: true }],
+  _xpcom_categories: [
+    {category: "profile-after-change", service: true },
+    {category: "command-line-handler", entry: "m-fuzzinject" },
+  ],
+  QueryInterface: XPCOMUtils.generateQI([
+    Ci.nsIObserver,
+    Ci.nsICommandLineHandler,
+  ]),
 
   isFrameScriptLoaded: false,
 
-  //QueryInterface:   XPCOMUtils.generateQI([Ci.nsIDOMGlobalPropertyInitializer]),
-  QueryInterface:   XPCOMUtils.generateQI([Ci.nsIObserver]),
-
+  /* nsIObserver */
   observe: function(aSubject, aTopic, aData) {
     if (aTopic == "profile-after-change") {
       this.init();
@@ -52,7 +56,6 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
 
       messageManager.loadFrameScript("chrome://domfuzzhelper/content/fuzzPriv.js", true);
-      messageManager.loadFrameScript("chrome://domfuzzhelper/content/inject.js", true);
 
       this.isFrameScriptLoaded = true;
 
@@ -103,7 +106,20 @@ DOMFuzzHelperObserver.prototype = {
         dumpln("Unrecognized message sent to domfuzzhelperobserver.js");
 
     }
-  }
+  },
+
+  /* nsICommandLineHandler */
+  handle: function(cmdLine) {
+    if (cmdLine.handleFlag("fuzzinject", false)) {
+      var messageManager = Cc["@mozilla.org/globalmessagemanager;1"].
+                               getService(Ci.nsIMessageListenerManager || Ci.nsIChromeFrameMessageManager);
+      messageManager.loadFrameScript("chrome://domfuzzhelper/content/inject.js", true);
+
+      cmdLine.preventDefault = true;
+    }
+  },
+
+  helpInfo: "  -fuzzinject          Enable injection of fuzz scripts\n",
 };
 
 const NSGetFactory = XPCOMUtils.generateNSGetFactory([DOMFuzzHelperObserver]);
