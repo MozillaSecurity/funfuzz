@@ -301,7 +301,8 @@ function bloatStats(callback)
  * QUIT *
  ********/
 
-// From quit.js, which Bob Clary extracted from mozilla/toolkit/content
+// goQuitApplication and canQuitApplication are from quit.js,
+// which Bob Clary extracted from mozilla/toolkit/content
 
 function canQuitApplication()
 {
