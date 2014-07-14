@@ -23,7 +23,6 @@ const CHILD_SCRIPT = "chrome://domfuzzhelper/content/domfuzzhelper.js";
 // https://developer.mozilla.org/en/how_to_build_an_xpcom_component_in_javascript
 
 function DOMFuzzHelperObserver() {
-  this._isFrameScriptLoaded = false;
 }
 
 DOMFuzzHelperObserver.prototype = {
@@ -31,6 +30,8 @@ DOMFuzzHelperObserver.prototype = {
   classID:          Components.ID("{73DD0F4A-B201-44A1-8C56-D1D72432B02A}"),
   contractID:       "@squarefree.com/dom-fuzz-helper-observer;1",
   _xpcom_categories: [{category: "profile-after-change", service: true }],
+
+  isFrameScriptLoaded: false,
 
   //QueryInterface:   XPCOMUtils.generateQI([Ci.nsIDOMGlobalPropertyInitializer]),
   QueryInterface:   XPCOMUtils.generateQI([Ci.nsIObserver]),
