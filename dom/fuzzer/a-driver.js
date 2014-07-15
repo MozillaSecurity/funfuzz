@@ -27,25 +27,6 @@ function fuzzOnload(ev)
     return;
   }
 
-  if (window != top) {
-    dumpln("I'm in some kind of frame!?");
-    return;
-  }
-
-  if (window.opener) {
-    dumpln("I have an opener!?");
-    return;
-  }
-
-  if (history.length > 1 && "fuzzPriv" in window) {
-    // This check is for some of the crazier stuff fuzzerDuringEvents does.
-    // Unfortunately, it breaks the "&scan" tests that are nice for testing outside of the Firefox harness.
-    // And it also breaks fuzzRetry.
-    dumpln("I have history!?");
-    fuzzPriv.quitApplicationSoon();
-    return;
-  }
-
   initFuzzerGeneral();
 
   // initFuzzerSpecific() is expected to call startFuzzing.  Most fuzzers call it immediately but some use a timeout or callback.

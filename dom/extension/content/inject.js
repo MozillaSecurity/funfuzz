@@ -55,8 +55,41 @@ function maybeInjectScript(event)
     return;
   }
 
-  var fuzzSettings = hash.slice(6).split(",").map(function(s) { return parseInt(s); });
-  injectScript(doc, fuzzSettings);
+  if (ensurePrimay(doc)) {
+    var fuzzSettings = hash.slice(6).split(",").map(function(s) { return parseInt(s); });
+    injectScript(doc, fuzzSettings);
+  }
+}
+
+function ensurePrimay(doc)
+{
+  // Avoid injecting the fuzz script multiple times. That would cause irreducible chaos.
+
+  // (It would be conceptually simpler to have the rule be
+  // "it must be the first document ever loaded",
+  // but I can't think of a way to do that without lots of sync IPC messages.)
+
+  var win = doc.defaultView;
+
+  if (win !== win.top) {
+    return false;
+  }
+
+  if (win.opener !== null) {
+    return false;
+  }
+
+  if (win.history.length > 1) {
+    // If we intentionally navigated forward and back but bfcache failed,
+    // or we accidentally navigated to the same or similar URL,
+    // then we not only want to avoid injecting the script but also
+    // want to avoid wasting time sitting here.
+    dumpln("Quitting because we tried to inject a fuzz script into a page with history.");
+    sendAsyncMessage('DOMFuzzHelper.quitApplicationSoon', {}); // !!!
+    return false;
+  }
+
+  return true;
 }
 
 
