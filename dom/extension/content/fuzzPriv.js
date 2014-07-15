@@ -45,10 +45,12 @@ function makeDOMFuzzHelper(aWindow) {
       toString: function() { return "[DOMFuzzHelper]"; },
 
       quitApplication: function() {
+        dumpln("fuzzPriv.quitApplication");
         sendAsyncMessage('DOMFuzzHelper.quitApplication', {});
       },
 
       quitApplicationSoon: function() {
+        dumpln("fuzzPriv.quitApplicationSoon");
         sendAsyncMessage('DOMFuzzHelper.quitApplicationSoon', {});
       },
 

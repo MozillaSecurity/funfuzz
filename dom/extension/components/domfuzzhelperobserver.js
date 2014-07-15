@@ -417,7 +417,9 @@ function quitApplicationSoon() { dumpln("Page called quitApplicationSoon."); run
 var alreadyQuitting = false;
 function quitOnce()
 {
-  if (!alreadyQuitting) {
+  if (alreadyQuitting) {
+    dumpln("But I'm already quitting!");
+  } else {
     alreadyQuitting = true;
     goQuitApplication();
   }
