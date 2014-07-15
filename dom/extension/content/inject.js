@@ -56,7 +56,12 @@ function maybeInjectScript(event)
   }
 
   var fuzzSettings = hash.slice(6).split(",").map(function(s) { return parseInt(s); });
+  injectScript(doc, fuzzSettings);
+}
 
+
+function injectScript(doc, fuzzSettings)
+{
   var domFuzzerScript = getEnv("DOM_FUZZER_SCRIPT");
   if (!domFuzzerScript) {
     return;
