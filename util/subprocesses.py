@@ -548,7 +548,7 @@ def shellify(cmd):
             ssc.append('"' + item + '"')
         else:
             vdump('Regex not matched, but trying to shellify anyway:')
-            return ' '.join(cmd).replace('\\', '\\\\') if isWin else ' '.join(cmd)
+            return ' '.join(cmd).replace('\\', '//') if isWin else ' '.join(cmd)
     return ' '.join(ssc)
 
 

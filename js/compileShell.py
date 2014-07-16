@@ -388,7 +388,7 @@ def cfgBin(shell, binToBeCompiled):
         for entry in cfgCmdList:
             if os.sep in entry:
                 assert isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
-                cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '\\\\')
+                cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '//')
             counter = counter + 1
 
     # Print whatever we added to the environment
@@ -402,14 +402,17 @@ def cfgBin(shell, binToBeCompiled):
     wDir = shell.getNsprObjdir() if binToBeCompiled == 'nspr' else shell.getJsObjdir()
     assert os.path.isdir(wDir)
 
-    if isWin and binToBeCompiled == 'nspr':
-        nsprCfgCmdList = []
+    if isWin:
+        changedCfgCmdList = []
         for entry in cfgCmdList:
-            # See bug 986715 comment 6 as to why we need forward slashes.
-            if 'nsprpub' in entry and 'configure' in entry:
+            # See bug 986715 comment 6 as to why we need forward slashes for NSPR
+            # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
+            #   but really, the whole thing likes forward slashes way better"
+            # See bug 1038590 comment 9.
+            if '\\' in entry:
                 entry = entry.replace('\\', '/')
-            nsprCfgCmdList.append(entry)
-        captureStdout(nsprCfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
+            changedCfgCmdList.append(entry)
+        captureStdout(changedCfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
     else:
         captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
 
