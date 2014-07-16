@@ -54,7 +54,7 @@ def knownBrokenRanges(options):
         hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
         hgrange('b0678affef03', '77d06ee9ac48'), # broken standalone js shells with ICU
         hgrange('7cff27cb2845', 'ff5ca7959511'), # broken build config w/ NSPR
-        hgrange('99a6ee6466f5', '5c9119729bbf'), # unstable spidermonkey
+        hgrange('99a6ee6466f5', '5c9119729bbf'), # Fx32, unstable spidermonkey
     ]
 
     if isMac and macVer() >= [10, 7]:
@@ -66,7 +66,7 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('743204c6b245', 'fbd476579542'), # broken ARM builds
             hgrange('688d526f9313', '280aa953c868'), # broken ARM builds
-            hgrange('35e7af3e86fd', 'a393ec07bc6a'), # broken ARM builds
+            hgrange('35e7af3e86fd', 'a393ec07bc6a'), # Fx32, broken ARM builds
         ])
 
     if isWin:
