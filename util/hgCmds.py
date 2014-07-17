@@ -45,7 +45,14 @@ def findCommonAncestor(repoDir, a, b):
                           '--template={node|short}'])[0]
 
 def isAncestor(repoDir, a, b):
-    return findCommonAncestor(repoDir, a, b) == a
+    """Returns true iff |a| is an ancestor of |b|. (Throws if |a| or |b| does not exist.)"""
+    return captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
+                          '--template={node|short}'])[0] != ""
+
+def existsAndIsAncestor(repoDir, a, b):
+    """Returns true iff |a| exists and is an ancestor of |b|."""
+    # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
+    return isAncestor(repoDir, "id(" + a + ")", b)
 
 
 def getCsetHashFromBisectMsg(str):
