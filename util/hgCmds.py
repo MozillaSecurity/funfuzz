@@ -44,6 +44,9 @@ def findCommonAncestor(repoDir, a, b):
     return captureStdout(['hg', '-R', repoDir, 'log', '-r', 'ancestor(' + a + ',' + b + ')',
                           '--template={node|short}'])[0]
 
+def isAncestor(repoDir, a, b):
+    return findCommonAncestor(repoDir, a, b) == a
+
 
 def getCsetHashFromBisectMsg(str):
     # Example bisect msg: "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
@@ -109,10 +112,6 @@ def getRepoNameFromHgrc(repoDir):
     hgCfg.read(normExpUserPath(os.path.join(repoDir, '.hg', 'hgrc')))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgCfg.get('paths', 'default').split('/') if i][-1]
-
-
-def isAncestor(repoDir, a, b):
-    return findCommonAncestor(repoDir, a, b) == a
 
 
 def isRepoValid(repo):
