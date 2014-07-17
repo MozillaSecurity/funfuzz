@@ -16,7 +16,8 @@ def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
     # NB: mercurial's descendants(x) includes x
     # So this revset expression includes firstBad, but does not include firstGood.
-    return '(descendants(' + firstBad + ')-descendants(' + firstGood + '))'
+    # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set, like we want"
+    return '(descendants(id(' + firstBad + '))-descendants(id(' + firstGood + ')))'
 
 def knownBrokenRangesBrowser(options):
     skips = [
