@@ -57,6 +57,10 @@ class CompiledShell(object):
 
         self.jsObjdir = ''
         self.nsprObjdir = ''
+        # This rev is when js build system compiles NSPR together when compiling threadsafe builds
+        # Landed in m-c rev ID 194734 (from TBPL) and in mid-July 2014, when Fx33 was nightly.
+        self.jsBuildSystemConsidersNspr = hgCmds.existsAndIsAncestor(
+            self.buildOptions.repoDir, 'a459b02a9ca472fa10299b5cb6c0456fe492c78a', '.')
     def setDestDir(self, tDir):
         self.destDir = tDir
 
@@ -93,6 +97,8 @@ class CompiledShell(object):
         return self.fullEnv
     def getHgHash(self):
         return self.hgHash
+    def getJsBuildSystemConsidersNspr(self):
+        return self.jsBuildSystemConsidersNspr
     def getJsObjdir(self):
         return self.jsObjdir
     def setJsObjdir(self, oDir):
@@ -166,7 +172,7 @@ def autoconfRun(cwDir):
 
 def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
-    if shell.buildOptions.isThreadsafe:
+    if shell.buildOptions.isThreadsafe and not shell.getJsBuildSystemConsidersNspr():
         compileNspr(shell)
     autoconfRun(shell.getRepoDirJsSrc())
     configureTryCount = 0
@@ -371,14 +377,15 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--with-ccache')
         if shell.buildOptions.isThreadsafe:
             cfgCmdList.append('--enable-threadsafe')
-            cfgCmdList.append('--with-nspr-prefix=' + \
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
-            cfgCmdList.append('--with-nspr-cflags=-I' + \
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
-            cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)) \
-                    for compileLib in ALL_COMPILE_LIBS
-                ]))
+            if not shell.getJsBuildSystemConsidersNspr():
+                cfgCmdList.append('--with-nspr-prefix=' + \
+                    normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+                cfgCmdList.append('--with-nspr-cflags=-I' + \
+                    normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
+                cfgCmdList.append('--with-nspr-libs=' + ' '.join([
+                    normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib))\
+                        for compileLib in ALL_COMPILE_LIBS
+                    ]))
         else:
             cfgCmdList.append('--disable-threadsafe')
 
@@ -445,7 +452,7 @@ def compileJs(shell):
     if os.path.exists(shell.getShellCompiledPath()):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
-        if shell.buildOptions.isThreadsafe:
+        if shell.buildOptions.isThreadsafe and not shell.getJsBuildSystemConsidersNspr():
             for runLib in shell.getShellCompiledRunLibsPath():
                 shutil.copy2(runLib, shell.getDestDir())
             assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_NSPR_LIB)))
@@ -521,7 +528,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
                 raise Exception('Unable to create shell cache directory.')
         shell.setDestDir(shell.getShellCacheDir())
 
-        if shell.buildOptions.isThreadsafe:
+        if shell.buildOptions.isThreadsafe and not shell.getJsBuildSystemConsidersNspr():
             try:
                 os.mkdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
             except OSError:
