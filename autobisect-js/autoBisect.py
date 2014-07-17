@@ -171,13 +171,24 @@ def parseOpts():
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
+
+    if options.browserOptions:
+        earliestKnown = earliestKnownWorkingRevForBrowser(options.browserOptions)
+    else:
+        earliestKnown = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+
     if options.startRepo is None:
         if options.useTinderboxBinaries:
             options.startRepo = 'default'
-        elif options.browserOptions:
-            options.startRepo = earliestKnownWorkingRevForBrowser(options.browserOptions)
         else:
-            options.startRepo = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+            options.startRepo = earliestKnown
+    else:
+        if not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo):
+            raise Exception('startRepo is not a descendant of earliestKnownWorkingRev for this configuration')
+
+    if not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
+        raise Exception('endRepo is not a descendant of earliestKnownWorkingRev for this configuration')
+
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
