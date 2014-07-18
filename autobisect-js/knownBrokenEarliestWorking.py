@@ -138,6 +138,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     # These should be in descending order, or bisection will break at earlier changesets.
 
     threadCountFlag = parallelCompileFlag = offthreadCompileFlag = False
+    asmNopFillFlag = asmPoolMaxOffsetFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after --thread-count= can be any number, so we look for the string instead.
@@ -147,11 +148,19 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
             parallelCompileFlag = True
         elif '--ion-offthread-compile=' in entry:
             offthreadCompileFlag = True
+        elif '--arm-asm-nop-fill=' in entry:
+            asmNopFillFlag = True
+        elif '--asm-pool-max-offset=' in entry:
+            asmPoolMaxOffsetFlag = True
 
     required = []
 
     #if isMac and macVer() >= [10, 9]:
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if asmPoolMaxOffsetFlag:
+        required.append('f114c4101f02') # m-c 194525 Fx33, 1st with --asm-pool-max-offset=1024
+    if asmNopFillFlag:
+        required.append('f1bacafe789c') # m-c 192164 Fx33, 1st with --arm-asm-nop-fill=0
     if '--latin1-strings' in flags:
         required.append('5c88c5b4fe07') # 191353 on m-c, first rev that has the --latin1-strings option
     if offthreadCompileFlag:

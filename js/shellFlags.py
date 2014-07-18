@@ -36,6 +36,17 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    # See bug 1026919 comment 60:
+    if shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
+        # It was suggested to focus more on the range between 0 and 1.
+        asmNopFill = random.randint(1, 2**31-1) if chance(0.3) else random.randint(0, 1)
+        args.append("--arm-asm-nop-fill=" + asmNopFill)  # Landed in bug 1020834
+
+    # See bug 1026919 comment 60:
+    if shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
+        asmPoolMaxOffset = random.randint(5, 1024)
+        args.append("--asm-pool-max-offset=" + asmPoolMaxOffset)  # Landed in bug 1026919
+
     if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
 
