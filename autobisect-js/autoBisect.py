@@ -173,9 +173,11 @@ def parseOpts():
 
 
     if options.browserOptions:
-        earliestKnown = earliestKnownWorkingRevForBrowser(options.browserOptions)
+        earliestKnownQuery = earliestKnownWorkingRevForBrowser(options.browserOptions)
     else:
-        earliestKnown = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+        earliestKnownQuery = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+
+    earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
 
     if options.startRepo is None:
         if options.useTinderboxBinaries:
