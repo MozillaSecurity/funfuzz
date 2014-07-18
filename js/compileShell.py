@@ -122,8 +122,9 @@ class CompiledShell(object):
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if isWin else '')))
     def getShellCompiledRunLibsPath(self):
+        lDir = self.getJsObjdir() if self.getJsBuildSystemConsidersNspr() else self.getNsprObjdir()
         libsList = [
-            normExpUserPath(os.path.join(self.getNsprObjdir(), 'dist', 'lib', runLib)) \
+            normExpUserPath(os.path.join(lDir, 'dist', 'lib', runLib)) \
                 for runLib in ALL_RUN_LIBS
         ]
         return libsList
@@ -452,7 +453,7 @@ def compileJs(shell):
     if os.path.exists(shell.getShellCompiledPath()):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
-        if shell.buildOptions.isThreadsafe and not shell.getJsBuildSystemConsidersNspr():
+        if shell.buildOptions.isThreadsafe:
             for runLib in shell.getShellCompiledRunLibsPath():
                 shutil.copy2(runLib, shell.getDestDir())
             assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_NSPR_LIB)))
