@@ -137,12 +137,16 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     # These should be in descending order, or bisection will break at earlier changesets.
 
-    threadCountFlag = False
+    threadCountFlag = parallelCompileFlag = offthreadCompileFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after --thread-count= can be any number, so we look for the string instead.
         if '--thread-count=' in entry:
             threadCountFlag = True
+        elif '--ion-parallel-compile=' in entry:
+            parallelCompileFlag = True
+        elif '--ion-offthread-compile=' in entry:
+            offthreadCompileFlag = True
 
     required = []
 
@@ -150,7 +154,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
     if '--latin1-strings' in flags:
         required.append('5c88c5b4fe07') # 191353 on m-c, first rev that has the --latin1-strings option
-    if '--ion-offthread-compile=' in flags:
+    if offthreadCompileFlag:
         required.append('f0d67b1ccff9') # 188901 on m-c, first rev that has the --ion-offthread-compile=off option
     if '--no-native-regexp' in flags:
         required.append('43acd23f5a98') # 183413 on m-c, first rev that has the --no-native-regexp option
@@ -168,7 +172,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
     if '--ion-check-range-analysis' in flags:
         required.append('e4a0c6fd1aa9') # 143131 on m-c, first rev that has a stable --ion-check-range-analysis option
-    if '--fuzzing-safe' in flags or '--ion-parallel-compile=' in flags:
+    if '--fuzzing-safe' in flags or parallelCompileFlag:
         # --fuzzing-safe and --ion-parallel-compile=off generally are required flags for compareJIT
         # autoBisect acts funny when in the region between m-c rev f42381e2760d and 0a9314155404,
         # so we should just use the later revision as the start revision.
