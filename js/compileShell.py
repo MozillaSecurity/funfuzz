@@ -452,7 +452,8 @@ def compileJs(shell):
     if os.path.exists(shell.getShellCompiledPath()):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
         assert os.path.isfile(shell.getShellBaseTempDirWithName())
-        if shell.buildOptions.isThreadsafe and not shell.getJsBuildSystemConsidersNspr():
+        # After bug 975011 landed, libraries were still needed for Windows binaries but not POSIX.
+        if shell.buildOptions.isThreadsafe and (isWin or not shell.getJsBuildSystemConsidersNspr()):
             for runLib in shell.getShellCompiledRunLibsPath():
                 shutil.copy2(runLib, shell.getDestDir())
             assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_NSPR_LIB)))
