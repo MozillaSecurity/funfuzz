@@ -122,8 +122,14 @@ class CompiledShell(object):
     def getShellCompiledPath(self):
         return normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if isWin else '')))
     def getShellCompiledRunLibsPath(self):
+        if isWin and self.getJsBuildSystemConsidersNspr():
+            lDir = self.getJsObjdir()
+        elif not self.getJsBuildSystemConsidersNspr():
+            lDir = self.getNsprObjdir()
+        else:
+            raise Exception('A post-975011 build system on POSIX should not arrive here.')
         libsList = [
-            normExpUserPath(os.path.join(self.getNsprObjdir(), 'dist', 'lib', runLib)) \
+            normExpUserPath(os.path.join(lDir, 'dist', 'lib', runLib)) \
                 for runLib in ALL_RUN_LIBS
         ]
         return libsList
