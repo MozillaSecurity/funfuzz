@@ -409,6 +409,13 @@ var fuzzValues = {
     "javascript:5555",
     "javascript:" + escalationAttempt,
     "javascript:'QQQQ' + String.fromCharCode(0) + 'UUUU'",
+    // Probably no server running here
+    "http://a.invalid/",
+    "http://localhost:6/",
+    "https://localhost:6/",
+    "ftp://localhost:6/",
+    // Blocked port
+    "http://localhost:25/",
   ],
 
   // URLs that are safe to load as frames, in new tabs, etc.

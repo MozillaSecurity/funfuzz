@@ -60,6 +60,8 @@ user_pref("plugins.update.url", "");
 user_pref("datareporting.healthreport.service.enabled", false);
 
 // Prevent the fuzzer from accidentally contacting servers.
+//   Note: Since we are not actually running a proxy on port 6,
+//     Firefox will show the error message "The proxy server is refusing connections"
 //   Note: I'm not sure why localhost / 127.0.0.1 even calls the PAC (see https://bugzilla.mozilla.org/show_bug.cgi?id=31510)
 //   Note: If I want to make a real proxy, look at:
 //     https://hg.mozilla.org/mozilla-central/file/f78e532e8a10/testing/mochitest/runtests.py#l984
