@@ -47,7 +47,8 @@ def randomFlagSet(shellPath):
     if subprocesses.isARMv7l and shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and \
             chance(0.3):
         # It was suggested to focus more on the range between 0 and 1.
-        asmNopFill = random.randint(1, 2**31-1) if chance(0.3) else random.randint(0, 1)
+        # Reduced the upper limit to 4096, see bug 1041978 comment 2.
+        asmNopFill = random.randint(1, 4096) if chance(0.3) else random.randint(0, 1)
         args.append("--arm-asm-nop-fill=" + str(asmNopFill))  # Landed in bug 1020834
 
     # See bug 1026919 comment 60:
