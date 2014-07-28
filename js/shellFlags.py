@@ -60,9 +60,6 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
 
-    if shellSupportsFlag(shellPath, '--latin1-strings') and chance(.2):
-        args.append("--latin1-strings")  # See bug 1028867
-
     if queryBuildConfiguration(shellPath, 'arm-simulator') and chance(.4):
         args.append('--arm-sim-icache-checks')
 
@@ -172,8 +169,6 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'], # Not in jit_test.py though, see bug 848906 comment 1
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],
         ]
-        if shellSupportsFlag(shellPath, "--latin1-strings"):  # See bug 1028867
-            basicFlagList.append(['--fuzzing-safe', '--baseline-eager', '--latin1-strings'])
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.

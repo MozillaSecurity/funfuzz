@@ -161,7 +161,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('f114c4101f02') # m-c 194525 Fx33, 1st with --asm-pool-max-offset=1024
     if asmNopFillFlag:
         required.append('f1bacafe789c') # m-c 192164 Fx33, 1st with --arm-asm-nop-fill=0
-    if '--latin1-strings' in flags:
+    if '--latin1-strings' in flags:  # Can be removed soon, see bug 1041469
         required.append('5c88c5b4fe07') # 191353 on m-c, first rev that has the --latin1-strings option
     if offthreadCompileFlag:
         required.append('f0d67b1ccff9') # 188901 on m-c, first rev that has the --ion-offthread-compile=off option
