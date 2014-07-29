@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--disable-ion') and chance(.05):
+        args.append("--disable-ion")  # --disable-ion landed in bug 789319
+
     # See bug 1026919 comment 60:
     if subprocesses.isARMv7l and shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and \
             chance(0.3):
