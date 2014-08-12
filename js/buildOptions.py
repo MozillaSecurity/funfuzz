@@ -117,11 +117,11 @@ def addParserOptions():
             dest = 'enableHardFp',
             help = 'Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".'
         )
-    randomizeBool(['--enable-threadsafe'], 0.7,
-        dest = 'isThreadsafe',
-        help = 'Enable compilation and fuzzing of threadsafe js shell. ' + \
-               'NSPR should first be installed, see: ' + \
-               'https://developer.mozilla.org/en/NSPR_build_instructions ' + \
+    randomizeBool(['--enable-nspr-build'], 0.5,
+        dest = 'enableNsprBuild',
+        help = 'Build the shell using (in-tree) NSPR. This is the default on Windows. ' + \
+               'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' + \
+               'Using --enable-nspr-build creates a JS shell that is more like the browser. ' + \
                'Defaults to "%(default)s".'
     )
     randomizeBool(['--enable-more-deterministic'], 0.9,
@@ -193,8 +193,8 @@ def computeShellName(buildOptions, extraIdentifier):
         fileName.append('asan')
     if buildOptions.buildWithVg:
         fileName.append('vg')
-    if buildOptions.isThreadsafe:
-        fileName.append('ts')
+    if buildOptions.enableNsprBuild:
+        fileName.append('nsprBuild')
     if buildOptions.disableExactRooting:
         fileName.append('erDisabled')
     if buildOptions.disableGcGenerational:

@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--no-threads') and chance(.5):
+        args.append("--no-threads")  # --no-threads landed in bug 1031529
+
     if shellSupportsFlag(shellPath, '--disable-ion') and chance(.05):
         args.append("--disable-ion")  # --disable-ion landed in bug 789319
 
@@ -169,6 +172,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--no-ion'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager', '--no-threads'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'], # Not in jit_test.py though, see bug 848906 comment 1
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],
         ]
