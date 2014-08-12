@@ -53,6 +53,7 @@ def knownBrokenRanges(options):
         hgrange('07c0cf637290', 'f2adbe2a41c0'), # Fx31, broken non-threadsafe
         hgrange('99a6ee6466f5', '5c9119729bbf'), # Fx32, unstable spidermonkey
         hgrange('573458d10426', '5a50315d4d7d'), # Fx33, broken non-threadsafe
+        hgrange('6b285759568c', 'e498b157651e'), # Fx34, broken ICU
     ]
 
     if isARMv7l:
