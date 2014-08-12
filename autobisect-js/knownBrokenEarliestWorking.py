@@ -45,80 +45,37 @@ def knownBrokenRanges(options):
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange('0a8867dd72a4', 'a765d833483a'), # Rivertrail work broke non-threadsafe/nspr builds
-        hgrange('57449cdf45ad', 'ca0d05c99758'), # broken spidermonkey
-        hgrange('8c6ec2899d89', '26653529ea8b'), # broken odinmonkey
-        hgrange('d2cce982a7c8', '4a6b8dd4dfe3'), # broken virtualenv
-        hgrange('e213c2a01ec2', 'cd67ffb5ca47'), # broken spidermonkey
-        hgrange('79a1f60d83df', 'a88f40be25e7'), # broken spidermonkey
-        hgrange('4110a8986a2a', '9f64519c330f'), # broken cross-compile and ICU, very problematic
-        hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
-        hgrange('b0678affef03', '77d06ee9ac48'), # broken standalone js shells with ICU
-        hgrange('7cff27cb2845', 'ff5ca7959511'), # broken build config w/ NSPR
+        hgrange('d633e3ff2013', 'bcbe93f41547'), # Fx29, broken non-threadsafe
+        hgrange('dbeea0e93b56', 'b980c2dee2e7'), # Fx29, broken non-threadsafe
+        hgrange('995f7402235b', '6c899a1064f3'), # Fx30, broken non-threadsafe
+        hgrange('d2c4ae312b66', 'abfaf0ccae19'), # Fx30, broken non-threadsafe
+        hgrange('7cff27cb2845', 'ff5ca7959511'), # Fx30, broken build config w/ NSPR
+        hgrange('07c0cf637290', 'f2adbe2a41c0'), # Fx31, broken non-threadsafe
         hgrange('99a6ee6466f5', '5c9119729bbf'), # Fx32, unstable spidermonkey
+        hgrange('573458d10426', '5a50315d4d7d'), # Fx33, broken non-threadsafe
     ]
-
-    if isMac and macVer() >= [10, 7]:
-        skips.extend([
-            hgrange('c054eef6ba77', 'e02f86260dad'), # clang
-        ])
 
     if isARMv7l:
         skips.extend([
-            hgrange('743204c6b245', 'fbd476579542'), # broken ARM builds
-            hgrange('688d526f9313', '280aa953c868'), # broken ARM builds
+            hgrange('688d526f9313', '280aa953c868'), # Fx29-30, broken ARM builds
             hgrange('35e7af3e86fd', 'a393ec07bc6a'), # Fx32, broken ARM builds
         ])
 
     if isWin:
         skips.extend([
-            hgrange('f6d5a48271b6', 'dc128b242d8a'), # broken Windows builds due to ICU
-            hgrange('17c463691232', 'f76b7bc18dbc'), # broken Windows builds due to build breakage
+            hgrange('f6d5a48271b6', 'dc128b242d8a'), # Fx29, broken Windows builds due to ICU
+            hgrange('17c463691232', 'f76b7bc18dbc'), # Fx29-30, build breakage
             hgrange('d959285c827e', 'edf5e2dc9198'), # Fx33, build breakage
         ])
 
     if isMozBuild64:
         skips.extend([
-            hgrange('b4d7497c01c2', 'ef0e134ef78f'), # broken Win64 builds
-            hgrange('89a645d498e3', 'ee42c4773641'), # broken Win64 builds
-            hgrange('77d06ee9ac48', 'e7bb99d245e8'), # broken Win64 builds, due to moz.build error
+            hgrange('77d06ee9ac48', 'e7bb99d245e8'), # Fx28-29, breakage due to moz.build error
         ])
 
     if options.enableMoreDeterministic:
         skips.extend([
-            hgrange('9ab1119d4596', 'e963546ec749'), # missing #include -> compile failure
-            hgrange('7c148efceaf9', '541248fb29e4'), # missing #include -> compile failure
             hgrange('4a04ca5ed7d3', '406904577dfc'), # Fx33, see bug 1030014
-        ])
-
-    if options.isThreadsafe:
-        skips.extend([
-            hgrange('54c6c42eb219', 'fe8429f81df8'), # broken threadsafe builds
-            hgrange('07606a1ebf5d', '43f17af3f704'), # --enable-threadsafe was removed
-        ])
-
-    if not options.isThreadsafe:
-        skips.extend([
-            hgrange('d86f10836597', 'f6d5a48271b6'), # broken non-threadsafe after ts became default
-            hgrange('d633e3ff2013', 'bcbe93f41547'), # broken non-threadsafe after ts became default
-            hgrange('dbeea0e93b56', 'b980c2dee2e7'), # broken non-threadsafe after ts became default
-            hgrange('995f7402235b', '6c899a1064f3'), # broken non-threadsafe after ts became default
-            hgrange('d2c4ae312b66', 'abfaf0ccae19'), # broken non-threadsafe after ts became default
-            hgrange('07c0cf637290', 'f2adbe2a41c0'), # broken non-threadsafe after ts became default
-            hgrange('573458d10426', '5a50315d4d7d'), # Fx33, broken non-threadsafe
-        ])
-
-    # This has been moved to a global ignore range. JSBugMon passes in --disable-threadsafe directly
-    # so the way to solve this is if knownBrokenEarliestWorking.py knows what configure parameters
-    # have been passed.
-    #if not options.isThreadsafe:
-    #    skips.extend([
-    #        hgrange('3b9e118ded0f', '48161187ac9a'), # --disable-threadsafe was broken
-    #    ])
-
-    if options.isThreadsafe and options.enableMoreDeterministic:
-        skips.extend([
-            hgrange('3eae4564001c', '537fd7f9486b'), # broken builds
         ])
 
     return skips
@@ -137,16 +94,11 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     # These should be in descending order, or bisection will break at earlier changesets.
 
-    threadCountFlag = parallelCompileFlag = offthreadCompileFlag = False
-    asmNopFillFlag = asmPoolMaxOffsetFlag = False
+    offthreadCompileFlag = asmNopFillFlag = asmPoolMaxOffsetFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
-        # What comes after --thread-count= can be any number, so we look for the string instead.
-        if '--thread-count=' in entry:
-            threadCountFlag = True
-        elif '--ion-parallel-compile=' in entry:
-            parallelCompileFlag = True
-        elif '--ion-offthread-compile=' in entry:
+        # What comes after these flags needs to be a number, so we look for the string instead.
+        if '--ion-offthread-compile=' in entry:
             offthreadCompileFlag = True
         elif '--arm-asm-nop-fill=' in entry:
             asmNopFillFlag = True
@@ -155,54 +107,27 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
-    #if isMac and macVer() >= [10, 9]:
-    #    required.append('d5fa4120ce92') # 152051 on m-c, first rev that builds with Mac 10.9 SDK successfully
+    if '--no-threads' in flags:
+        required.append('e8558ecd9b16') # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
+    if '--enable-nspr-build' in flags:
+        required.append('a459b02a9ca4') # m-c 194734 Fx33, 1st w/--enable-nspr-build, see bug 975011
     if asmPoolMaxOffsetFlag:
-        required.append('f114c4101f02') # m-c 194525 Fx33, 1st with --asm-pool-max-offset=1024
+        required.append('f114c4101f02') # m-c 194525 Fx33, 1st w/--asm-pool-max-offset=1024, see bug 1026919
     if asmNopFillFlag:
-        required.append('f1bacafe789c') # m-c 192164 Fx33, 1st with --arm-asm-nop-fill=0
-    if '--latin1-strings' in flags:  # Can be removed soon, see bug 1041469
-        required.append('5c88c5b4fe07') # 191353 on m-c, first rev that has the --latin1-strings option
+        required.append('f1bacafe789c') # m-c 192164 Fx33, 1st w/--arm-asm-nop-fill=0, see bug 1020834
     if offthreadCompileFlag:
-        required.append('f0d67b1ccff9') # 188901 on m-c, first rev that has the --ion-offthread-compile=off option
+        required.append('f0d67b1ccff9') # m-c 188901 Fx33, 1st w/--ion-offthread-compile=off, see bug 1020364
     if '--no-native-regexp' in flags:
-        required.append('43acd23f5a98') # 183413 on m-c, first rev that has the --no-native-regexp option
+        required.append('43acd23f5a98') # m-c 183413 Fx32, 1st w/--no-native-regexp, see bug 976446
     if options.enableArmSimulator:
-        required.append('5ad5f92387a2') # 179476 on m-c, first rev with relevant getBuildConfiguration entry
+        required.append('5ad5f92387a2') # m-c 179476 Fx31, 1st w/relevant getBuildConfiguration entry, see bug 998596
     if options.disableGcGenerational:
-        required.append('52f43e3f552f') # 175600 on m-c, first rev that has the --disable-gcgenerational option
+        required.append('52f43e3f552f') # m-c 175600 Fx31, 1st w/--disable-gcgenerational option, see bug 619558
     if options.disableExactRooting:
-        required.append('6f7227918e79') # 164088 on m-c, first rev that has stable forward-compatible compilation options for GGC
+        required.append('6f7227918e79') # m-c 164088 Fx28, 1st w/stable forward-compatible compilation options for GGC, see bug 753203
     if isWin:
-        required.append('1a1968da61b3') # 163224 on m-c, first rev that builds on Windows successfully after build config changes
-    if not options.isThreadsafe:
-        required.append('df3c2a1e86d3') # 160479 on m-c, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs
-    if isMac and macVer() >= [10, 9]:
-        required.append('37e29c27e6e8') # 150707 on m-c, first rev that builds with Intl (built by default) on Mac 10.9 successfully
-    if '--ion-check-range-analysis' in flags:
-        required.append('e4a0c6fd1aa9') # 143131 on m-c, first rev that has a stable --ion-check-range-analysis option
-    if '--fuzzing-safe' in flags or parallelCompileFlag:
-        # --fuzzing-safe and --ion-parallel-compile=off generally are required flags for compareJIT
-        # autoBisect acts funny when in the region between m-c rev f42381e2760d and 0a9314155404,
-        # so we should just use the later revision as the start revision.
-        required.append('0a9314155404') # 135892 on m-c, first rev that has the --fuzzing-safe option
-    if '--no-fpu' in flags:
-        required.append('f10884c6a91e') # 128312 on m-c, first rev that has the --no-fpu option
-    if '--baseline-eager' in flags:
-        required.append('be125cabea26') # 127353 on m-c, first rev that has the --baseline-eager option
-    if '--no-baseline' in flags:
-        required.append('1c0489e5a302') # 127126 on m-c, first rev that has the --no-baseline option
-    if '--no-asmjs' in flags:
-        required.append('b3d85b68449d') # 124920 on m-c, first rev that has the --no-asmjs option
-    if options.buildWithAsan:
-        required.append('774ba579fd39') # 120418 on m-c, first rev with correct getBuildConfiguration details, including x86/x64 ones.
-    if '--ion-regalloc=backtracking' in flags or '--ion-regalloc=stupid' in flags:
-        required.append('dc4887f61d2e') # 116100 on m-c, first rev that has the --ion-regalloc=[backtracking|stupid] option. lsra option was already present.
-    if threadCountFlag:
-        required.append('b4fa8b1f279d') # 114005 on m-c, first rev that has the --thread-count=N option
-    if isMac and [10, 7] <= macVer() < [10, 9]:
-        required.append('d97862fb8e6d') # 111938 on m-c, first rev required by Mac w/Xcode 4.6, clang-425.0.24
-    required.append('e3799f9cfee8') # 107071 on m-c, first rev with correct getBuildConfiguration details
+        required.append('1a1968da61b3') # m-c 163224 Fx29, 1st w/successful Win builds after build config changes, see bug 950298
+    required.append('df3c2a1e86d3') # m-c 160479 Fx29, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs, see bug 927685
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 
