@@ -514,6 +514,7 @@ def rdfInit(args):
                 # We did not detect a breakpad/ASan crash in the output, but it looks like the process crashed.
                 # Look for a core file (to feed to gdb) or log from the Mac crash reporter.
                 wantStack = True
+                assert alh.theapp
                 crashLog = grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
                 alh.crashWatcher.readCrashLog(crashLog)
 
