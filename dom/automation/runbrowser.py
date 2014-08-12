@@ -42,7 +42,7 @@ def runBrowser():
   sys.path.append(os.path.join(reftestScriptDir, "..", "mozbase", "mozfile"))
   try:
     from automation import Automation
-  except ImportError as e:
+  except ImportError:
     print "Working around https://bugzilla.mozilla.org/show_bug.cgi?id=903616"
     from automation import Automation
   import automationutils
