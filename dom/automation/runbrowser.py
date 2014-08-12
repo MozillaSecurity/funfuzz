@@ -38,6 +38,8 @@ def runBrowser():
   url = args[4]
 
   sys.path.append(reftestScriptDir)
+  sys.path.append(os.path.join(reftestScriptDir, "..", "mozbase", "mozinfo"))
+  sys.path.append(os.path.join(reftestScriptDir, "..", "mozbase", "mozfile"))
   try:
     from automation import Automation
   except ImportError as e:
