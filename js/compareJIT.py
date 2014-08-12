@@ -34,7 +34,7 @@ def ignoreSomeOfStderr(e):
             # MallocScribble prints a line that includes the process's pid.  We don't want to include that pid in the comparison!
             pass
         elif "Bailed out of parallel operation" in line:
-            # This error message will only appear in --enable-threadsafe builds, and only when JITs are enabled
+            # This error message will only appear when threads and JITs are enabled.
             pass
         else:
             lines.append(line)
