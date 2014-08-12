@@ -111,16 +111,6 @@ def testGetBuildConfiguration(s):
     return shellSupports(s, ['-e', 'getBuildConfiguration()'])
 
 
-def testGetBuildConfigurationWithThreadsafe(s):
-    '''
-    This function tests if a binary supports getBuildConfiguration() with threadsafe.
-    See bug 791146 - getBuildConfiguration() returns the wrong value for gczeal and threadsafe
-    '''
-    ans = testBinary(s,
-            ['-e', 'print(getBuildConfiguration().hasOwnProperty("threadsafe"))'], False)[0]
-    return ans.find('true') != -1
-
-
 def testJsShellOrXpcshell(s):
     '''This function tests if a binary is a js shell or xpcshell.'''
     return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
@@ -156,9 +146,6 @@ def verifyBinary(sh):
     if isARMv7l:
         assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == sh.buildOptions.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
-        if testGetBuildConfigurationWithThreadsafe(sh.getShellBaseTempDirWithName()):
-            assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'threadsafe') == \
-                sh.buildOptions.isThreadsafe
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \
             sh.buildOptions.enableMoreDeterministic
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
