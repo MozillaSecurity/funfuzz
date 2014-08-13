@@ -107,7 +107,8 @@ class CrashWatcher:
 
     def readCrashLog(self, crashlog):
         if not os.path.isfile(crashlog):
-            self.noteCallback("Crash log is missing!")
+            if self.crashProcessor != "asan":
+                self.noteCallback("Crash log is missing!")
             return
 
         with open(crashlog) as f:
