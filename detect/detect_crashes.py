@@ -54,6 +54,7 @@ class CrashWatcher:
             #     AddressSanitizer's allocator is terminating the process instead of returning 0
             #     If you don't like this behavior set allocator_may_return_null=1
             # If you're interested in OOM crashes, you can set ASAN_OPTIONS=allocator_may_return_null=1
+            self.crashProcessor = "asan"
             self.crashIsKnown = True
 
         if "ERROR: AddressSanitizer" in msg:
