@@ -52,7 +52,9 @@ def isAncestor(repoDir, a, b):
 def existsAndIsAncestor(repoDir, a, b):
     """Returns true iff |a| exists and is an ancestor of |b|."""
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
-    return isAncestor(repoDir, "id(" + a + ")", b)
+    out = captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
+                         '--template={node|short}'],  combineStderr=True, ignoreExitCode=True)[0]
+    return out != "" and out.find("abort: unknown revision") < 0
 
 
 def getCsetHashFromBisectMsg(str):
