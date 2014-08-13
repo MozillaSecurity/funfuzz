@@ -465,13 +465,9 @@ def compileJs(shell):
 
     if os.path.exists(shell.getShellCompiledPath()):
         shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
-        assert os.path.isfile(shell.getShellBaseTempDirWithName())
-        if shell.buildOptions.enableNsprBuild:
-            for runLib in shell.getShellCompiledRunLibsPath():
+        for runLib in shell.getShellCompiledRunLibsPath():
+            if os.path.isfile(runLib):
                 shutil.copy2(runLib, shell.getDestDir())
-            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_NSPR_LIB)))
-            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_PLDS_LIB)))
-            assert os.path.isfile(normExpUserPath(os.path.join(shell.getDestDir(), RUN_PLC_LIB)))
     else:
         print out
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
