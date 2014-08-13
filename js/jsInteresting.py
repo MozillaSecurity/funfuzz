@@ -108,30 +108,42 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
 def jsfunfuzzLevel(options, logPrefix, quiet=False):
     (lev, issues, runinfo) = baseLevel(options.jsengineWithArgs, options.timeout, options.knownPath, logPrefix, valgrind=options.valgrind)
 
-    if lev == JS_FINE and not oomed(logPrefix):
+    if lev == JS_FINE:
+        # Check for unexplained exits and for jsfunfuzz saying "Found a bug".
+        understoodExit = False
+
         # Read in binary mode, because otherwise Python on Windows will
         # throw a fit when it encounters certain unicode.  Note that this
         # makes line endings platform-specific.
+
+        if '-dm-' in options.jsengineWithArgs[0]:
+            # Since this is an --enable-more-deterministic build, we should get messages on stderr
+            # if the shell quit() or terminate() functions are called.
+            # (We use a sketchy filename-matching check because it's faster than inspecting the binary.)
+            with open(logPrefix + "-err.txt", "rb") as f:
+                for line in f:
+                    if "terminate called" in line or "quit called" in line:
+                        understoodExit = True
+                    if "can't allocate region" in line:
+                        understoodExit = True
+        else:
+            understoodExit = True
+
         with open(logPrefix + "-out.txt", "rb") as f:
             for line in f:
-                sline = line.rstrip()
-                if sline == "It's looking good!" or line.startswith("jsfunfuzz broke its own scripting environment: "):
-                    break
-                if 'terminate called' in sline or 'quit called' in sline:
-                    break
-                elif line.startswith("Found a bug: "):
-                    if "NestTest" in line and reportedOverRecursion(logPrefix):
-                        break
-                    lev = JS_DECIDED_TO_EXIT
-                    issues.append(line.rstrip())
-                    # FIXME: if not quiet:
-                    # FIXME:     output everything between this line and "jsfunfuzz stopping due to finding a bug."
-                    break
-            else:
-                if '-dm-' in options.jsengineWithArgs[0]:  # This is faster than inspectShell.py
-                    # We do not know whether quit/terminate was called in non-deterministic builds
-                    issues.append("jsfunfuzz didn't finish")
-                    lev = JS_DID_NOT_FINISH
+                if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
+                    understoodExit = True
+                if line.startswith("Found a bug: "):
+                    understoodExit = True
+                    if not ("NestTest" in line and reportedOverRecursion(logPrefix)):
+                        lev = JS_DECIDED_TO_EXIT
+                        issues.append(line.rstrip())
+                        # FIXME: if not quiet:
+                        # FIXME:     output everything between this line and "jsfunfuzz stopping due to finding a bug."
+
+        if not understoodExit:
+            issues.append("jsfunfuzz didn't finish")
+            lev = JS_DID_NOT_FINISH
 
     # FIXME: if not quiet:
     # FIXME:     output the last tryItOut line
@@ -197,15 +209,6 @@ def deleteLogs(logPrefix):
     # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
     if (os.path.exists(logPrefix + "-core.gz")):
         os.remove(logPrefix + "-core.gz")
-
-def oomed(logPrefix):
-    """Did the shell run out of memory?"""
-    with open(logPrefix + "-err.txt", "rb") as f:
-        for line in f:
-            if "can't allocate region" in line:
-                 return True
-    return False
-
 
 
 def parseOptions(args):
