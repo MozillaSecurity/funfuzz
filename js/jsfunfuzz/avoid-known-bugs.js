@@ -41,6 +41,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("length") == -1              // bug 1027846
        && code.indexOf("exec") == -1                // bug 1033946
        && code.indexOf("RegExp") == -1              // bug 1033946
+       && code.indexOf("buildPar") == -1            // bug 1054531
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
