@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import os, sys
+import os
+import sys
+import findIgnoreLists
 
 ready = False
 knownObjects = dict()
@@ -9,7 +11,8 @@ sizes = 0
 def readKnownLeakList(knownPath):
     global ready, knownObjects, sizes
 
-    with open(os.path.join(knownPath, "rleak.txt")) as f:
+    knownLeaksFn = os.path.join(findIgnoreLists.THIS_REPO_PATH, "known", knownPath, "rleak.txt")
+    with open(knownLeaksFn) as f:
         for line in f:
             line = line.split("#")[0]
             line = line.strip()

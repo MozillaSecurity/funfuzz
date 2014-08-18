@@ -4,7 +4,7 @@
 # Recognizes JS_ASSERT based on condition only :(
 # Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
 
-import os, sys
+import findIgnoreLists
 
 simpleIgnoreList = []
 twoPartIgnoreList = []
@@ -49,11 +49,8 @@ def assertionSeverity(line):
 
 def readIgnoreLists(knownPath):
     global ready
-    while os.path.basename(knownPath) != "known":
-        filename = os.path.join(knownPath, "assertions.txt")
-        if os.path.exists(filename):
-             readIgnoreList(filename)
-        knownPath = os.path.dirname(os.path.dirname(filename))
+    for filename in findIgnoreLists.findIgnoreLists(knownPath, "assertions.txt"):
+        readIgnoreList(filename)
     ready = True
     print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
 

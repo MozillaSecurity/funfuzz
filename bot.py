@@ -563,7 +563,7 @@ def fuzzUntilBug(options, buildDir, buildSrc, i):
         # Not using compareJIT: bug 751700, and it's not fully hooked up
         # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
         # FIXME: use the right timeout
-        mtrArgs = ["--random-flags", "10", os.path.join(path0, "known", "mozilla-central"), shell]
+        mtrArgs = ["--random-flags", "10", "mozilla-central", shell]
         (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
     else:
         # FIXME: support Valgrind

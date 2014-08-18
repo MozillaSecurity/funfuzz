@@ -37,6 +37,7 @@ import detect_assertions
 import detect_malloc_errors
 import detect_crashes
 import detect_leaks
+import findIgnoreLists
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
@@ -447,14 +448,19 @@ def rdfInit(args):
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
     runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
 
-    knownPath = os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, "known", "mozilla-central")
+    knownPath = "mozilla-central"
 
     if options.valgrind:
         runBrowserOptions.append("--valgrind")
+
+        suppressions = ""
+        for suppressionsFile in findIgnoreLists.findIgnoreLists(knownPath, "valgrind.txt"):
+            suppressions += "--suppressions=" + suppressionsFile + " "
+
         runBrowserOptions.append("--vgargs="
           "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
-          "--suppressions=" + os.path.join(knownPath, "valgrind.txt") + " " +
           "--gen-suppressions=all" + " " +
+          suppressions +
           "--child-silent-after-fork=yes" + " " + # First part of the workaround for bug 658840
     #      "--leak-check=full" + " " +
     #      "--show-possibly-lost=no" + " " +

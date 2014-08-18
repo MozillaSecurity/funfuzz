@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import findIgnoreLists
+
 ready = False
 
 def amiss(knownPath, crashLogFilename, verbose):
@@ -38,11 +40,8 @@ def readIgnoreLists(knownPath):
     global ignoreList
     global ready
     ignoreList = []
-    while os.path.basename(knownPath) != "known":
-        filename = os.path.join(knownPath, "crashes.txt")
-        if os.path.exists(filename):
-             readIgnoreList(filename)
-        knownPath = os.path.dirname(os.path.dirname(filename))
+    for filename in findIgnoreLists.findIgnoreLists(knownPath, "crashes.txt"):
+        readIgnoreList(filename)
     ready = True
     #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
 

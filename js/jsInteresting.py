@@ -15,6 +15,7 @@ sys.path.append(p2)
 import detect_assertions
 import detect_crashes
 import detect_malloc_errors
+import findIgnoreLists
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
 from fileManipulation import writeLinesToFile
@@ -188,13 +189,7 @@ def truncateFile(fn, maxSize):
             f.truncate(maxSize)
 
 def valgrindSuppressions(knownPath):
-    a = []
-    while os.path.basename(knownPath) != "known":
-        filename = os.path.join(knownPath, "valgrind.txt")
-        if os.path.exists(filename):
-             a.append("--suppressions=" + filename)
-        knownPath = os.path.dirname(os.path.dirname(filename))
-    return a
+    return ["--suppressions=" + filename for filename in findIgnoreLists.findIgnoreLists(knownPath, "valgrind.txt")]
 
 def deleteLogs(logPrefix):
     """Whoever calls baseLevel should eventually call deleteLogs (unless a bug was found)."""
