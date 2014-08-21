@@ -251,7 +251,7 @@ def areArgsValid(args):
     if args.buildWithAsan and subprocesses.isWin:
         return False, 'Asan is not yet supported on Windows.'
 
-    if args.disableGcGenerational and not args.disableExactRooting:
+    if not args.disableGcGenerational and args.disableExactRooting:
         return False, 'If exact rooting is disabled, GGC must also be disabled.'
 
     if args.enableArmSimulator:
