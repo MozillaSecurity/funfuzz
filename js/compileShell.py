@@ -396,10 +396,12 @@ def cfgBin(shell, binToBeCompiled):
             if shell.buildOptions.disableExactRooting:
                 cfgCmdList.append('--disable-exact-rooting')
 
-        if os.name == 'posix':
-            cfgCmdList.append('--with-ccache')
         if shell.buildOptions.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
+
+        # We add the following flags by default.
+        if os.name == 'posix':
+            cfgCmdList.append('--with-ccache')
         cfgCmdList.append('--enable-gczeal')
         cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
         cfgCmdList.append('--disable-tests')
