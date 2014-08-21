@@ -368,22 +368,6 @@ def cfgBin(shell, binToBeCompiled):
     else:
         if shell.buildOptions.enableProfiling:
             cfgCmdList.append('--enable-profiling')
-        cfgCmdList.append('--enable-gczeal')
-        cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
-        cfgCmdList.append('--disable-tests')
-        if shell.buildOptions.enableMoreDeterministic:
-            # Fuzzing tweaks for more useful output, implemented in bug 706433
-            cfgCmdList.append('--enable-more-deterministic')
-        # GGC requires exact rooting to be enabled
-        if shell.buildOptions.disableGcGenerational or shell.buildOptions.disableExactRooting:
-            cfgCmdList.append('--disable-gcgenerational')
-            if shell.buildOptions.disableExactRooting:
-                cfgCmdList.append('--disable-exact-rooting')
-        if shell.buildOptions.buildWithVg:
-            cfgCmdList.append('--enable-valgrind')
-
-        if os.name == 'posix':
-            cfgCmdList.append('--with-ccache')
         if shell.getJsUsesNoThreadsFlag() and shell.buildOptions.enableNsprBuild:
                 cfgCmdList.append('--enable-nspr-build')
         else:
@@ -402,6 +386,23 @@ def cfgBin(shell, binToBeCompiled):
                         ]))
             else:
                 cfgCmdList.append('--disable-threadsafe')
+
+        if shell.buildOptions.enableMoreDeterministic:
+            # Fuzzing tweaks for more useful output, implemented in bug 706433
+            cfgCmdList.append('--enable-more-deterministic')
+        # GGC requires exact rooting to be enabled
+        if shell.buildOptions.disableGcGenerational or shell.buildOptions.disableExactRooting:
+            cfgCmdList.append('--disable-gcgenerational')
+            if shell.buildOptions.disableExactRooting:
+                cfgCmdList.append('--disable-exact-rooting')
+
+        if os.name == 'posix':
+            cfgCmdList.append('--with-ccache')
+        if shell.buildOptions.buildWithVg:
+            cfgCmdList.append('--enable-valgrind')
+        cfgCmdList.append('--enable-gczeal')
+        cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
+        cfgCmdList.append('--disable-tests')
 
     if os.name == 'nt':
         # FIXME: Replace this with shellify.
