@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
+        args.append("--enable-small-chunk-size")  # --enable-small-chunk-size landed in bug 941804
+
     if shellSupportsFlag(shellPath, '--ion-loop-unrolling=on') and chance(.2):
         args.append("--ion-loop-unrolling=on")  # --ion-loop-unrolling=on landed in bug 1039458
 
