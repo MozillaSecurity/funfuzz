@@ -625,7 +625,7 @@ def localCompileFuzzJsShell(options):
             shutil.copy2(cFile, fullPath)
 
     if not options.noStart:
-        analysisPath = os.path.abspath(os.path.join(path0, 'jsfunfuzz', 'analysis.py'))
+        analysisPath = os.path.abspath(os.path.join(path0, 'experimental', 'js', 'analysis.py'))
         if os.path.exists(analysisPath):
             shutil.copy2(analysisPath, fullPath)
 
