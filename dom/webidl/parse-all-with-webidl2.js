@@ -1,3 +1,5 @@
+// Run this in a SpiderMonkey shell (not Node)
+
 // Where to find WebIDL files (pre-processed and normal)
 const BUILD = "/Users/jruderman/builds/mozilla-central-debug/";
 const TREE = "/Users/jruderman/trees/mozilla-central/";
