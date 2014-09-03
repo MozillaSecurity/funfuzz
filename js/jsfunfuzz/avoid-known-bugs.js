@@ -34,9 +34,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("'strict") == -1             // see bug 743425
        && code.indexOf("Object.seal") == -1         // bug 937922
-       && code.indexOf("Math.round") == -1          // bug 1000606
-       && code.indexOf("Math.fround") == -1         // bug 1000606
-       && code.indexOf("Math.log2") == -1           // bug 1000606
        && code.indexOf("Math.asinh") == -1          // bug 1007213
        && code.indexOf("length") == -1              // bug 1027846
        && code.indexOf("enumerable") == -1          // bug 1054545
