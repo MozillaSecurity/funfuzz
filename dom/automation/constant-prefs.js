@@ -33,6 +33,7 @@ user_pref("browser.firstrun.show.localepicker", false);
 user_pref("browser.firstrun.show.uidiscovery", false);
 user_pref("browser.startup.page", 0); // use about:blank, not browser.startup.homepage
 user_pref("general.warnOnAboutConfig", false);
+user_pref("browser.displayedE10SPrompt", 5);
 //user_pref("datareporting.policy.dataSubmissionPolicyBypassAcceptance", true);
 
 // Suppress automatic safe mode after crashes.
