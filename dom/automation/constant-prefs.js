@@ -29,11 +29,13 @@ user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.EULA.override", true);
 user_pref("toolkit.telemetry.prompted", 2);
 user_pref("browser.rights.3.shown", true);
+user_pref("browser.rights.override", true);
 user_pref("browser.firstrun.show.localepicker", false);
 user_pref("browser.firstrun.show.uidiscovery", false);
 user_pref("browser.startup.page", 0); // use about:blank, not browser.startup.homepage
 user_pref("general.warnOnAboutConfig", false);
 user_pref("browser.displayedE10SPrompt", 5);
+user_pref("browser.newtabpage.introShown", true);
 //user_pref("datareporting.policy.dataSubmissionPolicyBypassAcceptance", true);
 
 // Suppress automatic safe mode after crashes.
@@ -42,6 +44,7 @@ user_pref("toolkit.startup.max_resumed_crashes", -1);
 // Turn off various things in firefox that try to contact servers,
 // to improve performance and sanity.
 // http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
+user_pref("browser.newtabpage.enhanced", false);
 user_pref("browser.safebrowsing.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
 user_pref("browser.search.update", false);
@@ -59,6 +62,7 @@ user_pref("browser.microsummary.enabled", false);
 user_pref("toolkit.telemetry.server", "");
 user_pref("plugins.update.url", "");
 user_pref("datareporting.healthreport.service.enabled", false);
+user_pref("datareporting.healthreport.uploadEnabled", false);
 
 // Prevent the fuzzer from accidentally contacting servers.
 //   Note: Since we are not actually running a proxy on port 6,
