@@ -122,6 +122,7 @@ dom.serviceWorkers.enabled
 dom.sms.enabled
 dom.storage.enabled
 dom.telephony.enabled
+dom.udpsocket.enabled
 dom.undo_manager.enabled
 dom.wakelock.enabled
 dom.webcrypto.enabled
