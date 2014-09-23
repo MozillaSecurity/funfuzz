@@ -75,6 +75,7 @@ function fuzzInitBlacklists()
                 "quadraticCurveTo",  // bug 1017942
                 "location.reload",   // accidentally reloading the main testcase would cancel the quit timer
                 "-moz-column",       // bug 1007312
+                "MozColumn",         // bug 1007312
                 "VTTCue",            // bug 1010707
                 "addCue",            // bug 1010707
                 "addTextTrack",      // bug 1010707
