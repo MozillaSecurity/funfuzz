@@ -106,6 +106,7 @@ dom.gamepad.non_standard_events.enabled
 dom.identity.enabled
 dom.image.picture.enabled
 dom.image.srcset.enabled
+dom.imagecapture.enabled
 dom.indexedDB.enabled
 dom.indexedDB.experimental
 dom.ipc.plugins.enabled.i386
