@@ -176,6 +176,7 @@ layers.acceleration.disabled
 layers.bufferrotation.enabled
 layers.composer2d.enabled
 layout.css.DOMMatrix.enabled
+layout.css.object-fit-and-position.enabled
 layers.enable-tiles
 layers.force-enable-tiles
 layers.tiled-drawtarget.enabled
