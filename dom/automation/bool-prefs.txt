@@ -86,6 +86,7 @@ canvas.hitregions.enabled
 canvas.path.enabled
 converter.html2txt.structs
 device.sensors.enabled
+dom.abortablepromise.enabled
 dom.animations-api.core.enabled
 dom.cycle_collector.incremental
 dom.global-constructor.disable.mozContact
