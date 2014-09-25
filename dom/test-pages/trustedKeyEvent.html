@@ -1,4 +1,8 @@
+<!DOCTYPE html>
+<html>
 <head>
+<title>Maunal test for trustedKeyEvent()</title>
+<meta charset="UTF-8">
 <script>
 
 function dumpln(s) { dump(s + "\n"); }
@@ -39,19 +43,24 @@ function t()
 <body>
 
 <h3>Press <span style="background: yellow">shift</span> to trigger:</h3>
+
 <form name="f">
 <div><label><input type=checkbox name=ctrl> Ctrl</label></div>
 <div><label><input type=checkbox name=alt> Alt</label></div>
 <div><label><input type=checkbox name=shift> Shift</label></div>
 <div><label><input type=checkbox name=meta> Meta</label></div>
-<div><select name=eventtype><option>press</option><option>down</option><option>up</option></select><div>
+<div><select name=eventtype><option>press</option><option>down</option><option>up</option></select></div>
 <div><label>keyCode: <input type=text name=keyCode></label></div>
 <div><label>charCode: <input type=text name=charCode value=65></label></div>
 </form>
 
 <h3>Test here</h3>
+
 <div><textarea rows=5 cols=50>Textarea</textarea></div>
 <div contenteditable>Content<b>editable</b></div>
 <div>Just a div</div>
 
 <div style="height: 2000px; background: #eeeeee">I am tall!</div>
+
+</body>
+</html>
