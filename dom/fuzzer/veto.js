@@ -154,6 +154,7 @@ function fuzzInitBlacklists()
                 "canvas",           // changing a canvas's width can undraw things, which makes sense
                 "textarea",         // non-empty textareas can trigger spellcheck :(
                 "contenteditable",  // carets, selections, etc.
+                "designMode",       // carets, selections, etc.
                 "getSelection",     // can be used to select text, which changes its background
                 "find",             // selects text
                 "scrollto",         // a page that changes the scroll position will just confuse us
