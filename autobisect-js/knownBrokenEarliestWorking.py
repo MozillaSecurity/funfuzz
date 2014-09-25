@@ -77,6 +77,7 @@ def knownBrokenRanges(options):
     if options.enableMoreDeterministic:
         skips.extend([
             hgrange('4a04ca5ed7d3', '406904577dfc'), # Fx33, see bug 1030014
+            hgrange('752ce35b166b', 'e6e63113336d'), # Fx35, see bug 1069704
         ])
 
     return skips
