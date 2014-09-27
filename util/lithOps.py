@@ -22,8 +22,8 @@ lithiumpy = [sys.executable, "-u", os.path.join(p0, os.pardir, "lithium", "lithi
 def knownBugsDir(rName):
     '''Defines and returns the known-bugs directory.'''
     mcKnDir = 'mozilla-central'
-    if rName == 'mozilla-esr24':
-        return 'mozilla-esr24'
+    if rName == 'mozilla-esr31':
+        return 'mozilla-esr31'
     elif rName == 'ionmonkey':
         return os.path.join('mozilla-central', 'ionmonkey')
     elif rName != 'mozilla-central':

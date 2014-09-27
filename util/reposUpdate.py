@@ -25,7 +25,6 @@ repos.append('mozilla-central')
 repos.append('mozilla-aurora')
 repos.append('mozilla-beta')
 repos.append('mozilla-release')
-repos.append('mozilla-esr24')
 repos.append('mozilla-esr31')
 # B2G
 repos.append('b2g')

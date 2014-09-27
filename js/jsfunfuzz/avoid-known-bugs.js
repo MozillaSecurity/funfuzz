@@ -42,7 +42,7 @@ function whatToTestSpidermonkeyTrunk(code)
   };
 }
 
-function whatToTestSpidermonkeyMozilla24(code)
+function whatToTestSpidermonkeyMozilla31(code)
 {
   /* jshint laxcomma: true */
   // regexps can't match across lines, so replace whitespace with spaces.
@@ -65,6 +65,9 @@ function whatToTestSpidermonkeyMozilla24(code)
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("oomAfterAllocations") == -1
+       && code.indexOf("reducePar") == -1           // only deterministic for associative elemental-reducers
+       && code.indexOf("scanPar") == -1             // only deterministic for associative elemental-reducers
+       && code.indexOf("scatterPar") == -1          // only deterministic for associative conflict-resolvers
     ,
 
     expectConsistentOutputAcrossIter: true
@@ -72,9 +75,21 @@ function whatToTestSpidermonkeyMozilla24(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
+       && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("'strict") == -1             // see bug 743425
-       && code.indexOf("Object.seal") == -1         // bug 937922 (24 branch)
-       && code.indexOf("RegExp") == -1              // bug 945512 (24 branch)
+       && code.indexOf("Object.seal") == -1         // bug 937922 (31 branch)
+       && code.indexOf("buildPar") == -1            // bug 998262 (31 branch)
+       && code.indexOf("with") == -1                // bug 998580 (31 branch)
+       && code.indexOf("use asm") == -1             // bug 999790 (31 branch)
+       && code.indexOf("Math.round") == -1          // bug 1000606 (31 branch)
+       && code.indexOf("Math.fround") == -1         // bug 1000606 (31 branch)
+       && code.indexOf("Math.asinh") == -1          // bug 1007213 (31 branch)
+       && code.indexOf("Math.ceil") == -1           // bug 1000605, bug 1015656 (31 branch)
+       && code.indexOf("arguments") == -1           // bug 1024444 (31 branch)
+       && code.indexOf("use strict") == -1          // bug 1008818, bug 1025587 (31 branch)
+       && code.indexOf("length") == -1              // bug 998059, bug 1027846 (31 branch)
+       && code.indexOf("enumerable") == -1          // bug 1054545 (31 branch)
+       && code.indexOf("buildPar") == -1            // bug 1066496 (31 branch)
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
