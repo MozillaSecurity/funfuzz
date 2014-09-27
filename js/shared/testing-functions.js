@@ -92,8 +92,8 @@ var fuzzTestingFunctions = (function(glob){
     { w: 1,  v: function(d, b) { return "(" + tf("enableOsiPointRegisterChecks") + "()" + ")"; } },
 
     // Run-time equivalents to --baseline-eager or --baseline-uses-before-compile, --no-baseline, etc
-    { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.usecount.trigger', " + rnd(20) + ")" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('ion.usecount.trigger', " + rnd(40) + ")" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.warmup.trigger', " + rnd(20) + ")" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('ion.warmup.trigger', " + rnd(40) + ")" + ")"; } },
     //{ w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")"; } }, // see bug 949807
     //{ w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('baseline.enable', " + rnd(2) + ")"; } }, // bug 932284
 
