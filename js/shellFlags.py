@@ -168,7 +168,18 @@ def basicFlagSets(shellPath):
     compareJIT uses these combinations of flags (as well as the original set of flags) when run
     through Lithium and autoBisect.
     '''
-    if shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
+    if shellSupportsFlag(shellPath, "--no-threads"):
+        basicFlagList = [
+            # Parts of this flag permutation come from:
+            # https://hg.mozilla.org/mozilla-central/file/6a63bcb6e0d3/js/src/tests/lib/tests.py#l12
+            ['--fuzzing-safe', '--no-threads', '--ion-eager'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
+            ['--fuzzing-safe', '--no-threads', '--ion-eager', '--ion-check-range-analysis', '--no-sse3'],
+            ['--fuzzing-safe', '--no-threads', '--baseline-eager'],
+            ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
+            ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
+        ]
+        return basicFlagList
+    elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/84bd8d9f4256/js/src/tests/lib/tests.py#l12
@@ -189,7 +200,7 @@ def basicFlagSets(shellPath):
                 basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
-    elif shellSupportsFlag(shellPath, "--fuzzing-safe"):
+    else:
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
@@ -210,63 +221,6 @@ def basicFlagSets(shellPath):
                 basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
-    elif shellSupportsFlag(shellPath, "--baseline-eager"):
-        basicFlagList = [
-            # From http://hg.mozilla.org/mozilla-central/annotate/4236b1163508/js/src/jit-test/jit_test.py#l140
-            [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
-            ['--no-baseline'],  # Not in jit_test.py as of rev c6bca8768874 though...
-            ['--no-baseline', '--no-ion', '--no-ti'],
-            ['--no-baseline', '--no-ion'],
-            ['--no-baseline', '--ion-eager'],  # Not in jit_test.py as of rev c6bca8768874 though...
-            ['--ion-eager'],
-            ['--baseline-eager'],
-            ['--baseline-eager', '--no-ion'], # See bug 848906 comment 1
-            ['--baseline-eager', '--no-ti'],  # Not in jit_test.py as of rev c6bca8768874 though...
-            ['--baseline-eager', '--no-ti', '--no-fpu'],
-        ]
-        return basicFlagList
-    elif shellSupportsFlag(shellPath, "--no-ion"):
-        basicFlagList = [
-            # From https://bugzilla.mozilla.org/attachment.cgi?id=616725
-            [], # Here, compareJIT uses no flags as the sole baseline when fuzzing
-            ['--no-jm'],
-            ['--ion-gvn=off', '--ion-licm=off'],
-            ['--no-ion', '--no-jm', '--no-ti'],
-            ['--no-ion', '--no-ti'],
-            ['--no-ion', '--no-ti', '-a', '-d'],
-            ['--no-ion', '--no-jm'],
-            ['--no-ion'],
-            ['--no-ion', '-a'],
-            ['--no-ion', '-a', '-d'],
-            ['--no-ion', '-d'],
-            # Plus a special bonus
-            ['--ion-eager'],
-        ]
-        if shellSupportsFlag(shellPath, "--no-baseline"):
-            basicFlagList.extend([
-                ['--no-baseline'],
-                ['--no-baseline', '--no-ti'],
-            ])
-        return basicFlagList
-    else:
-        sets = [
-            # ,m,am,amd,n,mn,amn,amdn,mdn
-            [],
-            ['-m'],
-            ['-m', '-a'],
-            ['-m', '-a', '-d']
-        ]
-        if shellSupportsFlag(shellPath, '-n'):
-            sets.extend([
-                ['-n'],
-                ['-m', '-n'],
-                ['-m', '-n', '-a'],
-                ['-m', '-n', '-a', '-d'],
-                ['-m', '-n', '-d']
-            ])
-        if shellSupportsFlag(shellPath, "--ion"):
-            sets += [["--ion"] + set for set in sets]
-        return sets
 
 
 # Consider adding a function (for compareJIT reduction) that takes a flag set
