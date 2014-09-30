@@ -243,8 +243,8 @@ def areArgsValid(args):
 
         if subprocesses.isWin:
             return False, 'Valgrind does not work on Windows.'
-        if subprocesses.isMac:
-            return False, 'Valgrind does not yet work well on Mac OS X.'
+        if subprocesses.isMac and args.enable32:
+            return False, 'Valgrind does not work well with Mac OS X 32-bit binaries.'
         if subprocesses.isARMv7l and not args.enableHardFp:
             return False, 'libc6-dbg packages needed for Valgrind are only ' + \
                 'available via hardfp, tested on Ubuntu on an ARM odroid board.'
