@@ -180,6 +180,7 @@ layout.css.clip-path-shapes.enabled
 layout.css.DOMMatrix.enabled
 layout.css.object-fit-and-position.enabled
 layers.enable-tiles
+layout.event-regions.enabled
 layers.force-enable-tiles
 layers.tiled-drawtarget.enabled
 layers.force-active
