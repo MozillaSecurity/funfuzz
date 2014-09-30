@@ -12,11 +12,9 @@ import hgCmds
 import subprocesses
 
 if platform.uname()[2] == 'XP':
-    DEFAULT_MC_REPO_LOCATION = subprocesses.normExpUserPath(
-        os.path.join(path0, '..', '..', 'trees', 'mozilla-central'))
+    DEFAULT_TREES_LOCATION = subprocesses.normExpUserPath(os.path.join(path0, '..', '..', 'trees'))
 else:
-    DEFAULT_MC_REPO_LOCATION = subprocesses.normExpUserPath(
-        os.path.join('~', 'trees', 'mozilla-central'))
+    DEFAULT_TREES_LOCATION = subprocesses.normExpUserPath(os.path.join('~', 'trees'))
 
 
 def chance(p):
@@ -55,11 +53,9 @@ def addParserOptions():
         default = False,
            help = 'Chooses sensible random build options. Defaults to "%(default)s".'
     )
-    # FIXME: randomise repos as well??
     parser.add_argument('-R', '--repoDir',
         dest = 'repoDir',
-     default = subprocesses.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
-        help = 'Sets the source repository. Defaults to "%(default)s".'
+        help = 'Sets the source repository.'
     )
     parser.add_argument('-P', '--patch',
         dest = 'patchFile',
@@ -152,15 +148,24 @@ def parseShellOptions(inputArgs):
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args(inputArgs.split())
 
-    # This ensures that releng machines do not enter the if block.
+    # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isfile(subprocesses.normExpUserPath(
-            os.path.join(DEFAULT_MC_REPO_LOCATION, '.hg', 'hgrc'))):
+            os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central', '.hg', 'hgrc'))):
+        # Repositories do not get randomized if a repository is specified.
+        if buildOptions.repoDir is None:
+            # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
+            if buildOptions.enableRandom and not buildOptions.patchFile:
+                buildOptions.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
+            else:
+                buildOptions.repoDir = os.path.realpath(subprocesses.normExpUserPath(
+                    os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
+
         assert hgCmds.isRepoValid(buildOptions.repoDir)
 
-    if buildOptions.patchFile:
-        hgCmds.ensureMqEnabled()
-        buildOptions.patchFile = subprocesses.normExpUserPath(buildOptions.patchFile)
-        assert os.path.isfile(buildOptions.patchFile)
+        if buildOptions.patchFile:
+            hgCmds.ensureMqEnabled()
+            buildOptions.patchFile = subprocesses.normExpUserPath(buildOptions.patchFile)
+            assert os.path.isfile(buildOptions.patchFile)
 
     if buildOptions.enableRandom:
         buildOptions = generateRandomConfigurations(parser, randomizer)
@@ -276,6 +281,28 @@ def generateRandomConfigurations(parser, randomizer):
         if areArgsValid(buildOptions)[0]:
             buildOptions.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
             return buildOptions
+
+
+def getRandomValidRepo(treeLocation):
+    validRepos = []
+    for repo in ['mozilla-central', 'mozilla-aurora', 'mozilla-beta', 'mozilla-release',
+                 'mozilla-esr31']:
+        if os.path.isfile(subprocesses.normExpUserPath(os.path.join(
+                treeLocation, repo, '.hg', 'hgrc'))):
+            validRepos.append(repo)
+
+    # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
+    if 'mozilla-aurora' in validRepos and chance(0.4):
+        validRepos.remove('mozilla-aurora')
+    if 'mozilla-beta' in validRepos and chance(0.7):
+        validRepos.remove('mozilla-beta')
+    if 'mozilla-release' in validRepos and chance(0.9):
+        validRepos.remove('mozilla-release')
+    if 'mozilla-esr31' in validRepos and chance(0.8):
+        validRepos.remove('mozilla-esr31')
+
+    return os.path.realpath(subprocesses.normExpUserPath(
+        os.path.join(treeLocation, random.choice(validRepos))))
 
 
 if __name__ == "__main__":
