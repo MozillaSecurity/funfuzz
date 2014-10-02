@@ -43,6 +43,10 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    # This flag is an experiment, it might be removed eventually.
+    if shellSupportsFlag(shellPath, '--ion-scalar-replacement=on') and chance(.8):
+        args.append("--ion-scalar-replacement=on")  # --ion-scalar-replacement=on landed in bug 1069307
+
     if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
         args.append("--enable-small-chunk-size")  # --enable-small-chunk-size landed in bug 941804
 
