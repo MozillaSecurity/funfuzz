@@ -19,9 +19,9 @@ if os.name == 'nt':
     COMPILE_PLDS_LIB = 'libplds4.lib' if isMozBuild64 else 'plds4.lib'
     COMPILE_PLC_LIB = 'libplc4.lib' if isMozBuild64 else 'plc4.lib'
 
-    RUN_NSPR_LIB = 'libnspr4.dll' if isMozBuild64 else 'nspr4.dll'
-    RUN_PLDS_LIB = 'libplds4.dll' if isMozBuild64 else 'plds4.dll'
-    RUN_PLC_LIB = 'libplc4.dll' if isMozBuild64 else 'plc4.dll'
+    RUN_NSPR_LIB = 'nspr4.dll'
+    RUN_PLDS_LIB = 'plds4.dll'
+    RUN_PLC_LIB = 'plc4.dll'
 else:
     COMPILE_NSPR_LIB = 'libnspr4.a'
     COMPILE_PLDS_LIB = 'libplds4.a'
