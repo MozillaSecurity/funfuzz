@@ -86,10 +86,10 @@ var fuzzerCanvas2D = (function() {
   {
     var choice = Random.range(0, 4);
     if (choice == 0) {
-      return Things.add(Things.instance("HTMLCanvasElement") + ".toDataURL" + JS.methodHead([Utils.quote(Make.mimeType())]));
+      return Things.add(Things.instance("HTMLCanvasElement") + ".toDataURL" + JS.methodHead([Utils.quote(Make.imageMimeType())]));
     }
     if (Platform.isMozilla && choice == 1) {
-      var args = ["function() {}", Utils.quote(Make.mimeType()), Make.number];
+      var args = ["function() {}", Utils.quote(Make.imageMimeType()), Make.number];
       return Things.add(Things.instance("HTMLCanvasElement") + ".toBlob" + JS.methodHead(args));
     }
     if (Platform.isMozilla && choice == 2) {
