@@ -25,7 +25,7 @@ DOMFuzzHelperManager.prototype = {
     var window = aEvent.target.defaultView;
 
     // XXX This is probably insecure; check with bholley.
-    window.wrappedJSObject.fuzzPriv = makeDOMFuzzHelper(window);
+    window.wrappedJSObject.fuzzPriv = Cu.cloneInto(makeDOMFuzzHelper(window), window, {cloneFunctions: true});
   }
 };
 
@@ -37,6 +37,8 @@ var domfuzzhelpermanager = new DOMFuzzHelperManager();
  *****************************/
 
 // Create deeply fresh objects so windows don't influence each other.
+// This "deep freshness" also seems to expected for users of Cu.cloneInto:
+// https://bug1082450.bugzilla.mozilla.org/attachment.cgi?id=8505432
 
 function makeDOMFuzzHelper(aWindow) {
   dumpln("DOMFuzzHelper created");
@@ -133,58 +135,6 @@ function makeDOMFuzzHelper(aWindow) {
       resizeTo: safeResizeTo(aWindow),
 
       trustedKeyEvent: trustedKeyEvent(aWindow),
-
-      __exposedProps__: {
-        'toString': 'r',
-        'quitApplication': 'r',
-        'quitApplicationSoon': 'r',
-        'closeTabThenQuit': 'r',
-        'quitWithLeakCheck': 'r',
-        'runSoon': 'r',
-        'enableAccessibility': 'r',
-        'forceGC': 'r',
-        'GC': 'r',
-        'gc': 'r',
-        'CC': 'r',
-        'CCLog': 'r',
-        'finishCC': 'r',
-        'ccSlice': 'r',
-        'MP': 'r',
-        'forceShrinkingGC': 'r',
-        'schedulePreciseGC': 'r',
-        'schedulePreciseShrinkingGC': 'r',
-        'fontList': 'r',
-        'printToFile': 'r',
-        'openAboutMemory': 'r',
-        'openAboutNewtab': 'r',
-        'reftestList': 'r',
-        'cssPropertyDatabase': 'r',
-        'webidlDatabase': 'r',
-        'comparePixels': 'r',
-        'callDrawWindow': 'r',
-        'resizeTo': 'r',
-        deterministicgc: 'r',
-        schedulegc: 'r',
-        selectforgc: 'r',
-        gczeal: 'r',
-        gcslice: 'r',
-        gcparam: 'r',
-        countHeap: 'r',
-        verifyprebarriers: 'r',
-        verifypostbarriers: 'r',
-        terminate: 'r',
-        reftestFilesDirectory: 'r',
-        trustedKeyEvent: 'r',
-        setIonCheckGraphCoherency: 'r',
-        enableOsiPointRegisterChecks: 'r',
-        gcPreserveCode: 'r',
-        minorgc: 'r',
-        setJitCompilerOption: 'r',
-        // Disabled: bug 1005777
-        //enableSPSProfiling: 'r',
-        //enableSPSProfilingWithSlowAssertions: 'r',
-        //disableSPSProfiling: 'r',
-      }
   };
 }
 
