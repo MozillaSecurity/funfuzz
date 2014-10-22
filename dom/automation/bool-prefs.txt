@@ -193,6 +193,7 @@ layout.css.flexbox.enabled
 layout.css.grid.enabled
 layout.css.masking.enabled
 layout.css.report_errors
+layout.css.scroll-behavior.property-enabled
 layout.css.sticky.enabled
 layout.css.supports-rule.enabled
 layout.css.text-align-true-value.enabled
