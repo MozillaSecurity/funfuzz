@@ -27,7 +27,7 @@ var fuzzTestingFunctions = (function(glob){
 
   function enableGCZeal()
   {
-    var level = rnd(14);
+    var level = rnd(15);
     if (browser && level == 9) level = 0; // bug 815241
     var period = numberOfAllocs();
     return "(" + tf("gczeal") + "(" + level + ", " + period + ")" + ")";
