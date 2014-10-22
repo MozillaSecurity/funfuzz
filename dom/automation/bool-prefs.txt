@@ -300,6 +300,7 @@ security.warn_entering_weak
 security.warn_leaving_secure
 security.warn_submit_insecure
 security.warn_viewing_mixed
+selectioncaret.noneditable
 signed.applets.codebase_principal_support
 signon.autofillForms
 signon.autologin.proxy
