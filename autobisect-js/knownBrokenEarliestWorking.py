@@ -52,6 +52,7 @@ def knownBrokenRanges(options):
         hgrange('7cff27cb2845', 'ff5ca7959511'), # Fx30, broken build config w/ NSPR
         hgrange('07c0cf637290', 'f2adbe2a41c0'), # Fx31, broken non-threadsafe
         hgrange('99a6ee6466f5', '5c9119729bbf'), # Fx32, unstable spidermonkey
+        hgrange('93dce4b831f3', '143ce643d1b3'), # Fx32, asserts when run with --thread-count=1
         hgrange('573458d10426', '5a50315d4d7d'), # Fx33, broken non-threadsafe
         hgrange('6b285759568c', 'e498b157651e'), # Fx34, broken ICU
         hgrange('03242a11d044', '31714af41f2c'), # Fx35, broken spidermonkey due to let changes
