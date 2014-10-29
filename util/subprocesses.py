@@ -217,7 +217,6 @@ def dateStr():
 def findLlvmBinPath():
     '''Returns the path to compiled LLVM binaries, which differs depending on compilation method.'''
     # https://developer.mozilla.org/en-US/docs/Building_Firefox_with_Address_Sanitizer#Manual_Build
-    vdump('Assumed LLVM SVN version is: 200213')
     # FIXME: It would be friendlier to show instructions (or even offer to set up LLVM for the user,
     # with the right LLVM revision and build options). See MDN article on Firefox and Asan above.
 
