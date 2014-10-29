@@ -12,7 +12,6 @@ import sys
 
 from copy import deepcopy
 from multiprocessing import cpu_count
-from tempfile import mkdtemp
 from traceback import format_exc
 from optparse import OptionParser
 
