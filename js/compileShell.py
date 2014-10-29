@@ -18,7 +18,6 @@ from optparse import OptionParser
 
 import buildOptions
 from inspectShell import ALL_COMPILE_LIBS, ALL_RUN_LIBS
-from inspectShell import RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB
 from inspectShell import verifyBinary
 
 path0 = os.path.dirname(os.path.abspath(__file__))
