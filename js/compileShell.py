@@ -25,8 +25,9 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
-from subprocesses import captureStdout, findLlvmBinPath, isARMv7l, isLinux, isMac, isVM, isWin
-from subprocesses import macVer, normExpUserPath, rmTreeIncludingReadOnly, shellify, vdump
+from subprocesses import captureStdout, findLlvmBinPath, isARMv7l, isLinux, isMac
+from subprocesses import isProgramInstalled, isVM, isWin, macVer, normExpUserPath
+from subprocesses import rmTreeIncludingReadOnly, shellify, vdump
 from LockDir import LockDir
 
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
@@ -171,7 +172,9 @@ def ensureDir(dir):
 def autoconfRun(cwDir):
     '''Run autoconf binaries corresponding to the platform.'''
     if isMac:
-        subprocess.check_call(['autoconf213'], cwd=cwDir)
+        autoconf213MacBin = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213' \
+                                if isProgramInstalled('brew') else 'autoconf213'
+        subprocess.check_call([autoconf213MacBin], cwd=cwDir)
     elif isLinux:
         subprocess.check_call(['autoconf2.13'], cwd=cwDir)
     elif isWin:
@@ -253,6 +256,8 @@ def cfgBin(shell, binToBeCompiled):
             cfgEnvDt['LD'] = 'ld'
             cfgEnvDt['STRIP'] = 'strip -x -S'
             cfgEnvDt['CROSS_COMPILE'] = '1'
+            if isProgramInstalled('brew'):
+                cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
                 cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
@@ -301,6 +306,8 @@ def cfgBin(shell, binToBeCompiled):
         else:  # Uses system clang
             cfgEnvDt['CC'] = 'clang' + CLANG_PARAMS
             cfgEnvDt['CXX'] = 'clang++' + CLANG_PARAMS
+        if isProgramInstalled('brew'):
+            cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
             cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
