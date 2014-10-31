@@ -129,6 +129,7 @@ dom.undo_manager.enabled
 dom.wakelock.enabled
 dom.webcrypto.enabled
 dom.workers.enabled
+dom.workers.websocket.enabled
 editor.use_css
 editor.use_custom_colors
 font.size.inflation.forceEnabled
@@ -260,7 +261,6 @@ network.standard-url.encode-utf8
 network.standard-url.escape-utf8
 network.websocket.allowInsecureFromHTTPS
 network.websocket.auto-follow-http-redirects
-network.websocket.enabled
 network.websocket.extensions.stream-deflate
 nglayout.debug.disable_xul_cache
 nglayout.enable_drag_images
