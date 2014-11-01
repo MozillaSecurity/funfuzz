@@ -43,9 +43,6 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
-    if shellSupportsFlag(shellPath, '--enable-gccompacting') and chance(.5):
-        args.append("--enable-gccompacting")  # --enable-gccompacting landed, Fx34 rev 8f3ba188627a
-
     if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
         args.append("--enable-small-chunk-size")  # --enable-small-chunk-size landed in bug 941804
 
