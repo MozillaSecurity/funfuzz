@@ -113,7 +113,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     if '--no-threads' in flags:
         required.append('e8558ecd9b16') # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
-    if isWin64 or '--enable-nspr-build' in flags:  # Win64 has peculiar complexities prior to this
+    if isWin64 or '--enable-nspr-build' in options.enableNsprBuild:  # Win64 has peculiar complexities prior to this
         required.append('a459b02a9ca4') # m-c 194734 Fx33, 1st w/--enable-nspr-build, see bug 975011
     if asmPoolMaxOffsetFlag:
         required.append('f114c4101f02') # m-c 194525 Fx33, 1st w/--asm-pool-max-offset=1024, see bug 1026919
