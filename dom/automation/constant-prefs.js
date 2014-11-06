@@ -1,3 +1,8 @@
+// Not ready for e10s
+user_pref("browser.tabs.remote.autostart", false);
+user_pref("browser.tabs.remote.autostart.1", false);
+user_pref("browser.tabs.remote.autostart.2", false);
+
 // Extend the time before slow script dialogs appear.
 user_pref("dom.max_chrome_script_run_time", 75);
 user_pref("dom.max_script_run_time", 60);
