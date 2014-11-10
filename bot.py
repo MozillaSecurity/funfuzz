@@ -134,6 +134,14 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
         summaryFile = job + filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
         with open(summaryFile) as f:
             summary = "\n\n" + f.read(50000)
+        if options.testType == 'js':
+            outFile = job + filter(lambda s: s.find("-out.txt") != -1, os.listdir(job))[0]
+            if os.path.isfile(outFile):
+                from itertools import islice
+                with open(outFile) as f:
+                    for line in islice(f, 0, 9):  # fuzzSeed is located near the top of *-out.txt
+                        if line.startswith('fuzzSeed'):
+                            summary = '\n\nfuzzSeed is: ' + line.split()[1] + summary
     else:
         summary = ""
 
