@@ -155,21 +155,25 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     runCommand(options.remote_host, "mv " + options.relevantJobsDir + newjobnameTmp + " " + options.relevantJobsDir + newjobname)
     shutil.rmtree(newjobTmp)
 
-    if options.remote_host and (lithResult == lithOps.LITH_FINISHED or (options.testType == 'js')):
+    if lithResult == lithOps.LITH_FINISHED or options.testType == 'js':
         recipients = []
         subject = "Reduced " + options.testType + " fuzz testcase"
-        machineInfo = "This machine: " + platform.uname()[1] + "\n" + "Reporting to: " + options.remote_host + ":" + options.baseDir
-        if options.baseDir == "//mnt/pvt_builds/fuzzing/":
-            dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
+        if options.remote_host:
+            machineInfo = "This machine: " + platform.uname()[1] + "\n" + "Reporting to: " + options.remote_host + ":" + options.baseDir
+            if options.baseDir == "//mnt/pvt_builds/fuzzing/":
+                dirRef = "https://pvtbuilds.mozilla.org/fuzzing/" + options.relevantJobsDirName + "/" + newjobname + "/"
+            else:
+                dirRef = options.relevantJobsDirName + "/" + newjobname + "/"
         else:
-            dirRef = options.relevantJobsDirName + "/" + newjobname + "/"
+            machineInfo = "This machine: " + platform.uname()[1] + "\n"
+            dirRef = ''
         # no_longer_reproducible crashes do not have a summary file,
         # so check if summary is an actual local variable with a value.
         body = machineInfo + "\n\n" + dirRef + summary
         if options.testType == 'js':
             # Send jsfunfuzz emails to gkw
             recipients.append("gkwong")
-        else:
+        elif options.remote_host:
             # Send domfuzz emails to Jesse
             recipients.append("jruderman")
         print "Sending email..."
