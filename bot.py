@@ -128,7 +128,7 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
     if lithResult == lithOps.LITH_PLEASE_CONTINUE:
         writeTinyFile(job + "lithium-command.txt", lithDetails)
 
-    if lithResult == lithOps.LITH_FINISHED:
+    if lithResult == lithOps.LITH_FINISHED or (options.testType == 'js' and lithOps.LITH_NO_REPRO):
         # lithDetails should be a string like "11 lines"
         statePostfix = "_" + lithDetails.replace(" ", "_") + statePostfix
         summaryFile = job + filter(lambda s: s.find("summary") != -1, os.listdir(job))[0]
