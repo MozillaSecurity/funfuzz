@@ -135,7 +135,7 @@ def uploadJob(options, lithResult, lithDetails, job, oldjobname):
         with open(summaryFile) as f:
             summary = "\n\n" + f.read(50000)
         if options.testType == 'js':
-            outFile = job + filter(lambda s: s.find("-out.txt") != -1, os.listdir(job))[0]
+            outFile = job + filter(lambda s: s.find("-out.txt") != -1 and '.gz' not in s, os.listdir(job))[0]
             if os.path.isfile(outFile):
                 from itertools import islice
                 with open(outFile) as f:
