@@ -389,19 +389,16 @@ def botmain(options):
 
             else:
                 print "Fuzz time!"
-                #if options.remote_host:
-                #  sendEmail("justFuzzTime", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+                #if options.testType == 'js':
+                #    print "Sending email..."
+                #    sendEmail("justFuzzTime", "Platform details (" + str(numProcesses) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+                #    print "Email sent!"
 
                 numProcesses = cpu_count()
                 if "-asan" in buildDir:
                     # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
                     # I could guess 1 GB RAM per core, but that wanders into sketchyville.
                     numProcesses = max(numProcesses // 2, 1)
-
-                if options.testType == 'js':
-                    print "Sending email..."
-                    sendEmail("justFuzzTime", "Platform details (" + str(numProcesses) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-                    print "Email sent!"
 
                 forkJoin(numProcesses, fuzzUntilBug, [options, buildDir, buildSrc])
 
