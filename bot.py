@@ -398,6 +398,11 @@ def botmain(options):
                     # I could guess 1 GB RAM per core, but that wanders into sketchyville.
                     numProcesses = max(numProcesses // 2, 1)
 
+                if options.testType == 'js':
+                    print "Sending email..."
+                    sendEmail("justFuzzTime", "Platform details (" + str(numProcesses) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+                    print "Email sent!"
+
                 forkJoin(numProcesses, fuzzUntilBug, [options, buildDir, buildSrc])
 
         # Remove build directory
