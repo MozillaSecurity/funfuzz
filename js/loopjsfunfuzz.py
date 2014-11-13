@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import random
+import shutil
 import subprocess
 import sys
 import time
@@ -15,7 +17,7 @@ p0 = os.path.dirname(os.path.abspath(__file__))
 interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
-from subprocesses import createWtmpDir
+from subprocesses import createWtmpDir, normExpUserPath
 from fileManipulation import fuzzSplice, linesStartingWith, writeLinesToFile
 from inspectShell import queryBuildConfiguration
 import lithOps
@@ -73,6 +75,20 @@ def linkFuzzer(target_fn):
     file_list_fn = os.path.join(p0, "files-to-link.txt")
     linkJS.linkJS(target_fn, file_list_fn, source_base)
 
+
+def getRndJitTest(repo):
+    '''
+    Returns the name of a random JS file in the %sjs/src/jit-test/tests/* directory, including
+    subdirectories.
+    ''' % repo
+    jsJitTestFiles = [os.path.join(path, filename)
+                      for path, dirs, files in os.walk(
+                          normExpUserPath(os.path.join(repo, 'js', 'src', 'jit-test', 'tests')))
+                      for filename in files
+                      if filename.endswith('.js')]
+    return random.choice(jsJitTestFiles)
+
+
 def many_timed_runs(targetTime, wtmpDir, args):
     options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
@@ -81,8 +97,22 @@ def many_timed_runs(targetTime, wtmpDir, args):
     fuzzjs = os.path.join(wtmpDir, "jsfunfuzz.js")
     linkFuzzer(fuzzjs)
 
+    origfuzzjs = os.path.join(wtmpDir, 'orig-jsfunfuzz.js')
+    shutil.copy2(fuzzjs, origfuzzjs)
+
     iteration = 0
     while True:
+        # Concatenates a random JS test from jit-tests with jsfunfuzz every iteration
+        rndJitTest = getRndJitTest(options.repo)
+        with open(fuzzjs, 'wb') as f, open(rndJitTest, 'rb') as g, open(origfuzzjs, 'rb') as h:
+            f.write('try {\n\n')
+            f.write('// Test file: ' + rndJitTest.split(options.repo)[1] + '\n\n')
+            for line in g:
+                f.write(line)
+            f.write('\n\n} catch (e) {}\n\n')
+            for line in h:  # jsfunfuzz
+                f.write(line)
+
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
             os.remove(fuzzjs)
