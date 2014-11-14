@@ -116,7 +116,8 @@ def many_timed_runs(targetTime, wtmpDir, args):
                 rndJitTest = getRndJitTest(options.repo)
                 with open(rndJitTest, 'rb') as h:
                     f.write('try {\n\n')
-                    f.write('// Random chosen test: ' + rndJitTest.split(options.repo)[1] + '\n\n')
+                    f.write('// Random chosen test: ' +
+                            rndJitTest.split(normExpUserPath(options.repo))[1][1:] + '\n\n')
                     for line in h:
                         f.write(line)
                     f.write('\n\n} catch (e) {}\n\n')
