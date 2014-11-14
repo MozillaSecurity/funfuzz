@@ -79,7 +79,7 @@ def linkFuzzer(target_fn):
 def getRndJitTest(repo):
     '''
     Returns the name of a random JS file in the %sjs/src/jit-test/tests/* directory, including
-    subdirectories. Adapted from http://stackoverflow.com/a/6411889.
+    subdirectories. Adapted from http://stackoverflow.com/a/6411889 .
     ''' % repo
     jsJitTestFiles = [os.path.join(path, filename)
                       for path, dirs, files in os.walk(
