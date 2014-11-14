@@ -102,15 +102,25 @@ def many_timed_runs(targetTime, wtmpDir, args):
 
     iteration = 0
     while True:
-        # Concatenates a random JS test from jit-tests with jsfunfuzz every iteration
-        rndJitTest = getRndJitTest(options.repo)
-        with open(fuzzjs, 'wb') as f, open(rndJitTest, 'rb') as g, open(origfuzzjs, 'rb') as h:
-            f.write('try {\n\n')
-            f.write('// Test file: ' + rndJitTest.split(options.repo)[1] + '\n\n')
-            for line in g:
-                f.write(line)
-            f.write('\n\n} catch (e) {}\n\n')
-            for line in h:  # jsfunfuzz
+        with open(fuzzjs, 'wb'): pass  # First empty the file.
+
+        # Concatenates up to 3 random JS jit-tests with jsfunfuzz every iteration
+        numOfTestsToCombine = random.randint(0, 3)
+        with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
+            for x in xrange(numOfTestsToCombine):
+                if x == 0:
+                    # Load the jit-test libdir if we are combining JS jit-tests
+                    f.write('libdir = "' + normExpUserPath(os.path.join(
+                        options.repo, 'js', 'src', 'jit-test', 'lib')) + '/"\n\n')
+
+                rndJitTest = getRndJitTest(options.repo)
+                with open(rndJitTest, 'rb') as h:
+                    f.write('try {\n\n')
+                    f.write('// Random chosen test: ' + rndJitTest.split(options.repo)[1] + '\n\n')
+                    for line in h:
+                        f.write(line)
+                    f.write('\n\n} catch (e) {}\n\n')
+            for line in g:  # jsfunfuzz
                 f.write(line)
 
         if targetTime and time.time() > startTime + targetTime:
