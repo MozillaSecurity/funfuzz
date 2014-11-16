@@ -103,7 +103,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
     iteration = 0
     while True:
         with open(fuzzjs, 'wb'): pass  # First empty the file.
-
+        # This part involves randorderfuzz - see bug 1100132
         # Concatenates up to 3 random JS jit-tests with jsfunfuzz every iteration
         numOfTestsToCombine = random.randint(0, 3)
         with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
