@@ -184,9 +184,8 @@ def parseOpts():
             options.startRepo = 'default'
         else:
             options.startRepo = earliestKnown
-    else:
-        if not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo):
-            raise Exception('startRepo is not a descendant of earliestKnownWorkingRev for this configuration')
+    elif not (options.useTinderboxBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
+        raise Exception('startRepo is not a descendant of earliestKnownWorkingRev for this configuration')
 
     if not options.useTinderboxBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
         raise Exception('endRepo is not a descendant of earliestKnownWorkingRev for this configuration')
