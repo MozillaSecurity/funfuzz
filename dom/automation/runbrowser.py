@@ -49,20 +49,13 @@ def runBrowser():
 
   automation = Automation()
 
-  # also run automation.py's options parser, but don't give it any input
-  aparser = OptionParser()
-  automationutils.addCommonOptions(aparser, defaults=dict(zip(automation.__all__, [getattr(automation, x) for x in automation.__all__])))
-  automation.addCommonOptions(aparser)
-  aOptions = aparser.parse_args([])[0]
-
   theapp = os.path.join(reftestScriptDir, automation.DEFAULT_APP)
   if not os.path.exists(theapp):
     print "RUNBROWSER ERROR | runbrowser.py | Application %s doesn't exist." % theapp
     sys.exit(1)
   print "theapp: " + theapp
 
-  if aOptions.xrePath is None:
-    aOptions.xrePath = os.path.dirname(theapp)
+  xrePath = os.path.dirname(theapp)
 
   if options.valgrind:
     print "About to use valgrind"
@@ -76,7 +69,7 @@ def runBrowser():
     slowness = 1.0
 
   # browser environment
-  browserEnv = automation.environment(xrePath = aOptions.xrePath)
+  browserEnv = automation.environment(xrePath = xrePath)
   gatherAssertionStacks = not automation.IS_WIN32 # bug 573306
   browserEnv["XPCOM_DEBUG_BREAK"] = "stack" if gatherAssertionStacks else "warn"
   browserEnv["MOZ_GDB_SLEEP"] = "2" # seconds
@@ -101,7 +94,7 @@ def runBrowser():
   print("RUNBROWSER INFO | runbrowser.py | " + url)
   status = automation.runApp(None, browserEnv, theapp, profileDir, cmdLineArgs,
                              utilityPath = utilityDir,
-                             xrePath=aOptions.xrePath,
+                             xrePath=xrePath,
                              symbolsPath=options.symbolsDir,
                              debuggerInfo=debuggerInfoVG,
                              maxTime = 400.0 * slowness,
