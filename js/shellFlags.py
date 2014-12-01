@@ -43,6 +43,10 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
+        gczealValue = 14 if chance(0.5) else random.randint(0, 14)  # Focus test compacting GC (14)
+        args.append("--gc-zeal=" + str(gczealValue))  # --gc-zeal= landed in bug 1101602
+
     if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
         args.append("--enable-small-chunk-size")  # --enable-small-chunk-size landed in bug 941804
 
