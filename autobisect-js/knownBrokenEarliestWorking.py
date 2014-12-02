@@ -99,7 +99,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     # These should be in descending order, or bisection will break at earlier changesets.
 
-    offthreadCompileFlag = asmNopFillFlag = asmPoolMaxOffsetFlag = False
+    offthreadCompileFlag = asmNopFillFlag = asmPoolMaxOffsetFlag = gczealValueFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after these flags needs to be a number, so we look for the string instead.
