@@ -76,17 +76,22 @@ def linkFuzzer(target_fn):
     linkJS.linkJS(target_fn, file_list_fn, source_base)
 
 
-def getRndJitTest(repo):
+def getRndTest(repo, testType):
     '''
     Returns the name of a random JS file in the %sjs/src/jit-test/tests/* directory, including
     subdirectories. Adapted from http://stackoverflow.com/a/6411889 .
     ''' % repo
-    jsJitTestFiles = [os.path.join(path, filename)
-                      for path, dirs, files in os.walk(
-                          normExpUserPath(os.path.join(repo, 'js', 'src', 'jit-test', 'tests')))
+    if testType == 'jit-test':
+        dirToBeWalked = os.path.join(repo, 'js', 'src', 'jit-test', 'tests')
+    elif testType == 'jstest':
+        dirToBeWalked = os.path.join(repo, 'js', 'src', 'tests')
+    else:
+        raise Exception('Invalid test type: ' + testType)
+    testFile = [os.path.join(path, filename)
+                      for path, dirs, files in os.walk(normExpUserPath(dirToBeWalked))
                       for filename in files
                       if filename.endswith('.js')]
-    return random.choice(jsJitTestFiles)
+    return random.choice(testFile)
 
 
 def many_timed_runs(targetTime, wtmpDir, args):
@@ -104,7 +109,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
     while True:
         with open(fuzzjs, 'wb'): pass  # First empty the file.
         # This part involves randorderfuzz - see bug 1100132
-        # Concatenates up to 3 random JS jit-tests with jsfunfuzz every iteration
+        # Concatenates up to 3 random JS jit-tests and/or jstests with jsfunfuzz every iteration
         numOfTestsToCombine = random.randint(0, 3)
         with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
             for x in xrange(numOfTestsToCombine):
@@ -112,12 +117,15 @@ def many_timed_runs(targetTime, wtmpDir, args):
                     # Load the jit-test libdir if we are combining JS jit-tests
                     f.write('libdir = "' + normExpUserPath(os.path.join(
                         options.repo, 'js', 'src', 'jit-test', 'lib')) + '/"\n\n')
+                    # Load the jstests shell.js harness
+                    f.write('load("' + normExpUserPath(os.path.join(
+                        options.repo, 'js', 'src', 'tests', 'shell.js')) + '")')
 
-                rndJitTest = getRndJitTest(options.repo)
-                with open(rndJitTest, 'rb') as h:
+                rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
+                with open(rndTest, 'rb') as h:
                     f.write('try {\n\n')
                     f.write('// Random chosen test: ' +
-                            rndJitTest.split(normExpUserPath(options.repo))[1][1:] + '\n\n')
+                            rndTest.split(normExpUserPath(options.repo))[1][1:] + '\n\n')
                     for line in h:
                         f.write(line)
                     f.write('\n\n} catch (e) {}\n\n')
