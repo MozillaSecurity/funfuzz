@@ -114,19 +114,18 @@ def many_timed_runs(targetTime, wtmpDir, args):
         with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
             for x in xrange(numOfTestsToCombine):
                 if x == 0:
+                    f.write('repodir = "' + normExpUserPath(options.repo) + '/";\n')
                     # Load the jit-test libdir if we are combining JS jit-tests
-                    f.write('libdir = "' + normExpUserPath(os.path.join(
-                        options.repo, 'js', 'src', 'jit-test', 'lib')) + '/";\n')
+                    f.write('libdir = repodir + "' + os.path.join('js', 'src', 'jit-test', 'lib') +
+                            '/";\n')
                     # Load the jstests shell.js harness
-                    f.write('load("' + normExpUserPath(os.path.join(
-                        options.repo, 'js', 'src', 'tests', 'shell.js')) + '");\n\n')
+                    f.write('load(repodir + "' + os.path.join('js', 'src', 'tests', 'shell.js') +
+                            '");\n\n')
 
                 rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
-                f.write('try {\n\n')
-                f.write('// Random chosen test: ' +
-                        rndTest.split(normExpUserPath(options.repo))[1][1:] + '\n\n')
-                f.write('load("' + rndTest + '");')
-                f.write('\n\n} catch (e) {}\n\n')
+                rndTestRelPath = rndTest.split(normExpUserPath(options.repo))[1][1:]
+                f.write('// Random chosen test: ' + rndTestRelPath + '\n')
+                f.write('try { load(repodir + "' + rndTestRelPath + '"); } catch (e) {}\n')
             for line in g:  # jsfunfuzz
                 f.write(line)
 
