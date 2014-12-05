@@ -122,13 +122,11 @@ def many_timed_runs(targetTime, wtmpDir, args):
                         options.repo, 'js', 'src', 'tests', 'shell.js')) + '");\n\n')
 
                 rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
-                with open(rndTest, 'rb') as h:
-                    f.write('try {\n\n')
-                    f.write('// Random chosen test: ' +
-                            rndTest.split(normExpUserPath(options.repo))[1][1:] + '\n\n')
-                    for line in h:
-                        f.write(line)
-                    f.write('\n\n} catch (e) {}\n\n')
+                f.write('try {\n\n')
+                f.write('// Random chosen test: ' +
+                        rndTest.split(normExpUserPath(options.repo))[1][1:] + '\n\n')
+                f.write('load("' + rndTest + '");')
+                f.write('\n\n} catch (e) {}\n\n')
             for line in g:  # jsfunfuzz
                 f.write(line)
 
