@@ -116,10 +116,10 @@ def many_timed_runs(targetTime, wtmpDir, args):
                 if x == 0:
                     # Load the jit-test libdir if we are combining JS jit-tests
                     f.write('libdir = "' + normExpUserPath(os.path.join(
-                        options.repo, 'js', 'src', 'jit-test', 'lib')) + '/"\n\n')
+                        options.repo, 'js', 'src', 'jit-test', 'lib')) + '/";\n')
                     # Load the jstests shell.js harness
                     f.write('load("' + normExpUserPath(os.path.join(
-                        options.repo, 'js', 'src', 'tests', 'shell.js')) + '")')
+                        options.repo, 'js', 'src', 'tests', 'shell.js')) + '");\n\n')
 
                 rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
                 with open(rndTest, 'rb') as h:
