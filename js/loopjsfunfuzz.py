@@ -94,6 +94,34 @@ def getRndTest(repo, testType):
     return random.choice(testFile)
 
 
+def prependJsfunfuzz(options, wtmpDir, fuzzjs):
+    '''randorderfuzz - Prepend some or none of randomly ordered js tests to jsfunfuzz.'''
+    origfuzzjs = os.path.join(wtmpDir, 'orig-jsfunfuzz.js')
+    shutil.copy2(fuzzjs, origfuzzjs)
+
+    with open(fuzzjs, 'wb'): pass  # First empty the file.
+    # This part involves randorderfuzz - see bug 1100132
+    # Concatenates up to 10 random JS jit-tests and/or jstests with jsfunfuzz every iteration
+    numOfTestsToCombine = random.randint(0, 10)
+    with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
+        for x in xrange(numOfTestsToCombine):
+            if x == 0:
+                f.write('repodir = "' + normExpUserPath(options.repo) + '/";\n')
+                # Load the jit-test libdir if we are combining JS jit-tests
+                f.write('libdir = repodir + "' + os.path.join('js', 'src', 'jit-test', 'lib') +
+                        '/";\n')
+                # Load the jstests shell.js harness
+                f.write('load(repodir + "' + os.path.join('js', 'src', 'tests', 'shell.js') +
+                        '");\n\n')
+
+            rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
+            rndTestRelPath = rndTest.split(normExpUserPath(options.repo))[1][1:]
+            f.write('// Random chosen test: ' + rndTestRelPath + '\n')
+            f.write('try { load(repodir + "' + rndTestRelPath + '"); } catch (e) {}\n')
+        for line in g:  # jsfunfuzz
+            f.write(line)
+
+
 def many_timed_runs(targetTime, wtmpDir, args):
     options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
@@ -102,32 +130,10 @@ def many_timed_runs(targetTime, wtmpDir, args):
     fuzzjs = os.path.join(wtmpDir, "jsfunfuzz.js")
     linkFuzzer(fuzzjs)
 
-    origfuzzjs = os.path.join(wtmpDir, 'orig-jsfunfuzz.js')
-    shutil.copy2(fuzzjs, origfuzzjs)
-
     iteration = 0
     while True:
-        with open(fuzzjs, 'wb'): pass  # First empty the file.
-        # This part involves randorderfuzz - see bug 1100132
-        # Concatenates up to 10 random JS jit-tests and/or jstests with jsfunfuzz every iteration
-        numOfTestsToCombine = random.randint(0, 10)
-        with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
-            for x in xrange(numOfTestsToCombine):
-                if x == 0:
-                    f.write('repodir = "' + normExpUserPath(options.repo) + '/";\n')
-                    # Load the jit-test libdir if we are combining JS jit-tests
-                    f.write('libdir = repodir + "' + os.path.join('js', 'src', 'jit-test', 'lib') +
-                            '/";\n')
-                    # Load the jstests shell.js harness
-                    f.write('load(repodir + "' + os.path.join('js', 'src', 'tests', 'shell.js') +
-                            '");\n\n')
-
-                rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
-                rndTestRelPath = rndTest.split(normExpUserPath(options.repo))[1][1:]
-                f.write('// Random chosen test: ' + rndTestRelPath + '\n')
-                f.write('try { load(repodir + "' + rndTestRelPath + '"); } catch (e) {}\n')
-            for line in g:  # jsfunfuzz
-                f.write(line)
+        if os.path.isdir(normExpUserPath(options.repo)):
+            prependJsfunfuzz(options, wtmpDir, fuzzjs)
 
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
