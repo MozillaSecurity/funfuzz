@@ -114,6 +114,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if '--ion-sink=on' in flags:
+        required.append('9188c8b7962b') # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
         required.append('03c6a758c9e8') # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
     if '--enable-gccompacting' in flags:
