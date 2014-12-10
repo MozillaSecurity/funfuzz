@@ -406,14 +406,7 @@ def botmain(options):
         if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
             shutil.rmtree(buildDir)
 
-        try:
-            # Remove the main temp dir, which should be empty at this point
-            os.rmdir(options.tempDir)
-        except OSError as e:
-            print repr(e)
-            print options.tempDir + ' still has the following contents:'
-            print os.listdir(options.tempDir)
-            raise
+        shutil.rmtree(options.tempDir)
 
 
 def printMachineInfo():
