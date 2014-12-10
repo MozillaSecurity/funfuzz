@@ -402,7 +402,7 @@ def botmain(options):
 
                 forkJoin(numProcesses, fuzzUntilBug, [options, buildDir, buildSrc])
 
-        # Remove build directory
+        # Remove build directory if we created it
         if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
             shutil.rmtree(buildDir)
 
