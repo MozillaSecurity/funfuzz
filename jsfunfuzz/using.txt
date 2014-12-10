@@ -3,11 +3,11 @@ TESTING SPIDERMONKEY
 Bugs in SpiderMonkey found with this fuzzer are tracked by https://bugzilla.mozilla.org/show_bug.cgi?id=349611.
 
 Fuzz and compare optimization modes:
-  ~/fuzzing/js/loopjsfunfuzz.py --random-flags --comparejit 12 ~/fuzzing/known/mozilla-central/ $tmd
+  ~/fuzzing/js/loopjsfunfuzz.py --random-flags --comparejit 12 mozilla-central $tmd
 Fuzz with Valgrind: (must build with --enable-valgrind. opt build recommended.)
-  ~/fuzzing/js/loopjsfunfuzz.py --valgrind 60 ~/fuzzing/known/mozilla-central/ $tmd -m -n
+  ~/fuzzing/js/loopjsfunfuzz.py --valgrind 60 mozilla-central $tmd -m -n
 Fuzz xpcshell:
-  ~/fuzzing/js/loopjsfunfuzz.py 20 ~/fuzzing/known/mozilla-central/ xpcshell -m
+  ~/fuzzing/js/loopjsfunfuzz.py 20 mozilla-central xpcshell -m
 
 For maximum coverage, test spidermonkey with multiple C++ compiler modes <http://blog.mozilla.com/nnethercote/2009/11/18/nanojit-test-coverage/> and multiple JS engine modes.
 
@@ -24,7 +24,7 @@ Bugs in JavaScriptCore found with this fuzzer are tracked by http://bugs.webkit.
 
 
 Recommended command line:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/known/jscore/ ./jscore
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 jscore ./jscore
 
 Hints for building testkjs:
   http://webkit.org/building/checkout.html
@@ -39,7 +39,7 @@ Bugs in V8 found with this fuzzer are tracked by <not yet set up>.
 
 
 Recommended command line:
-  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 ~/fuzzing/known/v8/ ./shell_g
+  python -u ~/fuzzing/jsfunfuzz/multi_timed_run.py 300 v8 ./shell_g
 
 Hints for building v8:
   http://code.google.com/apis/v8/build.html
