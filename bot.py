@@ -13,9 +13,9 @@ import sys
 import time
 import uuid
 import tempfile
+import multiprocessing
 
 from glob import iglob
-from multiprocessing import cpu_count, Process
 from optparse import OptionParser
 from tempfile import mkdtemp
 
@@ -394,7 +394,7 @@ def botmain(options):
                 #    sendEmail("justFuzzTime", "Platform details (" + str(numProcesses) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
                 #    print "Email sent!"
 
-                numProcesses = cpu_count()
+                numProcesses = multiprocessing.cpu_count()
                 if "-asan" in buildDir:
                     # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
                     # I could guess 1 GB RAM per core, but that wanders into sketchyville.
@@ -431,7 +431,7 @@ def printMachineInfo():
     # FIXME: Should have if os.path.exists(path to git) or something
     #print "git version: " + captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print "Python version: " + sys.version[:5]
-    print "Number of cores visible to OS: " +  str(cpu_count())
+    print "Number of cores visible to OS: " +  str(multiprocessing.cpu_count())
     print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
 
     hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
@@ -565,7 +565,7 @@ def forkJoin(numProcesses, fun, someArgs):
     # Fork a bunch of processes
     print "Forking %d children..." % numProcesses
     for i in xrange(numProcesses):
-        p = Process(target=fun, args=(someArgs + [i + 1]), name="Parallel process " + str(i + 1))
+        p = multiprocessing.Process(target=fun, args=(someArgs + [i + 1]), name="Parallel process " + str(i + 1))
         p.start()
         ps.append(p)
     # Wait for them all to finish
