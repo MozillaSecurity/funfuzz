@@ -400,7 +400,7 @@ def botmain(options):
                     # I could guess 1 GB RAM per core, but that wanders into sketchyville.
                     numProcesses = max(numProcesses // 2, 1)
 
-                forkJoin(numProcesses, fuzzUntilBug, [options, buildDir, buildSrc])
+                forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildDir, buildSrc)
 
         # Remove build directory if we created it
         if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
@@ -553,18 +553,57 @@ def ensureBuild(options):
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
-def forkJoin(numProcesses, fun, someArgs):
-    ps = []
+# Call |fun| in a bunch of separate processes, then wait for them all to finish.
+# fun is called with someArgs, plus an additional argument with a numeric ID.
+def forkJoin(logDir, numProcesses, fun, *someArgs):
+    def redirectOutputAndCallFun(i, someArgs):
+        sys.stdout = open(logFileName(i, "out"), 'w')
+        sys.stderr = open(logFileName(i, "err"), 'w')
+        fun(*(someArgs + (i,)))
+
+    def showFile(fn):
+        print "==== %s ====" % fn
+        print
+        with open(fn) as f:
+            for line in f:
+                print line.rstrip()
+        print
+
+    def logFileName(i, t):
+        return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
+
     # Fork a bunch of processes
     print "Forking %d children..." % numProcesses
+    ps = []
     for i in xrange(numProcesses):
-        p = multiprocessing.Process(target=fun, args=(someArgs + [i + 1]), name="Parallel process " + str(i + 1))
+        p = multiprocessing.Process(target=redirectOutputAndCallFun, args=[i, someArgs], name="Parallel process " + str(i))
         p.start()
         ps.append(p)
-    # Wait for them all to finish
-    for p in ps:
+
+    # Wait for them all to finish, and splat their outputs
+    for i in xrange(numProcesses):
+        p = ps[i]
+        print "=== Waiting for child #%d (%d) to finish... ===" % (i, p.pid)
         p.join()
-    print "All %d children have finished!" % numProcesses
+        print "=== Child process #%d exited with code %d ===" % (i, p.exitcode)
+        print
+        showFile(logFileName(i, "out"))
+        showFile(logFileName(i, "err"))
+        print
+
+
+def test_forkJoin():
+    # You should see "Green Chairs" from the first few processes, then a pause
+    # and error from process 5, then "Green Chairs" again from the rest.
+    def f(adj, noun, forkjoin_id):
+        import time
+        print adj + " " + noun
+        print forkjoin_id
+        if forkjoin_id == 5:
+            time.sleep(1)
+            print ({}).a # error
+    forkJoin(".", 8, f, "Green", "Chairs")
+
 
 def fuzzUntilBug(options, buildDir, buildSrc, i):
     # not really "oldjobname", but this is how i get newjobname to be what i want below
