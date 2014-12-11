@@ -42,7 +42,7 @@ else:
 if cpu_count() > 2:
     COMPILATION_JOBS = ((cpu_count() * 5) // 4)
 elif isARMv7l:
-    COMPILATION_JOBS = 2  # Likely an ARM board, e.g. pandaboard
+    COMPILATION_JOBS = 3  # An ARM board
 else:
     COMPILATION_JOBS = 3  # Other single/dual core computers
 
