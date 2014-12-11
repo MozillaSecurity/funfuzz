@@ -553,14 +553,8 @@ def ensureBuild(options):
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
-# Call |fun| in a bunch of separate processes, then wait for them all to finish.
-# fun is called with someArgs, plus an additional argument with a numeric ID.
+# |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
 def forkJoin(logDir, numProcesses, fun, *someArgs):
-    def redirectOutputAndCallFun(i, someArgs):
-        sys.stdout = open(logFileName(i, "out"), 'w')
-        sys.stderr = open(logFileName(i, "err"), 'w')
-        fun(*(someArgs + (i,)))
-
     def showFile(fn):
         print "==== %s ====" % fn
         print
@@ -569,14 +563,11 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):
                 print line.rstrip()
         print
 
-    def logFileName(i, t):
-        return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
-
     # Fork a bunch of processes
     print "Forking %d children..." % numProcesses
     ps = []
     for i in xrange(numProcesses):
-        p = multiprocessing.Process(target=redirectOutputAndCallFun, args=[i, someArgs], name="Parallel process " + str(i))
+        p = multiprocessing.Process(target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
         p.start()
         ps.append(p)
 
@@ -587,22 +578,29 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):
         p.join()
         print "=== Child process #%d exited with code %d ===" % (i, p.exitcode)
         print
-        showFile(logFileName(i, "out"))
-        showFile(logFileName(i, "err"))
+        showFile(logFileName(logDir, i, "out"))
+        showFile(logFileName(logDir, i, "err"))
         print
 
+# Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)
+def logFileName(logDir, i, t):
+    return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
+def redirectOutputAndCallFun(logDir, i, fun, someArgs):
+    sys.stdout = open(logFileName(logDir, i, "out"), 'w')
+    sys.stderr = open(logFileName(logDir, i, "err"), 'w')
+    fun(*(someArgs + (i,)))
 
+# You should see "Green Chairs" from the first few processes, then a pause
+# and error from process 5, then "Green Chairs" again from the rest.
 def test_forkJoin():
-    # You should see "Green Chairs" from the first few processes, then a pause
-    # and error from process 5, then "Green Chairs" again from the rest.
-    def f(adj, noun, forkjoin_id):
-        import time
-        print adj + " " + noun
-        print forkjoin_id
-        if forkjoin_id == 5:
-            time.sleep(1)
-            print ({}).a # error
-    forkJoin(".", 8, f, "Green", "Chairs")
+    forkJoin(".", 8, test_forkJoin_inner, "Green", "Chairs")
+def test_forkJoin_inner(adj, noun, forkjoin_id):
+    import time
+    print adj + " " + noun
+    print forkjoin_id
+    if forkjoin_id == 5:
+        time.sleep(1)
+        print ({}).a # error
 
 
 def fuzzUntilBug(options, buildDir, buildSrc, i):
