@@ -130,7 +130,7 @@ def randomFlagSet(shellPath):
         if chance(.6):
             args.append("--ion-eager")
         if chance(.2):
-            args.append("--ion-gvn=" + random.choice(["off", "pessimistic", "optimistic"]))
+            args.append("--ion-gvn=off")
         if chance(.2):
             args.append("--ion-licm=off")
         if shellSupportsFlag(shellPath, '--ion-edgecase-analysis=off') and chance(.2):
