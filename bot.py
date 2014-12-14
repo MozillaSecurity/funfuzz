@@ -389,10 +389,10 @@ def botmain(options):
 
             else:
                 print "Fuzz time!"
-                #if options.testType == 'js':
-                #    print "Sending email..."
-                #    sendEmail("justFuzzTime", "Platform details (" + str(numProcesses) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-                #    print "Email sent!"
+                if options.testType == 'js':
+                    print "Sending email..."
+                    sendEmail("justFuzzTime", "Platform details (" + str(numProcesses) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+                    print "Email sent!"
 
                 numProcesses = multiprocessing.cpu_count()
                 if "-asan" in buildDir:
