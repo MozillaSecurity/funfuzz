@@ -390,9 +390,10 @@ def botmain(options):
             else:
                 print "Fuzz time!"
                 if options.testType == 'js':
-                    print "Sending email..."
-                    sendEmail("justFuzzTime", "Platform details (" + str(multiprocessing.cpu_count()) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-                    print "Email sent!"
+                    if isLinux:  # Test to see whether releng AWS Linux instances can send email
+                        print "Sending email..."
+                        sendEmail("justFuzzTime", "Platform details (" + str(multiprocessing.cpu_count()) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+                        print "Email sent!"
 
                 numProcesses = multiprocessing.cpu_count()
                 if "-asan" in buildDir:
