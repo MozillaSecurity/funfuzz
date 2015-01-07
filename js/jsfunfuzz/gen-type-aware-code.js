@@ -208,7 +208,6 @@ var makeEvilCallback;
     // a: Array
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "[]"); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "new Array"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", makeArrayBuildParCall(d, b)); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", makeIterable(d, b)); } },
     { w: 1,  v: function(d, b) { return m("a") + ".length = " + arrayIndex(d, b) + ";"; } },
     { w: 8,  v: function(d, b) { return assign(d, b, "v", m("at") + ".length"); } },
@@ -241,14 +240,6 @@ var makeEvilCallback;
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["filter", "forEach", "every", "map", "some"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
     { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ", " + m() + ");"; } },
-
-    // Parallel array methods
-    // http://wiki.ecmascript.org/doku.php?id=strawman:data_parallelism
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".mapPar(" + (rnd(2)?m("f"):makeParallelMap(d,b)) + Random.index([", 1", ", 2", ""]) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".filterPar(" + (rnd(2)?m("f"):makeParallelFilter(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "v", m("a") + ".reducePar(" + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".scanPar(" +   (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".scatterPar([0,0,1,1,2,2], undefined," + (rnd(2)?m("f"):makeParallelBinary(d,b)) + ")"); } },
 
     // Typed Objects (aka Binary Data)
     // http://wiki.ecmascript.org/doku.php?id=harmony:typed_objects (does not match what's in spidermonkey as of 2014-02-11)
@@ -399,64 +390,6 @@ var makeEvilCallback;
   };
 })();
 
-
-function makeArrayBuildParCall(d, b)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-  var dimensions = 1; // Todo: keep track of multi-dimensional ArrayType / TypedObject
-  var sizes = [];
-  var argList = [];
-  for (var i = 0; i < dimensions; ++i) {
-    sizes[i] = (rnd(100) === 0) ? makeExpr(d, b) :
-      (dimensions == 1) ? rnd(20000) + 1 :
-      rnd(120) + 1;
-
-    argList.push("x" + i);
-  }
-  var bv = b.concat(argList);
-
-  // Array.buildPar requires the size argument to be a scalar
-  var sizeArg = (dimensions == 1) ? sizes[0] : "[" + sizes.join(", ") + "]";
-
-  var elementalFunctionArg = rnd(2) ?
-    makeFunction(d, bv) :
-    "function(" + argList.join(", ") + ") { " +
-      directivePrologue() +
-      parallelBail(d, bv, argList) +
-      "return " + (rnd(2) ? makeMathExpr(d - 1, bv, rnd(2)) : makeExpr(d - 1, bv)) + "; " +
-    "}";
-
-  return "Array.buildPar(" + sizeArg + ", " + elementalFunctionArg + ")";
-}
-
-function makeParallelMap(d, b)
-{
-  // Map can also see indices and the array, but we don't use them here
-  var bv = b.concat(["e"]);
-  return "function(e) { " + parallelBail(d, bv, ["e"]) + "return " + (rnd(2) ? "e" : makeExpr(d, bv)) + "; }";
-}
-
-function makeParallelFilter(d, b)
-{
-  var bv = b.concat(["e", "i", "s"]);
-  return "function(e, i, s) { " + parallelBail(d, bv, ["e", "i"]) + "return " + (rnd(2) ? "i%2" : makeExpr(d, bv)) + "; }";
-}
-
-function makeParallelBinary(d, b)
-{
-  var bv = b.concat(["a", "b"]);
-  return "function(a, b) { " + parallelBail(d, bv, ["a", "b"]) + "return " + (rnd(2) ? "a-b" : makeExpr(d, bv)) + "; }";
-}
-
-function parallelBail(d, b, inputs)
-{
-  if (rnd(3))
-    return "";
-
-  var condition = infrequentCondition(Random.index(inputs), 2000);
-  return "if (" + condition + ") { " + makeStatement(d, b) + "return " + makeExpr(d, b) + " }";
-}
 
 function infrequentCondition(v, n)
 {
