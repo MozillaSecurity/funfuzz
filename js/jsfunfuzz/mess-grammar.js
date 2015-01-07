@@ -6,7 +6,14 @@ var allMakers = getListOfMakers(this);
 function totallyRandom(d, b) {
   d = d + (rnd(5) - 2); // can increase!!
 
-  return (Random.index(allMakers))(d, b);
+  var maker = Random.index(allMakers);
+  var val = maker(d, b);
+  if (typeof val != "string") {
+    print(maker.name);
+    print(maker);
+    throw "We generated something that isn't a string!";
+  }
+  return val;
 }
 
 function getListOfMakers(glob)
