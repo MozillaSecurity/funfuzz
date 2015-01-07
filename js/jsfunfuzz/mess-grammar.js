@@ -13,7 +13,7 @@ function getListOfMakers(glob)
 {
   var r = [];
   for (var f in glob) {
-    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver") {
+    if (f.indexOf("make") == 0 && typeof glob[f] == "function" && f != "makeFinalizeObserver" && f != "makeFakePromise") {
       r.push(glob[f]);
     }
   }
