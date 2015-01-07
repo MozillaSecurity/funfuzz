@@ -34,14 +34,20 @@ var fuzzTestingFunctions = (function(glob){
   }
 
   function setGcparam() {
-    switch(rnd(2)) {
-      case 0:  return c("sliceTimeBudget", rnd(100));
-      default: return c("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
+    switch(rnd(4)) {
+      case 0:  return _set("sliceTimeBudget", rnd(100));
+      case 1:  return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
+      case 2:  return _set("maxBytes", _get("gcBytes") + " + " + (rnd(2) ? rnd(2) : rnd(4097))); // Make a near-future allocation fail
+      default: return _set("maxBytes", 4294967295); // Restore the unlimited-ish default
     }
 
-    function c(name, value) {
-      // try..catch because gcparam may throw, depending on GC state (see bug 973571)
+    function _set(name, value) {
+      // try..catch because gcparam sets may throw, depending on GC state (see bug 973571)
       return "try { " + tf("gcparam") + "('" + name + "', " + value + ");" + " } catch(e) { }";
+    }
+
+    function _get(name) {
+      return tf("gcparam") + "('" + name + "')";
     }
   }
 
