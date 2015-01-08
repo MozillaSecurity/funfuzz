@@ -1,5 +1,6 @@
-// Generate calls to "testing functions" shared between the SpiderMonkey shell and Firefox browser.
-// http://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp
+// Generate calls to SpiderMonkey "testing functions" for:
+// * testing that they do not cause assertions/crashes
+// * testing that they do not alter visible results (compareJIT with and without the call)
 
 var fuzzTestingFunctions = (function(glob){
 
@@ -52,7 +53,9 @@ var fuzzTestingFunctions = (function(glob){
     }
   }
 
-  var testingFunctions = Random.weighted([
+  // Functions shared between the SpiderMonkey shell and Firefox browser
+  // https://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp
+  var sharedTestingFunctions = [
     // Force garbage collection (global or specific compartment)
     { w: 10, v: function(d, b) { return "(void " + tf("gc") + "()" + ")"; } },
     { w: 10, v: function(d, b) { return "(void " + tf("gc") + "('compartment')" + ")"; } },
@@ -115,7 +118,25 @@ var fuzzTestingFunctions = (function(glob){
 
     // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
     { w: 5,  v: function(d, b) { return "(" + tf("gcPreserveCode") + "()" + ")"; } },
-  ]);
+  ];
+
+  // Functions only in the SpiderMonkey shell
+  // https://mxr.mozilla.org/mozilla-central/source/js/src/shell/js.cpp
+  var shellOnlyTestingFunctions = [
+    // JIT bailout
+    { w: 5,  v: function(d, b) { return "(" + tf("bailout") + "()" + ")"; } },
+
+    // ARM simulator settings
+    { w: 1,  v: function(d, b) { return "(void" + tf("disableSingleStepProfiling") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(" + tf("enableSingleStepProfiling") + "()" + ")"; } },
+
+    // Force garbage collection with function relazification
+    { w: 10, v: function(d, b) { return "(void " + tf("relazify") + "()" + ")"; } },
+    { w: 10, v: function(d, b) { return "(void " + tf("relazify") + "('compartment')" + ")"; } },
+    { w: 5,  v: function(d, b) { return "(void " + tf("relazify") + "(" + global(d, b) + ")" + ")"; } },
+  ];
+
+  var testingFunctions = Random.weighted(browser ? sharedTestingFunctions : sharedTestingFunctions.concat(shellOnlyTestingFunctions));
 
   return { testingFunctions: testingFunctions, enableGCZeal: enableGCZeal };
 
