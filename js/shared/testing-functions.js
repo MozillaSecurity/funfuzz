@@ -4,6 +4,7 @@
 var fuzzTestingFunctions = (function(glob){
 
   var browser = "window" in glob;
+  var prefix = browser ? "fuzzPriv." : "";
 
   function tf(funName) {
     if (!browser && (rnd(5) == 0)) {
@@ -14,7 +15,7 @@ var fuzzTestingFunctions = (function(glob){
       var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
       return "(" + cond + " ? " + funName + " : (function(){}))";
     }
-    return browser ? "fuzzPriv." + funName : funName;
+    return prefix + funName;
   }
 
   function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
@@ -47,7 +48,7 @@ var fuzzTestingFunctions = (function(glob){
     }
 
     function _get(name) {
-      return tf("gcparam") + "('" + name + "')";
+      return prefix + "gcparam" + "('" + name + "')";
     }
   }
 
