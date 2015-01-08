@@ -40,8 +40,9 @@ def assertionSeverity(line):
     if "Assertion failure:" in line:
          # MOZ_ASSERT; spidermonkey; nss
          return FATAL_ASSERT
-    if "Assertion failed:" in line:
+    if line.startswith("Assertion failed:"):
         # assert.h e.g. as used by harfbuzz
+        # Lots of JS tests use this to indicate failure, but we don't care when transcluding those tests into fuzz testcases
         return FATAL_ASSERT
     if "Mozilla has caught an Obj-C exception" in line:
         return NON_FATAL_ASSERT
