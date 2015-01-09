@@ -110,8 +110,8 @@ var fuzzTestingFunctions = (function(glob){
     // Run-time equivalents to --baseline-eager or --baseline-uses-before-compile, --no-baseline, etc
     { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.warmup.trigger', " + rnd(20) + ")" + ")"; } },
     { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('ion.warmup.trigger', " + rnd(40) + ")" + ")"; } },
-    { w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")"; } },
-    { w: 1,  v: function(d, b) { return tf("setJitCompilerOption") + "('baseline.enable', " + rnd(2) + ")"; } },
+    { w: 1,  v: function(d, b) { return tryCatchExpr(tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")"); } },
+    { w: 1,  v: function(d, b) { return tryCatchExpr(tf("setJitCompilerOption") + "('baseline.enable', " + rnd(2) + ")"); } },
 
     // Toggle the built-in profiler.
     { w: 1,  v: function(d, b) { return "(" + tf("enableSPSProfiling") + "()" + ")"; } },
