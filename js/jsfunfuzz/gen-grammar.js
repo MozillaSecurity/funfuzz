@@ -4,12 +4,17 @@
  ****************************/
 
 
-function makeOv(d, ignoredB)
+function makeScript(d, ignoredB)
+{
+  return directivePrologue() + makeScriptBody(d, ignoredB);
+}
+
+function makeScriptBody(d, ignoredB)
 {
   if (rnd(3) == 0) {
     return makeMathyFunAndTest(d, ["x"]);
   }
-  return directivePrologue() + makeStatement(d, ["x"]);
+  return makeStatement(d, ["x"]);
 }
 
 function makeStatement(d, b)

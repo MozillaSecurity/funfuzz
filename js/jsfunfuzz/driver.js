@@ -66,10 +66,10 @@ function start(glob)
         dumpln(cookie + "Random.twister.import_mta(" + MTA + ");");
         Random.lastDumpedMTA = MTA;
       }
-      dumpln(cookie + "Random.twister.import_mti(" + MTI + "); void (makeOv(" + depth + "));");
+      dumpln(cookie + "Random.twister.import_mti(" + MTI + "); void (makeScript(" + depth + "));");
     }
 
-    var code = makeOv(depth);
+    var code = makeScript(depth);
 
     if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
       code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
