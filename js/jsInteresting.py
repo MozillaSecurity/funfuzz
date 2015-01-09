@@ -136,7 +136,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
                     understoodExit = True
                 if line.startswith("Found a bug: "):
                     understoodExit = True
-                    if not ("NestTest" in line and reportedOverRecursion(logPrefix)):
+                    if not ("NestTest" in line and oomed(logPrefix)):
                         lev = JS_DECIDED_TO_EXIT
                         issues.append(line.rstrip())
                         # FIXME: if not quiet:
@@ -189,11 +189,11 @@ def hitMemoryLimit(err):
 
     return None
 
-def reportedOverRecursion(logPrefix):
-    # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they over-recurse.
+def oomed(logPrefix):
+    # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they run out of memory
     with open(logPrefix + "-err.txt", "rb") as f:
         for line in f:
-            if "js_ReportOverRecursed called" in line:
+            if hitMemoryLimit(line):
                 return True
     return False
 
