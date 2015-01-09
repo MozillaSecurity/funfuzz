@@ -12,12 +12,10 @@ import stat
 import subprocess
 import sys
 import time
-
 from optparse import OptionParser
 from tempfile import mkdtemp
 
-from knownBrokenEarliestWorking import knownBrokenRanges, knownBrokenRangesBrowser, \
-    earliestKnownWorkingRev, earliestKnownWorkingRevForBrowser
+import knownBrokenEarliestWorking as kbew
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
@@ -34,11 +32,10 @@ path4 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path4)
 from fileManipulation import firstLine
 import buildOptions
-from downloadBuild import defaultBuildType, downloadBuild, getBuildList
+import downloadBuild
 import hgCmds
-from subprocesses import captureStdout, dateStr, isVM, isWin
-from subprocesses import rmTreeIncludingReadOnly, normExpUserPath, Unbuffered, vdump
-from LockDir import LockDir
+import subprocesses as sps
+import LockDir
 
 INCOMPLETE_NOTE = 'incompleteBuild.txt'
 MAX_ITERATIONS = 100
@@ -53,7 +50,8 @@ def sanityChecks():
     # Disable autoBisect when running in a VM, even Linux. This has the possibility of interacting
     # with the repositories in the trees directory as they can update to a different changeset
     # within the VM. It should work when running manually though.
-    assert isVM()[1] == False
+    assert sps.isVM()[1] == False
+
 
 def parseOpts():
     usage = 'Usage: %prog [options]'
@@ -122,7 +120,7 @@ def parseOpts():
                       help='Specify parameters for the js shell, e.g. -p "-a --ion-eager testcase.js".')
 
     # Specify how to treat revisions that fail to compile.
-    # (You might want to add these to knownBrokenRanges in knownBrokenEarliestWorking.py.)
+    # (You might want to add these to kbew.knownBrokenRanges in knownBrokenEarliestWorking.py.)
     parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
                       help='Specify how to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
@@ -140,12 +138,12 @@ def parseOpts():
     if options.browserOptions:
         assert not options.buildOptions
         options.browserOptions = buildBrowser.parseOptions(options.browserOptions.split())
-        options.skipRevs = ' + '.join(knownBrokenRangesBrowser(options.browserOptions))
+        options.skipRevs = ' + '.join(kbew.kbew.knownBrokenRangesBrowser(options.browserOptions))
     else:
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-        options.skipRevs = ' + '.join(knownBrokenRanges(options.buildOptions))
+        options.skipRevs = ' + '.join(kbew.knownBrokenRanges(options.buildOptions))
 
-    options.paramList = [normExpUserPath(x) for x in options.parameters.split(' ') if x]
+    options.paramList = [sps.normExpUserPath(x) for x in options.parameters.split(' ') if x]
     # First check that the testcase is present.
     if '-e 42' not in options.parameters and not os.path.isfile(options.paramList[-1]):
         print '\nList of parameters to be passed to the shell is: ' + ' '.join(options.paramList)
@@ -173,9 +171,9 @@ def parseOpts():
 
 
     if options.browserOptions:
-        earliestKnownQuery = earliestKnownWorkingRevForBrowser(options.browserOptions)
+        earliestKnownQuery = kbew.kbew.earliestKnownWorkingRevForBrowser(options.browserOptions)
     else:
-        earliestKnownQuery = earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+        earliestKnownQuery = kbew.earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
 
@@ -185,10 +183,10 @@ def parseOpts():
         else:
             options.startRepo = earliestKnown
     elif not (options.useTinderboxBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
-        raise Exception('startRepo is not a descendant of earliestKnownWorkingRev for this configuration')
+        raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
     if not options.useTinderboxBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
-        raise Exception('endRepo is not a descendant of earliestKnownWorkingRev for this configuration')
+        raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
 
     if options.parameters == '-e 42':
@@ -199,15 +197,16 @@ def parseOpts():
 
     return options
 
+
 def findBlamedCset(options, repoDir, testRev):
-    print dateStr()
+    print sps.dateStr()
 
     hgPrefix = ['hg', '-R', repoDir]
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
     realStartRepo = sRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.startRepo)[0]
     realEndRepo = eRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]
-    vdump("Bisecting in the range " + sRepo + ":" + eRepo)
+    sps.vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
@@ -216,9 +215,9 @@ def findBlamedCset(options, repoDir, testRev):
         subprocess.check_call(hgPrefix + ['purge', '--all'])
 
     # Reset bisect ranges and set skip ranges.
-    captureStdout(hgPrefix + ['bisect', '-r'])
+    sps.captureStdout(hgPrefix + ['bisect', '-r'])
     if options.skipRevs:
-        captureStdout(hgPrefix + ['bisect', '--skip', options.skipRevs])
+        sps.captureStdout(hgPrefix + ['bisect', '--skip', options.skipRevs])
 
     labels = {}
     # Specify `hg bisect` ranges.
@@ -229,7 +228,7 @@ def findBlamedCset(options, repoDir, testRev):
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
         currRev = hgCmds.getCsetHashFromBisectMsg(firstLine(
-            captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
+            sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
     iterNum = 1
     if options.testInitialRevs:
@@ -275,14 +274,15 @@ def findBlamedCset(options, repoDir, testRev):
         checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
-    vdump("Resetting bisect")
+    sps.vdump("Resetting bisect")
     subprocess.check_call(hgPrefix + ['bisect', '-U', '-r'])
 
-    vdump("Resetting working directory")
-    captureStdout(hgPrefix + ['update', '-C', '-r', 'default'], ignoreStderr=True)
+    sps.vdump("Resetting working directory")
+    sps.captureStdout(hgPrefix + ['update', '-C', '-r', 'default'], ignoreStderr=True)
     hgCmds.destroyPyc(repoDir)
 
-    print dateStr()
+    print sps.dateStr()
+
 
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
@@ -325,6 +325,7 @@ def internalTestAndLabel(options):
             return ('bad', 'Unknown exit code ' + str(exitCode))
     return inner
 
+
 def externalTestAndLabel(options, interestingness):
     '''Make use of interestingness scripts to decide whether the changeset is good or bad.'''
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
@@ -342,9 +343,10 @@ def externalTestAndLabel(options, interestingness):
         else:
             innerResult = ('good', 'not interesting')
         if os.path.isdir(tempDir):
-            rmTreeIncludingReadOnly(tempDir)
+            sps.rmTreeIncludingReadOnly(tempDir)
         return innerResult
     return inner
+
 
 def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """If bisect blamed a merge, try to figure out why."""
@@ -352,7 +354,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
     bisectLied = False
     missedCommonAncestor = False
 
-    parents = captureStdout(["hg", "-R", repoDir] + ["parent", '--template={node|short},',
+    parents = sps.captureStdout(["hg", "-R", repoDir] + ["parent", '--template={node|short},',
                                                    "-r", blamedRev])[0].split(",")[:-1]
 
     if len(parents) == 1:
@@ -407,6 +409,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
         print "The bug was introduced by a merge (it was not present on either parent)."
         print "I don't know which patches from each side of the merge contributed to the bug. Sorry."
 
+
 def sanitizeCsetMsg(msg, repo):
     '''Sanitizes changeset messages, removing email addresses.'''
     msgList = msg.split('\n')
@@ -419,10 +422,11 @@ def sanitizeCsetMsg(msg, repo):
         sanitizedMsgList.append(line)
     return '\n'.join(sanitizedMsgList)
 
+
 def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     '''Tell hg what we learned about the revision.'''
     assert hgLabel in ("good", "bad", "skip")
-    outputResult = captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
+    outputResult = sps.captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
@@ -445,7 +449,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
         return None, None, None, startRepo, endRepo
 
     # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
-    vdump(outputLines[0])
+    sps.vdump(outputLines[0])
 
     currRev = hgCmds.getCsetHashFromBisectMsg(outputLines[0])
     if currRev is None:
@@ -483,10 +487,10 @@ def assertSaneJsBinary(cacheF):
                 print cacheF + ' has subdirectories: ' + str(fList)
                 raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
                             'present together in this directory.')
-            assert os.path.isdir(normExpUserPath(os.path.join(cacheF, 'build', 'download')))
-            assert os.path.isdir(normExpUserPath(os.path.join(cacheF, 'build', 'dist')))
-            assert os.path.isfile(normExpUserPath(os.path.join(cacheF, 'build', 'dist',
-                                                               'js' + ('.exe' if isWin else ''))))
+            assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'download')))
+            assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist')))
+            assert os.path.isfile(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist',
+                                                               'js' + ('.exe' if sps.isWin else ''))))
             try:
                 shellPath = getTboxJsBinPath(cacheF)
                 # Ensure we don't fail because the shell lacks u+x
@@ -498,7 +502,7 @@ def assertSaneJsBinary(cacheF):
                 out, retCode = testBinary(shellPath, ['-e', '42'], False)
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
-                isDllNotPresentWinStartupError = (isWin and retCode == -1073741515)
+                isDllNotPresentWinStartupError = (sps.isWin and retCode == -1073741515)
                 # We should have another condition here for non-Windows platforms but we do not yet
                 # have a situation where we can test broken tinderbox js shells on those platforms.
                 if isDllNotPresentWinStartupError:
@@ -523,10 +527,10 @@ def bisectUsingTboxBins(options):
     '''
     testedIDs = {}
     desiredArch = '32' if options.buildOptions.enable32 else '64'
-    buildType = defaultBuildType(options.nameOfTinderboxBranch, desiredArch, options.buildOptions.enableDbg)
+    buildType = downloadBuild.defaultBuildType(options.nameOfTinderboxBranch, desiredArch, options.buildOptions.enableDbg)
 
     # Get list of tinderbox IDs
-    urlsTbox = getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
+    urlsTbox = downloadBuild.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
 
     # Download and test starting point.
     print '\nExamining starting point...'
@@ -550,7 +554,7 @@ def bisectUsingTboxBins(options):
     count = 0
     print '\nStarting bisection...\n'
     while count < MAX_ITERATIONS:
-        vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
+        sps.vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
         count += 1
         print 'Test number ' + str(count) + ':'
 
@@ -589,7 +593,7 @@ def bisectUsingTboxBins(options):
         print showRemainingNumOfTests(urlsTbox)
 
     print
-    vdump('Build URLs are: ' + str(urlsTbox))
+    sps.vdump('Build URLs are: ' + str(urlsTbox))
     assert getIdFromTboxUrl(urlsTbox[0]) in testedIDs, 'Starting ID should have been tested.'
     assert getIdFromTboxUrl(urlsTbox[-1]) in testedIDs, 'Ending ID should have been tested.'
     outputTboxBisectionResults(options, urlsTbox, testedIDs)
@@ -609,14 +613,14 @@ def createTboxCacheFolder(cacheFolder):
         ensureCacheDirHasCorrectIdNum(cacheFolder)
     except (KeyboardInterrupt, Exception) as e:
         if 'Folder name numeric ID not equal to source URL numeric ID.' in repr(e):
-            rmTreeIncludingReadOnly(normExpUserPath(os.path.join(cacheFolder, 'build')))
+            sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
 
 
 def ensureCacheDirHasCorrectIdNum(cacheFolder):
     '''
     Ensures that the cache folder is named with the correct numeric ID.
     '''
-    srcUrlPath = normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
+    srcUrlPath = sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
     if os.path.isfile(srcUrlPath):
         with open(srcUrlPath, 'rb') as f:
             fContents = f.read().splitlines()
@@ -668,7 +672,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
             except (KeyboardInterrupt, Exception) as e:
                 if 'Shell startup error' in repr(e):
                     writeIncompleteBuildTxtFile(urls[newIndex], tboxCacheFolder,
-                        normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE)), idNum)
+                        sps.normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE)), idNum)
                     continue
             return newIndex, idNum, tboxCacheFolder
 
@@ -687,11 +691,11 @@ def getOneBuild(isJsShell, url, buildType, testedIDs):
     Try to get a complete working build.
     '''
     idNum = getIdFromTboxUrl(url)
-    tboxCacheFolder = normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
+    tboxCacheFolder = sps.normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
                                                    'tboxjs-' + buildType + '-' + idNum))
     createTboxCacheFolder(tboxCacheFolder)
 
-    incompleteBuildTxtFile = normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE))
+    incompleteBuildTxtFile = sps.normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE))
 
     if os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
         return True, idNum, tboxCacheFolder  # Cached, complete
@@ -702,7 +706,7 @@ def getOneBuild(isJsShell, url, buildType, testedIDs):
         readIncompleteBuildTxtFile(incompleteBuildTxtFile, idNum)
         return False, None, None  # Cached, incomplete
 
-    if downloadBuild(url, tboxCacheFolder, jsShell=isJsShell):
+    if downloadBuild.downloadBuild(url, tboxCacheFolder, jsShell=isJsShell):
         assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
             'the build subdirectory should be present in ' + tboxCacheFolder
         return True, idNum, tboxCacheFolder  # Downloaded, complete
@@ -715,14 +719,14 @@ def getTboxJsBinPath(baseDir):
     '''
     Returns the path to the tinderbox js binary from a download folder.
     '''
-    return normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if isWin else 'js'))
+    return sps.normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if sps.isWin else 'js'))
 
 
 def getTimestampAndHashFromTboxFiles(folder):
     '''
     Returns timestamp and changeset information from the .txt file downloaded from tinderbox.
     '''
-    downloadDir = normExpUserPath(os.path.join(folder, 'build', 'download'))
+    downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
     for fn in os.listdir(downloadDir):
         if fn.startswith('firefox-') and fn.endswith('.txt'):
             with open(os.path.join(downloadDir, fn), 'rb') as f:
@@ -836,9 +840,9 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
     '''
     Writes a text file indicating that this particular build is incomplete.
     '''
-    if os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
-            os.path.isdir(normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
-        rmTreeIncludingReadOnly(normExpUserPath(os.path.join(cacheFolder, 'build')))
+    if os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
+            os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
+        sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
     assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
     with open(txtFile, 'wb') as f:
         f.write('This build with numeric ID ' + num + ' is incomplete.')
@@ -855,9 +859,8 @@ def main():
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
 
-    with LockDir(compileShell.getLockDirPath(options.nameOfTinderboxBranch, tboxIdentifier='Tbox') \
-                 if options.useTinderboxBinaries else \
-                 compileShell.getLockDirPath(repoDir)):
+    with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTinderboxBranch, tboxIdentifier='Tbox') \
+                         if options.useTinderboxBinaries else compileShell.getLockDirPath(repoDir)):
         if options.useTinderboxBinaries:
             bisectUsingTboxBins(options)
         else:
@@ -872,5 +875,5 @@ def main():
 
 if __name__ == '__main__':
     # Reopen stdout, unbuffered. This is similar to -u. From http://stackoverflow.com/a/107717
-    sys.stdout = Unbuffered(sys.stdout)
+    sys.stdout = sps.Unbuffered(sys.stdout)
     main()

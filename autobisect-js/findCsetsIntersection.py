@@ -15,11 +15,12 @@ import os
 import sys
 from optparse import OptionParser
 
-from knownBrokenEarliestWorking import knownBrokenRanges
+import knownBrokenEarliestWorking as kbew
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import captureStdout, normExpUserPath
+import subprocesses as sps
+
 
 def parseOptions():
     parser = OptionParser()
@@ -27,20 +28,22 @@ def parseOptions():
                       help='Sets the repository to analyze..')
     options, args = parser.parse_args()
     assert options.rDir is not None
-    assert os.path.isdir(normExpUserPath(options.rDir))
+    assert os.path.isdir(sps.normExpUserPath(options.rDir))
     return options
+
 
 def countCsets(revset, rdir):
     '''Counts the number of changesets in the revsets by outputting ones and counting them.'''
     listCmd = ['hg', 'log', '-r', revset, '--template=1']
-    rangeIntersectionOnes = captureStdout(listCmd, currWorkingDir=rdir)
+    rangeIntersectionOnes = sps.captureStdout(listCmd, currWorkingDir=rdir)
     assert rangeIntersectionOnes[1] == 0
     return len(rangeIntersectionOnes[0])
+
 
 def main():
     options = parseOptions()
     repoDir = options.rDir
-    brokenRanges = knownBrokenRanges(options)
+    brokenRanges = kbew.knownBrokenRanges(options)
 
     cnt = 0
     for i in range(0, len(brokenRanges)):
@@ -53,6 +56,7 @@ def main():
             if overlap > 0:
                 print('Number of overlapping changesets: ' + str(overlap))
         cnt = 0
+
 
 if __name__ == '__main__':
     main()

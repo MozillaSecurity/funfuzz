@@ -10,7 +10,8 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import isARMv7l, isMac, isMozBuild64, isWin, macVer
+import subprocesses as sps
+
 
 def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
@@ -18,6 +19,7 @@ def hgrange(firstBad, firstGood):
     # So this revset expression includes firstBad, but does not include firstGood.
     # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set, like we want"
     return '(descendants(id(' + firstBad + '))-descendants(id(' + firstGood + ')))'
+
 
 def knownBrokenRangesBrowser(options):
     skips = [
@@ -32,6 +34,7 @@ def knownBrokenRangesBrowser(options):
     ]
 
     return skips
+
 
 def knownBrokenRanges(options):
     '''Returns a list of revsets corresponding to known-busted revisions'''
@@ -59,20 +62,20 @@ def knownBrokenRanges(options):
         hgrange('b160657339f8', '06d07689a043'), # Fx36, unstable spidermonkey
     ]
 
-    if isARMv7l:
+    if sps.isARMv7l:
         skips.extend([
             hgrange('688d526f9313', '280aa953c868'), # Fx29-30, broken ARM builds
             hgrange('35e7af3e86fd', 'a393ec07bc6a'), # Fx32, broken ARM builds
         ])
 
-    if isWin:
+    if sps.isWin:
         skips.extend([
             hgrange('f6d5a48271b6', 'dc128b242d8a'), # Fx29, broken Windows builds due to ICU
             hgrange('17c463691232', 'f76b7bc18dbc'), # Fx29-30, build breakage
             hgrange('d959285c827e', 'edf5e2dc9198'), # Fx33, build breakage
         ])
 
-    if isMozBuild64:
+    if sps.isMozBuild64:
         skips.extend([
             hgrange('77d06ee9ac48', 'e7bb99d245e8'), # Fx28-29, breakage due to moz.build error
         ])
@@ -85,17 +88,19 @@ def knownBrokenRanges(options):
 
     return skips
 
+
 def earliestKnownWorkingRevForBrowser(options):
-    if isMac and macVer() >= [10, 9]:
+    if sps.isMac and sps.macVer() >= [10, 9]:
         return '1c4ac1d21d29' # beacc621ec68 fixed 10.9 builds, but landed in the middle of unrelated bustage
     return '4e852ca66ea0' # or 'd97862fb8e6d' (same as js below) ... either way, oct 2012 on mac :(
+
 
 def earliestKnownWorkingRev(options, flags, skipRevs):
     '''
     Returns a revset which evaluates to the first revision of the shell that
     compiles with |options| and runs jsfunfuzz successfully with |flags|.
     '''
-    assert (not isMac) or (macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
+    assert (not sps.isMac) or (sps.macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
 
     # These should be in descending order, or bisection will break at earlier changesets.
 
@@ -122,7 +127,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('8f3ba188627a') # m-c 199692 Fx34, 1st w/--enable-gccompacting, see bug 650161
     if '--no-threads' in flags:
         required.append('e8558ecd9b16') # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
-    if isMozBuild64 or options.enableNsprBuild:  # 64-bit builds have peculiar complexities prior to this
+    if sps.isMozBuild64 or options.enableNsprBuild:  # 64-bit builds have peculiar complexities prior to this
         required.append('a459b02a9ca4') # m-c 194734 Fx33, 1st w/--enable-nspr-build, see bug 975011
     if asmPoolMaxOffsetFlag:
         required.append('f114c4101f02') # m-c 194525 Fx33, 1st w/--asm-pool-max-offset=1024, see bug 1026919
@@ -138,11 +143,12 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('52f43e3f552f') # m-c 175600 Fx31, 1st w/--disable-gcgenerational option, see bug 619558
     if options.disableExactRooting:
         required.append('6f7227918e79') # m-c 164088 Fx28, 1st w/stable forward-compatible compilation options for GGC, see bug 753203
-    if isWin:
+    if sps.isWin:
         required.append('1a1968da61b3') # m-c 163224 Fx29, 1st w/successful Win builds after build config changes, see bug 950298
     required.append('df3c2a1e86d3') # m-c 160479 Fx29, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs, see bug 927685
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
+
 
 def commonDescendants(revs):
     return " and ".join("descendants(" + r + ")" for r in revs)
