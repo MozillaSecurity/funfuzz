@@ -120,7 +120,7 @@ function makeProxyHandlerFactory(d, b)
 
 function proxyMunge(funText, p)
 {
-  funText = funText.replace(/\{/, "{ var yum = 'PCAL'; dumpln(yum + 'LED: " + p + "');");
+  //funText = funText.replace(/\{/, "{ var yum = 'PCAL'; dumpln(yum + 'LED: " + p + "');");
   return funText;
 }
 
