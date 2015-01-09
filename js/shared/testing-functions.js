@@ -35,6 +35,12 @@ var fuzzTestingFunctions = (function(glob){
     return "(" + tf("gczeal") + "(" + level + ", " + period + ")" + ")";
   }
 
+  // Wrap an expression in try..catch -- which requires wrapping the whole thing in a function, because try..catch is statement-level
+  function tryCatchExpr(expr)
+  {
+    return "(function() { try { return " + expr + "; } catch(e) { return undefined; } })()";
+  }
+
   function setGcparam() {
     switch(rnd(4)) {
       case 0:  return _set("sliceTimeBudget", rnd(100));
@@ -45,7 +51,7 @@ var fuzzTestingFunctions = (function(glob){
 
     function _set(name, value) {
       // try..catch because gcparam sets may throw, depending on GC state (see bug 973571)
-      return "try { " + tf("gcparam") + "('" + name + "', " + value + ");" + " } catch(e) { }";
+      return tryCatchExpr(tf("gcparam") + "('" + name + "', " + value + ")");
     }
 
     function _get(name) {
