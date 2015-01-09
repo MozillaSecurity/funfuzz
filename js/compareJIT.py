@@ -54,35 +54,26 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOpt
         return (lithOps.HAPPY, None)
 
 
-def hitMemoryLimit(err, infilename, issues, lev, elapsedtime, stderrTooLong):
+def hitMemoryLimit(err, stderrTooLong):
     """Does stderr indicate hitting a memory limit?"""
-
-    def reportOOM(msg):
-        fullMsg = "compareJIT is not comparing output: OOM (" + msg + ")"
-        print infilename + " | " + jsInteresting.summaryString(issues + [fullMsg], lev, elapsedtime)
 
     if "js_ReportOverRecursed called" in err:
         # --enable-more-deterministic
-        reportOOM("js_ReportOverRecursed called")
-        return True
+        return "js_ReportOverRecursed called"
     elif "js_ReportOutOfMemory called" in err:
         # --enable-more-deterministic
-        reportOOM("js_ReportOutOfMemory called")
-        return True
+        return "js_ReportOutOfMemory called"
     elif "failed to allocate" in err:
         # ASan
-        reportOOM("failed to allocate")
-        return True
+        return "failed to allocate"
     elif "can't allocate region" in err:
         # malloc
-        reportOOM("can't allocate region")
-        return True
+        return "can't allocate region"
     elif stderrTooLong:
         # If the output was too long for Python to read it in, assume the worst.
-        reportOOM("stderr too long")
-        return True
+        return "stderr too long"
 
-    return False
+    return None
 
 
 def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
@@ -109,6 +100,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
 
         stderrTooLong = (len(r.err) + 5 > lengthLimit)
         r.err = ignoreSomeOfStderr(r.err)
+        oom = hitMemoryLimit(r.err, stderrTooLong)
 
         if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
             print "Got usage error from:"
@@ -126,9 +118,11 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             jsInteresting.deleteLogs(prefix)
             if i == 0:
                 return jsInteresting.JS_FINE
-        elif hitMemoryLimit(r.err, infilename, issues, lev, r.elapsedtime, stderrTooLong):
+        elif oom:
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
+            message = "compareJIT is not comparing output: OOM (" + oom + ")"
+            print infilename + " | " + jsInteresting.summaryString(issues + [message], lev, r.elapsedtime)
             jsInteresting.deleteLogs(prefix)
             if i == 0:
                 return jsInteresting.JS_FINE
