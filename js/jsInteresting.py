@@ -170,6 +170,25 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
     return lev
 
+
+def hitMemoryLimit(err):
+    """Does stderr indicate hitting a memory limit?"""
+
+    if "js_ReportOverRecursed called" in err:
+        # --enable-more-deterministic
+        return "js_ReportOverRecursed called"
+    elif "js_ReportOutOfMemory called" in err:
+        # --enable-more-deterministic
+        return "js_ReportOutOfMemory called"
+    elif "failed to allocate" in err:
+        # ASan
+        return "failed to allocate"
+    elif "can't allocate region" in err:
+        # malloc
+        return "can't allocate region"
+
+    return None
+
 def reportedOverRecursion(logPrefix):
     # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they over-recurse.
     with open(logPrefix + "-err.txt", "rb") as f:

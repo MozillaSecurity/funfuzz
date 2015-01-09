@@ -54,25 +54,6 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOpt
         return (lithOps.HAPPY, None)
 
 
-def hitMemoryLimit(err):
-    """Does stderr indicate hitting a memory limit?"""
-
-    if "js_ReportOverRecursed called" in err:
-        # --enable-more-deterministic
-        return "js_ReportOverRecursed called"
-    elif "js_ReportOutOfMemory called" in err:
-        # --enable-more-deterministic
-        return "js_ReportOutOfMemory called"
-    elif "failed to allocate" in err:
-        # ASan
-        return "failed to allocate"
-    elif "can't allocate region" in err:
-        # malloc
-        return "can't allocate region"
-
-    return None
-
-
 def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
     combos = shellFlags.basicFlagSets(jsEngine)
 
@@ -95,7 +76,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         with open(prefix + "-err.txt") as f:
             r.err = f.read(lengthLimit)
 
-        oom = hitMemoryLimit(r.err)
+        oom = jsInteresting.hitMemoryLimit(r.err)
         if (not oom) and (len(r.err) + 5 > lengthLimit):
             # The output was too long for Python to read it in all at once. Assume the worst.
             oom = "stderr too long"
