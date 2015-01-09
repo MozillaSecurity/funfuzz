@@ -133,8 +133,8 @@ var fuzzTestingFunctions = (function(glob){
     { w: 5,  v: function(d, b) { return "(" + tf("bailout") + "()" + ")"; } },
 
     // ARM simulator settings
-    { w: 1,  v: function(d, b) { return "(void" + tf("disableSingleStepProfiling") + "()" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("enableSingleStepProfiling") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return tryCatchExpr("(void" + tf("disableSingleStepProfiling") + "()" + ")"); } },
+    { w: 1,  v: function(d, b) { return tryCatchExpr("(" + tf("enableSingleStepProfiling") + "()" + ")"); } },
 
     // Force garbage collection with function relazification
     { w: 10, v: function(d, b) { return "(void " + tf("relazify") + "()" + ")"; } },
