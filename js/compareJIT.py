@@ -54,7 +54,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOpt
         return (lithOps.HAPPY, None)
 
 
-def hitMemoryLimit(err, stderrTooLong):
+def hitMemoryLimit(err):
     """Does stderr indicate hitting a memory limit?"""
 
     if "js_ReportOverRecursed called" in err:
@@ -69,9 +69,6 @@ def hitMemoryLimit(err, stderrTooLong):
     elif "can't allocate region" in err:
         # malloc
         return "can't allocate region"
-    elif stderrTooLong:
-        # If the output was too long for Python to read it in, assume the worst.
-        return "stderr too long"
 
     return None
 
@@ -98,9 +95,12 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         with open(prefix + "-err.txt") as f:
             r.err = f.read(lengthLimit)
 
-        stderrTooLong = (len(r.err) + 5 > lengthLimit)
+        oom = hitMemoryLimit(r.err)
+        if (not oom) and (len(r.err) + 5 > lengthLimit):
+            # The output was too long for Python to read it in all at once. Assume the worst.
+            oom = "stderr too long"
+
         r.err = ignoreSomeOfStderr(r.err)
-        oom = hitMemoryLimit(r.err, stderrTooLong)
 
         if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
             print "Got usage error from:"
