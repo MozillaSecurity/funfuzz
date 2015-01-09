@@ -47,6 +47,17 @@ localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in 
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
 
+
+class BuildInfo(object):
+    '''
+    This object stores information related to the build, such as its directory, source and type.
+    '''
+    def __init__(self, bDir, bType, bSrc):
+        self.buildDir = bDir
+        self.buildType = bType
+        self.buildSrc = bSrc
+
+
 def splitSlash(d):
     return d.split("/" if "/" in d else "\\")
 
@@ -357,16 +368,16 @@ def botmain(options):
             printMachineInfo()
             #sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        buildDir, buildSrc, buildType, haveBuild = ensureBuild(options)
+        buildInfo, haveBuild = ensureBuild(options)
         if not haveBuild:
             return
-        assert os.path.isdir(buildDir)
+        assert os.path.isdir(buildInfo.buildDir)
 
         if options.retestRoot:
             print "Retesting time!"
-            retestAll(options, buildDir)
+            retestAll(options, buildInfo)
         else:
-            options.relevantJobsDirName = options.testType + "-" + buildType
+            options.relevantJobsDirName = options.testType + "-" + buildInfo.buildType
             options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
 
             runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
@@ -396,16 +407,16 @@ def botmain(options):
                 #        print "Email sent!"
 
                 numProcesses = multiprocessing.cpu_count()
-                if "-asan" in buildDir:
+                if "-asan" in buildInfo.buildDir:
                     # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
                     # I could guess 1 GB RAM per core, but that wanders into sketchyville.
                     numProcesses = max(numProcesses // 2, 1)
 
-                forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildDir, buildSrc)
+                forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildInfo)
 
         # Remove build directory if we created it
         if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
-            shutil.rmtree(buildDir)
+            shutil.rmtree(buildInfo.buildDir)
 
         shutil.rmtree(options.tempDir)
 
@@ -451,7 +462,7 @@ def readSkips(filename):
                 skips[jobname] = True
     return skips
 
-def retestAll(options, buildDir):
+def retestAll(options, buildInfo):
     '''
     Retest all testcases in options.retestRoot, starting with the newest,
     without modifying that subtree (because it might be rsync'ed).
@@ -467,7 +478,7 @@ def retestAll(options, buildDir):
         for j in os.listdir(jobTypeDir):
             if j.split("_")[0] in retestSkips:
                 print "Skipping " + j + " for " + j.split("_")[0]
-            if "-asan" in buildDir and "-asan" not in jobTypeDir:
+            if "-asan" in buildInfo.buildDir and "-asan" not in jobTypeDir:
                 pass
             elif "_0_lines" in j:
                 print "Skipping a 0-line testcase"
@@ -484,7 +495,7 @@ def retestAll(options, buildDir):
     testcases.sort(key=lambda t: t['mtime'], reverse=True)
 
     i = 0
-    levelAndLines, domInterestingOptions = domInteresting.rdfInit([buildDir])
+    levelAndLines, domInterestingOptions = domInteresting.rdfInit([buildInfo.buildDir])
     tempDir = tempfile.mkdtemp("retesting")
 
     # Retest all the things!
@@ -515,7 +526,7 @@ def retestAll(options, buildDir):
 
         # Or this way?
 
-        #lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildDir, testcase]
+        #lithArgs = ["--strategy=check-only", loopdomfuzz.domInterestingpy, buildInfo.buildDir, testcase]
         #
         #(lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
         #if lithResult == lithOps.LITH_RETESTED_STILL_INTERESTING:
@@ -526,30 +537,30 @@ def retestAll(options, buildDir):
 
 def ensureBuild(options):
     if options.existingBuildDir:
-        buildDir = options.existingBuildDir
-        buildType = 'local-build'
-        buildSrc = buildDir
+        bDir = options.existingBuildDir
+        bType = 'local-build'
+        bSrc = bDir
         success = True
     elif options.buildOptions is not None:
         # Compile from source
         if options.testType == "js":
             # options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-            # buildType = computeShellName(options.buildOptions, "x") ??
+            # bType = computeShellName(options.buildOptions, "x") ??
             raise Exception("For now, use 'localjsfunfuzz' mode to compile and fuzz local shells")
         else:
             options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
-            buildDir = options.buildOptions.objDir
-            buildType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
-            buildSrc = repr(hgCmds.getRepoHashAndId(options.buildOptions.repoDir))
+            bDir = options.buildOptions.objDir
+            bType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
+            bSrc = repr(hgCmds.getRepoHashAndId(options.buildOptions.repoDir))
             success = buildBrowser.tryCompiling(options.buildOptions)
     else:
         # Download from Tinderbox and call it 'build'
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-        buildDir = 'build'
-        buildType = downloadBuild.defaultBuildType(options.repoName, None, True)
-        buildSrc = downloadBuild.downloadLatestBuild(buildType, './', getJsShell=(options.testType == 'js'))
+        bDir = 'build'
+        bType = downloadBuild.defaultBuildType(options.repoName, None, True)
+        bSrc = downloadBuild.downloadLatestBuild(bType, './', getJsShell=(options.testType == 'js'))
         success = True
-    return buildDir, buildSrc, buildType, success
+    return BuildInfo(bDir, bType, bSrc), success
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
@@ -604,7 +615,7 @@ def test_forkJoin_inner(adj, noun, forkjoin_id):
         print ({}).a # error
 
 
-def fuzzUntilBug(options, buildDir, buildSrc, i):
+def fuzzUntilBug(options, buildInfo, i):
     # not really "oldjobname", but this is how i get newjobname to be what i want below
     # avoid putting underscores in this part, because those get split on
     oldjobname = uuid.uuid1(clock_seq = i).hex
@@ -612,7 +623,7 @@ def fuzzUntilBug(options, buildDir, buildSrc, i):
     os.mkdir(job)
 
     if options.testType == 'js':
-        shell = os.path.join(buildDir, "dist", "js.exe" if isWin else "js")
+        shell = os.path.join(buildInfo.buildDir, "dist", "js.exe" if isWin else "js")
         # Not using compareJIT: bug 751700, and it's not fully hooked up
         # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
         # FIXME: use the right timeout
@@ -620,12 +631,12 @@ def fuzzUntilBug(options, buildDir, buildSrc, i):
         (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
     else:
         # FIXME: support Valgrind
-        (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildDir])
+        (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildInfo.buildDir])
 
     if lithResult == lithOps.HAPPY:
         print "Happy happy! No bugs found!"
     else:
-        writeTinyFile(job + "build-source.txt", buildSrc)
+        writeTinyFile(job + "build-source.txt", buildInfo.buildSrc)
         uploadJob(options, lithResult, lithDetails, job, oldjobname)
 
 
