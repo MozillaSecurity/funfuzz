@@ -136,10 +136,10 @@ var fuzzTestingFunctions = (function(glob){
     { w: 1,  v: function(d, b) { return tryCatchExpr("(void" + tf("disableSingleStepProfiling") + "()" + ")"); } },
     { w: 1,  v: function(d, b) { return tryCatchExpr("(" + tf("enableSingleStepProfiling") + "()" + ")"); } },
 
-    // Force garbage collection with function relazification
-    { w: 10, v: function(d, b) { return "(void " + tf("relazify") + "()" + ")"; } },
-    { w: 10, v: function(d, b) { return "(void " + tf("relazify") + "('compartment')" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(void " + tf("relazify") + "(" + global(d, b) + ")" + ")"; } },
+    // Force garbage collection with function relazification (uncomment when this feature lands) (bug 1116760)
+    //{ w: 10, v: function(d, b) { return "(void " + tf("relazify") + "()" + ")"; } },
+    //{ w: 10, v: function(d, b) { return "(void " + tf("relazify") + "('compartment')" + ")"; } },
+    //{ w: 5,  v: function(d, b) { return "(void " + tf("relazify") + "(" + global(d, b) + ")" + ")"; } },
   ];
 
   var testingFunctions = Random.weighted(browser ? sharedTestingFunctions : sharedTestingFunctions.concat(shellOnlyTestingFunctions));
