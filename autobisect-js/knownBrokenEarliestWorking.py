@@ -60,6 +60,7 @@ def knownBrokenRanges(options):
         hgrange('6b285759568c', 'e498b157651e'), # Fx34, broken ICU
         hgrange('03242a11d044', '31714af41f2c'), # Fx35, broken spidermonkey due to let changes
         hgrange('b160657339f8', '06d07689a043'), # Fx36, unstable spidermonkey
+        hgrange('1c9c64027cac', 'ef7a85ec6595'), # Fx37, unstable spidermonkey
     ]
 
     if sps.isARMv7l:
