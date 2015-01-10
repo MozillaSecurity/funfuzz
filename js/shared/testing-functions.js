@@ -78,10 +78,10 @@ var fuzzTestingFunctions = (function(glob){
     { w: 10, v: function(d, b) { return "(" + tf("selectforgc") + "(" + object(d, b) + ")" + ")"; } },
 
     // Add a compartment to the next garbage collection.
-    { w: 10, v: function(d, b) { return "(" + tf("schedulegc") + "(" + global(d, b) + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "(void " + tf("schedulegc") + "(" + global(d, b) + ")" + ")"; } },
 
     // Schedule a GC for after N allocations.
-    { w: 10, v: function(d, b) { return "(" + tf("schedulegc") + "(" + numberOfAllocs() + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "(void " + tf("schedulegc") + "(" + numberOfAllocs() + ")" + ")"; } },
 
     // Change a GC parameter.
     { w: 10, v: setGcparam },
