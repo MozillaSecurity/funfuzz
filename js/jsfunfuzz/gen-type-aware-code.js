@@ -319,7 +319,7 @@ var makeEvilCallback;
     { w: 5,  v: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + strToEval(d, b) + ")"); } },
     { w: 5,  v: function(d, b) { return assign(d, b, "v", "evalcx(" + strToEval(d, b) + ", " + m("g") + ")"); } },
     { w: 5,  v: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", " + evaluateFlags(d, b) + ")"); } },
-    { w: 3,  v: function(d, b) { return "schedulegc(" + m("g") + ");"; } },
+    { w: 3,  v: function(d, b) { return "(void schedulegc(" + m("g") + "));"; } },
 
     // Mix builtins between globals
     { w: 3,  v: function(d, b) { return "/*MXX1*/" + assign(d, b, "o", m("g") + "." + Random.index(builtinProperties)); } },
