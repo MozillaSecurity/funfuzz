@@ -78,7 +78,7 @@ def parseOpts():
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify js shell build options, e.g. -b "-c opt --arch=32" (python buildOptions.py --help)')
+                      help='Specify js shell build options, e.g. -b "--enable-debug --32" (python buildOptions.py --help)')
     parser.add_option('-B', '--browser',
                       dest='browserOptions',
                       help='Specify browser build options, e.g. -b "-c mozconfig"')
