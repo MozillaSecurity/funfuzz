@@ -107,9 +107,12 @@ var fuzzTestingFunctions = (function(glob){
     { w: 1,  v: function(d, b) { return "(" + tf("setIonCheckGraphCoherency") + "(true)" + ")"; } },
     { w: 1,  v: function(d, b) { return "(" + tf("enableOsiPointRegisterChecks") + "()" + ")"; } },
 
-    // Run-time equivalents to --baseline-eager or --baseline-uses-before-compile, --no-baseline, etc
+    // Run-time equivalents to --baseline-eager, --baseline-warmup-threshold, --ion-eager, --ion-warmup-threshold
     { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.warmup.trigger', " + rnd(20) + ")" + ")"; } },
     { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('ion.warmup.trigger', " + rnd(40) + ")" + ")"; } },
+
+    // Run-time equivalents to --no-ion, --no-baseline
+    // These can throw: "Can't turn off JITs with JIT code on the stack."
     { w: 1,  v: function(d, b) { return tryCatchExpr(tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")"); } },
     { w: 1,  v: function(d, b) { return tryCatchExpr(tf("setJitCompilerOption") + "('baseline.enable', " + rnd(2) + ")"); } },
 
@@ -133,6 +136,7 @@ var fuzzTestingFunctions = (function(glob){
     { w: 5,  v: function(d, b) { return "(" + tf("bailout") + "()" + ")"; } },
 
     // ARM simulator settings
+    // These throw when not in the ARM simulator.
     { w: 1,  v: function(d, b) { return tryCatchExpr("(void" + tf("disableSingleStepProfiling") + "()" + ")"); } },
     { w: 1,  v: function(d, b) { return tryCatchExpr("(" + tf("enableSingleStepProfiling") + "()" + ")"); } },
 
