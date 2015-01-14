@@ -20,6 +20,8 @@ var fuzzTestingFunctions = (function(glob){
   }
 
   function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
+  function gcSliceSize() { return Math.floor(Math.pow(2, Random.float() * 32)); }
+  function maybeCommaShrinking() { return rnd(5) ? "" : ", 'shrinking'"; }
 
   function global(d, b) { return ensureOneArg(browser ? Things.instance("Window") : makeExpr(d - 1, b)); }
   function object(d, b) { return ensureOneArg(browser ? Things.any() : makeExpr(d - 1, b)); }
@@ -63,16 +65,18 @@ var fuzzTestingFunctions = (function(glob){
   // https://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp
   var sharedTestingFunctions = [
     // Force garbage collection (global or specific compartment)
-    { w: 10, v: function(d, b) { return "(void " + tf("gc") + "()" + ")"; } },
-    { w: 10, v: function(d, b) { return "(void " + tf("gc") + "('compartment')" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(void " + tf("gc") + "(" + global(d, b) + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "(void " + tf("gc") + "("                                            + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "(void " + tf("gc") + "(" + "'compartment'"  + maybeCommaShrinking() + ")" + ")"; } },
+    { w: 5,  v: function(d, b) { return "(void " + tf("gc") + "(" + global(d, b)     + maybeCommaShrinking() + ")" + ")"; } },
 
     // Run a minor garbage collection on the nursery.
     { w: 20, v: function(d, b) { return "(" + tf("minorgc") + "(false)" + ")"; } },
     { w: 20, v: function(d, b) { return "(" + tf("minorgc") + "(true)" + ")"; } },
 
-    // Invoke an incremental garbage collection slice.
-    { w: 20, v: function(d, b) { return "(" + tf("gcslice") + "(" + Math.floor(Math.pow(2, Random.float() * 32)) + ")" + ")"; } },
+    // Start or continue incremental garbage collection.
+    // startgc can throw: "Incremental GC already in progress"
+    { w: 20, v: function(d, b) { return tryCatchExpr("(" + tf("startgc") + "(" + gcSliceSize() + maybeCommaShrinking() + ")" + ")"); } },
+    { w: 20, v: function(d, b) { return              "(" + tf("gcslice") + "(" + gcSliceSize()                         + ")" + ")"; } },
 
     // Schedule the given objects to be marked in the next GC slice.
     { w: 10, v: function(d, b) { return "(" + tf("selectforgc") + "(" + object(d, b) + ")" + ")"; } },
