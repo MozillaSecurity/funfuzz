@@ -21,6 +21,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("oomAfterAllocations") == -1
+       && code.indexOf("load") == -1                // load()ed regression test might output dates, etc
     ,
 
     expectConsistentOutputAcrossIter: true

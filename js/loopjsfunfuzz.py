@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
+import json
 import os
-import random
-import shutil
 import subprocess
 import sys
 import time
@@ -70,56 +69,35 @@ def showtail(filename):
     print
     print
 
-def linkFuzzer(target_fn):
+def linkFuzzer(target_fn, repo, prologue):
     source_base = p0
-    file_list_fn = os.path.join(p0, "files-to-link.txt")
-    linkJS.linkJS(target_fn, file_list_fn, source_base)
+    file_list_fn = normExpUserPath(os.path.join(p0, "files-to-link.txt"))
+    linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
 
+def makeRegressionTestPrologue(repo, regressionTestListFile):
+    """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests"""
 
-def getRndTest(repo, testType):
-    '''
-    Returns the name of a random JS file in the %sjs/src/jit-test/tests/* directory, including
-    subdirectories. Adapted from http://stackoverflow.com/a/6411889 .
-    ''' % repo
-    if testType == 'jit-test':
-        dirToBeWalked = os.path.join(repo, 'js', 'src', 'jit-test', 'tests')
-    elif testType == 'jstest':
-        dirToBeWalked = os.path.join(repo, 'js', 'src', 'tests')
-    else:
-        raise Exception('Invalid test type: ' + testType)
-    testFile = [os.path.join(path, filename)
-                      for path, dirs, files in os.walk(normExpUserPath(dirToBeWalked))
+    # We use json.dumps to escape strings (Windows paths have backslashes).
+    return """
+        const regressionTestList = read(%s).match(/.+/g);
+        const regressionTestsRoot = %s;
+        const libdir = regressionTestsRoot + %s; // needed by jit-tests
+    """ % (
+        json.dumps(os.path.abspath(normExpUserPath(regressionTestListFile))),
+        json.dumps(normExpUserPath(repo) + os.sep),
+        json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
+    )
+
+def inTreeRegressionTests(repo):
+    jitTests = jsFilesIn(os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
+    jsTests = jsFilesIn(os.path.join(repo, 'js', 'src', 'tests'))
+    return jitTests + jsTests
+
+def jsFilesIn(root):
+    return [os.path.join(path, filename)
+                      for path, dirs, files in os.walk(normExpUserPath(root))
                       for filename in files
                       if filename.endswith('.js')]
-    return random.choice(testFile)
-
-
-def prependJsfunfuzz(options, wtmpDir, fuzzjs):
-    '''randorderfuzz - Prepend some or none of randomly ordered js tests to jsfunfuzz.'''
-    origfuzzjs = os.path.join(wtmpDir, 'orig-jsfunfuzz.js')
-    shutil.copy2(fuzzjs, origfuzzjs)
-
-    with open(fuzzjs, 'wb'): pass  # First empty the file.
-    # This part involves randorderfuzz - see bug 1100132
-    # Concatenates up to 10 random JS jit-tests and/or jstests with jsfunfuzz every iteration
-    numOfTestsToCombine = random.randint(0, 10)
-    with open(fuzzjs, 'a+b') as f, open(origfuzzjs, 'rb') as g:
-        for x in xrange(numOfTestsToCombine):
-            if x == 0:
-                f.write('repodir = "' + normExpUserPath(options.repo) + '/";\n')
-                # Load the jit-test libdir if we are combining JS jit-tests
-                f.write('libdir = repodir + "' + os.path.join('js', 'src', 'jit-test', 'lib') +
-                        '/";\n')
-                # Load the jstests shell.js harness
-                f.write('load(repodir + "' + os.path.join('js', 'src', 'tests', 'shell.js') +
-                        '");\n\n')
-
-            rndTest = getRndTest(options.repo, random.choice(['jit-test', 'jstest']))
-            rndTestRelPath = rndTest.split(normExpUserPath(options.repo))[1][1:]
-            f.write('// Random chosen test: ' + rndTestRelPath + '\n')
-            f.write('try { load(repodir + "' + rndTestRelPath + '"); } catch (e) {}\n')
-        for line in g:  # jsfunfuzz
-            f.write(line)
 
 
 def many_timed_runs(targetTime, wtmpDir, args):
@@ -127,14 +105,20 @@ def many_timed_runs(targetTime, wtmpDir, args):
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
     startTime = time.time()
 
-    fuzzjs = os.path.join(wtmpDir, "jsfunfuzz.js")
-    linkFuzzer(fuzzjs)
+    if os.path.isdir(normExpUserPath(options.repo)):
+        regressionTestListFile = normExpUserPath(os.path.join(wtmpDir, "regression-tests.list"))
+        with open(regressionTestListFile, "wb") as f:
+            for fn in inTreeRegressionTests(options.repo):
+                f.write(fn + "\n")
+        regressionTestPrologue = makeRegressionTestPrologue(options.repo, regressionTestListFile)
+    else:
+        regressionTestPrologue = ""
+
+    fuzzjs = normExpUserPath(os.path.join(wtmpDir, "jsfunfuzz.js"))
+    linkFuzzer(fuzzjs, options.repo, regressionTestPrologue)
 
     iteration = 0
     while True:
-        if os.path.isdir(normExpUserPath(options.repo)):
-            prependJsfunfuzz(options, wtmpDir, fuzzjs)
-
         if targetTime and time.time() > startTime + targetTime:
             print "Out of time!"
             os.remove(fuzzjs)
@@ -157,7 +141,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
         jsunhappyOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
         iteration += 1
-        logPrefix = os.path.join(wtmpDir, "w" + str(iteration))
+        logPrefix = normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))
 
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 

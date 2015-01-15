@@ -152,11 +152,10 @@ var makeEvilCallback;
 
   function strToEval(d, b)
   {
-    switch(rnd(4)) {
+    switch(rnd(5)) {
       case 0:  return simpleSource(fdecl(d, b));
       case 1:  return simpleSource(makeBuilderStatement(d, b));
-      case 2:  return simpleSource(makeExpr(d, b));
-      default: return simpleSource(makeStatement(d, b));
+      default: return simpleSource(makeScriptForEval(d, b));
     }
   }
 

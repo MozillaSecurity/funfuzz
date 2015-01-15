@@ -17,6 +17,18 @@ function makeScriptBody(d, ignoredB)
   return makeStatement(d, ["x"]);
 }
 
+function makeScriptForEval(d, b)
+{
+  switch (rnd(4)) {
+    case 0:  return makeExpr(d - 1, b);
+    case 1:  return makeStatement(d - 1, b);
+    case 2:  return makeUseRegressionTest(d, b);
+    default: return makeScript(d - 3, b);
+  }
+}
+
+
+// Statement or block of statements
 function makeStatement(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
@@ -247,10 +259,73 @@ var statementMakers = Random.weighted([
 
   { w: 1, v: makeRegisterStompBody },
 
+  { w: 20, v: makeUseRegressionTest },
+
   // Discover properties to add to the allPropertyNames list
   //{ w: 3, v: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
   //{ w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
+
+
+function makeUseRegressionTest(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  if (typeof regressionTestList != "object") {
+    return "/* no regression tests found */";
+  }
+
+  var maintest = Random.index(regressionTestList);
+  var files = regressionTestDependencies(maintest);
+
+  var s = "";
+
+  if (rnd(5) == 0) {
+    // Many tests call assertEq, intending to throw if something unexpected happens.
+    // Sometimes, override it with a function that compares but does not throw.
+    s += "assertEq = function(x, y) { if (x != y) { print(0); } }; ";
+  }
+
+  for (var i = 0; i < files.length; ++i) {
+    switch (rnd(2)) {
+      case 0:
+        // simply inline the script -- this is the only one that will work in newGlobal()
+        s += "/* regression-test-inline */ " + "/* " + files[i] + " */ " + read(files[i]) + "\n";
+        break;
+      default:
+        // run it using load()
+        s += "/* regression-test-load */ " + "load(" + simpleSource(files[i]) + ");";
+        break;
+      // NB: these scripts will also be run through eval(), evalcx(), evaluate() thanks to other parts of the fuzzer using makeScriptForEval or makeStatement
+    }
+  }
+  return s;
+}
+
+function regressionTestDependencies(maintest)
+{
+  var files = [];
+
+  if (rnd(3)) {
+    // Include the chain of 'shell.js' files in their containing directories (starting from regressionTestsRoot)
+    for (var i = regressionTestsRoot.length; i < maintest.length; ++i) {
+      if (maintest.charAt(i) == "/" || maintest.charAt(i) == "\\") {
+        var shelljs = maintest.substr(0, i + 1) + "shell.js";
+        if (regressionTestList.indexOf(shelljs) != -1) {
+          files.push(shelljs);
+        }
+      }
+    }
+
+    // Include prolog.js for jit-tests
+    if (maintest.indexOf("jit-test") != -1) {
+      files.push(libdir + "prolog.js");
+    }
+  }
+
+  files.push(maintest);
+  return files;
+}
 
 
 function linkedList(x, n)
@@ -734,11 +809,9 @@ var exprMakers =
 
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
-  function(d, b) { return makeExpr(d, b) + ".eval(" + makeExpr(d, b) + ")"; },
-  function(d, b) { return "eval(" + uneval(makeExpr(d, b))      + ")"; },
-  function(d, b) { return "eval(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
-  function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ")"; },
-  function(d, b) { return "eval(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
+  function(d, b) { return makeExpr(d, b) + ".eval(" + uneval(makeScriptForEval(d, b)) + ")"; },
+  function(d, b) { return "eval(" + uneval(makeScriptForEval(d, b)) + ")"; },
+  function(d, b) { return "eval(" + uneval(makeScriptForEval(d, b)) + ", " + makeExpr(d, b) + ")"; },
 
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(d, b) { return "(uneval(" + makeExpr(d, b) + "))"; },
@@ -807,10 +880,8 @@ function makeTestingFunctionCall(d, b)
 if (typeof evalcx == "function") {
   exprMakers = exprMakers.concat([
     function(d, b) { return makeGlobal(d, b); },
-    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeExpr(d, b) + ")"; },
-    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
-    function(d, b) { return "evalcx(" + uneval(makeExpr(d, b))      + ", " + makeGlobal(d, b) + ")"; },
-    function(d, b) { return "evalcx(" + uneval(makeStatement(d, b)) + ", " + makeGlobal(d, b) + ")"; },
+    function(d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeExpr(d, b) + ")"; },
+    function(d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeGlobal(d, b) + ")"; },
   ]);
 }
 

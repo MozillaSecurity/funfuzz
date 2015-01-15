@@ -2,8 +2,9 @@
 
 import os
 
-def linkJS(target_fn, file_list_fn, source_base):
-    with open(target_fn, "w") as target:
+def linkJS(target_fn, file_list_fn, source_base, prologue=""):
+    with open(target_fn, "wb") as target:
+        target.write(prologue)
         with open(file_list_fn) as file_list:
             for source_fn in file_list:
                 source_fn = source_fn.strip()
