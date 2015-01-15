@@ -16,7 +16,7 @@
 function cat(toks)
 {
   if (rnd(1700) === 0)
-    return totallyRandom(2, []);
+    return totallyRandom(2, ["x"]);
 
   var torture = (rnd(1700) === 57);
   if (torture)
@@ -47,7 +47,7 @@ function cat(toks)
       case 2:
       case 3:
       case 4:
-        s += maybeSpace() + totallyRandom(2, []) + maybeSpace();
+        s += maybeSpace() + totallyRandom(2, ["x"]) + maybeSpace();
         break;
       case 5:
         s = "(" + s + ")"; // randomly parenthesize some *prefix* of it.
