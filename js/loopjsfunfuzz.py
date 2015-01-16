@@ -51,7 +51,12 @@ def parseOpts(args):
     if options.valgrind and options.useCompareJIT:
         print "Note: When running comparejit, the --valgrind option will be ignored"
 
+    # kill js shell if it runs this long.
+    # jsfunfuzz will quit after half this time if it's not ilooping.
+    # higher = more complex mixing, especially with regression tests.
+    # lower = less time wasted in timeouts and in compareJIT testcases that are thrown away due to OOMs.
     options.timeout = int(args[0])
+
     options.knownPath = os.path.expanduser(args[1])
     options.jsEngine = args[2]
     options.engineFlags = args[3:]

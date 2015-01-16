@@ -43,6 +43,8 @@ import loopjsfunfuzz
 
 localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
+JS_SHELL_DEFAULT_TIMEOUT = 24 # see comments in loopjsfunfuzz.py for tradeoffs
+
 # Possible ssh options:
 #   -oStrictHostKeyChecking=no
 #   -oUserKnownHostsFile=/dev/null
@@ -627,7 +629,7 @@ def fuzzUntilBug(options, buildInfo, i):
         # Not using compareJIT: bug 751700, and it's not fully hooked up
         # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
         # FIXME: use the right timeout
-        mtrArgs = ["--random-flags", "10", "mozilla-central", shell]
+        mtrArgs = ["--random-flags", str(JS_SHELL_DEFAULT_TIMEOUT), "mozilla-central", shell]
         (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
     else:
         # FIXME: support Valgrind
@@ -737,7 +739,7 @@ def machineTimeoutDefaults(options):
     elif isARMv7l:
         return 180
     else:
-        return 10  # If no timeout preference is specified, use 10 seconds.
+        return JS_SHELL_DEFAULT_TIMEOUT
 
 
 if __name__ == "__main__":
