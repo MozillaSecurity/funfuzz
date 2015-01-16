@@ -355,7 +355,7 @@ def constructCdbCommand(progfullname, crashedPID):
     # On Windows Vista and above, look for a minidump.
     dumpFilename = normExpUserPath(os.path.join('~', 'AppData', 'Local', 'CrashDumps',
                     os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
-    win64bitDebuggerFolder = os.path.join(os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.0',
+    win64bitDebuggerFolder = os.path.join(os.getenv('ProgramFiles(x86)'), 'Windows Kits', '8.1',
                                           'Debuggers', 'x64')
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdbPath = os.path.join(win64bitDebuggerFolder, 'cdb.exe')
