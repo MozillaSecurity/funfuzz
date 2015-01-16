@@ -133,10 +133,6 @@ def addParserOptions():
         dest = 'disableGcGenerational',
         help = 'Build shells with --disable-gcgenerational. Defaults to "%(default)s".'
     )
-    randomizeBool(['--enable-gccompacting'], 0.3,
-        dest = 'enableGcCompacting',
-        help = 'Build shells with --enable-gccompacting. Defaults to "%(default)s".'
-    )
     randomizeBool(['--enable-arm-simulator'], 0.3,
         dest = 'enableArmSimulator',
         help = 'Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' + \
@@ -208,8 +204,6 @@ def computeShellName(buildOptions, extraIdentifier):
         fileName.append('erDisabled')
     if buildOptions.disableGcGenerational:
         fileName.append('ggcDisabled')
-    if buildOptions.enableGcCompacting:
-        fileName.append('compactingGcEnabled')
     if buildOptions.enableArmSimulator:
         fileName.append('armSim')
     if subprocesses.isARMv7l:

@@ -124,8 +124,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('9188c8b7962b') # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
         required.append('03c6a758c9e8') # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
-    if '--enable-gccompacting' in flags:
-        required.append('8f3ba188627a') # m-c 199692 Fx34, 1st w/--enable-gccompacting, see bug 650161
     if '--no-threads' in flags:
         required.append('e8558ecd9b16') # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
     if sps.isMozBuild64 or options.enableNsprBuild:  # 64-bit builds have peculiar complexities prior to this
