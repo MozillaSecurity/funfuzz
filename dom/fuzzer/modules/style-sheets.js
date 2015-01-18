@@ -388,12 +388,6 @@ var fuzzerRandomClasses = (function() {
     importProperties(window.getComputedStyle(v, null), "computed style");
   }
 
-  // 4. Grab things like "margin-right-value". I don't know what the deal with them is.
-  v.style.margin = "8px";
-  v.style.padding = "8px";
-  v.style.border = "1px solid green";
-  importProperties(v.style, "inline style");
-
   var CSSPropList = getKeysFromHash(CSSPropHash);
 
   function randomCSSValue() {
