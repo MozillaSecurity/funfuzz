@@ -40,6 +40,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Math.ceil") == -1           // bug 1122401
        && code.indexOf("0x80000000") == -1          // bug 1122402
        && code.indexOf("0xffffffff") == -1          // bug 1122403
+       && code.indexOf("use strict") == -1          // bug 1123011
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
