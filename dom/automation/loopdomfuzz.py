@@ -19,7 +19,7 @@ domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.
 
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import createWtmpDir
+import subprocesses as sps
 from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLinesToFile
 import lithOps
 import linkJS
@@ -206,4 +206,4 @@ def afterColon(s):
     return tail.strip()
 
 if __name__ == "__main__":
-    many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:], quiet=False)
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], quiet=False)

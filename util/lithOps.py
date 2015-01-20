@@ -10,7 +10,7 @@ import shutil
 import subprocess
 from tempfile import mkdtemp
 
-from subprocesses import normExpUserPath, shellify, vdump
+import subprocesses as sps
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = [sys.executable, "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
@@ -35,7 +35,7 @@ def knownBugsDir(rName):
     elif rName == 'ionmonkey':
         return os.path.join('mozilla-central', 'ionmonkey')
     elif rName != 'mozilla-central':
-        vdump('Known bugs for the ' + rName + ' repository does not exist. Using m-c one instead.')
+        sps.vdump('Known bugs for the ' + rName + ' repository does not exist. Using m-c one instead.')
     return mcKnDir
 
 
@@ -57,7 +57,7 @@ def runLithium(lithArgs, logPrefix, targetTime):
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     lithlogfn = logPrefix + "-lith-out.txt"
     print "Preparing to run Lithium, log file " + lithlogfn
-    print shellify(lithiumpy + lithArgs)
+    print sps.shellify(lithiumpy + lithArgs)
     subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
     if deletableLithTemp:

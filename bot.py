@@ -25,9 +25,7 @@ sys.path.insert(0, path1)
 import downloadBuild
 import hgCmds
 import lithOps
-from subprocesses import captureStdout, dateStr, getFreeSpace
-from subprocesses import isARMv7l, isLinux, isMac, isWin
-from subprocesses import normExpUserPath, shellify
+import subprocesses as sps
 from LockDir import LockDir
 path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
 sys.path.append(path2)
@@ -304,7 +302,7 @@ def parseOpts():
     if options.testType == 'auto' and not options.runLocalJsfunfuzz:
         if options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
-        elif isLinux and platform.machine() != "x86_64":
+        elif sps.isLinux and platform.machine() != "x86_64":
             # Bug 855881
             options.testType = 'js'
         else:
@@ -403,7 +401,7 @@ def botmain(options):
             else:
                 print "Fuzz time!"
                 #if options.testType == 'js':
-                #    if isLinux:  # Test to see whether releng AWS Linux instances can send email
+                #    if sps.isLinux:  # Test to see whether releng AWS Linux instances can send email
                 #        print "Sending email..."
                 #        sendEmail("justFuzzTime", "Platform details (" + str(multiprocessing.cpu_count()) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
                 #        print "Email sent!"
@@ -426,20 +424,20 @@ def botmain(options):
 def printMachineInfo():
     # Log information about the machine.
     print "Platform details: " + " ".join(platform.uname())
-    print "hg version: " + captureStdout(['hg', '-q', 'version'])[0]
+    print "hg version: " + sps.captureStdout(['hg', '-q', 'version'])[0]
 
     # In here temporarily to see if mock Linux slaves on TBPL have gdb installed
     try:
-        print "gdb version: " + captureStdout(['gdb', '--version'], combineStderr=True,
+        print "gdb version: " + sps.captureStdout(['gdb', '--version'], combineStderr=True,
                                               ignoreStderr=True, ignoreExitCode=True)[0]
     except (KeyboardInterrupt, Exception) as e:
         print('Error involving gdb is: ' + repr(e))
 
     # FIXME: Should have if os.path.exists(path to git) or something
-    #print "git version: " + captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
+    #print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print "Python version: " + sys.version[:5]
     print "Number of cores visible to OS: " +  str(multiprocessing.cpu_count())
-    print 'Free space (GB): ' + str('%.2f') % getFreeSpace('/', 3)
+    print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
 
     hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
     if os.path.isfile(hgrcLocation):
@@ -625,7 +623,7 @@ def fuzzUntilBug(options, buildInfo, i):
     os.mkdir(job)
 
     if options.testType == 'js':
-        shell = os.path.join(buildInfo.buildDir, "dist", "js.exe" if isWin else "js")
+        shell = os.path.join(buildInfo.buildDir, "dist", "js.exe" if sps.isWin else "js")
         # Not using compareJIT: bug 751700, and it's not fully hooked up
         # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
         # FIXME: use the right timeout
@@ -646,20 +644,20 @@ def cmdDump(shell, cmdList, log):
     '''Dump commands to file.'''
     with open(log, 'ab') as f:
         f.write('Command to be run is:\n')
-        f.write(shellify(cmdList) + '\n')
+        f.write(sps.shellify(cmdList) + '\n')
         f.write('========================================================\n')
         f.write('|  Fuzzing %s js shell builds\n' %
                      (shell.getRepoName() ))
-        f.write('|  DATE: %s\n' % dateStr())
+        f.write('|  DATE: %s\n' % sps.dateStr())
         f.write('========================================================\n\n')
 
 
 def fuzzingPathName(options, repoHash, repoId):
     '''Returns the path of the directory where fuzzing is going to take place.'''
     appendStr = ''
-    if isMac:
+    if sps.isMac:
         appendStr += '.noindex'  # Prevents Spotlight in Mac from indexing these folders.
-    userDesktopFolder = normExpUserPath(os.path.join('~', 'Desktop'))
+    userDesktopFolder = sps.normExpUserPath(os.path.join('~', 'Desktop'))
     if not os.path.isdir(userDesktopFolder):
         try:
             os.mkdir(userDesktopFolder)
@@ -675,7 +673,7 @@ def fuzzingPathName(options, repoHash, repoId):
 
 def localCompileFuzzJsShell(options):
     '''Compiles and readies a js shell for fuzzing.'''
-    print dateStr()
+    print sps.dateStr()
     (repoHash, repoId, isOnDefault) = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
 
     shell = compileShell.CompiledShell(options.buildOptions, repoHash)
@@ -697,7 +695,7 @@ def localCompileFuzzJsShell(options):
 
     # Construct a command-line for running loopjsfunfuzz.py
     cmdList = [sys.executable, '-u']
-    cmdList.append(normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
+    cmdList.append(sps.normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
     cmdList.append('--repo=' + shell.getRepoDir())
     cmdList += ["--build", options.buildOptions.buildOptionsStr]
     if options.buildOptions.runWithVg:
@@ -708,14 +706,14 @@ def localCompileFuzzJsShell(options):
         cmdList.append('--random-flags')
     cmdList.append(str(options.timeout))
     cmdList.append(lithOps.knownBugsDir(shell.getRepoName()))
-    cmdList.append(normExpUserPath(os.path.join(fullPath, shell.getShellNameWithExt())))
+    cmdList.append(sps.normExpUserPath(os.path.join(fullPath, shell.getShellNameWithExt())))
 
     # Write log files describing commands to be run for fuzzing using jsfunfuzz.
-    runLog = normExpUserPath(os.path.join(fullPath, 'log-localjsfunfuzz.txt'))
+    runLog = sps.normExpUserPath(os.path.join(fullPath, 'log-localjsfunfuzz.txt'))
     cmdDump(shell, cmdList, runLog)
 
     # Display compilation parameter and fuzz command logs prior to fuzzing.
-    compileLog = normExpUserPath(os.path.join(fullPath, 'compilation-parameters.txt'))
+    compileLog = sps.normExpUserPath(os.path.join(fullPath, 'compilation-parameters.txt'))
     if os.path.isfile(compileLog):
         with open(compileLog, 'rb') as f:
             for line in f:
@@ -736,7 +734,7 @@ def machineTimeoutDefaults(options):
     '''Sets different defaults depending on the machine type or debugger used.'''
     if options.buildOptions.runWithVg:
         return 300
-    elif isARMv7l:
+    elif sps.isARMv7l:
         return 180
     else:
         return JS_SHELL_DEFAULT_TIMEOUT

@@ -11,7 +11,8 @@
 
 import os
 import sys
-from subprocesses import dateStr, timeSubprocess
+
+import subprocesses as sps
 
 repos = []
 # Add your repository here.
@@ -59,7 +60,7 @@ def typeOfRepo(r):
     raise Exception('Type of repository located at ' + r + ' cannot be determined.')
 
 def main():
-    print dateStr()
+    print sps.dateStr()
     cwdParent = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
     cwdParentParent = os.path.abspath(os.path.join(cwdParent, os.pardir))
 
@@ -85,20 +86,20 @@ def main():
             if repoType == 'svn':
                 # Valgrind SVN is located in svn://svn.valgrind.org/valgrind/trunk
                 # V8 SVN is located in http://v8.googlecode.com/svn/branches/bleeding_edge/
-                svnCoStdout, retval = timeSubprocess(
+                svnCoStdout, retval = sps.timeSubprocess(
                     [repoType, 'update'], cwd=os.path.abspath(os.path.join(repoLocation)), vb=True)
             elif repoType == 'hg':
-                hgPullRebaseStdout, retval = timeSubprocess(
+                hgPullRebaseStdout, retval = sps.timeSubprocess(
                     # Ignore exit codes so the loop can continue retrying up to number of counts.
                     ['hg', 'pull', '--rebase'], ignoreStderr=True, combineStderr=True,
                     ignoreExitCode=True, cwd=repoLocation, vb=True)
             else:
                 assert repoType == 'git'
                 # Ignore exit codes so the loop can continue retrying up to number of counts.
-                gitStdout, retval = timeSubprocess(
+                gitStdout, retval = sps.timeSubprocess(
                     ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
                     cwd=repoLocation, vb=True)
-                gitStdout, retval = timeSubprocess(
+                gitStdout, retval = sps.timeSubprocess(
                     ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
                     cwd=repoLocation, vb=True)
 
@@ -122,14 +123,14 @@ def main():
                 sys.exit(1)
 
         if repoType == 'hg' and repo != 'valgrind':
-            timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, combineStderr=True,
+            sps.timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, combineStderr=True,
                 ignoreStderr=True, vb=True)
-            timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
+            sps.timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
 
         if 'comm-' in repo:
-            timeSubprocess([sys.executable, 'client.py', 'checkout'], cwd=repoLocation, vb=True)
+            sps.timeSubprocess([sys.executable, 'client.py', 'checkout'], cwd=repoLocation, vb=True)
 
-    print dateStr()
+    print sps.dateStr()
 
 # Run main when run as a script, this line means it will not be run as a module.
 if __name__ == '__main__':

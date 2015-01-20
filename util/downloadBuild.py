@@ -9,7 +9,7 @@ import subprocess
 from HTMLParser import HTMLParser
 
 from optparse import OptionParser
-from subprocesses import captureStdout, normExpUserPath, shellify, vdump
+import subprocesses as sps
 
 # Use curl/wget rather than urllib because urllib can't check certs.
 useCurl = False
@@ -32,7 +32,7 @@ def readFromURL(url):
               'in ~/.wgetrc'
         raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
     elif p.returncode != 0:
-        print 'inpCmdList is: ' + shellify(inpCmdList)
+        print 'inpCmdList is: ' + sps.shellify(inpCmdList)
         print 'stdout: ' + repr(out)
         print 'stderr: ' + repr(err)
         raise Exception('The following exit code was returned: ' + str(p.returncode))
@@ -45,7 +45,7 @@ def downloadURL(url, dest):
     Reads in a URL and downloads it to a destination.
     '''
     inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', dest, url]
-    out, retVal = captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
+    out, retVal = sps.captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
     if retVal != 0:
         print out
         raise Exception('Return code is not 0, but is: ' + str(retVal))
@@ -111,7 +111,7 @@ def httpDirList(directory):
     '''
     print "Looking in " + directory + " ..."
     page = readFromURL(directory)
-    vdump('Finished reading from: ' + directory)
+    sps.vdump('Finished reading from: ' + directory)
 
     parser = MyHTMLParser()
     fileList = parser.getHrefLinks(page)
@@ -121,7 +121,7 @@ def unzip(fn, dest):
     '''
     Extracts .zip files to their destination.
     '''
-    captureStdout(['unzip', fn, '-d', dest])
+    sps.captureStdout(['unzip', fn, '-d', dest])
 
 def untarbz2(fn, dest):
     '''
@@ -129,7 +129,7 @@ def untarbz2(fn, dest):
     '''
     if not os.path.exists(dest):
         os.mkdir(dest)
-    captureStdout(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
+    sps.captureStdout(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
 
 def undmg(fn, dest, mountpoint):
     '''
@@ -137,14 +137,14 @@ def undmg(fn, dest, mountpoint):
     '''
     if os.path.exists(mountpoint):
         # If the mount point already exists, detach it first.
-        captureStdout(['hdiutil', 'detach', mountpoint, '-force'])
-    captureStdout(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
+        sps.captureStdout(['hdiutil', 'detach', mountpoint, '-force'])
+    sps.captureStdout(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
     try:
         apps = [x for x in os.listdir(mountpoint) if x.endswith('app')]
         assert len(apps) == 1
         shutil.copytree(mountpoint + '/' + apps[0], dest + '/' + apps[0])
     finally:
-        captureStdout(['hdiutil', 'detach', mountpoint])
+        sps.captureStdout(['hdiutil', 'detach', mountpoint])
 
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
     '''
@@ -157,7 +157,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     gotTxtFile = False
     gotSyms = False
     # Create build folder and a download subfolder.
-    buildDir = os.path.abspath(normExpUserPath(os.path.join(targetDir, 'build')))
+    buildDir = os.path.abspath(sps.normExpUserPath(os.path.join(targetDir, 'build')))
     if os.path.exists(buildDir):
         print "Deleting old build..."
         shutil.rmtree(buildDir)

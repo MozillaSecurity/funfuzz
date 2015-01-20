@@ -11,13 +11,12 @@ import sys
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import envWithPath, captureStdout, isARMv7l, isMac, isWin, isMozBuild64
-from subprocesses import normExpUserPath, shellify, vdump
+import subprocesses as sps
 
 if os.name == 'nt':
-    COMPILE_NSPR_LIB = 'libnspr4.lib' if isMozBuild64 else 'nspr4.lib'
-    COMPILE_PLDS_LIB = 'libplds4.lib' if isMozBuild64 else 'plds4.lib'
-    COMPILE_PLC_LIB = 'libplc4.lib' if isMozBuild64 else 'plc4.lib'
+    COMPILE_NSPR_LIB = 'libnspr4.lib' if sps.isMozBuild64 else 'nspr4.lib'
+    COMPILE_PLDS_LIB = 'libplds4.lib' if sps.isMozBuild64 else 'plds4.lib'
+    COMPILE_PLC_LIB = 'libplc4.lib' if sps.isMozBuild64 else 'plc4.lib'
 
     RUN_NSPR_LIB = 'nspr4.dll'
     RUN_PLDS_LIB = 'plds4.dll'
@@ -42,9 +41,9 @@ ALL_RUN_LIBS = (RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
 
 def archOfBinary(binary):
     '''This function tests if a binary is 32-bit or 64-bit.'''
-    unsplitFiletype = captureStdout(['file', binary])[0]
+    unsplitFiletype = sps.captureStdout(['file', binary])[0]
     filetype = unsplitFiletype.split(':', 1)[1]
-    if isWin:
+    if sps.isWin:
         assert 'PE executable for MS Windows (console)' in filetype
         return '32' if 'Intel 80386 32-bit' in filetype else '64'
     else:
@@ -62,10 +61,10 @@ def constructVgCmdList(errorCode=77):
     '''Constructs default parameters needed to run valgrind with.'''
     vgCmdList = []
     vgCmdList.append('valgrind')
-    if isMac:
+    if sps.isMac:
         vgCmdList.append('--dsymutil=yes')
     vgCmdList.append('--error-exitcode=' + str(errorCode))
-    if not isARMv7l:  # jseward mentioned that ARM does not need --smc-check=<something>
+    if not sps.isARMv7l:  # jseward mentioned that ARM does not need --smc-check=<something>
         vgCmdList.append('--smc-check=all-non-file')
     # See bug 913876 comment 18:
     vgCmdList.append('--vex-iropt-register-updates=allregs-at-mem-access')
@@ -99,10 +98,11 @@ def shellSupports(shellPath, args):
 def testBinary(shellPath, args, useValgrind):
     '''Tests the given shell with the given args.'''
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
-    vdump('The testing command is: ' + shellify(testCmd))
-    out, rCode = captureStdout(testCmd, combineStderr=True, ignoreStderr=True, ignoreExitCode=True,
-                               env=envWithPath(os.path.dirname(os.path.abspath(shellPath))))
-    vdump('The exit code is: ' + str(rCode))
+    sps.vdump('The testing command is: ' + sps.shellify(testCmd))
+    out, rCode = sps.captureStdout(testCmd, combineStderr=True, ignoreStderr=True,
+                                   ignoreExitCode=True, env=sps.envWithPath(
+                                       os.path.dirname(os.path.abspath(shellPath))))
+    sps.vdump('The exit code is: ' + str(rCode))
     return out, rCode
 
 
@@ -127,8 +127,8 @@ def testIsHardFpShellARM(s):
     '''Tests if the ARM shell is compiled with hardfp support.'''
     readelfBin = '/usr/bin/readelf'
     if os.path.exists(readelfBin):
-        newEnv = envWithPath(os.path.dirname(os.path.abspath(s)))
-        readelfOutput = captureStdout([readelfBin, '-A', s], env=newEnv)[0]
+        newEnv = sps.envWithPath(os.path.dirname(os.path.abspath(s)))
+        readelfOutput = sps.captureStdout([readelfBin, '-A', s], env=newEnv)[0]
         return ('Tag_ABI_VFP_args: VFP registers' in readelfOutput)
     else:
         raise Exception('readelf is not found.')
@@ -143,7 +143,7 @@ def verifyBinary(sh):
     assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'debug') == \
         sh.buildOptions.enableDbg
 
-    if isARMv7l:
+    if sps.isARMv7l:
         assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == sh.buildOptions.enableHardFp
     if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
         assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \

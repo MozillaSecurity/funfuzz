@@ -13,7 +13,7 @@ import shellFlags
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-from subprocesses import shellify
+import subprocesses as sps
 import lithOps
 
 
@@ -85,17 +85,17 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
 
         if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
             print "Got usage error from:"
-            print "  " + shellify(command)
+            print "  " + sps.shellify(command)
             assert i > 0
             jsInteresting.deleteLogs(prefix)
         elif lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
             print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT found a more serious bug"], lev, r.elapsedtime)
-            print "  " + shellify(command)
+            print "  " + sps.shellify(command)
             return lev
         elif lev != jsInteresting.JS_FINE:
             print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT is not comparing output, because the shell exited strangely"], lev, r.elapsedtime)
-            print "  " + shellify(command)
+            print "  " + sps.shellify(command)
             jsInteresting.deleteLogs(prefix)
             if i == 0:
                 return jsInteresting.JS_FINE
@@ -129,15 +129,15 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
 
             if r.err != r0.err and not fpuOptionDisabledAsmOnOneSide() and not optionDisabledAsmOnOneSide():
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
-                print "  " + shellify(commands[0])
-                print "  " + shellify(command)
+                print "  " + sps.shellify(commands[0])
+                print "  " + sps.shellify(command)
                 showDifferences(prefix0 + "-err.txt", prefix + "-err.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             elif r.out != r0.out:
                 print infilename + " | " + jsInteresting.summaryString(["Mismatch on stdout"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
-                print "  " + shellify(commands[0])
-                print "  " + shellify(command)
+                print "  " + sps.shellify(commands[0])
+                print "  " + sps.shellify(command)
                 showDifferences(prefix0 + "-out.txt", prefix + "-out.txt", showDetailedDiffs)
                 print ""
                 return jsInteresting.JS_OVERALL_MISMATCH

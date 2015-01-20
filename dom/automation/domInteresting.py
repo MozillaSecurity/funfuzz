@@ -41,7 +41,7 @@ import findIgnoreLists
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import isWin, grabCrashLog
+import subprocesses as sps
 
 close_fds = sys.platform != 'win32'
 
@@ -198,9 +198,9 @@ class AmissLogHandler:
         newAssertion = newAssertion and (
             not overlyGenericAssertion and
             not ("Tear-off objects remain in hashtable at shutdown" in msg and self.expectedToLeak) and
-            not ("Assertion failed: _cairo_status_is_error" in msg and isWin) and # A frequent error that I cannot reproduce
+            not ("Assertion failed: _cairo_status_is_error" in msg and sps.isWin) and # A frequent error that I cannot reproduce
             not ("JS_IsExceptionPending" in msg) and # Bug 813646, bug 735082, bug 735081
-            not (self.goingDownHard and isWin) and # Bug 763182
+            not (self.goingDownHard and sps.isWin) and # Bug 763182
             True)
 
         if newAssertion:
@@ -357,7 +357,7 @@ class FigureOutDirs:
             self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
             self.utilityDir = os.path.join(browserDir, "tests", "bin")
             self.symbolsDir = os.path.join(browserDir, "symbols")
-            possible_stackwalk_fn = "minidump_stackwalk.exe" if isWin else "minidump_stackwalk"
+            possible_stackwalk_fn = "minidump_stackwalk.exe" if sps.isWin else "minidump_stackwalk"
             possible_stackwalk = os.path.join(browserDir, possible_stackwalk_fn)
             if (not os.environ.get('MINIDUMP_STACKWALK', None) and
                 not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
@@ -398,7 +398,7 @@ def findSrcDir(objDir):
 
 def deCygPath(p):
     """Convert a cygwin-style path to a native Windows path"""
-    if isWin and p.startswith("/c/"):
+    if sps.isWin and p.startswith("/c/"):
         p = "c:\\" + p.replace("/", "\\")[3:]
     return p
 
@@ -521,7 +521,7 @@ def rdfInit(args):
                 # Look for a core file (to feed to gdb) or log from the Mac crash reporter.
                 wantStack = True
                 assert alh.theapp
-                crashLog = grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
+                crashLog = sps.grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
                 alh.crashWatcher.readCrashLog(crashLog)
 
         lev = DOM_FINE
@@ -559,9 +559,9 @@ def rdfInit(args):
             print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
         elif status == 1:
             alh.printAndLog("%%% Exited with status 1 (OOM or plugin crash?)")
-        elif status == -2147483645 and isWin:
+        elif status == -2147483645 and sps.isWin:
             alh.printAndLog("%%% Exited with status -2147483645 (plugin issue, bug 867263?)")
-        elif status != 0 and not (isWin and alh.sawFatalAssertion):
+        elif status != 0 and not (sps.isWin and alh.sawFatalAssertion):
             alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
             lev = max(lev, DOM_ABNORMAL_EXIT)
 

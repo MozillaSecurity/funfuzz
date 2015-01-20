@@ -8,13 +8,13 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, 'util'))
 sys.path.append(path2)
-from subprocesses import isMac
+import subprocesses as sps
 
 class CrashWatcher:
 
     '''
     Call processOutputLine on each line of stderr, then
-    call readCrashLog if you have an external crash log file (e.g. from subprocesses.grabCrashLog)
+    call readCrashLog if you have an external crash log file (e.g. from sps.grabCrashLog)
     '''
 
     def __init__(self, knownPath, ignoreASanOOM, noteCallback):
@@ -71,7 +71,7 @@ class CrashWatcher:
                 else:
                     #self.noteCallback("This looks like a null deref bug.")
                     pass
-            elif isMac and "stack-overflow on address 0x7fff" in msg:
+            elif sps.isMac and "stack-overflow on address 0x7fff" in msg:
                 # self.noteCallback("This ASan crash may be a too-much-recursion bug")
                 pass
             else:
@@ -87,7 +87,7 @@ class CrashWatcher:
             self.noteCallback("Known crash signature: " + msg)
             self.crashIsKnown = True
 
-        if isMac:
+        if sps.isMac:
             # There are several [TMR] bugs listed in crashes.txt
             # Bug 507876 is a breakpad issue that means too-much-recursion crashes don't give me stack traces on Mac
             # (and Linux, but differently).

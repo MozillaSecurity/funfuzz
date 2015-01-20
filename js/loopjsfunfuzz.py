@@ -16,7 +16,7 @@ p0 = os.path.dirname(os.path.abspath(__file__))
 interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
-from subprocesses import createWtmpDir, normExpUserPath
+import subprocesses as sps
 from fileManipulation import fuzzSplice, linesStartingWith, writeLinesToFile
 from inspectShell import queryBuildConfiguration
 import lithOps
@@ -76,7 +76,7 @@ def showtail(filename):
 
 def linkFuzzer(target_fn, repo, prologue):
     source_base = p0
-    file_list_fn = normExpUserPath(os.path.join(p0, "files-to-link.txt"))
+    file_list_fn = sps.normExpUserPath(os.path.join(p0, "files-to-link.txt"))
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
 
 def makeRegressionTestPrologue(repo, regressionTestListFile):
@@ -88,8 +88,8 @@ def makeRegressionTestPrologue(repo, regressionTestListFile):
         const regressionTestsRoot = %s;
         const libdir = regressionTestsRoot + %s; // needed by jit-tests
     """ % (
-        json.dumps(os.path.abspath(normExpUserPath(regressionTestListFile))),
-        json.dumps(normExpUserPath(repo) + os.sep),
+        json.dumps(os.path.abspath(sps.normExpUserPath(regressionTestListFile))),
+        json.dumps(sps.normExpUserPath(repo) + os.sep),
         json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
     )
 
@@ -100,7 +100,7 @@ def inTreeRegressionTests(repo):
 
 def jsFilesIn(root):
     return [os.path.join(path, filename)
-                      for path, dirs, files in os.walk(normExpUserPath(root))
+                      for path, dirs, files in os.walk(sps.normExpUserPath(root))
                       for filename in files
                       if filename.endswith('.js')]
 
@@ -110,8 +110,8 @@ def many_timed_runs(targetTime, wtmpDir, args):
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
     startTime = time.time()
 
-    if os.path.isdir(normExpUserPath(options.repo)):
-        regressionTestListFile = normExpUserPath(os.path.join(wtmpDir, "regression-tests.list"))
+    if os.path.isdir(sps.normExpUserPath(options.repo)):
+        regressionTestListFile = sps.normExpUserPath(os.path.join(wtmpDir, "regression-tests.list"))
         with open(regressionTestListFile, "wb") as f:
             for fn in inTreeRegressionTests(options.repo):
                 f.write(fn + "\n")
@@ -119,7 +119,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
     else:
         regressionTestPrologue = ""
 
-    fuzzjs = normExpUserPath(os.path.join(wtmpDir, "jsfunfuzz.js"))
+    fuzzjs = sps.normExpUserPath(os.path.join(wtmpDir, "jsfunfuzz.js"))
     linkFuzzer(fuzzjs, options.repo, regressionTestPrologue)
 
     iteration = 0
@@ -146,7 +146,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
         jsunhappyOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
         iteration += 1
-        logPrefix = normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))
+        logPrefix = sps.normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))
 
         level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
 
@@ -201,4 +201,4 @@ def many_timed_runs(targetTime, wtmpDir, args):
             jsInteresting.deleteLogs(logPrefix)
 
 if __name__ == "__main__":
-    many_timed_runs(None, createWtmpDir(os.getcwdu()), sys.argv[1:])
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:])

@@ -18,7 +18,7 @@ sys.path.append(p1)
 from fileIngredients import fileContainsStr
 from fileManipulation import linesWith, writeLinesToFile
 from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
-from subprocesses import shellify
+import subprocesses as sps
 
 
 def tempdir(path):
@@ -41,7 +41,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
                                                    buildOptionsStr, targetTime, suspiciousLevel)
 
     print "\nDone running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
-    print shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
+    print sps.shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
 
     if bisectRepo is not "none" and targetTime is None and buildOptionsStr is not None:
         if platform.uname()[2] == 'XP':
@@ -53,7 +53,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
                 ["-p", ' '.join(engineFlags + [infilename])] +
                 ["-i"] + itest
             )
-            print shellify(autobisectCmd)
+            print sps.shellify(autobisectCmd)
             subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + logPrefix + "-autobisect"
 
@@ -69,7 +69,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptions
         '''Lithium reduction commands accepting various strategies.'''
         reductionCount[0] += 1
         fullLithArgs = [x for x in (strategy + lithArgs) if x]  # Remove empty elements
-        print shellify([lithiumpy] + fullLithArgs)
+        print sps.shellify([lithiumpy] + fullLithArgs)
 
         desc = '-chars' if strategy == '--char' else '-lines'
         (lithResult, lithDetails) = runLithium(fullLithArgs, logPrefix + "-" +

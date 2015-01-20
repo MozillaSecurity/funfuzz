@@ -11,7 +11,7 @@ import sys
 import subprocess
 from ConfigParser import SafeConfigParser, NoOptionError
 
-from subprocesses import captureStdout, isVM, normExpUserPath, vdump
+import subprocesses as sps
 
 
 def destroyPyc(repoDir):
@@ -41,18 +41,18 @@ def ensureMqEnabled():
 
 
 def findCommonAncestor(repoDir, a, b):
-    return captureStdout(['hg', '-R', repoDir, 'log', '-r', 'ancestor(' + a + ',' + b + ')',
+    return sps.captureStdout(['hg', '-R', repoDir, 'log', '-r', 'ancestor(' + a + ',' + b + ')',
                           '--template={node|short}'])[0]
 
 def isAncestor(repoDir, a, b):
     """Returns true iff |a| is an ancestor of |b|. (Throws if |a| or |b| does not exist.)"""
-    return captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
+    return sps.captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
                           '--template={node|short}'])[0] != ""
 
 def existsAndIsAncestor(repoDir, a, b):
     """Returns true iff |a| exists and is an ancestor of |b|."""
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
-    out = captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
+    out = sps.captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
                          '--template={node|short}'],  combineStderr=True, ignoreExitCode=True)[0]
     return out != "" and out.find("abort: unknown revision") < 0
 
@@ -71,15 +71,15 @@ assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"
 
 def getMcRepoDir():
     '''Returns default m-c repository location and its base directory depending on machine.'''
-    if isVM() == ('Windows', True):  # Self-selected presets in custom VMs
+    if sps.isVM() == ('Windows', True):  # Self-selected presets in custom VMs
         baseDir = os.path.join('z:', os.sep)
-    elif isVM() == ('Linux', True):  # Self-selected presets in custom VMs
+    elif sps.isVM() == ('Linux', True):  # Self-selected presets in custom VMs
         baseDir = os.path.join('/', 'mnt', 'hgfs')
     elif platform.uname()[2] == 'XP':  # WinXP contains spaces in the user directory
         baseDir = os.path.join('c:\\')
     else:
         baseDir = '~'
-    mcRepoDir = normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
+    mcRepoDir = sps.normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
     return baseDir, mcRepoDir
 
 
@@ -91,7 +91,7 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     # This returns null if the repository is not on default.
     hgLogTmplList = ['hg', '-R', repoDir, 'log', '-r', repoRev,
                      '--template', '{node|short} {rev}']
-    hgIdFull = captureStdout(hgLogTmplList)[0]
+    hgIdFull = sps.captureStdout(hgLogTmplList)[0]
     onDefault = bool(hgIdFull)
     if not onDefault:
         updateDefault = raw_input('Not on default tip! ' + \
@@ -107,10 +107,10 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
                              '{node|short} {rev}']
         else:
             raise Exception('Invalid choice.')
-        hgIdFull = captureStdout(hgLogTmplList)[0]
+        hgIdFull = sps.captureStdout(hgLogTmplList)[0]
     assert hgIdFull != ''
     (hgIdChangesetHash, hgIdLocalNum) = hgIdFull.split(' ')
-    vdump('Finished getting the hash and local id number of the repository.')
+    sps.vdump('Finished getting the hash and local id number of the repository.')
     return hgIdChangesetHash, hgIdLocalNum, onDefault
 
 
@@ -118,22 +118,22 @@ def getRepoNameFromHgrc(repoDir):
     '''Looks in the hgrc file in the .hg directory of the repository and returns the name.'''
     assert isRepoValid(repoDir)
     hgCfg = SafeConfigParser()
-    hgCfg.read(normExpUserPath(os.path.join(repoDir, '.hg', 'hgrc')))
+    hgCfg.read(sps.normExpUserPath(os.path.join(repoDir, '.hg', 'hgrc')))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgCfg.get('paths', 'default').split('/') if i][-1]
 
 
 def isRepoValid(repo):
     '''Checks that a repository is valid by ensuring that the hgrc file exists.'''
-    return os.path.isfile(normExpUserPath(os.path.join(repo, '.hg', 'hgrc')))
+    return os.path.isfile(sps.normExpUserPath(os.path.join(repo, '.hg', 'hgrc')))
 
 
 def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
     # We may have passed in the patch with or without the full directory.
-    patchAbsPath = os.path.abspath(normExpUserPath(patchFile))
+    patchAbsPath = os.path.abspath(sps.normExpUserPath(patchFile))
     pname = os.path.basename(patchAbsPath)
     assert pname != ''
-    qimportOutput, qimportRetCode = captureStdout(['hg', '-R', workingDir, 'qimport', patchAbsPath],
+    qimportOutput, qimportRetCode = sps.captureStdout(['hg', '-R', workingDir, 'qimport', patchAbsPath],
                                                    combineStderr=True, ignoreStderr=True,
                                                    ignoreExitCode=True)
     if qimportRetCode != 0:
@@ -143,7 +143,7 @@ def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
 
     print("Patch qimport'ed..."),
 
-    qpushOutput, qpushRetCode = captureStdout(['hg', '-R', workingDir, 'qpush', pname],
+    qpushOutput, qpushRetCode = sps.captureStdout(['hg', '-R', workingDir, 'qpush', pname],
         combineStderr=True, ignoreStderr=True)
     assert ' is empty' not in qpushOutput, "Patch to be qpush'ed should not be empty."
 
@@ -161,7 +161,7 @@ def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
 
 def hgQpopQrmAppliedPatch(patchFile, repoDir):
     '''Remove applied patch using `hg qpop` and `hg qdelete`.'''
-    qpopOutput, qpopRetCode = captureStdout(['hg', '-R', repoDir, 'qpop'],
+    qpopOutput, qpopRetCode = sps.captureStdout(['hg', '-R', repoDir, 'qpop'],
                                              combineStderr=True, ignoreStderr=True,
                                              ignoreExitCode=True)
     if qpopRetCode != 0:

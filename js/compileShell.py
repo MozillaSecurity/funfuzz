@@ -23,14 +23,12 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
-from subprocesses import captureStdout, findLlvmBinPath, isARMv7l, isLinux, isMac
-from subprocesses import isProgramInstalled, isVM, isWin, macVer, normExpUserPath
-from subprocesses import rmTreeIncludingReadOnly, shellify, vdump
+import subprocesses as sps
 from LockDir import LockDir
 
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
 # MSVC 2010, change "mozmake" in the line below back to "make".
-if isWin:
+if sps.isWin:
     MAKE_BINARY = 'mozmake'
 else:
     MAKE_BINARY = 'make'
@@ -41,7 +39,7 @@ else:
 
 if cpu_count() > 2:
     COMPILATION_JOBS = ((cpu_count() * 5) // 4)
-elif isARMv7l:
+elif sps.isARMv7l:
     COMPILATION_JOBS = 3  # An ARM board
 else:
     COMPILATION_JOBS = 3  # Other single/dual core computers
@@ -50,7 +48,7 @@ else:
 class CompiledShell(object):
     def __init__(self, buildOpts, hgHash):
         self.shellNameWithoutExt = buildOptions.computeShellName(buildOpts, hgHash)
-        self.shellNameWithExt = self.shellNameWithoutExt + ('.exe' if isWin else '')
+        self.shellNameWithExt = self.shellNameWithoutExt + ('.exe' if sps.isWin else '')
         self.hgHash = hgHash
         self.buildOptions = buildOpts
 
@@ -64,7 +62,7 @@ class CompiledShell(object):
             GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
             unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
             GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
-            self.destDir = normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
+            self.destDir = sps.normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
 
         assert '~' not in self.destDir
         assert os.path.isdir(self.destDir)
@@ -75,11 +73,11 @@ class CompiledShell(object):
     def getCfgCmdExclEnv(self):
         return self.cfg
     def getJsCfgPath(self):
-        self.jsCfgFile = normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
+        self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
         assert os.path.isfile(self.jsCfgFile)
         return self.jsCfgFile
     def getNsprCfgPath(self):
-        self.nsprCfgFile = normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
+        self.nsprCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
         assert os.path.isfile(self.nsprCfgFile)
         return self.nsprCfgFile
     def setEnvAdded(self, addedEnv):
@@ -117,26 +115,27 @@ class CompiledShell(object):
     def getRepoDir(self):
         return self.buildOptions.repoDir
     def getRepoDirJsSrc(self):
-        return normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
+        return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
     def getRepoDirNsprSrc(self):
-        return normExpUserPath(os.path.join(self.getRepoDir(), 'nsprpub'))
+        return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'nsprpub'))
     def getRepoName(self):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
     def getShellCacheDir(self):
-        return normExpUserPath(os.path.join(ensureCacheDir(), self.shellNameWithoutExt))
+        return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.shellNameWithoutExt))
     def getShellCacheFullPath(self):
-        return normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
+        return sps.normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
     def getShellCompiledPath(self):
-        return normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if isWin else '')))
+        return sps.normExpUserPath(
+            os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if sps.isWin else '')))
     def getShellCompiledRunLibsPath(self):
         lDir = self.getJsObjdir() if self.getJsBuildSystemConsidersNspr() else self.getNsprObjdir()
         libsList = [
-            normExpUserPath(os.path.join(lDir, 'dist', 'lib', runLib)) \
+            sps.normExpUserPath(os.path.join(lDir, 'dist', 'lib', runLib)) \
                 for runLib in ALL_RUN_LIBS
         ]
         return libsList
     def getShellBaseTempDirWithName(self):
-        return normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
+        return sps.normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
     def getShellNameWithExt(self):
         return self.shellNameWithExt
 
@@ -144,14 +143,14 @@ class CompiledShell(object):
 def ensureCacheDir():
     '''Returns a cache directory for compiled shells to live in, creating one if needed'''
 
-    if isVM() == ('Windows', True):
-        # FIXME: Add an assertion that isVM() is a WinXP VM, and not Vista/Win7/Win8.
+    if sps.isVM() == ('Windows', True):
+        # FIXME: Add an assertion that sps.isVM() is a WinXP VM, and not Vista/Win7/Win8.
         # Set to root directory of Windows VM since we only test WinXP in a VM.
         # This might fail on a Vista or Win7 VM due to lack of permissions.
         # It would be good to get this machine-specific hack out of the shared file, eventually.
         cacheDirBase = os.path.join('c:', os.sep)
     else:
-        cacheDirBase = normExpUserPath(os.path.join('~', 'Desktop'))
+        cacheDirBase = sps.normExpUserPath(os.path.join('~', 'Desktop'))
         # If ~/Desktop is not present, create it. ~/Desktop might not be present with
         # CLI/server versions of Linux.
         ensureDir(cacheDirBase)
@@ -169,13 +168,13 @@ def ensureDir(dir):
 
 def autoconfRun(cwDir):
     '''Run autoconf binaries corresponding to the platform.'''
-    if isMac:
+    if sps.isMac:
         autoconf213MacBin = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213' \
-                                if isProgramInstalled('brew') else 'autoconf213'
+                                if sps.isProgramInstalled('brew') else 'autoconf213'
         subprocess.check_call([autoconf213MacBin], cwd=cwDir)
-    elif isLinux:
+    elif sps.isLinux:
         subprocess.check_call(['autoconf2.13'], cwd=cwDir)
-    elif isWin:
+    elif sps.isWin:
         # Windows needs to call sh to be able to find autoconf.
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
 
@@ -195,14 +194,14 @@ def cfgJsCompile(shell):
             if configureTryCount > 3:
                 print 'Configuration of the js binary failed 3 times.'
                 raise
-            # This exception message is returned from captureStdout via cfgBin.
-            # No idea why this is isLinux as well..
-            if isLinux or (isWin and 'Windows conftest.exe configuration permission' in repr(e)):
+            # This exception message is returned from sps.captureStdout via cfgBin.
+            # No idea why this is sps.isLinux as well..
+            if sps.isLinux or (sps.isWin and 'Windows conftest.exe configuration permission' in repr(e)):
                 print 'Trying once more...'
                 continue
     compileJs(shell)
     verifyBinary(shell)
-    envDump(shell, normExpUserPath(os.path.join(shell.getDestDir(), 'compilation-parameters.txt')))
+    envDump(shell, sps.normExpUserPath(os.path.join(shell.getDestDir(), 'compilation-parameters.txt')))
 
 
 def cfgBin(shell, binToBeCompiled):
@@ -212,11 +211,11 @@ def cfgBin(shell, binToBeCompiled):
     origCfgEnvDt = deepcopy(os.environ)
     cfgEnvDt['AR'] = 'ar'
     if shell.buildOptions.buildWithAsan:
-        llvmPath = findLlvmBinPath()
-        CLANG_PATH = normExpUserPath(os.path.join(llvmPath, 'clang'))
-        CLANGPP_PATH = normExpUserPath(os.path.join(llvmPath, 'clang++'))
+        llvmPath = sps.findLlvmBinPath()
+        CLANG_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang'))
+        CLANGPP_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang++'))
 
-    if isARMv7l:
+    if sps.isARMv7l:
         # 32-bit shell on ARM boards, e.g. odroid boards.
         # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
         assert shell.buildOptions.enable32, 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
@@ -237,8 +236,8 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--target=arm-linux-gnueabi')
     elif shell.buildOptions.enable32 and os.name == 'posix':
         # 32-bit shell on Mac OS X 10.7 Lion and greater
-        if isMac:
-            assert macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
+        if sps.isMac:
+            assert sps.macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
             if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
                 cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
                     CLANG_ASAN_PARAMS + SSE2_FLAGS
@@ -254,7 +253,7 @@ def cfgBin(shell, binToBeCompiled):
             cfgEnvDt['LD'] = 'ld'
             cfgEnvDt['STRIP'] = 'strip -x -S'
             cfgEnvDt['CROSS_COMPILE'] = '1'
-            if isProgramInstalled('brew'):
+            if sps.isProgramInstalled('brew'):
                 cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
@@ -268,7 +267,7 @@ def cfgBin(shell, binToBeCompiled):
             if shell.buildOptions.enableArmSimulator:
                 cfgCmdList.append('--enable-arm-simulator')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif isLinux and not isARMv7l:
+        elif sps.isLinux and not sps.isARMv7l:
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
             if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
                 cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
@@ -297,14 +296,14 @@ def cfgBin(shell, binToBeCompiled):
             else:
                 cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
-    elif isMac and macVer() >= [10, 7] and not shell.buildOptions.enable32:
+    elif sps.isMac and sps.macVer() >= [10, 7] and not shell.buildOptions.enable32:
         if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
             cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
             cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
         else:  # Uses system clang
             cfgEnvDt['CC'] = 'clang' + CLANG_PARAMS
             cfgEnvDt['CXX'] = 'clang++' + CLANG_PARAMS
-        if isProgramInstalled('brew'):
+        if sps.isProgramInstalled('brew'):
             cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
@@ -316,7 +315,7 @@ def cfgBin(shell, binToBeCompiled):
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
-    elif isWin:
+    elif sps.isWin:
         cfgEnvDt['MAKE'] = 'mozmake'  # Workaround for bug 948534
         cfgCmdList.append('sh')
         if binToBeCompiled == 'nspr':
@@ -369,7 +368,7 @@ def cfgBin(shell, binToBeCompiled):
 
     if binToBeCompiled == 'nspr':
         cfgCmdList.append('--prefix=' + \
-            normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+            sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
     else:
         if shell.buildOptions.enableProfiling:
             cfgCmdList.append('--enable-profiling')
@@ -380,13 +379,13 @@ def cfgBin(shell, binToBeCompiled):
                 cfgCmdList.append('--enable-threadsafe')
                 if not shell.getJsBuildSystemConsidersNspr():
                     cfgCmdList.append('--with-nspr-prefix=' + \
-                        normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+                        sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
                     cfgCmdList.append('--with-nspr-cflags=-I' + \
-                        normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include',
-                                                     'nspr')))
+                        sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include',
+                                                         'nspr')))
                     cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                        normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib',
-                                                     compileLib))\
+                        sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib',
+                                                         compileLib))\
                             for compileLib in ALL_COMPILE_LIBS
                         ]))
             else:
@@ -412,11 +411,11 @@ def cfgBin(shell, binToBeCompiled):
         cfgCmdList.append('--disable-tests')
 
     if os.name == 'nt':
-        # FIXME: Replace this with shellify.
+        # FIXME: Replace this with sps.shellify.
         counter = 0
         for entry in cfgCmdList:
             if os.sep in entry:
-                assert isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
+                assert sps.isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
                 cfgCmdList[counter] = cfgCmdList[counter].replace(os.sep, '//')
             counter = counter + 1
 
@@ -426,12 +425,12 @@ def cfgBin(shell, binToBeCompiled):
         strToBeAppended = envVar + '="' + cfgEnvDt[envVar] + '"' \
             if ' ' in cfgEnvDt[envVar] else envVar + '=' + cfgEnvDt[envVar]
         envVarList.append(strToBeAppended)
-    vdump('Command to be run is: ' + shellify(envVarList) + ' ' + shellify(cfgCmdList))
+    sps.vdump('Command to be run is: ' + sps.shellify(envVarList) + ' ' + sps.shellify(cfgCmdList))
 
     wDir = shell.getNsprObjdir() if binToBeCompiled == 'nspr' else shell.getJsObjdir()
     assert os.path.isdir(wDir)
 
-    if isWin:
+    if sps.isWin:
         changedCfgCmdList = []
         for entry in cfgCmdList:
             # See bug 986715 comment 6 as to why we need forward slashes for NSPR
@@ -441,9 +440,9 @@ def cfgBin(shell, binToBeCompiled):
             if '\\' in entry:
                 entry = entry.replace('\\', '/')
             changedCfgCmdList.append(entry)
-        captureStdout(changedCfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
+        sps.captureStdout(changedCfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
     else:
-        captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
+        sps.captureStdout(cfgCmdList, ignoreStderr=True, currWorkingDir=wDir, env=cfgEnvDt)
 
     shell.setEnvAdded(envVarList)
     shell.setEnvFull(cfgEnvDt)
@@ -454,15 +453,15 @@ def compileJs(shell):
     '''This function compiles and copies a binary.'''
     try:
         cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
-        out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
+        out = sps.captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                             currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception as e:
-        # This exception message is returned from captureStdout via cmdList.
-        if (isLinux or isMac) and \
+        # This exception message is returned from sps.captureStdout via cmdList.
+        if (sps.isLinux or sps.isMac) and \
             ('GCC running out of memory' in repr(e) or 'Clang running out of memory' in repr(e)):
             # FIXME: Absolute hack to retry after hitting OOM.
             print 'Trying once more due to the compiler running out of memory...'
-            out = captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
+            out = sps.captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
@@ -489,14 +488,15 @@ def compileNspr(shell):
     # build during bisection. Maybe find the changeset that fixes this, and if before that, use -j1,
     # and after that, use -jX ?
     nsprCmdList = [MAKE_BINARY, '-C', shell.getNsprObjdir(), '-j1', '-s']
-    out = captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
+    out = sps.captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
                         currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
     for compileLib in ALL_COMPILE_LIBS:
-        if not normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
+        if not sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
             print out
             raise Exception(MAKE_BINARY + " did not result in a NSPR binary.")
 
-    assert os.path.isdir(normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
+    assert os.path.isdir(sps.normExpUserPath(
+        os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
 
 def compileStandalone(shell, updateToRev=None, isTboxBins=False):
@@ -522,14 +522,14 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
         raise Exception("Found a cached shell that failed compilation...")
     elif not compileStandaloneCreatedCacheDir and os.path.exists(shell.getShellCacheDir()):
         print 'Found a cache dir without a successful/failed shell, so recompiling...'
-        rmTreeIncludingReadOnly(shell.getShellCacheDir())
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
 
     if updateToRev:
         # We should not print here without a trailing newline to avoid breaking other stuff:
         print "Updating..."
-        captureStdout(["hg", "-R", shell.buildOptions.repoDir] + \
+        sps.captureStdout(["hg", "-R", shell.buildOptions.repoDir] + \
             ['update', '-C', '-r', updateToRev], ignoreStderr=True)
         # We should not print here without a trailing newline to avoid breaking other stuff:
         print "Compiling..."
@@ -550,24 +550,24 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
 
         if shell.buildOptions.enableNsprBuild and not shell.getJsBuildSystemConsidersNspr():
             try:
-                os.mkdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
+                os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
             except OSError:
                 raise Exception('Unable to create nspr objdir directory.')
-            shell.setNsprObjdir(normExpUserPath(os.path.join(shell.getShellCacheDir(),
+            shell.setNsprObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(),
                                                              'objdir-nspr')))
 
         try:
-            os.mkdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+            os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
         except OSError:
             raise Exception('Unable to create js objdir directory.')
-        shell.setJsObjdir(normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+        shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
         cfgJsCompile(shell)
 
     except KeyboardInterrupt:
-        rmTreeIncludingReadOnly(shell.getShellCacheDir())
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
         raise
     except Exception as e:
-        rmTreeIncludingReadOnly(shell.getShellCacheDir())
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
         # Remove the cache dir, but recreate it with only the .busted file.
         try:
@@ -595,18 +595,18 @@ def envDump(shell, log):
         f.write('Information about shell:\n\n')
 
         f.write('Create another shell in shell-cache like this one:\n')
-        f.write(shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
+        f.write(sps.shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
             "-b", shell.buildOptions.buildOptionsStr]) + "\n\n")
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')
-        f.write(shellify(shell.getEnvAdded()) + '\n\n')
+        f.write(sps.shellify(shell.getEnvAdded()) + '\n\n')
 
         f.write('Configuration command was:\n')
-        f.write(shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write(sps.shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
         f.write('Full configuration command with needed environment variables is:\n')
-        f.write(shellify(shell.getEnvAdded()) + ' ' + shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write(sps.shellify(shell.getEnvAdded()) + ' ' + sps.shellify(shell.getCfgCmdExclEnv()) + '\n\n')
 
 
 def getLockDirPath(repoDir, tboxIdentifier=''):

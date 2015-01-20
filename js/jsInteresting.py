@@ -19,7 +19,8 @@ import findIgnoreLists
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
 from fileManipulation import writeLinesToFile
-from subprocesses import vdump, shellify
+import subprocesses as sps
+
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -150,7 +151,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
     # FIXME:     output the last tryItOut line
 
     if lev <= JS_ABNORMAL_EXIT:  # JS_ABNORMAL_EXIT and below (inclusive) will be ignored.
-        vdump("jsfunfuzzLevel is ignoring a baseLevel of " + str(lev))
+        sps.vdump("jsfunfuzzLevel is ignoring a baseLevel of " + str(lev))
         lev = JS_FINE
         issues = []
 
@@ -162,7 +163,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         assert len(statusIssueList) != 0
         writeLinesToFile(
           ['Number: ' + logPrefix + '\n',
-           'Command: ' + shellify(options.jsengineWithArgs) + '\n'] +
+           'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
           [i + '\n' for i in statusIssueList],
           logPrefix + '-summary.txt')
 
