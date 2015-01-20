@@ -102,7 +102,7 @@ var fuzzTestingFunctions = (function(glob){
     // Trace the heap using non-GC tracing code
     { w: 1,  v: function(d, b) { return "(void " + tf("countHeap") + "()" + ")"; } },
 
-    // Toggle various validations.
+    // Various validation functions (toggles)
     { w: 5,  v: function(d, b) { return "(" + tf("validategc") + "(false)" + ")"; } },
     { w: 1,  v: function(d, b) { return "(" + tf("validategc") + "(true)" + ")"; } },
     { w: 5,  v: function(d, b) { return "(" + tf("fullcompartmentchecks") + "(false)" + ")"; } },
@@ -110,6 +110,9 @@ var fuzzTestingFunctions = (function(glob){
     { w: 5,  v: function(d, b) { return "(" + tf("setIonCheckGraphCoherency") + "(false)" + ")"; } },
     { w: 1,  v: function(d, b) { return "(" + tf("setIonCheckGraphCoherency") + "(true)" + ")"; } },
     { w: 1,  v: function(d, b) { return "(" + tf("enableOsiPointRegisterChecks") + "()" + ")"; } },
+
+    // Various validation functions (immediate)
+    { w: 1,  v: function(d, b) { return "(" + tf("assertValidJitStack") + "()" + ")"; } },
 
     // Run-time equivalents to --baseline-eager, --baseline-warmup-threshold, --ion-eager, --ion-warmup-threshold
     { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.warmup.trigger', " + rnd(20) + ")" + ")"; } },
