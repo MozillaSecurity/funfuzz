@@ -38,33 +38,33 @@ def randomFlagSet(shellPath):
 
     args = []
 
-    ion = inspectShell.shellSupportsFlag(shellPath, "--ion") and chance(.8)
+    ion = shellSupportsFlag(shellPath, "--ion") and chance(.8)
 
-    if inspectShell.shellSupportsFlag(shellPath, '--fuzzing-safe'):
+    if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
-    #if inspectShell.shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
+    #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
 
-    if inspectShell.shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
+    if shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
         gczealValue = 14 if chance(0.5) else random.randint(0, 14)  # Focus test compacting GC (14)
         args.append("--gc-zeal=" + str(gczealValue))  # --gc-zeal= landed in bug 1101602
 
-    if inspectShell.shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
+    if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
         args.append("--enable-small-chunk-size")  # --enable-small-chunk-size landed in bug 941804
 
-    if inspectShell.shellSupportsFlag(shellPath, '--ion-loop-unrolling=on') and chance(.2):
+    if shellSupportsFlag(shellPath, '--ion-loop-unrolling=on') and chance(.2):
         args.append("--ion-loop-unrolling=on")  # --ion-loop-unrolling=on landed in bug 1039458
 
-    if inspectShell.shellSupportsFlag(shellPath, '--no-threads') and chance(.5):
+    if shellSupportsFlag(shellPath, '--no-threads') and chance(.5):
         args.append("--no-threads")  # --no-threads landed in bug 1031529
 
-    if inspectShell.shellSupportsFlag(shellPath, '--disable-ion') and chance(.05):
+    if shellSupportsFlag(shellPath, '--disable-ion') and chance(.05):
         args.append("--disable-ion")  # --disable-ion landed in bug 789319
 
     # See bug 1026919 comment 60:
     if subprocesses.isARMv7l and \
-            inspectShell.shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
+            shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
         # It was suggested to focus more on the range between 0 and 1.
         # Reduced the upper limit to 8, see bug 1053996 comment 8.
         asmNopFill = random.randint(1, 8) if chance(0.3) else random.randint(0, 1)
@@ -72,56 +72,56 @@ def randomFlagSet(shellPath):
 
     # See bug 1026919 comment 60:
     if subprocesses.isARMv7l and \
-            inspectShell.shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
+            shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
         asmPoolMaxOffset = random.randint(5, 1024)
         args.append("--asm-pool-max-offset=" + str(asmPoolMaxOffset))  # Landed in bug 1026919
 
-    if inspectShell.shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
+    if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
 
     if inspectShell.queryBuildConfiguration(shellPath, 'arm-simulator') and chance(.4):
         args.append('--arm-sim-icache-checks')
 
-    if (inspectShell.shellSupportsFlag(shellPath, '--no-sse3') and \
-            inspectShell.shellSupportsFlag(shellPath, '--no-sse4')) and chance(.2):
+    if (shellSupportsFlag(shellPath, '--no-sse3') and \
+            shellSupportsFlag(shellPath, '--no-sse4')) and chance(.2):
         # --no-sse3 and --no-sse4 landed in m-c rev 526ba3ace37a.
         if chance(.5):
             args.append("--no-sse3")
         else:
             args.append("--no-sse4")
 
-    if inspectShell.shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
+    if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
         args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
-    if inspectShell.shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
+    if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
         args.append("--no-asmjs")
 
     # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
-    if inspectShell.shellSupportsFlag(shellPath, '--baseline-eager'):
+    if shellSupportsFlag(shellPath, '--baseline-eager'):
         if chance(.3):
             args.append('--no-baseline')
         # elif is important, as we want to call --baseline-eager only if --no-baseline is not set.
         elif chance(.6):
             args.append("--baseline-eager")
 
-    if inspectShell.shellSupportsFlag(shellPath, '--ion-offthread-compile=off'):
+    if shellSupportsFlag(shellPath, '--ion-offthread-compile=off'):
         if chance(.7):
             # Focus on the reproducible cases
             args.append("--ion-offthread-compile=off")
         elif chance(.5) and multiprocessing.cpu_count() > 1 and \
-                inspectShell.shellSupportsFlag(shellPath, '--thread-count=1'):
+                shellSupportsFlag(shellPath, '--thread-count=1'):
             # Adjusts default number of threads for parallel compilation (turned on by default)
             totalThreads = random.randint(2, (multiprocessing.cpu_count() * 2))
             args.append('--thread-count=' + str(totalThreads))
         # else:
         #   Default is to have --ion-offthread-compile=on and --thread-count=<some default value>
-    elif inspectShell.shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
+    elif shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
         # --ion-parallel-compile=off has gone away as of m-c rev 9ab3b097f304 and f0d67b1ccff9.
         if chance(.7):
             # Focus on the reproducible cases
             args.append("--ion-parallel-compile=off")
         elif chance(.5) and multiprocessing.cpu_count() > 1 and \
-                inspectShell.shellSupportsFlag(shellPath, '--thread-count=1'):
+                shellSupportsFlag(shellPath, '--thread-count=1'):
             # Adjusts default number of threads for parallel compilation (turned on by default)
             totalThreads = random.randint(2, (multiprocessing.cpu_count() * 2))
             args.append('--thread-count=' + str(totalThreads))
@@ -135,7 +135,7 @@ def randomFlagSet(shellPath):
             args.append("--ion-gvn=off")
         if chance(.2):
             args.append("--ion-licm=off")
-        if inspectShell.shellSupportsFlag(shellPath, '--ion-edgecase-analysis=off') and chance(.2):
+        if shellSupportsFlag(shellPath, '--ion-edgecase-analysis=off') and chance(.2):
             args.append("--ion-edgecase-analysis=off")
         if chance(.2):
             args.append("--ion-range-analysis=off")
@@ -146,17 +146,17 @@ def randomFlagSet(shellPath):
         if chance(.2):
             args.append("--ion-limit-script-size=off")
         # Landed in m-c changeset 8db8eef79b8c
-        if inspectShell.shellSupportsFlag(shellPath, '--ion-regalloc=lsra'):
+        if shellSupportsFlag(shellPath, '--ion-regalloc=lsra'):
             if chance(.1):
                 args.append('--ion-regalloc=lsra')  # On by default
             # Backtracking and stupid landed in m-c changeset dc4887f61d2e
-            elif inspectShell.shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and \
+            elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and \
                     chance(.4):
                 args.append('--ion-regalloc=backtracking')
             # Disabled until bug 871848 is fixed.
-            #elif inspectShell.shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
+            #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
-        if inspectShell.shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
+        if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
             if chance(.5):
                 args.append('--ion-check-range-analysis')
     else:
@@ -178,7 +178,7 @@ def basicFlagSets(shellPath):
     compareJIT uses these combinations of flags (as well as the original set of flags) when run
     through Lithium and autoBisect.
     '''
-    if inspectShell.shellSupportsFlag(shellPath, "--no-threads"):
+    if shellSupportsFlag(shellPath, "--no-threads"):
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/6a63bcb6e0d3/js/src/tests/lib/tests.py#l12
@@ -189,7 +189,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
         ]
         return basicFlagList
-    elif inspectShell.shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
+    elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/84bd8d9f4256/js/src/tests/lib/tests.py#l12
@@ -202,10 +202,10 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'], # Not in jit_test.py though, see bug 848906 comment 1
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],
         ]
-        if inspectShell.shellSupportsFlag(shellPath, "--thread-count=1"):
+        if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-            if inspectShell.shellSupportsFlag(shellPath, '--no-sse3'):
+            if shellSupportsFlag(shellPath, '--no-sse3'):
                 basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
@@ -223,10 +223,10 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
         ]
-        if inspectShell.shellSupportsFlag(shellPath, "--thread-count=1"):
+        if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-            if inspectShell.shellSupportsFlag(shellPath, '--no-sse3'):
+            if shellSupportsFlag(shellPath, '--no-sse3'):
                 basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
                                       '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
