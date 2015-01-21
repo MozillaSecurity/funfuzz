@@ -1,9 +1,9 @@
 import argparse
+import hashlib
 import os
 import platform
 import random
 import sys
-from hashlib import sha512
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -216,8 +216,8 @@ def computeShellName(buildOptions, extraIdentifier):
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         fileName.append(os.path.basename(buildOptions.patchFile).split('.')[0])
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
-        fileName.append(sha512(file(os.path.abspath(buildOptions.patchFile),
-                                    'rb').read()).hexdigest()[:12])
+        fileName.append(hashlib.sha512(file(os.path.abspath(buildOptions.patchFile),'rb').read())
+                        .hexdigest()[:12])
 
     assert '' not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
     return '-'.join(fileName)

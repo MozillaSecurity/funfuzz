@@ -4,6 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import copy
 import ctypes
 import errno
 import os
@@ -14,7 +15,6 @@ import stat
 import subprocess
 import sys
 import time
-from copy import deepcopy
 
 verbose = False
 
@@ -100,7 +100,7 @@ def envWithPath(path, runningEnv=os.environ):
     elif isWin:
         libPath = 'PATH'
 
-    env = deepcopy(runningEnv)
+    env = copy.deepcopy(runningEnv)
     if libPath in env:
         if path not in env[libPath]:
             env[libPath] += ENV_PATH_SEPARATOR + path

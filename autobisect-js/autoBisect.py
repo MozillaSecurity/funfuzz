@@ -5,6 +5,7 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import math
+import tempfile
 import os
 import platform
 import re
@@ -13,7 +14,6 @@ import subprocess
 import sys
 import time
 from optparse import OptionParser
-from tempfile import mkdtemp
 
 import knownBrokenEarliestWorking as kbew
 
@@ -24,13 +24,13 @@ import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 import compileShell
-from inspectShell import testBinary
+import inspectShell
 path3 = os.path.abspath(os.path.join(path0, os.pardir, 'dom', 'automation'))
 sys.path.append(path3)
 import buildBrowser
 path4 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path4)
-from fileManipulation import firstLine
+import fileManipulation
 import buildOptions
 import downloadBuild
 import hgCmds
@@ -227,7 +227,7 @@ def findBlamedCset(options, repoDir, testRev):
         labels[sRepo] = ('good', 'assumed start rev is good')
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
-        currRev = hgCmds.getCsetHashFromBisectMsg(firstLine(
+        currRev = hgCmds.getCsetHashFromBisectMsg(fileManipulation.firstLine(
             sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
     iterNum = 1
@@ -287,7 +287,7 @@ def findBlamedCset(options, repoDir, testRev):
 def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
     def inner(shellFilename, _hgHash):
-        (stdoutStderr, exitCode) = testBinary(shellFilename, options.paramList,
+        (stdoutStderr, exitCode) = inspectShell.testBinary(shellFilename, options.paramList,
             options.buildOptions.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
@@ -333,7 +333,7 @@ def externalTestAndLabel(options, interestingness):
 
     def inner(shellFilename, hgHash):
         conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList
-        tempDir = mkdtemp(prefix="abExtTestAndLabel-" + hgHash)
+        tempDir = tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash)
         tempPrefix = os.path.join(tempDir, 't')
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
@@ -499,7 +499,7 @@ def assertSaneJsBinary(cacheF):
 
                 # tbpl binaries are always:
                 # * run without Valgrind (they are not compiled with --enable-valgrind)
-                out, retCode = testBinary(shellPath, ['-e', '42'], False)
+                out, retCode = inspectShell.testBinary(shellPath, ['-e', '42'], False)
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (sps.isWin and retCode == -1073741515)

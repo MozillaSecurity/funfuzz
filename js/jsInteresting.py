@@ -5,7 +5,7 @@ import sys
 
 from optparse import OptionParser
 
-from inspectShell import constructVgCmdList
+import inspectShell
 p0 = os.path.dirname(os.path.abspath(__file__))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
 sys.path.append(p1)
@@ -18,7 +18,7 @@ import detect_malloc_errors
 import findIgnoreLists
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
-from fileManipulation import writeLinesToFile
+import fileManipulation
 import subprocesses as sps
 
 
@@ -43,7 +43,7 @@ VALGRIND_ERROR_EXIT_CODE = 77
 def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
     if valgrind:
         runthis = (
-            constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
+            inspectShell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
             valgrindSuppressions(knownPath) +
           runthis)
 
@@ -161,7 +161,7 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
         for i in issues:
             statusIssueList.append('Status: ' + i)
         assert len(statusIssueList) != 0
-        writeLinesToFile(
+        fileManipulation.writeLinesToFile(
           ['Number: ' + logPrefix + '\n',
            'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
           [i + '\n' for i in statusIssueList],

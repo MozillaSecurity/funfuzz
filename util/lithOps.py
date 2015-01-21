@@ -8,7 +8,7 @@ import os
 import sys
 import shutil
 import subprocess
-from tempfile import mkdtemp
+import tempfile
 
 import subprocesses as sps
 
@@ -48,7 +48,7 @@ def runLithium(lithArgs, logPrefix, targetTime):
     if targetTime:
         # FIXME: this could be based on whether bot.py has a remoteHost
         # loopdomfuzz.py or loopjsfuzz.py is being used by bot.py
-        deletableLithTemp = mkdtemp(prefix="fuzzbot-lithium")
+        deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
     else:
         # loopdomfuzz.py or loopjsfuzz.py is being run standalone

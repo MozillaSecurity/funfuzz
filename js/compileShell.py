@@ -4,20 +4,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import copy
 import ctypes
+import multiprocessing
 import os
 import shutil
 import subprocess
 import sys
+import traceback
 
-from copy import deepcopy
-from multiprocessing import cpu_count
-from traceback import format_exc
 from optparse import OptionParser
 
 import buildOptions
-from inspectShell import ALL_COMPILE_LIBS, ALL_RUN_LIBS
-from inspectShell import verifyBinary
+import inspectShell
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -37,8 +36,8 @@ else:
     SSE2_FLAGS = ' -msse2 -mfpmath=sse'  # See bug 948321
     CLANG_X86_FLAG = ' -arch i386'
 
-if cpu_count() > 2:
-    COMPILATION_JOBS = ((cpu_count() * 5) // 4)
+if multiprocessing.cpu_count() > 2:
+    COMPILATION_JOBS = ((multiprocessing.cpu_count() * 5) // 4)
 elif sps.isARMv7l:
     COMPILATION_JOBS = 3  # An ARM board
 else:
@@ -131,7 +130,7 @@ class CompiledShell(object):
         lDir = self.getJsObjdir() if self.getJsBuildSystemConsidersNspr() else self.getNsprObjdir()
         libsList = [
             sps.normExpUserPath(os.path.join(lDir, 'dist', 'lib', runLib)) \
-                for runLib in ALL_RUN_LIBS
+                for runLib in inspectShell.ALL_RUN_LIBS
         ]
         return libsList
     def getShellBaseTempDirWithName(self):
@@ -200,15 +199,15 @@ def cfgJsCompile(shell):
                 print 'Trying once more...'
                 continue
     compileJs(shell)
-    verifyBinary(shell)
+    inspectShell.verifyBinary(shell)
     envDump(shell, sps.normExpUserPath(os.path.join(shell.getDestDir(), 'compilation-parameters.txt')))
 
 
 def cfgBin(shell, binToBeCompiled):
     '''This function configures a binary according to required parameters.'''
     cfgCmdList = []
-    cfgEnvDt = deepcopy(os.environ)
-    origCfgEnvDt = deepcopy(os.environ)
+    cfgEnvDt = copy.deepcopy(os.environ)
+    origCfgEnvDt = copy.deepcopy(os.environ)
     cfgEnvDt['AR'] = 'ar'
     if shell.buildOptions.buildWithAsan:
         llvmPath = sps.findLlvmBinPath()
@@ -386,7 +385,7 @@ def cfgBin(shell, binToBeCompiled):
                     cfgCmdList.append('--with-nspr-libs=' + ' '.join([
                         sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib',
                                                          compileLib))\
-                            for compileLib in ALL_COMPILE_LIBS
+                            for compileLib in inspectShell.ALL_COMPILE_LIBS
                         ]))
             else:
                 cfgCmdList.append('--disable-threadsafe')
@@ -490,7 +489,7 @@ def compileNspr(shell):
     nsprCmdList = [MAKE_BINARY, '-C', shell.getNsprObjdir(), '-j1', '-s']
     out = sps.captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
                         currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
-    for compileLib in ALL_COMPILE_LIBS:
+    for compileLib in inspectShell.ALL_COMPILE_LIBS:
         if not sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
             print out
             raise Exception(MAKE_BINARY + " did not result in a NSPR binary.")
@@ -578,7 +577,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
         with open(cachedNoShell, 'wb') as f:
             f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
             f.write("Backtrace:\n")
-            f.write(format_exc() + "\n")
+            f.write(traceback.format_exc() + "\n")
         if os.path.exists(shell.getShellCacheFullPath()):
             print 'Stop autoBisect - a .busted file should not be generated ' + \
                             'with a shell that has been compiled successfully.'

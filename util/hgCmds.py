@@ -4,12 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import ConfigParser
 import os
 import platform
 import re
 import sys
 import subprocess
-from ConfigParser import SafeConfigParser, NoOptionError
 
 import subprocesses as sps
 
@@ -31,12 +31,12 @@ def ensureMqEnabled():
     usrHgrc = os.path.join(os.path.expanduser('~'), '.hgrc')
     assert os.path.isfile(usrHgrc)
 
-    usrHgrcCfg = SafeConfigParser()
+    usrHgrcCfg = ConfigParser.SafeConfigParser()
     usrHgrcCfg.read(usrHgrc)
 
     try:
         usrHgrcCfg.get('extensions', 'mq')
-    except NoOptionError:
+    except ConfigParser.NoOptionError:
         raise Exception('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
 
 
@@ -117,7 +117,7 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
 def getRepoNameFromHgrc(repoDir):
     '''Looks in the hgrc file in the .hg directory of the repository and returns the name.'''
     assert isRepoValid(repoDir)
-    hgCfg = SafeConfigParser()
+    hgCfg = ConfigParser.SafeConfigParser()
     hgCfg.read(sps.normExpUserPath(os.path.join(repoDir, '.hg', 'hgrc')))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgCfg.get('paths', 'default').split('/') if i][-1]

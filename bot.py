@@ -3,6 +3,8 @@
 # bot.py runs domfuzz, jsfunfuzz, or Lithium for a limited amount of time.
 # It stores jobs using ssh, using directory 'mv' for synchronization.
 
+import glob
+import multiprocessing
 import os
 import platform
 import random
@@ -13,11 +15,8 @@ import sys
 import time
 import uuid
 import tempfile
-import multiprocessing
 
-from glob import iglob
 from optparse import OptionParser
-from tempfile import mkdtemp
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
@@ -665,10 +664,10 @@ def fuzzingPathName(options, repoHash, repoId):
             raise Exception('Unable to create ~/Desktop folder.')
 
     buildId = '-'.join([hgCmds.getRepoNameFromHgrc(options.buildOptions.repoDir), repoHash, repoId])
-    return mkdtemp(appendStr + os.sep,
-                   buildOptions.computeShellName(options.buildOptions, buildId) + "-",
-                   # WinXP has spaces in the user directory.
-                   'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder)
+    return tempfile.mkdtemp(appendStr + os.sep,
+                            buildOptions.computeShellName(options.buildOptions, buildId) + "-",
+                            # WinXP has spaces in the user directory.
+                            'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder)
 
 
 def localCompileFuzzJsShell(options):
@@ -683,7 +682,7 @@ def localCompileFuzzJsShell(options):
 
     # Copy only files over to fullPath, not the objdir.
     # From http://stackoverflow.com/a/296184
-    compiledFiles = iglob(os.path.join(shell.getShellCacheDir(), "*"))
+    compiledFiles = glob.iglob(os.path.join(shell.getShellCacheDir(), "*"))
     for cFile in compiledFiles:
         if os.path.isfile(cFile):
             shutil.copy2(cFile, fullPath)

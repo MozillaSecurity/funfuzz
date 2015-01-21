@@ -16,11 +16,11 @@ p0 = os.path.dirname(os.path.abspath(__file__))
 interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
-import subprocesses as sps
-from fileManipulation import fuzzSplice, linesStartingWith, writeLinesToFile
-from inspectShell import queryBuildConfiguration
+import fileManipulation
+import inspectShell
 import lithOps
 import linkJS
+import subprocesses as sps
 
 def parseOpts(args):
     parser = OptionParser()
@@ -156,12 +156,12 @@ def many_timed_runs(targetTime, wtmpDir, args):
 
             # splice jsfunfuzz.js with `grep FRC wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
-            [before, after] = fuzzSplice(fuzzjs)
+            [before, after] = fileManipulation.fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + [l.replace('/*FRC*/', '') for l in linesStartingWith(f, "/*FRC*/")] + after
-            writeLinesToFile(newfileLines, logPrefix + "-orig.js")
-            writeLinesToFile(newfileLines, filenameToReduce)
+                newfileLines = before + [l.replace('/*FRC*/', '') for l in fileManipulation.linesStartingWith(f, "/*FRC*/")] + after
+            fileManipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
+            fileManipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
             itest = [interestingpy]
@@ -176,7 +176,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
                 return (lithResult, lithDetails)
 
         else:
-            shellIsDeterministic = queryBuildConfiguration(options.jsEngine, 'more-deterministic')
+            shellIsDeterministic = inspectShell.queryBuildConfiguration(options.jsEngine, 'more-deterministic')
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
@@ -185,11 +185,11 @@ def many_timed_runs(targetTime, wtmpDir, args):
                         ["dumpObject = function() { };\n",
                          "dumpHeapComplete = function() { };\n",
                          "// DDBEGIN\n"] +
-                        [l.replace('/*FCM*/', '') for l in linesStartingWith(f, "/*FCM*/")] +
+                        [l.replace('/*FCM*/', '') for l in fileManipulation.linesStartingWith(f, "/*FCM*/")] +
                         ["\ntry{print(uneval(this));}catch(e){}\n", "// DDEND\n"]
                     )
                 jitcomparefilename = logPrefix + "-cj-in.js"
-                writeLinesToFile(jitcomparelines, jitcomparefilename)
+                fileManipulation.writeLinesToFile(jitcomparelines, jitcomparefilename)
                 (lithResult, lithDetails) = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                                                   logPrefix + "-cj", options.knownPath, options.repo,
                                                                   options.buildOptionsStr, options.timeout, targetTime)
