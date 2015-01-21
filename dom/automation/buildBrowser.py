@@ -14,7 +14,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path3 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
-from hgCmds import getMcRepoDir, getRepoNameFromHgrc, destroyPyc
+import hgCmds
 
 def parseOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
@@ -24,7 +24,7 @@ def parseOptions(inputArgs):
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        repoDir = getMcRepoDir()[1],
+        repoDir = hgCmds.getMcRepoDir()[1],
         objDir = None,
         mozconfig = None
     )
@@ -88,7 +88,7 @@ def makeTestRev(options):
     def testRev(rev):
         print "Updating to " + rev + "..."
         subprocess.check_call(['hg', '-R', srcDir, 'update', '-r', rev])
-        destroyPyc(srcDir)
+        sps.destroyPyc(srcDir)
 
         if os.path.exists(objDir):
             print "Clobbering..."
