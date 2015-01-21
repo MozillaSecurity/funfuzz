@@ -51,10 +51,12 @@ class BuildInfo(object):
     '''
     This object stores information related to the build, such as its directory, source and type.
     '''
-    def __init__(self, bDir, bType, bSrc):
+    def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):
         self.buildDir = bDir
         self.buildType = bType
         self.buildSrc = bSrc
+        self.buildRev = bRev
+        self.mtrArgs = manyTimedRunArgs
 
 
 def splitSlash(d):
@@ -235,11 +237,8 @@ def parseOpts():
         testType = "auto",
         existingBuildDir = None,
         retestRoot = None,
-        disableRndFlags = False,
-        noStart = False,
         timeout = 0,
         buildOptions = None,
-        runLocalJsfunfuzz = False,
         useTinderboxShells = False,
         retestSkips = None
     )
@@ -247,8 +246,6 @@ def parseOpts():
     parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
         help='Test type: "js", "dom", or "auto" (which is usually random).')
 
-    parser.add_option("--delay", dest="localJsfunfuzzTimeDelay",
-        help="Delay before local jsfunfuzz is run.")
     parser.add_option("--build", dest="existingBuildDir",
         help="Use an existing build directory.")
     parser.add_option("--retest", dest="retestRoot",
@@ -266,16 +263,8 @@ def parseOpts():
     parser.add_option("--target-time", dest="targetTime", type='int',
         help="Nominal amount of time to run, in seconds")
 
-    #####
-    parser.add_option('-j', '--local-jsfunfuzz', dest='runLocalJsfunfuzz', action='store_true',
-                      help='Run local jsfunfuzz.')
     parser.add_option('-T', '--use-tinderbox-shells', dest='useTinderboxShells', action='store_true',
                       help='Fuzz js using tinderbox shells. Requires -j.')
-    # From the old localjsfunfuzz file.
-    parser.add_option('--disable-random-flags', dest='disableRndFlags', action='store_true',
-                      help='Disable random flag fuzzing.')
-    parser.add_option('--nostart', dest='noStart', action='store_true',
-                      help='Compile shells only, do not start fuzzing.')
 
     # Specify how the shell will be built.
     # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
@@ -292,14 +281,10 @@ def parseOpts():
     if len(args) > 0:
         print "Warning: bot.py does not use positional arguments"
 
-    if options.useTinderboxShells:
-        if not options.runLocalJsfunfuzz:
-            raise Exception('Turn on -j before using fuzzing using tinderbox js shells.')
+    if options.testType == 'auto':
         if options.buildOptions is not None:
-            raise Exception('Do not use tinderbox shells if one needs to specify build parameters')
-
-    if options.testType == 'auto' and not options.runLocalJsfunfuzz:
-        if options.retestRoot or options.existingBuildDir:
+            options.testType = 'js'
+        elif options.retestRoot or options.existingBuildDir:
             options.testType = 'dom'
         elif sps.isLinux and platform.machine() != "x86_64":
             # Bug 855881
@@ -308,15 +293,15 @@ def parseOpts():
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
 
-    if options.runLocalJsfunfuzz:
-        options.testType = 'js'
-        if options.buildOptions is None and not options.useTinderboxShells:
+    if options.testType == 'js':
+        if not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
+            options.useTinderboxShells = True
+            print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
+            print 'Using treeherder shells instead...'
+        if options.buildOptions is None:
             options.buildOptions = ''
-
-        if options.localJsfunfuzzTimeDelay is None:
-            options.localJsfunfuzzTimeDelay = 0
-        else:
-            options.localJsfunfuzzTimeDelay = int(options.localJsfunfuzzTimeDelay)
+        if options.useTinderboxShells and options.buildOptions != '':
+            raise Exception('Do not use treeherder shells if one specifies build parameters')
 
     if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
@@ -335,89 +320,65 @@ def parseOpts():
 def main():
     botmain(parseOpts())
 
+
 def botmain(options):
-    #####
-    # These only affect fuzzing the js shell on a local machine.
-    if options.runLocalJsfunfuzz and not options.useTinderboxShells:
-        if options.localJsfunfuzzTimeDelay != 0:
-            time.sleep(options.localJsfunfuzzTimeDelay)
+    options.tempDir = tempfile.mkdtemp("fuzzbot")
+    print options.tempDir
 
-        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-        options.timeout = options.timeout or machineTimeoutDefaults(options)
+    if options.remote_host:
+        printMachineInfo()
+        #sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
 
-        with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
-            shell, fuzzPath, cList = localCompileFuzzJsShell(options)
+    buildInfo = ensureBuild(options)
+    assert os.path.isdir(buildInfo.buildDir)
 
-        if options.noStart:
-            print 'Exiting, --nostart is set.'
-            sys.exit(0)
-
-        # Commands to simulate bash's `tee`.
-        tee = subprocess.Popen(['tee', 'log-jsfunfuzz.txt'], stdin=subprocess.PIPE, cwd=fuzzPath)
-
-        # Start fuzzing the newly compiled builds.
-        subprocess.call(cList, stdout=tee.stdin, cwd=fuzzPath)
-    #####
-
+    if options.retestRoot:
+        print "Retesting time!"
+        retestAll(options, buildInfo)
     else:
-        options.tempDir = tempfile.mkdtemp("fuzzbot")
-        print options.tempDir
+        options.relevantJobsDirName = options.testType + "-" + buildInfo.buildType
+        options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
 
-        if options.remote_host:
-            printMachineInfo()
-            #sendEmail("justInWhileLoop", "Platform details , " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+        runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
+        runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
+        runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
+        runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
 
-        buildInfo, haveBuild = ensureBuild(options)
-        if not haveBuild:
-            return
-        assert os.path.isdir(buildInfo.buildDir)
+        (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
+        if job:
+            print "Reduction time!"
+            lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
+            lithArgs[-1] = job + splitSlash(lithArgs[-1])[-1] # options.tempDir may be different
+            if platform.system() == "Windows":
+                # Ensure both Lithium and Firefox understand the filename
+                lithArgs[-1] = lithArgs[-1].replace("/","\\")
+            logPrefix = job + "reduce" + timestamp()
+            (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
+            uploadJob(options, lithResult, lithDetails, job, oldjobname)
+            runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
 
-        if options.retestRoot:
-            print "Retesting time!"
-            retestAll(options, buildInfo)
         else:
-            options.relevantJobsDirName = options.testType + "-" + buildInfo.buildType
-            options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
+            print "Fuzz time!"
+            #if options.testType == 'js':
+            #    if sps.isLinux:  # Test to see whether releng AWS Linux instances can send email
+            #        print "Sending email..."
+            #        sendEmail("justFuzzTime", "Platform details (" + str(multiprocessing.cpu_count()) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
+            #        print "Email sent!"
 
-            runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
-            runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
-            runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
-            runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
+            numProcesses = multiprocessing.cpu_count()
+            if "-asan" in buildInfo.buildDir:
+                # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
+                # I could guess 1 GB RAM per core, but that wanders into sketchyville.
+                numProcesses = max(numProcesses // 2, 1)
 
-            (job, oldjobname, takenNameOnServer) = grabJob(options, "_needsreduction")
-            if job:
-                print "Reduction time!"
-                lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-                lithArgs[-1] = job + splitSlash(lithArgs[-1])[-1] # options.tempDir may be different
-                if platform.system() == "Windows":
-                    # Ensure both Lithium and Firefox understand the filename
-                    lithArgs[-1] = lithArgs[-1].replace("/","\\")
-                logPrefix = job + "reduce" + timestamp()
-                (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
-                uploadJob(options, lithResult, lithDetails, job, oldjobname)
-                runCommand(options.remote_host, "rm -rf " + takenNameOnServer)
+            forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildInfo)
 
-            else:
-                print "Fuzz time!"
-                #if options.testType == 'js':
-                #    if sps.isLinux:  # Test to see whether releng AWS Linux instances can send email
-                #        print "Sending email..."
-                #        sendEmail("justFuzzTime", "Platform details (" + str(multiprocessing.cpu_count()) + " cores), " + platform.node() + " , Python " + sys.version[:5] + " , " +  " ".join(platform.uname()), "gkwong")
-                #        print "Email sent!"
+    # Remove build directory if we created it
+    if options.testType == 'dom' and not \
+            (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
+        shutil.rmtree(buildInfo.buildDir)
 
-                numProcesses = multiprocessing.cpu_count()
-                if "-asan" in buildInfo.buildDir:
-                    # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
-                    # I could guess 1 GB RAM per core, but that wanders into sketchyville.
-                    numProcesses = max(numProcesses // 2, 1)
-
-                forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildInfo)
-
-        # Remove build directory if we created it
-        if not (options.retestRoot or options.existingBuildDir or options.buildOptions is not None):
-            shutil.rmtree(buildInfo.buildDir)
-
-        shutil.rmtree(options.tempDir)
+    shutil.rmtree(options.tempDir)
 
 
 def printMachineInfo():
@@ -536,30 +497,60 @@ def retestAll(options, buildInfo):
 
 def ensureBuild(options):
     if options.existingBuildDir:
+        # Pre-downloaded treeherder builds (browser only for now)
         bDir = options.existingBuildDir
         bType = 'local-build'
         bSrc = bDir
-        success = True
+        bRev = ''
+        manyTimedRunArgs = []
     elif options.buildOptions is not None:
-        # Compile from source
-        if options.testType == "js":
-            # options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-            # bType = computeShellName(options.buildOptions, "x") ??
-            raise Exception("For now, use 'localjsfunfuzz' mode to compile and fuzz local shells")
+        if options.testType == "js" and not options.useTinderboxShells:
+            # Compiled js shells
+            options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+            options.timeout = options.timeout or machineTimeoutDefaults(options)
+
+            with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
+                bRev = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0]
+                cshell = compileShell.CompiledShell(options.buildOptions, bRev)
+                compileShell.compileStandalone(cshell)
+
+                bDir = cshell.getShellCacheFullPath()
+                bType = buildOptions.computeShellType(options.buildOptions)
+                bSrc = 'Create another shell in shell-cache like this one:\n' + \
+                       'python -u %s -b "%s -R %s" -r %s\n\n' % (
+                       os.path.join(path3, 'compileShell.py'), options.buildOptions.buildOptionsStr,
+                       options.buildOptions.repoDir, bRev) + \
+                       '==============================================\n' + \
+                       '|  Fuzzing %s js shell builds\n'  % cshell.getRepoName() + \
+                       '|  DATE: %s\n'                    % sps.dateStr() + \
+                       '==============================================\n\n'
+                manyTimedRunArgs = mtrArgsCreation(options, cshell)
         else:
+            # Compiled browser
             options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
             bDir = options.buildOptions.objDir
             bType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
             bSrc = repr(hgCmds.getRepoHashAndId(options.buildOptions.repoDir))
+            bRev = ''
+            manyTimedRunArgs = []
             success = buildBrowser.tryCompiling(options.buildOptions)
+            if not success:
+                raise Exception('Building a browser failed.')
     else:
+        # Treeherder js shells and browser
         # Download from Tinderbox and call it 'build'
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
+        # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
         bDir = 'build'
         bType = downloadBuild.defaultBuildType(options.repoName, None, True)
         bSrc = downloadBuild.downloadLatestBuild(bType, './', getJsShell=(options.testType == 'js'))
-        success = True
-    return BuildInfo(bDir, bType, bSrc), success
+        bRev = ''
+
+        # These two lines are only used for treeherder js shells:
+        shell = os.path.join(bDir, "dist", "js.exe" if sps.isWin else "js")
+        manyTimedRunArgs = ["--random-flags", str(JS_SHELL_DEFAULT_TIMEOUT), "mozilla-central", shell]
+
+    return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
@@ -622,12 +613,7 @@ def fuzzUntilBug(options, buildInfo, i):
     os.mkdir(job)
 
     if options.testType == 'js':
-        shell = os.path.join(buildInfo.buildDir, "dist", "js.exe" if sps.isWin else "js")
-        # Not using compareJIT: bug 751700, and it's not fully hooked up
-        # FIXME: randomize branch selection, download an appropriate build and use an appropriate known directory
-        # FIXME: use the right timeout
-        mtrArgs = ["--random-flags", str(JS_SHELL_DEFAULT_TIMEOUT), "mozilla-central", shell]
-        (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, mtrArgs)
+        (lithResult, lithDetails) = loopjsfunfuzz.many_timed_runs(options.targetTime, job, buildInfo.mtrArgs)
     else:
         # FIXME: support Valgrind
         (lithResult, lithDetails) = loopdomfuzz.many_timed_runs(options.targetTime, job, [buildInfo.buildDir])
@@ -639,96 +625,6 @@ def fuzzUntilBug(options, buildInfo, i):
         uploadJob(options, lithResult, lithDetails, job, oldjobname)
 
 
-def cmdDump(shell, cmdList, log):
-    '''Dump commands to file.'''
-    with open(log, 'ab') as f:
-        f.write('Command to be run is:\n')
-        f.write(sps.shellify(cmdList) + '\n')
-        f.write('========================================================\n')
-        f.write('|  Fuzzing %s js shell builds\n' %
-                     (shell.getRepoName() ))
-        f.write('|  DATE: %s\n' % sps.dateStr())
-        f.write('========================================================\n\n')
-
-
-def fuzzingPathName(options, repoHash, repoId):
-    '''Returns the path of the directory where fuzzing is going to take place.'''
-    appendStr = ''
-    if sps.isMac:
-        appendStr += '.noindex'  # Prevents Spotlight in Mac from indexing these folders.
-    userDesktopFolder = sps.normExpUserPath(os.path.join('~', 'Desktop'))
-    if not os.path.isdir(userDesktopFolder):
-        try:
-            os.mkdir(userDesktopFolder)
-        except OSError:
-            raise Exception('Unable to create ~/Desktop folder.')
-
-    buildId = '-'.join([hgCmds.getRepoNameFromHgrc(options.buildOptions.repoDir), repoHash, repoId])
-    return tempfile.mkdtemp(appendStr + os.sep,
-                            buildOptions.computeShellName(options.buildOptions, buildId) + "-",
-                            # WinXP has spaces in the user directory.
-                            'c:\\' if platform.uname()[2] == 'XP' else userDesktopFolder)
-
-
-def localCompileFuzzJsShell(options):
-    '''Compiles and readies a js shell for fuzzing.'''
-    print sps.dateStr()
-    (repoHash, repoId, isOnDefault) = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
-
-    shell = compileShell.CompiledShell(options.buildOptions, repoHash)
-    compileShell.compileStandalone(shell)
-
-    fullPath = fuzzingPathName(options, repoHash, repoId)
-
-    # Copy only files over to fullPath, not the objdir.
-    # From http://stackoverflow.com/a/296184
-    compiledFiles = glob.iglob(os.path.join(shell.getShellCacheDir(), "*"))
-    for cFile in compiledFiles:
-        if os.path.isfile(cFile):
-            shutil.copy2(cFile, fullPath)
-
-    if not options.noStart:
-        analysisPath = os.path.abspath(os.path.join(path0, 'experimental', 'js', 'analysis.py'))
-        if os.path.exists(analysisPath):
-            shutil.copy2(analysisPath, fullPath)
-
-    # Construct a command-line for running loopjsfunfuzz.py
-    cmdList = [sys.executable, '-u']
-    cmdList.append(sps.normExpUserPath(os.path.join(path0, 'js', 'loopjsfunfuzz.py')))
-    cmdList.append('--repo=' + shell.getRepoDir())
-    cmdList += ["--build", options.buildOptions.buildOptionsStr]
-    if options.buildOptions.runWithVg:
-        cmdList.append('--valgrind')
-    if options.buildOptions.enableMoreDeterministic:
-        cmdList.append('--comparejit')
-    if not options.disableRndFlags:
-        cmdList.append('--random-flags')
-    cmdList.append(str(options.timeout))
-    cmdList.append(lithOps.knownBugsDir(shell.getRepoName()))
-    cmdList.append(sps.normExpUserPath(os.path.join(fullPath, shell.getShellNameWithExt())))
-
-    # Write log files describing commands to be run for fuzzing using jsfunfuzz.
-    runLog = sps.normExpUserPath(os.path.join(fullPath, 'log-localjsfunfuzz.txt'))
-    cmdDump(shell, cmdList, runLog)
-
-    # Display compilation parameter and fuzz command logs prior to fuzzing.
-    compileLog = sps.normExpUserPath(os.path.join(fullPath, 'compilation-parameters.txt'))
-    if os.path.isfile(compileLog):
-        with open(compileLog, 'rb') as f:
-            for line in f:
-                if 'Full environment is' not in line:
-                    print line,
-
-    with open(runLog, 'rb') as f:
-        for line in f:
-            print line,
-
-    # FIXME: Randomize logic should be developed later, possibly together with target time in
-    # loopjsfunfuzz.py. Randomize Valgrind runs too.
-
-    return shell, fullPath, cmdList
-
-
 def machineTimeoutDefaults(options):
     '''Sets different defaults depending on the machine type or debugger used.'''
     if options.buildOptions.runWithVg:
@@ -737,6 +633,26 @@ def machineTimeoutDefaults(options):
         return 180
     else:
         return JS_SHELL_DEFAULT_TIMEOUT
+
+
+def mtrArgsCreation(options, cshell):
+    '''Create many_timed_run arguments for compiled builds'''
+    manyTimedRunArgs = []
+    manyTimedRunArgs.append('--repo=' + sps.normExpUserPath(options.buildOptions.repoDir))
+    manyTimedRunArgs.append("--build=" + options.buildOptions.buildOptionsStr)
+    if options.buildOptions.runWithVg:
+        manyTimedRunArgs.append('--valgrind')
+    if options.buildOptions.enableMoreDeterministic:
+        # Treeherder shells not using compareJIT:
+        #   They are not built with --enable-more-deterministic - bug 751700
+        manyTimedRunArgs.append('--comparejit')
+    manyTimedRunArgs.append('--random-flags')
+
+    # Ordering of elements in manyTimedRunArgs is important.
+    manyTimedRunArgs.append(str(options.timeout))
+    manyTimedRunArgs.append(cshell.getRepoName())  # known bugs' directory
+    manyTimedRunArgs.append(cshell.getShellCacheFullPath())
+    return manyTimedRunArgs
 
 
 if __name__ == "__main__":

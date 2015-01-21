@@ -188,7 +188,10 @@ def cfgJsCompile(shell):
                 continue
     compileJs(shell)
     inspectShell.verifyBinary(shell)
-    envDump(shell, sps.normExpUserPath(os.path.join(shell.getDestDir(), 'compilation-parameters.txt')))
+
+    compileLog = sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'compilation-parameters.txt'))
+    if not os.path.isfile(compileLog):
+        envDump(shell, compileLog)
 
 
 def cfgBin(shell, binToBeCompiled):
@@ -582,8 +585,9 @@ def envDump(shell, log):
         f.write('Information about shell:\n\n')
 
         f.write('Create another shell in shell-cache like this one:\n')
-        f.write(sps.shellify(["python", "-u", os.path.join(path0, "compileShell.py"),
-            "-b", shell.buildOptions.buildOptionsStr]) + "\n\n")
+        f.write('python -u %s -b "%s -R %s" -r %s\n\n' %
+                (os.path.join(path0, 'compileShell.py'),
+                shell.buildOptions.buildOptionsStr, shell.buildOptions.repoDir, shell.getHgHash()))
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
         f.write('Environment variables added are:\n')

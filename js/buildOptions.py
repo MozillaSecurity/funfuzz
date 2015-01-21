@@ -52,6 +52,7 @@ def addParserOptions():
     )
     parser.add_argument('-R', '--repoDir',
         dest = 'repoDir',
+        default = sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
         help = 'Sets the source repository.'
     )
     parser.add_argument('-P', '--patch',
@@ -174,8 +175,8 @@ def parseShellOptions(inputArgs):
     return buildOptions
 
 
-def computeShellName(buildOptions, extraIdentifier):
-    """Makes a compact name that contains most of the configuration information for the shell"""
+def computeShellType(buildOptions):
+    '''Returns configuration information of the shell.'''
     fileName = ['js']
     if buildOptions.enableDbg:
         fileName.append('dbg')
@@ -205,9 +206,6 @@ def computeShellName(buildOptions, extraIdentifier):
     if sps.isARMv7l:
         fileName.append('armhfp' if buildOptions.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
-    if extraIdentifier:
-        fileName.append(extraIdentifier)
-
     if buildOptions.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         fileName.append(os.path.basename(buildOptions.patchFile).split('.')[0])
@@ -217,6 +215,11 @@ def computeShellName(buildOptions, extraIdentifier):
 
     assert '' not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
     return '-'.join(fileName)
+
+
+def computeShellName(buildOptions, buildRev):
+    '''Returns the shell type together with the build revision.'''
+    return computeShellType(buildOptions) + '-' + buildRev
 
 
 def areArgsValid(args):
@@ -297,6 +300,7 @@ def getRandomValidRepo(treeLocation):
     if 'mozilla-esr31' in validRepos and chance(0.8):
         validRepos.remove('mozilla-esr31')
 
+    validRepos = ['mozilla-central']  # FIXME: Let's set to random configurations within m-c for now
     return os.path.realpath(sps.normExpUserPath(
         os.path.join(treeLocation, random.choice(validRepos))))
 
