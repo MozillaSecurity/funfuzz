@@ -23,6 +23,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("oomAfterAllocations") == -1
        && code.indexOf("load") == -1                // load()ed regression test might output dates, etc
        && code.indexOf("drainAllocationsLog") == -1 // drainAllocationsLog returns an object with a timestamp, see bug 1066313
+       && code.indexOf("getBacktrace") == -1        // getBacktrace returns memory addresses which differs depending on flags
     ,
 
     expectConsistentOutputAcrossIter: true
