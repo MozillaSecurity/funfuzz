@@ -22,7 +22,7 @@ def memoize(f, cache={}):
 
 
 @memoize
-def inspectShell.shellSupportsFlag(shellPath, flag):
+def shellSupportsFlag(shellPath, flag):
     return inspectShell.shellSupports(shellPath, [flag, '-e', '42'])
 
 
