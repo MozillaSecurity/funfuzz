@@ -8,7 +8,7 @@ import inspectShell
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
-import subprocesses
+import subprocesses as sps
 
 def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
@@ -63,7 +63,7 @@ def randomFlagSet(shellPath):
         args.append("--disable-ion")  # --disable-ion landed in bug 789319
 
     # See bug 1026919 comment 60:
-    if subprocesses.isARMv7l and \
+    if sps.isARMv7l and \
             shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
         # It was suggested to focus more on the range between 0 and 1.
         # Reduced the upper limit to 8, see bug 1053996 comment 8.
@@ -71,7 +71,7 @@ def randomFlagSet(shellPath):
         args.append("--arm-asm-nop-fill=" + str(asmNopFill))  # Landed in bug 1020834
 
     # See bug 1026919 comment 60:
-    if subprocesses.isARMv7l and \
+    if sps.isARMv7l and \
             shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
         asmPoolMaxOffset = random.randint(5, 1024)
         args.append("--asm-pool-max-offset=" + str(asmPoolMaxOffset))  # Landed in bug 1026919

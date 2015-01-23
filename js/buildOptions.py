@@ -9,12 +9,12 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
-import subprocesses
+import subprocesses as sps
 
 if platform.uname()[2] == 'XP':
-    DEFAULT_TREES_LOCATION = subprocesses.normExpUserPath(os.path.join(path0, '..', '..', 'trees'))
+    DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join(path0, '..', '..', 'trees'))
 else:
-    DEFAULT_TREES_LOCATION = subprocesses.normExpUserPath(os.path.join('~', 'trees'))
+    DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
 
 
 def chance(p):
@@ -108,7 +108,7 @@ def addParserOptions():
     )
 
     # Misc spidermonkey options
-    if subprocesses.isARMv7l:
+    if sps.isARMv7l:
         randomizeBool(['--enable-hardfp'], 0.5,
             dest = 'enableHardFp',
             help = 'Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".'
@@ -149,7 +149,7 @@ def parseShellOptions(inputArgs):
     buildOptions = parser.parse_args(inputArgs.split())
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
-    if os.path.isfile(subprocesses.normExpUserPath(
+    if os.path.isfile(sps.normExpUserPath(
             os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central', '.hg', 'hgrc'))):
         # Repositories do not get randomized if a repository is specified.
         if buildOptions.repoDir is None:
@@ -157,14 +157,14 @@ def parseShellOptions(inputArgs):
             if buildOptions.enableRandom and not buildOptions.patchFile:
                 buildOptions.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
             else:
-                buildOptions.repoDir = os.path.realpath(subprocesses.normExpUserPath(
+                buildOptions.repoDir = os.path.realpath(sps.normExpUserPath(
                     os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
 
         assert hgCmds.isRepoValid(buildOptions.repoDir)
 
         if buildOptions.patchFile:
             hgCmds.ensureMqEnabled()
-            buildOptions.patchFile = subprocesses.normExpUserPath(buildOptions.patchFile)
+            buildOptions.patchFile = sps.normExpUserPath(buildOptions.patchFile)
             assert os.path.isfile(buildOptions.patchFile)
 
     if buildOptions.enableRandom:
@@ -206,9 +206,9 @@ def computeShellName(buildOptions, extraIdentifier):
         fileName.append('ggcDisabled')
     if buildOptions.enableArmSimulator:
         fileName.append('armSim')
-    if subprocesses.isARMv7l:
+    if sps.isARMv7l:
         fileName.append('hfp' if buildOptions.enableHardFp else 'sfp')
-    fileName.append('windows' if subprocesses.isWin else platform.system().lower())
+    fileName.append('windows' if sps.isWin else platform.system().lower())
     if extraIdentifier:
         fileName.append(extraIdentifier)
 
@@ -231,40 +231,40 @@ def areArgsValid(args):
         return False, 'Making an optimized, non-optimized build would be kind of silly.'
     if not args.enableDbg and not args.enableOpt:
         return False, 'Making a non-debug, non-optimized build would be kind of silly.'
-    if subprocesses.isARMv7l and not args.enable32:
+    if sps.isARMv7l and not args.enable32:
         return False, '64-bit ARM builds are not yet supported.'
 
-    if subprocesses.isWin and (args.enable32 == subprocesses.isMozBuild64):
+    if sps.isWin and (args.enable32 == sps.isMozBuild64):
         return False, 'Win32 builds need the 32-bit MozillaBuild batch file and likewise the ' + \
             'corresponding 64-bit ones for Win64 builds.'
 
     if args.buildWithVg:
-        if not subprocesses.isProgramInstalled('valgrind'):
+        if not sps.isProgramInstalled('valgrind'):
             return False, 'Valgrind is not installed.'
         if not args.enableOpt:
             return False, 'Valgrind needs opt builds.'
         if args.buildWithAsan:
             return False, 'One should not compile with both Valgrind flags and ASan flags.'
 
-        if subprocesses.isWin:
+        if sps.isWin:
             return False, 'Valgrind does not work on Windows.'
-        if subprocesses.isMac:
+        if sps.isMac:
             return False, 'Valgrind does not work well with Mac OS X 10.10 Yosemite.'
-        if subprocesses.isARMv7l and not args.enableHardFp:
+        if sps.isARMv7l and not args.enableHardFp:
             return False, 'libc6-dbg packages needed for Valgrind are only ' + \
                 'available via hardfp, tested on Ubuntu on an ARM odroid board.'
 
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'
 
-    if args.buildWithAsan and subprocesses.isWin:
+    if args.buildWithAsan and sps.isWin:
         return False, 'Asan is not yet supported on Windows.'
 
     if not args.disableGcGenerational and args.disableExactRooting:
         return False, 'If exact rooting is disabled, GGC must also be disabled.'
 
     if args.enableArmSimulator:
-        if subprocesses.isARMv7l:
+        if sps.isARMv7l:
             return False, 'We cannot run the ARM simulator in an ARM build.'
         if not args.enable32:  # Remove this when we have the ARM64 simulator builds
             return False, 'The ARM simulator builds are only for 32-bit binaries.'
@@ -287,7 +287,7 @@ def getRandomValidRepo(treeLocation):
     validRepos = []
     for repo in ['mozilla-central', 'mozilla-aurora', 'mozilla-beta', 'mozilla-release',
                  'mozilla-esr31']:
-        if os.path.isfile(subprocesses.normExpUserPath(os.path.join(
+        if os.path.isfile(sps.normExpUserPath(os.path.join(
                 treeLocation, repo, '.hg', 'hgrc'))):
             validRepos.append(repo)
 
@@ -301,7 +301,7 @@ def getRandomValidRepo(treeLocation):
     if 'mozilla-esr31' in validRepos and chance(0.8):
         validRepos.remove('mozilla-esr31')
 
-    return os.path.realpath(subprocesses.normExpUserPath(
+    return os.path.realpath(sps.normExpUserPath(
         os.path.join(treeLocation, random.choice(validRepos))))
 
 
