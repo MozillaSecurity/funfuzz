@@ -36,11 +36,9 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Object.seal") == -1         // bug 937922
        && code.indexOf("length") == -1              // bug 1027846
        && code.indexOf("preventExtensions") == -1   // bug 1085299
-       && code.indexOf("SharedArrayBuffer") == -1   // bug 1122338
        && code.indexOf("Math.round") == -1          // bug 1122344
        && code.indexOf("Math.ceil") == -1           // bug 1122401
        && code.indexOf("0x80000000") == -1          // bug 1122402
-       && code.indexOf("0xffffffff") == -1          // bug 1122403
        && code.indexOf("use strict") == -1          // bug 1123011
        && code.indexOf("Uint32Array") == -1         // bug 1124421
        && code.indexOf("Float32Array") == -1        // bug 1124421
