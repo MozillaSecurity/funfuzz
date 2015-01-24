@@ -14,7 +14,8 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path3 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'util'))
 sys.path.append(path3)
 from downloadBuild import mozPlatformDetails
-import hgCmds
+import subprocesses as sps
+
 
 def parseOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
@@ -24,7 +25,7 @@ def parseOptions(inputArgs):
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        repoDir = hgCmds.getMcRepoDir()[1],
+        repoDir = sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
         objDir = None,
         mozconfig = None
     )

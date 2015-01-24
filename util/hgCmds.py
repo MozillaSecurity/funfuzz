@@ -69,13 +69,6 @@ assert getCsetHashFromBisectMsg("x 12345:123412341234") == "123412341234"
 assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"
 
 
-def getMcRepoDir():
-    '''Returns default m-c repository location and its base directory depending on machine.'''
-    baseDir = '~'
-    mcRepoDir = sps.normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
-    return baseDir, mcRepoDir
-
-
 def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     '''
     This function returns the repository hash and id, and whether it is on default.
