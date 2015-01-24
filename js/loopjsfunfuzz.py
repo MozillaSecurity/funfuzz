@@ -33,7 +33,7 @@ def parseOpts(args):
     parser.add_option("--random-flags",
                       action = "store_true", dest = "randomFlags",
                       default = False,
-                      help = "Pass a random set of flags (-m, -j, etc) to the js engine")
+                      help = "Pass a random set of flags (e.g. --ion-eager) to the js engine")
     parser.add_option("--repo",
                       action = "store", dest = "repo",
                       default = os.path.expanduser("~/trees/mozilla-central/"),
