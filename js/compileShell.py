@@ -150,11 +150,11 @@ def ensureCacheDir():
     return cacheDir
 
 
-def ensureDir(dir):
+def ensureDir(directory):
     '''Creates a directory, if it does not already exist'''
-    if not os.path.exists(dir):
-        os.mkdir(dir)
-    assert os.path.isdir(dir)
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    assert os.path.isdir(directory)
 
 
 def autoconfRun(cwDir):
