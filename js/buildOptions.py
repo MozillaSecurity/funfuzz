@@ -11,10 +11,7 @@ sys.path.append(path1)
 import hgCmds
 import subprocesses as sps
 
-if platform.uname()[2] == 'XP':
-    DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join(path0, '..', '..', 'trees'))
-else:
-    DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
+DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
 
 
 def chance(p):

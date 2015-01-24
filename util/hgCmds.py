@@ -75,8 +75,6 @@ def getMcRepoDir():
         baseDir = os.path.join('z:', os.sep)
     elif sps.isVM() == ('Linux', True):  # Self-selected presets in custom VMs
         baseDir = os.path.join('/', 'mnt', 'hgfs')
-    elif platform.uname()[2] == 'XP':  # WinXP contains spaces in the user directory
-        baseDir = os.path.join('c:\\')
     else:
         baseDir = '~'
     mcRepoDir = sps.normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))

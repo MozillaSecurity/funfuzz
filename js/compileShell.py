@@ -141,18 +141,10 @@ class CompiledShell(object):
 
 def ensureCacheDir():
     '''Returns a cache directory for compiled shells to live in, creating one if needed'''
-
-    if sps.isVM() == ('Windows', True):
-        # FIXME: Add an assertion that sps.isVM() is a WinXP VM, and not Vista/Win7/Win8.
-        # Set to root directory of Windows VM since we only test WinXP in a VM.
-        # This might fail on a Vista or Win7 VM due to lack of permissions.
-        # It would be good to get this machine-specific hack out of the shared file, eventually.
-        cacheDirBase = os.path.join('c:', os.sep)
-    else:
-        cacheDirBase = sps.normExpUserPath(os.path.join('~', 'Desktop'))
-        # If ~/Desktop is not present, create it. ~/Desktop might not be present with
-        # CLI/server versions of Linux.
-        ensureDir(cacheDirBase)
+    cacheDirBase = sps.normExpUserPath(os.path.join('~', 'Desktop'))
+    # If ~/Desktop is not present, create it. ~/Desktop might not be present with
+    # CLI/server versions of Linux.
+    ensureDir(cacheDirBase)
     cacheDir = os.path.join(cacheDirBase, 'shell-cache')
     ensureDir(cacheDir)
     return cacheDir
