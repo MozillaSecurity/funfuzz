@@ -206,7 +206,7 @@ def computeShellName(buildOptions, extraIdentifier):
     if buildOptions.enableArmSimulator:
         fileName.append('armSim')
     if sps.isARMv7l:
-        fileName.append('hfp' if buildOptions.enableHardFp else 'sfp')
+        fileName.append('armhfp' if buildOptions.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
     if extraIdentifier:
         fileName.append(extraIdentifier)
