@@ -41,13 +41,6 @@ INCOMPLETE_NOTE = 'incompleteBuild.txt'
 MAX_ITERATIONS = 100
 
 
-def sanityChecks():
-    # Disable autoBisect when running in a VM, even Linux. This has the possibility of interacting
-    # with the repositories in the trees directory as they can update to a different changeset
-    # within the VM. It should work when running manually though.
-    assert sps.isVM()[1] == False
-
-
 def parseOpts():
     usage = 'Usage: %prog [options]'
     parser = OptionParser(usage)
@@ -849,7 +842,6 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
 
 def main():
     '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
-    sanityChecks()
     options = parseOpts()
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir

@@ -51,25 +51,6 @@ def macVer():
     return [int(x) for x in platform.mac_ver()[0].split('.')]
 
 
-def isVM():
-    '''
-    Returns the OS of the system, if system is a VM.
-    '''
-    vm = False
-    # In VMware, shared folders are in z:, and we copy from the shared folders to avoid having
-    # another copy of the repository in the VM.
-    # FIXME: This is not entirely true. If there are source trees in the VM itself, and not reliant
-    # on shared folders with the host system, isVM()[1] returns False too.
-    if ((platform.uname()[2] == 'XP' or platform.uname()[2] == '7') \
-            and os.path.exists(os.path.join('z:', os.sep, 'fuzzing'))) or \
-        platform.uname()[0] == 'Linux' \
-            and os.path.exists(os.path.join('/', 'mnt', 'hgfs', 'fuzzing')):
-        assert not os.path.exists(normExpUserPath(os.path.join('~', 'fuzzing')))
-        assert not os.path.exists(normExpUserPath(os.path.join('~', 'trees')))
-        vm = True
-    return ('Windows' if isWin else platform.system(), vm)
-
-
 def getFreeSpace(folder, mulVar):
     '''
     Return folder/drive free space in bytes if mulVar is 0.
@@ -169,10 +150,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
                     raise Exception('Nonzero exit code')
     if not combineStderr and not ignoreStderr and len(stderr) > 0:
         # Ignore hg color mode throwing an error in console on Windows platforms.
-        # Ignore stderr warning when running a Linux VM on a Mac host:
-        # Not trusting file /mnt/hgfs/trees/mozilla-central/.hg/hgrc from untrusted user 501...
-        if not ((isWin and 'warning: failed to set color mode to win32' in stderr) or \
-                (isVM() == ('Linux', True) and 'hgrc from untrusted user 501' in stderr)):
+        if not (isWin and 'warning: failed to set color mode to win32' in stderr):
             print 'Unexpected output on stderr from: '
             print '  ' + shellify(cmd)
             print stdout, stderr

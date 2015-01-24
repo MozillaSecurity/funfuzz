@@ -71,12 +71,7 @@ assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"
 
 def getMcRepoDir():
     '''Returns default m-c repository location and its base directory depending on machine.'''
-    if sps.isVM() == ('Windows', True):  # Self-selected presets in custom VMs
-        baseDir = os.path.join('z:', os.sep)
-    elif sps.isVM() == ('Linux', True):  # Self-selected presets in custom VMs
-        baseDir = os.path.join('/', 'mnt', 'hgfs')
-    else:
-        baseDir = '~'
+    baseDir = '~'
     mcRepoDir = sps.normExpUserPath(os.path.join(baseDir, 'trees', 'mozilla-central'))
     return baseDir, mcRepoDir
 
