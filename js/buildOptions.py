@@ -149,8 +149,7 @@ def parseShellOptions(inputArgs):
     buildOptions = parser.parse_args(inputArgs.split())
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
-    if os.path.isfile(sps.normExpUserPath(
-            os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central', '.hg', 'hgrc'))):
+    if os.path.isdir(DEFAULT_TREES_LOCATION):
         # Repositories do not get randomized if a repository is specified.
         if buildOptions.repoDir is None:
             # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
