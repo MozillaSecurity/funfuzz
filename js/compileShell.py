@@ -586,7 +586,7 @@ def envDump(shell, log):
         f.write('Information about shell:\n\n')
 
         f.write('Create another shell in shell-cache like this one:\n')
-        f.write(sps.shellify(["python", "-u", os.path.join(path0, 'js', "compileShell.py"),
+        f.write(sps.shellify(["python", "-u", os.path.join(path0, "compileShell.py"),
             "-b", shell.buildOptions.buildOptionsStr]) + "\n\n")
 
         f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
