@@ -112,7 +112,7 @@ var fuzzTestingFunctions = (function(glob){
     { w: 1,  v: function(d, b) { return "(" + tf("enableOsiPointRegisterChecks") + "()" + ")"; } },
 
     // Various validation functions (immediate)
-    { w: 1,  v: function(d, b) { return "(" + tf("assertValidJitStack") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return "(" + tf("assertJitStackInvariants") + "()" + ")"; } },
 
     // Run-time equivalents to --baseline-eager, --baseline-warmup-threshold, --ion-eager, --ion-warmup-threshold
     { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.warmup.trigger', " + rnd(20) + ")" + ")"; } },
