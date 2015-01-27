@@ -141,11 +141,7 @@ class CompiledShell(object):
 
 def ensureCacheDir():
     '''Returns a cache directory for compiled shells to live in, creating one if needed'''
-    cacheDirBase = sps.normExpUserPath(os.path.join('~', 'Desktop'))
-    # If ~/Desktop is not present, create it. ~/Desktop might not be present with
-    # CLI/server versions of Linux.
-    ensureDir(cacheDirBase)
-    cacheDir = os.path.join(cacheDirBase, 'shell-cache')
+    cacheDir = os.path.join(sps.normExpUserPath('~'), 'shell-cache')
     ensureDir(cacheDir)
     return cacheDir
 
