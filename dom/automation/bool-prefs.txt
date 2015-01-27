@@ -216,6 +216,7 @@ layout.frames.force_resizability
 layout.imagevisibility.enabled
 layout.interruptible-reflow.enabled
 layout.gpu-scaling.enabled
+layout.scroll.root-frame-containers
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
 media.audio_data.enabled
