@@ -145,7 +145,7 @@ function fuzzInitBlacklists()
                 "embed",            // animated infobar + async missing-plugin box
                 "applet",           // animated infobar + async missing-plugin box
                 "spampede",         // animated infobar + async missing-plugin box
-                "img",              // async loading
+                "img",              // async loading & may require image.single-color-optimization.enabled to be false (see bug 1126146)
                 "image",            // async loading; bug 409494
                 "@font-face",       // async loading
                 "select",           // bug 393325; internal scrolling; general weirdness
