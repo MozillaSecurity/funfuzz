@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.5):
+        args.append("--unboxed-objects")  # --unboxed-objects landed in bug 1116855
+
     #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
 

@@ -121,6 +121,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if '--unboxed-objects' in flags:
+        required.append('7820fd141998') # m-c 225967 Fx38, 1st w/--unboxed-objects, see bug 1116855
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b') # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
