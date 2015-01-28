@@ -21,11 +21,6 @@ from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 import subprocesses as sps
 
 
-def tempdir(path):
-    os.mkdir(path)
-    return "--tempdir=" + path
-
-
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
     """
        Run Lithium and autobisect.
