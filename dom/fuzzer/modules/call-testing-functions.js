@@ -29,7 +29,7 @@ var fuzzerTestingFunctions = (function() {
       return Random.index(browserTestingFunctions)();
     }
 
-    return Random.index(fuzzTestingFunctions.testingFunctions)() + ";";
+    return Random.index(fuzzTestingFunctions.testingFunctions)();
   }
 
   return { makeCommand: makeCommand };

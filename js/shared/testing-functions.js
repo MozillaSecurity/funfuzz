@@ -7,18 +7,6 @@ var fuzzTestingFunctions = (function(glob){
   var browser = "window" in glob;
   var prefix = browser ? "fuzzPriv." : "";
 
-  function tf(funName) {
-    if (!browser && (rnd(5) == 0)) {
-      // Differential testing hack!
-      // Take advantage of the fact that --no-asmjs flips isAsmJSCompilationAvailable().
-      // (I couldn't find a better way to communicate from compareJIT to jsfunfuzz:
-      // doing --execute='gcslice=function(){}' changes the result of uneval(this)!)
-      var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
-      return "(" + cond + " ? " + funName + " : (function(){}))";
-    }
-    return prefix + funName;
-  }
-
   function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
   function gcSliceSize() { return Math.floor(Math.pow(2, Random.float() * 32)); }
   function maybeCommaShrinking() { return rnd(5) ? "" : ", 'shrinking'"; }
@@ -34,13 +22,12 @@ var fuzzTestingFunctions = (function(glob){
     var level = rnd(15);
     if (browser && level == 9) level = 0; // bug 815241
     var period = numberOfAllocs();
-    return "(" + tf("gczeal") + "(" + level + ", " + period + ")" + ")";
+    return prefix + "gczeal" + "(" + level + ", " + period + ");";
   }
 
-  // Wrap an expression in try..catch -- which requires wrapping the whole thing in a function, because try..catch is statement-level
-  function tryCatchExpr(expr)
+  function tryCatch(statement)
   {
-    return "(function() { try { return " + expr + "; } catch(e) { } return void 0; })()";
+    return "try { " + statement + " } catch(e) { }";
   }
 
   function setGcparam() {
@@ -53,7 +40,7 @@ var fuzzTestingFunctions = (function(glob){
 
     function _set(name, value) {
       // try..catch because gcparam sets may throw, depending on GC state (see bug 973571)
-      return tryCatchExpr(tf("gcparam") + "('" + name + "', " + value + ")");
+      return tryCatch(prefix + "gcparam" + "('" + name + "', " + value + ");");
     }
 
     function _get(name) {
@@ -65,92 +52,92 @@ var fuzzTestingFunctions = (function(glob){
   // https://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp
   var sharedTestingFunctions = [
     // Force garbage collection (global or specific compartment)
-    { w: 10, v: function(d, b) { return "(void " + tf("gc") + "("                                            + ")" + ")"; } },
-    { w: 10, v: function(d, b) { return "(void " + tf("gc") + "(" + "'compartment'"  + maybeCommaShrinking() + ")" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(void " + tf("gc") + "(" + global(d, b)     + maybeCommaShrinking() + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "("                                            + ");"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "(" + "'compartment'"  + maybeCommaShrinking() + ");"; } },
+    { w: 5,  v: function(d, b) { return "void " + prefix + "gc" + "(" + global(d, b)     + maybeCommaShrinking() + ");"; } },
 
     // Run a minor garbage collection on the nursery.
-    { w: 20, v: function(d, b) { return "(" + tf("minorgc") + "(false)" + ")"; } },
-    { w: 20, v: function(d, b) { return "(" + tf("minorgc") + "(true)" + ")"; } },
+    { w: 20, v: function(d, b) { return prefix + "minorgc" + "(false);"; } },
+    { w: 20, v: function(d, b) { return prefix + "minorgc" + "(true);"; } },
 
     // Start or continue incremental garbage collection.
     // startgc can throw: "Incremental GC already in progress"
-    { w: 20, v: function(d, b) { return tryCatchExpr("(" + tf("startgc") + "(" + gcSliceSize() + maybeCommaShrinking() + ")" + ")"); } },
-    { w: 20, v: function(d, b) { return              "(" + tf("gcslice") + "(" + gcSliceSize()                         + ")" + ")"; } },
+    { w: 20, v: function(d, b) { return tryCatch(prefix + "startgc" + "(" + gcSliceSize() + maybeCommaShrinking() + ");"); } },
+    { w: 20, v: function(d, b) { return prefix + "gcslice" + "(" + gcSliceSize() + ");"; } },
 
     // Schedule the given objects to be marked in the next GC slice.
-    { w: 10, v: function(d, b) { return "(" + tf("selectforgc") + "(" + object(d, b) + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return prefix + "selectforgc" + "(" + object(d, b) + ")" + ");"; } },
 
     // Add a compartment to the next garbage collection.
-    { w: 10, v: function(d, b) { return "(void " + tf("schedulegc") + "(" + global(d, b) + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "schedulegc" + "(" + global(d, b) + ");"; } },
 
     // Schedule a GC for after N allocations.
-    { w: 10, v: function(d, b) { return "(void " + tf("schedulegc") + "(" + numberOfAllocs() + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "schedulegc" + "(" + numberOfAllocs() + ");"; } },
 
     // Change a GC parameter.
     { w: 10, v: setGcparam },
 
     // Make garbage collection extremely frequent (SLOW)
-    { w: 1,  v: function(d, b) { return (!browser || rnd(100) == 0) ? (enableGCZeal()) : "0"; } },
+    { w: 1,  v: function(d, b) { return (!browser || rnd(100) === 0) ? (enableGCZeal()) : "void 0;"; } },
 
     // Verify write barriers. These functions are effective in pairs.
     // The first call sets up the start barrier, the second call sets up the end barrier.
     // Nothing happens when there is only one call.
-    { w: 10, v: function(d, b) { return "(" + tf("verifyprebarriers") + "()" + ")"; } },
-    { w: 10, v: function(d, b) { return "(" + tf("verifypostbarriers") + "()" + ")"; } },
+    { w: 10, v: function(d, b) { return prefix + "verifyprebarriers" + "();"; } },
+    { w: 10, v: function(d, b) { return prefix + "verifypostbarriers" + "();"; } },
 
     // Trace the heap using non-GC tracing code
-    { w: 1,  v: function(d, b) { return "(void " + tf("countHeap") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return "void " + prefix + "countHeap" + "();"; } },
 
     // Various validation functions (toggles)
-    { w: 5,  v: function(d, b) { return "(" + tf("validategc") + "(false)" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("validategc") + "(true)" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(" + tf("fullcompartmentchecks") + "(false)" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("fullcompartmentchecks") + "(true)" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(" + tf("setIonCheckGraphCoherency") + "(false)" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("setIonCheckGraphCoherency") + "(true)" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("enableOsiPointRegisterChecks") + "()" + ")"; } },
+    { w: 5,  v: function(d, b) { return prefix + "validategc" + "(false);"; } },
+    { w: 1,  v: function(d, b) { return prefix + "validategc" + "(true);"; } },
+    { w: 5,  v: function(d, b) { return prefix + "fullcompartmentchecks" + "(false);"; } },
+    { w: 1,  v: function(d, b) { return prefix + "fullcompartmentchecks" + "(true);"; } },
+    { w: 5,  v: function(d, b) { return prefix + "setIonCheckGraphCoherency" + "(false);"; } },
+    { w: 1,  v: function(d, b) { return prefix + "setIonCheckGraphCoherency" + "(true);"; } },
+    { w: 1,  v: function(d, b) { return prefix + "enableOsiPointRegisterChecks" + "();"; } },
 
     // Various validation functions (immediate)
-    { w: 1,  v: function(d, b) { return "(" + tf("assertJitStackInvariants") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return prefix + "assertJitStackInvariants" + "();"; } },
 
     // Run-time equivalents to --baseline-eager, --baseline-warmup-threshold, --ion-eager, --ion-warmup-threshold
-    { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('baseline.warmup.trigger', " + rnd(20) + ")" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("setJitCompilerOption") + "('ion.warmup.trigger', " + rnd(40) + ")" + ")"; } },
+    { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('baseline.warmup.trigger', " + rnd(20) + ");"; } },
+    { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.warmup.trigger', " + rnd(40) + ");"; } },
 
     // Run-time equivalents to --no-ion, --no-baseline
     // These can throw: "Can't turn off JITs with JIT code on the stack."
-    { w: 1,  v: function(d, b) { return tryCatchExpr(tf("setJitCompilerOption") + "('ion.enable', " + rnd(2) + ")"); } },
-    { w: 1,  v: function(d, b) { return tryCatchExpr(tf("setJitCompilerOption") + "('baseline.enable', " + rnd(2) + ")"); } },
+    { w: 1,  v: function(d, b) { return tryCatch(prefix + "setJitCompilerOption" + "('ion.enable', " + rnd(2) + ");"); } },
+    { w: 1,  v: function(d, b) { return tryCatch(prefix + "setJitCompilerOption" + "('baseline.enable', " + rnd(2) + ");"); } },
 
     // Toggle the built-in profiler.
-    { w: 1,  v: function(d, b) { return "(" + tf("enableSPSProfiling") + "()" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("enableSPSProfilingWithSlowAssertions") + "()" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(" + tf("disableSPSProfiling") + "()" + ")"; } },
+    { w: 1,  v: function(d, b) { return prefix + "enableSPSProfiling" + "();"; } },
+    { w: 1,  v: function(d, b) { return prefix + "enableSPSProfilingWithSlowAssertions" + "();"; } },
+    { w: 5,  v: function(d, b) { return prefix + "disableSPSProfiling" + "();"; } },
 
     // I'm not sure what this does in the shell.
-    { w: 5,  v: function(d, b) { return "(" + tf("deterministicgc") + "(false)" + ")"; } },
-    { w: 1,  v: function(d, b) { return "(" + tf("deterministicgc") + "(true)" + ")"; } },
+    { w: 5,  v: function(d, b) { return prefix + "deterministicgc" + "(false);"; } },
+    { w: 1,  v: function(d, b) { return prefix + "deterministicgc" + "(true);"; } },
 
     // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
-    { w: 5,  v: function(d, b) { return "(" + tf("gcPreserveCode") + "()" + ")"; } },
+    { w: 5,  v: function(d, b) { return prefix + "gcPreserveCode" + "();"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
   // https://mxr.mozilla.org/mozilla-central/source/js/src/shell/js.cpp
   var shellOnlyTestingFunctions = [
     // JIT bailout
-    { w: 5,  v: function(d, b) { return "(" + tf("bailout") + "()" + ")"; } },
+    { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
 
     // ARM simulator settings
     // These throw when not in the ARM simulator.
-    { w: 1,  v: function(d, b) { return tryCatchExpr("(void" + tf("disableSingleStepProfiling") + "()" + ")"); } },
-    { w: 1,  v: function(d, b) { return tryCatchExpr("(" + tf("enableSingleStepProfiling") + "()" + ")"); } },
+    { w: 1,  v: function(d, b) { return tryCatch("(void" + prefix + "disableSingleStepProfiling" + "()" + ")"); } },
+    { w: 1,  v: function(d, b) { return tryCatch("(" + prefix + "enableSingleStepProfiling" + "()" + ")"); } },
 
     // Force garbage collection with function relazification
-    { w: 10, v: function(d, b) { return "(void " + tf("relazifyFunctions") + "()" + ")"; } },
-    { w: 10, v: function(d, b) { return "(void " + tf("relazifyFunctions") + "('compartment')" + ")"; } },
-    { w: 5,  v: function(d, b) { return "(void " + tf("relazifyFunctions") + "(" + global(d, b) + ")" + ")"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "();"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
+    { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + global(d, b) + ");"; } },
   ];
 
   var testingFunctions = Random.weighted(browser ? sharedTestingFunctions : sharedTestingFunctions.concat(shellOnlyTestingFunctions));

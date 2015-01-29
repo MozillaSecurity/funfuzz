@@ -246,8 +246,9 @@ var statementMakers = Random.weighted([
   // Oddly placed "use strict" or "use asm"
   { w: 1, v: function(d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
 
-  // Spidermonkey gc and OOM controls
-  { w: 5, v: function(d, b) { return makeTestingFunctionCall(d - 1, b) + "; " + makeStatement(d - 1, b); } },
+  // Spidermonkey GC and JIT controls
+  { w: 3, v: function(d, b) { return makeTestingFunctionCall(d, b); } },
+  { w: 3, v: function(d, b) { return makeTestingFunctionCall(d - 1, b) + " " + makeStatement(d - 1, b); } },
 
   // Blocks of statements related to typed arrays
   { w: 8, v: makeTypedArrayStatements },
@@ -862,16 +863,29 @@ var exprMakers =
   makeRegexUseExpr,
   makeShapeyValue,
   makeIterable,
-  makeTestingFunctionCall,
   function(d, b) { return makeMathExpr(d + rnd(3), b); },
-
-  function(d, b) { return cat(["(", makeTestingFunctionCall(d - 1, b), ", ", makeExpr(d - 1, b), ")"]); },
 ];
 
 function makeTestingFunctionCall(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  return Random.index(fuzzTestingFunctions.testingFunctions)(d, b);
+
+  var callStatement = Random.index(fuzzTestingFunctions.testingFunctions)(d, b);
+
+  // Curly braces to make it less likely for unwanted return values to leak out
+  // and confuse compareJIT.
+  var callBlock = "{ " + callStatement + " }";
+
+  if (jsshell && rnd(5) === 0) {
+    // Differential testing hack!
+    // Take advantage of the fact that --no-asmjs flips isAsmJSCompilationAvailable().
+    // (A more principled approach would be to have compareJIT set an environment
+    // variable and read it here using os.getenv().)
+    var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
+    return "if (" + cond + ") " + callBlock;
+  }
+
+  return callBlock;
 }
 
 
