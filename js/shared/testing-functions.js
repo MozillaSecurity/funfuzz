@@ -40,7 +40,7 @@ var fuzzTestingFunctions = (function(glob){
   // Wrap an expression in try..catch -- which requires wrapping the whole thing in a function, because try..catch is statement-level
   function tryCatchExpr(expr)
   {
-    return "(function() { try { return " + expr + "; } catch(e) { return undefined; } })()";
+    return "(function() { try { return " + expr + "; } catch(e) { } return void 0; })()";
   }
 
   function setGcparam() {
