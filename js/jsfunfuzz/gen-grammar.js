@@ -1765,8 +1765,16 @@ function makeMixedTypeArray(d, b)
   // Create a large array literal by randomly repeating the values.
   var c = [];
   var count = loopCount();
-  for (var j = 0; j < count; ++j)
-    c.push(Random.index(picks));
+  for (var j = 0; j < count; ++j) {
+    var elem = Random.index(picks);
+    // Sometimes, especially at the beginning of arrays, repeat a single value (or type) many times
+    // (This is needed for shape warmup, but not for JIT warmup)
+    var repeat = count === 0 ? rnd(4)===0 : rnd(50)===0;
+    var repeats = repeat ? rnd(30) : 1;
+    for (var k = 0; k < repeats; ++k) {
+      c.push(elem);
+    }
+  }
 
   return "/*MARR*/" + "[" + c.join(", ") + "]";
 }
