@@ -870,7 +870,9 @@ var exprMakers =
 var fuzzTestingFunctions = fuzzTestingFunctionsCtor(!jsshell, fuzzTestingFunctionArg, fuzzTestingFunctionArg);
 
 // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
-function fuzzTestingFunctionArg(d, b) { return "(null || (" + makeExpr(d - 2, b) + "))"; }
+// (null || (" + makeExpr(d - 2, b) + "))
+// Darn, only |this| and local variables are safe: an expression with side effects breaks the statement-level compareJIT hack
+function fuzzTestingFunctionArg(d, b) { return "this"; }
 
 function makeTestingFunctionCall(d, b)
 {
