@@ -91,6 +91,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
         elif lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
             print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT found a more serious bug"], lev, r.elapsedtime)
+            with open(logPrefix + "-summary.txt", 'wb') as f:
+                f.write('\n'.join(issues + ["compareJIT found a more serious bug"]))
             print "  " + sps.shellify(command)
             return lev
         elif lev != jsInteresting.JS_FINE:
@@ -127,19 +129,22 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
                 return (optionDisabledAsm and optionDiffers)
 
-            if r.err != r0.err and not fpuOptionDisabledAsmOnOneSide() and not optionDisabledAsmOnOneSide():
-                print infilename + " | " + jsInteresting.summaryString(["Mismatch on stderr"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
-                print "  " + sps.shellify(commands[0])
-                print "  " + sps.shellify(command)
-                showDifferences(prefix0 + "-err.txt", prefix + "-err.txt", showDetailedDiffs)
-                print ""
-                return jsInteresting.JS_OVERALL_MISMATCH
-            elif r.out != r0.out:
-                print infilename + " | " + jsInteresting.summaryString(["Mismatch on stdout"], jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
-                print "  " + sps.shellify(commands[0])
-                print "  " + sps.shellify(command)
-                showDifferences(prefix0 + "-out.txt", prefix + "-out.txt", showDetailedDiffs)
-                print ""
+            mismatchErr = (r.err != r0.err and not fpuOptionDisabledAsmOnOneSide() and not optionDisabledAsmOnOneSide())
+            mismatchOut = (r.out != r0.out)
+
+            if mismatchErr or mismatchOut:
+                # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
+                rerunCommand = sps.shellify([__file__, "--flags="+' '.join(flags), "--timeout="+str(timeout), knownPath, jsEngine, infilename])
+                (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
+                summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
+                with open(logPrefix + "-summary.txt", 'wb') as f:
+                    f.write(rerunCommand + "\n\n" + summary)
+                print infilename + " | " + jsInteresting.summaryString(issues, jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
+                if quickMode:
+                    print rerunCommand
+                if showDetailedDiffs:
+                    print summary
+                    print ""
                 return jsInteresting.JS_OVERALL_MISMATCH
             else:
                 #print "compareJIT: match"
@@ -149,14 +154,26 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
     jsInteresting.deleteLogs(prefix0)
     return jsInteresting.JS_FINE
 
+def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
+    issues = []
+    summary = ""
+    if mismatchErr:
+        issues.append("Mismatch on stderr")
+        summary += diffFiles(prefix0 + "-err.txt", prefix + "-err.txt")
+    if mismatchOut:
+        issues.append("Mismatch on stdout")
+        summary += diffFiles(prefix0 + "-out.txt", prefix + "-out.txt")
+    return (summary, issues)
 
-def showDifferences(f1, f2, showDetailedDiffs):
+
+def diffFiles(f1, f2):
+    '''Return a command to diff two files, along with the diff output (if it's short)'''
     diffcmd = ["diff", "-u", f1, f2]
-    if showDetailedDiffs:
-        subprocess.call(diffcmd)
-    else:
-        print "To see differences, run " + ' '.join(diffcmd)
-
+    s = ' '.join(diffcmd) + "\n\n"
+    diff = sps.captureStdout(diffcmd, ignoreExitCode=True)[0]
+    if len(diff) < 10000:
+        s += diff + "\n\n"
+    return s
 
 
 def parseOptions(args):
