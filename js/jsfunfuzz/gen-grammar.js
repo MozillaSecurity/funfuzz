@@ -1034,18 +1034,6 @@ function makeBoolean(d, b)
   }
 }
 
-function makeZealLevel()
-{
-  // gczeal is really slow, so only turn it on very occasionally.
-  if (rnd(15)) {
-    return "0";
-  }
-
-  // http://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp#604
-  // ./js -e "help(gczeal)"
-  return "" + rnd(14);
-}
-
 
 function makeObjLiteralPart(d, b)
 {
