@@ -59,7 +59,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 20, v: function(d, b) { return prefix + "gcslice" + "(" + gcSliceSize() + ");"; } },
 
     // Schedule the given objects to be marked in the next GC slice.
-    { w: 10, v: function(d, b) { return prefix + "selectforgc" + "(" + fObject(d, b) + ")" + ");"; } },
+    { w: 10, v: function(d, b) { return prefix + "selectforgc" + "(" + fObject(d, b) + ");"; } },
 
     // Add a compartment to the next garbage collection.
     { w: 10, v: function(d, b) { return "void " + prefix + "schedulegc" + "(" + fGlobal(d, b) + ");"; } },
