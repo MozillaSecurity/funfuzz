@@ -1,5 +1,9 @@
 var fuzzerTestingFunctions = (function() {
 
+  function fGlobal() { return Things.instance("Window"); }
+  function fObject() { return Things.any(); }
+  var fuzzTestingFunctions = fuzzTestingFunctionsCtor(true, fGlobal, fObject);
+
   function bool() { return rnd(2) ? "true" : "false"; }
   function budget() { return Math.pow(2, rnd(30)); }
 

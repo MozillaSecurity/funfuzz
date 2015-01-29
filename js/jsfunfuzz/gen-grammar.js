@@ -866,6 +866,12 @@ var exprMakers =
   function(d, b) { return makeMathExpr(d + rnd(3), b); },
 ];
 
+
+var fuzzTestingFunctions = fuzzTestingFunctionsCtor(!jsshell, fuzzTestingFunctionArg, fuzzTestingFunctionArg);
+
+// Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
+function fuzzTestingFunctionArg(d, b) { return "(null || (" + makeExpr(d - 2, b) + "))"; }
+
 function makeTestingFunctionCall(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);

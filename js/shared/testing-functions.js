@@ -2,20 +2,13 @@
 // * testing that they do not cause assertions/crashes
 // * testing that they do not alter visible results (compareJIT with and without the call)
 
-var fuzzTestingFunctions = (function(glob){
-
-  var browser = "window" in glob;
+function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
+{
   var prefix = browser ? "fuzzPriv." : "";
 
   function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
   function gcSliceSize() { return Math.floor(Math.pow(2, Random.float() * 32)); }
   function maybeCommaShrinking() { return rnd(5) ? "" : ", 'shrinking'"; }
-
-  function global(d, b) { return ensureOneArg(browser ? Things.instance("Window") : makeExpr(d - 1, b)); }
-  function object(d, b) { return ensureOneArg(browser ? Things.any() : makeExpr(d - 1, b)); }
-
-  // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
-  function ensureOneArg(s) { return "(null || (" + s + "))"; }
 
   function enableGCZeal()
   {
@@ -53,8 +46,8 @@ var fuzzTestingFunctions = (function(glob){
   var sharedTestingFunctions = [
     // Force garbage collection (global or specific compartment)
     { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "("                                            + ");"; } },
-    { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "(" + "'compartment'"  + maybeCommaShrinking() + ");"; } },
-    { w: 5,  v: function(d, b) { return "void " + prefix + "gc" + "(" + global(d, b)     + maybeCommaShrinking() + ");"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "(" + "'compartment'" + maybeCommaShrinking() + ");"; } },
+    { w: 5,  v: function(d, b) { return "void " + prefix + "gc" + "(" + fGlobal(d, b)   + maybeCommaShrinking() + ");"; } },
 
     // Run a minor garbage collection on the nursery.
     { w: 20, v: function(d, b) { return prefix + "minorgc" + "(false);"; } },
@@ -66,10 +59,10 @@ var fuzzTestingFunctions = (function(glob){
     { w: 20, v: function(d, b) { return prefix + "gcslice" + "(" + gcSliceSize() + ");"; } },
 
     // Schedule the given objects to be marked in the next GC slice.
-    { w: 10, v: function(d, b) { return prefix + "selectforgc" + "(" + object(d, b) + ")" + ");"; } },
+    { w: 10, v: function(d, b) { return prefix + "selectforgc" + "(" + fObject(d, b) + ")" + ");"; } },
 
     // Add a compartment to the next garbage collection.
-    { w: 10, v: function(d, b) { return "void " + prefix + "schedulegc" + "(" + global(d, b) + ");"; } },
+    { w: 10, v: function(d, b) { return "void " + prefix + "schedulegc" + "(" + fGlobal(d, b) + ");"; } },
 
     // Schedule a GC for after N allocations.
     { w: 10, v: function(d, b) { return "void " + prefix + "schedulegc" + "(" + numberOfAllocs() + ");"; } },
@@ -137,11 +130,10 @@ var fuzzTestingFunctions = (function(glob){
     // Force garbage collection with function relazification
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "();"; } },
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
-    { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + global(d, b) + ");"; } },
+    { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
   ];
 
   var testingFunctions = Random.weighted(browser ? sharedTestingFunctions : sharedTestingFunctions.concat(shellOnlyTestingFunctions));
 
   return { testingFunctions: testingFunctions, enableGCZeal: enableGCZeal };
-
-})(this);
+}
