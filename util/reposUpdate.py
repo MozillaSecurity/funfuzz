@@ -22,24 +22,13 @@ repos.append('fuzzing')
 # Official repository branches
 repos.append('mozilla-inbound')
 repos.append('mozilla-central')
-#repos.append('comm-central')
 repos.append('mozilla-aurora')
 repos.append('mozilla-beta')
 repos.append('mozilla-release')
 repos.append('mozilla-esr31')
-# B2G
-repos.append('b2g')
-repos.append('framework-orangutan')
-repos.append('gaia')
-repos.append('monkey-gaia')  # preferred name for gwagner's repo disabling phone calls and sms
-repos.append('orangfuzz')
 # Others
 repos.append('v8')
 # Miscellaneous tools
-repos.append('buildbot-configs')
-repos.append('buildbot')
-repos.append('build-tools')
-#repos.append('mozmill-tests')
 repos.append('valgrind')
 
 def typeOfRepo(r):
