@@ -17,6 +17,7 @@ function whatToTestSpidermonkeyTrunk(code)
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
+       && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("Date") == -1                // time marches on
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
@@ -31,7 +32,6 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-       && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("'strict") == -1             // see bug 743425
        && code.indexOf("Object.seal") == -1         // bug 937922
        && code.indexOf("length") == -1              // bug 1027846

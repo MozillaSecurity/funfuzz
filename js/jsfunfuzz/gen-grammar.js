@@ -291,7 +291,7 @@ function makeUseRegressionTest(d, b)
     switch (rnd(2)) {
       case 0:
         // simply inline the script -- this is the only one that will work in newGlobal()
-        s += "/* regression-test-inline */ " + "/* " + files[i] + " */ " + read(files[i]) + "\n";
+        s += "/* regression-test-inline */ " + inlineRegressionTest(files[i]);
         break;
       default:
         // run it using load()
@@ -302,6 +302,30 @@ function makeUseRegressionTest(d, b)
   }
   return s;
 }
+
+function inlineRegressionTest(filename)
+{
+  // Inline a regression test, adding NODIFF (to disable differential testing) if it calls a testing function that might throw.
+
+  const s = "/* " + filename + " */ " + read(filename) + "\n";
+
+  const testingFunctionsThatCanThrow = [
+    "gcparam",
+    "startgc",
+    "setJitCompilerOption",
+    "disableSingleStepProfiling",
+    "enableSingleStepProfiling",
+  ];
+
+  for (var f of testingFunctionsThatCanThrow) {
+    if (s.indexOf(f) != -1) {
+      return "/*NODIFF*/ " + s;
+    }
+  }
+
+  return s;
+}
+
 
 function regressionTestDependencies(maintest)
 {
