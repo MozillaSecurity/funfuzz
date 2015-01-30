@@ -43,6 +43,15 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--no-cgc') and chance(.1):
+       args.append("--no-cgc")  # --no-cgc landed in bug 1126769
+
+    if shellSupportsFlag(shellPath, '--no-ggc') and chance(.1):
+       args.append("--no-ggc")  # --no-ggc landed in bug 706885
+
+    if shellSupportsFlag(shellPath, '--no-incremental-gc') and chance(.1):
+       args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
+
     # Bug 1127133 makes me wonder if this passes regression tests...
     #if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.5):
     #   args.append("--unboxed-objects")  # --unboxed-objects landed in bug 1116855

@@ -121,12 +121,16 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if '--no-cgc' in flags:
+        required.append('ade5e0300605') # m-c 226540 Fx38, 1st w/--no-cgc, see bug 1126769
     if '--unboxed-objects' in flags:
         required.append('7820fd141998') # m-c 225967 Fx38, 1st w/--unboxed-objects, see bug 1116855
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b') # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
         required.append('03c6a758c9e8') # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
+    if '--no-incremental-gc' in flags:
+        required.append('35025fd9e99b') # m-c 211115 Fx36, 1st w/--no-incremental-gc, see bug 958492
     if '--no-threads' in flags:
         required.append('e8558ecd9b16') # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
     if sps.isMozBuild64 or options.enableNsprBuild:  # 64-bit builds have peculiar complexities prior to this
