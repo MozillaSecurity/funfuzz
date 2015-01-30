@@ -514,7 +514,7 @@ def ensureBuild(options):
                 cshell = compileShell.CompiledShell(options.buildOptions, bRev)
                 compileShell.compileStandalone(cshell)
 
-                bDir = cshell.getShellCacheFullPath()
+                bDir = cshell.getShellCacheDir()
                 bType = buildOptions.computeShellType(options.buildOptions)
                 bSrc = 'Create another shell in shell-cache like this one:\n' + \
                        'python -u %s -b "%s -R %s" -r %s\n\n' % (
