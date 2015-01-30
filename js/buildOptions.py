@@ -268,7 +268,7 @@ def areArgsValid(args):
         if not args.enable32:  # Remove this when we have the ARM64 simulator builds
             return False, 'The ARM simulator builds are only for 32-bit binaries.'
         if args.enable32 and sps.isMac:
-            return False, 'Bug 1128097'
+            return False, 'Bug 1128097'  # Uncomment known brokenness range when fixed
 
     return True, ''
 
