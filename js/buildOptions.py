@@ -267,8 +267,6 @@ def areArgsValid(args):
             return False, 'We cannot run the ARM simulator in an ARM build.'
         if not args.enable32:  # Remove this when we have the ARM64 simulator builds
             return False, 'The ARM simulator builds are only for 32-bit binaries.'
-        if args.enable32:
-            return False, 'ARM simulators are broken due to bug 1124653'
 
     return True, ''
 
