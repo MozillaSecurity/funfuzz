@@ -525,6 +525,8 @@ def ensureBuild(options):
                        '|  DATE: %s\n'                    % sps.dateStr() + \
                        '==============================================\n\n'
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)
+                print 'buildDir is: ' + bDir
+                print 'buildSrc is: ' + bSrc
         else:
             # Compiled browser
             options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
