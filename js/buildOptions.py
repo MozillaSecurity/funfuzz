@@ -259,6 +259,9 @@ def areArgsValid(args):
     if args.buildWithAsan and sps.isWin:
         return False, 'Asan is not yet supported on Windows.'
 
+    if args.buildWithAsan and not args.enableDbg:
+        return False, 'We need debug mode for ASan builds.'
+
     if not args.disableGcGenerational and args.disableExactRooting:
         return False, 'If exact rooting is disabled, GGC must also be disabled.'
 
