@@ -239,7 +239,7 @@ def parseOpts():
         retestRoot = None,
         timeout = 0,
         buildOptions = None,
-        useTinderboxShells = False,
+        useTreeherderShells = False,
         retestSkips = None
     )
 
@@ -263,8 +263,8 @@ def parseOpts():
     parser.add_option("--target-time", dest="targetTime", type='int',
         help="Nominal amount of time to run, in seconds")
 
-    parser.add_option('-T', '--use-tinderbox-shells', dest='useTinderboxShells', action='store_true',
-                      help='Fuzz js using tinderbox shells. Requires -j.')
+    parser.add_option('-T', '--use-treeherder-shells', dest='useTreeherderShells', action='store_true',
+                      help='Fuzz js using treeherder shells. Requires -j.')
 
     # Specify how the shell will be built.
     # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
@@ -295,12 +295,12 @@ def parseOpts():
 
     if options.testType == 'js':
         if not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
-            options.useTinderboxShells = True
+            options.useTreeherderShells = True
             print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
             print 'Using treeherder shells instead...'
         if options.buildOptions is None:
             options.buildOptions = ''
-        if options.useTinderboxShells and options.buildOptions != '':
+        if options.useTreeherderShells and options.buildOptions != '':
             raise Exception('Do not use treeherder shells if one specifies build parameters')
 
     if options.remote_host and "/msys/" in options.baseDir:
@@ -504,7 +504,7 @@ def ensureBuild(options):
         bRev = ''
         manyTimedRunArgs = []
     elif options.buildOptions is not None:
-        if options.testType == "js" and not options.useTinderboxShells:
+        if options.testType == "js" and not options.useTreeherderShells:
             # Compiled js shells
             options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
             options.timeout = options.timeout or machineTimeoutDefaults(options)
@@ -540,7 +540,7 @@ def ensureBuild(options):
                 raise Exception('Building a browser failed.')
     else:
         # Treeherder js shells and browser
-        # Download from Tinderbox and call it 'build'
+        # Download from Treeherder and call it 'build'
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
         bDir = 'build'

@@ -58,8 +58,8 @@ def parseOpts():
         parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel = 'skip',
         buildOptions = "",
-        useTinderboxBinaries = False,
-        nameOfTinderboxBranch = 'mozilla-inbound',
+        useTreeherderBinaries = False,
+        nameOfTreeherderBranch = 'mozilla-inbound',
     )
 
     # Specify how the shell will be built.
@@ -113,13 +113,13 @@ def parseOpts():
                       help='Specify how to treat revisions that fail to compile. ' + \
                             '(bad, good, or skip) Defaults to "%default"')
 
-    parser.add_option('-T', '--useTinderboxBinaries',
-                      dest='useTinderboxBinaries',
+    parser.add_option('-T', '--useTreeherderBinaries',
+                      dest='useTreeherderBinaries',
                       action="store_true",
-                      help='Use tinderbox binaries for quick bisection, assuming a fast ' + \
+                      help='Use treeherder binaries for quick bisection, assuming a fast ' + \
                            'internet connection. Defaults to "%default"')
-    parser.add_option('-N', '--nameOfTinderboxBranch',
-                      dest='nameOfTinderboxBranch',
+    parser.add_option('-N', '--nameOfTreeherderBranch',
+                      dest='nameOfTreeherderBranch',
                       help='Name of the branch to download. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
@@ -166,22 +166,22 @@ def parseOpts():
     earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
 
     if options.startRepo is None:
-        if options.useTinderboxBinaries:
+        if options.useTreeherderBinaries:
             options.startRepo = 'default'
         else:
             options.startRepo = earliestKnown
-    elif not (options.useTinderboxBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
+    elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
         raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
-    if not options.useTinderboxBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
+    if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
         raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
 
-    if options.nameOfTinderboxBranch != 'mozilla-inbound' and not options.useTinderboxBinaries:
-        raise Exception('Setting the name of branches only works for tinderbox shell bisection.')
+    if options.nameOfTreeherderBranch != 'mozilla-inbound' and not options.useTreeherderBinaries:
+        raise Exception('Setting the name of branches only works for treeherder shell bisection.')
 
     return options
 
@@ -460,7 +460,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 
 
 #############################################
-#  Bisection involving tinderbox js shells  #
+#  Bisection involving treeherder js shells  #
 #############################################
 
 
@@ -492,7 +492,7 @@ def assertSaneJsBinary(cacheF):
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (sps.isWin and retCode == -1073741515)
                 # We should have another condition here for non-Windows platforms but we do not yet
-                # have a situation where we can test broken tinderbox js shells on those platforms.
+                # have a situation where we can test broken treeherder js shells on those platforms.
                 if isDllNotPresentWinStartupError:
                     raise Exception('Shell startup error - a .dll file is probably not present.')
                 elif retCode != 0:
@@ -511,13 +511,13 @@ def assertSaneJsBinary(cacheF):
 
 def bisectUsingTboxBins(options):
     '''
-    Downloads tinderbox binaries and bisects them.
+    Downloads treeherder binaries and bisects them.
     '''
     testedIDs = {}
     desiredArch = '32' if options.buildOptions.enable32 else '64'
-    buildType = downloadBuild.defaultBuildType(options.nameOfTinderboxBranch, desiredArch, options.buildOptions.enableDbg)
+    buildType = downloadBuild.defaultBuildType(options.nameOfTreeherderBranch, desiredArch, options.buildOptions.enableDbg)
 
-    # Get list of tinderbox IDs
+    # Get list of treeherder IDs
     urlsTbox = downloadBuild.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
 
     # Download and test starting point.
@@ -561,7 +561,7 @@ def bisectUsingTboxBins(options):
             print 'Middle ID is None.'
             break
 
-        # Refresh the range of tinderbox IDs depending on mResult.
+        # Refresh the range of treeherder IDs depending on mResult.
         if mResult == endResult:
             urlsTbox = urlsTbox[0:(mPosition + 1)]
         else:
@@ -589,7 +589,7 @@ def bisectUsingTboxBins(options):
 
 def createTboxCacheFolder(cacheFolder):
     '''
-    Attempt to create the tinderbox js shell's cache folder if it does not exist. If it does, check
+    Attempt to create the treeherder js shell's cache folder if it does not exist. If it does, check
     that its binaries are working properly.
     '''
     try:
@@ -668,8 +668,8 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
 
 def getIdFromTboxUrl(url):
     '''
-    Returns the numeric ID from the tinderbox URL at:
-        https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/
+    Returns the numeric ID from the treeherder URL at:
+        https://ftp.mozilla.org/pub/mozilla.org/firefox/treeherder-builds/
     '''
     return filter(None, url.split('/'))[-1]
 
@@ -705,14 +705,14 @@ def getOneBuild(isJsShell, url, buildType, testedIDs):
 
 def getTboxJsBinPath(baseDir):
     '''
-    Returns the path to the tinderbox js binary from a download folder.
+    Returns the path to the treeherder js binary from a download folder.
     '''
     return sps.normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if sps.isWin else 'js'))
 
 
 def getTimestampAndHashFromTboxFiles(folder):
     '''
-    Returns timestamp and changeset information from the .txt file downloaded from tinderbox.
+    Returns timestamp and changeset information from the .txt file downloaded from treeherder.
     '''
     downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
     for fn in os.listdir(downloadDir):
@@ -726,14 +726,14 @@ def getTimestampAndHashFromTboxFiles(folder):
 
 def isTboxBinInteresting(options, downloadDir, csetHash):
     '''
-    Test the required tinderbox binary.
+    Test the required treeherder binary.
     '''
     return options.testAndLabel(getTboxJsBinPath(downloadDir), csetHash)
 
 
 def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     '''
-    Returns formatted bisection results from using tinderbox builds.
+    Returns formatted bisection results from using treeherder builds.
     '''
     sTimestamp, sHash, sResult, sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
     eTimestamp, eHash, eResult, eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
@@ -744,7 +744,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     params = filter(None, ['-s ' + sHash, '-e ' + eHash, pOutput, oOutput, '-b <build parameters>'])
     print ' '.join(params)
 
-    print '\n=== Tinderbox Build Bisection Results by autoBisect ===\n'
+    print '\n=== Treeherder Build Bisection Results by autoBisect ===\n'
     print 'The "' + sResult + '" changeset has the timestamp "' + sTimestamp + \
         '" and the hash "' + sHash + '".'
     print 'The "' + eResult + '" changeset has the timestamp "' + eTimestamp + \
@@ -752,15 +752,15 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
 
     # Formulate hgweb link for mozilla repositories
     hgWebAddrList = ['hg.mozilla.org']
-    if options.nameOfTinderboxBranch == 'mozilla-central':
-        hgWebAddrList.append(options.nameOfTinderboxBranch)
-    elif options.nameOfTinderboxBranch == 'mozilla-inbound':
-        hgWebAddrList.extend(['integration', options.nameOfTinderboxBranch])
-    elif options.nameOfTinderboxBranch == 'mozilla-aurora' or \
-            options.nameOfTinderboxBranch == 'mozilla-beta' or \
-            options.nameOfTinderboxBranch == 'mozilla-release' or \
-            'mozilla-esr' in options.nameOfTinderboxBranch:
-        hgWebAddrList.extend(['releases', options.nameOfTinderboxBranch])
+    if options.nameOfTreeherderBranch == 'mozilla-central':
+        hgWebAddrList.append(options.nameOfTreeherderBranch)
+    elif options.nameOfTreeherderBranch == 'mozilla-inbound':
+        hgWebAddrList.extend(['integration', options.nameOfTreeherderBranch])
+    elif options.nameOfTreeherderBranch == 'mozilla-aurora' or \
+            options.nameOfTreeherderBranch == 'mozilla-beta' or \
+            options.nameOfTreeherderBranch == 'mozilla-release' or \
+            'mozilla-esr' in options.nameOfTreeherderBranch:
+        hgWebAddrList.extend(['releases', options.nameOfTreeherderBranch])
     hgWebAddr = 'https://' + '/'.join(hgWebAddrList)
 
     if sResult == 'good' and eResult == 'bad':
@@ -846,9 +846,9 @@ def main():
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
 
-    with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTinderboxBranch, tboxIdentifier='Tbox') \
-                         if options.useTinderboxBinaries else compileShell.getLockDirPath(repoDir)):
-        if options.useTinderboxBinaries:
+    with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox') \
+                         if options.useTreeherderBinaries else compileShell.getLockDirPath(repoDir)):
+        if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
         else:
             # Bisect using local builds

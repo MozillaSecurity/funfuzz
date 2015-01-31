@@ -614,7 +614,7 @@ def makeTestRev(options):
         print "Rev " + rev + ":",
 
         try:
-            compileStandalone(shell, updateToRev=rev, isTboxBins=options.useTinderboxBinaries)
+            compileStandalone(shell, updateToRev=rev, isTboxBins=options.useTreeherderBinaries)
         except Exception:
             return (options.compilationFailedLabel, 'compilation failed')
 
