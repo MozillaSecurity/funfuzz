@@ -84,13 +84,14 @@ def makeRegressionTestPrologue(repo, regressionTestListFile):
 
     # We use json.dumps to escape strings (Windows paths have backslashes).
     return """
-        const regressionTestList = read(%s).match(/.+/g);
         const regressionTestsRoot = %s;
         const libdir = regressionTestsRoot + %s; // needed by jit-tests
+        var regressionTestList;
+        try { regressionTestList = read(%s).match(/.+/g); } catch(e) { }
     """ % (
-        json.dumps(os.path.abspath(sps.normExpUserPath(regressionTestListFile))),
         json.dumps(sps.normExpUserPath(repo) + os.sep),
         json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
+        json.dumps(os.path.abspath(sps.normExpUserPath(regressionTestListFile))),
     )
 
 def inTreeRegressionTests(repo):
