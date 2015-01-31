@@ -515,7 +515,10 @@ def ensureBuild(options):
                 compileShell.compileStandalone(cshell)
 
                 bDir = cshell.getShellCacheDir()
-                bType = buildOptions.computeShellType(options.buildOptions)
+                # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
+                #   js-js-dbg-opt-64-dm-nsprBuild-linux
+                # This is because options.testType gets prepended along with a dash later.
+                bType = buildOptions.computeShellType(options.buildOptions)[3:]
                 bSrc = 'Create another shell in shell-cache like this one:\n' + \
                        'python -u %s -b "%s -R %s" -r %s\n\n' % (
                        os.path.join(path3, 'compileShell.py'), options.buildOptions.buildOptionsStr,
