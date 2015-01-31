@@ -36,14 +36,10 @@ var domfuzzhelpermanager = new DOMFuzzHelperManager();
  * FUZZPRIV OBJECT INJECTION *
  *****************************/
 
-// Create deeply fresh objects so windows don't influence each other.
-// This "deep freshness" also seems to expected for users of Cu.cloneInto:
-// https://bug1082450.bugzilla.mozilla.org/attachment.cgi?id=8505432
-
 function makeDOMFuzzHelper(aWindow) {
   dumpln("DOMFuzzHelper created");
 
-  return {
+  var helper = {
       toString: function() { return "[DOMFuzzHelper]"; },
 
       quitApplication: function() {
@@ -72,47 +68,23 @@ function makeDOMFuzzHelper(aWindow) {
 
       enableAccessibility: enableAccessibility.bind(this),
 
-      forceGC: function() { Cu.forceGC(); },
-
-      CC: cycleCollect(aWindow),
-      finishCC: function() { Cu.finishCC(); },
-      ccSlice: function(budget) { Cu.ccSlice(budget); },
-
-      CCLog: cycleCollectLog(aWindow),
-
-      MP: sendMemoryPressureNotification.bind(this),
-
-      // Using the apply/arguments pattern because some of these functions (GC, gcslice) vary their behavior based on the number of arguments
-      // XXX can I somehow change this to be just a list of functions that we allow to be forwarded?
-      GC:                                    function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
-      gc:                                    function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
-      deterministicgc:                       function() { Components.utils.getJSTestingFunctions().deterministicgc.apply(this, arguments); },
-      schedulegc:                            function() { Components.utils.getJSTestingFunctions().schedulegc.apply(this, arguments); },
-      selectforgc:                           function() { Components.utils.getJSTestingFunctions().selectforgc.apply(this, arguments); },
-      gczeal:                                function() { Components.utils.getJSTestingFunctions().gczeal.apply(this, arguments); },
-      gcslice:                               function() { Components.utils.getJSTestingFunctions().gcslice.apply(this, arguments); },
-      setIonCheckGraphCoherency:             function() { Components.utils.getJSTestingFunctions().setIonCheckGraphCoherency.apply(this, arguments); },
-      enableOsiPointRegisterChecks:          function() { Components.utils.getJSTestingFunctions().enableOsiPointRegisterChecks.apply(this, arguments); },
-      gcPreserveCode:                        function() { Components.utils.getJSTestingFunctions().gcPreserveCode.apply(this, arguments); },
-      minorgc:                               function() { Components.utils.getJSTestingFunctions().minorgc.apply(this, arguments); },
-      gcparam:                               function() { return Components.utils.getJSTestingFunctions().gcparam.apply(this, arguments); },
-      countHeap:                             function() { return Components.utils.getJSTestingFunctions().countHeap.apply(this, arguments); },
-      setJitCompilerOption:                  function() { Components.utils.getJSTestingFunctions().setJitCompilerOption.apply(this, arguments); },
-      // Disabled: bug 1005777
-      //enableSPSProfiling:                    function() { Components.utils.getJSTestingFunctions().enableSPSProfiling.apply(this, arguments); },
-      //enableSPSProfilingWithSlowAssertions:  function() { Components.utils.getJSTestingFunctions().enableSPSProfilingWithSlowAssertions().apply(this, arguments); },
-      //disableSPSProfiling:                   function() { Components.utils.getJSTestingFunctions().disableSPSProfiling.apply(this, arguments); },
-
-      verifyprebarriers:            function() { Components.utils.getJSTestingFunctions().verifyprebarriers(); },
-      verifypostbarriers:           function() { Components.utils.getJSTestingFunctions().verifypostbarriers(); },
-      terminate:                    function() { Components.utils.getJSTestingFunctions().terminate(); },
-
-      forceShrinkingGC: function() { Cu.forceShrinkingGC(); },
-
-      schedulePreciseGC: function() { Cu.schedulePreciseGC(function() { dumpln("precise GC complete"); }); },
-
+      // Garbage collection (those not covered by import of getJSTestingFunctions)
+      GC:                         function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
+      forceShrinkingGC:           function() { Cu.forceShrinkingGC(); },
+      schedulePreciseGC:          function() { Cu.schedulePreciseGC(function() { dumpln("precise GC complete"); }); },
       schedulePreciseShrinkingGC: function() { Cu.schedulePreciseShrinkingGC(function() { dumpln("precise shrinking GC complete"); }); },
 
+      // Cycle collection
+      CC:        cycleCollect(aWindow),
+      CCLog:     cycleCollectLog(aWindow),
+      forceGC:   function() { Cu.forceGC(); },
+      finishCC:  function() { Cu.finishCC(); },
+      ccSlice:   function(budget) { Cu.ccSlice(budget); },
+
+      // Memory pressure
+      MP: sendMemoryPressureNotification.bind(this),
+
+      // Requests for information
       fontList: fontList.bind(this),
       reftestFilesDirectory: reftestFilesDirectory.bind(this),
       reftestList: reftestList.bind(this),
@@ -127,7 +99,6 @@ function makeDOMFuzzHelper(aWindow) {
 
       openAboutNewtab: function() { aWindow.open("about:newtab"); },
 
-
       comparePixels: comparePixels(aWindow),
 
       callDrawWindow: callDrawWindow(aWindow),
@@ -136,6 +107,19 @@ function makeDOMFuzzHelper(aWindow) {
 
       trustedKeyEvent: trustedKeyEvent(aWindow),
   };
+
+  var testingFunctions = Components.utils.getJSTestingFunctions();
+  for (let key of Object.getOwnPropertyNames(testingFunctions)) {
+    if (key.indexOf("SPSProfil") != -1) {
+      // Bug 1005777
+      continue;
+    }
+    if (!(key in helper)) {
+      helper[key] = testingFunctions[key];
+    }
+  }
+
+  return helper;
 }
 
 
