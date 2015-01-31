@@ -48,8 +48,9 @@ def knownBrokenRanges(options):
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange('d633e3ff2013', 'bcbe93f41547'), # Fx29, broken non-threadsafe
         hgrange('dbeea0e93b56', 'b980c2dee2e7'), # Fx29, broken non-threadsafe
+        hgrange('d633e3ff2013', 'bcbe93f41547'), # Fx29, broken non-threadsafe
+        hgrange('f97076de7eb0', '609fa13b17d0'), # Fx29, broken non-threadsafe
         hgrange('995f7402235b', '6c899a1064f3'), # Fx30, broken non-threadsafe
         hgrange('d2c4ae312b66', 'abfaf0ccae19'), # Fx30, broken non-threadsafe
         hgrange('7cff27cb2845', 'ff5ca7959511'), # Fx30, broken build config w/ NSPR
