@@ -912,7 +912,8 @@ function makeTestingFunctionCall(d, b)
     // Differential testing hack!
     // Take advantage of the fact that --no-asmjs flips isAsmJSCompilationAvailable().
     // (A more principled approach would be to have compareJIT set an environment
-    // variable and read it here using os.getenv().)
+    // variable and read it here using os.getenv(), but os is not available
+    // when running with --fuzzing-safe...)
     var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
     return "if (" + cond + ") " + callBlock;
   }
