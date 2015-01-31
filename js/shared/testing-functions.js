@@ -27,17 +27,11 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     switch(rnd(4)) {
       case 0:  return _set("sliceTimeBudget", rnd(100));
       case 1:  return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
-      case 2:  return _set("maxBytes", _get("gcBytes") + " + " + (rnd(2) ? rnd(2) : rnd(4097))); // Make a near-future allocation fail
-      default: return _set("maxBytes", 4294967295); // Restore the unlimited-ish default
     }
 
     function _set(name, value) {
       // try..catch because gcparam sets may throw, depending on GC state (see bug 973571)
       return tryCatch(prefix + "gcparam" + "('" + name + "', " + value + ");");
-    }
-
-    function _get(name) {
-      return prefix + "gcparam" + "('" + name + "')";
     }
   }
 
@@ -69,9 +63,6 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
     // Change a GC parameter.
     { w: 10, v: setGcparam },
-
-    // Make garbage collection extremely frequent (SLOW)
-    { w: 1,  v: function(d, b) { return (!browser || rnd(100) === 0) ? (enableGCZeal()) : "void 0;"; } },
 
     // Verify write barriers. These functions are effective in pairs.
     // The first call sets up the start barrier, the second call sets up the end barrier.
@@ -131,6 +122,12 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "();"; } },
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
     { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
+
+    // [TestingFunctions.cpp, but CRASHY] After N js_malloc memory allocations, fail every following allocation
+    { w: 1,  v: function(d, b) { return prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");"; } },
+
+    // [TestingFunctions.cpp, but SLOW] Make garbage collection extremely frequent
+    { w: 1,  v: function(d, b) { return (rnd(100) === 0) ? (enableGCZeal()) : "void 0;"; } },
   ];
 
   var testingFunctions = Random.weighted(browser ? sharedTestingFunctions : sharedTestingFunctions.concat(shellOnlyTestingFunctions));
