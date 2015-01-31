@@ -238,6 +238,7 @@ def areArgsValid(args):
             'corresponding 64-bit ones for Win64 builds.'
 
     if args.buildWithVg:
+        return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
         if not sps.isProgramInstalled('valgrind'):
             return False, 'Valgrind is not installed.'
         if not args.enableOpt:
