@@ -94,10 +94,11 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 1,  v: function(d, b) { return tryCatch(prefix + "setJitCompilerOption" + "('ion.enable', " + rnd(2) + ");"); } },
     { w: 1,  v: function(d, b) { return tryCatch(prefix + "setJitCompilerOption" + "('baseline.enable', " + rnd(2) + ");"); } },
 
-    // Toggle the built-in profiler.
+    // Test the built-in profiler.
     { w: 1,  v: function(d, b) { return prefix + "enableSPSProfiling" + "();"; } },
     { w: 1,  v: function(d, b) { return prefix + "enableSPSProfilingWithSlowAssertions" + "();"; } },
     { w: 5,  v: function(d, b) { return prefix + "disableSPSProfiling" + "();"; } },
+    { w: 1,  v: function(d, b) { return "void " + prefix + "readSPSProfilingStack" + "();"; } },
 
     // I'm not sure what this does in the shell.
     { w: 5,  v: function(d, b) { return prefix + "deterministicgc" + "(false);"; } },
