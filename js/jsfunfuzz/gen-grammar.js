@@ -309,15 +309,19 @@ function inlineRegressionTest(filename)
 
   const s = "/* " + filename + " */ " + read(filename) + "\n";
 
-  const testingFunctionsThatCanThrow = [
+  const noDiffTestingFunctions = [
+    // These can throw
     "gcparam",
     "startgc",
     "setJitCompilerOption",
     "disableSingleStepProfiling",
     "enableSingleStepProfiling",
+    // These return values depending on command-line options, and some regression tests check them
+    "isAsmJSCompilationAvailable",
+    "isSimdAvailable", // in 32-bit x86 builds, it depends on whether --no-fpu is passed in, because --no-fpu also disables SSE
   ];
 
-  for (var f of testingFunctionsThatCanThrow) {
+  for (var f of noDiffTestingFunctions) {
     if (s.indexOf(f) != -1) {
       return "/*NODIFF*/ " + s;
     }
