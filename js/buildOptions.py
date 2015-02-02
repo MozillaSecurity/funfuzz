@@ -225,9 +225,9 @@ def computeShellName(buildOptions, buildRev):
 def areArgsValid(args):
     '''Checks to see if chosen arguments are valid.'''
     if args.enableDbg and args.disableDbg:
-        return False, 'Making a debug, non-debug build would be kind of silly.'
+        return False, 'Making a debug, non-debug build would be contradictory.'
     if args.enableOpt and args.disableOpt:
-        return False, 'Making an optimized, non-optimized build would be kind of silly.'
+        return False, 'Making an optimized, non-optimized build would be contradictory.'
     if not args.enableDbg and not args.enableOpt:
         return False, 'Making a non-debug, non-optimized build would be kind of silly.'
     if sps.isARMv7l and not args.enable32:
