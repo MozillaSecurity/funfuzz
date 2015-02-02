@@ -126,15 +126,6 @@ def addParserOptions():
         dest = 'enableMoreDeterministic',
         help = 'Build shells with --enable-more-deterministic. Defaults to "%(default)s".'
     )
-    randomizeBool(['--disable-exact-rooting'], 0.1, 0,
-        dest = 'disableExactRooting',
-        help = 'Build shells with --disable-exact-rooting. Defaults to "%(default)s". ' + \
-               'Implies --disable-gcgenerational.'
-    )
-    randomizeBool(['--disable-gcgenerational'], 0.1, 0,
-        dest = 'disableGcGenerational',
-        help = 'Build shells with --disable-gcgenerational. Defaults to "%(default)s".'
-    )
     randomizeBool(['--enable-arm-simulator'], 0.3, 0,
         dest = 'enableArmSimulator',
         help = 'Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' + \
@@ -197,10 +188,6 @@ def computeShellType(buildOptions):
         fileName.append('vg')
     if buildOptions.enableNsprBuild:
         fileName.append('nsprBuild')
-    if buildOptions.disableExactRooting:
-        fileName.append('erDisabled')
-    if buildOptions.disableGcGenerational:
-        fileName.append('ggcDisabled')
     if buildOptions.enableArmSimulator:
         fileName.append('armSim')
     if sps.isARMv7l:
@@ -262,9 +249,6 @@ def areArgsValid(args):
 
     if args.buildWithAsan and not args.enableDbg:
         return False, 'We need debug mode for ASan builds.'
-
-    if not args.disableGcGenerational and args.disableExactRooting:
-        return False, 'If exact rooting is disabled, GGC must also be disabled.'
 
     if args.enableArmSimulator:
         if sps.isARMv7l:

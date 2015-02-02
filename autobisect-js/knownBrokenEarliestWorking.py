@@ -151,10 +151,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('43acd23f5a98') # m-c 183413 Fx32, 1st w/--no-native-regexp, see bug 976446
     if options.enableArmSimulator:
         required.append('5ad5f92387a2') # m-c 179476 Fx31, 1st w/relevant getBuildConfiguration entry, see bug 998596
-    if options.disableGcGenerational:
-        required.append('52f43e3f552f') # m-c 175600 Fx31, 1st w/--disable-gcgenerational option, see bug 619558
-    if options.disableExactRooting:
-        required.append('6f7227918e79') # m-c 164088 Fx28, 1st w/stable forward-compatible compilation options for GGC, see bug 753203
     if sps.isWin:
         required.append('1a1968da61b3') # m-c 163224 Fx29, 1st w/successful Win builds after build config changes, see bug 950298
     required.append('df3c2a1e86d3') # m-c 160479 Fx29, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs, see bug 927685
