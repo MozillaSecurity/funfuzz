@@ -19,6 +19,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
        && code.indexOf("Date") == -1                // time marches on
+       && code.indexOf("timeout") == -1             // time runs and crawls
        && code.indexOf("random") == -1
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("oomAfterAllocations") == -1
