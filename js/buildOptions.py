@@ -73,11 +73,11 @@ def addParserOptions():
         dest = 'enableDbg',
         help = 'Build shells with --enable-debug. Defaults to "%(default)s".'
     )
-    randomizeBool(['--disable-debug'], 0.25, 0.25,
+    randomizeBool(['--disable-debug'], 0, 0, # Already default in configure.in
         dest = 'disableDbg',
         help = 'Build shells with --disable-debug. Defaults to "%(default)s".'
     )
-    randomizeBool(['--enable-optimize'], 0.8, 0.95,
+    randomizeBool(['--enable-optimize'], 0, 0, # Already default in configure.in
         dest = 'enableOpt',
         help = 'Build shells with --enable-optimize. Defaults to "%(default)s".'
     )
@@ -184,10 +184,6 @@ def computeShellType(buildOptions):
     fileName = ['js']
     if buildOptions.enableDbg:
         fileName.append('dbg')
-    if buildOptions.disableDbg:
-        fileName.append('dbgDisabled')
-    if buildOptions.enableOpt:
-        fileName.append('opt')
     if buildOptions.disableOpt:
         fileName.append('optDisabled')
     fileName.append('32' if buildOptions.enable32 else '64')
@@ -232,7 +228,7 @@ def areArgsValid(args):
         return False, 'Making a debug, non-debug build would be contradictory.'
     if args.enableOpt and args.disableOpt:
         return False, 'Making an optimized, non-optimized build would be contradictory.'
-    if not args.enableDbg and not args.enableOpt:
+    if not args.enableDbg and args.disableOpt:
         return False, 'Making a non-debug, non-optimized build would be kind of silly.'
     if sps.isARMv7l and not args.enable32:
         return False, '64-bit ARM builds are not yet supported.'
