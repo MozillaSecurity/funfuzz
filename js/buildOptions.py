@@ -12,6 +12,7 @@ import hgCmds
 import subprocesses as sps
 
 DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
+deviceIsFast = not sps.isARMv7l
 
 
 def chance(p):
@@ -21,13 +22,16 @@ def chance(p):
 class Randomizer(object):
     def __init__(self):
         self.options = []
-    def add(self, name, weight):
+    def add(self, name, fastDeviceWeight, slowDeviceWeight):
         self.options.append({
             'name': name,
-            'weight': weight
+            'fastDeviceWeight': fastDeviceWeight,
+            'slowDeviceWeight': slowDeviceWeight
         })
     def getRandomSubset(self):
-        return [o['name'] for o in self.options if chance(o['weight'])]
+        def getWeight(o):
+            return o['fastDeviceWeight'] if deviceIsFast else o['slowDeviceWeight']
+        return [o['name'] for o in self.options if chance(getWeight(o))]
 
 
 def addParserOptions():
@@ -36,12 +40,12 @@ def addParserOptions():
     parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
     randomizer = Randomizer()
 
-    def randomizeBool(name, weight, **kwargs):
+    def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):
         '''
         Adds a randomized boolean option that defaults to False,
         and has a [weight] chance of being changed to True when using --random.
         '''
-        randomizer.add(name[-1], weight)
+        randomizer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
         parser.add_argument(*name, action='store_true', default=False, **kwargs)
 
     parser.add_argument('--random',
@@ -61,37 +65,37 @@ def addParserOptions():
     )
 
     # Basic spidermonkey options
-    randomizeBool(['--32'], 0.5,
+    randomizeBool(['--32'], 0.5, 0.5,
         dest = 'enable32',
         help = 'Build 32-bit shells, but if not enabled, 64-bit shells are built.'
     )
-    randomizeBool(['--enable-debug'], 0.5,
+    randomizeBool(['--enable-debug'], 0.5, 0.5,
         dest = 'enableDbg',
         help = 'Build shells with --enable-debug. Defaults to "%(default)s".'
     )
-    randomizeBool(['--disable-debug'], 0.25,
+    randomizeBool(['--disable-debug'], 0.25, 0.25,
         dest = 'disableDbg',
         help = 'Build shells with --disable-debug. Defaults to "%(default)s".'
     )
-    randomizeBool(['--enable-optimize'], 0.8,
+    randomizeBool(['--enable-optimize'], 0.8, 0.95,
         dest = 'enableOpt',
         help = 'Build shells with --enable-optimize. Defaults to "%(default)s".'
     )
-    randomizeBool(['--disable-optimize'], 0.1,
+    randomizeBool(['--disable-optimize'], 0.1, 0.05,
         dest = 'disableOpt',
         help = 'Build shells with --disable-optimize. Defaults to "%(default)s".'
     )
-    randomizeBool(['--enable-profiling'], 0.5,
+    randomizeBool(['--enable-profiling'], 0.5, 0,
         dest = 'enableProfiling',
         help = 'Build shells with --enable-profiling. Defaults to "%(default)s".'
     )
 
     # Memory debuggers
-    randomizeBool(['--build-with-asan'], 0.3,
+    randomizeBool(['--build-with-asan'], 0.3, 0,
         dest = 'buildWithAsan',
         help = 'Build with clang AddressSanitizer support. Defaults to "%(default)s".'
     )
-    randomizeBool(['--build-with-valgrind'], 0.2,
+    randomizeBool(['--build-with-valgrind'], 0.2, 0.05,
         dest = 'buildWithVg',
         help = 'Build with valgrind.h bits. Defaults to "%(default)s". ' + \
                'Requires --enable-hardfp for ARM platforms.'
@@ -107,31 +111,31 @@ def addParserOptions():
 
     # Misc spidermonkey options
     if sps.isARMv7l:
-        randomizeBool(['--enable-hardfp'], 0.5,
+        randomizeBool(['--enable-hardfp'], 0.5, 0.5,
             dest = 'enableHardFp',
             help = 'Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".'
         )
-    randomizeBool(['--enable-nspr-build'], 0.5,
+    randomizeBool(['--enable-nspr-build'], 0.5, 0.95,
         dest = 'enableNsprBuild',
         help = 'Build the shell using (in-tree) NSPR. This is the default on Windows. ' + \
                'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' + \
                'Using --enable-nspr-build creates a JS shell that is more like the browser. ' + \
                'Defaults to "%(default)s".'
     )
-    randomizeBool(['--enable-more-deterministic'], 0.9,
+    randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
         dest = 'enableMoreDeterministic',
         help = 'Build shells with --enable-more-deterministic. Defaults to "%(default)s".'
     )
-    randomizeBool(['--disable-exact-rooting'], 0.1,
+    randomizeBool(['--disable-exact-rooting'], 0.1, 0,
         dest = 'disableExactRooting',
         help = 'Build shells with --disable-exact-rooting. Defaults to "%(default)s". ' + \
                'Implies --disable-gcgenerational.'
     )
-    randomizeBool(['--disable-gcgenerational'], 0.1,
+    randomizeBool(['--disable-gcgenerational'], 0.1, 0,
         dest = 'disableGcGenerational',
         help = 'Build shells with --disable-gcgenerational. Defaults to "%(default)s".'
     )
-    randomizeBool(['--enable-arm-simulator'], 0.3,
+    randomizeBool(['--enable-arm-simulator'], 0.3, 0,
         dest = 'enableArmSimulator',
         help = 'Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' + \
                'Defaults to "%(default)s".'
