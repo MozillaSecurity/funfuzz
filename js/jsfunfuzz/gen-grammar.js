@@ -914,8 +914,9 @@ function makeTestingFunctionCall(d, b)
     // (A more principled approach would be to have compareJIT set an environment
     // variable and read it here using os.getenv(), but os is not available
     // when running with --fuzzing-safe...)
+    // The extra braces prevent a stray "else" from being associated with this "if".
     var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
-    return "if (" + cond + ") " + callBlock;
+    return "{ if (" + cond + ") " + callBlock + " }";
   }
 
   return callBlock;
