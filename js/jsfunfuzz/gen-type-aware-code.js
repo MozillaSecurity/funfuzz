@@ -365,8 +365,6 @@ var makeEvilCallback;
     { w: 2,  v: function(d, b) { return m() + ".__iterator__ = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1,  v: function(d, b) { return m() + " = " + m() + ";"; } },
     { w: 1,  v: function(d, b) { return m() + " = " + m("g") + ".objectEmulatingUndefined();"; } },
-    { w: 1,  v: function(d, b) { return m() + " = wrap(" + val(d, b) + ");"; } },
-    { w: 1,  v: function(d, b) { return m() + " = wrapWithProto(" + val(d, b) + ", " + val(d, b) + ");"; } },
     { w: 1,  v: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
     { w: 5,  v: function(d, b) { return m() + ".__proto__ = " + m() + ";"; } },
     { w: 10, v: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
