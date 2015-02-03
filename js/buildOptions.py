@@ -81,7 +81,7 @@ def addParserOptions():
         dest = 'enableOpt',
         help = 'Build shells with --enable-optimize. Defaults to "%(default)s".'
     )
-    randomizeBool(['--disable-optimize'], 0.1, 0.05,
+    randomizeBool(['--disable-optimize'], 0.1, 0.01,
         dest = 'disableOpt',
         help = 'Build shells with --disable-optimize. Defaults to "%(default)s".'
     )
@@ -111,11 +111,11 @@ def addParserOptions():
 
     # Misc spidermonkey options
     if sps.isARMv7l:
-        randomizeBool(['--enable-hardfp'], 0.5, 0.5,
+        randomizeBool(['--enable-hardfp'], 0.1, 0.1,
             dest = 'enableHardFp',
             help = 'Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".'
         )
-    randomizeBool(['--enable-nspr-build'], 0.5, 0.95,
+    randomizeBool(['--enable-nspr-build'], 0.5, 0.99,
         dest = 'enableNsprBuild',
         help = 'Build the shell using (in-tree) NSPR. This is the default on Windows. ' + \
                'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' + \
