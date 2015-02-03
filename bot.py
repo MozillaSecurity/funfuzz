@@ -294,7 +294,8 @@ def parseOpts():
             print "Randomly fuzzing: " + options.testType
 
     if options.testType == 'js':
-        if not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
+        if not options.useTreeherderShells and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
+            # We don't have trees, so we must use treeherder shells.
             options.useTreeherderShells = True
             print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
             print 'Using treeherder shells instead...'
