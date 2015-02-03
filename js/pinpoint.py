@@ -38,7 +38,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
     print "\nDone running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
     print sps.shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
 
-    if bisectRepo is not "none" and targetTime is None and buildOptionsStr is not None:
+    if bisectRepo is not "none" and targetTime >= 3*60*60 and buildOptionsStr is not None:
         if platform.uname()[2] == 'XP':
             print 'Not pinpointing to exact changeset since autoBisect does not work well in WinXP.'
         elif testJsShellOrXpcshell(jsEngine) != "xpcshell":
