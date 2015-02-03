@@ -49,6 +49,7 @@ def knownBrokenRanges(options):
 
     skips = [
         hgrange('dbeea0e93b56', 'b980c2dee2e7'), # Fx29, broken non-threadsafe
+        hgrange('464e261cbcbe', '8838fe37b98d'), # Fx29, broken non-threadsafe
         hgrange('d633e3ff2013', 'bcbe93f41547'), # Fx29, broken non-threadsafe
         hgrange('f97076de7eb0', '609fa13b17d0'), # Fx29, broken non-threadsafe
         hgrange('995f7402235b', '6c899a1064f3'), # Fx30, broken non-threadsafe
