@@ -44,6 +44,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Math.pow") == -1            // bug 1124485
        // We need to check if the following is fixed by bug 1122402.
        //&& code.indexOf("Math.max") == -1            // bug 1126066
+       && code.indexOf("Uint8ClampedArray") == -1     // bug 1129088
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
 
   };
