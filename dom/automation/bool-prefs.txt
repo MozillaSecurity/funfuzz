@@ -169,6 +169,7 @@ javascript.options.gc_on_memory_pressure
 javascript.options.ion
 javascript.options.ion.offthread_compilation
 javascript.options.ion.unsafe_eager_compilation
+javascript.options.mem.gc_compacting
 javascript.options.mem.gc_dynamic_heap_growth
 javascript.options.mem.gc_dynamic_mark_slice
 javascript.options.mem.gc_incremental
