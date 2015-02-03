@@ -239,7 +239,7 @@ def parseOpts():
         retestRoot = None,
         timeout = 0,
         buildOptions = None,
-        useTreeherderShells = False,
+        useTreeherderBuilds = False,
         retestSkips = None
     )
 
@@ -263,10 +263,10 @@ def parseOpts():
     parser.add_option("--target-time", dest="targetTime", type='int',
         help="Nominal amount of time to run, in seconds")
 
-    parser.add_option('-T', '--use-treeherder-shells', dest='useTreeherderShells', action='store_true',
-                      help='Fuzz js using treeherder shells. Requires -j.')
+    parser.add_option('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
+                      help='Download builds from treeherder instead of compiling our own.')
 
-    # Specify how the shell will be built.
+    # Specify how the shell or browser will be built.
     # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
     parser.add_option('-b', '--build-options',
                       dest='buildOptions',
@@ -293,16 +293,16 @@ def parseOpts():
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
 
-    if options.testType == 'js':
-        if not options.useTreeherderShells and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
-            # We don't have trees, so we must use treeherder shells.
-            options.useTreeherderShells = True
-            print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
-            print 'Using treeherder shells instead...'
-        if options.buildOptions is None:
-            options.buildOptions = ''
-        if options.useTreeherderShells and options.buildOptions != '':
-            raise Exception('Do not use treeherder shells if one specifies build parameters')
+    if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
+        # We don't have trees, so we must use treeherder builds.
+        options.useTreeherderBuilds = True
+        print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
+        print 'Using treeherder builds instead...'
+
+    if options.buildOptions is None:
+        options.buildOptions = ''
+    if options.useTreeherderBuilds and options.buildOptions != '':
+        raise Exception('Do not use treeherder builds if one specifies build parameters')
 
     if options.remote_host and "/msys/" in options.baseDir:
         # Undo msys-bash damage that turns --basedir "/foo" into "C:/mozilla-build/msys/foo"
@@ -504,8 +504,8 @@ def ensureBuild(options):
         bSrc = bDir
         bRev = ''
         manyTimedRunArgs = []
-    elif options.buildOptions is not None:
-        if options.testType == "js" and not options.useTreeherderShells:
+    elif not options.useTreeherderBuilds:
+        if options.testType == "js":
             # Compiled js shells
             options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
             options.timeout = options.timeout or machineTimeoutDefaults(options)
