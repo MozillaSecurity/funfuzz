@@ -253,6 +253,8 @@ def areArgsValid(args):
     if args.enableArmSimulator:
         if sps.isARMv7l:
             return False, 'We cannot run the ARM simulator in an ARM build.'
+        if sps.isWin:
+            return False, 'Nobody runs the ARM simulator on Windows.'
         if not args.enable32:  # Remove this when we have the ARM64 simulator builds
             return False, 'The ARM simulator builds are only for 32-bit binaries.'
 
