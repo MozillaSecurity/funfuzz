@@ -250,9 +250,6 @@ def areArgsValid(args):
         if sps.isMac:
             return False, 'Asan does not yet work well on Mac due to bug 935795.'
 
-    if args.buildWithAsan and not args.enableDbg:
-        return False, 'We need debug mode for ASan builds.'
-
     if args.enableArmSimulator:
         if sps.isARMv7l:
             return False, 'We cannot run the ARM simulator in an ARM build.'
