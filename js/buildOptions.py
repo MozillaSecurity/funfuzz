@@ -244,8 +244,11 @@ def areArgsValid(args):
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'
 
-    if args.buildWithAsan and sps.isWin:
-        return False, 'Asan is not yet supported on Windows.'
+    if args.buildWithAsan:
+        if sps.isWin:
+            return False, 'Asan is not yet supported on Windows.'
+        if sps.isMac:
+            return False, 'Asan does not yet work well on Mac due to bug 935795.'
 
     if args.buildWithAsan and not args.enableDbg:
         return False, 'We need debug mode for ASan builds.'
