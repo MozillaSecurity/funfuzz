@@ -181,16 +181,9 @@ def many_timed_runs(targetTime, wtmpDir, args):
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
             if options.useCompareJIT and level == jsInteresting.JS_FINE and \
                     shellIsDeterministic and flagsAreDeterministic:
-                with open(logPrefix + '-out.txt', 'rb') as f:
-                    jitcomparelines = (
-                        ["dumpObject = function() { };\n",
-                         "dumpHeapComplete = function() { };\n",
-                         "// DDBEGIN\n"] +
-                        [l.replace('/*FCM*/', '') for l in fileManipulation.linesStartingWith(f, "/*FCM*/")] +
-                        ["\ntry{print(uneval(this));}catch(e){}\n", "// DDEND\n"]
-                    )
+                linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")
                 jitcomparefilename = logPrefix + "-cj-in.js"
-                fileManipulation.writeLinesToFile(jitcomparelines, jitcomparefilename)
+                fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
                 (lithResult, lithDetails) = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                                                   logPrefix + "-cj", options.knownPath, options.repo,
                                                                   options.buildOptionsStr, options.timeout, targetTime)
@@ -200,6 +193,54 @@ def many_timed_runs(targetTime, wtmpDir, args):
                     jsInteresting.deleteLogs(logPrefix)
                     return (lithResult, lithDetails)
             jsInteresting.deleteLogs(logPrefix)
+
+
+def jitCompareLines(jsfunfuzzOutputFilename, marker):
+    """Create a compareJIT file, using the lines marked by jsfunfuzz as valid for comparison"""
+    lines = [
+        "dumpObject = function() { };\n",
+        "dumpHeapComplete = function() { };\n",
+        "// DDBEGIN\n"
+    ]
+    with open(jsfunfuzzOutputFilename, 'rb') as f:
+        for line in f:
+            if line.startswith(marker):
+                sline = line[len(marker):]
+                divisionIsInconsistent = sps.isWin  # Really 'if MSVC' -- revisit if we add clang builds on Windows
+                if not (divisionIsInconsistent and mightUseDivision(sline)):
+                    lines.append(sline)
+    lines += [
+        "\ntry{print(uneval(this));}catch(e){}\n",
+        "// DDEND\n"
+    ]
+    return lines
+
+def mightUseDivision(code):
+    # Work around MSVC division inconsistencies (bug 948321)
+    # by leaving division out of *-cj-in.js files on Windows.
+    # (Unfortunately, this will also match regexps and a bunch
+    # of other things.)
+    i = 0
+    while i < len(code):
+        if code[i] == '/':
+            if i + 1 < len(code) and (code[i + 1] == '/' or code[i + 1] == '*'):
+                # An open-comment like "//" or "/*" is okay. Skip the next character.
+                i += 1
+            elif i > 0 and code[i - 1] == '*':
+                # A close-comment like "*/" is okay too.
+                pass
+            else:
+                # Plain "/" could be division (or regexp or something else)
+                return True
+        i += 1
+    return False
+
+assert(mightUseDivision("//") == False)
+assert(mightUseDivision("// a") == False)
+assert(mightUseDivision("/*FOO*/") == False)
+assert(mightUseDivision("a / b") == True)
+assert(mightUseDivision("eval('/**/'); a / b;") == True)
+assert(mightUseDivision("eval('//x'); a / b;") == True)
 
 if __name__ == "__main__":
     many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:])
