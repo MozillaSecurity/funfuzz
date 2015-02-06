@@ -138,6 +138,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('03c6a758c9e8') # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
     if '--no-incremental-gc' in flags:
         required.append('35025fd9e99b') # m-c 211115 Fx36, 1st w/--no-incremental-gc, see bug 958492
+    if '--ion-loop-unrolling=on' in flags:
+        required.append('aa33f4725177') # m-c 198804 Fx34, 1st w/--ion-loop-unrolling=on, see bug 1039458
     if '--no-threads' in flags:
         required.append('e8558ecd9b16') # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
     if sps.isMozBuild64 or options.enableNsprBuild:  # 64-bit builds have peculiar complexities prior to this
