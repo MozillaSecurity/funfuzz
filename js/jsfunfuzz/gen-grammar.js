@@ -923,8 +923,10 @@ function makeTestingFunctionCall(d, b)
     //     variable and read it here using os.getenv(), but os is not available
     //     when running with --fuzzing-safe...)
     // * The extra braces prevent a stray "else" from being associated with this "if".
+    // * The 'void 0' at the end ensures the last expression-statement is consistent
+    //     (needed because |eval| returns that as its result)
     var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
-    return "{ if (" + cond + ") " + callBlock + " }";
+    return "{ if (" + cond + ") " + callBlock + " void 0; }";
   }
 
   return callBlock;
