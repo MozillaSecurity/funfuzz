@@ -250,6 +250,7 @@ def areArgsValid(args):
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
         if sps.isMac:
+            # FIXME: Implement workaround in https://bugzilla.mozilla.org/show_bug.cgi?id=935795#c3
             return False, 'Asan does not yet work well on Mac due to bug 935795.'
 
     if args.enableArmSimulator:
