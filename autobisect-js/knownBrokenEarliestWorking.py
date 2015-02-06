@@ -129,7 +129,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     required = []
 
     if '--no-cgc' in flags:
-        required.append('ade5e0300605') # m-c 226540 Fx38, 1st w/--no-cgc, see bug 1126769. Please update when bug 1129233 is fixed.
+        required.append('b63d7e80709a') # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
     if '--unboxed-objects' in flags:
         required.append('7820fd141998') # m-c 225967 Fx38, 1st w/--unboxed-objects, see bug 1116855
     if '--ion-sink=on' in flags:
