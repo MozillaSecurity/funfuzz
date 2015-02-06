@@ -371,6 +371,10 @@ def botmain(options):
                 # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
                 # I could guess 1 GB RAM per core, but that wanders into sketchyville.
                 numProcesses = max(numProcesses // 2, 1)
+            if sps.isARMv7l:
+                # Even though ARM boards generally now have many cores, each core is not as powerful
+                # as x86/64 ones, so restrict fuzzing to only 2 cores for now.
+                numProcesses = 2
 
             forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildInfo)
 
