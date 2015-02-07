@@ -37,7 +37,7 @@ def assertionSeverity(line):
         return NON_FATAL_ASSERT
     if "###!!! ABORT" in line:
         return FATAL_ASSERT
-    if "Assertion failure:" in line:
+    if line.startswith("Assertion failure:"):
          # MOZ_ASSERT; spidermonkey; nss
          return FATAL_ASSERT
     if line.startswith("Assertion failed:"):
