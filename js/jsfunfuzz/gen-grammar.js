@@ -319,6 +319,7 @@ function inlineRegressionTest(filename)
     // These return values depending on command-line options, and some regression tests check them
     "isAsmJSCompilationAvailable",
     "isSimdAvailable", // in 32-bit x86 builds, it depends on whether --no-fpu is passed in, because --no-fpu also disables SSE
+    "countHeap",
   ];
 
   for (var f of noDiffTestingFunctions) {
