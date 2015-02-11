@@ -296,12 +296,17 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
             close_fds = (os.name == "posix")
         )
         if useLogFiles:
-            # Path to memory dump is the last element of debuggerCmd.
-            shutil.move(debuggerCmd[-1], logPrefix + "-core")
-            subprocess.call(["gzip", '-f', logPrefix + "-core"])
-            # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-            subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
-            return logPrefix + "-crash.txt"
+            # FIXME: This workaround is for EC2 VMs. We should find out why coredumps are
+            # seemingly not produced.
+            if os.path.isfile(normExpUserPath(debuggerCmd[-1])):
+                # Path to memory dump is the last element of debuggerCmd.
+                shutil.move(debuggerCmd[-1], logPrefix + "-core")
+                subprocess.call(["gzip", '-f', logPrefix + "-core"])
+                # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
+                subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
+                return logPrefix + "-crash.txt"
+            else:
+                print 'This file does not exist: ' + debuggerCmd[-1]
         else:
             print "I don't know what to do with a core file when logPrefix is null"
 
