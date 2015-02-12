@@ -288,14 +288,20 @@ function makeUseRegressionTest(d, b)
   }
 
   for (var i = 0; i < files.length; ++i) {
+    var file = files[i];
+    if (read(file).indexOf("SIMD") != -1) {
+      // Disable SIMD testing until it's more stable (and we can get better stacks?)
+      continue;
+    }
+
     switch (rnd(2)) {
       case 0:
         // simply inline the script -- this is the only one that will work in newGlobal()
-        s += "/* regression-test-inline */ " + inlineRegressionTest(files[i]);
+        s += "/* regression-test-inline */ " + inlineRegressionTest(file);
         break;
       default:
         // run it using load()
-        s += "/* regression-test-load */ " + "load(" + simpleSource(files[i]) + ");";
+        s += "/* regression-test-load */ " + "load(" + simpleSource(file) + ");";
         break;
       // NB: these scripts will also be run through eval(), evalcx(), evaluate() thanks to other parts of the fuzzer using makeScriptForEval or makeStatement
     }
