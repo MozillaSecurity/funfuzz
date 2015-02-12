@@ -320,6 +320,7 @@ function inlineRegressionTest(filename)
     "isAsmJSCompilationAvailable",
     "isSimdAvailable", // in 32-bit x86 builds, it depends on whether --no-fpu is passed in, because --no-fpu also disables SSE
     "countHeap",
+    "PerfMeasurement",
   ];
 
   for (var f of noDiffTestingFunctions) {
