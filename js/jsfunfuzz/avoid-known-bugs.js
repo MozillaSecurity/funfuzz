@@ -37,7 +37,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Object.seal") == -1         // bug 937922
        && code.indexOf("length") == -1              // bug 1027846
        && code.indexOf("preventExtensions") == -1   // bug 1085299
-       && code.indexOf("Math.ceil") == -1           // bug 1122401
        && code.indexOf("Uint32Array") == -1         // bug 1124421
        && code.indexOf("Float32Array") == -1        // bug 1124421
        && code.indexOf("Math.imul") == -1           // bug 1130679
