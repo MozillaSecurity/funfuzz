@@ -25,6 +25,11 @@ var fuzzerTestingFunctions = (function() {
       return [];
     }
 
+    return makeTestingFunctionCall();
+  }
+
+  function makeTestingFunctionCall()
+  {
     if (rnd(100) === 0) {
       return fuzzTestingFunctions.enableGCZeal() + "; try { " + fuzzSubCommand() + " } finally { fuzzPriv.gczeal(0); }";
     }
@@ -36,5 +41,8 @@ var fuzzerTestingFunctions = (function() {
     return Random.index(fuzzTestingFunctions.testingFunctions)();
   }
 
-  return { makeCommand: makeCommand };
+  return {
+    makeCommand: makeCommand,
+    makeTestingFunctionCall: makeTestingFunctionCall
+  };
 })();
