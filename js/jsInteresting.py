@@ -175,12 +175,12 @@ def jsfunfuzzLevel(options, logPrefix, quiet=False):
 def hitMemoryLimit(err):
     """Does stderr indicate hitting a memory limit?"""
 
-    if "js_ReportOverRecursed called" in err:
+    if "ReportOverRecursed called" in err:
         # --enable-more-deterministic
-        return "js_ReportOverRecursed called"
-    elif "js_ReportOutOfMemory called" in err:
+        return "ReportOverRecursed called"
+    elif "ReportOutOfMemory called" in err:
         # --enable-more-deterministic
-        return "js_ReportOutOfMemory called"
+        return "ReportOutOfMemory called"
     elif "failed to allocate" in err:
         # ASan
         return "failed to allocate"
