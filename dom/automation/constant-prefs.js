@@ -10,6 +10,7 @@ user_pref("dom.max_script_run_time", 60);
 // Set additional prefs for fuzzing.
 user_pref("browser.dom.window.dump.enabled", true);
 user_pref("browser.sessionstore.resume_from_crash", false);
+user_pref("browser.addon-watch.interval", -1);
 user_pref("layout.debug.enable_data_xbl", true);
 user_pref("dom.disable_window_status_change", false);
 user_pref("dom.disable_window_move_resize", false);
