@@ -916,9 +916,9 @@ function makeTestingFunctionCall(d, b)
 
   var callStatement = Random.index(fuzzTestingFunctions.testingFunctions)(d, b);
 
-  // Curly braces to make it less likely for unwanted return values to leak out
-  // and confuse compareJIT.
-  var callBlock = "{ " + callStatement + " }";
+  // Set the 'last expression evaluated' to undefined, in case we're in an eval
+  // context, and the function throws in one run but not in another.
+  var callBlock = "{ void 0; " + callStatement + " }";
 
   if (jsshell && rnd(5) === 0) {
     // Differential testing hack!
