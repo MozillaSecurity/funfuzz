@@ -30,6 +30,9 @@ def runBrowser():
   parser.add_option("--leak-log-file",
                     action = "store", dest = "leakLogFile",
                     default = None)
+  parser.add_option("--background",
+                    action = "store_true", dest = "background",
+                    default = False)
   options, args = parser.parse_args(sys.argv)
 
   reftestScriptDir = args[1]
@@ -92,6 +95,10 @@ def runBrowser():
 
   print("RUNBROWSER INFO | runbrowser.py | runApp: start.")
   print("RUNBROWSER INFO | runbrowser.py | " + url)
+
+  if options.background:
+    automation.buildCommandLine = stripForegroundArg(automation.buildCommandLine)
+
   status = automation.runApp(None, browserEnv, theapp, profileDir, cmdLineArgs,
                              utilityPath = utilityDir,
                              xrePath=xrePath,
@@ -101,6 +108,13 @@ def runBrowser():
                              timeout = 200.0 * slowness
                              )
   print("RUNBROWSER INFO | runbrowser.py | runApp: exited with status " + str(status))
+
+def stripForegroundArg(buildCommandLine):
+  def intercept(*args):
+    cmd, args = buildCommandLine(*args)
+    args = filter((lambda a: a != "-foreground"), args)
+    return cmd, args
+  return intercept
 
 if __name__ == "__main__":
   runBrowser()

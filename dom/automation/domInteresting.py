@@ -426,6 +426,10 @@ def rdfInit(args):
                       type = "int", dest = "minimumInterestingLevel",
                       default = DOM_FINE + 1,
                       help = "minimum domfuzz level for lithium to consider the testcase interesting")
+    parser.add_option("--background",
+                      action = "store_true", dest = "background",
+                      default = False,
+                      help = "Run the browser in the background on Mac (e.g. for local reduction)")
     options, args = parser.parse_args(args)
 
     browserDir = args[0]
@@ -439,6 +443,8 @@ def rdfInit(args):
     options.browserDir = browserDir # used by loopdomfuzz
 
     runBrowserOptions = []
+    if options.background:
+        runBrowserOptions.append("--background")
     if dirs.symbolsDir:
         runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
 
