@@ -222,7 +222,9 @@ class AmissLogHandler:
             if len(self.summaryLog) < 100:
                 self.summaryLog.append(msgLF)
         if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
-           msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer")):
+           msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer") or
+           "Shutdown too long, probably frozen, causing a crash" in msg):
+            # A hang was caught by either automation.py or by RunWatchdog (toolkit/components/terminator/nsTerminator.cpp)
             self.timedOut = True
             self.goingDownHard = True
             self.crashWatcher.crashIsKnown = True
