@@ -165,6 +165,7 @@ intl.locale.matchOS
 javascript.options.asmjs
 javascript.options.baselinejit
 javascript.options.baselinejit.unsafe_eager_compilation
+javascript.options.compact_on_user_inactive
 javascript.options.gc_on_memory_pressure
 javascript.options.ion
 javascript.options.ion.offthread_compilation
