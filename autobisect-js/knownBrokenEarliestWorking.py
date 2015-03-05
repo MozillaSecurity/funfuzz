@@ -155,7 +155,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     if options.enableArmSimulator:
         required.append('5ad5f92387a2') # m-c 179476 Fx31, 1st w/relevant getBuildConfiguration entry, see bug 998596
     if sps.isWin:
-        required.append('1a1968da61b3') # m-c 163224 Fx29, 1st w/successful Win builds after build config changes, see bug 950298
+        required.append('abfaf0ccae19') # m-c 169626 Fx30, 1st w/reliably successful Win builds, see bug 974739
     required.append('df3c2a1e86d3') # m-c 160479 Fx29, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs, see bug 927685
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
