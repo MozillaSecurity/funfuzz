@@ -137,6 +137,8 @@ class CompiledShell(object):
         return sps.normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
     def getShellNameWithExt(self):
         return self.shellNameWithExt
+    def getShellNameWithoutExt(self):
+        return self.shellNameWithoutExt
 
 
 def ensureCacheDir():
@@ -189,7 +191,8 @@ def cfgJsCompile(shell):
     compileJs(shell)
     inspectShell.verifyBinary(shell)
 
-    compileLog = sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'compilation-parameters.txt'))
+    compileLog = sps.normExpUserPath(os.path.join(shell.getShellCacheDir(),
+        shell.getShellNameWithoutExt() + '.fuzzmanagerconf'))
     if not os.path.isfile(compileLog):
         envDump(shell, compileLog)
 
@@ -575,24 +578,55 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
 
 
 def envDump(shell, log):
-    '''Dumps environment to file.'''
+    '''Dumps environment to a .fuzzmanagerconf file.'''
+
+    # Platform and OS detection for the spec, part of which is in:
+    #   https://wiki.mozilla.org/Security/CrashSignatures
+    if sps.isARMv7l:
+        fmconfPlatform = 'ARM'
+    elif sps.isARMv7l and not shell.buildOptions.enable32:
+        print 'ARM64 is not supported in .fuzzmanagerconf yet.'
+        fmconfPlatform = 'ARM64'
+    elif shell.buildOptions.enable32:
+        fmconfPlatform = 'x86'
+    else:
+        fmconfPlatform = 'x86-64'
+
+    if sps.isLinux:
+        fmconfOS = 'linux'
+    elif sps.isMac:
+        fmconfOS = 'macosx'
+    elif sps.isWin:
+        fmconfOS = 'windows'
+
+
     with open(log, 'ab') as f:
-        f.write('Information about shell:\n\n')
+        f.write('# Information about shell:\n# \n')
 
-        f.write('Create another shell in shell-cache like this one:\n')
-        f.write('python -u %s -b "%s -R %s" -r %s\n\n' %
-                (os.path.join(path0, 'compileShell.py'),
-                shell.buildOptions.buildOptionsStr, shell.buildOptions.repoDir, shell.getHgHash()))
+        f.write('# Create another shell in shell-cache like this one:\n')
+        f.write('# python -u %s -b "%s" -r %s\n# \n' % ('~/fuzzing/js/compileShell.py',
+                    shell.buildOptions.buildOptionsStr, shell.getHgHash()))
 
-        f.write('Full environment is: ' + str(shell.getEnvFull()) + '\n')
-        f.write('Environment variables added are:\n')
-        f.write(sps.shellify(shell.getEnvAdded()) + '\n\n')
+        f.write('# Full environment is:\n')
+        f.write('# %s\n# \n' % str(shell.getEnvFull()))
 
-        f.write('Configuration command was:\n')
-        f.write(sps.shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+        f.write('# Full configuration command with needed environment variables is:\n')
+        f.write('# %s %s\n# \n' % (sps.shellify(shell.getEnvAdded()),
+                                   sps.shellify(shell.getCfgCmdExclEnv())))
 
-        f.write('Full configuration command with needed environment variables is:\n')
-        f.write(sps.shellify(shell.getEnvAdded()) + ' ' + sps.shellify(shell.getCfgCmdExclEnv()) + '\n\n')
+        # .fuzzmanagerconf details
+        f.write('\n')
+        f.write('[Main]\n')
+        f.write('platform = %s\n'        % fmconfPlatform)
+        f.write('product = %s\n'         % shell.getRepoName())
+        f.write('product_version = %s\n' % shell.getHgHash())
+        f.write('os = %s\n'              % fmconfOS)
+
+        f.write('\n')
+        f.write('[Metadata]\n')
+        f.write('pathPrefix = %s%s\n' % (shell.getRepoDir(),
+                                         '/' if not shell.getRepoDir().endswith('/') else ''))
+        f.write('buildFlags = %s\n' % shell.buildOptions.buildOptionsStr)
 
 
 def getLockDirPath(repoDir, tboxIdentifier=''):
