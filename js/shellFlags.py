@@ -52,9 +52,8 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-incremental-gc') and chance(.1):
        args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
 
-    # There are a number of regressions associated with --unboxed-objects, let's wait. (9 Feb 2015)
-    #if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.5):
-    #   args.append("--unboxed-objects")
+    if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.5):
+       args.append("--unboxed-objects")
 
     #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
