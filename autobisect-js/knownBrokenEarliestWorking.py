@@ -80,11 +80,6 @@ def knownBrokenRanges(options):
             hgrange('d959285c827e', 'edf5e2dc9198'), # Fx33, build breakage
         ])
 
-    if sps.isMozBuild64:
-        skips.extend([
-            hgrange('77d06ee9ac48', 'e7bb99d245e8'), # Fx28-29, breakage due to moz.build error
-        ])
-
     if options.enableMoreDeterministic:
         skips.extend([
             hgrange('4a04ca5ed7d3', '406904577dfc'), # Fx33, see bug 1030014
