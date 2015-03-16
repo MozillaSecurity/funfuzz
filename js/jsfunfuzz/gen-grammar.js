@@ -889,7 +889,6 @@ var exprMakers =
 
   // More special Spidermonkey shell functions
   //  function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
-  function(d, b) { return "(void findReferences(" + makeExpr(d, b) + "))"; },
   function(d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; },
   function(d, b) { return "intern(" + makeExpr(d, b) + ")"; },
   function(d, b) { return "timeout(1800)"; }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
