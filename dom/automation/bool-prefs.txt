@@ -194,7 +194,6 @@ layers.tiled-drawtarget.enabled
 layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 736219, bug 717925
 #layers.offmainthreadcomposition.async-animations
-layout.async-containerless-scrolling.enabled
 layout.css.background-blend-mode.enabled
 layout.css.box-decoration-break.enabled
 layout.css.expensive-style-struct-assertions.enabled
