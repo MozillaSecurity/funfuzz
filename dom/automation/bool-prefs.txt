@@ -85,6 +85,7 @@ browser.zoom.updateBackgroundTabs
 canvas.hitregions.enabled
 canvas.path.enabled
 converter.html2txt.structs
+converter.html2txt.always_include_ruby
 device.sensors.enabled
 dom.abortablepromise.enabled
 dom.animations-api.core.enabled
