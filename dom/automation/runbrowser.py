@@ -83,6 +83,7 @@ def runBrowser():
     browserEnv["G_SLICE"] = "always-malloc"
   if automation.IS_DEBUG_BUILD and not options.valgrind and options.leakLogFile:
       browserEnv["XPCOM_MEM_LEAK_LOG"] = options.leakLogFile
+  browserEnv["MOZ_DISABLE_SAFE_MODE_KEY"] = "1"
 
   # Defeat Lion's misguided attempt to stop Firefox from crashing repeatedly. (I suspect "restorecount.txt" is the most important file to remove.)
   removeDirIfExists(os.path.expanduser("~/Library/Saved Application State/org.mozilla.nightly.savedState"))
