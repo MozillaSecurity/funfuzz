@@ -9,6 +9,7 @@ import tempfile
 import os
 import platform
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -788,6 +789,23 @@ def readIncompleteBuildTxtFile(txtFile, idNum):
                 'Trying another build...'
 
 
+def rmOldLocalCachedDirs(cacheDir):
+    '''Removes old local cached directories, which were created four weeks ago.'''
+    # This is in autoBisect because it has a lock so we do not race while removing directories
+    # Adapted from http://stackoverflow.com/a/11337407
+    SECONDS_IN_A_DAY = 24 * 60 * 60
+    NUMBER_OF_DAYS = 3 if sps.isARMv7l else 28  # native ARM boards usually have less disk space
+
+    cacheDir = sps.normExpUserPath(cacheDir)
+    names = [os.path.join(cacheDir, fname) for fname in os.listdir(cacheDir)]
+
+    for name in names:
+        if os.path.isdir(name):
+            timediff = time.mktime(time.gmtime()) - os.stat(name).st_mtime
+            if timediff > SECONDS_IN_A_DAY * NUMBER_OF_DAYS:
+                shutil.rmtree(name)
+
+
 def showRemainingNumOfTests(reqList):
     '''
     Display the approximate number of tests remaining.
@@ -858,6 +876,10 @@ def main():
             else:
                 findBlamedCset(options, repoDir,
                                compileShell.makeTestRev(options))
+
+        # Last thing we do while we have a lock.
+        # Note that this only clears old *local* cached directories, not remote ones.
+        rmOldLocalCachedDirs(compileShell.ensureCacheDir())
 
 
 if __name__ == '__main__':
