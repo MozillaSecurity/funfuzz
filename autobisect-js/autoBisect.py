@@ -801,7 +801,7 @@ def rmOldLocalCachedDirs(cacheDir):
 
     for name in names:
         if os.path.isdir(name):
-            timediff = time.mktime(time.gmtime()) - os.stat(name).st_mtime
+            timediff = time.mktime(time.gmtime()) - os.stat(name).st_atime
             if timediff > SECONDS_IN_A_DAY * NUMBER_OF_DAYS:
                 shutil.rmtree(name)
 
