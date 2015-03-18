@@ -44,17 +44,16 @@ def randomFlagSet(shellPath):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
     if shellSupportsFlag(shellPath, '--no-cgc') and chance(.1):
-       args.append("--no-cgc")  # --no-cgc landed in bug 1126769
+        args.append("--no-cgc")  # --no-cgc landed in bug 1126769
 
     if shellSupportsFlag(shellPath, '--no-ggc') and chance(.1):
-       args.append("--no-ggc")  # --no-ggc landed in bug 706885
+        args.append("--no-ggc")  # --no-ggc landed in bug 706885
 
     if shellSupportsFlag(shellPath, '--no-incremental-gc') and chance(.1):
-       args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
+        args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
 
-    # Stop testing --unboxed-objects until bug 1143106 is fixed
-    # if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.2):
-    #    args.append("--unboxed-objects")
+    if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.2):
+        args.append("--unboxed-objects")
 
     #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
