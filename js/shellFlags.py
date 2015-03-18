@@ -170,8 +170,11 @@ def randomFlagSet(shellPath):
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #    args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
-            if chance(.5):
+            if chance(.3):
                 args.append('--ion-check-range-analysis')
+        if shellSupportsFlag(shellPath, '--ion-extra-checks'):
+            if chance(.3):
+                args.append('--ion-extra-checks')
     else:
         args.append("--no-ion")
 
@@ -194,9 +197,11 @@ def basicFlagSets(shellPath):
     if shellSupportsFlag(shellPath, "--no-threads"):
         basicFlagList = [
             # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/mozilla-central/file/6a63bcb6e0d3/js/src/tests/lib/tests.py#l12
+            # https://hg.mozilla.org/mozilla-central/file/e3bf27190360/js/src/tests/lib/tests.py#l12
             ['--fuzzing-safe', '--no-threads', '--ion-eager'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
-            ['--fuzzing-safe', '--no-threads', '--ion-eager', '--ion-check-range-analysis', '--no-sse3'],
+            ['--fuzzing-safe', '--no-threads', '--ion-eager', '--ion-check-range-analysis',
+             '--ion-extra-checks', '--no-sse3'],
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
             ['--fuzzing-safe', '--no-threads', '--baseline-eager'],
             ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
             ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],

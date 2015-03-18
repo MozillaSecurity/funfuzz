@@ -124,6 +124,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if '--ion-extra-checks' in flags:
+        required.append('cdf93416b39a') # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
         required.append('b63d7e80709a') # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
     if '--unboxed-objects' in flags:
