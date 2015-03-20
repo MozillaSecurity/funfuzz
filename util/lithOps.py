@@ -20,25 +20,6 @@ lithiumpy = [sys.executable, "-u", os.path.join(p0, os.pardir, "lithium", "lithi
  LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
 
 
-def knownBugsDir(rName):
-    '''Defines and returns the known-bugs directory.'''
-    mcKnDir = 'mozilla-central'
-    if rName == 'mozilla-esr31':
-        return 'mozilla-esr31'
-    # XXX: mozilla-aurora, mozilla-beta and mozilla-release should have their known-bugs lists.
-    #elif rName == 'mozilla-release':
-    #    return 'mozilla-release'
-    #elif rName == 'mozilla-beta':
-    #    return 'mozilla-beta'
-    #elif rName == 'mozilla-aurora':
-    #    return 'mozilla-aurora'
-    elif rName == 'ionmonkey':
-        return os.path.join('mozilla-central', 'ionmonkey')
-    elif rName != 'mozilla-central':
-        sps.vdump('Known bugs for the ' + rName + ' repository does not exist. Using m-c one instead.')
-    return mcKnDir
-
-
 def runLithium(lithArgs, logPrefix, targetTime):
     """
       Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
