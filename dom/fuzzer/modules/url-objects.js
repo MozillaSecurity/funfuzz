@@ -49,11 +49,11 @@ var fuzzerURLObjects = (function() {
   {
     switch(rnd(5)) {
       case 0:
-        return Things.add('new URL(' + simpleSource(Random.pick(fuzzValues.URIs)) + ')');
+        return Things.reserve() + ' = new URL(' + simpleSource(Random.pick(fuzzValues.URIs)) + ');';
       case 1:
-        return Things.add('document.createElementNS("http://www.w3.org/1999/xhtml", "a")');
+        return Things.reserve() + ' = document.createElementNS("http://www.w3.org/1999/xhtml", "a");';
       case 2:
-        return Things.add('document.createElementNS("http://www.w3.org/1999/xhtml", "area")');
+        return Things.reserve() + ' = document.createElementNS("http://www.w3.org/1999/xhtml", "area");';
       case 3:
         // It is safe to play with a frame's location.
         var frame = Things.instanceAny(["HTMLObjectElement", "HTMLFrameElement", "HTMLIFrameElement", "SVGIFrameElement"]);
