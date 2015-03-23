@@ -18,7 +18,7 @@ if os.name == 'nt':
     COMPILE_PLDS_LIB = 'libplds4.lib' if sps.isMozBuild64 else 'plds4.lib'
     COMPILE_PLC_LIB = 'libplc4.lib' if sps.isMozBuild64 else 'plc4.lib'
 
-    RUN_MOZGLUE_LIB = 'mozglue.lib'
+    RUN_MOZGLUE_LIB = 'mozglue.dll'
     RUN_NSPR_LIB = 'nspr4.dll'
     RUN_PLDS_LIB = 'plds4.dll'
     RUN_PLC_LIB = 'plc4.dll'
