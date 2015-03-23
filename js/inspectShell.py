@@ -38,9 +38,10 @@ else:
         RUN_PLDS_LIB = 'libplds4.so'
         RUN_PLC_LIB = 'libplc4.so'
 
-# These are only for compiling NSPR
+# These are only for compiling NSPR, and should be in dist/lib
 ALL_COMPILE_LIBS = (COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB)
-# These include running the js shell (mozglue) and/or with NSPR (for older threadsafe builds)
+# These include running the js shell (mozglue) and/or with NSPR (for older threadsafe builds),
+# and should be in dist/bin
 ALL_RUN_LIBS = (RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
 
 
