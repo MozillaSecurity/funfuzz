@@ -52,9 +52,8 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-incremental-gc') and chance(.1):
         args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
 
-    # Disabled due to bug 1145426.
-    #if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.2):
-    #    args.append("--unboxed-objects")
+    if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.2):
+        args.append("--unboxed-objects")
 
     #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
