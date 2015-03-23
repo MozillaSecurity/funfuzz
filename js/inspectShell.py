@@ -18,6 +18,7 @@ if os.name == 'nt':
     COMPILE_PLDS_LIB = 'libplds4.lib' if sps.isMozBuild64 else 'plds4.lib'
     COMPILE_PLC_LIB = 'libplc4.lib' if sps.isMozBuild64 else 'plc4.lib'
 
+    RUN_MOZGLUE_LIB = 'mozglue.dll'
     RUN_NSPR_LIB = 'nspr4.dll'
     RUN_PLDS_LIB = 'plds4.dll'
     RUN_PLC_LIB = 'plc4.dll'
@@ -27,16 +28,20 @@ else:
     COMPILE_PLC_LIB = 'libplc4.a'
 
     if platform.system() == 'Darwin':
+        RUN_MOZGLUE_LIB = 'libmozglue.dylib'
         RUN_NSPR_LIB = 'libnspr4.dylib'
         RUN_PLDS_LIB = 'libplds4.dylib'
         RUN_PLC_LIB = 'libplc4.dylib'
     elif (platform.system() == 'Linux'):
+        RUN_MOZGLUE_LIB = 'libmozglue.so'
         RUN_NSPR_LIB = 'libnspr4.so'
         RUN_PLDS_LIB = 'libplds4.so'
         RUN_PLC_LIB = 'libplc4.so'
 
+# These are only for compiling NSPR
 ALL_COMPILE_LIBS = (COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB)
-ALL_RUN_LIBS = (RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
+# These include running the js shell (mozglue) and/or with NSPR (for older threadsafe builds)
+ALL_RUN_LIBS = (RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
 
 
 def archOfBinary(binary):
