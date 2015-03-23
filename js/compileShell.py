@@ -129,7 +129,7 @@ class CompiledShell(object):
     def getShellCompiledRunLibsPath(self):
         lDir = self.getJsObjdir() if self.getJsBuildSystemConsidersNspr() else self.getNsprObjdir()
         libsList = [
-            sps.normExpUserPath(os.path.join(lDir, 'dist', 'lib', runLib)) \
+            sps.normExpUserPath(os.path.join(lDir, 'dist', 'bin', runLib)) \
                 for runLib in inspectShell.ALL_RUN_LIBS
         ]
         return libsList
