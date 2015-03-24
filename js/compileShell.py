@@ -342,6 +342,7 @@ def cfgBin(shell, binToBeCompiled):
     if shell.buildOptions.buildWithAsan:
         assert 'clang' in cfgEnvDt['CC']
         assert 'clang++' in cfgEnvDt['CXX']
+        cfgCmdList.append('--disable-jemalloc')  # See bug 1146895
 
     # For NSPR, specify "--disable-debug --enable-optimize" to generate an opt build.
     # They can actually be used independently, but it's not recommended.
