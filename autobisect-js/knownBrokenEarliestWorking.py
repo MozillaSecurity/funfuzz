@@ -73,6 +73,11 @@ def knownBrokenRanges(options):
             hgrange('35e7af3e86fd', 'a393ec07bc6a'), # Fx32, broken ARM builds
         ])
 
+    if sps.isMac:
+        skips.extend([
+            hgrange('5e45fba743aa', '8e5d8f34c53e'), # Fx39, broken Mac builds due to jemalloc
+        ])
+
     if sps.isWin:
         skips.extend([
             hgrange('f6d5a48271b6', 'dc128b242d8a'), # Fx29, broken Windows builds due to ICU
