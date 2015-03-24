@@ -391,6 +391,7 @@ def cfgBin(shell, binToBeCompiled):
 
         if shell.buildOptions.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
+            cfgCmdList.append('--disable-jemalloc')
 
         # We add the following flags by default.
         if os.name == 'posix':
