@@ -175,6 +175,8 @@ def diffFiles(f1, f2):
     diff = sps.captureStdout(diffcmd, ignoreExitCode=True)[0]
     if len(diff) < 10000:
         s += diff + "\n\n"
+    else:
+        s += diff[:10000] + "\n(truncated after 10000 bytes)... \n\n"
     return s
 
 
