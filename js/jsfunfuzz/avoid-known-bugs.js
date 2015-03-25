@@ -26,6 +26,8 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("load") == -1                // load()ed regression test might output dates, etc
        && code.indexOf("drainAllocationsLog") == -1 // drainAllocationsLog returns an object with a timestamp, see bug 1066313
        && code.indexOf("getBacktrace") == -1        // getBacktrace returns memory addresses which differs depending on flags
+       && code.indexOf("inJit") == -1               // may become true after several iterations, or return a string with --no-baseline
+       && code.indexOf("inIon") == -1               // may become true after several iterations, or return a string with --no-ion
     ,
 
     expectConsistentOutputAcrossIter: true
