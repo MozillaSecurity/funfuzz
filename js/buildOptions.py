@@ -257,7 +257,7 @@ def areArgsValid(args):
         if sps.isARMv7l:
             return False, 'We cannot run the ARM simulator in an ARM build.'
         if sps.isMac:
-            return False, 'Currently blocked by bug 1128097.'
+            return False, 'Currently blocked by bug 1148880.'
         if sps.isWin:
             return False, 'Nobody runs the ARM simulator on Windows.'
         if not args.enable32:  # Remove this when we have the ARM64 simulator builds
