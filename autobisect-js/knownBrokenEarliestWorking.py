@@ -94,6 +94,7 @@ def knownBrokenRanges(options):
     if options.enableArmSimulator:
         skips.extend([
             hgrange('b0e9b9113cb0', 'ce52eb68bc21'), # Fx38, broken ARM-simulator, occasionally Mac
+            hgrange('b2904e8f07e7', '814e2c0ad479'), # Fx39, broken ARM-simulator for Mac
         ])
 
     return skips
