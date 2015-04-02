@@ -245,6 +245,7 @@ media.peerconnection.enabled
 media.peerconnection.video.enabled
 media.webvtt.enabled
 media.webvtt.regions.enabled
+media.hardware-video-decoding.enabled
 media.windows-media-foundation.enabled
 media.windows-media-foundation.play-stand-alone
 memory.free_dirty_pages
