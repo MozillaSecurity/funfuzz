@@ -161,6 +161,7 @@ var makeEvilCallback;
 
   function evaluateFlags(d, b)
   {
+    // Options are in js.cpp: Evaluate() and ParseCompileOptions()
     return ("({ global: " + m("g") +
       ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
       ", lineNumber: 42, newContext: " + makeBoolean(d, b) +
