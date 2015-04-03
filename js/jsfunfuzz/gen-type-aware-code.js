@@ -164,6 +164,7 @@ var makeEvilCallback;
     return ("({ global: " + m("g") +
       ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
       ", lineNumber: 42, newContext: " + makeBoolean(d, b) +
+      ", isRunOnce: " + makeBoolean(d, b) +
       ", noScriptRval: " + makeBoolean(d, b) +
       ", catchTermination: " + makeBoolean(d, b) +
       ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) +
