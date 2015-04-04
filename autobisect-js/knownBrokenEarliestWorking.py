@@ -89,7 +89,7 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('4a04ca5ed7d3', '406904577dfc'), # Fx33, see bug 1030014
             hgrange('752ce35b166b', 'e6e63113336d'), # Fx35, see bug 1069704
-            # Fx40 1d672188b8aa broke stuff too
+            hgrange('1d672188b8aa', 'ea7dabcd215e'), # Fx40, see bug 1149739
         ])
 
     if options.enableArmSimulator:
