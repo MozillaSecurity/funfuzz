@@ -159,11 +159,12 @@ def randomFlagSet(shellPath):
             args.append("--ion-limit-script-size=off")
         # Landed in m-c changeset 8db8eef79b8c
         if shellSupportsFlag(shellPath, '--ion-regalloc=lsra'):
-            if chance(.1):
-                args.append('--ion-regalloc=lsra')  # On by default
+            # Disabled until bug 1136551 is fixed. It is no longer the default.
+            #if chance(.1):
+            #    args.append('--ion-regalloc=lsra')
             # Backtracking and stupid landed in m-c changeset dc4887f61d2e
             elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and \
-                    chance(.4):
+                    chance(.1):  # On by default
                 args.append('--ion-regalloc=backtracking')
             # Disabled until bug 871848 is fixed.
             #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
