@@ -18,6 +18,14 @@ function isPrimitive(v)
 return (v === null || v === undefined || typeof v == "boolean" || typeof v == "number" || typeof v == "string");
 }
 
+function errorToString(e)
+{
+  try {
+    return "" + e;
+  } catch (e2) {
+    return "Can't toString the error!!";
+  }
+}
 
 /*
 
