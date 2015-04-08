@@ -158,6 +158,7 @@ gfx.missing_fonts.notify
 gfx.use_text_smoothing_setting
 #gfx.prefer-mesa-llvmpipe # Bug 868787
 gfx.xrender.enabled
+image.decode-immediately.enabled
 image.downscale-during-decode.enabled
 image.high_quality_downscaling.enabled
 image.decode-only-on-draw.enabled
