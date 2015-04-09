@@ -129,7 +129,6 @@ dom.udpsocket.enabled
 dom.undo_manager.enabled
 dom.url.encode_decode_hash
 dom.wakelock.enabled
-dom.webcrypto.enabled
 dom.workers.enabled
 dom.workers.websocket.enabled
 editor.use_css
