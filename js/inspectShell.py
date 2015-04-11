@@ -18,6 +18,9 @@ if os.name == 'nt':
     COMPILE_PLDS_LIB = 'libplds4.lib' if sps.isMozBuild64 else 'plds4.lib'
     COMPILE_PLC_LIB = 'libplc4.lib' if sps.isMozBuild64 else 'plc4.lib'
 
+    RUN_ICUDT52_LIB = 'icudt52.dll'
+    RUN_ICUIN52_LIB = 'icuin52.dll'
+    RUN_ICUUC52_LIB = 'icuuc52.dll'
     RUN_MOZGLUE_LIB = 'mozglue.dll'
     RUN_NSPR_LIB = 'nspr4.dll'
     RUN_PLDS_LIB = 'plds4.dll'
@@ -28,11 +31,17 @@ else:
     COMPILE_PLC_LIB = 'libplc4.a'
 
     if platform.system() == 'Darwin':
+        RUN_ICUDT52_LIB = 'libicudt52.dylib'
+        RUN_ICUIN52_LIB = 'libicuin52.dylib'
+        RUN_ICUUC52_LIB = 'libicuuc52.dylib'
         RUN_MOZGLUE_LIB = 'libmozglue.dylib'
         RUN_NSPR_LIB = 'libnspr4.dylib'
         RUN_PLDS_LIB = 'libplds4.dylib'
         RUN_PLC_LIB = 'libplc4.dylib'
     elif (platform.system() == 'Linux'):
+        RUN_ICUDT52_LIB = 'libicudt52.so'
+        RUN_ICUIN52_LIB = 'libicuin52.so'
+        RUN_ICUUC52_LIB = 'libicuuc52.so'
         RUN_MOZGLUE_LIB = 'libmozglue.so'
         RUN_NSPR_LIB = 'libnspr4.so'
         RUN_PLDS_LIB = 'libplds4.so'
@@ -41,8 +50,9 @@ else:
 # These are only for compiling NSPR, and should be in dist/lib
 ALL_COMPILE_LIBS = (COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB)
 # These include running the js shell (mozglue) and/or with NSPR (for older threadsafe builds),
-# and should be in dist/bin
-ALL_RUN_LIBS = (RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
+# and should be in dist/bin. At least Windows required the ICU libraries.
+ALL_RUN_LIBS = (RUN_ICUDT52_LIB, RUN_ICUIN52_LIB, RUN_ICUUC52_LIB,
+                RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB)
 
 
 def archOfBinary(binary):
