@@ -129,6 +129,7 @@ function fuzzInitBlacklists()
                 "generateCRMFRequest", // dialog does weird things to shutdown sequence
                 "animVal",           // bug 1033301
                 "TrackEvent",        // bug 1035654
+                "fonts",             // bug 1153628
             ]
         },
         {
