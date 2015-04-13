@@ -130,6 +130,8 @@ function fuzzInitBlacklists()
                 "animVal",           // bug 1033301
                 "TrackEvent",        // bug 1035654
                 "fonts",             // bug 1153628
+                "MediaSource",       // bug 1153690
+                "MediaRecorder",     // bug 1153690
             ]
         },
         {
