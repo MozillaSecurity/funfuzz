@@ -20,7 +20,7 @@ function fillShellSandbox(sandbox)
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
     "verifyprebarriers", "verifypostbarriers", "gcPreserveCode",
-    "minorgc",
+    "minorgc", "abortgc",
     "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox",
     "testMathyFunction", "hashStr",

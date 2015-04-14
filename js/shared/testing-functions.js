@@ -47,10 +47,11 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 20, v: function(d, b) { return prefix + "minorgc" + "(false);"; } },
     { w: 20, v: function(d, b) { return prefix + "minorgc" + "(true);"; } },
 
-    // Start or continue incremental garbage collection.
+    // Start, continue, or abort incremental garbage collection.
     // startgc can throw: "Incremental GC already in progress"
     { w: 20, v: function(d, b) { return tryCatch(prefix + "startgc" + "(" + gcSliceSize() + maybeCommaShrinking() + ");"); } },
     { w: 20, v: function(d, b) { return prefix + "gcslice" + "(" + gcSliceSize() + ");"; } },
+    { w: 10, v: function(d, b) { return prefix + "abortgc" + "(" + ");"; } },
 
     // Schedule the given objects to be marked in the next GC slice.
     { w: 10, v: function(d, b) { return prefix + "selectforgc" + "(" + fObject(d, b) + ");"; } },
