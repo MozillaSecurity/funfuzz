@@ -157,21 +157,10 @@ def randomFlagSet(shellPath):
             args.append("--ion-osr=off")
         if chance(.2):
             args.append("--ion-limit-script-size=off")
-        if shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and chance(.1):  # On by default
-            args.append('--ion-regalloc=backtracking')
-        # Landed in m-c changeset 8db8eef79b8c
-        #if shellSupportsFlag(shellPath, '--ion-regalloc=lsra'):
-            # Disabled until bug 1136551 is fixed. It is no longer the default.
-            #if chance(.1):
-            #    args.append('--ion-regalloc=lsra')
-            # Backtracking and stupid landed in m-c changeset dc4887f61d2e
-            #elif shellSupportsFlag(shellPath, '--ion-regalloc=backtracking') and \
-            #        chance(.1):  # On by default
-            #    # Moved above
-            #    args.append('--ion-regalloc=backtracking')
-            # Disabled until bug 871848 is fixed.
-            #elif shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
-            #    args.append('--ion-regalloc=stupid')
+        # Backtracking (on by default as of 2015-04-15) and stupid landed in m-c changeset dc4887f61d2e
+        # Disabled until bug 871848 is fixed.
+        #if shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
+            #args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
             if chance(.3):
                 args.append('--ion-check-range-analysis')
