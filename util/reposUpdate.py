@@ -38,7 +38,7 @@ def typeOfRepo(r):
     repoList = []
     repoList.append('.hg')
     repoList.append('.svn')
-    repoList.append('.git')
+    #repoList.append('.git')
     for rtype in repoList:
         try:
             os.mkdir(os.path.join(r, rtype))
@@ -82,15 +82,17 @@ def main():
                     # Ignore exit codes so the loop can continue retrying up to number of counts.
                     ['hg', 'pull', '--rebase'], ignoreStderr=True, combineStderr=True,
                     ignoreExitCode=True, cwd=repoLocation, vb=True)
-            else:
-                assert repoType == 'git'
+            #elif repoType == 'git':
+                # This needs to be looked at. When ready, re-enable in typeOfRepo function.
                 # Ignore exit codes so the loop can continue retrying up to number of counts.
-                gitStdout, retval = sps.timeSubprocess(
-                    ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
-                    cwd=repoLocation, vb=True)
-                gitStdout, retval = sps.timeSubprocess(
-                    ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
-                    cwd=repoLocation, vb=True)
+                # gitStdout, retval = sps.timeSubprocess(
+                #     ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+                #     cwd=repoLocation, vb=True)
+                # gitStdout, retval = sps.timeSubprocess(
+                #     ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+                #     cwd=repoLocation, vb=True)
+            else:
+                raise Exception('Unknown repository type: ' + repoType)
 
             if ((retval == 255) or (retval == -1)) and \
                 'hg pull: option --rebase not recognized' in hgPullRebaseStdout:
