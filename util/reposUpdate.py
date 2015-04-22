@@ -5,124 +5,108 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 # To update specified repositories to default tip and provide a short list of latest checkins.
+# Only supports hg (Mercurial) for now.
 #
-# Assumes that the repositories are located in ../../* or ../../trees/*, and assumes the Valgrind
-# SVN directory is located only in ../../* if repositories are in ../../trees/*.
+# Assumes that the repositories are located in ../../trees/*.
 
+import logging
 import os
+import subprocesses as sps
 import sys
 
-import subprocesses as sps
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-repos = []
-# Add your repository here.
-repos.append('fuzzing')
-# Spidermonkey friends
-#repos.append('ionmonkey')
-# Official repository branches
-repos.append('mozilla-inbound')
-repos.append('mozilla-central')
-repos.append('mozilla-aurora')
-repos.append('mozilla-beta')
-repos.append('mozilla-release')
-repos.append('mozilla-esr31')
-# Others
-repos.append('v8')
-# Miscellaneous tools
-repos.append('valgrind')
+ESR_NOW = 31
+ESR_NEXT = ESR_NOW + 7
+
+path0 = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
+path1 = os.path.abspath(os.path.join(path0, os.pardir))
+
+# Add your repository here. Note that Valgrind does not have a hg repository.
+REPOS = ['fuzzing'] + ['mozilla-' + x for x in [
+            'inbound', 'central', 'aurora', 'beta', 'release',
+            'esr' + str(ESR_NOW), 'esr' + str(ESR_NEXT)
+    ]
+]
 
 def typeOfRepo(r):
-    '''
-    Returns the type of repository.
-    '''
+    '''Returns the type of repository.'''
     repoList = []
     repoList.append('.hg')
-    repoList.append('.svn')
     #repoList.append('.git')
     for rtype in repoList:
         try:
             os.mkdir(os.path.join(r, rtype))
             os.rmdir(os.path.join(r, rtype))
-        except OSError, e:
+        except OSError as e:
             if 'File exists' in e or 'Cannot create a file when that file already exists' in e:
                 return rtype[1:]
     raise Exception('Type of repository located at ' + r + ' cannot be determined.')
 
-def main():
-    print sps.dateStr()
-    cwdParent = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
-    cwdParentParent = os.path.abspath(os.path.join(cwdParent, os.pardir))
 
-    for repo in repos:
-        repoLocation = os.path.join(cwdParentParent, repo)
-        if not (os.path.exists(repoLocation)):
-            repoLocation = os.path.join(cwdParentParent, 'trees', repo)
+def updateRepo(repo):
+    '''Updates repositories.'''
+    repoLocation = os.path.join(path1, 'trees', repo)
 
-        if not (os.path.exists(repoLocation)):
-            print repo, "repository does not exist at %s or at %s\n" % \
-                (os.path.join(cwdParentParent, repo), \
-                os.path.join(cwdParentParent, 'trees', repo))
-            continue
+    if not os.path.exists(repoLocation):
+        logger.debug(repo, "repository does not exist at %s\n" %  os.path.join(path1, 'trees', repo))
+        return False
 
-        print 'Now in %s repository.' % repo
+    logger.info('Now in %s repository.' % repo)
+    repoType = typeOfRepo(repoLocation)
 
-        repoType = typeOfRepo(repoLocation)
-        assert repoType != None
-
-        count = 0
-        # Try pulling 5 times per repository.
-        while count < 5:
-            if repoType == 'svn':
-                # Valgrind SVN is located in svn://svn.valgrind.org/valgrind/trunk
-                # V8 SVN is located in http://v8.googlecode.com/svn/branches/bleeding_edge/
-                svnCoStdout, retval = sps.timeSubprocess(
-                    [repoType, 'update'], cwd=os.path.abspath(os.path.join(repoLocation)), vb=True)
-            elif repoType == 'hg':
-                hgPullRebaseStdout, retval = sps.timeSubprocess(
-                    # Ignore exit codes so the loop can continue retrying up to number of counts.
-                    ['hg', 'pull', '--rebase'], ignoreStderr=True, combineStderr=True,
-                    ignoreExitCode=True, cwd=repoLocation, vb=True)
-            #elif repoType == 'git':
-                # This needs to be looked at. When ready, re-enable in typeOfRepo function.
+    count = 0
+    while count < 3:  # Try pulling 3 times per repository.
+        if repoType == 'hg':
+            hgPullRebaseStdout, retval = sps.timeSubprocess(
                 # Ignore exit codes so the loop can continue retrying up to number of counts.
-                # gitStdout, retval = sps.timeSubprocess(
-                #     ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
-                #     cwd=repoLocation, vb=True)
-                # gitStdout, retval = sps.timeSubprocess(
-                #     ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
-                #     cwd=repoLocation, vb=True)
-            else:
-                raise Exception('Unknown repository type: ' + repoType)
+                ['hg', 'pull', '--rebase'], ignoreStderr=True, combineStderr=True,
+                ignoreExitCode=True, cwd=repoLocation, vb=True)
+        #elif repoType == 'git':
+            # This needs to be looked at. When ready, re-enable in typeOfRepo function.
+            # Ignore exit codes so the loop can continue retrying up to number of counts.
+            # gitStdout, retval = sps.timeSubprocess(
+            #     ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+            #     cwd=repoLocation, vb=True)
+            # gitStdout, retval = sps.timeSubprocess(
+            #     ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+            #     cwd=repoLocation, vb=True)
+        else:
+            raise Exception('Unknown repository type: ' + repoType)
 
-            if ((retval == 255) or (retval == -1)) and \
-                'hg pull: option --rebase not recognized' in hgPullRebaseStdout:
-                # Exit if the "rebase =" line is absent from the [Extensions] section of ~/.hgrc
-                print 'Please enable the rebase extension in your hgrc file!'
-                print 'Exiting...'
-                sys.exit(1)
-            # 255 is the return code for abnormal hg exit on POSIX.
-            # -1 is the return code for abnormal hg exit on Windows.
-            # Not sure about SVN.
-            if (retval != 255) and (retval != -1):
-                break
+        if ((retval == 255) or (retval == -1)) and \
+            'hg pull: option --rebase not recognized' in hgPullRebaseStdout:
+            # Exit if the "rebase =" line is absent from the [Extensions] section of ~/.hgrc
+            logger.critical('Please enable the rebase extension in .hgrc. Exiting.')
+            sys.exit(1)
+        # 255 is the return code for abnormal hg exit on POSIX.
+        # -1 is the return code for abnormal hg exit on Windows.
+        # Not sure about SVN.
+        if (retval != 255) and (retval != -1):
+            break
 
-            count += 1
-            # If this script tries 5 times and fails, exit with status 1.
-            if count == 5:
-                print 'Script has tried to pull 5 times and has failed every time.'
-                print 'Exiting...'
-                sys.exit(1)
+        count += 1
+        if count == 3:
+            logger.critical('Script tried to pull thrice and failed every time. Exiting.')
+            sys.exit(1)
 
-        if repoType == 'hg' and repo != 'valgrind':
-            sps.timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, combineStderr=True,
-                ignoreStderr=True, vb=True)
-            sps.timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
+    if repoType == 'hg' and repo != 'valgrind':
+        logger.info('Updating %s repository.' % repo)
+        sps.timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, combineStderr=True,
+            ignoreStderr=True, vb=True)
+        sps.timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
+    return True
 
-        if 'comm-' in repo:
-            sps.timeSubprocess([sys.executable, 'client.py', 'checkout'], cwd=repoLocation, vb=True)
 
-    print sps.dateStr()
+def main():
+    logger.info(sps.dateStr())
 
-# Run main when run as a script, this line means it will not be run as a module.
+    for repo in REPOS:
+        updateRepo(repo)
+
+    logger.info(sps.dateStr())
+
+
 if __name__ == '__main__':
     main()
