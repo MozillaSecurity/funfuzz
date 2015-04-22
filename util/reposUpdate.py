@@ -78,7 +78,7 @@ def updateRepo(repo):
         if ((retval == 255) or (retval == -1)) and \
             'hg pull: option --rebase not recognized' in hgPullRebaseStdout:
             # Exit if the "rebase =" line is absent from the [Extensions] section of ~/.hgrc
-            logger.critical('Please enable the rebase extension in .hgrc. Exiting.')
+            logger.error('Please enable the rebase extension in .hgrc. Exiting.')
             sys.exit(1)
         # 255 is the return code for abnormal hg exit on POSIX.
         # -1 is the return code for abnormal hg exit on Windows.
@@ -88,7 +88,7 @@ def updateRepo(repo):
 
         count += 1
         if count == 3:
-            logger.critical('Script tried to pull thrice and failed every time. Exiting.')
+            logger.error('Script tried to pull thrice and failed every time. Exiting.')
             sys.exit(1)
 
     if repoType == 'hg' and repo != 'valgrind':
