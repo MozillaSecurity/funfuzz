@@ -47,11 +47,15 @@ def typeOfRepo(r):
 
 def updateRepo(repo):
     '''Updates repositories.'''
-    repoLocation = os.path.join(path1, 'trees', repo)
+    repoLocation = os.path.join(path1, repo)
 
     if not os.path.exists(repoLocation):
-        logger.debug(repo, "repository does not exist at %s\n" %  os.path.join(path1, 'trees', repo))
-        return False
+        logger.debug(repo, "repository does not exist at %s\n" %  repoLocation)
+        repoLocation = os.path.join(path1, 'trees', repo)
+
+        if not os.path.exists(repoLocation):
+            logger.debug(repo, "repository does not exist at %s\n" %  repoLocation)
+            return False
 
     logger.info('Now in %s repository.' % repo)
     repoType = typeOfRepo(repoLocation)
