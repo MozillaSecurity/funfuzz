@@ -50,7 +50,7 @@ def amiss(knownPath, leakLogFn, verbose=False):
             if (line.startswith("== BloatView: ALL (cumulative) LEAK STATISTICS")):
                 sawLeakStats = True
             # This line appears only if there are leaks with XPCOM_MEM_LEAK_LOG (but always shows with XPCOM_MEM_BLOAT_LOG, oops)
-            if (line.endswith("Total      Rem")):
+            if (line.endswith("Total      Rem|")):
                 break
         else:
             if verbose:
@@ -69,7 +69,11 @@ def amiss(knownPath, leakLogFn, verbose=False):
                 break
             if line.startswith("nsTraceRefcntImpl::DumpStatistics"):
                 continue
-            objname = line.split(" ")[1]
+            parts = line.split("|")
+            if len(parts) < 2:
+                print "detect_leaks: failed to parse: " + line
+                return True
+            objname = parts[1].rstrip(" ")
             if objname == "TOTAL":
                 continue
             info = knownObjects.get(objname, {'size': 10-sizes, 'knownToLeak': False})
