@@ -132,6 +132,7 @@ function fuzzInitBlacklists()
                 "fonts",             // bug 1153628
                 "MediaSource",       // bug 1153690
                 "MediaRecorder",     // bug 1153690
+                "mediaDevices",      // bug 1157995
             ]
         },
         {
