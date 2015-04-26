@@ -204,8 +204,13 @@ def many_timed_runs(targetTime, wtmpDir, args):
 def jitCompareLines(jsfunfuzzOutputFilename, marker):
     """Create a compareJIT file, using the lines marked by jsfunfuzz as valid for comparison"""
     lines = [
-        "dumpObject = function() { };\n",
+        "backtrace = function() { };\n",
         "dumpHeapComplete = function() { };\n",
+        "dumpObject = function() { };\n",
+        "dumpStringRepresentation = function() { };\n",
+        "evalInWorker = function() { };\n",
+        "offThreadCompileScript = function() { };\n",
+        "printProfilerEvents = function() { };\n",
         "// DDBEGIN\n"
     ]
     with open(jsfunfuzzOutputFilename, 'rb') as f:

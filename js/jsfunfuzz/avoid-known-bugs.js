@@ -21,9 +21,14 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Date") == -1                // time marches on
        && code.indexOf("timeout") == -1             // time runs and crawls
        && code.indexOf("random") == -1
+       && code.indexOf("backtrace") == -1           // shows memory addresses
        && code.indexOf("dumpObject") == -1          // shows heap addresses
        && code.indexOf("dumpHeapComplete") == -1    // shows heap addresses
+       && code.indexOf("dumpStringRepresentation") == -1  // shows memory addresses
+       && code.indexOf("evalInWorker") == -1        // causes diffs in --no-threads vs --ion-offthread-compile=off
+       && code.indexOf("offThreadCompileScript") == -1  // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("oomAfterAllocations") == -1
+       && code.indexOf("printProfilerEvents") == -1 // causes diffs in --ion-eager vs --baseline-eager
        && code.indexOf("load") == -1                // load()ed regression test might output dates, etc
        && code.indexOf("drainAllocationsLog") == -1 // drainAllocationsLog returns an object with a timestamp, see bug 1066313
        && code.indexOf("getBacktrace") == -1        // getBacktrace returns memory addresses which differs depending on flags
