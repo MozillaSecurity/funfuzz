@@ -17,23 +17,23 @@ function whatToTestSpidermonkeyTrunk(code)
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
-       && code.indexOf("/*NODIFF*/") == -1          // Ignore diff testing on these labels
-       && code.indexOf("Date") == -1                // time marches on
-       && code.indexOf("timeout") == -1             // time runs and crawls
-       && code.indexOf("random") == -1
-       && code.indexOf("backtrace") == -1           // shows memory addresses
-       && code.indexOf("dumpObject") == -1          // shows heap addresses
-       && code.indexOf("dumpHeapComplete") == -1    // shows heap addresses
+       && code.indexOf("/*NODIFF*/") == -1                // Ignore diff testing on these labels
+       && code.indexOf("Date") == -1                      // time marches on
+       && code.indexOf("backtrace") == -1                 // shows memory addresses
+       && code.indexOf("drainAllocationsLog") == -1       // drainAllocationsLog returns an object with a timestamp, see bug 1066313
+       && code.indexOf("dumpObject") == -1                // shows heap addresses
+       && code.indexOf("dumpHeapComplete") == -1          // shows heap addresses
        && code.indexOf("dumpStringRepresentation") == -1  // shows memory addresses
-       && code.indexOf("evalInWorker") == -1        // causes diffs in --no-threads vs --ion-offthread-compile=off
-       && code.indexOf("offThreadCompileScript") == -1  // causes diffs in --no-threads vs --ion-offthread-compile=off
+       && code.indexOf("evalInWorker") == -1              // causes diffs in --no-threads vs --ion-offthread-compile=off
+       && code.indexOf("getBacktrace") == -1              // getBacktrace returns memory addresses which differs depending on flags
+       && code.indexOf("load") == -1                      // load()ed regression test might output dates, etc
+       && code.indexOf("offThreadCompileScript") == -1    // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("oomAfterAllocations") == -1
-       && code.indexOf("printProfilerEvents") == -1 // causes diffs in --ion-eager vs --baseline-eager
-       && code.indexOf("load") == -1                // load()ed regression test might output dates, etc
-       && code.indexOf("drainAllocationsLog") == -1 // drainAllocationsLog returns an object with a timestamp, see bug 1066313
-       && code.indexOf("getBacktrace") == -1        // getBacktrace returns memory addresses which differs depending on flags
-       && code.indexOf("inJit") == -1               // may become true after several iterations, or return a string with --no-baseline
-       && code.indexOf("inIon") == -1               // may become true after several iterations, or return a string with --no-ion
+       && code.indexOf("printProfilerEvents") == -1       // causes diffs in --ion-eager vs --baseline-eager
+       && code.indexOf("inIon") == -1                     // may become true after several iterations, or return a string with --no-ion
+       && code.indexOf("inJit") == -1                     // may become true after several iterations, or return a string with --no-baseline
+       && code.indexOf("random") == -1
+       && code.indexOf("timeout") == -1                   // time runs and crawls
     ,
 
     expectConsistentOutputAcrossIter: true
@@ -41,11 +41,11 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-       && code.indexOf("'strict") == -1             // see bug 743425
-       && code.indexOf("Object.seal") == -1         // bug 937922
-       && code.indexOf("length") == -1              // bug 1027846
-       && code.indexOf("preventExtensions") == -1   // bug 1085299
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/)) // doesn't stay valid utf-8 after going through python (?)
+       && code.indexOf("'strict") == -1                 // see bug 743425
+       && code.indexOf("Object.seal") == -1             // bug 937922
+       && code.indexOf("length") == -1                  // bug 1027846
+       && code.indexOf("preventExtensions") == -1       // bug 1085299
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
 }
