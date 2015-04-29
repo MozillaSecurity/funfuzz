@@ -437,7 +437,9 @@ def constructGdbCommand(progfullname, crashedPID):
         if os.path.exists('/proc/sys/kernel/core_uses_pid'):
             with open('/proc/sys/kernel/core_uses_pid') as f:
                 isPidUsed = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
-        coreFilename = 'core.' + str(crashedPID) if isPidUsed else 'core'
+        coreFilename = 'core.' + str(crashedPID) if isPidUsed else 'core'  # relative path
+        if not os.path.isfile(coreFilename):
+            coreFilename = normExpUserPath(os.path.join('~', coreFilename))  # try the home dir
 
     if coreFilename and os.path.exists(coreFilename):
         debuggerCmdPath = getAbsPathForAdjacentFile('gdb-quick.txt')
