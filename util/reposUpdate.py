@@ -36,70 +36,48 @@ def typeOfRepo(r):
     repoList.append('.hg')
     #repoList.append('.git')
     for rtype in repoList:
-        try:
-            os.mkdir(os.path.join(r, rtype))
-            os.rmdir(os.path.join(r, rtype))
-        except OSError as e:
-            if 'File exists' in e or 'Cannot create a file when that file already exists' in e:
-                return rtype[1:]
+        if os.path.isdir(os.path.join(r, rtype)):
+            return rtype[1:]
     raise Exception('Type of repository located at ' + r + ' cannot be determined.')
 
 
 def updateRepo(repo):
-    '''Updates repositories.'''
-    repoLocation = os.path.join(path1, repo)
+    '''Updates a repository. Returns False if missing; returns True if successful; raises an exception if updating fails.'''
 
-    if not os.path.exists(repoLocation):
-        logger.debug(repo, "repository does not exist at %s\n" %  repoLocation)
-        repoLocation = os.path.join(path1, 'trees', repo)
+    # Find the repo, or return False if we can't find it
+    locs = [
+        os.path.normpath(os.path.join(path1, repo)),
+        os.path.normpath(os.path.join(path1, 'trees', repo))
+    ]
+    for loc in locs:
+        if os.path.isdir(loc):
+            repoLocation = loc
+            break
+    else:
+        logger.info("We didn't find a repo in any of: %s\n" % repr(locs))
+        return False
 
-        if not os.path.exists(repoLocation):
-            logger.debug(repo, "repository does not exist at %s\n" %  repoLocation)
-            return False
-
-    logger.info('Now in %s repository.' % repo)
+    logger.info('Found %s repository in %s' % (repo, repoLocation))
     repoType = typeOfRepo(repoLocation)
 
-    count = 0
-    while count < 3:  # Try pulling 3 times per repository.
-        if repoType == 'hg':
-            hgPullRebaseStdout, retval = sps.timeSubprocess(
-                # Ignore exit codes so the loop can continue retrying up to number of counts.
-                ['hg', 'pull', '--rebase'], ignoreStderr=True, combineStderr=True,
-                ignoreExitCode=True, cwd=repoLocation, vb=True)
-        #elif repoType == 'git':
-            # This needs to be looked at. When ready, re-enable in typeOfRepo function.
-            # Ignore exit codes so the loop can continue retrying up to number of counts.
-            # gitStdout, retval = sps.timeSubprocess(
-            #     ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
-            #     cwd=repoLocation, vb=True)
-            # gitStdout, retval = sps.timeSubprocess(
-            #     ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
-            #     cwd=repoLocation, vb=True)
-        else:
-            raise Exception('Unknown repository type: ' + repoType)
+    # Update the repo, or sys.exit(1) if we can't update it
+    if repoType == 'hg':
+        _, retval = sps.timeSubprocess(['hg', 'pull', '-u'],
+            ignoreStderr=True, combineStderr=True, cwd=repoLocation, vb=True)
+        sps.timeSubprocess(['hg', 'log', '-r', 'default'],
+            cwd=repoLocation, vb=True)
+    #elif repoType == 'git':
+        # This needs to be looked at. When ready, re-enable in typeOfRepo function.
+        # Ignore exit codes so the loop can continue retrying up to number of counts.
+        # gitStdout, retval = sps.timeSubprocess(
+        #     ['git', 'fetch'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+        #     cwd=repoLocation, vb=True)
+        # gitStdout, retval = sps.timeSubprocess(
+        #     ['git', 'checkout'], ignoreStderr=True, combineStderr=True, ignoreExitCode=True,
+        #     cwd=repoLocation, vb=True)
+    else:
+        raise Exception('Unknown repository type: ' + repoType)
 
-        if ((retval == 255) or (retval == -1)) and \
-            'hg pull: option --rebase not recognized' in hgPullRebaseStdout:
-            # Exit if the "rebase =" line is absent from the [Extensions] section of ~/.hgrc
-            logger.error('Please enable the rebase extension in .hgrc. Exiting.')
-            sys.exit(1)
-        # 255 is the return code for abnormal hg exit on POSIX.
-        # -1 is the return code for abnormal hg exit on Windows.
-        # Not sure about SVN.
-        if (retval != 255) and (retval != -1):
-            break
-
-        count += 1
-        if count == 3:
-            logger.error('Script tried to pull thrice and failed every time. Exiting.')
-            sys.exit(1)
-
-    if repoType == 'hg' and repo != 'valgrind':
-        logger.info('Updating %s repository.' % repo)
-        sps.timeSubprocess(['hg', 'update', 'default'], cwd=repoLocation, combineStderr=True,
-            ignoreStderr=True, vb=True)
-        sps.timeSubprocess(['hg', 'log', '-l', '5'], cwd=repoLocation, vb=True)
     return True
 
 
