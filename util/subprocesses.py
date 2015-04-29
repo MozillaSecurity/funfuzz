@@ -296,8 +296,6 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
             close_fds = (os.name == "posix")
         )
         if useLogFiles:
-            # FIXME: This workaround is for EC2 VMs. We should find out why coredumps are
-            # seemingly not produced.
             if os.path.isfile(normExpUserPath(debuggerCmd[-1])):
                 # Path to memory dump is the last element of debuggerCmd.
                 shutil.move(debuggerCmd[-1], logPrefix + "-core")
