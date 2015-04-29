@@ -33,26 +33,27 @@ def botArgs():
         return domDefaults()
     return sys.argv[1:]
 
-def callWithBackoff(args):
-    try:
-        subprocess.check_call(args)
-    except subprocess.CalledProcessError as e:
-        print repr(args)
-        print "hit a subprocess error:"
-        print repr(e)
-        print "Waiting a minute..."
-        time.sleep(60)
-
-def once(i):
-    print "localLoop #%d!" % i
-    callWithBackoff([sys.executable, "-u", os.path.join(path0, 'util', 'reposUpdate.py')])
-    callWithBackoff([sys.executable, "-u", os.path.join(path0, 'bot.py')] + botArgs())
-
-def main():
+def loopSequence(cmdSequence, waitTime):
+    """Call a sequence of commands in a loop. If any fails, sleep(waitTime) and go back to the beginning of the sequence."""
     i = 0
     while True:
         i += 1
-        once(i)
+        print "localLoop #%d!" % i
+        for cmd in cmdSequence:
+            try:
+                subprocess.check_call(cmd)
+            except subprocess.CalledProcessError as e:
+                print "Something went wrong when calling: " + repr(cmd)
+                print repr(e)
+                print "Waiting %d seconds..." % waitTime
+                time.sleep(waitTime)
+                break
+
+def main():
+    loopSequence([
+        [sys.executable, "-u", os.path.join(path0, 'util', 'reposUpdate.py')],
+        [sys.executable, "-u", os.path.join(path0, 'bot.py')] + botArgs()
+    ], 60)
 
 if __name__ == "__main__":
     main()
