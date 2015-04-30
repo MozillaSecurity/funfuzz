@@ -40,8 +40,9 @@ var fuzzerWebIDL = (function () {
       case "unrestricted double":
       case "unrestricted float":
          return fuzzValues.jsNumbers();
-      case "ByteString": // ???
       case "DOMString":
+      case "ByteString": // https://heycam.github.io/webidl/#idl-ByteString
+      case "USVString": // https://heycam.github.io/webidl/#idl-USVString
         return simpleSource(Random.pick([fuzzValues.texts, fuzzValues.URIs]));
       case "WindowProxy":
         return Things.instance("Window");
@@ -97,7 +98,7 @@ var fuzzerWebIDL = (function () {
       //s += "/* members of dictionary " + name + ": */ "
       var item = db[name];
       for (var i = 0; (member = item.members[i]); ++i) {
-        if (rnd(3) < fill) {
+        if (member.required ? (rnd(100) > 0) : (rnd(3) < fill)) {
           s += maybeComma + genDictionaryMember(simpleSource(member.name), gimmei(member.idlType));
           maybeComma = ", ";
         }
@@ -180,7 +181,7 @@ var fuzzerWebIDL = (function () {
         return "/* hangy */";
       }
 
-      var memberExpr = instance + "." + member.name;
+      var memberExpr = instance + "[" + simpleSource(member.name) + "]";
       if (member.type == "attribute") {
         if (rnd(2)) {
           return "fuzzerWebIDL.rv = " + memberExpr + ";";

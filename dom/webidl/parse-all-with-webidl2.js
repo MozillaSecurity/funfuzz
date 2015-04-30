@@ -6,20 +6,21 @@ const TREE = "/Users/jruderman/trees/mozilla-central/";
 
 // Load a library that parses WebIDL files into a JSON-like format
 // (https://github.com/darobin/webidl2.js + my patch "mozilla-ize-webidl2.diff")
-var window = {};
+var self = {};
 load("/Users/jruderman/code/webidl2.js/lib/webidl2.js");
 
-function assert(p) { if (!p) throw "Assertion failed"; }
+function assert(p) { if (!p) { var e = new Error("Assertion failed"); print (e.stack); throw e; } }
 function last(a) { return a[a.length - 1]; }
 
 function parseAll()
 {
     var generated = {};
     var idlTrees = [];
+    var skips = {'BluetoothAdapter.webidl':1, 'BluetoothDevice.webidl':1, 'BluetoothManager.webidl':1}; // MOZ_B2G_BT_API_V2
 
     // First, read the generated and preprocessed WebIDL files
     // https://mxr.mozilla.org/mozilla-central/source/dom/webidl/moz.build#12
-    system("ls " + BUILD + "dom/bindings/*.webidl > /Users/jruderman/Desktop/webidl-generated.list");
+    os.system("ls " + BUILD + "dom/bindings/*.webidl > /Users/jruderman/Desktop/webidl-generated.list");
     var list = snarf("/Users/jruderman/Desktop/webidl-generated.list").split("\n");
     for (let fn of list) {
         if (!fn)
@@ -33,7 +34,7 @@ function parseAll()
     }
 
     // Second, read the normal WebIDL files (skipping the ones that are really input for preprocessing)
-    system("ls " + TREE + "dom/webidl/*.webidl > /Users/jruderman/Desktop/webidl-tree.list");
+    os.system("ls " + TREE + "dom/webidl/*.webidl > /Users/jruderman/Desktop/webidl-tree.list");
     list = snarf("/Users/jruderman/Desktop/webidl-tree.list").split("\n");
     for (let fn of list) {
         if (!fn) {
@@ -41,6 +42,9 @@ function parseAll()
         }
         leaf = last(fn.split("/"));
         if (generated[leaf]) {
+            continue;
+        }
+        if (skips[leaf]) {
             continue;
         }
         idlTrees.push(parse(fn));
@@ -56,7 +60,7 @@ function parse(fullFn)
     idlText = idlText.replace(/jsonifier;/g, ""); // remove another mozilla extension
 
     try {
-        return window.WebIDL2.parse(idlText);
+        return self.WebIDL2.parse(idlText);
     } catch(e) {
         print("Error in: " + fullFn);
         linematch = /line (\d+)/.exec(e);
@@ -79,7 +83,10 @@ function flattenIDL(idlTrees)
     for (let fileTree of idlTrees) {
         for (let item of fileTree) {
             if ("name" in item && !item.partial) {
-                assert(!(item.name in items));
+                if (item.name in items) {
+                    print("Duplicate: " + item.name);
+                    continue;
+                }
                 if (item.name in items) {
                     items[item.name] = zipPartial(items[item.name], item);
                 } else {

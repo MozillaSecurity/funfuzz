@@ -1,43 +1,50 @@
 diff --git a/lib/webidl2.js b/lib/webidl2.js
-index d5f61ae..bbc3d45 100644
+index 50d3950..c8d5513 100644
 --- a/lib/webidl2.js
 +++ b/lib/webidl2.js
-@@ -13,7 +13,11 @@
+@@ -6,14 +6,15 @@
+         ,   re = {
+                 "float":        /^-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([Ee][-+]?[0-9]+)?|[0-9]+[Ee][-+]?[0-9]+)/
+             ,   "integer":      /^-?(0([Xx][0-9A-Fa-f]+|[0-7]*)|[1-9][0-9]*)/
+-            ,   "identifier":   /^[A-Z_a-z][0-9A-Z_a-z]*/
++            ,   "identifier":   /^[A-Z_a-z][0-9A-Z_\-a-z]*/
+             ,   "string":       /^"[^"]*"/
+             ,   "whitespace":   /^(?:[\t\n\r ]+|[\t\n\r ]*((\/\/.*|\/\*(.|\n|\r)*?\*\/)[\t\n\r ]*))+/
+             ,   "other":        /^[^\t\n\r 0-9A-Z_a-z]/
              }
          ,   types = []
          ;
 -        for (var k in re) types.push(k);
-+
-+        // mozilla breaks enumeration-order assumption in JS_MORE_DETERMINISTIC builds
-+        //for (var k in re) types.push(k);
-+        types = ["float", "integer", "identifier", "string", "whitespace", "other"];
-+
++        // https://github.com/darobin/webidl2.js/issues/27
++        var types = ["float", "integer", "identifier", "string", "whitespace", "other"];
          while (str.length > 0) {
              var matched = false;
              for (var i = 0, n = types.length; i < n; i++) {
-@@ -320,6 +324,7 @@
-             if (eq) {
-                 all_ws();
-                 ret.rhs = consume(ID);
-+                if (!ret.rhs) ret.rhs = consume(STR); // mozilla extension
-                 if (!ret.rhs) return error("No right hand side to extended attribute assignment");
-             }
-             all_ws();
-@@ -483,7 +488,7 @@
+@@ -335,6 +336,9 @@
+                 if (rhs = consume(ID)) {
+                   ret.rhs = rhs
+                 }
++                else if (rhs = consume(STR)) {
++                  ret.rhs = rhs // mozilla extension
++                }
+                 else if (consume(OTHER, "(")) {
+                     rhs = [];
+                     var id = consume(ID);
+@@ -524,7 +528,7 @@
              }
              all_ws();
              ret.idlType = type() || error("No type in attribute");
 -            if (ret.idlType.sequence) error("Attributes cannot accept sequence types");
-+            //if (ret.idlType.sequence) error("Attributes cannot accept sequence types"); // mozilla extension allows this
++            //if (ret.idlType.sequence) error("Attributes cannot accept sequence types");
              all_ws();
              var name = consume(ID) || error("No name in attribute");
              ret.name = name.value;
-@@ -793,7 +798,7 @@
+@@ -838,7 +842,7 @@
                  all_ws(store ? vals : null);
                  if (consume(OTHER, "}")) {
                      all_ws();
 -                    if (saw_comma) error("Trailing comma in enum");
-+                    //if (saw_comma) error("Trailing comma in enum"); // mozilla extension
++                    //if (saw_comma) error("Trailing comma in enum");
                      consume(OTHER, ";") || error("No semicolon after enum");
                      return ret;
                  }
