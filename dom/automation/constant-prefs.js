@@ -66,6 +66,7 @@ user_pref("extensions.testpilot.runStudies", false);
 user_pref("lightweightThemes.update.enabled", false);
 user_pref("browser.microsummary.enabled", false);
 user_pref("toolkit.telemetry.server", "");
+user_pref("toolkit.telemetry.unified", false);
 user_pref("plugins.update.url", "");
 user_pref("datareporting.healthreport.service.enabled", false);
 user_pref("datareporting.healthreport.uploadEnabled", false);
