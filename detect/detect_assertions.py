@@ -44,6 +44,9 @@ def assertionSeverity(line):
         # assert.h e.g. as used by harfbuzz
         # Lots of JS tests use this to indicate failure, but we don't care when transcluding those tests into fuzz testcases
         return FATAL_ASSERT
+    if ": failed assertion" in line:
+        # Skia
+        return FATAL_ASSERT
     if "Mozilla has caught an Obj-C exception" in line:
         return NON_FATAL_ASSERT
     return NO_ASSERT
