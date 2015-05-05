@@ -251,8 +251,7 @@ def basicFlagSets(shellPath):
 
 
 def testRandomFlags():
-    import sys
-    for i in range(100):
+    for _ in range(100):
         print ' '.join(randomFlagSet(sys.argv[1]))
 
 
