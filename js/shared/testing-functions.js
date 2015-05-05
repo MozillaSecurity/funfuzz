@@ -126,7 +126,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
 
     // [TestingFunctions.cpp, but CRASHY] After N js_malloc memory allocations, fail every following allocation
-    { w: 1,  v: function(d, b) { return prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");"; } },
+    //{ w: 1,  v: function(d, b) { return prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");"; } },
 
     // [TestingFunctions.cpp, but SLOW] Make garbage collection extremely frequent
     { w: 1,  v: function(d, b) { return (rnd(100) === 0) ? (enableGCZeal()) : "void 0;"; } },
