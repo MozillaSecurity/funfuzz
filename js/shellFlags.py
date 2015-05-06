@@ -55,8 +55,8 @@ def randomFlagSet(shellPath):
     # if shellSupportsFlag(shellPath, '--unboxed-arrays') and chance(.2):
     #     args.append("--unboxed-arrays")  # --unboxed-arrays landed in bug 1146597
 
-    if shellSupportsFlag(shellPath, '--unboxed-objects') and chance(.2):
-        args.append("--unboxed-objects")  # --unboxed-objects landed in bug 1116855
+    if shellSupportsFlag(shellPath, '--no-unboxed-objects') and chance(.2):
+        args.append("--no-unboxed-objects")  # --no-unboxed-objects landed in bug 1162199
 
     #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
