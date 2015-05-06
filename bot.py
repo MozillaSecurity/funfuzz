@@ -375,8 +375,8 @@ def botmain(options):
                 numProcesses = max(numProcesses // 2, 1)
             if sps.isARMv7l:
                 # Even though ARM boards generally now have many cores, each core is not as powerful
-                # as x86/64 ones, so restrict fuzzing to only 2 cores for now.
-                numProcesses = 2
+                # as x86/64 ones, so restrict fuzzing to only 1 core for now.
+                numProcesses = 1
 
             forkJoin(options.tempDir, numProcesses, fuzzUntilBug, options, buildInfo)
 
