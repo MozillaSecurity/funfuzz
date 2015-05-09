@@ -19,7 +19,7 @@ function fillShellSandbox(sandbox)
   var safeFuns = [
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
-    "verifyprebarriers", "verifypostbarriers", "gcPreserveCode",
+    "verifyprebarriers", "gcPreserveCode",
     "minorgc", "abortgc",
     "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox",

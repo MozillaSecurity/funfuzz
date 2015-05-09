@@ -175,8 +175,6 @@ def randomFlagSet(shellPath):
 
     #if chance(.05):
     #    args.append("--execute=verifyprebarriers()")
-    #if chance(.05):
-    #    args.append("--execute=verifypostbarriers()")
 
     if chance(.05):
         args.append("-D") # aka --dump-bytecode

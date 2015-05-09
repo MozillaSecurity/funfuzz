@@ -65,11 +65,10 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // Change a GC parameter.
     { w: 10, v: setGcparam },
 
-    // Verify write barriers. These functions are effective in pairs.
+    // Verify write barriers. This functions is effective in pairs.
     // The first call sets up the start barrier, the second call sets up the end barrier.
     // Nothing happens when there is only one call.
     { w: 10, v: function(d, b) { return prefix + "verifyprebarriers" + "();"; } },
-    { w: 10, v: function(d, b) { return prefix + "verifypostbarriers" + "();"; } },
 
     // Trace the heap using non-GC tracing code
     { w: 1,  v: function(d, b) { return "void " + prefix + "countHeap" + "();"; } },
