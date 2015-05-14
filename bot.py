@@ -526,14 +526,17 @@ def ensureBuild(options):
                 #   js-js-dbg-opt-64-dm-nsprBuild-linux
                 # This is because options.testType gets prepended along with a dash later.
                 bType = buildOptions.computeShellType(options.buildOptions)[3:]
-                bSrc = 'Create another shell in shell-cache like this one:\n' + \
-                       'python -u %s -b "%s -R %s" -r %s\n\n' % (
-                       os.path.join(path3, 'compileShell.py'), options.buildOptions.buildOptionsStr,
-                       options.buildOptions.repoDir, bRev) + \
-                       '==============================================\n' + \
-                       '|  Fuzzing %s js shell builds\n'  % cshell.getRepoName() + \
-                       '|  DATE: %s\n'                    % sps.dateStr() + \
-                       '==============================================\n\n'
+                bSrc = (
+                    'Create another shell in shell-cache like this one:\n' +
+                    'python -u %s -b "%s -R %s" -r %s\n\n' % (
+                        os.path.join(path3, 'compileShell.py'), options.buildOptions.buildOptionsStr,
+                        options.buildOptions.repoDir, bRev
+                    ) +
+                    '==============================================\n' +
+                    '|  Fuzzing %s js shell builds\n'  % cshell.getRepoName() +
+                    '|  DATE: %s\n'                    % sps.dateStr() +
+                    '==============================================\n\n')
+
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)
                 print 'buildDir is: ' + bDir
                 print 'buildSrc is: ' + bSrc
