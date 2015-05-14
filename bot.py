@@ -443,10 +443,10 @@ def retestAll(options, buildInfo):
     # Find testcases to retest
     for jobTypeDir in (os.path.join(options.retestRoot, x) for x in os.listdir(options.retestRoot) if x.startswith(options.testType + "-")):
         for j in os.listdir(jobTypeDir):
-            if j.split("_")[0] in retestSkips:
-                print "Skipping " + j + " for " + j.split("_")[0]
             if "-asan" in buildInfo.buildDir and "-asan" not in jobTypeDir:
                 pass
+            elif j.split("_")[0] in retestSkips:
+                print "Skipping " + j + " for " + j.split("_")[0]
             elif "_0_lines" in j:
                 print "Skipping a 0-line testcase"
             elif "_reduced" in j:
