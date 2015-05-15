@@ -130,7 +130,6 @@ dom.undo_manager.enabled
 dom.url.encode_decode_hash
 dom.wakelock.enabled
 dom.workers.enabled
-dom.workers.websocket.enabled
 editor.use_css
 editor.use_custom_colors
 font.size.inflation.forceEnabled
