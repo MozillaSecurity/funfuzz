@@ -354,7 +354,7 @@ def botmain(options):
             lithArgs[-1] = job + splitSlash(lithArgs[-1])[-1] # options.tempDir may be different
             if platform.system() == "Windows":
                 # Ensure both Lithium and Firefox understand the filename
-                lithArgs[-1] = lithArgs[-1].replace("/","\\")
+                lithArgs[-1] = lithArgs[-1].replace("/", "\\")
             logPrefix = job + "reduce" + timestamp()
             (lithResult, lithDetails) = lithOps.runLithium(lithArgs, logPrefix, options.targetTime)
             uploadJob(options, lithResult, lithDetails, job, oldjobname)
