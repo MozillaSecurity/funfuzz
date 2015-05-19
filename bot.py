@@ -39,9 +39,9 @@ import buildOptions
 import compileShell
 import loopjsfunfuzz
 
-localSep = "/" # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
+localSep = "/"  # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
 
-JS_SHELL_DEFAULT_TIMEOUT = 24 # see comments in loopjsfunfuzz.py for tradeoffs
+JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loopjsfunfuzz.py for tradeoffs
 
 # Possible ssh options:
 #   -oStrictHostKeyChecking=no
@@ -63,14 +63,17 @@ class BuildInfo(object):
 def splitSlash(d):
     return d.split("/" if "/" in d else "\\")
 
+
 def assertTrailingSlash(d):
     assert d[-1] in ("/", "\\")
+
 
 def adjustForScp(d):
     if platform.system() == "Windows" and d[1] == ":":
         # Turn "c:\foo\" into "/c/foo/" so scp doesn't think "c" is a hostname
         return "/" + d[0] + d[2:].replace("\\", "/")
     return d
+
 
 # Copies a directory (the directory itself, not just its contents)
 # whose full name is |srcDir|, creating a subdirectory of |destParent| with the same short name.
@@ -85,6 +88,7 @@ def copyFiles(remoteHost, srcDir, destParent):
     srcDirLeaf = splitSlash(srcDir)[-2]
     return destParent + srcDirLeaf + destParent[-1]
 
+
 def tryCommand(remoteHost, cmd):
     if remoteHost == None:
         p = subprocess.Popen(["bash", "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -92,6 +96,7 @@ def tryCommand(remoteHost, cmd):
         p = subprocess.Popen(["ssh", remoteHost, cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p.communicate()
     return p.returncode == 0
+
 
 def runCommand(remoteHost, cmd):
     if remoteHost == None:
@@ -108,7 +113,7 @@ def runCommand(remoteHost, cmd):
 
 def grabJob(options, desiredJobType):
     while True:
-        jobs = filter( (lambda s: s.endswith(desiredJobType)), runCommand(options.remote_host, "ls -t " + options.relevantJobsDir).split("\n") )
+        jobs = filter((lambda s: s.endswith(desiredJobType)), runCommand(options.remote_host, "ls -t " + options.relevantJobsDir).split("\n"))
         if len(jobs) > 0:
             oldNameOnServer = jobs[0]
             shortHost = socket.gethostname().split(".")[0]  # more portable than os.uname()[1]
@@ -116,11 +121,11 @@ def grabJob(options, desiredJobType):
             if tryCommand(options.remote_host, "mv " + options.relevantJobsDir + oldNameOnServer + " " + takenNameOnServer + ""):
                 print "Grabbed " + oldNameOnServer + " by renaming it to " + takenNameOnServer
                 jobWithPostfix = copyFiles(options.remote_host, options.remote_prefix + takenNameOnServer + options.remoteSep, options.tempDir + localSep)
-                oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)] # cut off the part after the "_"
+                oldjobname = oldNameOnServer[:len(oldNameOnServer) - len(desiredJobType)]  # cut off the part after the "_"
                 job = options.tempDir + localSep + oldjobname + localSep
                 shutil.move(jobWithPostfix, job)
                 print repr((job, oldjobname, takenNameOnServer))
-                return (job, oldjobname, takenNameOnServer) # where it is for running lithium; what it should be named; and where to delete it from the server
+                return (job, oldjobname, takenNameOnServer)  # where it is for running lithium; what it should be named; and where to delete it from the server
             else:
                 print "Raced to grab " + options.relevantJobsDir + oldNameOnServer + ", trying again"
                 continue
@@ -202,12 +207,15 @@ def readTinyFile(fn):
         text = f.read()
     return text.strip()
 
+
 def writeTinyFile(fn, text):
     with open(fn, "w") as f:
         f.write(text)
 
+
 def timestamp():
     return str(int(time.time()))
+
 
 def sendEmail(subject, body, receiver):
     import smtplib
@@ -229,6 +237,7 @@ def sendEmail(subject, body, receiver):
     server = smtplib.SMTP('mail.build.mozilla.org')
     server.sendmail(fromAddr, [toAddr], msg.as_string())
     server.quit()
+
 
 def parseOpts():
     parser = OptionParser()
@@ -343,7 +352,7 @@ def botmain(options):
         options.relevantJobsDirName = options.testType + "-" + buildInfo.buildType
         options.relevantJobsDir = options.baseDir + options.relevantJobsDirName + options.remoteSep
 
-        runCommand(options.remote_host, "mkdir -p " + options.baseDir) # don't want this created recursively, because "mkdir -p" is weird with modes
+        runCommand(options.remote_host, "mkdir -p " + options.baseDir)  # don't want this created recursively, because "mkdir -p" is weird with modes
         runCommand(options.remote_host, "chmod og+rx " + options.baseDir)
         runCommand(options.remote_host, "mkdir -p " + options.relevantJobsDir)
         runCommand(options.remote_host, "chmod og+rx " + options.relevantJobsDir)
@@ -352,7 +361,7 @@ def botmain(options):
         if job:
             print "Reduction time!"
             lithArgs = readTinyFile(job + "lithium-command.txt").strip().split(" ")
-            lithArgs[-1] = job + splitSlash(lithArgs[-1])[-1] # options.tempDir may be different
+            lithArgs[-1] = job + splitSlash(lithArgs[-1])[-1]  # options.tempDir may be different
             if platform.system() == "Windows":
                 # Ensure both Lithium and Firefox understand the filename
                 lithArgs[-1] = lithArgs[-1].replace("/", "\\")
@@ -404,7 +413,7 @@ def printMachineInfo():
     # FIXME: Should have if os.path.exists(path to git) or something
     #print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print "Python version: " + sys.version[:5]
-    print "Number of cores visible to OS: " +  str(multiprocessing.cpu_count())
+    print "Number of cores visible to OS: " + str(multiprocessing.cpu_count())
     print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
 
     hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
@@ -419,7 +428,8 @@ def printMachineInfo():
         # resource library is only applicable to Linux or Mac platforms.
         import resource
         print "Corefile size (soft limit, hard limit) is: " + \
-                repr(resource.getrlimit(resource.RLIMIT_CORE))
+              repr(resource.getrlimit(resource.RLIMIT_CORE))
+
 
 def readSkips(filename):
     skips = {}
@@ -429,6 +439,7 @@ def readSkips(filename):
                 jobname = line.split(" ")[0]
                 skips[jobname] = True
     return skips
+
 
 def retestAll(options, buildInfo):
     '''
@@ -569,12 +580,10 @@ def ensureBuild(options):
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)
 
 
-
-
 def fuzzUntilBug(options, buildInfo, i):
     # not really "oldjobname", but this is how i get newjobname to be what i want below
     # avoid putting underscores in this part, because those get split on
-    oldjobname = uuid.uuid1(clock_seq = i).hex
+    oldjobname = uuid.uuid1(clock_seq=i).hex
     job = options.tempDir + localSep + oldjobname + localSep
     os.mkdir(job)
 
