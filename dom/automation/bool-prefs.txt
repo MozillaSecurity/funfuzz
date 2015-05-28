@@ -325,6 +325,7 @@ svg.new-getBBox.enabled
 svg.paint-order.enabled
 svg.smil.enabled
 svg.svg-iframe.enabled
+svg.transform-origin.enabled
 toolkit.identity.debug
 toolkit.telemetry.enabled
 view_source.syntax_highlight
