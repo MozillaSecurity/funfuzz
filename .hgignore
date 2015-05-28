@@ -13,13 +13,3 @@ refdyn.log
 autoconf.js
 wlog
 wtmp
-langfuzz/[^\/]+/target
-langfuzz/[^\/]+/.settings/
-langfuzz/LangFuzz/grammar/output
-langfuzz/LangFuzz/grammar/antlr/classes
-langfuzz/target
-langfuzz/LangFuzz/src/test/resources/parser/
-langfuzz/BlockFuzz/src/test/resources/
-
-peach/Logs
-peach/FruitFarm
