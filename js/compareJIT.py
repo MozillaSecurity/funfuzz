@@ -92,7 +92,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             # would be more efficient to run lithium on one or the other, but meh
             print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT found a more serious bug"], lev, r.elapsedtime)
             with open(logPrefix + "-summary.txt", 'wb') as f:
-                f.write('\n'.join(issues + [sps.shellify(command), "compareJIT found a more serious bug"]))
+                f.write('\n'.join(issues + [sps.shellify(command), "compareJIT found a more serious bug"]) + '\n')
             print "  " + sps.shellify(command)
             return lev
         elif lev != jsInteresting.JS_FINE:
