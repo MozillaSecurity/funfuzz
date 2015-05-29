@@ -19,7 +19,6 @@ bot.py --> loopdomfuzz.py --> domInteresting.py --> runbrowser.py --> automation
 import sys
 import shutil
 import os
-import platform
 import signal
 import glob
 import re
@@ -49,12 +48,22 @@ close_fds = sys.platform != 'win32'
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-(DOM_FINE, DOM_TIMED_OUT_UNEXPECTEDLY, DOM_ABNORMAL_EXIT, DOM_FUZZER_COMPLAINED, DOM_VG_AMISS, DOM_NEW_LEAK, DOM_MALLOC_ERROR, DOM_NEW_ASSERT_OR_CRASH) = range(8)
+(
+    DOM_FINE,
+    DOM_TIMED_OUT_UNEXPECTEDLY,
+    DOM_ABNORMAL_EXIT,
+    DOM_FUZZER_COMPLAINED,
+    DOM_VG_AMISS,
+    DOM_NEW_LEAK,
+    DOM_MALLOC_ERROR,
+    DOM_NEW_ASSERT_OR_CRASH
+) = range(8)
 
 oldcwd = os.getcwd()
 #os.chdir(SCRIPT_DIRECTORY)
 
 VALGRIND_ERROR_EXIT_CODE = 77
+
 
 def getSignalName(num, default=None):
     for p in dir(signal):
@@ -63,9 +72,11 @@ def getSignalName(num, default=None):
                 return p
     return default
 
+
 def getFullPath(path):
     "Get an absolute path relative to oldcwd."
     return os.path.normpath(os.path.join(oldcwd, os.path.expanduser(path)))
+
 
 def writePrefs(profileDir, extraPrefs):
     prefsText = ""
@@ -93,7 +104,8 @@ def createDOMFuzzProfile(profileDir):
         extFile.write(domfuzzExtensionPath)
 
 
-valgrindComplaintRegexp = re.compile("^==\d+== ")
+valgrindComplaintRegexp = re.compile(r"^==\d+== ")
+
 
 class AmissLogHandler:
     def __init__(self, knownPath):
@@ -131,11 +143,11 @@ class AmissLogHandler:
         if len(self.fullLogHead) < 100000:
             self.fullLogHead.append(msgLF)
         pidprefix = "INFO | automation.py | Application pid:"
-        if self.pid == None and msg.startswith(pidprefix):
+        if self.pid is None and msg.startswith(pidprefix):
             self.pid = int(msg[len(pidprefix):])
             #print "Firefox pid: " + str(self.pid)
         theappPrefix = "theapp: "
-        if self.theapp == None and msg.startswith(theappPrefix):
+        if self.theapp is None and msg.startswith(theappPrefix):
             self.theapp = msg[len(theappPrefix):]
             #print "self.theapp " + repr(self.theapp)
         if msg.find("FRC") != -1:
@@ -167,7 +179,7 @@ class AmissLogHandler:
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
-                print "Ignoring memory leaks (bug 622315)" # testcase in comment 2
+                print "Ignoring memory leaks (bug 622315)"  # testcase in comment 2
                 self.expectedToLeak = True
             if "nsCARenderer::Render failure" in msg:
                 print "Ignoring memory leaks (bug 840688)"
@@ -189,19 +201,19 @@ class AmissLogHandler:
 
         # Treat these fatal assertions as crashes. This lets us distinguish call sites and makes ASan signatures match.
         overlyGenericAssertion = (
-          "You can't dereference a NULL" in msg or
-          ("Assertion failure: false," in msg) or
-          ("Assertion failure: value" in msg and "BindingUtils.h" in msg) or
-          ("Assertion failure: i < Length() (invalid array index)" in msg)
+            "You can't dereference a NULL" in msg or
+            ("Assertion failure: false," in msg) or
+            ("Assertion failure: value" in msg and "BindingUtils.h" in msg) or
+            ("Assertion failure: i < Length() (invalid array index)" in msg)
         )
 
         newAssertion = newAssertion and (
             not overlyGenericAssertion and
             not (self.expectedToLeak and "ASSERTION: Component Manager being held past XPCOM shutdown" in msg) and
             not (self.expectedToLeak and "Tear-off objects remain in hashtable at shutdown" in msg) and
-            not ("Assertion failed: _cairo_status_is_error" in msg and sps.isWin) and # A frequent error that I cannot reproduce
-            not ("JS_IsExceptionPending" in msg) and # Bug 813646, bug 735082, bug 735081
-            not (self.goingDownHard and sps.isWin) and # Bug 763182
+            not ("Assertion failed: _cairo_status_is_error" in msg and sps.isWin) and  # A frequent error that I cannot reproduce
+            not ("JS_IsExceptionPending" in msg) and  # Bug 813646, bug 735082, bug 735081
+            not (self.goingDownHard and sps.isWin) and  # Bug 763182
             True)
 
         if newAssertion:
@@ -223,8 +235,8 @@ class AmissLogHandler:
             if len(self.summaryLog) < 100:
                 self.summaryLog.append(msgLF)
         if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
-           msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer") or
-           "Shutdown too long, probably frozen, causing a crash" in msg):
+                msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application ran for longer") or
+                "Shutdown too long, probably frozen, causing a crash" in msg):
             # A hang was caught by either automation.py or by RunWatchdog (toolkit/components/terminator/nsTerminator.cpp)
             self.timedOut = True
             self.goingDownHard = True
@@ -232,7 +244,7 @@ class AmissLogHandler:
 
         if "goQuitApplication" in msg:
             self.expectChromeFailure = True
-        if (not self.expectChromeFailure and jsInChrome(msg) and jsFailure(msg) and not knownChromeFailure(msg)):
+        if (not self.expectChromeFailure) and jsInChrome(msg) and jsFailure(msg) and not knownChromeFailure(msg):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
 
@@ -242,6 +254,7 @@ class AmissLogHandler:
         print "$ " + msg
         self.fullLogHead.append(msg + "\n")
         self.summaryLog.append(msg + "\n")
+
 
 def jsFailure(msg):
     return ("uncaught exception" in msg or
@@ -254,6 +267,7 @@ def jsFailure(msg):
             "Full stack:" in msg or
             "System JS : ERROR" in msg or
             False)
+
 
 def jsInChrome(msg):
     return ("chrome://browser/" in msg or
@@ -268,62 +282,64 @@ def jsInChrome(msg):
             "resource://gre/components/" in msg or
             "System JS : ERROR" in msg or
             False) and not (
-            "xbl-marquee.xml" in msg or # chrome://xbl-marquee/content/xbl-marquee.xml
-            "videocontrols.xml" in msg # chrome://global/content/bindings/videocontrols.xml
+                "xbl-marquee.xml" in msg or  # chrome://xbl-marquee/content/xbl-marquee.xml
+                "videocontrols.xml" in msg  # chrome://global/content/bindings/videocontrols.xml
             )
+
 
 def knownChromeFailure(msg):
     return (
-        ("nsIWebProgress.DOMWindow" in msg or "nsIWebProgress.isTopLevel" in msg) or # bug 732593
-        "installStatus is null" in msg or # bug 693237
-        "aTab is null" in msg or # bug 693239
-        "tab is null" in msg or  # bug 693239?
-        "browser is null" in msg or # bug 693239?
-        "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or # bug 732692, bug 693270
-        "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or # bug 732692, bug 693270
-        "prompt aborted by user" in msg or # thrown intentionally in nsPrompter.js
-        "newPrompt.abortPrompt is not a function" in msg or # trying to do things after closing the window
-        "nsIIOService.getProtocolHandler" in msg or # bug 746878
-        "tipElement is null" in msg or # bug 746893
-        ("browser.xul" in msg and "gBrowserInit is not defined" in msg) or # Bug 897867
-        ("browser.js" in msg and "overlayText is null" in msg) or # Bug 797945
-        ("browser.js" in msg and "organizer.PlacesOrganizer" in msg) or # Bug 801436?
-        ("browser.js" in msg and "element is null" in msg) or # trustedKeyEvent can artifically direct F6 at browser.js (focusNextFrame) when the focused window is a Scratchpad window
-        ("browser.js" in msg and "this.UIModule is undefined" in msg) or  # Bug 877013
-        ("browser.js" in msg and "this._cps2 is undefined" in msg) or     # Bug 877013
-        ("browser.js" in msg and "this.button is null" in msg) or         # Bug 877013
-        ("browser.xml" in msg and "this.docShell is null" in msg) or      # Bug 919362
-        ("places.js" in msg and "PlacesUIUtils is not defined" in msg) or # Bug 801436
-        ("places.js" in msg and "this._places is null" in msg) or         # Bug 893322
-        ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or # Bug 799329
-        ("pageInfo.js" in msg and "can't access dead object" in msg) or # Bug 799329 ?
-        ("pageInfo.js" in msg and "imgIRequest.image" in msg) or # Bug 801930
-        ("pageInfo.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949927
-        ("pageInfo.js" in msg and ": NS_ERROR_FAILURE" in msg) or # Bug 979400
-        ("aboutHome.js" in msg and "The operation is insecure" in msg) or # Bug 873300
-        ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or # Bug 927294
-        ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or # Bug 931286
-        ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or # Bug 927339
-        ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or # Bug 931304
-        ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or # Bug 947404
-        ("webrtcUI.jsm" in msg and "NS_ERROR_OUT_OF_MEMORY" in msg) or # Seems legit: whenfixed-local/webrtc-js-oom/
-        ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or # Bug 949920
-        ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or # Bug 950327
-        ("webrtcUI.jsm" in msg) or # Bug 973318
-        ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or # Bug 949926
-        ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or # bug 978524
-        ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or # bug 978629
-        ("nsDOMIdentity.js, line " in msg) or # These seem to be intentional messages about misusing the identity API
-        "DOMIdentity.jsm" in msg or # Bug 973397, bug 973398
-        "abouthealth.js" in msg or # Bug 895113
-        "WindowsPrefSync.jsm" in msg or # Bug 947581
-        "nsIFeedWriter::close" in msg or # Bug 813408
-        "SidebarUtils is not defined" in msg or # Bug 856250
-        "this.keyManager_ is null" in msg or # mostly happens when i manually quit during a fuzz run
-        "pbu_privacyContextFromWindow" in msg or # bug 931304 whenfixed 'pb'
-        ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or # Bug 978617
-        ("System JS : ERROR (null):0" in msg) or # Bug 987048
-        ("System JS" in msg) or # Bug 987222
+        "nsIWebProgress.DOMWindow" in msg or                                            # bug 732593
+        "nsIWebProgress.isTopLevel" in msg or                                           # bug 732593
+        "installStatus is null" in msg or                                               # bug 693237
+        "aTab is null" in msg or                                                        # bug 693239
+        "tab is null" in msg or                                                         # bug 693239?
+        "browser is null" in msg or                                                     # bug 693239?
+        "nsIWebContentHandlerRegistrar::registerProtocolHandler" in msg or              # bug 732692, bug 693270
+        "nsIWebContentHandlerRegistrar::registerContentHandler" in msg or               # bug 732692, bug 693270
+        "prompt aborted by user" in msg or                                              # thrown intentionally in nsPrompter.js
+        "newPrompt.abortPrompt is not a function" in msg or                             # trying to do things after closing the window
+        "nsIIOService.getProtocolHandler" in msg or                                     # bug 746878
+        "tipElement is null" in msg or                                                  # bug 746893
+        ("browser.xul" in msg and "gBrowserInit is not defined" in msg) or              # Bug 897867
+        ("browser.js" in msg and "overlayText is null" in msg) or                       # Bug 797945
+        ("browser.js" in msg and "organizer.PlacesOrganizer" in msg) or                 # Bug 801436?
+        ("browser.js" in msg and "element is null" in msg) or                           # trustedKeyEvent can artifically direct F6 at browser.js (focusNextFrame) when the focused window is a Scratchpad window
+        ("browser.js" in msg and "this.UIModule is undefined" in msg) or                # Bug 877013
+        ("browser.js" in msg and "this._cps2 is undefined" in msg) or                   # Bug 877013
+        ("browser.js" in msg and "this.button is null" in msg) or                       # Bug 877013
+        ("browser.xml" in msg and "this.docShell is null" in msg) or                    # Bug 919362
+        ("places.js" in msg and "PlacesUIUtils is not defined" in msg) or               # Bug 801436
+        ("places.js" in msg and "this._places is null" in msg) or                       # Bug 893322
+        ("pageInfo.js" in msg and "elem.ownerDocument.defaultView" in msg) or           # Bug 799329
+        ("pageInfo.js" in msg and "can't access dead object" in msg) or                 # Bug 799329 ?
+        ("pageInfo.js" in msg and "imgIRequest.image" in msg) or                        # Bug 801930
+        ("pageInfo.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or                   # Bug 949927
+        ("pageInfo.js" in msg and ": NS_ERROR_FAILURE" in msg) or                       # Bug 979400
+        ("aboutHome.js" in msg and "The operation is insecure" in msg) or               # Bug 873300
+        ("PermissionSettings.js" in msg and "aWindow.document is null" in msg) or       # Bug 927294
+        ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or            # Bug 931286
+        ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or            # Bug 927339
+        ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or               # Bug 931304
+        ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or         # Bug 947404
+        ("webrtcUI.jsm" in msg and "NS_ERROR_OUT_OF_MEMORY" in msg) or                  # Seems legit: whenfixed-local/webrtc-js-oom/
+        ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or           # Bug 949920
+        ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or                     # Bug 950327
+        ("webrtcUI.jsm" in msg) or                                                      # Bug 973318
+        ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 949926
+        ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or   # bug 978524
+        ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or         # bug 978629
+        ("nsDOMIdentity.js, line " in msg) or                                           # These seem to be intentional messages about misusing the identity API
+        "DOMIdentity.jsm" in msg or                                                     # Bug 973397, bug 973398
+        "abouthealth.js" in msg or                                                      # Bug 895113
+        "WindowsPrefSync.jsm" in msg or                                                 # Bug 947581
+        "nsIFeedWriter::close" in msg or                                                # Bug 813408
+        "SidebarUtils is not defined" in msg or                                         # Bug 856250
+        "this.keyManager_ is null" in msg or                                            # mostly happens when i manually quit during a fuzz run
+        "pbu_privacyContextFromWindow" in msg or                                        # bug 931304 whenfixed 'pb'
+        ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
+        ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
+        ("System JS" in msg) or                                                         # Bug 987222
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
@@ -331,16 +347,18 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "browser is undefined" in msg) or
         ("browser.js" in msg and "gNavigatorBundle.getString is not a function" in msg) or
         ("browser.js" in msg and "gBrowser.browsers is undefined" in msg) or
-        "devtools" in msg or # most devtools js errors I hit are uninteresting races
+        "devtools" in msg or  # most devtools js errors I hit are uninteresting races
 
-        True or # bug 878543 makes all chrome errors suspect
+        True or  # bug 878543 makes all chrome errors suspect
 
         False
     )
 
+
 def stripBeeps(s):
     """Strip BEL characters, in order to make copy-paste happier and avoid triggering text/plain binary-sniffing in web browsers."""
     return s.replace("\x07", "")
+
 
 class FigureOutDirs:
     def __init__(self, browserDir):
@@ -363,8 +381,8 @@ class FigureOutDirs:
             possible_stackwalk_fn = "minidump_stackwalk.exe" if sps.isWin else "minidump_stackwalk"
             possible_stackwalk = os.path.join(browserDir, possible_stackwalk_fn)
             if (not os.environ.get('MINIDUMP_STACKWALK', None) and
-                not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
-                os.path.exists(possible_stackwalk)):
+                    not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
+                    os.path.exists(possible_stackwalk)):
                 self.stackwalk = possible_stackwalk
         elif os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "_tests")):
             # browserDir is an objdir (more convenient for local builds)
@@ -391,6 +409,7 @@ class FigureOutDirs:
         if self.symbolsDir:
             self.symbolsDir = getFullPath(self.symbolsDir)
 
+
 def findSrcDir(objDir):
     with open(os.path.join(objDir, "Makefile")) as f:
         for line in f:
@@ -399,6 +418,7 @@ def findSrcDir(objDir):
 
     raise Exception("Didn't find a topsrcdir line in the Makefile")
 
+
 def deCygPath(p):
     """Convert a cygwin-style path to a native Windows path"""
     if sps.isWin and p.startswith("/c/"):
@@ -406,10 +426,10 @@ def deCygPath(p):
     return p
 
 
-
 def removeIfExists(filename):
     if os.path.exists(filename):
         os.remove(filename)
+
 
 def rdfInit(args):
     """
@@ -420,17 +440,17 @@ def rdfInit(args):
 
     parser = OptionParser()
     parser.add_option("--valgrind",
-                      action = "store_true", dest = "valgrind",
-                      default = False,
-                      help = "use valgrind with a reasonable set of options")
+                      action="store_true", dest="valgrind",
+                      default=False,
+                      help="use valgrind with a reasonable set of options")
     parser.add_option("-m", "--minlevel",
-                      type = "int", dest = "minimumInterestingLevel",
-                      default = DOM_FINE + 1,
-                      help = "minimum domfuzz level for lithium to consider the testcase interesting")
+                      type="int", dest="minimumInterestingLevel",
+                      default=DOM_FINE + 1,
+                      help="minimum domfuzz level for lithium to consider the testcase interesting")
     parser.add_option("--background",
-                      action = "store_true", dest = "background",
-                      default = False,
-                      help = "Run the browser in the background on Mac (e.g. for local reduction)")
+                      action="store_true", dest="background",
+                      default=False,
+                      help="Run the browser in the background on Mac (e.g. for local reduction)")
     options, args = parser.parse_args(args)
 
     browserDir = args[0]
@@ -441,7 +461,7 @@ def rdfInit(args):
     # Lithium:                    Required. Reduce this file.
     options.argURL = args[1] if len(args) > 1 else ""
 
-    options.browserDir = browserDir # used by loopdomfuzz
+    options.browserDir = browserDir  # used by loopdomfuzz
 
     runBrowserOptions = []
     if options.background:
@@ -466,18 +486,20 @@ def rdfInit(args):
         for suppressionsFile in findIgnoreLists.findIgnoreLists(knownPath, "valgrind.txt"):
             suppressions += "--suppressions=" + suppressionsFile + " "
 
-        runBrowserOptions.append("--vgargs="
-          "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
-          "--gen-suppressions=all" + " " +
-          suppressions +
-          "--child-silent-after-fork=yes" + " " + # First part of the workaround for bug 658840
-    #      "--leak-check=full" + " " +
-    #      "--show-possibly-lost=no" + " " +
-          "--smc-check=all-non-file" + " " +
-    #      "--track-origins=yes" + " " +
-    #      "--num-callers=50" + " " +
-          "--quiet"
+        vgargs = (
+            "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
+            "--gen-suppressions=all" + " " +
+            suppressions +
+            "--child-silent-after-fork=yes" + " " +  # First part of the workaround for bug 658840
+            # "--leak-check=full" + " " +
+            # "--show-possibly-lost=no" + " " +
+            "--smc-check=all-non-file" + " " +
+            # "--track-origins=yes" + " " +
+            # "--num-callers=50" + " " +
+            "--quiet"
         )
+
+        runBrowserOptions.append("--vgargs=" + vgargs)  # spaces are okay here
 
     def levelAndLines(url, logPrefix=None, extraPrefs="", quiet=False, leaveProfile=False):
         """Run Firefox using the profile created above, detecting bugs and stuff."""
@@ -488,16 +510,17 @@ def rdfInit(args):
 
         runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
 
-        assert logPrefix # :(
+        assert logPrefix  # :(
         leakLogFile = logPrefix + "-leaks.txt"
 
         runbrowser = subprocess.Popen(
-                         runbrowserpy + ["--leak-log-file=" + leakLogFile] + runBrowserOptions + runBrowserArgs + [url],
-                         stdin = None,
-                         stdout = subprocess.PIPE,
-                         stderr = subprocess.STDOUT,
-                         env = env,
-                         close_fds = close_fds)
+            runbrowserpy + ["--leak-log-file=" + leakLogFile] + runBrowserOptions + runBrowserArgs + [url],
+            stdin=None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=env,
+            close_fds=close_fds
+        )
 
         alh = AmissLogHandler(knownPath)
         alh.valgrind = options.valgrind
@@ -565,7 +588,7 @@ def rdfInit(args):
             pass
         elif status < 0 and os.name == 'posix':
             signame = getSignalName(signum, "unknown signal")
-            print("DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")")
+            print "DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")"
         elif status == 1:
             alh.printAndLog("%%% Exited with status 1 (OOM or plugin crash?)")
         elif status == -2147483645 and sps.isWin:
@@ -591,7 +614,6 @@ def rdfInit(args):
                 for f in glob.glob(leakLogFile + "*"):
                     os.remove(f)
 
-
         if (lev > DOM_FINE) and logPrefix:
             with open(logPrefix + "-output.txt", "w") as outlog:
                 outlog.writelines(alh.fullLogHead)
@@ -606,10 +628,11 @@ def rdfInit(args):
         if not leaveProfile:
             shutil.rmtree(profileDir)
 
-        print("DOMFUZZ INFO | domInteresting.py | " + str(lev))
+        print "DOMFUZZ INFO | domInteresting.py | " + str(lev)
         return (lev, alh.FRClines)
 
-    return levelAndLines, options # return a closure along with the set of options
+    return levelAndLines, options  # return a closure along with the set of options
+
 
 # For use by Lithium
 def init(args):
@@ -620,8 +643,9 @@ def init(args):
 def interesting(args, tempPrefix):
     global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
     extraPrefs = randomPrefs.grabExtraPrefs(lithiumURL) # Re-scan testcase (and prefs file) in case Lithium changed them
-    actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix = tempPrefix, extraPrefs = extraPrefs)
+    actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix=tempPrefix, extraPrefs=extraPrefs)
     return actualLevel >= minimumInterestingLevel
+
 
 # For direct (usually manual) invocations
 def directMain():
