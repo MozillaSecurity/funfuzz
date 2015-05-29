@@ -15,10 +15,13 @@ autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'aut
 
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
-from fileIngredients import fileContainsStr
 from fileManipulation import linesWith, writeLinesToFile
 from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 import subprocesses as sps
+
+p2 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
+sys.path.append(p2)
+from fileIngredients import fileContainsStr
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
