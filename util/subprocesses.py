@@ -4,7 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import copy
 import ctypes
 import errno
 import os
@@ -27,8 +26,6 @@ isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
 isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
-
-ENV_PATH_SEPARATOR = ';' if os.name == 'nt' else ':'
 
 noMinidumpMsg = '''
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
@@ -70,25 +67,6 @@ def getFreeSpace(folder, mulVar):
 #####################
 #  Shell Functions  #
 #####################
-
-
-def envWithPath(path, runningEnv=os.environ):
-    '''Appends the path to the appropriate library path on various platforms.'''
-    if isLinux:
-        libPath = 'LD_LIBRARY_PATH'
-    elif isMac:
-        libPath = 'DYLD_LIBRARY_PATH'
-    elif isWin:
-        libPath = 'PATH'
-
-    env = copy.deepcopy(runningEnv)
-    if libPath in env:
-        if path not in env[libPath]:
-            env[libPath] += ENV_PATH_SEPARATOR + path
-    else:
-        env[libPath] = path
-
-    return env
 
 
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
@@ -190,28 +168,6 @@ def dateStr():
     # assert captureStdout(['date'])[0] == currDateTime # This fails on Windows
     # On Windows, there is a leading zero in the day of the date in time.asctime()
     return time.asctime()
-
-
-def findLlvmBinPath():
-    '''Returns the path to compiled LLVM binaries, which differs depending on compilation method.'''
-    # https://developer.mozilla.org/en-US/docs/Building_Firefox_with_Address_Sanitizer#Manual_Build
-    # FIXME: It would be friendlier to show instructions (or even offer to set up LLVM for the user,
-    # with the right LLVM revision and build options). See MDN article on Firefox and Asan above.
-
-    LLVM_ROOT = normExpUserPath(os.path.join('~', 'llvm'))
-    assert os.path.isdir(LLVM_ROOT)
-    LLVM_BUILD_DIR = normExpUserPath(os.path.join(LLVM_ROOT, 'build'))
-
-    BIN_PATH = normExpUserPath(os.path.join(LLVM_BUILD_DIR, 'bin'))
-    if not os.path.isdir(BIN_PATH):
-        BIN_PATH = normExpUserPath(os.path.join(LLVM_BUILD_DIR, 'Release', 'bin'))
-    if not os.path.isdir(BIN_PATH):
-        BIN_PATH = normExpUserPath(os.path.join(LLVM_BUILD_DIR, 'Release+Asserts', 'bin'))
-
-    assert os.path.isfile(normExpUserPath(os.path.join(BIN_PATH, 'clang')))
-    assert os.path.isfile(normExpUserPath(os.path.join(BIN_PATH, 'clang++')))
-    assert os.path.isfile(normExpUserPath(os.path.join(BIN_PATH, 'llvm-symbolizer')))
-    return BIN_PATH
 
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):

@@ -25,6 +25,10 @@ import hgCmds
 import subprocesses as sps
 from LockDir import LockDir
 
+path2 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
+sys.path.append(path2)
+import envVars
+
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
 # MSVC 2010, change "mozmake" in the line below back to "make".
 if sps.isWin:
@@ -204,7 +208,8 @@ def cfgBin(shell, binToBeCompiled):
     origCfgEnvDt = copy.deepcopy(os.environ)
     cfgEnvDt['AR'] = 'ar'
     if shell.buildOptions.buildWithAsan:
-        llvmPath = sps.findLlvmBinPath()
+        llvmPath = envVars.findLlvmBinPath()
+        assert llvmPath is not None
         CLANG_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang'))
         CLANGPP_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang++'))
 

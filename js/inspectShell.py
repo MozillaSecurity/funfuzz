@@ -13,6 +13,11 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import subprocesses as sps
 
+path2 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
+sys.path.append(path2)
+import envVars
+
+
 if sps.isWin:
     COMPILE_NSPR_LIB = 'libnspr4.lib' if sps.isMozBuild64 else 'nspr4.lib'
     COMPILE_PLDS_LIB = 'libplds4.lib' if sps.isMozBuild64 else 'plds4.lib'
@@ -130,7 +135,7 @@ def testBinary(shellPath, args, useValgrind):
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     sps.vdump('The testing command is: ' + sps.shellify(testCmd))
     out, rCode = sps.captureStdout(testCmd, combineStderr=True, ignoreStderr=True,
-                                   ignoreExitCode=True, env=sps.envWithPath(
+                                   ignoreExitCode=True, env=envVars.envWithPath(
                                        os.path.dirname(os.path.abspath(shellPath))))
     sps.vdump('The exit code is: ' + str(rCode))
     return out, rCode
@@ -157,7 +162,7 @@ def testIsHardFpShellARM(s):
     '''Tests if the ARM shell is compiled with hardfp support.'''
     readelfBin = '/usr/bin/readelf'
     if os.path.exists(readelfBin):
-        newEnv = sps.envWithPath(os.path.dirname(os.path.abspath(s)))
+        newEnv = envVars.envWithPath(os.path.dirname(os.path.abspath(s)))
         readelfOutput = sps.captureStdout([readelfBin, '-A', s], env=newEnv)[0]
         return ('Tag_ABI_VFP_args: VFP registers' in readelfOutput)
     else:
