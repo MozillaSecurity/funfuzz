@@ -47,10 +47,12 @@ def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
             valgrindSuppressions(knownPath) +
           runthis)
 
-    wantStack = True
     preexec_fn = ulimitSet if os.name == 'posix' else None
-    runinfo = timedRun.timed_run(runthis, timeout, logPrefix, wantStack, preexec_fn=preexec_fn)
+    runinfo = timedRun.timed_run(runthis, timeout, logPrefix, preexec_fn=preexec_fn)
     sta = runinfo.sta
+
+    if sta == timedRun.CRASHED:
+        sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True)
 
     lev = JS_FINE
     issues = []
