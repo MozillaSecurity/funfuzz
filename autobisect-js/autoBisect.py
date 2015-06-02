@@ -662,6 +662,21 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
             return newIndex, idNum, tboxCacheFolder
 
 
+def getHgwebMozillaOrg(options):
+    '''Returns the hgweb link of the respository in the desired branch.'''
+    hgWebAddrList = ['hg.mozilla.org']
+    if options.nameOfTreeherderBranch == 'mozilla-central':
+        hgWebAddrList.append(options.nameOfTreeherderBranch)
+    elif options.nameOfTreeherderBranch == 'mozilla-inbound':
+        hgWebAddrList.extend(['integration', options.nameOfTreeherderBranch])
+    elif options.nameOfTreeherderBranch == 'mozilla-aurora' or \
+            options.nameOfTreeherderBranch == 'mozilla-beta' or \
+            options.nameOfTreeherderBranch == 'mozilla-release' or \
+            'mozilla-esr' in options.nameOfTreeherderBranch:
+        hgWebAddrList.extend(['releases', options.nameOfTreeherderBranch])
+    return 'https://' + '/'.join(hgWebAddrList)
+
+
 def getIdFromTboxUrl(url):
     '''
     Returns the numeric ID from the treeherder URL at:
@@ -747,18 +762,6 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
         '" and the hash "' + eHash + '".'
 
     # Formulate hgweb link for mozilla repositories
-    hgWebAddrList = ['hg.mozilla.org']
-    if options.nameOfTreeherderBranch == 'mozilla-central':
-        hgWebAddrList.append(options.nameOfTreeherderBranch)
-    elif options.nameOfTreeherderBranch == 'mozilla-inbound':
-        hgWebAddrList.extend(['integration', options.nameOfTreeherderBranch])
-    elif options.nameOfTreeherderBranch == 'mozilla-aurora' or \
-            options.nameOfTreeherderBranch == 'mozilla-beta' or \
-            options.nameOfTreeherderBranch == 'mozilla-release' or \
-            'mozilla-esr' in options.nameOfTreeherderBranch:
-        hgWebAddrList.extend(['releases', options.nameOfTreeherderBranch])
-    hgWebAddr = 'https://' + '/'.join(hgWebAddrList)
-
     if sResult == 'good' and eResult == 'bad':
         windowType = 'regression'
     elif sResult == 'bad' and eResult == 'good':
@@ -766,7 +769,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     else:
         raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' +
                         'ending result is "' + eResult + '".')
-    print '\nLikely ' + windowType + ' window: ' + hgWebAddr + '/pushloghtml?fromchange=' + sHash +\
+    print '\nLikely ' + windowType + ' window: ' + getHgwebMozillaOrg(options) + '/pushloghtml?fromchange=' + sHash +\
           '&tochange=' + eHash + '\n'
 
 
