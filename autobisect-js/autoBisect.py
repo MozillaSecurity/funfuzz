@@ -200,7 +200,7 @@ def findBlamedCset(options, repoDir, testRev):
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
-         # Throws exit code 255 if purge extension is not enabled in .hgrc:
+        # Throws exit code 255 if purge extension is not enabled in .hgrc:
         subprocess.check_call(hgPrefix + ['purge', '--all'])
 
     # Reset bisect ranges and set skip ranges.
