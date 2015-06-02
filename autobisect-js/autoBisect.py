@@ -647,8 +647,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
         elif newIndex >= len(urls):
             continue
 
-        isWorking, idNum, tboxCacheFolder = getOneBuild(isJsShell, urls[newIndex], buildType,
-                                                        testedIDs)
+        isWorking, idNum, tboxCacheFolder = getOneBuild(isJsShell, urls[newIndex], buildType)
 
         if isWorking:
             try:
@@ -656,7 +655,9 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
             except (KeyboardInterrupt, Exception) as e:
                 if 'Shell startup error' in repr(e):
                     writeIncompleteBuildTxtFile(urls[newIndex], tboxCacheFolder,
-                        sps.normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE)), idNum)
+                                                sps.normExpUserPath(os.path.join(tboxCacheFolder,
+                                                                                 INCOMPLETE_NOTE)),
+                                                idNum)
                     continue
             return newIndex, idNum, tboxCacheFolder
 
@@ -669,7 +670,7 @@ def getIdFromTboxUrl(url):
     return filter(None, url.split('/'))[-1]
 
 
-def getOneBuild(isJsShell, url, buildType, testedIDs):
+def getOneBuild(isJsShell, url, buildType):
     '''
     Try to get a complete working build.
     '''
