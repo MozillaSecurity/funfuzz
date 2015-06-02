@@ -205,7 +205,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
     """Create a compareJIT file, using the lines marked by jsfunfuzz as valid for comparison"""
     lines = [
         "backtrace = function() { };\n",
-        "dumpHeapComplete = function() { };\n",
+        "dumpHeap = function() { };\n",
         "dumpObject = function() { };\n",
         "dumpStringRepresentation = function() { };\n",
         "evalInWorker = function() { };\n",

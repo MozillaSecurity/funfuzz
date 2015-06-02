@@ -19,7 +19,7 @@ if (jsshell) {
     // Run a diff between the help() outputs of different js shells.
     // Make sure the function to look out for is not located only in some
     // particular #ifdef, e.g. JS_GC_ZEAL, or controlled by --fuzzing-safe.
-    if (typeof dumpHeapComplete == "function") {
+    if (typeof dumpHeap == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
     } else {
       engine = ENGINE_SPIDERMONKEY_MOZILLA31;

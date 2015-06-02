@@ -22,7 +22,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("backtrace") == -1                 // shows memory addresses
        && code.indexOf("drainAllocationsLog") == -1       // drainAllocationsLog returns an object with a timestamp, see bug 1066313
        && code.indexOf("dumpObject") == -1                // shows heap addresses
-       && code.indexOf("dumpHeapComplete") == -1          // shows heap addresses
+       && code.indexOf("dumpHeap") == -1                  // shows heap addresses
        && code.indexOf("dumpStringRepresentation") == -1  // shows memory addresses
        && code.indexOf("evalInWorker") == -1              // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("getBacktrace") == -1              // getBacktrace returns memory addresses which differs depending on flags
