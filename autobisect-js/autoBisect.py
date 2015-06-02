@@ -7,7 +7,6 @@
 import math
 import tempfile
 import os
-import platform
 import re
 import shutil
 import stat
@@ -49,18 +48,18 @@ def parseOpts():
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        resetRepoFirst = False,
-        startRepo = None,
-        endRepo = 'default',
-        testInitialRevs = True,
-        output = '',
-        watchExitCode = None,
-        useInterestingnessTests = False,
-        parameters = '-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
-        compilationFailedLabel = 'skip',
-        buildOptions = "",
-        useTreeherderBinaries = False,
-        nameOfTreeherderBranch = 'mozilla-inbound',
+        resetRepoFirst=False,
+        startRepo=None,
+        endRepo='default',
+        testInitialRevs=True,
+        output='',
+        watchExitCode=None,
+        useInterestingnessTests=False,
+        parameters='-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
+        compilationFailedLabel='skip',
+        buildOptions="",
+        useTreeherderBinaries=False,
+        nameOfTreeherderBranch='mozilla-inbound',
     )
 
     # Specify how the shell will be built.
@@ -74,31 +73,31 @@ def parseOpts():
 
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
-                      help='First reset to default tip overwriting all local changes. ' + \
-                           'Equivalent to first executing `hg update -C default`. ' + \
-                           'Defaults to "%default".')
+                      help='First reset to default tip overwriting all local changes. ' +
+                      'Equivalent to first executing `hg update -C default`. ' +
+                      'Defaults to "%default".')
 
     # Specify the revisions between which to bisect.
     parser.add_option('-s', '--startRev', dest='startRepo',
-                      help='Earliest changeset/build numeric ID to consider (usually a "good" cset). ' + \
-                           'Defaults to the earliest revision known to work at all/available.')
+                      help='Earliest changeset/build numeric ID to consider (usually a "good" cset). ' +
+                      'Defaults to the earliest revision known to work at all/available.')
     parser.add_option('-e', '--endRev', dest='endRepo',
-                      help='Latest changeset/build numeric ID to consider (usually a "bad" cset). ' + \
-                           'Defaults to the head of the main branch, "default", or latest available build.')
+                      help='Latest changeset/build numeric ID to consider (usually a "bad" cset). ' +
+                      'Defaults to the head of the main branch, "default", or latest available build.')
     parser.add_option('-k', '--skipInitialRevs', dest='testInitialRevs',
                       action='store_false',
-                      help='Skip testing the -s and -e revisions and automatically trust them ' + \
-                           'as -g and -b.')
+                      help='Skip testing the -s and -e revisions and automatically trust them ' +
+                      'as -g and -b.')
 
     # Specify the type of failure to look for.
     # (Optional -- by default, internalTestAndLabel will look for exit codes that indicate a crash or assert.)
     parser.add_option('-o', '--output', dest='output',
-                      help='Stdout or stderr output to be observed. Defaults to "%default". ' + \
-                           'For assertions, set to "ssertion fail"')
+                      help='Stdout or stderr output to be observed. Defaults to "%default". ' +
+                      'For assertions, set to "ssertion fail"')
     parser.add_option('-w', '--watchExitCode', dest='watchExitCode',
                       type='int',
-                      help='Look out for a specific exit code. Only this exit code will be ' + \
-                           'considered "bad".')
+                      help='Look out for a specific exit code. Only this exit code will be ' +
+                      'considered "bad".')
     parser.add_option('-i', '--useInterestingnessTests',
                       dest='useInterestingnessTests',
                       action="store_true",
@@ -111,14 +110,14 @@ def parseOpts():
     # Specify how to treat revisions that fail to compile.
     # (You might want to add these to kbew.knownBrokenRanges in knownBrokenEarliestWorking.py.)
     parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
-                      help='Specify how to treat revisions that fail to compile. ' + \
-                            '(bad, good, or skip) Defaults to "%default"')
+                      help='Specify how to treat revisions that fail to compile. ' +
+                      '(bad, good, or skip) Defaults to "%default"')
 
     parser.add_option('-T', '--useTreeherderBinaries',
                       dest='useTreeherderBinaries',
                       action="store_true",
-                      help='Use treeherder binaries for quick bisection, assuming a fast ' + \
-                           'internet connection. Defaults to "%default"')
+                      help='Use treeherder binaries for quick bisection, assuming a fast ' +
+                      'internet connection. Defaults to "%default"')
     parser.add_option('-N', '--nameOfTreeherderBranch',
                       dest='nameOfTreeherderBranch',
                       help='Name of the branch to download. Defaults to "%default"')
@@ -153,11 +152,10 @@ def parseOpts():
                     extraFlags = a[8:].split(' ')
         options.testAndLabel = externalTestAndLabel(options, args)
     else:
-        assert not options.browserOptions # autoBisect doesn't have a built-in way to run the browser
+        assert not options.browserOptions  # autoBisect doesn't have a built-in way to run the browser
         if len(args) >= 1:
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
-
 
     if options.browserOptions:
         earliestKnownQuery = kbew.earliestKnownWorkingRevForBrowser(options.browserOptions)
@@ -176,7 +174,6 @@ def parseOpts():
 
     if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
         raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
-
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."
@@ -245,7 +242,7 @@ def findBlamedCset(options, repoDir, testRev):
             print 'Finished testing the initial boundary revisions...',
         else:
             print "Bisecting for the n-th round where n is", iterNum, "and 2^n is", \
-                    str(2**iterNum), "...",
+                  str(2**iterNum), "...",
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
@@ -277,38 +274,38 @@ def internalTestAndLabel(options):
     '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
     def inner(shellFilename, _hgHash):
         (stdoutStderr, exitCode) = inspectShell.testBinary(shellFilename, options.paramList,
-            options.buildOptions.runWithVg)
+                                                           options.buildOptions.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
-        elif options.watchExitCode != None and exitCode == options.watchExitCode:
+        elif options.watchExitCode is not None and exitCode == options.watchExitCode:
             return ('bad', 'Specified-bad exit code ' + str(exitCode))
-        elif options.watchExitCode == None and 129 <= exitCode <= 159:
+        elif options.watchExitCode is None and 129 <= exitCode <= 159:
             return ('bad', 'High exit code ' + str(exitCode))
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
-            if (options.watchExitCode != None and 128 - exitCode == options.watchExitCode):
-                return ('bad', 'Specified-bad exit code ' + str(exitCode) + \
+            if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
+                return ('bad', 'Specified-bad exit code ' + str(exitCode) +
                         ' (after converting to signal)')
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ''):
                 return ('good', 'Bad output, but not the specified one')
-            elif (options.watchExitCode != None and 128 - exitCode != options.watchExitCode):
+            elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
                 return ('good', 'Negative exit code, but not the specified one')
             else:
                 return ('bad', 'Negative exit code ' + str(exitCode))
         elif exitCode == 0:
             return ('good', 'Exit code 0')
         elif (exitCode == 1 or exitCode == 2) and (options.output != '') and \
-                (stdoutStderr.find('usage: js [') != -1 or \
-                 stdoutStderr.find('Error: Short option followed by junk') != -1 or \
-                 stdoutStderr.find('Error: Invalid long option:') != -1 or \
+                (stdoutStderr.find('usage: js [') != -1 or
+                 stdoutStderr.find('Error: Short option followed by junk') != -1 or
+                 stdoutStderr.find('Error: Invalid long option:') != -1 or
                  stdoutStderr.find('Error: Invalid short option:') != -1):
-            return ('good', 'Exit code 1 or 2 - js shell quits ' + \
-                            'because it does not support a given CLI parameter')
+            return ('good', 'Exit code 1 or 2 - js shell quits ' +
+                    'because it does not support a given CLI parameter')
         elif 3 <= exitCode <= 6:
             return ('good', 'Acceptable exit code ' + str(exitCode))
-        elif options.watchExitCode != None:
+        elif options.watchExitCode is not None:
             return ('good', 'Unknown exit code ' + str(exitCode) + ', but not the specified one')
         else:
             return ('bad', 'Unknown exit code ' + str(exitCode))
@@ -344,7 +341,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
     missedCommonAncestor = False
 
     parents = sps.captureStdout(["hg", "-R", repoDir] + ["parent", '--template={node|short},',
-                                                   "-r", blamedRev])[0].split(",")[:-1]
+                                                         "-r", blamedRev])[0].split(",")[:-1]
 
     if len(parents) == 1:
         return
@@ -353,12 +350,12 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
             print ""
-            print ("Oops! We didn't test rev %s, a parent of the blamed revision! " + \
-                "Let's do that now.") % str(p)
+            print ("Oops! We didn't test rev %s, a parent of the blamed revision! " +
+                   "Let's do that now.") % str(p)
             if not hgCmds.isAncestor(repoDir, startRepo, p) and \
                     not hgCmds.isAncestor(repoDir, endRepo, p):
-                print ('We did not test rev %s because it is not a descendant of either ' + \
-                    '%s or %s.') % (str(p), startRepo, endRepo)
+                print ('We did not test rev %s because it is not a descendant of either ' +
+                       '%s or %s.') % (str(p), startRepo, endRepo)
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
@@ -368,8 +365,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            print "Parent rev %s was marked as 'skip', so the regression window includes it." % \
-                    str(p)
+            print "Parent rev %s was marked as 'skip', so the regression window includes it." % str(p)
         elif labels[p][0] == blamedGoodOrBad:
             print "Bisect lied to us! Parent rev %s was also %s!" % (str(p), blamedGoodOrBad)
             bisectLied = True
@@ -420,16 +416,15 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
 
-    if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match\
-            (outputLines[0]):
-        print('\n' + sanitizeCsetMsg(outputResult, repoDir) + '\n')
+    if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
+        print '\n' + sanitizeCsetMsg(outputResult, repoDir) + '\n'
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
         print '\n\nautoBisect shows this is probably related to the following changeset:\n'
-        print(sanitizeCsetMsg(outputResult, repoDir) + '\n')
+        print sanitizeCsetMsg(outputResult, repoDir) + '\n'
         blamedGoodOrBad = m.group(1)
         blamedRev = hgCmds.getCsetHashFromBisectMsg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
@@ -474,21 +469,21 @@ def assertSaneJsBinary(cacheF):
         if 'build' in fList:
             if INCOMPLETE_NOTE in fList:
                 print cacheF + ' has subdirectories: ' + str(fList)
-                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +\
-                            'present together in this directory.')
+                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +
+                                'present together in this directory.')
             assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'download')))
             assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist')))
             assert os.path.isfile(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist',
-                                                               'js' + ('.exe' if sps.isWin else ''))))
+                                                                   'js' + ('.exe' if sps.isWin else ''))))
             try:
                 shellPath = getTboxJsBinPath(cacheF)
                 # Ensure we don't fail because the shell lacks u+x
                 if not os.access(shellPath, os.X_OK):
-                    os.chmod(shellPath, stat.S_IXUSR);
+                    os.chmod(shellPath, stat.S_IXUSR)
 
                 # tbpl binaries are always:
                 # * run without Valgrind (they are not compiled with --enable-valgrind)
-                out, retCode = inspectShell.testBinary(shellPath, ['-e', '42'], False)
+                retCode = inspectShell.testBinary(shellPath, ['-e', '42'], False)[1]
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (sps.isWin and retCode == -1073741515)
@@ -500,7 +495,7 @@ def assertSaneJsBinary(cacheF):
                     raise Exception('Non-zero return code: ' + str(retCode))
                 return True  # Binary is working correctly
             except (OSError, IOError):
-                raise Exception('Cache folder ' + cacheF + ' is corrupt, please delete it ' + \
+                raise Exception('Cache folder ' + cacheF + ' is corrupt, please delete it ' +
                                 'and try again.')
         elif INCOMPLETE_NOTE in fList:
             return True
@@ -619,8 +614,8 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
 
         if idNumFolderName != idNumSourceUrl:
             print '\nWARNING: Numeric ID in folder name (current value: ' + \
-            idNumFolderName + ') is not equal to the numeric ID from source URL ' + \
-            '(current value: ' + idNumSourceUrl + ')\n'
+                idNumFolderName + ') is not equal to the numeric ID from source URL ' + \
+                '(current value: ' + idNumSourceUrl + ')\n'
             raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
@@ -666,7 +661,6 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
             return newIndex, idNum, tboxCacheFolder
 
 
-
 def getIdFromTboxUrl(url):
     '''
     Returns the numeric ID from the treeherder URL at:
@@ -681,7 +675,7 @@ def getOneBuild(isJsShell, url, buildType, testedIDs):
     '''
     idNum = getIdFromTboxUrl(url)
     tboxCacheFolder = sps.normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
-                                                   'tboxjs-' + buildType + '-' + idNum))
+                                                       'tboxjs-' + buildType + '-' + idNum))
     createTboxCacheFolder(tboxCacheFolder)
 
     incompleteBuildTxtFile = sps.normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE))
@@ -769,10 +763,10 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     elif sResult == 'bad' and eResult == 'good':
         windowType = 'fix'
     else:
-        raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' + \
+        raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' +
                         'ending result is "' + eResult + '".')
     print '\nLikely ' + windowType + ' window: ' + hgWebAddr + '/pushloghtml?fromchange=' + sHash +\
-            '&tochange=' + eHash + '\n'
+          '&tochange=' + eHash + '\n'
 
 
 def readIncompleteBuildTxtFile(txtFile, idNum):
@@ -781,7 +775,7 @@ def readIncompleteBuildTxtFile(txtFile, idNum):
     '''
     with open(txtFile, 'rb') as f:
         contentsF = f.read()
-        if not 'is incomplete.' in contentsF:
+        if 'is incomplete.' not in contentsF:
             print 'Contents of ' + txtFile + ' is: ' + repr(contentsF)
             raise Exception('Invalid ' + INCOMPLETE_NOTE + ' file contents.')
         else:
@@ -864,7 +858,7 @@ def main():
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
 
-    with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox') \
+    with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
                          if options.useTreeherderBinaries else compileShell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
