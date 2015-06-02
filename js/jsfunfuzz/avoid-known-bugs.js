@@ -135,8 +135,8 @@ function whatToTestGeneric(code)
 var whatToTest;
 if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   whatToTest = whatToTestSpidermonkeyTrunk;
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA24)
-  whatToTest = whatToTestSpidermonkeyMozilla24;
+else if (engine == ENGINE_SPIDERMONKEY_MOZILLA31)
+  whatToTest = whatToTestSpidermonkeyMozilla31;
 else if (engine == ENGINE_JAVASCRIPTCORE)
   whatToTest = whatToTestJavaScriptCore;
 else
