@@ -127,7 +127,7 @@ def parseOpts():
     if options.browserOptions:
         assert not options.buildOptions
         options.browserOptions = buildBrowser.parseOptions(options.browserOptions.split())
-        options.skipRevs = ' + '.join(kbew.kbew.knownBrokenRangesBrowser(options.browserOptions))
+        options.skipRevs = ' + '.join(kbew.knownBrokenRangesBrowser(options.browserOptions))
     else:
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
         options.skipRevs = ' + '.join(kbew.knownBrokenRanges(options.buildOptions))
@@ -160,7 +160,7 @@ def parseOpts():
 
 
     if options.browserOptions:
-        earliestKnownQuery = kbew.kbew.earliestKnownWorkingRevForBrowser(options.browserOptions)
+        earliestKnownQuery = kbew.earliestKnownWorkingRevForBrowser(options.browserOptions)
     else:
         earliestKnownQuery = kbew.earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
