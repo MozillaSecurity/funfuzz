@@ -2,13 +2,6 @@ var count = 0;
 var verbose = false;
 
 
-// https://bugzilla.mozilla.org/show_bug.cgi?id=394853#c19
-//try { eval("/") } catch(e) { }
-// Remember the number of countHeap.
-tryItOut("");
-
-
-
 /**************************************
  * To reproduce a crash or assertion: *
  **************************************/

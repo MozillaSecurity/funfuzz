@@ -12,16 +12,6 @@ function optionalTests(f, code, wtt)
     }
   }
 
-  if (0 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    if (wtt.allowExec && (typeof sandbox == "function")) {
-      f = null;
-      if (trySandboxEval(code, false)) {
-        dumpln("Trying it again to see if it's a 'real leak' (???)");
-        trySandboxEval(code, true);
-      }
-    }
-  }
-
   if (count % 100 == 3 && f && typeof disassemble == "function") {
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
@@ -51,52 +41,6 @@ function simpleDVGTest(code)
       foundABug("Wrong error message", e);
     }
   }
-}
-
-var maxHeapCount = 0;
-var sandbox = null;
-
-function trySandboxEval(code, isRetry)
-{
-  // (function(){})() wrapping allows "return" when it's allowed outside.
-  // The line breaks are to allow single-line comments within code ("//" and "<!--").
-
-  if (!sandbox) {
-    sandbox = evalcx("");
-  }
-
-  var rv = null;
-  try {
-    rv = evalcx("(function(){\n" + code + "\n})();", sandbox);
-  } catch(e) {
-    rv = "Error from sandbox: " + errorToString(e);
-  }
-
-  try {
-    if (typeof rv != "undefined")
-      dumpln(rv);
-  } catch(e) {
-    dumpln("Sandbox error printing: " + errorToString(e));
-  }
-  rv = null;
-
-  if (1 || count % 100 == 0) { // count % 100 *here* is sketchy.
-    dumpln("Done with this sandbox.");
-    sandbox = null;
-    gc();
-    var currentHeapCount = countHeap();
-    dumpln("countHeap: " + currentHeapCount);
-    if (currentHeapCount > maxHeapCount) {
-      if (maxHeapCount != 0)
-        dumpln("A new record by " + (currentHeapCount - maxHeapCount) + "!");
-      if (isRetry)
-        throw new Error("Found a leak!");
-      maxHeapCount = currentHeapCount;
-      return true;
-    }
-  }
-
-  return false;
 }
 
 
