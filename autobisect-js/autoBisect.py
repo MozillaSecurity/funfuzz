@@ -619,7 +619,7 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
             raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
-def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType, testedIDs):
+def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
     '''
     Downloads a build. If the build is incomplete, find a working neighbour, then return results.
     '''
@@ -769,7 +769,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     else:
         raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' +
                         'ending result is "' + eResult + '".')
-    print '\nLikely ' + windowType + ' window: ' + getHgwebMozillaOrg(options) + '/pushloghtml?fromchange=' + sHash +\
+    print '\nLikely ' + windowType + ' window: ' + getHgwebMozillaOrg(options) + '/pushloghtml?fromchange=' + sHash + \
           '&tochange=' + eHash + '\n'
 
 
@@ -819,8 +819,7 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
     '''
     Tests the build. If the build is incomplete, find a working neighbour, then return results.
     '''
-    finalIndex, idNum, tboxCacheFolder = getBuildOrNeighbour(
-        (not options.browserOptions), preferredIndex, urls, buildType, testedIDs)
+    finalIndex, idNum, tboxCacheFolder = getBuildOrNeighbour((not options.browserOptions), preferredIndex, urls, buildType)
 
     if idNum is None:
         result, reason = None, None
