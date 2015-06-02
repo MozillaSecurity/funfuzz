@@ -354,9 +354,9 @@ function regressionTestDependencies(maintest)
       }
     }
 
-    // Include prolog.js for jit-tests
+    // Include prologue.js for jit-tests
     if (maintest.indexOf("jit-test") != -1) {
-      files.push(libdir + "prolog.js");
+      files.push(libdir + "prologue.js");
     }
   }
 
