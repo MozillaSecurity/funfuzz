@@ -57,6 +57,7 @@ class CompiledShell(object):
 
         self.jsObjdir = ''
         self.nsprObjdir = ''
+
     def setDestDir(self, tDir):
         self.destDir = tDir
 
@@ -69,78 +70,107 @@ class CompiledShell(object):
 
         assert '~' not in self.destDir
         assert os.path.isdir(self.destDir)
+
     def getDestDir(self):
         return self.destDir
+
     def setCfgCmdExclEnv(self, cfg):
         self.cfg = cfg
+
     def getCfgCmdExclEnv(self):
         return self.cfg
+
     def getJsCfgPath(self):
         self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
         assert os.path.isfile(self.jsCfgFile)
         return self.jsCfgFile
+
     def getNsprCfgPath(self):
         self.nsprCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
         assert os.path.isfile(self.nsprCfgFile)
         return self.nsprCfgFile
+
     def setEnvAdded(self, addedEnv):
         self.addedEnv = addedEnv
+
     def getEnvAdded(self):
         return self.addedEnv
+
     def setEnvFull(self, fullEnv):
         self.fullEnv = fullEnv
+
     def getEnvFull(self):
         return self.fullEnv
+
     def getHgHash(self):
         return self.hgHash
+
     def getJsBuildSystemConsidersNspr(self):
         return self.jsBuildSystemConsidersNspr
+
     def setJsBuildSystemConsidersNspr(self):
         # This rev is when js build system compiles NSPR together when compiling threadsafe builds
         # Landed in m-c rev ID 194734 (from TBPL) and in mid-July 2014, when Fx33 was nightly.
         self.jsBuildSystemConsidersNspr = hgCmds.existsAndIsAncestor(
             self.getRepoDir(), 'a459b02a9ca472fa10299b5cb6c0456fe492c78a', '.')
+
     def getJsUsesNoThreadsFlag(self):
         return self.jsUsesNoThreadsFlag
+
     def setJsUsesNoThreadsFlag(self):
         # This rev is when --enable/disable-threadsafe was replaced by the --no-threads flag.
         # Landed in m-c rev ID 195996 (from TBPL) and in end-July 2014, when Fx34 was nightly.
         self.jsUsesNoThreadsFlag = hgCmds.existsAndIsAncestor(
             self.getRepoDir(), '35038c3324ee08b29924059da9b117940e740bd7', '.')
+
     def getJsObjdir(self):
         return self.jsObjdir
+
     def setJsObjdir(self, oDir):
         self.jsObjdir = oDir
+
     def getNsprObjdir(self):
         return self.nsprObjdir
+
     def setNsprObjdir(self, oDir):
         self.nsprObjdir = oDir
+
     def getRepoDir(self):
         return self.buildOptions.repoDir
+
     def getRepoDirJsSrc(self):
         return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
+
     def getRepoDirNsprSrc(self):
         return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'nsprpub'))
+
     def getRepoName(self):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
+
     def getShellCacheDir(self):
         return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.shellNameWithoutExt))
+
     def getShellCacheFullPath(self):
         return sps.normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
+
     def getShellCompiledPath(self):
         return sps.normExpUserPath(
             os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if sps.isWin else '')))
+
     def getShellCompiledRunLibsPath(self):
         lDir = self.getJsObjdir() if self.getJsBuildSystemConsidersNspr() else self.getNsprObjdir()
         libsList = [
-            sps.normExpUserPath(os.path.join(lDir, 'dist', 'bin', runLib)) \
-                for runLib in inspectShell.ALL_RUN_LIBS
+            sps.normExpUserPath(os.path.join(lDir, 'dist', 'bin', runLib))
+            for runLib in inspectShell.ALL_RUN_LIBS
         ]
         return libsList
+
     def getShellBaseTempDirWithName(self):
         return sps.normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
+
     def getShellNameWithExt(self):
         return self.shellNameWithExt
+
     def getShellNameWithoutExt(self):
         return self.shellNameWithoutExt
 
@@ -163,7 +193,7 @@ def autoconfRun(cwDir):
     '''Run autoconf binaries corresponding to the platform.'''
     if sps.isMac:
         autoconf213MacBin = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213' \
-                                if sps.isProgramInstalled('brew') else 'autoconf213'
+                            if sps.isProgramInstalled('brew') else 'autoconf213'
         subprocess.check_call([autoconf213MacBin], cwd=cwDir)
     elif sps.isLinux:
         subprocess.check_call(['autoconf2.13'], cwd=cwDir)
@@ -196,7 +226,7 @@ def cfgJsCompile(shell):
     inspectShell.verifyBinary(shell)
 
     compileLog = sps.normExpUserPath(os.path.join(shell.getShellCacheDir(),
-        shell.getShellNameWithoutExt() + '.fuzzmanagerconf'))
+                                                  shell.getShellNameWithoutExt() + '.fuzzmanagerconf'))
     if not os.path.isfile(compileLog):
         envDump(shell, compileLog)
 
@@ -227,9 +257,9 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             # From mjrosenb: things might go wrong if these three lines are not present for
             # compiling ARM on a 64-bit host machine. Not needed if compiling on the board itself.
-            #cfgCmdList.append('--target=arm-linux-gnueabi')
-            #cfgCmdList.append('--with-arch=armv7-a')
-            #cfgCmdList.append('--with-thumb')
+            # cfgCmdList.append('--target=arm-linux-gnueabi')
+            # cfgCmdList.append('--with-arch=armv7-a')
+            # cfgCmdList.append('--with-thumb')
         if not shell.buildOptions.enableHardFp:
             cfgCmdList.append('--target=arm-linux-gnueabi')
     elif shell.buildOptions.enable32 and os.name == 'posix':
@@ -366,26 +396,25 @@ def cfgBin(shell, binToBeCompiled):
         cfgCmdList.append('--disable-optimize')
 
     if binToBeCompiled == 'nspr':
-        cfgCmdList.append('--prefix=' + \
-            sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+        cfgCmdList.append('--prefix=' +
+                          sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
     else:
         if shell.buildOptions.enableProfiling:
             cfgCmdList.append('--enable-profiling')
         if shell.getJsUsesNoThreadsFlag() and shell.buildOptions.enableNsprBuild:
-                cfgCmdList.append('--enable-nspr-build')
+            cfgCmdList.append('--enable-nspr-build')
         else:
             if shell.buildOptions.enableNsprBuild:
                 cfgCmdList.append('--enable-threadsafe')
                 if not shell.getJsBuildSystemConsidersNspr():
-                    cfgCmdList.append('--with-nspr-prefix=' + \
-                        sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
-                    cfgCmdList.append('--with-nspr-cflags=-I' + \
-                        sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include',
-                                                         'nspr')))
+                    cfgCmdList.append('--with-nspr-prefix=' +
+                                      sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
+                    cfgCmdList.append('--with-nspr-cflags=-I' +
+                                      sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
                     cfgCmdList.append('--with-nspr-libs=' + ' '.join([
                         sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib',
-                                                         compileLib))\
-                            for compileLib in inspectShell.ALL_COMPILE_LIBS
+                                                         compileLib))
+                        for compileLib in inspectShell.ALL_COMPILE_LIBS
                         ]))
             else:
                 cfgCmdList.append('--disable-threadsafe')
@@ -449,15 +478,15 @@ def compileJs(shell):
     try:
         cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
         out = sps.captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                            currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
+                                currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception as e:
         # This exception message is returned from sps.captureStdout via cmdList.
         if (sps.isLinux or sps.isMac) and \
-            ('GCC running out of memory' in repr(e) or 'Clang running out of memory' in repr(e)):
+                ('GCC running out of memory' in repr(e) or 'Clang running out of memory' in repr(e)):
             # FIXME: Absolute hack to retry after hitting OOM.
             print 'Trying once more due to the compiler running out of memory...'
             out = sps.captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
-                                currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
+                                    currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
             print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
@@ -484,7 +513,7 @@ def compileNspr(shell):
     # and after that, use -jX ?
     nsprCmdList = [MAKE_BINARY, '-C', shell.getNsprObjdir(), '-j1', '-s']
     out = sps.captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
-                        currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
+                            currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
     for compileLib in inspectShell.ALL_COMPILE_LIBS:
         if not sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
             print out
@@ -524,8 +553,8 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
     if updateToRev:
         # We should not print here without a trailing newline to avoid breaking other stuff:
         print "Updating..."
-        sps.captureStdout(["hg", "-R", shell.buildOptions.repoDir] + \
-            ['update', '-C', '-r', updateToRev], ignoreStderr=True)
+        sps.captureStdout(["hg", "-R", shell.buildOptions.repoDir] +
+                          ['update', '-C', '-r', updateToRev], ignoreStderr=True)
         # We should not print here without a trailing newline to avoid breaking other stuff:
         print "Compiling..."
     hgCmds.destroyPyc(shell.buildOptions.repoDir)
@@ -548,8 +577,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
                 os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
             except OSError:
                 raise Exception('Unable to create nspr objdir directory.')
-            shell.setNsprObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(),
-                                                             'objdir-nspr')))
+            shell.setNsprObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
 
         try:
             os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
@@ -576,7 +604,7 @@ def compileStandalone(shell, updateToRev=None, isTboxBins=False):
             f.write(traceback.format_exc() + "\n")
         if os.path.exists(shell.getShellCacheFullPath()):
             print 'Stop autoBisect - a .busted file should not be generated ' + \
-                            'with a shell that has been compiled successfully.'
+                  'with a shell that has been compiled successfully.'
         print 'Compilation failed (' + str(e) + ') (details in ' + cachedNoShell + ')'
         raise
     finally:
@@ -606,13 +634,12 @@ def envDump(shell, log):
     elif sps.isWin:
         fmconfOS = 'windows'
 
-
     with open(log, 'ab') as f:
         f.write('# Information about shell:\n# \n')
 
         f.write('# Create another shell in shell-cache like this one:\n')
         f.write('# python -u %s -b "%s" -r %s\n# \n' % ('~/fuzzing/js/compileShell.py',
-                    shell.buildOptions.buildOptionsStr, shell.getHgHash()))
+                                                        shell.buildOptions.buildOptionsStr, shell.getHgHash()))
 
         f.write('# Full environment is:\n')
         f.write('# %s\n# \n' % str(shell.getEnvFull()))
@@ -624,10 +651,10 @@ def envDump(shell, log):
         # .fuzzmanagerconf details
         f.write('\n')
         f.write('[Main]\n')
-        f.write('platform = %s\n'        % fmconfPlatform)
-        f.write('product = %s\n'         % shell.getRepoName())
+        f.write('platform = %s\n' % fmconfPlatform)
+        f.write('product = %s\n' % shell.getRepoName())
         f.write('product_version = %s\n' % shell.getHgHash())
-        f.write('os = %s\n'              % fmconfOS)
+        f.write('os = %s\n' % fmconfOS)
 
         f.write('\n')
         f.write('[Metadata]\n')
@@ -667,29 +694,28 @@ def main():
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        buildOptions = "",
+        buildOptions="",
     )
 
     # Specify how the shell will be built.
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify build options, e.g. -b "--disable-debug --enable-optimize" ' + \
-                           '(python buildOptions.py --help)')
+                      help='Specify build options, e.g. -b "--disable-debug --enable-optimize" ' +
+                      '(python buildOptions.py --help)')
 
     parser.add_option('-r', '--rev',
                       dest='revision',
                       help='Specify revision to build')
 
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()[0]
     options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
 
     with LockDir(getLockDirPath(options.buildOptions.repoDir)):
         if options.revision:
             shell = CompiledShell(options.buildOptions, options.revision)
         else:
-            localOrigHgHash, localOrigHgNum, isOnDefault = \
-                hgCmds.getRepoHashAndId(options.buildOptions.repoDir)
+            localOrigHgHash = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0]
             shell = CompiledShell(options.buildOptions, localOrigHgHash)
 
         compileStandalone(shell, updateToRev=options.revision)
