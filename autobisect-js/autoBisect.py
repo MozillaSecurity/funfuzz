@@ -662,18 +662,18 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
             return newIndex, idNum, tboxCacheFolder
 
 
-def getHgwebMozillaOrg(options):
-    '''Returns the hgweb link of the respository in the desired branch.'''
+def getHgwebMozillaOrg(branchName):
+    '''Returns the hgweb link of the respository, given a treeherder branch name.'''
     hgWebAddrList = ['hg.mozilla.org']
-    if options.nameOfTreeherderBranch == 'mozilla-central':
-        hgWebAddrList.append(options.nameOfTreeherderBranch)
-    elif options.nameOfTreeherderBranch == 'mozilla-inbound':
-        hgWebAddrList.extend(['integration', options.nameOfTreeherderBranch])
-    elif options.nameOfTreeherderBranch == 'mozilla-aurora' or \
-            options.nameOfTreeherderBranch == 'mozilla-beta' or \
-            options.nameOfTreeherderBranch == 'mozilla-release' or \
-            'mozilla-esr' in options.nameOfTreeherderBranch:
-        hgWebAddrList.extend(['releases', options.nameOfTreeherderBranch])
+    if branchName == 'mozilla-central':
+        hgWebAddrList.append(branchName)
+    elif branchName == 'mozilla-inbound':
+        hgWebAddrList.extend(['integration', branchName])
+    elif branchName == 'mozilla-aurora' or \
+            branchName == 'mozilla-beta' or \
+            branchName == 'mozilla-release' or \
+            'mozilla-esr' in branchName:
+        hgWebAddrList.extend(['releases', branchName])
     return 'https://' + '/'.join(hgWebAddrList)
 
 
@@ -761,7 +761,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     print 'The "' + eResult + '" changeset has the timestamp "' + eTimestamp + \
         '" and the hash "' + eHash + '".'
 
-    # Formulate hgweb link for mozilla repositories
+    # Are we describing a regression window or a fix window?
     if sResult == 'good' and eResult == 'bad':
         windowType = 'regression'
     elif sResult == 'bad' and eResult == 'good':
@@ -769,8 +769,10 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     else:
         raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' +
                         'ending result is "' + eResult + '".')
-    print '\nLikely ' + windowType + ' window: ' + getHgwebMozillaOrg(options) + '/pushloghtml?fromchange=' + sHash + \
-          '&tochange=' + eHash + '\n'
+
+    # Show an hgweb link
+    pushlogWindow = getHgwebMozillaOrg(options.nameOfTreeherderBranch) + '/pushloghtml?fromchange=' + sHash + '&tochange=' + eHash
+    print '\nLikely ' + windowType + ' window: ' + pushlogWindow + '\n'
 
 
 def readIncompleteBuildTxtFile(txtFile, idNum):
