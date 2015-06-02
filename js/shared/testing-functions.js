@@ -70,8 +70,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // Nothing happens when there is only one call.
     { w: 10, v: function(d, b) { return prefix + "verifyprebarriers" + "();"; } },
 
-    // Trace the heap using non-GC tracing code
-    { w: 1,  v: function(d, b) { return "void " + prefix + "countHeap" + "();"; } },
+    // hasChild(parent, child): Return true if |child| is a child of |parent|, as determined by a call to TraceChildren.
+    // We ignore the return value because hasChild can be used to see which WeakMap entries have been GCed.
+    { w: 1,  v: function(d, b) { return "void " + prefix + "hasChild(" + fObject(d, b) + ", " + fObject(d, b) + ");"; } },
 
     // Various validation functions (toggles)
     { w: 5,  v: function(d, b) { return prefix + "validategc" + "(false);"; } },
