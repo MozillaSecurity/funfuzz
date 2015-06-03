@@ -36,7 +36,8 @@ if sps.isWin:
 else:
     MAKE_BINARY = 'make'
     CLANG_PARAMS = ' -Qunused-arguments'
-    CLANG_ASAN_PARAMS = ' -fsanitize=address -Dxmalloc=myxmalloc'
+    # See https://bugzilla.mozilla.org/show_bug.cgi?id=935795#c3 for some of the following flags:
+    CLANG_ASAN_PARAMS = ' -fsanitize=address -Dxmalloc=myxmalloc -mllvm -asan-stack=0'
     SSE2_FLAGS = ' -msse2 -mfpmath=sse'  # See bug 948321
     CLANG_X86_FLAG = ' -arch i386'
 
