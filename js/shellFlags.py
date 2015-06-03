@@ -14,7 +14,7 @@ def memoize(f, cache={}):
     '''Function decorator that caches function results.'''
     # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
     def g(*args, **kwargs):
-        key = ( f, tuple(args), frozenset(kwargs.items()) )
+        key = (f, tuple(args), frozenset(kwargs.items()))
         if key not in cache:
             cache[key] = f(*args, **kwargs)
         return cache[key]
@@ -97,8 +97,7 @@ def randomFlagSet(shellPath):
     if inspectShell.queryBuildConfiguration(shellPath, 'arm-simulator') and chance(.4):
         args.append('--arm-sim-icache-checks')
 
-    if (shellSupportsFlag(shellPath, '--no-sse3') and \
-            shellSupportsFlag(shellPath, '--no-sse4')) and chance(.2):
+    if (shellSupportsFlag(shellPath, '--no-sse3') and shellSupportsFlag(shellPath, '--no-sse4')) and chance(.2):
         # --no-sse3 and --no-sse4 landed in m-c rev 526ba3ace37a.
         if chance(.5):
             args.append("--no-sse3")
@@ -177,7 +176,7 @@ def randomFlagSet(shellPath):
     #    args.append("--execute=verifyprebarriers()")
 
     if chance(.05):
-        args.append("-D") # aka --dump-bytecode
+        args.append("-D")  # aka --dump-bytecode
 
     return args
 
@@ -211,7 +210,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--no-ion'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'], # Not in jit_test.py though, see bug 848906 comment 1
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'],  # Not in jit_test.py though, see bug 848906 comment 1
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
@@ -232,7 +231,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'], # See bug 848906 comment 1
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'],  # See bug 848906 comment 1
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
