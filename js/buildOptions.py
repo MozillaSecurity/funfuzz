@@ -249,8 +249,6 @@ def areArgsValid(args):
             return False, 'FIXME: Figure out why compiling with Asan does not work in this harness.'
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
-        if sps.isMac:
-            return False, 'Asan does not yet work well on Mac due to bug 935795.'
 
     if args.enableArmSimulator:
         if sps.isARMv7l:
