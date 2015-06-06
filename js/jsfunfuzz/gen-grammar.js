@@ -289,8 +289,8 @@ function makeUseRegressionTest(d, b)
 
   for (var i = 0; i < files.length; ++i) {
     var file = files[i];
-    if (read(file).indexOf("SIMD") != -1) {
-      // Disable SIMD testing until it's more stable (and we can get better stacks?)
+
+    if (regressionTestIsEvil(read(file))) {
       continue;
     }
 
@@ -307,6 +307,19 @@ function makeUseRegressionTest(d, b)
     }
   }
   return s;
+}
+
+function regressionTestIsEvil(contents)
+{
+  if (contents.indexOf("SIMD") != -1) {
+    // Disable SIMD testing until it's more stable (and we can get better stacks?)
+    return true;
+  }
+  if (contents.indexOf("print = ") != -1) {
+    // A testcase that clobbers the |print| function would confuse jsInteresting.py
+    return true;
+  }
+  return false;
 }
 
 function inlineRegressionTest(filename)
