@@ -184,6 +184,7 @@ layers.acceleration.disabled
 layers.bufferrotation.enabled
 layers.composer2d.enabled
 layout.css.clip-path-shapes.enabled
+layout.css.contain.enabled
 layout.css.display-contents.enabled
 layout.css.DOMMatrix.enabled
 layout.css.object-fit-and-position.enabled
