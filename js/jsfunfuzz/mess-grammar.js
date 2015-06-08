@@ -31,7 +31,7 @@ function getListOfMakers(glob)
 /*
 function testEachMaker()
 {
-  for each (var f in allMakers) {
+  for (var f of allMakers) {
     dumpln("");
     dumpln(f.name);
     dumpln("==========");

@@ -114,7 +114,7 @@ function makeTypeUnstableLoop(d, b) {
   var a = makeMixedTypeArray(d, b);
   var v = makeNewId(d, b);
   var bv = b.concat([v]);
-  return "/*tLoop*/for each (let " + v + " in " + a + ") { " + makeStatement(d - 2, bv) + " }";
+  return "/*tLoop*/for (let " + v + " of " + a + ") { " + makeStatement(d - 2, bv) + " }";
 }
 
 
@@ -175,8 +175,12 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for each (value in obj)
+  // to be removed: https://bugzilla.mozilla.org/show_bug.cgi?id=1083470
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  // -- for (element of arraylike)
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
 
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
@@ -1060,7 +1064,7 @@ function makeShapeyConstructorLoop(d, b)
   var v2 = uniqueVarName(d, b);
   var bvv = b.concat([v, v2]);
   return makeShapeyConstructor(d - 1, b) +
-    "/*tLoopC*/for each (let " + v + " in " + a + ") { " +
+    "/*tLoopC*/for (let " + v + " of " + a + ") { " +
      "try{" +
        "let " + v2 + " = " + Random.index(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
        //"print(uneval(" + v2 + "));" +
@@ -1447,7 +1451,7 @@ function makeId(d, b)
   case 8: case 9: case 10:
     // some keywords that can be used as identifiers in some contexts (e.g. variables, function names, argument names)
     // but that's annoying, and some of these cause lots of syntax errors.
-    return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "each"]);
+    return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "of"]);
   case 11: case 12: case 13:
     return "this." + makeId(d, b);
   case 14: case 15: case 16:
@@ -1479,15 +1483,20 @@ function makeComprehension(d, b)
   if (d < 0)
     return "";
 
-  switch(rnd(5)) {
+  switch(rnd(7)) {
   case 0:
     return "";
   case 1:
     return cat([" for ",          "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
+  // |for each| to be removed: https://bugzilla.mozilla.org/show_bug.cgi?id=1083470
   case 2:
     return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
   case 3:
     return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
+  case 4:
+    return cat([" for ",          "(", makeId(d, b),       " of ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
+  case 5:
+    return cat([" for ",          "(", makeId(d, b),       " of ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
   default:
     return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
   }

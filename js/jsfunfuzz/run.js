@@ -136,9 +136,7 @@ function tryIteration(rv)
   dumpln("It's an iterator!");
   try {
     var iterCount = 0;
-    var iterValue;
-    // To keep Safari-compatibility, don't use "let", "each", etc.
-    for /* each */ ( /* let */ iterValue in rv)
+    for (var iterValue of rv)
       ++iterCount;
     dumpln("Iterating succeeded, iterCount == " + iterCount);
   } catch (iterError) {
