@@ -149,10 +149,10 @@ class CompiledShell(object):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
 
     def getShellCacheDir(self):
-        return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.shellNameWithoutExt))
+        return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.getShellNameWithoutExt()))
 
     def getShellCacheFullPath(self):
-        return sps.normExpUserPath(os.path.join(self.getShellCacheDir(), self.shellNameWithExt))
+        return sps.normExpUserPath(os.path.join(self.getShellCacheDir(), self.getShellNameWithExt()))
 
     def getShellCompiledPath(self):
         return sps.normExpUserPath(
