@@ -11,6 +11,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import traceback
 
 from optparse import OptionParser
@@ -22,12 +23,15 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import hgCmds
+import s3cache
 import subprocesses as sps
 from LockDir import LockDir
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
 sys.path.append(path2)
 import envVars
+
+S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autoBisect
 
 # If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
 # MSVC 2010, change "mozmake" in the line below back to "make".
@@ -141,6 +145,12 @@ class CompiledShell(object):
 
     def getRepoName(self):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
+
+    def getS3TarballWithExt(self):
+        return self.getShellNameWithoutExt() + '.tar.bz2'
+
+    def getS3TarballWithExtFullPath(self):
+        return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.getS3TarballWithExt()))
 
     def getShellCacheDir(self):
         return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.getShellNameWithoutExt()))
@@ -645,16 +655,32 @@ def obtainShell(shell, updateToRev=None):
     elif os.path.isfile(cachedNoShell):
         raise Exception("Found a cached shell that failed compilation...")
     elif os.path.isdir(shell.getShellCacheDir()):
-        print 'Found a cache dir without a successful/failed shell, so recompiling...'
+        print 'Found a cache dir without a successful/failed shell...'
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
     os.mkdir(shell.getShellCacheDir())
     hgCmds.destroyPyc(shell.buildOptions.repoDir)
 
-    if updateToRev:
-        updateRepo(shell.buildOptions.repoDir, updateToRev)
+    s3CacheObj = s3cache.S3Cache(S3_SHELL_CACHE_DIRNAME)
+    useS3Cache = s3CacheObj.connect()
+
+    if useS3Cache:
+        if s3CacheObj.downloadFile(shell.getShellNameWithoutExt() + '.busted',
+                                   shell.getShellCacheFullPath() + '.busted'):
+            raise Exception('Found a .busted file for rev ' + shell.getHgHash())
+
+        if s3CacheObj.downloadFile(shell.getShellNameWithoutExt() + '.tar.bz2',
+                                   shell.getS3TarballWithExtFullPath()):
+            print 'Extracting shell...'
+            with tarfile.open(shell.getS3TarballWithExtFullPath(), 'r') as z:
+                z.extractall(shell.getShellCacheDir())
+            # Delete tarball after downloading from S3
+            os.remove(shell.getS3TarballWithExtFullPath())
+            return
 
     try:
+        if updateToRev:
+            updateRepo(shell.buildOptions.repoDir, updateToRev)
         if shell.buildOptions.patchFile:
             hgCmds.patchHgRepoUsingMq(shell.buildOptions.patchFile, shell.getRepoDir())
 
@@ -667,10 +693,15 @@ def obtainShell(shell, updateToRev=None):
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
         os.mkdir(shell.getShellCacheDir())
         createBustedFile(cachedNoShell, e)
+        if useS3Cache:
+            s3CacheObj.uploadFileToS3(shell.getShellCacheFullPath() + '.busted')
         raise
     finally:
         if shell.buildOptions.patchFile:
             hgCmds.hgQpopQrmAppliedPatch(shell.buildOptions.patchFile, shell.getRepoDir())
+
+    if useS3Cache:
+        s3CacheObj.compressAndUploadDirTarball(shell.getShellCacheDir(), shell.getS3TarballWithExtFullPath())
 
 
 def updateRepo(repo, rev):

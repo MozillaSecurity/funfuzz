@@ -34,6 +34,7 @@ import fileManipulation
 import buildOptions
 import downloadBuild
 import hgCmds
+import s3cache
 import subprocesses as sps
 import LockDir
 
@@ -794,7 +795,13 @@ def rmOldLocalCachedDirs(cacheDir):
     # This is in autoBisect because it has a lock so we do not race while removing directories
     # Adapted from http://stackoverflow.com/a/11337407
     SECONDS_IN_A_DAY = 24 * 60 * 60
-    NUMBER_OF_DAYS = 3 if sps.isARMv7l else 28  # native ARM boards usually have less disk space
+    s3CacheObj = s3cache.S3Cache(compileShell.S3_SHELL_CACHE_DIRNAME)
+    if s3CacheObj.connect():
+        NUMBER_OF_DAYS = 1  # EC2 VMs generally have less disk space for local shell caches
+    elif sps.isARMv7l:
+        NUMBER_OF_DAYS = 3  # native ARM boards usually have less disk space
+    else:
+        NUMBER_OF_DAYS = 28
 
     cacheDir = sps.normExpUserPath(cacheDir)
     names = [os.path.join(cacheDir, fname) for fname in os.listdir(cacheDir)]
