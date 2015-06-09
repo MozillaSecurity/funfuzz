@@ -71,7 +71,6 @@ class CompiledShell(object):
             self.destDir = sps.normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
 
         assert '~' not in self.destDir
-        assert os.path.isdir(self.destDir)
 
     def getDestDir(self):
         return self.destDir
@@ -206,8 +205,17 @@ def autoconfRun(cwDir):
 
 def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
+    shell.setJsBuildSystemConsidersNspr()
+    shell.setJsUsesNoThreadsFlag()
+
     if shell.buildOptions.enableNsprBuild and not shell.getJsBuildSystemConsidersNspr():
+        os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
+        shell.setNsprObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
         compileNspr(shell)
+
+    os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+    shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+
     autoconfRun(shell.getRepoDirJsSrc())
     configureTryCount = 0
     while True:
@@ -525,93 +533,63 @@ def compileNspr(shell):
         os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
 
-def compileStandalone(shell, updateToRev=None, isTboxBins=False):
-    '''Compile a standalone shell. Keep the objdir for now, especially .a files, for symbols.'''
-    compileStandaloneCreatedCacheDir = False
-    if not os.path.exists(shell.getShellCacheDir()):
-        try:
-            os.mkdir(shell.getShellCacheDir())
-        except OSError:
-            raise Exception('Unable to create shell cache directory.')
-        compileStandaloneCreatedCacheDir = True
+def obtainShell(shell, updateToRev=None):
+    '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
+    assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
     shell.setDestDir(shell.getShellCacheDir())
-
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
-    if os.path.exists(shell.getShellCacheFullPath()):
+    if os.path.isdir(shell.getShellCacheFullPath()):
         # Don't remove the comma at the end of this line, and thus remove the newline printed.
         # We would break JSBugMon.
         print 'Found cached shell...'
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
         return
-    elif os.path.exists(cachedNoShell):
+    elif os.path.isfile(cachedNoShell):
         raise Exception("Found a cached shell that failed compilation...")
-    elif not compileStandaloneCreatedCacheDir and os.path.exists(shell.getShellCacheDir()):
+    elif os.path.isdir(shell.getShellCacheDir()):
         print 'Found a cache dir without a successful/failed shell, so recompiling...'
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
-    assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
+    os.mkdir(shell.getShellCacheDir())
+    hgCmds.destroyPyc(shell.buildOptions.repoDir)
 
     if updateToRev:
-        # We should not print here without a trailing newline to avoid breaking other stuff:
-        print "Updating..."
-        sps.captureStdout(["hg", "-R", shell.buildOptions.repoDir] +
-                          ['update', '-C', '-r', updateToRev], ignoreStderr=True)
-        # We should not print here without a trailing newline to avoid breaking other stuff:
-        print "Compiling..."
-    hgCmds.destroyPyc(shell.buildOptions.repoDir)
-    shell.setJsBuildSystemConsidersNspr()
-    shell.setJsUsesNoThreadsFlag()
+        updateRepo(shell.buildOptions.repoDir, updateToRev)
 
     try:
         if shell.buildOptions.patchFile:
             hgCmds.patchHgRepoUsingMq(shell.buildOptions.patchFile, shell.getRepoDir())
 
-        if not os.path.exists(shell.getShellCacheDir()):
-            try:
-                os.mkdir(shell.getShellCacheDir())
-            except OSError:
-                raise Exception('Unable to create shell cache directory.')
-        shell.setDestDir(shell.getShellCacheDir())
-
-        if shell.buildOptions.enableNsprBuild and not shell.getJsBuildSystemConsidersNspr():
-            try:
-                os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
-            except OSError:
-                raise Exception('Unable to create nspr objdir directory.')
-            shell.setNsprObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
-
-        try:
-            os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
-        except OSError:
-            raise Exception('Unable to create js objdir directory.')
-        shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
         cfgJsCompile(shell)
-
     except KeyboardInterrupt:
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
         raise
     except Exception as e:
-        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
-
         # Remove the cache dir, but recreate it with only the .busted file.
-        try:
-            os.mkdir(shell.getShellCacheDir())
-        except OSError:
-            raise Exception('Unable to create shell cache directory.')
-
-        with open(cachedNoShell, 'wb') as f:
-            f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
-            f.write("Backtrace:\n")
-            f.write(traceback.format_exc() + "\n")
-        if os.path.exists(shell.getShellCacheFullPath()):
-            print 'Stop autoBisect - a .busted file should not be generated ' + \
-                  'with a shell that has been compiled successfully.'
-        print 'Compilation failed (' + str(e) + ') (details in ' + cachedNoShell + ')'
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
+        os.mkdir(shell.getShellCacheDir())
+        createBustedFile(cachedNoShell, e)
         raise
     finally:
         if shell.buildOptions.patchFile:
             hgCmds.hgQpopQrmAppliedPatch(shell.buildOptions.patchFile, shell.getRepoDir())
+
+
+def createBustedFile(filename, e):
+    '''Creates a .busted file with the exception message and backtrace included.'''
+    with open(filename, 'wb') as f:
+        f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
+        f.write("Backtrace:\n")
+        f.write(traceback.format_exc() + "\n")
+    print 'Compilation failed (' + str(e) + ') (details in ' + filename + ')'
+
+
+def updateRepo(repo, rev):
+    '''Updates repository to the specified revision.'''
+    print "Updating..."  # Print *with* a trailing newline to avoid breaking other stuff
+    sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
+    print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
 
 
 def envDump(shell, log):
@@ -679,7 +657,7 @@ def makeTestRev(options):
         print "Rev " + rev + ":",
 
         try:
-            compileStandalone(shell, updateToRev=rev, isTboxBins=options.useTreeherderBinaries)
+            obtainShell(shell, updateToRev=rev)
         except Exception:
             return (options.compilationFailedLabel, 'compilation failed')
 
@@ -720,7 +698,7 @@ def main():
             localOrigHgHash = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0]
             shell = CompiledShell(options.buildOptions, localOrigHgHash)
 
-        compileStandalone(shell, updateToRev=options.revision)
+        obtainShell(shell, updateToRev=options.revision)
         print shell.getShellCacheFullPath()
 
 if __name__ == '__main__':

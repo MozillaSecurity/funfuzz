@@ -531,7 +531,7 @@ def ensureBuild(options):
             with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
                 bRev = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0]
                 cshell = compileShell.CompiledShell(options.buildOptions, bRev)
-                compileShell.compileStandalone(cshell)
+                compileShell.obtainShell(cshell)
 
                 bDir = cshell.getShellCacheDir()
                 # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
