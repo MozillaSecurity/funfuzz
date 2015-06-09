@@ -539,7 +539,7 @@ def obtainShell(shell, updateToRev=None):
     shell.setDestDir(shell.getShellCacheDir())
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
-    if os.path.isdir(shell.getShellCacheFullPath()):
+    if os.path.isfile(shell.getShellCacheFullPath()):
         # Don't remove the comma at the end of this line, and thus remove the newline printed.
         # We would break JSBugMon.
         print 'Found cached shell...'
