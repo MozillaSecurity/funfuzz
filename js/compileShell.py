@@ -662,7 +662,8 @@ def obtainShell(shell, updateToRev=None):
 
 def updateRepo(repo, rev):
     '''Updates repository to the specified revision.'''
-    print "Updating..."  # Print *with* a trailing newline to avoid breaking other stuff
+    # Print *with* a trailing newline to avoid breaking other stuff
+    print "Updating to rev %s in the %s repository..." % (rev, repo)
     sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
 
 
