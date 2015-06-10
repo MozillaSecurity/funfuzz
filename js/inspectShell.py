@@ -171,23 +171,23 @@ def testIsHardFpShellARM(s):
 
 def verifyBinary(sh):
     '''Verifies that the binary is compiled as intended.'''
-    assert archOfBinary(sh.getShellBaseTempDirWithName()) == \
+    assert archOfBinary(sh.getShellCacheFullPath()) == \
         ('32' if sh.buildOptions.enable32 else '64')
 
     # Testing for debug or opt builds are different because there can be hybrid debug-opt builds.
-    assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'debug') == \
+    assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'debug') == \
         sh.buildOptions.enableDbg
 
     if sps.isARMv7l:
-        assert testIsHardFpShellARM(sh.getShellBaseTempDirWithName()) == sh.buildOptions.enableHardFp
-    if testGetBuildConfiguration(sh.getShellBaseTempDirWithName()):
-        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'more-deterministic') == \
+        assert testIsHardFpShellARM(sh.getShellCacheFullPath()) == sh.buildOptions.enableHardFp
+    if testGetBuildConfiguration(sh.getShellCacheFullPath()):
+        assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'more-deterministic') == \
             sh.buildOptions.enableMoreDeterministic
-        assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'asan') == \
+        assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'asan') == \
             sh.buildOptions.buildWithAsan
         # Apparently the entry for getBuildConfiguration landed in April 2014, months after the
         # actual ARM32 simulator landed. We can uncomment this maybe arbitrarily in Sep 2014.
         # If people still bisect till the range ~Feb 2014 to April 2014 for ARM32 simulator bugs,
         # then we'll think about testing flags only for this range.
-        #assert queryBuildConfiguration(sh.getShellBaseTempDirWithName(), 'arm-simulator') == \
+        #assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'arm-simulator') == \
         #    sh.buildOptions.enableArmSimulator

@@ -75,13 +75,6 @@ class CompiledShell(object):
     def setCfgCmdExclEnv(self, cfg):
         self.cfg = cfg
 
-    def getDestDir(self):
-        return self.destDir
-
-    def setDestDir(self, tDir):
-        self.destDir = tDir
-        assert '~' not in self.destDir
-
     def setEnvAdded(self, addedEnv):
         self.addedEnv = addedEnv
 
@@ -148,9 +141,6 @@ class CompiledShell(object):
 
     def getRepoName(self):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
-
-    def getShellBaseTempDirWithName(self):
-        return sps.normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
 
     def getShellCacheDir(self):
         return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.getShellNameWithoutExt()))
@@ -515,10 +505,10 @@ def compileJs(shell):
             raise
 
     if os.path.exists(shell.getShellCompiledPath()):
-        shutil.copy2(shell.getShellCompiledPath(), shell.getShellBaseTempDirWithName())
+        shutil.copy2(shell.getShellCompiledPath(), shell.getShellCacheFullPath())
         for runLib in shell.getShellCompiledRunLibsPath():
             if os.path.isfile(runLib):
-                shutil.copy2(runLib, shell.getDestDir())
+                shutil.copy2(runLib, shell.getShellCacheDir())
     else:
         print out
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
@@ -546,7 +536,6 @@ def compileNspr(shell):
 def obtainShell(shell, updateToRev=None):
     '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
-    shell.setDestDir(shell.getShellCacheDir())
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
     if os.path.isfile(shell.getShellCacheFullPath()):
