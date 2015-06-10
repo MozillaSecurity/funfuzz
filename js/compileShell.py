@@ -80,14 +80,6 @@ class CompiledShell(object):
 
     def setDestDir(self, tDir):
         self.destDir = tDir
-
-        if os.name == 'nt':  # adapted from http://stackoverflow.com/a/3931799
-            winTmpDir = unicode(self.destDir)
-            GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
-            unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
-            GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
-            self.destDir = sps.normExpUserPath(str(unicodeBuffer.value))  # convert back to a str
-
         assert '~' not in self.destDir
 
     def setEnvAdded(self, addedEnv):
@@ -188,6 +180,15 @@ class CompiledShell(object):
 def ensureCacheDir():
     '''Returns a cache directory for compiled shells to live in, creating one if needed'''
     cacheDir = os.path.join(sps.normExpUserPath('~'), 'shell-cache')
+
+    # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
+    if os.name == 'nt':  # adapted from http://stackoverflow.com/a/3931799
+        winTmpDir = unicode(cacheDir)
+        GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
+        unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
+        GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
+        cacheDir = sps.normExpUserPath(str(unicodeBuffer.value))  # convert back to a str
+
     ensureDir(cacheDir)
     return cacheDir
 
