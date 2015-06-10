@@ -533,48 +533,6 @@ def compileNspr(shell):
         os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
 
-def obtainShell(shell, updateToRev=None):
-    '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
-    assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
-    cachedNoShell = shell.getShellCacheFullPath() + ".busted"
-
-    if os.path.isfile(shell.getShellCacheFullPath()):
-        # Don't remove the comma at the end of this line, and thus remove the newline printed.
-        # We would break JSBugMon.
-        print 'Found cached shell...'
-        # Assuming that since the binary is present, everything else (e.g. symbols) is also present
-        return
-    elif os.path.isfile(cachedNoShell):
-        raise Exception("Found a cached shell that failed compilation...")
-    elif os.path.isdir(shell.getShellCacheDir()):
-        print 'Found a cache dir without a successful/failed shell, so recompiling...'
-        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
-
-    os.mkdir(shell.getShellCacheDir())
-    hgCmds.destroyPyc(shell.buildOptions.repoDir)
-
-    if updateToRev:
-        updateRepo(shell.buildOptions.repoDir, updateToRev)
-
-    try:
-        if shell.buildOptions.patchFile:
-            hgCmds.patchHgRepoUsingMq(shell.buildOptions.patchFile, shell.getRepoDir())
-
-        cfgJsCompile(shell)
-    except KeyboardInterrupt:
-        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
-        raise
-    except Exception as e:
-        # Remove the cache dir, but recreate it with only the .busted file.
-        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
-        os.mkdir(shell.getShellCacheDir())
-        createBustedFile(cachedNoShell, e)
-        raise
-    finally:
-        if shell.buildOptions.patchFile:
-            hgCmds.hgQpopQrmAppliedPatch(shell.buildOptions.patchFile, shell.getRepoDir())
-
-
 def createBustedFile(filename, e):
     '''Creates a .busted file with the exception message and backtrace included.'''
     with open(filename, 'wb') as f:
@@ -656,6 +614,48 @@ def makeTestRev(options):
         print "Testing...",
         return options.testAndLabel(shell.getShellCacheFullPath(), rev)
     return testRev
+
+
+def obtainShell(shell, updateToRev=None):
+    '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
+    assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
+    cachedNoShell = shell.getShellCacheFullPath() + ".busted"
+
+    if os.path.isfile(shell.getShellCacheFullPath()):
+        # Don't remove the comma at the end of this line, and thus remove the newline printed.
+        # We would break JSBugMon.
+        print 'Found cached shell...'
+        # Assuming that since the binary is present, everything else (e.g. symbols) is also present
+        return
+    elif os.path.isfile(cachedNoShell):
+        raise Exception("Found a cached shell that failed compilation...")
+    elif os.path.isdir(shell.getShellCacheDir()):
+        print 'Found a cache dir without a successful/failed shell, so recompiling...'
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
+
+    os.mkdir(shell.getShellCacheDir())
+    hgCmds.destroyPyc(shell.buildOptions.repoDir)
+
+    if updateToRev:
+        updateRepo(shell.buildOptions.repoDir, updateToRev)
+
+    try:
+        if shell.buildOptions.patchFile:
+            hgCmds.patchHgRepoUsingMq(shell.buildOptions.patchFile, shell.getRepoDir())
+
+        cfgJsCompile(shell)
+    except KeyboardInterrupt:
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
+        raise
+    except Exception as e:
+        # Remove the cache dir, but recreate it with only the .busted file.
+        sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
+        os.mkdir(shell.getShellCacheDir())
+        createBustedFile(cachedNoShell, e)
+        raise
+    finally:
+        if shell.buildOptions.patchFile:
+            hgCmds.hgQpopQrmAppliedPatch(shell.buildOptions.patchFile, shell.getRepoDir())
 
 
 def updateRepo(repo, rev):
