@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, "--execute='setJitCompilerOption(\"ion.forceinlineCaches\", 1)'") and chance(.1):
+        args.append("--execute='setJitCompilerOption(\"ion.forceinlineCaches\", 1)'")
+
     if shellSupportsFlag(shellPath, '--no-cgc') and chance(.1):
         args.append("--no-cgc")  # --no-cgc landed in bug 1126769
 

@@ -90,6 +90,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('baseline.warmup.trigger', " + rnd(20) + ");"; } },
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.warmup.trigger', " + rnd(40) + ");"; } },
 
+    // Force inline cache.
+    { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.forceinlineCaches\', " + rnd(2) + ");"; } },
+
     // Run-time equivalents to --no-ion, --no-baseline
     // These can throw: "Can't turn off JITs with JIT code on the stack."
     { w: 1,  v: function(d, b) { return tryCatch(prefix + "setJitCompilerOption" + "('ion.enable', " + rnd(2) + ");"); } },
