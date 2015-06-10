@@ -60,6 +60,15 @@ class CompiledShell(object):
         self.jsObjdir = ''
         self.nsprObjdir = ''
 
+    def getCfgCmdExclEnv(self):
+        return self.cfg
+
+    def setCfgCmdExclEnv(self, cfg):
+        self.cfg = cfg
+
+    def getDestDir(self):
+        return self.destDir
+
     def setDestDir(self, tDir):
         self.destDir = tDir
 
@@ -71,25 +80,6 @@ class CompiledShell(object):
             self.destDir = sps.normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
 
         assert '~' not in self.destDir
-
-    def getDestDir(self):
-        return self.destDir
-
-    def setCfgCmdExclEnv(self, cfg):
-        self.cfg = cfg
-
-    def getCfgCmdExclEnv(self):
-        return self.cfg
-
-    def getJsCfgPath(self):
-        self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
-        assert os.path.isfile(self.jsCfgFile)
-        return self.jsCfgFile
-
-    def getNsprCfgPath(self):
-        self.nsprCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
-        assert os.path.isfile(self.nsprCfgFile)
-        return self.nsprCfgFile
 
     def setEnvAdded(self, addedEnv):
         self.addedEnv = addedEnv
@@ -115,6 +105,17 @@ class CompiledShell(object):
         self.jsBuildSystemConsidersNspr = hgCmds.existsAndIsAncestor(
             self.getRepoDir(), 'a459b02a9ca472fa10299b5cb6c0456fe492c78a', '.')
 
+    def getJsCfgPath(self):
+        self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
+        assert os.path.isfile(self.jsCfgFile)
+        return self.jsCfgFile
+
+    def getJsObjdir(self):
+        return self.jsObjdir
+
+    def setJsObjdir(self, oDir):
+        self.jsObjdir = oDir
+
     def getJsUsesNoThreadsFlag(self):
         return self.jsUsesNoThreadsFlag
 
@@ -124,11 +125,10 @@ class CompiledShell(object):
         self.jsUsesNoThreadsFlag = hgCmds.existsAndIsAncestor(
             self.getRepoDir(), '35038c3324ee08b29924059da9b117940e740bd7', '.')
 
-    def getJsObjdir(self):
-        return self.jsObjdir
-
-    def setJsObjdir(self, oDir):
-        self.jsObjdir = oDir
+    def getNsprCfgPath(self):
+        self.nsprCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
+        assert os.path.isfile(self.nsprCfgFile)
+        return self.nsprCfgFile
 
     def getNsprObjdir(self):
         return self.nsprObjdir
@@ -148,6 +148,9 @@ class CompiledShell(object):
     def getRepoName(self):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
 
+    def getShellBaseTempDirWithName(self):
+        return sps.normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
+
     def getShellCacheDir(self):
         return sps.normExpUserPath(os.path.join(ensureCacheDir(), self.getShellNameWithoutExt()))
 
@@ -165,9 +168,6 @@ class CompiledShell(object):
             for runLib in inspectShell.ALL_RUN_LIBS
         ]
         return libsList
-
-    def getShellBaseTempDirWithName(self):
-        return sps.normExpUserPath(os.path.join(self.getDestDir(), self.shellNameWithExt))
 
     def getShellNameWithExt(self):
         return self.shellNameWithExt
