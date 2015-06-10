@@ -584,13 +584,6 @@ def createBustedFile(filename, e):
     print 'Compilation failed (' + str(e) + ') (details in ' + filename + ')'
 
 
-def updateRepo(repo, rev):
-    '''Updates repository to the specified revision.'''
-    print "Updating..."  # Print *with* a trailing newline to avoid breaking other stuff
-    sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
-    print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
-
-
 def envDump(shell, log):
     '''Dumps environment to a .fuzzmanagerconf file.'''
 
@@ -663,6 +656,13 @@ def makeTestRev(options):
         print "Testing...",
         return options.testAndLabel(shell.getShellCacheFullPath(), rev)
     return testRev
+
+
+def updateRepo(repo, rev):
+    '''Updates repository to the specified revision.'''
+    print "Updating..."  # Print *with* a trailing newline to avoid breaking other stuff
+    sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
+    print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
 
 
 def main():
