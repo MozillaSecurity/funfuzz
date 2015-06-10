@@ -170,8 +170,10 @@ class CompiledShell(object):
 def ensureCacheDir():
     '''Returns a cache directory for compiled shells to live in, creating one if needed'''
     cacheDir = os.path.join(sps.normExpUserPath('~'), 'shell-cache')
+    ensureDir(cacheDir)
 
     # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
+    # This has to occur after the shell-cache directory is created
     if sps.isWin:  # adapted from http://stackoverflow.com/a/3931799
         winTmpDir = unicode(cacheDir)
         GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
@@ -179,7 +181,6 @@ def ensureCacheDir():
         GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
         cacheDir = sps.normExpUserPath(str(unicodeBuffer.value))  # convert back to a str
 
-    ensureDir(cacheDir)
     return cacheDir
 
 
