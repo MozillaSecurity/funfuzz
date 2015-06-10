@@ -205,6 +205,7 @@ def autoconfRun(cwDir):
 
 def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
+    print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
     shell.setJsBuildSystemConsidersNspr()
     shell.setJsUsesNoThreadsFlag()
 
@@ -662,7 +663,6 @@ def updateRepo(repo, rev):
     '''Updates repository to the specified revision.'''
     print "Updating..."  # Print *with* a trailing newline to avoid breaking other stuff
     sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
-    print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
 
 
 def main():
