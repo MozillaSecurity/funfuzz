@@ -60,6 +60,15 @@ class CompiledShell(object):
         self.jsObjdir = ''
         self.nsprObjdir = ''
 
+        self.cfg = ''
+        self.destDir = ''
+        self.addedEnv = ''
+        self.fullEnv = ''
+        self.jsBuildSystemConsidersNspr = ''
+        self.jsCfgFile = ''
+        self.jsUsesNoThreadsFlag = ''
+        self.nsprCfgFile = ''
+
     def getCfgCmdExclEnv(self):
         return self.cfg
 
@@ -77,7 +86,7 @@ class CompiledShell(object):
             GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
             unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
             GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
-            self.destDir = sps.normExpUserPath(str(unicodeBuffer.value)) # convert back to a str
+            self.destDir = sps.normExpUserPath(str(unicodeBuffer.value))  # convert back to a str
 
         assert '~' not in self.destDir
 
