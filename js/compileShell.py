@@ -172,7 +172,7 @@ def ensureCacheDir():
     cacheDir = os.path.join(sps.normExpUserPath('~'), 'shell-cache')
 
     # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
-    if os.name == 'nt':  # adapted from http://stackoverflow.com/a/3931799
+    if sps.isWin:  # adapted from http://stackoverflow.com/a/3931799
         winTmpDir = unicode(cacheDir)
         GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
         unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
