@@ -125,7 +125,6 @@ function fuzzInitBlacklists()
                 "Worker",            // annoying timing-dependent leaks
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
-                "insertItemBefore",  // bug 1015551
                 "generateCRMFRequest", // dialog does weird things to shutdown sequence
                 "animVal",           // bug 1033301
                 "TrackEvent",        // bug 1035654
