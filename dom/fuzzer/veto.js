@@ -66,7 +66,6 @@ function fuzzInitBlacklists()
                 "202E",              // bug 812826 (RLO causes a hang in CoreText)
                 "MediaSource",       // bug 931388
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
-                "generateCRMFRequest", // bug 922034 (master password dialog, especially when it interferes with quitting)
                 "strokeText",        // bug 943622
                 "strokeRect",        // bug 986902
                 ".arc",              // bug 943587
@@ -124,7 +123,6 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
-                "generateCRMFRequest", // dialog does weird things to shutdown sequence
                 "TrackEvent",        // bug 1035654
                 "MediaSource",       // bug 1153690
                 "MediaRecorder",     // bug 1153690
