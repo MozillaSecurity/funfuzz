@@ -122,7 +122,6 @@ function fuzzInitBlacklists()
                 "/*keyCode*/118",    // leak with style editor (bug 865027)
                 "notification",      // general badness when spamming Notifications (bug 897367, bug 866653)
                 "\\u",               // bug 963878
-                "Worker",            // annoying timing-dependent leaks
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
                 "generateCRMFRequest", // dialog does weird things to shutdown sequence
