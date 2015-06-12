@@ -199,8 +199,6 @@ function fuzzInitBlacklists()
                 "table-footer",     // bug 501035?
                 "table-header",     // bug 501035?
                 "table-column",     // bug 501035?
-                "text-indent",      // bug 718157
-                "textIndent",       // bug 718157
                 "-moz-grid",        // bug 521600
                 "-moz-inline-grid", // bug 521600
                 "rules",            // bug 543791
