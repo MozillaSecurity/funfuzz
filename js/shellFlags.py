@@ -163,7 +163,7 @@ def randomFlagSet(shellPath):
         if chance(.2):
             args.append("--ion-limit-script-size=off")
         # Backtracking (on by default as of 2015-04-15) and stupid landed in m-c changeset dc4887f61d2e
-        # Disabled until bug 871848 is fixed.
+        # The stupid allocator isn't used by default and devs prefer not to have to fix fuzzbugs
         #if shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
