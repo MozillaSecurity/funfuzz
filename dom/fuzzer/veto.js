@@ -136,7 +136,7 @@ function fuzzInitBlacklists()
             list: [
                 "nearNativeStackLimit", // kinda expected to break things
                 "nearScriptStackLimit", // kinda expected to break things
-                "iframe",           // bug 254144 - paints white immediately after a move
+                "iframe",           // nested browsing context is discarded when removed from the DOM tree, per spec
                 "frameset",         // ditto
                 "object ",          // can act like an iframe
                 "object>",          // can act like an iframe
