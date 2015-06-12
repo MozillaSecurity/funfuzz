@@ -79,7 +79,7 @@ def archOfBinary(binary):
     unsplitFiletype = sps.captureStdout(['file', binary])[0]
     filetype = unsplitFiletype.split(':', 1)[1]
     if sps.isWin:
-        assert 'PE executable for MS Windows (console)' in filetype
+        assert 'MS Windows' in filetype
         return '32' if 'Intel 80386 32-bit' in filetype else '64'
     else:
         if 'universal binary' in filetype:
