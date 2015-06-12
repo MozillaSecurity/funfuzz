@@ -46,7 +46,9 @@ def runBrowser():
   try:
     from automation import Automation
   except ImportError:
-    print "Working around https://bugzilla.mozilla.org/show_bug.cgi?id=903616"
+    # The first time running from a local objdir, I get "ImportError: No module named mozcrash".
+    # The correct fix is to use virtualenv: https://bugzilla.mozilla.org/show_bug.cgi?id=903616#c12
+    # For now, just try again.
     from automation import Automation
   import automationutils
 
