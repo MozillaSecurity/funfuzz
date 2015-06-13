@@ -232,6 +232,7 @@ media.dash.enabled
 media.gstreamer.enabled
 media.h264.enabled
 media.mediasource.enabled
+media.mediasource.format-reader
 media.ogg.enabled
 media.opus.enabled
 media.raw.enabled
