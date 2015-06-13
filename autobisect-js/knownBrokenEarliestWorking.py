@@ -136,6 +136,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if '--non-writable-jitcode' in flags:
+        required.append('b46d6692fe50')  # m-c 248578 Fx41, 1st w/--non-writable-jitcode, see bug 977805
     if '--ion-extra-checks' in flags:
         required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
