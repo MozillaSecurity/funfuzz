@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--non-writable-jitcode') and chance(.3):
+        args.append("--non-writable-jitcode")  # --non-writable-jitcode landed in bug 977805
+
     if shellSupportsFlag(shellPath, "--execute='setJitCompilerOption(\"ion.forceinlineCaches\", 1)'") and chance(.1):
         args.append("--execute='setJitCompilerOption(\"ion.forceinlineCaches\", 1)'")
 
@@ -199,9 +202,10 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
             ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
         ]
-        if shellSupportsFlag(shellPath, "--ion-extra-checks"):
+        if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
             basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
-                                  '--ion-check-range-analysis', '--ion-extra-checks', '--no-sse3'])
+                                  '--non-writable-jitcode', '--ion-check-range-analysis',
+                                  '--ion-extra-checks', '--no-sse3'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
         basicFlagList = [
