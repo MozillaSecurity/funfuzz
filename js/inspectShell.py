@@ -56,7 +56,7 @@ else:
         RUN_NSPR_LIB = 'libnspr4.dylib'
         RUN_PLDS_LIB = 'libplds4.dylib'
         RUN_PLC_LIB = 'libplc4.dylib'
-    elif (platform.system() == 'Linux'):
+    elif platform.system() == 'Linux':
         RUN_MOZGLUE_LIB = 'libmozglue.so'
         RUN_NSPR_LIB = 'libnspr4.so'
         RUN_PLDS_LIB = 'libplds4.so'
@@ -117,7 +117,7 @@ def shellSupports(shellPath, args):
     This function returns True if the shell likes the args.
     You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
     '''
-    output, retCode = testBinary(shellPath, args, False)
+    retCode = testBinary(shellPath, args, False)[1]
     if retCode == 0:
         return True
     elif 1 <= retCode <= 3:
@@ -164,7 +164,7 @@ def testIsHardFpShellARM(s):
     if os.path.exists(readelfBin):
         newEnv = envVars.envWithPath(os.path.dirname(os.path.abspath(s)))
         readelfOutput = sps.captureStdout([readelfBin, '-A', s], env=newEnv)[0]
-        return ('Tag_ABI_VFP_args: VFP registers' in readelfOutput)
+        return 'Tag_ABI_VFP_args: VFP registers' in readelfOutput
     else:
         raise Exception('readelf is not found.')
 
