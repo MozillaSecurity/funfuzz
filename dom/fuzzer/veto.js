@@ -103,7 +103,6 @@ function fuzzInitBlacklists()
                 "328751",            // bug 728933
                 "99776",             // bug 728933
                 "@import",           // bug 842309
-                "undoManager",       // bug 851638
                 "webgl",             // bug 859542
                 "history",           // bug 860482
                 "frame",             // bug 860482
