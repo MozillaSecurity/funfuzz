@@ -44,8 +44,6 @@ function fuzzInitBlacklists()
                 "repeating-radial-gradient", // bug 557348
                 "repeating-linear-gradient",
                 "radial-gradient",
-                "stroke-width",      // bug 564889
-                "strokeWidth",       // bug 564889
                 "letter-spacing",    // can be slow
                 "letterSpacing",     // can be slow
                 "autoplay",          // bug 573426 (windows only)
@@ -78,7 +76,6 @@ function fuzzInitBlacklists()
                 "addCue",            // bug 1010707
                 "addTextTrack",      // bug 1010707
                 "rowspan",           // slow enough to "hang" a debug build, but not an opt build
-                "OfflineAudioContext", // bug 1032656
             ]
         },
         {
@@ -120,10 +117,6 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
-                "TrackEvent",        // bug 1035654
-                "MediaSource",       // bug 1153690
-                "MediaRecorder",     // bug 1153690
-                "mediaDevices",      // bug 1157995
             ]
         },
         {
