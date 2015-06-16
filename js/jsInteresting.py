@@ -305,6 +305,9 @@ def interesting(args, tempPrefix):
     return actualLevel >= gOptions.minimumInterestingLevel
 
 
-if __name__ == "__main__":
+# For direct, manual use
+def main():
     options = parseOptions(sys.argv[1:])
     print jsfunfuzzLevel(options, "m")
+if __name__ == "__main__":
+    main()
