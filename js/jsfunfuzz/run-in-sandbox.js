@@ -74,8 +74,6 @@ function newGeckoSandbox(n)
   // Allow the sandbox to do a few things
   s.newGeckoSandbox = newGeckoSandbox;
   s.evalInSandbox = function(str, sbx) {
-    // Internal try..catch to work around bug 613142.
-    str = "try{"+str+"}catch(e){}";
     return Components.utils.evalInSandbox(str, sbx);
   };
   s.print = function(str) { print(str); };
@@ -88,8 +86,7 @@ function useGeckoSandbox() {
 
   return function(f, code, wtt) {
     try {
-      // Internal try..catch to work around bug 613142.
-      Components.utils.evalInSandbox("try{"+code+"}catch(e){}", primarySandbox);
+      Components.utils.evalInSandbox(code, primarySandbox);
     } catch(e) {
       // It might not be safe to operate on |e|.
     }

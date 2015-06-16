@@ -992,7 +992,7 @@ if (xpcshell) {
   exprMakers = exprMakers.concat([
     function(d, b) { var n = rnd(4); return "newGeckoSandbox(" + n + ")"; },
     function(d, b) { var n = rnd(4); return "s" + n + " = newGeckoSandbox(" + n + ")"; },
-    // Doesn't this need to be Components.utils.evalInSandbox? Oh well, we need to fix bug 613142 first.
+    // FIXME: Doesn't this need to be Components.utils.evalInSandbox?
     function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", newGeckoSandbox(" + n + "))"; },
     function(d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", s" + n + ")"; },
     function(d, b) { return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
