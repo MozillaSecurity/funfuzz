@@ -328,7 +328,6 @@ def knownChromeFailure(msg):
         ("webrtcUI.jsm" in msg) or                                                      # Bug 973318
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 949926
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or   # bug 978524
-        ("nsDOMIdentity.js" in msg and "this._log is not a function" in msg) or         # bug 978629
         ("nsDOMIdentity.js, line " in msg) or                                           # These seem to be intentional messages about misusing the identity API
         "DOMIdentity.jsm" in msg or                                                     # Bug 973397, bug 973398
         "abouthealth.js" in msg or                                                      # Bug 895113
