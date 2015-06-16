@@ -244,7 +244,7 @@ class AmissLogHandler:
 
         if "goQuitApplication" in msg:
             self.expectChromeFailure = True
-        if (not self.expectChromeFailure) and jsInChrome(msg) and jsFailure(msg) and not knownChromeFailure(msg):
+        if (not self.expectChromeFailure) and chromeFailure(msg) and not knownChromeFailure(msg):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
 
@@ -256,16 +256,22 @@ class AmissLogHandler:
         self.summaryLog.append(msg + "\n")
 
 
-def jsFailure(msg):
+def chromeFailure(msg):
+    """Look for strings that indicate failures in privileged Firefox code, as well as general JS failures from files we know are privileged."""
+    return ("A coding exception was thrown and uncaught in a Task" in msg or  # These are followed by stacks, which could be used to distinguish them...
+            "System JS : ERROR" in msg or
+            "JS Component Loader: ERROR" in msg or
+            (generalJsFailure(msg) and jsInChrome(msg)))
+
+
+def generalJsFailure(msg):
     return ("uncaught exception" in msg or
             "JavaScript error" in msg or
             "JavaScript Error" in msg or
             "[Exception..." in msg or
-            "JS Component Loader: ERROR" in msg or
+            "SyntaxError" in msg or
             "ReferenceError" in msg or
             "TypeError" in msg or
-            "Full stack:" in msg or
-            "System JS : ERROR" in msg or
             False)
 
 
@@ -280,7 +286,6 @@ def jsInChrome(msg):
             "resource://modules/" in msg or
             "resource://gre/modules/" in msg or
             "resource://gre/components/" in msg or
-            "System JS : ERROR" in msg or
             False) and not (
                 "xbl-marquee.xml" in msg or  # chrome://xbl-marquee/content/xbl-marquee.xml
                 "videocontrols.xml" in msg  # chrome://global/content/bindings/videocontrols.xml
