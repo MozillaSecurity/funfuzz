@@ -64,7 +64,6 @@ function fuzzInitBlacklists()
                 "trustedKeyEvent",   // can navigate away (?)
                 "__proto__",         // bug 801914 (too-much-recursion stops the fuzzer, which is interpreted by the python harness as a hang)
                 "202E",              // bug 812826 (RLO causes a hang in CoreText)
-                "MediaSource",       // bug 931388
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
                 "strokeText",        // bug 943622
                 "strokeRect",        // bug 986902
