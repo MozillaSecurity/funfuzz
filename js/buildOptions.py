@@ -125,75 +125,75 @@ def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
 
     parser, randomizer = addParserOptions()
-    bOpts = parser.parse_args(inputArgs.split())
+    buildOptions = parser.parse_args(inputArgs.split())
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
         # Repositories do not get randomized if a repository is specified.
-        if bOpts.repoDir is None:
+        if buildOptions.repoDir is None:
             # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
-            if bOpts.enableRandom and not bOpts.patchFile:
-                bOpts.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
+            if buildOptions.enableRandom and not buildOptions.patchFile:
+                buildOptions.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
             else:
-                bOpts.repoDir = os.path.realpath(sps.normExpUserPath(
+                buildOptions.repoDir = os.path.realpath(sps.normExpUserPath(
                     os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
 
-        assert hgCmds.isRepoValid(bOpts.repoDir)
+        assert hgCmds.isRepoValid(buildOptions.repoDir)
 
-        if bOpts.patchFile:
+        if buildOptions.patchFile:
             hgCmds.ensureMqEnabled()
-            bOpts.patchFile = sps.normExpUserPath(bOpts.patchFile)
-            assert os.path.isfile(bOpts.patchFile)
+            buildOptions.patchFile = sps.normExpUserPath(buildOptions.patchFile)
+            assert os.path.isfile(buildOptions.patchFile)
 
-    if bOpts.enableRandom:
-        bOpts = generateRandomConfigurations(parser, randomizer)
+    if buildOptions.enableRandom:
+        buildOptions = generateRandomConfigurations(parser, randomizer)
     else:
-        bOpts.buildOptionsStr = inputArgs
-        valid = areArgsValid(bOpts)
+        buildOptions.buildOptionsStr = inputArgs
+        valid = areArgsValid(buildOptions)
         if not valid[0]:
             print 'WARNING: This set of build options is not tested well because: ' + valid[1]
 
-    return bOpts
+    return buildOptions
 
 
-def computeShellType(bOpts):
+def computeShellType(buildOptions):
     '''Returns configuration information of the shell.'''
     fileName = ['js']
-    if bOpts.enableDbg:
+    if buildOptions.enableDbg:
         fileName.append('dbg')
-    if bOpts.disableOpt:
+    if buildOptions.disableOpt:
         fileName.append('optDisabled')
-    fileName.append('32' if bOpts.enable32 else '64')
-    if bOpts.enableProfiling:
+    fileName.append('32' if buildOptions.enable32 else '64')
+    if buildOptions.enableProfiling:
         fileName.append('prof')
-    if bOpts.enableMoreDeterministic:
+    if buildOptions.enableMoreDeterministic:
         fileName.append('dm')
-    if bOpts.buildWithAsan:
+    if buildOptions.buildWithAsan:
         fileName.append('asan')
-    if bOpts.buildWithVg:
+    if buildOptions.buildWithVg:
         fileName.append('vg')
-    if bOpts.enableNsprBuild:
+    if buildOptions.enableNsprBuild:
         fileName.append('nsprBuild')
-    if bOpts.enableSimulator:
-        assert bOpts.enableSimulator in ['arm', 'arm64', 'mips']
-        fileName.append(bOpts.enableSimulator)
+    if buildOptions.enableSimulator:
+        assert buildOptions.enableSimulator in ['arm', 'arm64', 'mips']
+        fileName.append(buildOptions.enableSimulator)
     if sps.isARMv7l:
-        fileName.append('armhfp' if bOpts.enableHardFp else 'armsfp')
+        fileName.append('armhfp' if buildOptions.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
-    if bOpts.patchFile:
+    if buildOptions.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
-        fileName.append(os.path.basename(bOpts.patchFile).split('.')[0])
+        fileName.append(os.path.basename(buildOptions.patchFile).split('.')[0])
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
-        fileName.append(hashlib.sha512(file(os.path.abspath(bOpts.patchFile), 'rb').read())
+        fileName.append(hashlib.sha512(file(os.path.abspath(buildOptions.patchFile), 'rb').read())
                         .hexdigest()[:12])
 
     assert '' not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
     return '-'.join(fileName)
 
 
-def computeShellName(bOpts, buildRev):
+def computeShellName(buildOptions, buildRev):
     '''Returns the shell type together with the build revision.'''
-    return computeShellType(bOpts) + '-' + buildRev
+    return computeShellType(buildOptions) + '-' + buildRev
 
 
 def areArgsValid(args):
@@ -254,10 +254,10 @@ def generateRandomConfigurations(parser, randomizer):
         randomArgs = randomizer.getRandomSubset()
         if '--build-with-valgrind' in randomArgs and chance(0.95):
             randomArgs.append('--run-with-valgrind')
-        bOpts = parser.parse_args(randomArgs)
-        if areArgsValid(bOpts)[0]:
-            bOpts.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
-            return bOpts
+        buildOptions = parser.parse_args(randomArgs)
+        if areArgsValid(buildOptions)[0]:
+            buildOptions.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
+            return buildOptions
 
 
 def getRandomValidRepo(treeLocation):
