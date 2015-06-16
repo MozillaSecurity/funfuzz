@@ -22,12 +22,14 @@ def chance(p):
 class Randomizer(object):
     def __init__(self):
         self.options = []
+
     def add(self, name, fastDeviceWeight, slowDeviceWeight):
         self.options.append({
             'name': name,
             'fastDeviceWeight': fastDeviceWeight,
             'slowDeviceWeight': slowDeviceWeight
         })
+
     def getRandomSubset(self):
         def getWeight(o):
             return o['fastDeviceWeight'] if deviceIsFast else o['slowDeviceWeight']
@@ -37,176 +39,160 @@ class Randomizer(object):
 def addParserOptions():
     '''Adds parser options.'''
     # Where to find the source dir and compiler, patching if necessary.
-    parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
-    randomizer = Randomizer()
+    prsr = argparse.ArgumentParser(description="Usage: Don't use this directly")
+    rndzer = Randomizer()
 
     def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):
         '''
         Adds a randomized boolean option that defaults to False,
         and has a [weight] chance of being changed to True when using --random.
         '''
-        randomizer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
-        parser.add_argument(*name, action='store_true', default=False, **kwargs)
+        rndzer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
+        prsr.add_argument(*name, action='store_true', default=False, **kwargs)
 
-    parser.add_argument('--random',
-           dest = 'enableRandom',
-         action ='store_true',
-        default = False,
-           help = 'Chooses sensible random build options. Defaults to "%(default)s".'
-    )
-    parser.add_argument('-R', '--repoDir',
-        dest = 'repoDir',
-        default = sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
-        help = 'Sets the source repository.'
-    )
-    parser.add_argument('-P', '--patch',
-        dest = 'patchFile',
-        help = 'Define the path to a single JS patch. Ensure mq is installed.'
-    )
+    prsr.add_argument('--random',
+                      dest='enableRandom',
+                      action='store_true',
+                      default=False,
+                      help='Chooses sensible random build options. Defaults to "%(default)s".')
+    prsr.add_argument('-R', '--repoDir',
+                      dest='repoDir',
+                      default=sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
+                      help='Sets the source repository.')
+    prsr.add_argument('-P', '--patch',
+                      dest='patchFile',
+                      help='Define the path to a single JS patch. Ensure mq is installed.')
 
     # Basic spidermonkey options
     randomizeBool(['--32'], 0.5, 0.5,
-        dest = 'enable32',
-        help = 'Build 32-bit shells, but if not enabled, 64-bit shells are built.'
-    )
+                  dest='enable32',
+                  help='Build 32-bit shells, but if not enabled, 64-bit shells are built.')
     randomizeBool(['--enable-debug'], 0.5, 0.5,
-        dest = 'enableDbg',
-        help = 'Build shells with --enable-debug. Defaults to "%(default)s".'
-    )
-    randomizeBool(['--disable-debug'], 0, 0, # Already default in configure.in
-        dest = 'disableDbg',
-        help = 'Build shells with --disable-debug. Defaults to "%(default)s".'
-    )
-    randomizeBool(['--enable-optimize'], 0, 0, # Already default in configure.in
-        dest = 'enableOpt',
-        help = 'Build shells with --enable-optimize. Defaults to "%(default)s".'
-    )
+                  dest='enableDbg',
+                  help='Build shells with --enable-debug. Defaults to "%(default)s".')
+    randomizeBool(['--disable-debug'], 0, 0,  # Already default in configure.in
+                  dest='disableDbg',
+                  help='Build shells with --disable-debug. Defaults to "%(default)s".')
+    randomizeBool(['--enable-optimize'], 0, 0,  # Already default in configure.in
+                  dest='enableOpt',
+                  help='Build shells with --enable-optimize. Defaults to "%(default)s".')
     randomizeBool(['--disable-optimize'], 0.1, 0.01,
-        dest = 'disableOpt',
-        help = 'Build shells with --disable-optimize. Defaults to "%(default)s".'
-    )
+                  dest='disableOpt',
+                  help='Build shells with --disable-optimize. Defaults to "%(default)s".')
     randomizeBool(['--enable-profiling'], 0.5, 0,
-        dest = 'enableProfiling',
-        help = 'Build shells with --enable-profiling. Defaults to "%(default)s".'
-    )
+                  dest='enableProfiling',
+                  help='Build shells with --enable-profiling. Defaults to "%(default)s".')
 
     # Memory debuggers
     randomizeBool(['--build-with-asan'], 0.3, 0,
-        dest = 'buildWithAsan',
-        help = 'Build with clang AddressSanitizer support. Defaults to "%(default)s".'
-    )
+                  dest='buildWithAsan',
+                  help='Build with clang AddressSanitizer support. Defaults to "%(default)s".')
     randomizeBool(['--build-with-valgrind'], 0.2, 0.05,
-        dest = 'buildWithVg',
-        help = 'Build with valgrind.h bits. Defaults to "%(default)s". ' + \
-               'Requires --enable-hardfp for ARM platforms.'
-    )
+                  dest='buildWithVg',
+                  help='Build with valgrind.h bits. Defaults to "%(default)s". ' +
+                  'Requires --enable-hardfp for ARM platforms.')
     # We do not use randomizeBool because we add this flag automatically if --build-with-valgrind
     # is selected.
-    parser.add_argument('--run-with-valgrind',
-           dest = 'runWithVg',
-         action ='store_true',
-        default = False,
-           help = 'Run the shell under Valgrind. Requires --build-with-valgrind.'
-    )
+    prsr.add_argument('--run-with-valgrind',
+                      dest='runWithVg',
+                      action='store_true',
+                      default=False,
+                      help='Run the shell under Valgrind. Requires --build-with-valgrind.')
 
     # Misc spidermonkey options
     if sps.isARMv7l:
         randomizeBool(['--enable-hardfp'], 0.1, 0.1,
-            dest = 'enableHardFp',
-            help = 'Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".'
-        )
+                      dest='enableHardFp',
+                      help='Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".')
     randomizeBool(['--enable-nspr-build'], 0.5, 0.99,
-        dest = 'enableNsprBuild',
-        help = 'Build the shell using (in-tree) NSPR. This is the default on Windows. ' + \
-               'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' + \
-               'Using --enable-nspr-build creates a JS shell that is more like the browser. ' + \
-               'Defaults to "%(default)s".'
-    )
+                  dest='enableNsprBuild',
+                  help='Build the shell using (in-tree) NSPR. This is the default on Windows. ' +
+                  'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' +
+                  'Using --enable-nspr-build creates a JS shell that is more like the browser. ' +
+                  'Defaults to "%(default)s".')
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
-        dest = 'enableMoreDeterministic',
-        help = 'Build shells with --enable-more-deterministic. Defaults to "%(default)s".'
-    )
+                  dest='enableMoreDeterministic',
+                  help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
     randomizeBool(['--enable-arm-simulator'], 0.3, 0,
-        dest = 'enableArmSimulator',
-        help = 'Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' + \
-               'Defaults to "%(default)s".'
-    )
+                  dest='enableArmSimulator',
+                  help='Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' +
+                  'Defaults to "%(default)s".')
 
-    return parser, randomizer
+    return prsr, rndzer
 
 
 def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
 
-    parser, randomizer = addParserOptions()
-    buildOptions = parser.parse_args(inputArgs.split())
+    prsr, rndzer = addParserOptions()
+    bOpts = prsr.parse_args(inputArgs.split())
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
         # Repositories do not get randomized if a repository is specified.
-        if buildOptions.repoDir is None:
+        if bOpts.repoDir is None:
             # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
-            if buildOptions.enableRandom and not buildOptions.patchFile:
-                buildOptions.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
+            if bOpts.enableRandom and not bOpts.patchFile:
+                bOpts.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
             else:
-                buildOptions.repoDir = os.path.realpath(sps.normExpUserPath(
+                bOpts.repoDir = os.path.realpath(sps.normExpUserPath(
                     os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
 
-        assert hgCmds.isRepoValid(buildOptions.repoDir)
+        assert hgCmds.isRepoValid(bOpts.repoDir)
 
-        if buildOptions.patchFile:
+        if bOpts.patchFile:
             hgCmds.ensureMqEnabled()
-            buildOptions.patchFile = sps.normExpUserPath(buildOptions.patchFile)
-            assert os.path.isfile(buildOptions.patchFile)
+            bOpts.patchFile = sps.normExpUserPath(bOpts.patchFile)
+            assert os.path.isfile(bOpts.patchFile)
 
-    if buildOptions.enableRandom:
-        buildOptions = generateRandomConfigurations(parser, randomizer)
+    if bOpts.enableRandom:
+        bOpts = generateRandomConfigurations(prsr, rndzer)
     else:
-        buildOptions.buildOptionsStr = inputArgs
-        valid = areArgsValid(buildOptions)
+        bOpts.buildOptionsStr = inputArgs
+        valid = areArgsValid(bOpts)
         if not valid[0]:
             print 'WARNING: This set of build options is not tested well because: ' + valid[1]
 
-    return buildOptions
+    return bOpts
 
 
-def computeShellType(buildOptions):
+def computeShellType(bOpts):
     '''Returns configuration information of the shell.'''
     fileName = ['js']
-    if buildOptions.enableDbg:
+    if bOpts.enableDbg:
         fileName.append('dbg')
-    if buildOptions.disableOpt:
+    if bOpts.disableOpt:
         fileName.append('optDisabled')
-    fileName.append('32' if buildOptions.enable32 else '64')
-    if buildOptions.enableProfiling:
+    fileName.append('32' if bOpts.enable32 else '64')
+    if bOpts.enableProfiling:
         fileName.append('prof')
-    if buildOptions.enableMoreDeterministic:
+    if bOpts.enableMoreDeterministic:
         fileName.append('dm')
-    if buildOptions.buildWithAsan:
+    if bOpts.buildWithAsan:
         fileName.append('asan')
-    if buildOptions.buildWithVg:
+    if bOpts.buildWithVg:
         fileName.append('vg')
-    if buildOptions.enableNsprBuild:
+    if bOpts.enableNsprBuild:
         fileName.append('nsprBuild')
-    if buildOptions.enableArmSimulator:
+    if bOpts.enableArmSimulator:
         fileName.append('armSim')
     if sps.isARMv7l:
-        fileName.append('armhfp' if buildOptions.enableHardFp else 'armsfp')
+        fileName.append('armhfp' if bOpts.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
-    if buildOptions.patchFile:
+    if bOpts.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
-        fileName.append(os.path.basename(buildOptions.patchFile).split('.')[0])
+        fileName.append(os.path.basename(bOpts.patchFile).split('.')[0])
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
-        fileName.append(hashlib.sha512(file(os.path.abspath(buildOptions.patchFile),'rb').read())
+        fileName.append(hashlib.sha512(file(os.path.abspath(bOpts.patchFile), 'rb').read())
                         .hexdigest()[:12])
 
     assert '' not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
     return '-'.join(fileName)
 
 
-def computeShellName(buildOptions, buildRev):
+def computeShellName(bOpts, buildRev):
     '''Returns the shell type together with the build revision.'''
-    return computeShellType(buildOptions) + '-' + buildRev
+    return computeShellType(bOpts) + '-' + buildRev
 
 
 def areArgsValid(args):
@@ -261,15 +247,15 @@ def areArgsValid(args):
     return True, ''
 
 
-def generateRandomConfigurations(parser, randomizer):
+def generateRandomConfigurations(prsr, rndzer):
     while True:
-        randomArgs = randomizer.getRandomSubset()
+        randomArgs = rndzer.getRandomSubset()
         if '--build-with-valgrind' in randomArgs and chance(0.95):
             randomArgs.append('--run-with-valgrind')
-        buildOptions = parser.parse_args(randomArgs)
-        if areArgsValid(buildOptions)[0]:
-            buildOptions.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
-            return buildOptions
+        bOpts = prsr.parse_args(randomArgs)
+        if areArgsValid(bOpts)[0]:
+            bOpts.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
+            return bOpts
 
 
 def getRandomValidRepo(treeLocation):
