@@ -190,9 +190,6 @@ class AmissLogHandler:
             if "Did not receive all required callbacks" in msg:
                 print "Ignoring memory leaks (bug 973384)"
                 self.expectedToLeak = True
-            if "AddPurpleRoot failed" in msg:
-                print "Ignoring memory leaks (CC OOM)"
-                self.expectedToLeak = True
             if self.nsassertionCount == 100:
                 print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
