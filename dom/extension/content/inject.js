@@ -1,13 +1,10 @@
 "use strict";
 
-// Separate scope to work around bug 673569
-(function() {
-
 const Cu = Components.utils;
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Cu.import("chrome://domfuzzhelper/content/file.jsm"); // How does this interact with the scope created to work around bug 673569??
+Cu.import("chrome://domfuzzhelper/content/file.jsm");
 
 // content script for e10s support
 
@@ -117,5 +114,3 @@ function injectScript(doc, fuzzSettings)
   script.textContent = scriptToInject;
   insertionPoint.appendChild(script);
 }
-
-})();
