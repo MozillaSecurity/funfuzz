@@ -39,29 +39,29 @@ class Randomizer(object):
 def addParserOptions():
     '''Adds parser options.'''
     # Where to find the source dir and compiler, patching if necessary.
-    prsr = argparse.ArgumentParser(description="Usage: Don't use this directly")
-    rndzer = Randomizer()
+    parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
+    randomizer = Randomizer()
 
     def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):
         '''
         Adds a randomized boolean option that defaults to False,
         and has a [weight] chance of being changed to True when using --random.
         '''
-        rndzer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
-        prsr.add_argument(*name, action='store_true', default=False, **kwargs)
+        randomizer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
+        parser.add_argument(*name, action='store_true', default=False, **kwargs)
 
-    prsr.add_argument('--random',
-                      dest='enableRandom',
-                      action='store_true',
-                      default=False,
-                      help='Chooses sensible random build options. Defaults to "%(default)s".')
-    prsr.add_argument('-R', '--repoDir',
-                      dest='repoDir',
-                      default=sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
-                      help='Sets the source repository.')
-    prsr.add_argument('-P', '--patch',
-                      dest='patchFile',
-                      help='Define the path to a single JS patch. Ensure mq is installed.')
+    parser.add_argument('--random',
+                        dest='enableRandom',
+                        action='store_true',
+                        default=False,
+                        help='Chooses sensible random build options. Defaults to "%(default)s".')
+    parser.add_argument('-R', '--repoDir',
+                        dest='repoDir',
+                        default=sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
+                        help='Sets the source repository.')
+    parser.add_argument('-P', '--patch',
+                        dest='patchFile',
+                        help='Define the path to a single JS patch. Ensure mq is installed.')
 
     # Basic spidermonkey options
     randomizeBool(['--32'], 0.5, 0.5,
@@ -93,11 +93,11 @@ def addParserOptions():
                   'Requires --enable-hardfp for ARM platforms.')
     # We do not use randomizeBool because we add this flag automatically if --build-with-valgrind
     # is selected.
-    prsr.add_argument('--run-with-valgrind',
-                      dest='runWithVg',
-                      action='store_true',
-                      default=False,
-                      help='Run the shell under Valgrind. Requires --build-with-valgrind.')
+    parser.add_argument('--run-with-valgrind',
+                        dest='runWithVg',
+                        action='store_true',
+                        default=False,
+                        help='Run the shell under Valgrind. Requires --build-with-valgrind.')
 
     # Misc spidermonkey options
     if sps.isARMv7l:
@@ -118,14 +118,14 @@ def addParserOptions():
                   help='Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' +
                   'Defaults to "%(default)s".')
 
-    return prsr, rndzer
+    return parser, randomizer
 
 
 def parseShellOptions(inputArgs):
     """Returns a 'buildOptions' object, which is intended to be immutable."""
 
-    prsr, rndzer = addParserOptions()
-    bOpts = prsr.parse_args(inputArgs.split())
+    parser, randomizer = addParserOptions()
+    bOpts = parser.parse_args(inputArgs.split())
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
@@ -146,7 +146,7 @@ def parseShellOptions(inputArgs):
             assert os.path.isfile(bOpts.patchFile)
 
     if bOpts.enableRandom:
-        bOpts = generateRandomConfigurations(prsr, rndzer)
+        bOpts = generateRandomConfigurations(parser, randomizer)
     else:
         bOpts.buildOptionsStr = inputArgs
         valid = areArgsValid(bOpts)
@@ -174,8 +174,9 @@ def computeShellType(bOpts):
         fileName.append('vg')
     if bOpts.enableNsprBuild:
         fileName.append('nsprBuild')
-    if bOpts.enableArmSimulator:
-        fileName.append('armSim')
+    if bOpts.enableSimulator:
+        assert bOpts.enableSimulator in ['arm', 'arm64', 'mips']
+        fileName.append(bOpts.enableSimulator)
     if sps.isARMv7l:
         fileName.append('armhfp' if bOpts.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
@@ -212,20 +213,21 @@ def areArgsValid(args):
 
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
-        if not sps.isProgramInstalled('valgrind'):
-            return False, 'Valgrind is not installed.'
-        if not args.enableOpt:
-            return False, 'Valgrind needs opt builds.'
-        if args.buildWithAsan:
-            return False, 'One should not compile with both Valgrind flags and ASan flags.'
+        # Uncomment the following when we unbreak Valgrind fuzzing.
+        # if not sps.isProgramInstalled('valgrind'):
+        #     return False, 'Valgrind is not installed.'
+        # if not args.enableOpt:
+        #     return False, 'Valgrind needs opt builds.'
+        # if args.buildWithAsan:
+        #     return False, 'One should not compile with both Valgrind flags and ASan flags.'
 
-        if sps.isWin:
-            return False, 'Valgrind does not work on Windows.'
-        if sps.isMac:
-            return False, 'Valgrind does not work well with Mac OS X 10.10 Yosemite.'
-        if sps.isARMv7l and not args.enableHardFp:
-            return False, 'libc6-dbg packages needed for Valgrind are only ' + \
-                'available via hardfp, tested on Ubuntu on an ARM odroid board.'
+        # if sps.isWin:
+        #     return False, 'Valgrind does not work on Windows.'
+        # if sps.isMac:
+        #     return False, 'Valgrind does not work well with Mac OS X 10.10 Yosemite.'
+        # if sps.isARMv7l and not args.enableHardFp:
+        #     return False, 'libc6-dbg packages needed for Valgrind are only ' + \
+        #         'available via hardfp, tested on Ubuntu on an ARM odroid board.'
 
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'
@@ -236,7 +238,7 @@ def areArgsValid(args):
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
-    if args.enableArmSimulator:
+    if args.enableSimulator:
         if sps.isARMv7l:
             return False, 'We cannot run the ARM simulator in an ARM build.'
         if sps.isWin:
@@ -247,12 +249,12 @@ def areArgsValid(args):
     return True, ''
 
 
-def generateRandomConfigurations(prsr, rndzer):
+def generateRandomConfigurations(parser, randomizer):
     while True:
-        randomArgs = rndzer.getRandomSubset()
+        randomArgs = randomizer.getRandomSubset()
         if '--build-with-valgrind' in randomArgs and chance(0.95):
             randomArgs.append('--run-with-valgrind')
-        bOpts = prsr.parse_args(randomArgs)
+        bOpts = parser.parse_args(randomArgs)
         if areArgsValid(bOpts)[0]:
             bOpts.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
             return bOpts
@@ -281,14 +283,18 @@ def getRandomValidRepo(treeLocation):
         os.path.join(treeLocation, random.choice(validRepos))))
 
 
-if __name__ == "__main__":
+def main():
     print 'Here are some sample random build configurations that can be generated:'
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args()
 
-    for x in range(30):
+    for _ in range(30):
         buildOptions = generateRandomConfigurations(parser, randomizer)
         print buildOptions.buildOptionsStr
 
     print "\nRunning this file directly doesn't do anything, but here's our subparser help:\n"
     parseShellOptions("--help")
+
+
+if __name__ == "__main__":
+    main()
