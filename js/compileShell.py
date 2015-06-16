@@ -304,8 +304,8 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--enable-macos-target=10.5')
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
-            if shell.buildOptions.enableArmSimulator:
-                cfgCmdList.append('--enable-arm-simulator')
+            if shell.buildOptions.enableSimulatorArm32:
+                cfgCmdList.append('--enable-simulator=arm')
         # 32-bit shell on 32/64-bit x86 Linux
         elif sps.isLinux and not sps.isARMv7l:
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
@@ -327,8 +327,8 @@ def cfgBin(shell, binToBeCompiled):
             cfgCmdList.append('--target=i686-pc-linux')
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
-            if shell.buildOptions.enableArmSimulator:
-                cfgCmdList.append('--enable-arm-simulator')
+            if shell.buildOptions.enableSimulatorArm32:
+                cfgCmdList.append('--enable-simulator=arm')
         else:
             cfgCmdList.append('sh')
             if binToBeCompiled == 'nspr':
@@ -354,6 +354,8 @@ def cfgBin(shell, binToBeCompiled):
         cfgCmdList.append('--target=x86_64-apple-darwin12.5.0')  # Mountain Lion 10.8.5
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
+        if shell.buildOptions.enableSimulatorArm64:
+            cfgCmdList.append('--enable-simulator=arm64')
 
     elif sps.isWin:
         cfgEnvDt['MAKE'] = 'mozmake'  # Workaround for bug 948534
@@ -367,11 +369,13 @@ def cfgBin(shell, binToBeCompiled):
         else:
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.buildOptions.enable32:
-            if shell.buildOptions.enableArmSimulator:
-                cfgCmdList.append('--enable-arm-simulator')
+            if shell.buildOptions.enableSimulatorArm32:
+                cfgCmdList.append('--enable-simulator=arm')
         else:
             cfgCmdList.append('--host=x86_64-pc-mingw32')
             cfgCmdList.append('--target=x86_64-pc-mingw32')
+            if shell.buildOptions.enableSimulatorArm64:
+                cfgCmdList.append('--enable-simulator=arm64')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang

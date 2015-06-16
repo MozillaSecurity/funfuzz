@@ -113,10 +113,15 @@ def addParserOptions():
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
-    randomizeBool(['--enable-arm-simulator'], 0.3, 0,
-                  dest='enableArmSimulator',
-                  help='Build shells with --enable-arm-simulator, only applicable to 32-bit shells. ' +
-                  'Defaults to "%(default)s".')
+    if not sps.isARMv7l:
+        randomizeBool(['--enable-simulator=arm'], 0.3, 0,
+                      dest='enableSimulatorArm32',
+                      help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
+                      'Defaults to "%(default)s".')
+        randomizeBool(['--enable-simulator=arm64'], 0.3, 0,
+                      dest='enableSimulatorArm64',
+                      help='Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. ' +
+                      'Defaults to "%(default)s".')
 
     return parser, randomizer
 
@@ -174,9 +179,8 @@ def computeShellType(buildOptions):
         fileName.append('vg')
     if buildOptions.enableNsprBuild:
         fileName.append('nsprBuild')
-    if buildOptions.enableSimulator:
-        assert buildOptions.enableSimulator in ['arm', 'arm64', 'mips']
-        fileName.append(buildOptions.enableSimulator)
+    if buildOptions.enableSimulatorArm32 or buildOptions.enableSimulatorArm64:
+        fileName.append('armSim')
     if sps.isARMv7l:
         fileName.append('armhfp' if buildOptions.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
@@ -238,13 +242,16 @@ def areArgsValid(args):
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
-    if args.enableSimulator:
-        if sps.isARMv7l:
-            return False, 'We cannot run the ARM simulator in an ARM build.'
+    if args.enableSimulatorArm32 or args.enableSimulatorArm64:
+        return False, 'Stop testing ARM-simulators until rev 25e99bc12482 lands on m-c.'
         if sps.isWin:
             return False, 'Nobody runs the ARM simulator on Windows.'
-        if not args.enable32:  # Remove this when we have the ARM64 simulator builds
-            return False, 'The ARM simulator builds are only for 32-bit binaries.'
+        if args.enableSimulatorArm32 and not args.enable32:
+            return False, 'The 32-bit ARM simulator builds are only for 32-bit binaries.'
+        if args.enableSimulatorArm64 and args.enable32:
+            return False, 'The 64-bit ARM simulator builds are only for 64-bit binaries.'
+        if args.enableSimulatorArm64 and not args.enable32:
+            return False, 'The 64-bit ARM simulator builds are not ready for testing yet.'
 
     return True, ''
 

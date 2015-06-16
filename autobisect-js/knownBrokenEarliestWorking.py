@@ -92,17 +92,6 @@ def knownBrokenRanges(options):
             hgrange('1d672188b8aa', 'ea7dabcd215e'),  # Fx40, see bug 1149739
         ])
 
-    if options.enableArmSimulator:
-        skips.extend([
-            hgrange('b0e9b9113cb0', 'ce52eb68bc21'),  # Fx38, broken ARM-simulator, occasionally Mac
-        ])
-
-    if sps.isMac and options.enableArmSimulator:
-        skips.extend([
-            hgrange('b2904e8f07e7', '814e2c0ad479'),  # Fx39, broken ARM-simulator for Mac
-            hgrange('a4650f2e28a2', 'cb25e0475da5'),  # Fx40, broken ARM-simulator for Mac
-        ])
-
     return skips
 
 
@@ -136,6 +125,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if options.enableSimulatorArm32 or options.enableSimulatorArm64:
+        required.append('25e99bc12482')  # m-c XXXXXX Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if '--non-writable-jitcode' in flags:
         required.append('b46d6692fe50')  # m-c 248578 Fx41, 1st w/--non-writable-jitcode, see bug 977805
     if '--ion-extra-checks' in flags:
@@ -164,8 +155,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('f0d67b1ccff9')  # m-c 188901 Fx33, 1st w/--ion-offthread-compile=off, see bug 1020364
     if '--no-native-regexp' in flags:
         required.append('43acd23f5a98')  # m-c 183413 Fx32, 1st w/--no-native-regexp, see bug 976446
-    if options.enableArmSimulator:
-        required.append('5ad5f92387a2')  # m-c 179476 Fx31, 1st w/relevant getBuildConfiguration entry, see bug 998596
     if sps.isWin:
         required.append('abfaf0ccae19')  # m-c 169626 Fx30, 1st w/reliably successful Win builds, see bug 974739
     if sps.isMac:
