@@ -64,9 +64,9 @@ class CompiledShell(object):
         self.destDir = ''
         self.addedEnv = ''
         self.fullEnv = ''
-        self.jsBuildSystemConsidersNspr = ''
+        self.jsBuildSystemConsidersNspr = None
         self.jsCfgFile = ''
-        self.jsUsesNoThreadsFlag = ''
+        self.jsUsesNoThreadsFlag = None
         self.nsprCfgFile = ''
 
     def getCfgCmdExclEnv(self):
