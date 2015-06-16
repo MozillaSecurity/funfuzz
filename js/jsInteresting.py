@@ -231,21 +231,16 @@ def deleteLogs(logPrefix):
 
 def ulimitSet():
     '''When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX.'''
-    # Adapted in part from bug 573646 and the following:
-    #   https://hg.mozilla.org/mozilla-central/file/6a63bcb6e0d3/js/src/tests/lib/tests.py#l27
     import resource  # module only available on POSIX
+
+    # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30
     if sps.isARMv7l:
-        # ODROID boards only have 2GB RAM, so restrict to half of it.
         resource.setrlimit(resource.RLIMIT_AS, (1*GB, 1*GB))
     else:
         resource.setrlimit(resource.RLIMIT_AS, (2*GB, 2*GB))
 
-    # Sets soft limit of corefile size to be half a GB in child process,
-    # after fork() but before exec(), only on POSIX platforms (Linux / Mac).
-    # See http://stackoverflow.com/a/1689991
-    # Do not use 1/2*GB, see http://stackoverflow.com/a/2958717
-    # float(1)/2*GB, or 0.5*GB (these 2 result in floats) or GB/2 (results in int)
+    # Limit corefiles to 0.5 GB.
     halfGB = int(GB / 2)
     resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
 
