@@ -44,6 +44,9 @@ class S3Cache(object):
 
     def connect(self):
         '''Connects to the S3 bucket.'''
+        if not isBoto:
+            return False
+
         EC2_PROFILE = None if isEC2VM() else 'laniakea'
         try:
             conn = S3Connection(profile_name=EC2_PROFILE)
