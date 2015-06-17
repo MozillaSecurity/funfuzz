@@ -169,6 +169,8 @@ def randomFlagSet(shellPath):
         # The stupid allocator isn't used by default and devs prefer not to have to fix fuzzbugs
         #if shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
             #args.append('--ion-regalloc=stupid')
+        if shellSupportsFlag(shellPath, '--ion-regalloc=testbed') and chance(.2):
+            args.append('--ion-regalloc=testbed')
         if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
             if chance(.3):
                 args.append('--ion-check-range-analysis')
