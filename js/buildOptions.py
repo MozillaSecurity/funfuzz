@@ -243,7 +243,6 @@ def areArgsValid(args):
             return False, 'Asan is not yet supported on Windows.'
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
-        return False, 'Stop testing ARM-simulators until rev 25e99bc12482 lands on m-c.'
         if sps.isWin:
             return False, 'Nobody runs the ARM simulator on Windows.'
         if args.enableSimulatorArm32 and not args.enable32:

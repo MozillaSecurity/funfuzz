@@ -126,7 +126,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     required = []
 
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
-        required.append('25e99bc12482')  # m-c XXXXXX Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
+        required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:
         required.append('47e92bae09fd')  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
     if '--non-writable-jitcode' in flags:
