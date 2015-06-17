@@ -141,11 +141,6 @@ def testBinary(shellPath, args, useValgrind):
     return out, rCode
 
 
-def testGetBuildConfiguration(s):
-    '''This function tests if a binary supports getBuildConfiguration().'''
-    return shellSupports(s, ['-e', 'getBuildConfiguration()'])
-
-
 def testJsShellOrXpcshell(s):
     '''This function tests if a binary is a js shell or xpcshell.'''
     return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
@@ -180,8 +175,8 @@ def verifyBinary(sh):
 
     if sps.isARMv7l:
         assert testIsHardFpShellARM(binary) == sh.buildOptions.enableHardFp
-    if testGetBuildConfiguration(binary):
-        assert queryBuildConfiguration(binary, 'more-deterministic') == sh.buildOptions.enableMoreDeterministic
-        assert queryBuildConfiguration(binary, 'asan') == sh.buildOptions.buildWithAsan
-        assert (queryBuildConfiguration(binary, 'arm-simulator') and sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
-        assert (queryBuildConfiguration(binary, 'arm-simulator') and not sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
+
+    assert queryBuildConfiguration(binary, 'more-deterministic') == sh.buildOptions.enableMoreDeterministic
+    assert queryBuildConfiguration(binary, 'asan') == sh.buildOptions.buildWithAsan
+    assert (queryBuildConfiguration(binary, 'arm-simulator') and sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
+    assert (queryBuildConfiguration(binary, 'arm-simulator') and not sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
