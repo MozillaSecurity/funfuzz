@@ -172,6 +172,12 @@ def dateStr():
     return time.asctime()
 
 
+def disableCorefile():
+    '''When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX.'''
+    import resource  # module only available on POSIX
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+
+
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     '''Finds the required crash log in the given crash reporter directory.'''
     assert platform.system() == 'Darwin' and macVer() >= [10, 6]
@@ -251,7 +257,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
             stdout=open(logPrefix + "-crash.txt", 'w') if useLogFiles else None,
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
-            close_fds=(os.name == "posix")
+            close_fds=(os.name == "posix"),
+            preexec_fn=(disableCorefile if os.name == 'posix' else None)  # Do not generate a corefile if gdb crashes
         )
         if useLogFiles:
             if os.path.isfile(normExpUserPath(debuggerCmd[-1])):
