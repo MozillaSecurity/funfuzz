@@ -125,7 +125,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
-    if options.enableSimulatorArm32 or options.enableSimulatorArm64:
+    if options.enableSimulatorArm64:
+        # This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
         required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:
         required.append('47e92bae09fd')  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
@@ -157,6 +158,10 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('f0d67b1ccff9')  # m-c 188901 Fx33, 1st w/--ion-offthread-compile=off, see bug 1020364
     if '--no-native-regexp' in flags:
         required.append('43acd23f5a98')  # m-c 183413 Fx32, 1st w/--no-native-regexp, see bug 976446
+    if options.enableSimulatorArm32:
+        # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
+        # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
+        required.append('5ad5f92387a2')  # m-c 179476 Fx31, see bug 1173992
     if sps.isWin:
         required.append('abfaf0ccae19')  # m-c 169626 Fx30, 1st w/reliably successful Win builds, see bug 974739
     if sps.isMac:
