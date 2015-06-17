@@ -28,7 +28,7 @@ isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
 isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
 # isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # For MozillaBuild 2.0.0
 
-noMinidumpMsg = '''
+noMinidumpMsg = r'''
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
 WARNING: Make sure the following key value exists in this key:
 WARNING: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps
@@ -84,27 +84,29 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         vdump('ENV_VARIABLES_WERE_ADDED_HERE ' + shellify(inputCmd))
     cmd = []
     for el in inputCmd:
-        if (el.startswith('"') and el.endswith('"')):
+        if el.startswith('"') and el.endswith('"'):
             cmd.append(str(el[1:-1]))
         else:
             cmd.append(str(el))
     assert cmd != []
     try:
-        p = subprocess.Popen(cmd,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.STDOUT if combineStderr else subprocess.PIPE,
-            cwd=currWorkingDir, env=env)
+        p = subprocess.Popen(
+            cmd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT if combineStderr else subprocess.PIPE,
+            cwd=currWorkingDir,
+            env=env)
         (stdout, stderr) = p.communicate()
     except OSError, e:
         raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
     if p.returncode != 0:
         oomErrorOutput = stdout if combineStderr else stderr
         if (isLinux or isMac) and oomErrorOutput:
-                if 'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
-                    raise Exception('GCC running out of memory')
-                elif 'error: unable to execute command: Killed' in oomErrorOutput:
-                    raise Exception('Clang running out of memory')
+            if 'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
+                raise Exception('GCC running out of memory')
+            elif 'error: unable to execute command: Killed' in oomErrorOutput:
+                raise Exception('Clang running out of memory')
         if not ignoreExitCode:
             # Potential problem area: Note that having a non-zero exit code does not mean that the
             # operation did not succeed, for example when compiling a shell. A non-zero exit code
@@ -119,8 +121,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
                 print 'stderr is:'
                 print stderr
             # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
-            if 'hg pull: option --rebase not recognized' not in stdout and \
-              'no such option: -s' not in stdout:
+            if 'hg pull: option --rebase not recognized' not in stdout and 'no such option: -s' not in stdout:
                 if isWin and stderr and 'Permission denied' in stderr and \
                         'configure: error: installation or configuration problem: ' + \
                         'C++ compiler cannot create executables.' in stderr:
@@ -192,7 +193,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
             crashLogs = []
         # Firefox sometimes still runs as firefox-bin, at least on Mac (likely bug 658850)
         crashLogs = [x for x in crashLogs
-                     if (x.startswith(progname + '_') or x.startswith(progname + '-bin_'))]
+                     if x.startswith(progname + '_') or x.startswith(progname + '-bin_')]
         crashLogs.sort(reverse=True)
         for fn in crashLogs:
             fullfn = os.path.join(reportDir, fn)
@@ -230,27 +231,27 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
         if os.path.exists(logPrefix + "-core"):
             os.remove(logPrefix + "-core")
 
-    if wantStack == False or progname == "valgrind":
+    if not wantStack or progname == "valgrind":
         return
 
     # This has only been tested on 64-bit Windows 7 and higher, but should work on 64-bit Vista.
     if isWinVistaOrHigher and isWin64:
-       debuggerCmd = constructCdbCommand(progfullname, crashedPID)
+        debuggerCmd = constructCdbCommand(progfullname, crashedPID)
     elif os.name == 'posix':
-       debuggerCmd = constructGdbCommand(progfullname, crashedPID)
+        debuggerCmd = constructGdbCommand(progfullname, crashedPID)
     else:
-       debuggerCmd = None
+        debuggerCmd = None
 
     if debuggerCmd:
         vdump(' '.join(debuggerCmd))
         subprocess.call(
             debuggerCmd,
-            stdin =  None,
-            stderr = subprocess.STDOUT,
-            stdout = open(logPrefix + "-crash.txt", 'w') if useLogFiles else None,
+            stdin=None,
+            stderr=subprocess.STDOUT,
+            stdout=open(logPrefix + "-crash.txt", 'w') if useLogFiles else None,
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
-            close_fds = (os.name == "posix")
+            close_fds=(os.name == "posix")
         )
         if useLogFiles:
             if os.path.isfile(normExpUserPath(debuggerCmd[-1])):
@@ -291,8 +292,8 @@ def constructCdbCommand(progfullname, crashedPID):
     stack trace.
     '''
     # On Windows Vista and above, look for a minidump.
-    dumpFilename = normExpUserPath(os.path.join('~', 'AppData', 'Local', 'CrashDumps',
-                    os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
+    dumpFilename = normExpUserPath(os.path.join(
+        '~', 'AppData', 'Local', 'CrashDumps', os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
     win64bitDebuggerFolder = os.path.join(os.getenv('PROGRAMW6432'), 'Debugging Tools for Windows (x64)')
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdbPath = os.path.join(win64bitDebuggerFolder, 'cdb.exe')
@@ -416,8 +417,8 @@ def getAbsPathForAdjacentFile(filename):
 
 def isProgramInstalled(program):
     '''Checks if the specified program is installed.'''
-    return (captureStdout(['which', program],
-        ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1] == 0)
+    whichExit = captureStdout(['which', program], ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1]
+    return whichExit == 0
 
 
 def rmDirIfEmpty(eDir):
@@ -475,8 +476,8 @@ def normExpUserPath(p):
 
 def shellify(cmd):
     """Try to convert an arguments array to an equivalent string that can be pasted into a shell."""
-    okUnquotedRE = re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
-    okQuotedRE =   re.compile("""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
+    okUnquotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
+    okQuotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
     ssc = []
     for i in xrange(len(cmd)):
         item = cmd[i]
@@ -508,11 +509,14 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
 
 class Unbuffered:
     '''From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u.'''
+
     def __init__(self, stream):
         self.stream = stream
+
     def write(self, data):
         self.stream.write(data)
         self.stream.flush()
+
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
