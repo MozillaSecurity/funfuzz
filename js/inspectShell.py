@@ -171,21 +171,17 @@ def testIsHardFpShellARM(s):
 
 def verifyBinary(sh):
     '''Verifies that the binary is compiled as intended.'''
-    assert archOfBinary(sh.getShellCacheFullPath()) == \
-        ('32' if sh.buildOptions.enable32 else '64')
+    binary = sh.getShellCacheFullPath()
+
+    assert archOfBinary(binary) == ('32' if sh.buildOptions.enable32 else '64')
 
     # Testing for debug or opt builds are different because there can be hybrid debug-opt builds.
-    assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'debug') == \
-        sh.buildOptions.enableDbg
+    assert queryBuildConfiguration(binary, 'debug') == sh.buildOptions.enableDbg
 
     if sps.isARMv7l:
-        assert testIsHardFpShellARM(sh.getShellCacheFullPath()) == sh.buildOptions.enableHardFp
-    if testGetBuildConfiguration(sh.getShellCacheFullPath()):
-        assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'more-deterministic') == \
-            sh.buildOptions.enableMoreDeterministic
-        assert queryBuildConfiguration(sh.getShellCacheFullPath(), 'asan') == \
-            sh.buildOptions.buildWithAsan
-        assert (queryBuildConfiguration(sh.getShellCacheFullPath(), 'arm-simulator') and
-                sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
-        assert (queryBuildConfiguration(sh.getShellCacheFullPath(), 'arm-simulator') and not
-                sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
+        assert testIsHardFpShellARM(binary) == sh.buildOptions.enableHardFp
+    if testGetBuildConfiguration(binary):
+        assert queryBuildConfiguration(binary, 'more-deterministic') == sh.buildOptions.enableMoreDeterministic
+        assert queryBuildConfiguration(binary, 'asan') == sh.buildOptions.buildWithAsan
+        assert (queryBuildConfiguration(binary, 'arm-simulator') and sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
+        assert (queryBuildConfiguration(binary, 'arm-simulator') and not sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
