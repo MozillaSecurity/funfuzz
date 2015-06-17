@@ -250,7 +250,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
 
     if debuggerCmd:
         vdump(' '.join(debuggerCmd))
-        subprocess.call(
+        debuggerExitCode = subprocess.call(
             debuggerCmd,
             stdin=None,
             stderr=subprocess.STDOUT,
@@ -260,6 +260,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
             close_fds=(os.name == "posix"),
             preexec_fn=(disableCorefile if os.name == 'posix' else None)  # Do not generate a corefile if gdb crashes
         )
+        if debuggerExitCode != 0:
+            print 'Debugger exited with code %d : %s' % (debuggerExitCode, shellify(debuggerCmd))
         if useLogFiles:
             if os.path.isfile(normExpUserPath(debuggerCmd[-1])):
                 # Path to memory dump is the last element of debuggerCmd.
