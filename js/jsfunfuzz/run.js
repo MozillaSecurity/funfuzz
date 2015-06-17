@@ -54,16 +54,16 @@ var realToSource = this.toSource; // "this." because it only exists in spidermon
 
 function tryEnsureSanity()
 {
-  /*
+  // The script might have set up oomAfterAllocations or oomAtAllocation.
+  // Turn it off so we can test only generated code with it.
   try {
-    // The script might have set up oomAfterAllocations.  "Turn it off" so we can test it only generated code with it.
-    if (typeof oomAfterAllocations == "function")
-      oomAfterAllocations(0x7fffffff);
+    if (typeof resetOOMFailure == "function")
+      resetOOMFailure();
   } catch(e) { }
-  */
 
   try {
-    // The script might have turned on gczeal.  Turn it back off right away to avoid slowness.
+    // The script might have turned on gczeal.
+    // Turn it off to avoid slowness.
     if (typeof gczeal == "function")
       gczeal(0);
   } catch(e) { }

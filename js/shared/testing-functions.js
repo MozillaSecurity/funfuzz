@@ -128,10 +128,16 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
     { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
 
-    // [TestingFunctions.cpp, but CRASHY] After N js_malloc memory allocations, fail every following allocation
-    //{ w: 1,  v: function(d, b) { return prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");"; } },
+    // [TestingFunctions.cpp, but CRASHY]
+    // After N js_malloc memory allocations, fail every following allocation
+    { w: 1,  v: function(d, b) { return (rnd(1000) === 0) ? prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
+    // After N js_malloc memory allocations, fail one allocation
+    { w: 1,  v: function(d, b) { return (rnd(100) === 0) ? prefix + "oomAtAllocation" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
+    // Reset either of the above
+    { w: 1,  v: function(d, b) { return "void " + prefix + "resetOOMFailure" + "(" + ");"; } },
 
-    // [TestingFunctions.cpp, but SLOW] Make garbage collection extremely frequent
+    // [TestingFunctions.cpp, but SLOW]
+    // Make garbage collection extremely frequent
     { w: 1,  v: function(d, b) { return (rnd(100) === 0) ? (enableGCZeal()) : "void 0;"; } },
   ];
 

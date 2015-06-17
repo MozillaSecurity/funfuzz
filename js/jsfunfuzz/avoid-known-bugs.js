@@ -29,6 +29,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("load") == -1                      // load()ed regression test might output dates, etc
        && code.indexOf("offThreadCompileScript") == -1    // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("oomAfterAllocations") == -1
+       && code.indexOf("oomAtAllocation") == -1
        && code.indexOf("printProfilerEvents") == -1       // causes diffs in --ion-eager vs --baseline-eager
        && code.indexOf("inIon") == -1                     // may become true after several iterations, or return a string with --no-ion
        && code.indexOf("inJit") == -1                     // may become true after several iterations, or return a string with --no-baseline
