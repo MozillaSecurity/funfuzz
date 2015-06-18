@@ -1,9 +1,9 @@
-DOMFuzz tests layout and other parts of browser engines through DOM API calls. Some modules lean more toward "mutation" and others lean more toward "generation", but all act on the DOM of a web page.
+DOMFuzz tests layout and other parts of browser engines through DOM API calls. Some [modules](fuzzer/modules/) lean more toward "mutation" and others lean more toward "generation", but all act on the DOM of a web page.
 
 For each instance of Firefox, up to 4 modules will be chosen and enabled. Modules include:
 * [Stir DOM](fuzzer/modules/stir-dom.js), which moves nodes around the document tree using appendChild and insertBefore.
 * [Random Styles](fuzzer/modules/style-properties.js), which adds inline style properties.
-*
+
 
 ## Setup
 
@@ -31,7 +31,8 @@ Quick start:
 fuzzing/util/downloadBuild.py && fuzzing/util/multi.py 8 fuzzing/dom/automation/loopdomfuzz.py build
 ```
 
-# Contributors
+
+## Contributors
 
 * Paul Nickerson contributed a module for testing CanvasRenderingContext2D and prototyped serializeDOMAsScript
 * Christoph Diehl contributed a bunch of modules

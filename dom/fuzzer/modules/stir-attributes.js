@@ -58,3 +58,5 @@ var fuzzerStirAttributes = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerStirAttributes", 2);

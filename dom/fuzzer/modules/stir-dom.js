@@ -42,3 +42,5 @@ var fuzzerStirDOM = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerStirDOM", 30);

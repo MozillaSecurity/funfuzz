@@ -276,3 +276,5 @@ var fuzzerMathMLAttributes = (function() {
      attrList: getKeysFromHash(attributes)
   };
 })();
+
+registerModule("fuzzerMathMLAttributes", 2);

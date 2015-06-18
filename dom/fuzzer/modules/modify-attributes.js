@@ -27,3 +27,5 @@ var fuzzerModifyAttributes = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerModifyAttributes", 4);

@@ -20,3 +20,5 @@ var fuzzerInnerHTML = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerInnerHTML", 1);

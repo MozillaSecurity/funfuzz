@@ -91,3 +91,5 @@ var fuzzerSlurpFrames = (function() {
 
   return { makeCommand: makeCommand, slurpSoon: slurpSoon, slurp: slurp };
 })();
+
+registerModule("fuzzerSlurpFrames", 3);

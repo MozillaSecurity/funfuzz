@@ -30,3 +30,5 @@ var fuzzerEventLoop = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerEventLoop", 1);

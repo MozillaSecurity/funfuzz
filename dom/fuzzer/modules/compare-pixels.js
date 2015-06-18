@@ -31,3 +31,5 @@ var fuzzerComparePixels = (function() {
   }
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerComparePixels", 1);

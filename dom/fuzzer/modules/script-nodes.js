@@ -18,3 +18,5 @@ var fuzzerNewScriptNodes = (function() {
     makeCommand: makeCommand,
   };
 })();
+
+registerModule("fuzzerNewScriptNodes", 3);

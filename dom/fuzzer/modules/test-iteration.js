@@ -49,3 +49,5 @@
     testObjectIteration: testObjectIteration,
   };
 })();
+
+registerModule("fuzzerTestIteration", 1);

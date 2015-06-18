@@ -308,3 +308,5 @@ var fuzzerSVGAttributes = (function() {
     attrList: getKeysFromHash(attributes)
   };
 })();
+
+registerModule("fuzzerSVGAttributes", 2);

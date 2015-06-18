@@ -24,3 +24,5 @@ var fuzzerCloneNode = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerCloneNode", 1);

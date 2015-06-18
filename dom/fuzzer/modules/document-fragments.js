@@ -1,5 +1,3 @@
-
-
 var fuzzerDocumentFragments = (function(){
   function makeCommand()
   {
@@ -16,3 +14,5 @@ var fuzzerDocumentFragments = (function(){
   }
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerDocumentFragments", 2);

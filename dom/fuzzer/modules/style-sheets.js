@@ -628,3 +628,5 @@ var fuzzerRandomClasses = (function() {
     propertyValue: propertyValue,            // Used by fuzzerCanvas
   };
 })();
+
+registerModule("fuzzerRandomClasses", 3);

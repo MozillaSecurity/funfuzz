@@ -131,3 +131,5 @@ var fuzzerContentEditable = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerContentEditable", 1);

@@ -39,3 +39,5 @@ var fuzzerChromeCode = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerChromeCode", 5);

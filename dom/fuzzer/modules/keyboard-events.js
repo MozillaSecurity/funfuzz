@@ -118,3 +118,5 @@ var fuzzerFakeEvents = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerFakeEvents", 1);

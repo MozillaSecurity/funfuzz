@@ -21,3 +21,4 @@ var fuzzerRepeat = (function() {
   };
 })();
 
+registerModule("fuzzerRepeat", 1);

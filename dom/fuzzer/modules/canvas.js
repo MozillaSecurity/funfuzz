@@ -1,6 +1,3 @@
-
-
-
 var fuzzerCanvas = (function() {
 
   var myCanvas = null;
@@ -228,3 +225,4 @@ var fuzzerCanvas = (function() {
   return { makeCommand: makeCommand };
 })();
 
+registerModule("fuzzerCanvas", 5);

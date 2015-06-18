@@ -9,3 +9,5 @@ var fuzzerChangeRoot = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerChangeRoot", 2);

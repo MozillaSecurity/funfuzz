@@ -65,3 +65,5 @@ var fuzzerDOMCSS = (function() {
     makeCommand: makeCommand,
   };
 })();
+
+registerModule("fuzzerDOMCSS", 1);

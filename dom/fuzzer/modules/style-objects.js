@@ -34,3 +34,5 @@ var fuzzerDOMStyle = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerDOMStyle", 1);

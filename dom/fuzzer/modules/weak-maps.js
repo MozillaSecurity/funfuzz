@@ -70,3 +70,5 @@ var fuzzerWeakMaps = (function() {
 
   return { makeCommand: makeCommand, checkDetermism: checkDetermism };
 })();
+
+registerModule("fuzzerWeakMaps", 1);

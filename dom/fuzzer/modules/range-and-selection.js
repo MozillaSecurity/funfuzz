@@ -146,3 +146,5 @@ var fuzzerRangeAndSelection = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerRangeAndSelection", 1);

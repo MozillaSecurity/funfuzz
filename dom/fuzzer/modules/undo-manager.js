@@ -86,3 +86,5 @@ var fuzzerUndoManager = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerUndoManager", 3);

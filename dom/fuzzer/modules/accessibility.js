@@ -7,3 +7,5 @@ var fuzzerAccessibility = (function() {
   }
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerAccessibility", 5);

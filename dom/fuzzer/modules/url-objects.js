@@ -72,3 +72,5 @@ var fuzzerURLObjects = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerURLObjects", 3);

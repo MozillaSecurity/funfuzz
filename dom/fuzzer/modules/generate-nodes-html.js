@@ -354,3 +354,5 @@ var fuzzerHTMLAttributes = (function() {
            attrList: getKeysFromHash(attributes)
          };
 })();
+
+registerModule("fuzzerHTMLAttributes", 2);

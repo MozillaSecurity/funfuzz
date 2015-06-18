@@ -25,3 +25,5 @@ var fuzzerTextboxes = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerTextboxes", 1);

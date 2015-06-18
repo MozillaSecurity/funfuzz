@@ -293,3 +293,5 @@ var fuzzerWebIDL = (function () {
   };
 
 })();
+
+registerModule("fuzzerWebIDL", 30);

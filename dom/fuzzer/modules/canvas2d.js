@@ -353,3 +353,5 @@ var fuzzerCanvas2D = (function() {
     makeCommand: makeCommand,
   };
 })();
+
+registerModule("fuzzerCanvas2D", 20);

@@ -128,3 +128,5 @@ var fuzzerChars = (function() {
     randomQuotedString: randomQuotedString
   };
 })();
+
+registerModule("fuzzerChars", 20);

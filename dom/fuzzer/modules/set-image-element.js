@@ -7,3 +7,5 @@ var fuzzerMozSetImageElement = (function() {
   }
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerMozSetImageElement", 1);

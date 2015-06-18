@@ -46,3 +46,5 @@ var fuzzerTestingFunctions = (function() {
     makeTestingFunctionCall: makeTestingFunctionCall
   };
 })();
+
+registerModule("fuzzerTestingFunctions", 5);

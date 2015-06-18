@@ -360,3 +360,5 @@ var fuzzerStirTable = (function() {
   };
 
 })();
+
+registerModule("fuzzerStirTable", 2);

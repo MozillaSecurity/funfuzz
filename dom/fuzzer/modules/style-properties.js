@@ -24,3 +24,5 @@ var fuzzerRandomStyles = (function() {
 
   return { makeCommand: makeCommand };
 })();
+
+registerModule("fuzzerRandomStyles", 30);
