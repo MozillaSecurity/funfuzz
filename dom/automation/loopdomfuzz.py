@@ -30,7 +30,8 @@ urlListFilename = "urls-reftests"  # XXX make this "--urls=..." somehow
 def linkFuzzer(target_fn):
     file_list_fn = os.path.join(fuzzingDomDir, "fuzzer", "files-to-link.txt")
     source_base = os.path.join(fuzzingDomDir, "fuzzer")
-    linkJS.linkJS(target_fn, file_list_fn, source_base)
+    module_base = os.path.join(fuzzingDomDir, "fuzzer", "modules")
+    linkJS.linkJS(target_fn, file_list_fn, source_base, module_dirs=[module_base])
 
 
 # If targetTime is None, this loops forever.
