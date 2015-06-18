@@ -24,7 +24,7 @@ from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLines
 import lithOps
 import linkJS
 
-urlListFilename = "urls-reftests" # XXX make this "--urls=..." somehow
+urlListFilename = "urls-reftests"  # XXX make this "--urls=..." somehow
 
 
 def linkFuzzer(target_fn):
@@ -73,25 +73,25 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
             print "loopdomfuzz.py: will try reducing from " + url
             rFN = createReproFile(fuzzerJS, extraPrefs, lines, logPrefix)
             if platform.system() == "Windows":
-                rFN = rFN.replace("/","\\") # Ensure both Lithium and Firefox understand the filename
+                rFN = rFN.replace("/", "\\")  # Ensure both Lithium and Firefox understand the filename
             extraRDFArgs = ["--valgrind"] if options.valgrind else []
             lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
             (lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
             if lithresult == lithOps.LITH_NO_REPRO:
                 os.remove(rFN)
                 print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
-                level2, lines2 = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs=extraPrefs)
+                level2, _ = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs=extraPrefs)
                 if level2 > domInteresting.DOM_FINE:
                     print "%%% Lithium can't reproduce, but I can!"
                     with open(logPrefix + "-repro-only.txt", "w") as reproOnlyFile:
                         reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
-                        reproOnlyFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
+                        reproOnlyFile.write(domInterestingpy + " " + browserDir + " " + url + "\n")
                     lithresult = lithOps.NO_REPRO_EXCEPT_BY_URL
                 else:
                     print "%%% Lithium can't reproduce, and neither can I."
                     with open(logPrefix + "-sorry.txt", "w") as sorryFile:
                         sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
-                        sorryFile.write(domInterestingpy  + " " + browserDir + " " + url + "\n")
+                        sorryFile.write(domInterestingpy + " " + browserDir + " " + url + "\n")
                     lithresult = lithOps.NO_REPRO_AT_ALL
             print ""
             if targetTime:
@@ -99,6 +99,7 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
 
         if options.argURL:
             break
+
 
 # Stuffs "lines" into a fresh file, which Lithium should be able to reduce.
 # Returns the name of the repro file.
@@ -140,12 +141,12 @@ def createReproFile(fuzzerJS, extraPrefs, lines, logPrefix):
             "// DDBEGIN\n"
         ]
     quittage = [
-      extraPrefs,
-      "// DDEND\n",
-      "fuzzCommands.push({origCount: 8888, rest: true, timeout: 3000});\n",
-      "fuzzCommands.push({origCount: 9999, fun: function() { fuzzPriv.quitApplication(); } });\n"
-      "\n",
-      "function user_pref() { /* Allow randomPrefs.py to parse user_pref lines from this file */ }\n",
+        extraPrefs,
+        "// DDEND\n",
+        "fuzzCommands.push({origCount: 8888, rest: true, timeout: 3000});\n",
+        "fuzzCommands.push({origCount: 9999, fun: function() { fuzzPriv.quitApplication(); } });\n"
+        "\n",
+        "function user_pref() { /* Allow randomPrefs.py to parse user_pref lines from this file */ }\n",
     ]
     linesToWrite = possibleDoctype + wbefore + jbefore + fuzzlines + quittage + jafter + wafter
 
@@ -157,12 +158,13 @@ def createReproFile(fuzzerJS, extraPrefs, lines, logPrefix):
 
     return rFN
 
+
 def getURLs(reftestFilesDir):
     URLs = []
 
     with open(os.path.join(p0, urlListFilename)) as urlfile:
         for line in urlfile:
-            if (not line.startswith("#") and len(line) > 2):
+            if not line.startswith("#") and len(line) > 2:
                 if urlListFilename == "urls-reftests":
                     localPath = os.path.join(reftestFilesDir, line.rstrip())
                     # This has to be a file: URL (rather than just a path) so the "#" will be interpreted as a hash-part
@@ -172,8 +174,10 @@ def getURLs(reftestFilesDir):
 
     return URLs
 
+
 def asFileURL(localPath):
     return "file:" + urllib.pathname2url(localPath)
+
 
 def randomHash():
     metaSeed = random.randint(0, 2**32 - 1)
@@ -201,9 +205,11 @@ def randomHash():
 
     return "#fuzz=" + str(metaSeed) + ",0," + str(metaPer) + "," + str(metaInterval) + "," + str(metaMax) + ",0"
 
+
 def afterColon(s):
-    (head, sep, tail) = s.partition(": ")
+    tail = s.partition(": ")[2]
     return tail.strip()
+
 
 if __name__ == "__main__":
     many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], quiet=False)
