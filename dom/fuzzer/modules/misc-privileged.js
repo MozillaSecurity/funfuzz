@@ -1,15 +1,3 @@
-
-var fuzzerAccessibility = (function() {
-  function makeCommand()
-  {
-    if (rnd(100) === 0)
-      return "fuzzPriv.enableAccessibility();";
-    return [];
-  }
-  return { makeCommand: makeCommand };
-})();
-
-
 var fuzzerChromeCode = (function() {
 
   function windowSize()
