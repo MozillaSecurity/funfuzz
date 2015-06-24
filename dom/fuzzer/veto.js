@@ -49,7 +49,6 @@ function fuzzInitBlacklists()
                 "autoplay",          // bug 573426 (windows only)
                 "shadow",            // bug 595042
                 "filter",            // bug 612213
-                "title",             // rdar://8706039
                 "window.open",       // bug 622218
                 "showModalDialog",   // bug 622218?
                 "position",          // bug 622314
