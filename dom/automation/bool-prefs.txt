@@ -128,6 +128,7 @@ dom.telephony.enabled
 dom.udpsocket.enabled
 dom.undo_manager.enabled
 dom.url.encode_decode_hash
+dom.url.getters_decode_hash
 dom.wakelock.enabled
 dom.workers.enabled
 editor.use_css
