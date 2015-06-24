@@ -24,8 +24,6 @@ function fuzzInitBlacklists()
                 "\"length",          // bug 346268, fuzzerRandomJS hang
                 "fuzzerRandomJS",    // Gigantic arrays, destructiveAndAnnoying
                 "uneval",            // Gigantic arrays are sadmaking
-                "frame",             // setting src can toss up a dialog (bug 331334)
-                "iframe",            // setting src can toss up a dialog (bug 331334)
                 "ftp:",              // bug 250098 (modal dialog interpreted as a hang)
                 "beforeunload",      // dialog on attempt to quit
                 "defineProperty",    // can accidentally create multiple-infinite-recursion
