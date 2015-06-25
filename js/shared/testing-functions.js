@@ -128,13 +128,13 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
     { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
 
-    // [TestingFunctions.cpp, but CRASHY]
+    // [TestingFunctions.cpp, but debug-only and CRASHY]
     // After N js_malloc memory allocations, fail every following allocation
-    { w: 1,  v: function(d, b) { return (rnd(1000) === 0) ? prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
+    { w: 1,  v: function(d, b) { return (typeof oomAfterAllocations == "function" && rnd(1000) === 0) ? prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
     // After N js_malloc memory allocations, fail one allocation
-    { w: 1,  v: function(d, b) { return (rnd(100) === 0) ? prefix + "oomAtAllocation" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
+    { w: 1,  v: function(d, b) { return (typeof oomAtAllocation == "function" && rnd(100) === 0) ? prefix + "oomAtAllocation" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
     // Reset either of the above
-    { w: 1,  v: function(d, b) { return "void " + prefix + "resetOOMFailure" + "(" + ");"; } },
+    { w: 1,  v: function(d, b) { return (typeof resetOOMFailure == "function") ? "void " + prefix + "resetOOMFailure" + "(" + ");" : "void 0;"; } },
 
     // [TestingFunctions.cpp, but SLOW]
     // Make garbage collection extremely frequent
