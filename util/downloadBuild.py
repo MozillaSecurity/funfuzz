@@ -19,12 +19,13 @@ useCurl = False
 # Another bug for Windows??
 wgetMaybeNCC = ['--no-check-certificate']
 
+
 def readFromURL(url):
     '''
     Reads in a URL and returns its contents as a list.
     '''
     inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', '-', url]
-    p = subprocess.Popen(inpCmdList, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    p = subprocess.Popen(inpCmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if not useCurl and p.returncode == 5:
         print 'Unable to read from URL. If you installed wget using MacPorts, you should put ' + \
@@ -40,6 +41,7 @@ def readFromURL(url):
         # Ignore whatever verbose output wget spewed to stderr.
         return out
 
+
 def downloadURL(url, dest):
     '''
     Reads in a URL and downloads it to a destination.
@@ -51,20 +53,21 @@ def downloadURL(url, dest):
         raise Exception('Return code is not 0, but is: ' + str(retVal))
     return dest
 
+
 def parseOptions():
     usage = 'Usage: %prog [options]'
     parser = OptionParser(usage)
     parser.disable_interspersed_args()
 
     parser.set_defaults(
-        compileType = 'dbg',
-        downloadFolder = os.getcwdu(),
-        repoName = 'mozilla-central',
-        enableJsShell = False,
+        compileType='dbg',
+        downloadFolder=os.getcwdu(),
+        repoName='mozilla-central',
+        enableJsShell=False,
     )
 
     parser.add_option('-c', '--compiletype', dest='compileType',
-                      help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' + \
+                      help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' +
                            'Defaults to "%default".')
     parser.add_option('-a', '--architecture',
                       dest='arch',
@@ -72,12 +75,12 @@ def parseOptions():
                       choices=['32', '64'],
                       help='Test architecture. Only accepts "32" or "64"')
     parser.add_option('-w', '--downloadfolder', dest='downloadFolder',
-                      help='Sets the folder to download builds in. Defaults to the current ' + \
+                      help='Sets the folder to download builds in. Defaults to the current ' +
                            'working directory, which is "%default".')
     parser.add_option('-r', '--repoName', dest='repoName',
                       help='Sets the repository to be fuzzed. Defaults to "%default".')
     parser.add_option('-d', '--remotedir', dest='remoteDir',
-                      help='Sets the remote directory from which the files are to be obtained ' + \
+                      help='Sets the remote directory from which the files are to be obtained ' +
                            'from. The default is to grab the latest from mozilla-central.')
     parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
                       help='Sets the compile type to be fuzzed. Defaults to "%default".')
@@ -87,7 +90,9 @@ def parseOptions():
     assert len(args) == 0
     return options
 
+
 class MyHTMLParser(HTMLParser):
+
     def getHrefLinks(self, html):
         '''
         Returns href links as a list.
@@ -95,6 +100,7 @@ class MyHTMLParser(HTMLParser):
         self.hrefLinksList = []
         self.feed(html)
         return self.hrefLinksList
+
     def handle_starttag(self, tag, attrs):
         aTagFound = False
         if tag == 'a':
@@ -104,6 +110,7 @@ class MyHTMLParser(HTMLParser):
                 break
             if aTagFound and attr[0] == 'href' and attr[1][:1] not in ('?', '/'):
                 self.hrefLinksList.append(attr[1])
+
 
 def httpDirList(directory):
     '''
@@ -117,11 +124,13 @@ def httpDirList(directory):
     fileList = parser.getHrefLinks(page)
     return fileList
 
+
 def unzip(fn, dest):
     '''
     Extracts .zip files to their destination.
     '''
     sps.captureStdout(['unzip', fn, '-d', dest])
+
 
 def untarbz2(fn, dest):
     '''
@@ -130,6 +139,7 @@ def untarbz2(fn, dest):
     if not os.path.exists(dest):
         os.mkdir(dest)
     sps.captureStdout(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
+
 
 def undmg(fn, dest, mountpoint):
     '''
@@ -145,6 +155,7 @@ def undmg(fn, dest, mountpoint):
         shutil.copytree(mountpoint + '/' + apps[0], dest + '/' + apps[0])
     finally:
         sps.captureStdout(['hdiutil', 'detach', mountpoint])
+
 
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
     '''
@@ -201,8 +212,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
         else:
-            if remotefn.endswith('.linux-i686.tar.bz2') or \
-                remotefn.endswith('.linux-x86_64.tar.bz2'):
+            if remotefn.endswith('.linux-i686.tar.bz2') or remotefn.endswith('.linux-x86_64.tar.bz2'):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
@@ -212,10 +222,11 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 # Hack #2 to make os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
                 shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
-                stackwalkUrl = \
-            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk' \
-            if remotefn.endswith('.linux-i686.tar.bz2') else \
-            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
+                stackwalkUrl = (
+                    'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk'
+                    if remotefn.endswith('.linux-i686.tar.bz2') else
+                    'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
+                )
                 downloadURL(stackwalkUrl, stackwalk)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
@@ -230,8 +241,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
                 for filename in ['minidump_stackwalk.exe', 'cyggcc_s-1.dll',
                                  'cygstdc++-6.dll', 'cygwin1.dll']:
-                    remoteURL = \
-            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s' % filename
+                    remoteURL = 'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s' % filename
                     localfile = os.path.join(buildDir, filename)
                     downloadURL(remoteURL, localfile)
                 gotApp = True
@@ -243,8 +253,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
 
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
-                stackwalkUrl = \
-            'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk'
+                stackwalkUrl = 'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk'
                 downloadURL(stackwalkUrl, stackwalk)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
@@ -257,6 +266,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 gotSyms = True
     return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
 
+
 def moveCrashInjector(tests):
     # Hackaround for crashinject.exe not being a reliable way to kill firefox.exe (see bug 888748)
     testsBin = os.path.join(tests, "bin")
@@ -264,11 +274,13 @@ def moveCrashInjector(tests):
     if os.path.exists(crashinject):
         shutil.move(crashinject, os.path.join(testsBin, "crashinject-disabled.exe"))
 
+
 def isNumericSubDir(n):
     '''
     Returns True if input is a numeric directory, False if not. e.g. 1234/ returns True
     '''
     return re.match(r'^\d+$', n.split('/')[0])
+
 
 def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     '''
@@ -298,8 +310,9 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
 
     buildDirs = [(buildsHttpDir + d) for d in dirNames if isNumericSubDir(d)]
     if len(buildDirs) < 1:
-        print ('Warning: No builds in ' + buildsHttpDir + '!')
+        print 'Warning: No builds in ' + buildsHttpDir + '!'
     return buildDirs
+
 
 def downloadLatestBuild(buildType, workingDir, getJsShell=False):
     '''
@@ -310,6 +323,7 @@ def downloadLatestBuild(buildType, workingDir, getJsShell=False):
         if downloadBuild(buildURL, workingDir, jsShell=getJsShell):
             return buildURL
     raise Exception("No complete builds found.")
+
 
 def mozPlatformDetails():
     '''
@@ -325,6 +339,7 @@ def mozPlatformDetails():
     else:
         raise Exception("Unknown platform.system(): " + s)
 
+
 def mozPlatform(arch):
     '''
     Returns the native build type of the current machine.
@@ -334,17 +349,19 @@ def mozPlatform(arch):
         return name64
     elif arch == "32":
         return name32
-    elif arch == None:
+    elif arch is None:
         # FIXME: Eventually, we should set 64-bit as native for Win64. We should also aim to test
         # both 32-bit and 64-bit Firefox builds on any platform that supports both. Let us make
         # sure Python detects 32-bit Windows vs 64-bit Windows correctly before changing this.
-        return (name64 if native64 else name32)
+        return name64 if native64 else name32
     else:
         raise Exception("The arch passed to mozPlatform must be '64', '32', or None")
+
 
 def defaultBuildType(repoName, arch, debug):
     '''Returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug.'''
     return repoName + '-' + mozPlatform(arch) + ('-debug' if debug else '')
+
 
 def main():
     options = parseOptions()
