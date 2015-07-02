@@ -190,14 +190,20 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
 
     for remotefn in fileHttpList:
         localfn = os.path.join(downloadFolder, remotefn.split('/')[-1])
-        if remotefn.endswith('.tests.zip') and wantTests:
-            print 'Downloading tests...',
+        if remotefn.endswith('.common.tests.zip') and wantTests:
+            print 'Downloading common test files...',
             dlAction = downloadURL(remotefn, localfn)
             print 'extracting...',
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
             print 'completed!'
             gotTests = True
+        if remotefn.endswith('.reftest.tests.zip') and wantTests:
+            print 'Downloading reftest files...',
+            dlAction = downloadURL(remotefn, localfn)
+            print 'extracting...',
+            unzip(dlAction, testsDir)
+            print 'completed!'
         if remotefn.split('/')[-1].endswith('.txt'):
             print 'Downloading text file...',
             downloadURL(remotefn, localfn)
