@@ -69,18 +69,18 @@ ALL_RUN_LIBS = [RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB]
 if sps.isWin:
     ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
     for icu_ver in (52, 55):
-        ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUIN_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUIND_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUIO_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUIOD_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUDT_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUDTD_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUTEST_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUTESTD_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUTU_LIB_EXCL_EXT + icu_ver + '.dll')
-        ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIN_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIND_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIO_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIOD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUDT_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUDTD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTEST_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTESTD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTU_LIB_EXCL_EXT + str(icu_ver) + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
 
 
 def archOfBinary(binary):
