@@ -25,27 +25,26 @@ if sps.isWin:
 
     # Update if the following changes:
     # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
-    # We should probably auto-detect these instead of whitelisting each one.
-    RUN_ICUUC52_LIB = 'icuuc52.dll'
+    RUN_ICUUC_LIB_EXCL_EXT = 'icuuc'
     # Debug builds seem to have their debug "d" notation *before* the ICU version.
     # Check https://dxr.mozilla.org/mozilla-central/search?q=%40BINPATH%40%2Ficudt&case=true&redirect=true
-    RUN_ICUUCD52_LIB = 'icuucd52.dll'
-    RUN_ICUIN52_LIB = 'icuin52.dll'
-    RUN_ICUIND52_LIB = 'icuind52.dll'
-    RUN_ICUIO52_LIB = 'icuio52.dll'
-    RUN_ICUIOD52_LIB = 'icuiod52.dll'
-    RUN_ICUDT52_LIB = 'icudt52.dll'
-    RUN_ICUDTD52_LIB = 'icudtd52.dll'
-    RUN_ICUTEST52_LIB = 'icutest52.dll'
-    RUN_ICUTESTD52_LIB = 'icutestd52.dll'
-    RUN_TESTPLUG_LIB = 'testplug.dll'
-    RUN_ICUTU52_LIB = 'icutu52.dll'
-    RUN_ICUTUD52_LIB = 'icutud52.dll'
+    RUN_ICUUCD_LIB_EXCL_EXT = 'icuucd'
+    RUN_ICUIN_LIB_EXCL_EXT = 'icuin'
+    RUN_ICUIND_LIB_EXCL_EXT = 'icuind'
+    RUN_ICUIO_LIB_EXCL_EXT = 'icuio'
+    RUN_ICUIOD_LIB_EXCL_EXT = 'icuiod'
+    RUN_ICUDT_LIB_EXCL_EXT = 'icudt'
+    RUN_ICUDTD_LIB_EXCL_EXT = 'icudtd'
+    RUN_ICUTEST_LIB_EXCL_EXT = 'icutest'
+    RUN_ICUTESTD_LIB_EXCL_EXT = 'icutestd'
+    RUN_ICUTU_LIB_EXCL_EXT = 'icutu'
+    RUN_ICUTUD_LIB_EXCL_EXT = 'icutud'
 
     RUN_MOZGLUE_LIB = 'mozglue.dll'
     RUN_NSPR_LIB = 'nspr4.dll'
     RUN_PLDS_LIB = 'plds4.dll'
     RUN_PLC_LIB = 'plc4.dll'
+    RUN_TESTPLUG_LIB = 'testplug.dll'
 else:
     COMPILE_NSPR_LIB = 'libnspr4.a'
     COMPILE_PLDS_LIB = 'libplds4.a'
@@ -68,10 +67,20 @@ ALL_COMPILE_LIBS = (COMPILE_NSPR_LIB, COMPILE_PLDS_LIB, COMPILE_PLC_LIB)
 # and should be in dist/bin. At least Windows required the ICU libraries.
 ALL_RUN_LIBS = [RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB]
 if sps.isWin:
-    ALL_RUN_LIBS += [RUN_ICUUC52_LIB, RUN_ICUUCD52_LIB, RUN_ICUIN52_LIB, RUN_ICUIND52_LIB,
-                     RUN_ICUIO52_LIB, RUN_ICUIOD52_LIB, RUN_ICUDT52_LIB, RUN_ICUDTD52_LIB,
-                     RUN_ICUTEST52_LIB, RUN_ICUTESTD52_LIB, RUN_TESTPLUG_LIB,
-                     RUN_ICUTU52_LIB, RUN_ICUTUD52_LIB]
+    ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
+    for icu_ver in (52, 55):
+        ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIN_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIND_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIO_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUIOD_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUDT_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUDTD_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTEST_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTESTD_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTU_LIB_EXCL_EXT + icu_ver + '.dll')
+        ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + icu_ver + '.dll')
 
 
 def archOfBinary(binary):
