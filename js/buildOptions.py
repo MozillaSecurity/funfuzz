@@ -242,7 +242,7 @@ def areArgsValid(args):
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
-    if (args.enableSimulatorArm32 or args.enableSimulatorArm64) and not sps.isARMv7l:
+    if not sps.isARMv7l and (args.enableSimulatorArm32 or args.enableSimulatorArm64):
         if sps.isWin:
             return False, 'Nobody runs the ARM simulator on Windows.'
         if args.enableSimulatorArm32 and not args.enable32:
