@@ -113,15 +113,14 @@ def addParserOptions():
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
-    if not sps.isARMv7l:
-        randomizeBool(['--enable-simulator=arm'], 0.3, 0,
-                      dest='enableSimulatorArm32',
-                      help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
-                      'Defaults to "%(default)s".')
-        randomizeBool(['--enable-simulator=arm64'], 0.3, 0,
-                      dest='enableSimulatorArm64',
-                      help='Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. ' +
-                      'Defaults to "%(default)s".')
+    randomizeBool(['--enable-simulator=arm'], 0.3, 0,
+                  dest='enableSimulatorArm32',
+                  help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
+                  'Defaults to "%(default)s".')
+    randomizeBool(['--enable-simulator=arm64'], 0.3, 0,
+                  dest='enableSimulatorArm64',
+                  help='Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. ' +
+                  'Defaults to "%(default)s".')
 
     return parser, randomizer
 
@@ -242,7 +241,9 @@ def areArgsValid(args):
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
-    if not sps.isARMv7l and (args.enableSimulatorArm32 or args.enableSimulatorArm64):
+    if args.enableSimulatorArm32 or args.enableSimulatorArm64:
+        if sps.isARMv7l:
+            return False, 'Does not make sense to run the ARM simulator on ARM hardware.'
         if sps.isWin:
             return False, 'Nobody runs the ARM simulator on Windows.'
         if args.enableSimulatorArm32 and not args.enable32:
