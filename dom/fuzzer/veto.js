@@ -22,7 +22,7 @@ function fuzzInitBlacklists()
                 "array",             // fuzzerRandomJS can accidentally create gigantic arrays
                 "gczeal",            // slow
                 "\"length",          // bug 346268, fuzzerRandomJS hang
-                "fuzzerRandomJS",    // Gigantic arrays, destructiveAndAnnoying
+                "fuzzerRandomJS",    // Gigantic arrays; allowed to ignore the annoyingProperties list
                 "uneval",            // Gigantic arrays are sadmaking
                 "ftp:",              // bug 250098 (modal dialog interpreted as a hang)
                 "beforeunload",      // dialog on attempt to quit

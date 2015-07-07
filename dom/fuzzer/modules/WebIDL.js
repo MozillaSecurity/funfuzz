@@ -171,14 +171,8 @@ var fuzzerWebIDL = (function () {
         return "/* " + ifaceName + " has a weird member */";
       }
 
-      if (fuzzerRandomJS.destructiveAndAnnoying[member.name]) {
-        return "/* annoying */";
-      }
-      if (member.name == "evaluate" && rnd(100)) {
-        return "/* crashy (bug 949990) */";
-      }
-      if (member.name == "arc" && rnd(100)) {
-        return "/* hangy */";
+      if (propertyIsAnnoying(eval(instance), member.name) && rnd(100)) {
+        return "/* the property " + member.name + " on our " + ifaceName + " is considered annoying */";
       }
 
       var memberExpr = instance + "[" + simpleSource(member.name) + "]";
