@@ -5,10 +5,10 @@ var fuzzerEventLoop = (function() {
       // Sync XHR lets us:
       // - Spin the event loop whenever we want
       // - Inject weird behaviors into anyone else who spins the event loop
-      fuzzExpectSanity = false; // Sync XHR can change which global is the current inner for a domwindow. See bug 804083.
+      fuzzInternalErrorsAreBugs = false; // Sync XHR can change which global is the current inner for a domwindow. See bug 804083.
       var n = 1 + rnd(30);
       var c = fuzzSubCommand("postxhr");
-      return "fuzzExpectSanity=false/*see bug 804083*/; (function() { for (var i = 0; i < "+n+"; ++i) { var x = new XMLHttpRequest(); x.open('GET', 'data:text/html,1', false); x.send(); } })();" + c;
+      return "fuzzInternalErrorsAreBugs=false/*see bug 804083*/; (function() { for (var i = 0; i < "+n+"; ++i) { var x = new XMLHttpRequest(); x.open('GET', 'data:text/html,1', false); x.send(); } })();" + c;
     } else if (rnd(19) === 4) {
       return "setTimeout(function() { " + fuzzSubCommand("timer") + " }, 0);";
     } else if (rnd(20000) === 4) {

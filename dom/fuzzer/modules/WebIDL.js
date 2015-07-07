@@ -180,7 +180,7 @@ var fuzzerWebIDL = (function () {
         if (rnd(2)) {
           return "fuzzerWebIDL.rv = " + memberExpr + ";";
         } else {
-          var prefix = reasonable ? "" : "fuzzExpectSanity = false; "; // We might be overwriting something important on |window|
+          var prefix = reasonable ? "" : "fuzzInternalErrorsAreBugs = false; "; // We might be overwriting something important on |window|
           return prefix + memberExpr + " = " + gimmei(member.idlType) + ";";
         }
       }

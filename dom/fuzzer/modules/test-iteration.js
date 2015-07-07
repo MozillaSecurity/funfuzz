@@ -20,7 +20,7 @@
 
     function check()
     {
-      var failPrefix = (fuzzExpectSanity && !"bug 927294") ? "FAILURE: " : "";
+      var failPrefix = (fuzzInternalErrorsAreBugs && !"bug 927294") ? "FAILURE: " : "";
       dumpln(failPrefix + "Iteration got stuck on o[" + iterI + "]");
     }
   }

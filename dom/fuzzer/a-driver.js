@@ -11,7 +11,10 @@ var dumpEachSeed = false; // Can be set to true if makeCommand has side effects,
 var pleaseSerializeDOMAsScript = false; // Can be set to true (and often is) ...
 var gPageCompleted = false;
 var reportAllErrors = false;
-var fuzzExpectSanity = (location.href.indexOf("xslt") == -1 && location.href.indexOf("xml-stylesheet") == -1);
+
+// Treat internal errors (makeCommand throwing or generating syntax errors) as bugs,
+// unless a module tells us not to by setting this to false.
+var fuzzInternalErrorsAreBugs = true;
 
 var fuzzCount;
 
@@ -25,6 +28,10 @@ function fuzzOnload(ev)
   if (Random.twister) {
     dumpln("fuzzOnload called twice!?");
     return;
+  }
+
+  if (location.href.indexOf("xslt") != -1 || location.href.indexOf("xml-stylesheet") != -1) {
+    fuzzInternalErrorsAreBugs = false;
   }
 
   initFuzzerGeneral();
@@ -179,7 +186,7 @@ function fuzzTryMakeCommand()
       if (!dumpEachSeed) {
         dumpRNGStateBefore();
       }
-      if (fuzzExpectSanity) {
+      if (fuzzInternalErrorsAreBugs) {
         dumpln("FAILURE: makeCommand threw an exception");
       }
       dumpln("STOPPING (" + e + ")");
@@ -212,7 +219,7 @@ function fuzzTryMakeCommand()
       if (!dumpEachSeed) {
         dumpRNGStateBefore();
       }
-      if (fuzzExpectSanity) {
+      if (fuzzInternalErrorsAreBugs) {
         dumpln("FAILURE: Can't compile: " + s);
       }
       dumpln("Can't compile: " + simpleSource(s));
@@ -254,7 +261,7 @@ function fuzzTryCommand(fun, note)
     // So, no "FAILURE:".
     dumpln("Uncatchable exception from " + note + "!?");
     fuzzPriv.quitApplicationSoon();
-    fuzzExpectSanity = false;
+    fuzzInternalErrorsAreBugs = false;
   }
 
   var failtimer = setTimeout(fail, 0);
