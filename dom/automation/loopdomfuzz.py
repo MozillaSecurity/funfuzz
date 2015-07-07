@@ -24,14 +24,24 @@ from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLines
 import lithOps
 import linkJS
 
+THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, os.pardir))
+
 urlListFilename = "urls-reftests"  # XXX make this "--urls=..." somehow
 
 
 def linkFuzzer(target_fn):
     file_list_fn = os.path.join(fuzzingDomDir, "fuzzer", "files-to-link.txt")
     source_base = os.path.join(fuzzingDomDir, "fuzzer")
-    module_base = os.path.join(fuzzingDomDir, "fuzzer", "modules")
-    linkJS.linkJS(target_fn, file_list_fn, source_base, module_dirs=[module_base])
+
+    module_dirs = []
+    for name in sorted(os.listdir(REPO_PARENT_PATH)):
+        if name.startswith("fuzzing") or name.startswith("funfuzz"):
+            module_dir = os.path.join(REPO_PARENT_PATH, name, "dom", "fuzzer", "modules")
+            if os.path.isdir(module_dir):
+                module_dirs.append(module_dir)
+
+    linkJS.linkJS(target_fn, file_list_fn, source_base, module_dirs=module_dirs)
 
 
 # If targetTime is None, this loops forever.
