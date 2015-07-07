@@ -14,6 +14,7 @@ REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir
 #   ???/funfuzz*/known/mozilla-central/ionmonkey/crashes.txt
 #   ???/funfuzz*/known/mozilla-central/crashes.txt
 
+
 def findIgnoreLists(targetRepo, needle):
     r = []
     assert not targetRepo.startswith("/")
