@@ -15,7 +15,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 
 # This junk should be moved to bot.py, OR moved into a config file, OR this file should subprocess-call ITSELF rather than using a while loop.
 def buildOptionsASan():
-    mozconfig = os.path.expanduser("~/fuzzing/dom/mozconfig/mozconfig-asan")
+    mozconfig = os.path.expanduser("~/funfuzz/dom/mozconfig/mozconfig-asan")
     srcdir = os.path.expanduser("~/trees/mozilla-central/")
     objdir = srcdir + "obj-firefox-asan/"
     return " ".join(["--mozconfig", mozconfig, "--repoDir", srcdir, "--objDir", objdir])

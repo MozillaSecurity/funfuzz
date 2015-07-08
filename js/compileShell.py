@@ -593,7 +593,7 @@ def envDump(shell, log):
         f.write('# Information about shell:\n# \n')
 
         f.write('# Create another shell in shell-cache like this one:\n')
-        f.write('# python -u %s -b "%s" -r %s\n# \n' % ('~/fuzzing/js/compileShell.py',
+        f.write('# python -u %s -b "%s" -r %s\n# \n' % ('~/funfuzz/js/compileShell.py',
                                                         shell.buildOptions.buildOptionsStr, shell.getHgHash()))
 
         f.write('# Full environment is:\n')
