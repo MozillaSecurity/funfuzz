@@ -13,7 +13,7 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import subprocesses as sps
 
-path2 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
+path2 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'lithium', 'interestingness'))
 sys.path.append(path2)
 import envVars
 

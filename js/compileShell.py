@@ -27,7 +27,7 @@ import s3cache
 import subprocesses as sps
 from LockDir import LockDir
 
-path2 = os.path.abspath(os.path.join(path0, os.pardir, 'interestingness'))
+path2 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, "lithium", 'interestingness'))
 sys.path.append(path2)
 import envVars
 

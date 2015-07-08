@@ -2,7 +2,11 @@
 
 import os
 import subprocess
+import sys
 
+p0 = os.path.dirname(os.path.abspath(__file__))
+p1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, os.pardir, 'lithium', 'interestingness'))
+sys.path.append(p1)
 import timedRun
 
 # usage: put the js in a separate file from html.  give the js filename to lithium as --testcase *and* the second parameter to this shell_compiles_browser_dies.

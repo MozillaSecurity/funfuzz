@@ -13,7 +13,10 @@ import tempfile
 import subprocesses as sps
 
 p0 = os.path.dirname(os.path.abspath(__file__))
-lithiumpy = [sys.executable, "-u", os.path.join(p0, os.pardir, "lithium", "lithium.py")]
+lithiumpy = os.path.join(p0, os.pardir, os.pardir, "lithium", "lithium", "lithium.py")
+if not os.path.exists(lithiumpy):
+    print "Warning: cannot reduce testcases without https://github.com/MozillaSecurity/lithium/ adjacent"
+runlithiumpy = [sys.executable, "-u", lithiumpy]
 
 # Status returns for runLithium and many_timed_runs (in loopdomfuzz.py, etc.)
 (HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,
@@ -38,8 +41,8 @@ def runLithium(lithArgs, logPrefix, targetTime):
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     lithlogfn = logPrefix + "-lith-out.txt"
     print "Preparing to run Lithium, log file " + lithlogfn
-    print sps.shellify(lithiumpy + lithArgs)
-    subprocess.call(lithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
+    print sps.shellify(runlithiumpy + lithArgs)
+    subprocess.call(runlithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print "Done running Lithium"
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)

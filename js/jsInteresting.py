@@ -7,7 +7,7 @@ from optparse import OptionParser
 
 import inspectShell
 p0 = os.path.dirname(os.path.abspath(__file__))
-p1 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
+p1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'interestingness'))
 sys.path.append(p1)
 import timedRun
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
