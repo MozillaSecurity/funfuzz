@@ -15,6 +15,7 @@ import timedRun
 
 jsshell = os.path.expanduser("~/tracemonkey/js/src/debug/js")
 
+
 def interesting(args, tempPrefix):
     timeout = int(args[0])
     returncode = subprocess.call([jsshell, "-c", args[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
