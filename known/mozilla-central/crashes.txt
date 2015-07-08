@@ -1,0 +1,317 @@
+# Running out of memory (on Windows, an EXCEPTION_BREAKPOINT)
+mozalloc_handle_oom
+# OOM on Windows can break breakpad
+ERROR: Minidump cannot read header
+# OOM in Skia
+sk_realloc_throw
+sk_malloc_throw
+sk_out_of_memory
+# OOM under ASan forgets that we asked for new to not throw?
+operator new
+# OOM with message "Trying to allocate an infallible array that's too big"
+nsTArrayInfallibleAllocator::SizeTooBig
+
+# I am not interested in startup crashes.
+nsCommandLine::EnumerateHandlers
+
+# Bug 574904
+nsJSNPRuntime.cpp
+
+# Bug 588278?
+nsHTMLEditor::GetElementOrigin
+
+# Bug 614144
+nsPNGEncoder::ConvertHostARGBRow
+
+# Bug 614495
+[TMR] RemoveBlockChild
+
+# rdar://8718869
+ 1  AppKit
+
+# Bug 623147
+nsContentUtils::GetOfflineAppManifest
+
+# Bug 635153
+nsStyleContext::HasPseudoElementData
+
+# Bug 607053
+XPCNativeScriptableInfo::GetCallback
+XPC_WN_Helper_GetProperty
+
+# Bug 665335
+nsDocAccessible::FireDelayedAccessibleEvent
+
+# Bug 671786
+[TMR] txExprParser
+
+# Bug 591832
+ImageRenderer::PrepareImage
+
+# Bug 675516
+nsContentUtils::GetCommonAncestor
+
+# Dunnos
+ 0  libgcc_s-4.1.1-20070105.so.1 + 0x75a8
+
+# Bug 694775
+nsComputedDOMStyle::GetPropertyCSSValue
+
+# Bug 716302
+nsAccDocManager::AddListeners
+
+# rdar://10694770 (New in Mac OS X 10.7) (lone surrogate in <title>) (marked as a duplicate, so i don't get updates)
+2  AppKit + 0x66995
+2  AppKit + 0x66472
+2  AppKit + 0x65d5e
+4  AppKit + 0x8b9d17
+4  AppKit + 0x99f985
+4  AppKit + 0x9a3acd
+_NSNoteInCrashReports
+nsCocoaWindow::SetTitle
+
+# rdar://13266035 (Reported using Mac OS X 10.8) (lone surrogate in <title> + full screen)
+_sendFullScreenMessageToDock
+nsCocoaWindow::MakeFullScreen
+
+# Bug 722771
+PreciseGCRunnable::Run
+
+# Bug 732575
+CreateTempXlibSurface
+gfxXlibNativeRenderer::Draw
+
+# Bug 742602
+BuildTextRunsScanner::BuildTextRunForFrames
+
+# Bug 745676
+mozilla::gfx::AlphaBoxBlur::AlphaBoxBlur
+gfxAlphaBoxBlur::Init
+
+# Bug 702150
+nsCanvasRenderingContext2D::DrawImage
+mozilla::dom::CanvasRenderingContext2D::DrawImage
+
+# Bug 698391
+mozilla::gfx::DrawTargetD2D::CreateGradientTexture
+
+# Bug 757413
+mozilla::layout::FrameChildListIterator::FrameChildListIterator
+
+# Bug 755570
+nsHTMLReflowState::ComputeContainingBlockRectangle
+
+# Bug 763819
+DocAccessible::GetAccessibleOrContainer
+
+# Bug 765111
+mozilla::gfx::GetImageFromSourceSurface
+mozilla::gfx::SetPaintPattern
+mozilla::dom::CanvasRenderingContext2D::Fill
+mozilla::dom::CanvasRenderingContext2D::Stroke
+CreateCGPattern
+CoreGraphics + 0x86db8
+# Bug 765111 + linux breakpad stack trace woes
+ 0  libxul.so!mozilla::gfx::GetCairoSurfaceForSourceSurface
+
+# Bug 766434
+_cairo_surface_acquire_source_image
+
+# Bug 776375
+mozilla::MediaStreamGraphImpl::AppendMessage
+
+# Bug 789299
+_moz_cairo_pattern_create_for_surface
+_moz_cairo_set_source_surface
+gfxContext::SetSource
+mozilla::layers::BasicLayerManager::PaintLayer
+
+# Bug 798963
+nsHTMLEditRules::GetPromotedPoint
+nsHTMLEditRules::PromoteRange
+
+# Bug 801821
+CA::ScanConverter::Path::add_monotonic_cube
+# With Breakpad on Mac OS X 10.7.2
+QuartzCore + 0x815ae
+# With Breakpad on Mac OS X 10.7.5
+QuartzCore + 0x81c76
+
+# Bug 804095
+MacIOSurface::CreateIOSurfaceContext
+
+# Bug 826978
+nsFloatManager::ClearFloats
+nsBlockReflowState::ClearFloats
+nsBlockFrame::ReflowPushedFloats
+
+# Bug 836925
+mozilla::nsTextNodeDirectionalityMap::RemoveElementFromMap
+mozilla::ResetDir
+# Bug 836925 (somehow the assertion isn't always seen on Windows, and we just get a EXCEPTION_BREAKPOINT crash ?)
+ 0  xul.dll!mozilla::nsTextNodeDirectionalityMap::EnsureMapIsClear
+
+# Bug 847136
+nsRangeUpdater::WillMoveNode
+
+# Bug 847699
+nsRange::UnregisterCommonAncestor
+
+# TODO Windows-only
+nsBaseHashtableET<nsPtrHashKey<void>,void *> >
+
+# Bug 850081 (breakpad)
+ 1  AppleIntelHD3000GraphicsGLDriver +
+# Bug 850081 (mac crash reporter)
+1   com.apple.driver.AppleIntelHD3000GraphicsGLDriver
+
+# Bug 799326 (10.7 only) (as seen by Mac OS X crash reporter, trying to clean up after a crash that ASan misses)
+CA::OGL::Shape::FillRenderer::render_lines
+
+# Bug 862624
+nsCellMapColumnIterator::GetNextFrame
+
+# Bug 864972
+nsFrameManager::ReResolveStyleContext
+
+# Bug 866767
+[TMR] PresShell::DidDoReflow
+[TMR] PresShell::ProcessReflowCommands
+[TMR] PresShell::FlushPendingNotifications
+[TMR] PresShell::HandlePostedReflowCallbacks
+
+# Bug 794927
+date_toLocaleFormat
+
+# Bug 868879
+gfxASurface::CairoSurface
+gfxContext::gfxContext
+# Bug 868879 'b' (Linux)
+gfxASurface::GetType
+
+# Bug 874293
+nsCxPusher::DoPush
+nsCxPusher::Push
+
+# Bug 888686
+nsNativeThemeWin::GetThemePartAndState
+
+# Ignore a crash related to full-screen that happens on Mac OS X 10.7 but not Mac OS X 10.8
+0x00007fff9059ba38 -[_NSFullScreenTransition
+
+# Bug 894125
+ScaledFontBase::CopyGlyphsToBuilder
+
+# Bug 897367
+[TMR] nsDocShell::EnsureContentViewer
+
+# Bug 897384
+InvalidateFrame
+
+# Bug 873260 (ASan opt)
+nsTransitionManager::StyleContextChanged
+mozilla::RestyleManager::ComputeStyleChangeFor
+
+# Bug 914501
+mozilla::ElementRestyler::RestyleContentChildren
+nsIFrame::IsFloating
+mozilla::layout::FrameChildListIterator::FrameChildListIterator(nsIFrame const*)
+
+# Bug 914536
+js::CloneScript
+
+# Bug 927368
+GrTextureStripAtlas::validate
+
+# Bug 931395
+mozilla::FrameLayerBuilder::BuildContainerLayerFor
+
+# Bug 926717
+TreeMatchContext::AssertHasAllStyleScopes
+
+# Bug 943550
+mozilla::gl::GLContext::raw_fTexImage2D
+mozilla::gl::GLContext::fTexImage2D
+mozilla::gl::GLContext::TexImage2D
+mozilla::gl::UploadImageDataToTexture
+
+# Bug 944181 (opt / asan)
+nsScanner::SetDocumentCharset
+
+# Bug 949893
+mozilla::dom::DOMProxyHandler::EnsureExpandoObject
+
+# Bug 949937
+mozilla::layers::TextureParent::RecvInit
+
+# Bug 975784
+mozilla::dom::MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode
+
+# Bug 951860
+nsEditorUtils::IsDescendantOf
+nsHTMLEditRules::WillOutdent
+
+# Bug 989711
+nsContentIterator::NextNode
+
+# Bug 993570
+nsLayoutUtils::SurfaceFromElement
+
+# Bug 1000432
+mozilla::dom::WrapNewBindingObject<mozilla::dom::TextTrackList>
+mozilla::dom::WrapNewBindingObject<mozilla::dom::TextTrack>
+mozilla::dom::WrapNewBindingObjectHelper<nsRefPtr<mozilla::dom::TextTrackList>
+mozilla::dom::WrapNewBindingObjectHelper<nsRefPtr<mozilla::dom::TextTrack>
+
+# Pfft
+Crashed:: com.apple.audio.IOThread.client
+
+# Bug 820667
+mozilla::storage::Service::Observe
+
+# Bug 1071823
+mozilla::RestyleTracker::AddPendingRestyle
+# Bug 1071823 ?
+=(mozilla::TimeStamp const&) const
+
+# Bug 1072792
+mozilla::a11y::Accessible::BindToParent
+
+# Bug 1127697, bug 1133622
+mozilla::dom::HTMLMediaElement::EndSrcMediaStreamPlayback
+mozilla::dom::HTMLMediaElement::CheckProgress
+
+# Bug 1140125
+js::frontend::CompileScript
+
+# Bug 1140251
+nsINode::IsEditableInternal
+
+# Bug 1140268
+nsHTMLReflowState::InitConstraints
+
+# Bug 1118536
+js::GlobalObject::new_
+
+# Bug 1156581
+nsSVGEffects::InvalidateRenderingObservers
+
+# Bug 1074584
+mozilla::WebGLFramebuffer::FramebufferTexture2D
+
+
+#############################
+#                           #
+#  Crashes hit by js shell  #
+#                           #
+#############################
+
+# Bug 1108413 (Only with --ion-sink=on)
+#js::jit::LiveInterval::addRangeAtHead
+
+# Bug 1130672
+js::jit::Assembler::bind
+
+# Bug 1169639
+js::GlobalObject::getIntrinsicValue
+
