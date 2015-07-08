@@ -22,30 +22,30 @@ import lithOps
 import linkJS
 import subprocesses as sps
 
+
 def parseOpts(args):
     parser = OptionParser()
     parser.disable_interspersed_args()
     parser.add_option("--comparejit",
-                      action = "store_true", dest = "useCompareJIT",
-                      default = False,
-                      help = "After running the fuzzer, run the FCM lines against the engine " + \
-                             "in two configurations and compare the output.")
+                      action="store_true", dest="useCompareJIT",
+                      default=False,
+                      help="After running the fuzzer, run the FCM lines against the engine in two configurations and compare the output.")
     parser.add_option("--random-flags",
-                      action = "store_true", dest = "randomFlags",
-                      default = False,
-                      help = "Pass a random set of flags (e.g. --ion-eager) to the js engine")
+                      action="store_true", dest="randomFlags",
+                      default=False,
+                      help="Pass a random set of flags (e.g. --ion-eager) to the js engine")
     parser.add_option("--repo",
-                      action = "store", dest = "repo",
-                      default = os.path.expanduser("~/trees/mozilla-central/"),
-                      help = "The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
+                      action="store", dest="repo",
+                      default=os.path.expanduser("~/trees/mozilla-central/"),
+                      help="The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
     parser.add_option("--build",
-                      action = "store", dest = "buildOptionsStr",
-                      help = "The build options, for bisection",
-                      default = None) # if you run loopjsfunfuzz.py directly without a --build, pinpoint will try to guess
+                      action="store", dest="buildOptionsStr",
+                      help="The build options, for bisection",
+                      default=None)  # if you run loopjsfunfuzz.py directly without a --build, pinpoint will try to guess
     parser.add_option("--valgrind",
-                      action = "store_true", dest = "valgrind",
-                      default = False,
-                      help = "use valgrind with a reasonable set of options")
+                      action="store_true", dest="valgrind",
+                      default=False,
+                      help="use valgrind with a reasonable set of options")
     options, args = parser.parse_args(args)
 
     if options.valgrind and options.useCompareJIT:
@@ -61,13 +61,13 @@ def parseOpts(args):
     # FIXME: findIgnoreLists.py should probably check this automatically.
     reposWithKnownLists = ['mozilla-central', 'mozilla-esr31', 'ionmonkey', 'jscore', 'v8']
     if options.knownPath not in reposWithKnownLists:
-        sps.vdump('Known bugs for the ' + options.knownPath + \
-                  ' repository does not exist. Using the list for mozilla-central instead.')
+        sps.vdump('Known bugs for the ' + options.knownPath + ' repository does not exist. Using the list for mozilla-central instead.')
         options.knownPath = 'mozilla-central'
     options.jsEngine = args[2]
     options.engineFlags = args[3:]
 
     return options
+
 
 def showtail(filename):
     # FIXME: Get jsfunfuzz to output start & end of interesting result boundaries instead of this.
@@ -80,10 +80,12 @@ def showtail(filename):
     print
     print
 
+
 def linkFuzzer(target_fn, repo, prologue):
     source_base = p0
     file_list_fn = sps.normExpUserPath(os.path.join(p0, "files-to-link.txt"))
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
+
 
 def makeRegressionTestPrologue(repo, regressionTestListFile):
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests"""
@@ -100,16 +102,18 @@ def makeRegressionTestPrologue(repo, regressionTestListFile):
         json.dumps(os.path.abspath(sps.normExpUserPath(regressionTestListFile))),
     )
 
+
 def inTreeRegressionTests(repo):
     jitTests = jsFilesIn(os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
     jsTests = jsFilesIn(os.path.join(repo, 'js', 'src', 'tests'))
     return jitTests + jsTests
 
+
 def jsFilesIn(root):
     return [os.path.join(path, filename)
-                      for path, dirs, files in os.walk(sps.normExpUserPath(root))
-                      for filename in files
-                      if filename.endswith('.js')]
+            for path, dirs, files in os.walk(sps.normExpUserPath(root))
+            for filename in files
+            if filename.endswith('.js')]
 
 
 def many_timed_runs(targetTime, wtmpDir, args):
@@ -226,6 +230,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
     ]
     return lines
 
+
 def mightUseDivision(code):
     # Work around MSVC division inconsistencies (bug 948321)
     # by leaving division out of *-cj-in.js files on Windows.
@@ -246,12 +251,13 @@ def mightUseDivision(code):
         i += 1
     return False
 
-assert(mightUseDivision("//") == False)
-assert(mightUseDivision("// a") == False)
-assert(mightUseDivision("/*FOO*/") == False)
-assert(mightUseDivision("a / b") == True)
-assert(mightUseDivision("eval('/**/'); a / b;") == True)
-assert(mightUseDivision("eval('//x'); a / b;") == True)
+assert not mightUseDivision("//")
+assert not mightUseDivision("// a")
+assert not mightUseDivision("/*FOO*/")
+assert mightUseDivision("a / b")
+assert mightUseDivision("eval('/**/'); a / b;")
+assert mightUseDivision("eval('//x'); a / b;")
+
 
 if __name__ == "__main__":
     many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:])
