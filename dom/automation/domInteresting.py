@@ -323,7 +323,6 @@ def knownChromeFailure(msg):
         ("nsDOMIdentity.js" in msg and "aWindow.document is null" in msg) or            # Bug 931286
         ("tabbrowser.xml" in msg and "b.webProgress is undefined" in msg) or            # Bug 927339
         ("ConsoleAPI.js" in msg and "can't access dead object" in msg) or               # Bug 931304
-        ("webrtcUI.jsm" in msg and "nsIDOMGetUserMediaErrorCallback" in msg) or         # Bug 947404
         ("webrtcUI.jsm" in msg and "NS_ERROR_OUT_OF_MEMORY" in msg) or                  # Seems legit: whenfixed-local/webrtc-js-oom/
         ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or           # Bug 949920
         ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or                     # Bug 950327
