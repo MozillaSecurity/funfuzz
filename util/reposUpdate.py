@@ -12,7 +12,6 @@
 import logging
 import os
 import subprocesses as sps
-import sys
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,11 +23,9 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir))
 
 # Add your repository here. Note that Valgrind does not have a hg repository.
-REPOS = ['gecko-dev', 'lithium'] + ['mozilla-' + x for x in [
-            'inbound', 'central', 'aurora', 'beta', 'release',
-            'esr' + str(ESR_NOW), 'esr' + str(ESR_NEXT)
-    ]
-]
+REPOS = ['gecko-dev', 'lithium'] + ['mozilla-' + x for x in ['inbound', 'central', 'aurora', 'beta', 'release',
+                                                             'esr' + str(ESR_NOW), 'esr' + str(ESR_NEXT)]]
+
 
 def typeOfRepo(r):
     '''Returns the type of repository.'''
@@ -47,10 +44,9 @@ def updateRepo(repo):
     repoType = typeOfRepo(repo)
 
     if repoType == 'hg':
-        _, retval = sps.timeSubprocess(['hg', 'pull', '-u'],
-            ignoreStderr=True, combineStderr=True, cwd=repo, vb=True)
-        sps.timeSubprocess(['hg', 'log', '-r', 'default'],
-            cwd=repo, vb=True)
+        sps.timeSubprocess(['hg', 'pull', '-u'],
+                           ignoreStderr=True, combineStderr=True, cwd=repo, vb=True)
+        sps.timeSubprocess(['hg', 'log', '-r', 'default'], cwd=repo, vb=True)
     elif repoType == 'git':
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         sps.timeSubprocess(['git', 'fetch'],
