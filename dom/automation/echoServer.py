@@ -19,6 +19,7 @@ import sys
 import threading
 import time
 
+
 class Server:
     # Based on http://ilab.cs.byu.edu/python/threadingmodule.html
     # which is CC (by-nc-nd)
@@ -61,13 +62,13 @@ class Server:
 
                 elif s == sys.stdin:
                     # handle standard input (including pipe closure)
-                    junk = sys.stdin.readline() # prevent fallthrough if I press Ctrl+D in a Terminal window
+                    junk = sys.stdin.readline()  # prevent fallthrough if I press Ctrl+D in a Terminal window
                     self.server.close()
-                    os._exit(0) # immediately kill all threads. do not join, do not clean up, do not pass Go.
+                    os._exit(0)  # immediately kill all threads. do not join, do not clean up, do not pass Go.
 
 
 class Client(threading.Thread):
-    def __init__(self,(client,address)):
+    def __init__(self, (client, address)):
         threading.Thread.__init__(self)
         self.client = client
         self.address = address
@@ -80,9 +81,8 @@ class Client(threading.Thread):
             return
         queryParams = path[2:].split("&")
         response = "oops"
-        delay = 0
         for param in queryParams:
-            e = param.find("=") # not using param.split because base64 can include "="
+            e = param.find("=")  # not using param.split because base64 can include "="
             if e == -1:
                 print "Error: url param without =: " + param[:20]
                 return
@@ -94,7 +94,6 @@ class Client(threading.Thread):
                 except TypeError as e:
                     # e.g. "Incorrect padding"
                     print "Error: standard_b64decode threw " + str(e)
-                #print 'Response: ' + repr(response)
             elif name == 'delay':
                 specifiedSeconds = parseInt(value) / 1000
                 time.sleep(minmax(0, specifiedSeconds, 10))
@@ -102,7 +101,6 @@ class Client(threading.Thread):
                 print "Error: unexpected url param: " + name[:20]
                 return
         self.client.sendall(response)
-
 
     def run(self):
         running = True
@@ -121,8 +119,10 @@ class Client(threading.Thread):
                 running = False
         self.client.close()
 
+
 def minmax(low, input, high):
     return min(high, max(low, input))
+
 
 def parseInt(s):
     try:
@@ -130,6 +130,6 @@ def parseInt(s):
     except ValueError:
         return 0
 
+
 if __name__ == "__main__":
-    s = Server()
-    s.run()
+    Server().run()
