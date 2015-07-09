@@ -209,7 +209,7 @@ class AmissLogHandler:
             not (self.expectedToLeak and "ASSERTION: Component Manager being held past XPCOM shutdown" in msg) and
             not (self.expectedToLeak and "Tear-off objects remain in hashtable at shutdown" in msg) and
             not ("Assertion failed: _cairo_status_is_error" in msg and sps.isWin) and  # A frequent error that I cannot reproduce
-            not ("JS_IsExceptionPending" in msg) and  # Bug 813646, bug 735082, bug 735081
+            not ("JS_IsExceptionPending" in msg) and  # Bug 735081, bug 735082
             not (self.goingDownHard and sps.isWin) and  # Bug 763182
             True)
 
