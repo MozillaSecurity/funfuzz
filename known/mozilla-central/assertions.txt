@@ -714,12 +714,6 @@ ASSERTION: Detaching editor when it's already detached.: '!mOSHE || !mOSHE->HasD
 ASSERTION: We're going to overwrite an owning ref!: '!(aData && mEditorData)', file docshell/shistory/src/nsSHEntry.cpp
 ASSERTION: We're going to overwrite an owning ref!: '!(aData && mShared->mEditorData)', file docshell/shistory/src/nsSHEntry.cpp
 
-# Bug 622218
-# This could depend on the stack
-ASSERTION: Oops!  You're asking for a weak reference to an object that doesn't support that.: 'factoryPtr', file nsWeakReference.cpp
-# Bug 622764
-ASSERTION: forward references have already been resolved: 'Error', file content/xul/document/src/nsXULDocument.cpp
-
 # Bug 622315
 ASSERTION: Entry added to loadgroup twice, don't do that: 'PL_DHASH_ENTRY_IS_FREE(entry)', file netwerk/base/nsLoadGroup.cpp
 ASSERTION: should only have one RestorePresentationEvent: '!mRestorePresentationEvent.IsPending()', file docshell/base/nsDocShell.cpp
@@ -1146,9 +1140,6 @@ ASSERTION: frame should be clean when getting special height reflow: '!mFlags.mS
 
 # I don't even (32-bit Linux only, involves font inflation, not reproducible)
 ASSERTION: somebody should have checked for screen width change and triggered a reflow: 'Not Reached', file layout/base/nsPresContext.cpp
-
-# Bug 729554
-ASSERTION: dup'd OTHER report: 'false', file aboutMemory.js
 
 # Bug 748426
 Assertion failure: nelements <=
@@ -2035,9 +2026,6 @@ Assertion failure: nsIntRegion(itemDrawRect).Contains(opaquePixels),
 # Bug 1151684
 Assertion failure: applyState.mGaps.mHandled == applyState.mGaps.mCount (Unprocessed justification gaps),
 
-# Bug 1103106
-ASSERTION: Can't modify the budget once it's been used.: '!mWillChangeBudgetCalculated', file layout/base/nsDisplayList.cpp
-
 # Bug 1153636
 Assertion failure: (NS_IsMainThread() && aType && aTypeAtom) || (!NS_IsMainThread() && aType && !aTypeString.IsEmpty()) || aAllEvents (Missing type),
 
@@ -2182,9 +2170,6 @@ Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i],
 
 # Bug 1174547
 Assertion failure: type == MIRType_Object,
-
-# Bug 1175714
-Assertion failure: !IsInsideNursery(&lir->object()->toConstant()->toObject()),
 
 # Bug 1180608
 Assertion failure: !types.empty(),
