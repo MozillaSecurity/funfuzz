@@ -77,6 +77,7 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
+        print
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
         level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=quiet)
 
