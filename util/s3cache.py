@@ -52,8 +52,11 @@ class S3Cache(object):
             conn = S3Connection(profile_name=EC2_PROFILE)
             self.bucket = conn.get_bucket(self.bucket_name)
             return True
+        except boto.provider.ProfileNotFoundError:
+            print 'Unable to connect via boto using profile name "%s" in ~/.boto' % EC2_PROFILE
+            return False
         except boto.exception.S3ResponseError:
-            print 'Unable to connect to the following bucket: %s' % self.bucket_name
+            print 'Unable to connect to the following bucket "%s", please check your credentials.' % self.bucket_name
             return False
 
     def downloadFile(self, origin, dest):
