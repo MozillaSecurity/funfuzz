@@ -28,19 +28,19 @@ intPrefs = {
     "accessibility.force_disabled":               lambda: random.choice([-1, 0, 1]),
     "gfx.hidpi.enabled":                          lambda: random.choice([0, 1, 2]),
     "image.mem.hard_limit_decoded_image_kb":      lambda: random.randrange(0, 66560),
-    "dom.max_script_run_time":                    lambda: random.choice([0, 5, 60, 60, 60, 60]), # NB: constant-prefs.js also usually sets it to 60
+    "dom.max_script_run_time":                    lambda: random.choice([0, 5, 60, 60, 60, 60]),  # NB: constant-prefs.js also usually sets it to 60
 }
 
 strPrefs = {
-    "layout.css.devPixelsPerPx":                  lambda: random.choice(["-1.0", "1.0", "2.0"]), # float prefs are string prefs
+    "layout.css.devPixelsPerPx":                  lambda: random.choice(["-1.0", "1.0", "2.0"]),  # float prefs are string prefs
     "intl.uidirection.en":                        lambda: "rtl",
     "gfx.canvas.azure.backends":                  lambda: "skia", # cg, direct2d, skia, cairo
 }
 
 
-
 def chance(p):
     return random.random() < p
+
 
 def loadBoolPrefs():
     prefs = []
@@ -53,13 +53,17 @@ def loadBoolPrefs():
 
     return prefs
 
+
 cachedBoolPrefs = None
+
+
 def boolPrefs():
     global cachedBoolPrefs
     if not cachedBoolPrefs:
         print "Loading bool prefs"
         cachedBoolPrefs = loadBoolPrefs()
     return cachedBoolPrefs
+
 
 def randomPrefs():
     s = ""
@@ -87,6 +91,8 @@ def randomPrefs():
 
 
 prefRE = re.compile(r'^user_pref\("([a-zA-Z0-9_\-\.]*)", (false|true|[\-0-9\.]*|"[a-zA-Z0-9_\-\.]*")\);$')
+
+
 def grabExtraPrefs(testcaseFilename):
     prefs = ""
 
@@ -108,6 +114,7 @@ def grabExtraPrefs(testcaseFilename):
 
     return prefs
 
+
 def findPrefsFiles(testcaseFilename):
     # If the testcase is a-1.html, we will look for prefs in a-1.html and a-prefs.txt.
     fns = []
@@ -117,7 +124,6 @@ def findPrefsFiles(testcaseFilename):
         hyphen = basename.find("-")
         if hyphen != -1:
             prefsFile = os.path.join(os.path.dirname(testcaseFilename), basename[0:hyphen] + "-prefs.txt")
-            #print "Looking for prefsFile: " + prefsFile
             if os.path.exists(prefsFile):
                 fns.append(prefsFile)
     return fns
