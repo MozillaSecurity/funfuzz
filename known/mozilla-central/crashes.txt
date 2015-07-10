@@ -312,3 +312,6 @@ mozilla::WebGLFramebuffer::FramebufferTexture2D
 # Bug 1130672
 js::jit::Assembler::bind
 
+# Bug 1182711
+js::ScopeIter::operator++
+
