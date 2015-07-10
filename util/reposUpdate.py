@@ -26,6 +26,12 @@ REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir
 REPOS = ['gecko-dev', 'lithium'] + ['mozilla-' + x for x in ['inbound', 'central', 'aurora', 'beta', 'release',
                                                              'esr' + str(ESR_NOW), 'esr' + str(ESR_NEXT)]]
 
+if sps.isWin:
+    # Assumes Git was installed using msysgitVS from http://go.microsoft.com/fwlink/?LinkId=278817
+    GITBINARY = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+else:
+    GITBINARY = 'git'
+
 
 def typeOfRepo(r):
     '''Returns the type of repository.'''
@@ -49,9 +55,9 @@ def updateRepo(repo):
         sps.timeSubprocess(['hg', 'log', '-r', 'default'], cwd=repo, vb=True)
     elif repoType == 'git':
         # Ignore exit codes so the loop can continue retrying up to number of counts.
-        sps.timeSubprocess(['git', 'fetch'],
+        sps.timeSubprocess([GITBINARY, 'fetch'],
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
-        sps.timeSubprocess(['git', 'merge', '--ff-only', 'origin/master'],
+        sps.timeSubprocess([GITBINARY, 'merge', '--ff-only', 'origin/master'],
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
     else:
         raise Exception('Unknown repository type: ' + repoType)
