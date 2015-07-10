@@ -40,6 +40,7 @@ browser.ctrlTab.previews
 browser.display.focus_ring_on_anything
 browser.display.force_inline_alttext
 browser.display.show_image_placeholders
+browser.display.show_loading_image_placeholder
 browser.display.use_document_colors
 browser.display.use_focus_colors
 browser.display.use_system_colors
