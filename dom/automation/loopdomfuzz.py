@@ -15,7 +15,7 @@ import randomPrefs
 p0 = os.path.dirname(os.path.abspath(__file__))
 fuzzingDomDir = os.path.abspath(os.path.join(p0, os.pardir))
 emptiesDir = os.path.abspath(os.path.join(fuzzingDomDir, "empties"))
-domInterestingpy = os.path.join("fuzzing", "dom", "automation", "domInteresting.py")
+domInterestingpy = os.path.join(fuzzingDomDir, "automation", "domInteresting.py")
 
 path1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'util'))
 sys.path.append(path1)
