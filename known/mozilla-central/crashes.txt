@@ -312,6 +312,3 @@ mozilla::WebGLFramebuffer::FramebufferTexture2D
 # Bug 1130672
 js::jit::Assembler::bind
 
-# Bug 1169639
-js::GlobalObject::getIntrinsicValue
-

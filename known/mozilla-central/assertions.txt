@@ -2162,9 +2162,6 @@ Assertion failure: self->contains(cx, aprop),
 # Bug 1158632
 Assertion failure: exprStack == stackDepth,
 
-# Bug 1169639
-Assertion failure: !getSlot(INTRINSICS).isUndefined(),
-
 # Bug 1174322
 Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i], val)),
 
