@@ -18,6 +18,14 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     return prefix + "gczeal" + "(" + level + ", " + period + ");";
   }
 
+  function callSetGCCallback() {
+    // https://dxr.mozilla.org/mozilla-central/source/js/src/shell/js.cpp - SetGCCallback
+    var phases = Random.index(["both", "begin", "end"]);
+    var actionAndOptions = rnd(2) ? 'action: "majorGC", depth: ' + rnd(17) : 'action: "minorGC"';
+    var arg = "{ " + actionAndOptions + ", phases: \"" + phases + "\" }";
+    return prefix + "setGCCallback(" + arg + ");";
+  }
+
   function tryCatch(statement)
   {
     return "try { " + statement + " } catch(e) { }";
@@ -139,6 +147,8 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // [TestingFunctions.cpp, but SLOW]
     // Make garbage collection extremely frequent
     { w: 1,  v: function(d, b) { return (rnd(100) === 0) ? (enableGCZeal()) : "void 0;"; } },
+
+    { w: 10, v: callSetGCCallback },
   ];
 
   var testingFunctions = Random.weighted(browser ? sharedTestingFunctions : sharedTestingFunctions.concat(shellOnlyTestingFunctions));
