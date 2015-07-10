@@ -27,7 +27,7 @@ REPOS = ['gecko-dev', 'lithium'] + ['mozilla-' + x for x in ['inbound', 'central
                                                              'esr' + str(ESR_NOW), 'esr' + str(ESR_NEXT)]]
 
 if sps.isWin:
-    # Assumes Git was installed using msysgitVS from http://go.microsoft.com/fwlink/?LinkId=278817
+    # Assumes Git was installed from https://msysgit.github.io/
     GITBINARY = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
 else:
     GITBINARY = 'git'
