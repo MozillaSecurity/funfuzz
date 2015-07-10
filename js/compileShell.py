@@ -208,7 +208,14 @@ def autoconfRun(cwDir):
                             if sps.isProgramInstalled('brew') else 'autoconf213'
         subprocess.check_call([autoconf213MacBin], cwd=cwDir)
     elif sps.isLinux:
-        subprocess.check_call(['autoconf2.13'], cwd=cwDir)
+        # FIXME: We should use a method that is similar to the client.mk one, as per
+        #   https://github.com/MozillaSecurity/funfuzz/issues/9
+        try:
+            # Ubuntu
+            subprocess.check_call(['autoconf2.13'], cwd=cwDir)
+        except OSError:
+            # Fedora has a different name
+            subprocess.check_call(['autoconf-2.13'], cwd=cwDir)
     elif sps.isWin:
         # Windows needs to call sh to be able to find autoconf.
         subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
