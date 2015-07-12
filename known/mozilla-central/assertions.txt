@@ -2174,3 +2174,6 @@ Assertion failure: !call->hasSingleTarget(),
 # Bug 1182711
 Assertion failure: ssi_.type() == StaticScopeIter<CanGC>::Function,
 
+# Bug 1182865
+Assertion failure: this->is<T>(),
+
