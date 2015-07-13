@@ -2180,3 +2180,6 @@ Assertion failure: this->is<T>(),
 # Bug 1182866
 Assertion failure: data.s.payload.why == why,
 
+# Bug 1183375
+Assertion failure: !IsInsideNursery(&lir->object()->toConstant()->toObject()),
+
