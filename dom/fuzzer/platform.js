@@ -2,7 +2,6 @@ var Platform = (function () {
   var version, webkitVersion, platform = {};
 
   var userAgent = (navigator.userAgent).toLowerCase();
-  var language = navigator.language || navigator.browserLanguage;
 
   version = platform.version = (userAgent.match(/.*(?:rv|chrome|webkit|opera|ie)[\/: ](.+?)([ \);]|$)/) || [])[1];
   webkitVersion = (userAgent.match(/webkit\/(.+?) /) || [])[1];
@@ -36,7 +35,6 @@ var Platform = (function () {
   platform.isiOSHomeScreen = platform.isMobileSafari && !/apple.*mobile.*safari/.test(userAgent);
   platform.safari = platform.webkit && !platform.chrome && !platform.iOS && !platform.android ? webkitVersion : 0;
   platform.isSafari = !!platform.safari;
-  platform.language = language.split("-", 1)[0];
   platform.current =
     platform.msie ? "msie" :
       platform.mozilla ? "mozilla" :
