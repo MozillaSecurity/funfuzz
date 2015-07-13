@@ -299,6 +299,9 @@ nsSVGEffects::InvalidateRenderingObservers
 # Bug 1074584
 mozilla::WebGLFramebuffer::FramebufferTexture2D
 
+# Bug 1183363
+mozilla::dom::CanvasRenderingContext2D::IsPointInPath
+
 
 #############################
 #                           #
