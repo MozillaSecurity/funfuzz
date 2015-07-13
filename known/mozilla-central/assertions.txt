@@ -165,7 +165,7 @@ ASSERTION: min larger than pref: 'mMinCoord <= mPrefCoord', file layout/tables/n
 ASSERTION: intrinsic widths out of order: 'aSpanMinCoord <= aSpanPrefCoord', file layout/tables/nsTableColFrame.h
 ASSERTION: min larger than pref: 'mSpanMinCoord <= mSpanPrefCoord', file layout/tables/nsTableColFrame.h
 # Bug 387205 whenfixed-jesse 'y'
-ASSERTION: assigned width smaller than min: 'col_width >= colFrame->GetMinCoord()', file layout/tables/BasicTableLayoutStrategy.cpp
+ASSERTION: assigned inline-size smaller than min: 'col_iSize >= colFrame->GetMinCoord()', file layout/tables/BasicTableLayoutStrategy.cpp
 
 # Bug 387754
 ASSERTION: How'd we get a floated inline frame? The frame ctor should've dealt with this.: '!aReflowState.IsFloating()', file layout/generic/nsLineLayout.cpp
