@@ -82,7 +82,7 @@ var annoyingProperties = [
 function propertyIsAnnoying(obj, prop)
 {
   for (var entry of annoyingProperties) {
-    if ((obj instanceof window[entry.iface]) && (prop in entry.props)) {
+    if ((entry.iface in window) && (obj instanceof window[entry.iface]) && (prop in entry.props)) {
       return true;
     }
   }
