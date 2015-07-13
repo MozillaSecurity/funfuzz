@@ -241,7 +241,7 @@ var fuzzerRandomClasses = (function() {
       var features = [];
       // Font-family is weird. The first few sub-properties can be ordered in various ways...
       // https://developer.mozilla.org/en-US/docs/Web/CSS/font
-      for (let sub of ["font-style", "font-variant", "font-weight", "font-stretch"]) {
+      for (var sub of ["font-style", "font-variant", "font-weight", "font-stretch"]) {
         if (rnd(2)) {
           features.push(propertyValue(sub));
         }
