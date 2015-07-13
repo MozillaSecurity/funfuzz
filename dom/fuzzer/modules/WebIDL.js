@@ -288,4 +288,8 @@ var fuzzerWebIDL = (function () {
 
 })();
 
-registerModule("fuzzerWebIDL", 30);
+if ("fuzzPriv" in window) {
+  registerModule("fuzzerWebIDL", 30);
+} else {
+  dumpln("Warning: DOMFuzz can't load WebIDL database.");
+}
