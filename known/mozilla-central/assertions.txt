@@ -201,11 +201,11 @@ ASSERTION: null node passed to nsEditor::Tag(): 'aNode', file editor/libeditor/b
 ASSERTION: null parent passed to nsHTMLEditUtils::IsList: 'node', file editor/libeditor/html/nsHTMLEditUtils.cpp
 
 # Bug 416639
-ASSERTION: Table width is less than the sum of its columns' min widths: '!(aWidthType == BTLS_FINAL_WIDTH && aWidth < guess_min)', file layout/tables/BasicTableLayoutStrategy.cpp
+ASSERTION: Table inline-size is less than the sum of its columns' min inline-sizes: '!(aISizeType == BTLS_FINAL_ISIZE && aISize < guess_min)', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: didn't subtract all that we added: '(space == 0 || space == nscoord_MAX) && ((l2t == FLEX_PCT_LARGE) ? (-0.001f < basis.f && basis.f < 0.001f) : (basis.c == 0 || basis.c == nscoord_MAX))', file layout/tables/BasicTableLayoutStrategy.cpp
-ASSERTION: Can't solve for both left and right:
+ASSERTION: Can't solve for both start and end
 # Bug 448083
-ASSERTION: Can't solve for both left and right:
+ASSERTION: Can't solve for both start and end
 
 # Bug 397568
 ASSERTION: Unable to locate an XBL binding.: 'protoBinding', file content/xbl/src/nsXBLService.cpp
@@ -1968,7 +1968,7 @@ Assertion failure: nsContentUtils::IsSystemPrincipal(triggeringPrincipal),
 ASSERTION: expected descendants to be handled by now: 'aData->mDescendants.IsEmpty()', file layout/base/RestyleTracker.cpp
 
 # Bug 1133619
-ASSERTION: containing block height must be constrained:
+ASSERTION: containing block bsize must be constrained:
 ASSERTION: unexpected containing block block-size:
 
 # Bug 1133622
@@ -2121,6 +2121,12 @@ Assertion failure: !oldScopedRuleProcessorHash.Get(scope) (duplicate rule proces
 
 # Bug 1183394
 ASSERTION: Must have state machine to start state machine thread: 'mDecoderStateMachine', file dom/media/MediaDecoder.cpp
+
+# Bug 1183421
+ASSERTION: Negative descent???: 'aMetrics.BSize(aMetrics.GetWritingMode()) - aMetrics.BlockStartAscent() >= 0', file layout/generic/nsTextFrame.cpp
+
+# Bug 1183431
+ASSERTION: block direction mismatch: 'hypotheticalBox.mWritingMode.GetBlockDir() == cbwm.GetBlockDir()', file layout/generic/nsHTMLReflowState.cpp
 
 
 ################################
