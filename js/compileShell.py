@@ -266,7 +266,9 @@ def cfgBin(shell, binToBeCompiled):
     cfgEnvDt = copy.deepcopy(os.environ)
     origCfgEnvDt = copy.deepcopy(os.environ)
     cfgEnvDt['AR'] = 'ar'
-    if shell.buildOptions.buildWithAsan:
+    # Check for determinism to prevent LLVM compilation from happening on releng machines,
+    # since releng machines only test non-deterministic builds.
+    if shell.buildOptions.buildWithAsan and shell.buildOptions.enableMoreDeterministic:
         llvmPath = envVars.findLlvmBinPath()
         assert llvmPath is not None
         CLANG_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang'))

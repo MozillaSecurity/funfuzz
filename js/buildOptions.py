@@ -236,6 +236,10 @@ def areArgsValid(args):
         return False, '--run-with-valgrind needs --build-with-valgrind.'
 
     if args.buildWithAsan:
+        # Also check for determinism to prevent LLVM compilation from happening on releng machines,
+        # since releng machines only test non-deterministic builds.
+        if not args.enableMoreDeterministic:
+            return False, 'We should test deterministic ASan builds.'
         if sps.isLinux:
             return False, 'FIXME: Figure out why compiling with Asan does not work in this harness.'
         if sps.isWin:
