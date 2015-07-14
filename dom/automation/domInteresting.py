@@ -255,7 +255,8 @@ class AmissLogHandler:
 
 def chromeFailure(msg):
     """Look for strings that indicate failures in privileged Firefox code, as well as general JS failures from files we know are privileged."""
-    return ("A coding exception was thrown and uncaught in a Task" in msg or  # These are followed by stacks, which could be used to distinguish them...
+    return (
+            #"A coding exception was thrown and uncaught in a Task" in msg or  # bug 1183435 || These are followed by stacks, which could be used to distinguish them...
             "System JS : ERROR" in msg or
             "JS Component Loader: ERROR" in msg or
             (generalJsFailure(msg) and jsInChrome(msg)))
