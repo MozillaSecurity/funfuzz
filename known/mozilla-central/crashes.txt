@@ -303,6 +303,9 @@ mozilla::WebGLFramebuffer::FramebufferTexture2D
 mozilla::dom::CanvasRenderingContext2D::IsPointInPath
 CanvasRenderingContext2D
 
+# Bug 1183896
+nsTableRowFrame::ReflowChildren
+
 
 #############################
 #                           #
