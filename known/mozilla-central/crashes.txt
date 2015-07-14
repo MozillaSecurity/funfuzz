@@ -319,3 +319,6 @@ js::jit::Assembler::bind
 # Bug 1182711
 js::ScopeIter::operator++
 
+# Bug 1183448
+NativeSetExistingDataProperty
+
