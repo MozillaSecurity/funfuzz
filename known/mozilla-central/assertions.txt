@@ -370,8 +370,8 @@ ASSERTION: bits don't correspond to style change reason: 'aIntrinsicDirty != eSt
 ASSERTION: bits don't correspond to style change reason: '!(aIntrinsicDirty == eStyleChange && aBitToAdd == NS_FRAME_HAS_DIRTY_CHILDREN)', file layout/base/nsPresShell.cpp
 
 # Bug 481089
-ASSERTION: Negative containing block height!: 'aContainingBlockHeight >= 0', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: Negative containing block width!: 'aContainingBlockWidth >= 0', file layout/generic/nsHTMLReflowState.cpp
+ASSERTION: Negative containing block height!: 'cbSize.BSize(wm) >= 0', file layout/generic/nsHTMLReflowState.cpp
+ASSERTION: Negative containing block width!: 'cbSize.ISize(wm) >= 0', file layout/generic/nsHTMLReflowState.cpp
 
 # Bug 481301
 ASSERTION: wrong thread: 'PR_GetCurrentThread() == gSocketThread', file netwerk/protocol/http/src/nsHttpTransaction.cpp
