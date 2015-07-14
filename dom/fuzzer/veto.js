@@ -114,6 +114,7 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
+                "fonts",             // bug 1183484
             ]
         },
         {
