@@ -29,14 +29,14 @@ If you want to use these scripts to compile SpiderMonkey or Firefox, install the
 
 1. On Mac OS X 10.9, you must first install a newer version of unzip than the one that comes with the OS. (Old versions [hit an error](https://bugzilla.mozilla.org/show_bug.cgi?id=1032391) on large zip files, such as the "mac64.tests.zip" file that [downloadBuild.py](util/downloadBuild.py) grabs.)
 
-```
-brew install homebrew/dupes/unzip
-brew link --force unzip
-```
+  ```
+  brew install homebrew/dupes/unzip
+  brew link --force unzip
+  ```
 
 2. If you encounter problems accessing the compiler, try re-running this command:
 
-```xcode-select --install```
+  ```xcode-select --install```
 
 especially after updating major/minor OS versions. This sometimes manifests on Mac OS X Combo updates.
 
@@ -44,9 +44,10 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 ### Linux
 
 1. To ensure your core dumps don't get mixed up when multiple instances crash at the same time, run:
-```
-echo -n 1 | sudo tee /proc/sys/kernel/core_uses_pid
-```
+
+  ```
+  echo -n 1 | sudo tee /proc/sys/kernel/core_uses_pid
+  ```
 2. Install 32-bit libraries to compile 32-bit binaries:
   * Debian/Ubuntu: ```sudo apt-get install lib32z1 gcc-multilib g++-multilib```
   * Fedora: (Fedora is known to work, however the exact library names are unknown for now.)
