@@ -306,6 +306,9 @@ CanvasRenderingContext2D
 # Bug 1183896
 nsTableRowFrame::ReflowChildren
 
+# Bug 1183954
+nsStructuredCloneContainer::AddRef
+
 
 #############################
 #                           #
