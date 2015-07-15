@@ -131,6 +131,7 @@ dom.undo_manager.enabled
 dom.url.encode_decode_hash
 dom.url.getters_decode_hash
 dom.wakelock.enabled
+dom.webcomponents.enabled
 dom.webnotifications.workers.enabled
 dom.workers.enabled
 editor.use_css
@@ -146,6 +147,7 @@ geo.enabled
 gfx.canvas.azure.enabled
 gfx.canvas.azure.accelerated
 gfx.color_management.enablev4
+gfx.color_management.force_srgb
 gfx.direct2d.disabled
 gfx.downloadable_fonts.disable_cache
 gfx.downloadable_fonts.enabled
@@ -191,6 +193,8 @@ layout.css.contain.enabled
 layout.css.display-contents.enabled
 layout.css.DOMMatrix.enabled
 layout.css.object-fit-and-position.enabled
+layout.css.unicode-range.enabled
+layout.css.ruby.enabled
 layers.deaa.enabled
 layers.enable-tiles
 layout.event-regions.enabled

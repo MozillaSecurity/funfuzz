@@ -19,19 +19,25 @@ user_pref("dom.disable_window_flip", false);
 user_pref("extensions.enabledScopes", 5);
 user_pref("extensions.autoDisableScopes", 0);
 user_pref("extensions.update.notifyUser", false);
+user_pref("extensions.installDistroAddons", false);
+user_pref("xpinstall.signatures.required", false);
 user_pref("security.fileuri.strict_origin_policy", false);
 user_pref("dom.min_background_timeout_value", 4);
 user_pref("dom.successive_dialog_time_limit", 0);
 user_pref("network.manage-offline-status", false);
+user_pref("layout.spammy_warnings.enabled", false);
 
 // Disable a timer-based drawWindow call in favor of fuzzPriv.callDrawWindow.
 user_pref("browser.pageThumbs.enabled", false);
+user_pref("browser.pagethumbnails.capturing_disabled", true);
 
 // Reset things (on each startup) that might be set by fuzzing
 user_pref("javascript.options.gczeal", 0);
 
 // Disable first-run annoyances.
+user_pref("browser.newtabpage.updateIntroShown", true);
 user_pref("browser.tabs.warnOnClose", false);
+user_pref("browser.warnOnQuit", false);
 user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.EULA.override", true);
 user_pref("toolkit.telemetry.prompted", 2);
@@ -41,8 +47,10 @@ user_pref("browser.firstrun.show.localepicker", false);
 user_pref("browser.firstrun.show.uidiscovery", false);
 user_pref("browser.startup.page", 0); // use about:blank, not browser.startup.homepage
 user_pref("general.warnOnAboutConfig", false);
-user_pref("browser.displayedE10SPrompt", 5);
+user_pref("browser.displayedE10SPrompt.1", 5);
 user_pref("browser.newtabpage.introShown", true);
+user_pref("browser.reader.detectedFirstArticle", true);
+user_pref("browser.readinglist.introShown", true);
 //user_pref("datareporting.policy.dataSubmissionPolicyBypassAcceptance", true);
 
 // Suppress automatic safe mode after crashes.
@@ -51,7 +59,10 @@ user_pref("toolkit.startup.max_resumed_crashes", -1);
 // Turn off various things in firefox that try to contact servers,
 // to improve performance and sanity.
 // http://support.mozilla.com/en-US/kb/Firefox+makes+unrequested+connections
+user_pref("browser.aboutHomeSnippets.updateUrl", "nonexistent://test");
 user_pref("browser.newtabpage.enhanced", false);
+user_pref("browser.newtabpage.directory.ping", "");
+user_pref("browser.newtabpage.directory.source", 'data:application/json,{"testing":1}');
 user_pref("browser.safebrowsing.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
 user_pref("browser.search.update", false);
@@ -59,6 +70,7 @@ user_pref("browser.webapps.checkForUpdates", 0);
 user_pref("app.update.enabled", false);
 user_pref("app.update.stage.enabled", false);
 user_pref("app.update.staging.enabled", false);
+user_pref("app.update.url.android", "");
 user_pref("extensions.update.enabled", false);
 user_pref("extensions.getAddons.cache.enabled", false);
 user_pref("extensions.blocklist.enabled", false);
@@ -71,6 +83,11 @@ user_pref("toolkit.telemetry.unified", false);
 user_pref("plugins.update.url", "");
 user_pref("datareporting.healthreport.service.enabled", false);
 user_pref("datareporting.healthreport.uploadEnabled", false);
+user_pref("browser.urlbar.suggest.searches", false);
+user_pref("browser.snippets.enabled", false);
+user_pref("browser.snippets.firstrunHomepage.enabled", false);
+user_pref("browser.snippets.syncPromo.enabled", false);
+user_pref("general.useragent.updates.enabled", false);
 
 // Prevent the fuzzer from accidentally contacting servers.
 //   Note: Since we are not actually running a proxy on port 6,
