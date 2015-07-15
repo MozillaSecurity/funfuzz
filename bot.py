@@ -411,7 +411,7 @@ def printMachineInfo():
         print('Error involving gdb is: ' + repr(e))
 
     # FIXME: Should have if os.path.exists(path to git) or something
-    #print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
+    print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print "Python version: " + sys.version[:5]
     print "Number of cores visible to OS: " + str(multiprocessing.cpu_count())
     print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
