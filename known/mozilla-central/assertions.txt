@@ -2192,3 +2192,6 @@ Assertion failure: data.s.payload.why == why,
 # Bug 1183375
 Assertion failure: !IsInsideNursery(&lir->object()->toConstant()->toObject()),
 
+# Bug 1184389
+Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
+
