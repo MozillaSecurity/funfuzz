@@ -2177,6 +2177,9 @@ Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i],
 # Bug 1174547
 Assertion failure: type == MIRType_Object,
 
+# Bug 1180047
+Assertion failure: !IsInternalFunctionObject(*obj),
+
 # Bug 1181336
 Assertion failure: !call->hasSingleTarget(),
 
