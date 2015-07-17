@@ -2128,6 +2128,9 @@ ASSERTION: Negative descent???: 'aMetrics.BSize(aMetrics.GetWritingMode()) - aMe
 # Bug 1183431
 ASSERTION: block direction mismatch: 'hypotheticalBox.mWritingMode.GetBlockDir() == cbwm.GetBlockDir()', file layout/generic/nsHTMLReflowState.cpp
 
+# Bug 1184807
+ASSERTION: Failed NS_DispatchToMainThread() in shutdown; leaking: 'false', file xpcom/glue/nsThreadUtils.cpp
+
 
 ################################
 #                              #
