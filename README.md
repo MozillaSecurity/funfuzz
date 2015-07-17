@@ -20,7 +20,7 @@ If you want to use these scripts to compile SpiderMonkey or Firefox, install the
 
 ### Windows
 
-1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) to get an msys shell.
+1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.0.0) to get an msys shell.
 2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories.
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
 
