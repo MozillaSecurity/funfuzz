@@ -2131,6 +2131,15 @@ ASSERTION: block direction mismatch: 'hypotheticalBox.mWritingMode.GetBlockDir()
 # Bug 1184807
 ASSERTION: Failed NS_DispatchToMainThread() in shutdown; leaking: 'false', file xpcom/glue/nsThreadUtils.cpp
 
+# Bug 1185176
+Assertion failure: mStream (How come we don't have a stream here?),
+
+# Bug 1185185
+Assertion failure: aCoord.IsCoordPercentCalcUnit(),
+
+# Bug 1185191, bug 1185192
+Invalid AudioContextState transition
+
 
 ################################
 #                              #
