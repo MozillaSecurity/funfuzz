@@ -548,6 +548,8 @@ def rdfInit(args):
             else:
                 break
 
+        lev = DOM_FINE
+
         if status < 0 and os.name == 'posix':
             # The program was terminated by a signal, which usually indicates a crash.
             signum = -status
@@ -557,9 +559,11 @@ def rdfInit(args):
                 wantStack = True
                 assert alh.theapp
                 crashLog = sps.grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
-                alh.crashWatcher.readCrashLog(crashLog)
-
-        lev = DOM_FINE
+                if crashLog:
+                    alh.crashWatcher.readCrashLog(crashLog)
+                else:
+                    alh.printAndLog("@@@ The browser crashed, but did not leave behind any crash information!")
+                    lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
 
         if alh.newAssertionFailure:
             lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
