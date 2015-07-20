@@ -249,6 +249,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
 
     if debuggerCmd:
         vdump(' '.join(debuggerCmd))
+        coreFile = debuggerCmd[-1]
+        assert os.path.isfile(coreFile)
         debuggerExitCode = subprocess.call(
             debuggerCmd,
             stdin=None,
@@ -262,15 +264,11 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
         if debuggerExitCode != 0:
             print 'Debugger exited with code %d : %s' % (debuggerExitCode, shellify(debuggerCmd))
         if useLogFiles:
-            if os.path.isfile(normExpUserPath(debuggerCmd[-1])):
-                # Path to memory dump is the last element of debuggerCmd.
-                shutil.move(debuggerCmd[-1], logPrefix + "-core")
-                subprocess.call(["gzip", '-f', logPrefix + "-core"])
-                # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
-                return logPrefix + "-crash.txt"
-            else:
-                print 'This file does not exist: ' + debuggerCmd[-1]
+            shutil.move(coreFile, logPrefix + "-core")
+            subprocess.call(["gzip", '-f', logPrefix + "-core"])
+            # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
+            subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
+            return logPrefix + "-crash.txt"
         else:
             print "I don't know what to do with a core file when logPrefix is null"
 
