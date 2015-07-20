@@ -53,7 +53,6 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
 
     fuzzerJS = os.path.abspath(os.path.join(tempDir, "fuzzer-combined.js"))
     linkFuzzer(fuzzerJS)
-    print fuzzerJS
     os.environ["DOM_FUZZER_SCRIPT"] = fuzzerJS
 
     levelAndLines, options = domInteresting.rdfInit(args)
