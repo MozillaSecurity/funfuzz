@@ -372,7 +372,7 @@ class FigureOutDirs:
         self.utilityDir = None
         self.stackwalk = None
         if not os.path.exists(browserDir):
-            raise Exception("browserDir (%s) does not exist" % browserDir)
+            usage("browserDir does not exist: %s" % browserDir)
 
         if os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "tests")):
             # browserDir is a downloaded packaged build, perhaps downloaded with downloadBuild.py.  Great!
@@ -395,8 +395,7 @@ class FigureOutDirs:
             self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
             self.symbolsDir = os.path.join(browserDir, "dist", "crashreporter-symbols")
         else:
-            print "browserDir: " + repr(browserDir)
-            raise Exception("browserDir should be an objdir for a local build, or a Tinderbox build downloaded with downloadBuild.py")
+            usage("browserDir does not appear to be a valid build: " + repr(browserDir))
 
         #if not os.path.exists(self.appDir):
         #  raise Exception("Oops! appDir does not exist!")
@@ -441,7 +440,7 @@ def rdfInit(args):
     levelAndLines is a function that runs Firefox in a clean profile and analyzes Firefox's output for bugs.
     """
 
-    parser = OptionParser()
+    parser = OptionParser(usage="%prog [options] browserDir [testcaseURL]")
     parser.add_option("--valgrind",
                       action="store_true", dest="valgrind",
                       default=False,
@@ -456,6 +455,8 @@ def rdfInit(args):
                       help="Run the browser in the background on Mac (e.g. for local reduction)")
     options, args = parser.parse_args(args)
 
+    if len(args) < 1:
+        usage("Missing browserDir argument")
     browserDir = args[0]
     dirs = FigureOutDirs(getFullPath(browserDir))
 
@@ -641,6 +642,13 @@ def rdfInit(args):
     return levelAndLines, options  # return a closure along with the set of options
 
 
+def usage(note):
+    print note
+    print "(browserDir should be an objdir for a local build, or a Tinderbox build downloaded with downloadBuild.py)"
+    print
+    sys.exit(2)
+
+
 # For use by Lithium
 def init(args):
     global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
@@ -666,6 +674,7 @@ def directMain():
     level, lines = levelAndLines(options.argURL or "about:blank", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
     print level
     sys.exit(level)
+
 
 if __name__ == "__main__":
     directMain()
