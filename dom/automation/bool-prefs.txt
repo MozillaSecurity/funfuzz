@@ -237,10 +237,16 @@ media.audio_data.enabled
 media.autoplay.enabled
 media.block-play-until-visible
 media.dash.enabled
+media.format-reader.mp4
+media.mediasource.format-reader.mp4
 media.gstreamer.enabled
 media.h264.enabled
 media.mediasource.enabled
 media.mediasource.format-reader
+media.mediasource.format-reader.mp4
+media.mediasource.format-reader.webm
+media.mediasource.mp4.enabled
+media.mediasource.webm.enabled
 media.ogg.enabled
 media.opus.enabled
 media.raw.enabled
