@@ -334,7 +334,8 @@ def knownChromeFailure(msg):
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 949926
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or   # bug 978524
         ("LoginManagerParent.jsm" in msg and "this._recipeManager is null" in msg) or   # bug 1167872
-        ("nsDOMIdentity.js, line " in msg) or                                           # These seem to be intentional messages about misusing the identity API
+        ("nsDOMIdentity.js, line " in msg) or                                           # Intentional messages about misusing the API
+        ("IdpSandbox.jsm, line " in msg) or                                             # Intentional messages about misusing the API
         "DOMIdentity.jsm" in msg or                                                     # Bug 973397, bug 973398
         "abouthealth.js" in msg or                                                      # Bug 895113
         "WindowsPrefSync.jsm" in msg or                                                 # Bug 947581
