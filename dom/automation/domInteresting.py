@@ -337,6 +337,7 @@ def knownChromeFailure(msg):
         ("nsDOMIdentity.js, line " in msg) or                                           # Intentional messages about misusing the API
         ("IdpSandbox.jsm, line " in msg) or                                             # Intentional messages about misusing the API
         "DOMIdentity.jsm" in msg or                                                     # Bug 973397, bug 973398
+        "FxAccounts.jsm" in msg or                                                      # Intermittent errors on startup
         "abouthealth.js" in msg or                                                      # Bug 895113
         "WindowsPrefSync.jsm" in msg or                                                 # Bug 947581
         "nsIFeedWriter::close" in msg or                                                # Bug 813408
