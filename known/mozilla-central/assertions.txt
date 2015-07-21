@@ -1974,9 +1974,9 @@ ASSERTION: unexpected containing block block-size:
 # Bug 1133622
 ASSERTION: Audio output key not found: 'Error', file dom/media/MediaStreamGraph.cpp
 
-# Bug 1133935
-ASSERTION: ReflowChild with unconstrained container width!: 'aContainerWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsContainerFrame.cpp
-ASSERTION: FinishReflowChild with unconstrained container width!: 'aContainerWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsContainerFrame.cpp
+# Bug 1186147
+ASSERTION: ReflowChild with unconstrained container width!: 'aContainerSize.width != NS_UNCONSTRAINEDSIZE', file layout/generic/nsContainerFrame.cpp
+ASSERTION: FinishReflowChild with unconstrained container width!: 'aContainerSize.width != NS_UNCONSTRAINEDSIZE', file layout/generic/nsContainerFrame.cpp
 
 # Bug 1134439
 ASSERTION: Unconstrained inline line size in bidi frame reordering: 'lineSize != NS_UNCONSTRAINEDSIZE', file layout/base/nsBidiPresUtils.cpp
