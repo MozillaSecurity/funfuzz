@@ -196,9 +196,9 @@ layout.css.object-fit-and-position.enabled
 layout.css.unicode-range.enabled
 layout.css.ruby.enabled
 layers.deaa.enabled
-layers.enable-tiles
+#layers.enable-tiles  # Bug 1186208
 layout.event-regions.enabled
-layers.force-enable-tiles
+#layers.force-enable-tiles  # Bug 1186208
 layers.tiled-drawtarget.enabled
 layers.force-active
 #layers.offmainthreadcomposition.enabled # bug 717925
