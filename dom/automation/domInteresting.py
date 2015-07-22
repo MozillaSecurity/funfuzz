@@ -315,6 +315,7 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "this._cps2 is undefined" in msg) or                   # Bug 877013
         ("browser.js" in msg and "this.button is null" in msg) or                       # Bug 877013
         ("downloads.js" in msg and "\"Cu\" is read-only" in msg) or                     # Bug 1175877
+        ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1186346
         ("browser.xml" in msg and "this.docShell is null" in msg) or                    # Bug 919362
         ("places.js" in msg and "PlacesUIUtils is not defined" in msg) or               # Bug 801436
         ("places.js" in msg and "this._places is null" in msg) or                       # Bug 893322
