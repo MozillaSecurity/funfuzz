@@ -2140,6 +2140,9 @@ Assertion failure: aCoord.IsCoordPercentCalcUnit(),
 # Bug 1185191, bug 1185192
 Invalid AudioContextState transition
 
+# Bug 1186682
+Assertion failure: outputTrack->GetEnd() == GraphTimeToStreamTime(interval.mStart) (Samples missing),
+
 
 ################################
 #                              #
