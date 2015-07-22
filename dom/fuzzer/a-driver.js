@@ -108,7 +108,6 @@ function recordSomehow()
       break;
 
     case "Record as it goes":
-      // alert("This fuzzer records as it goes.  If you encounter a crash or other bug you want to reduce, grep console output for lines containing origCount and paste that in as a fuzzCommands array.");
       immedChunk(numImmediate || stepsPerInterval);
       break;
 
@@ -166,10 +165,10 @@ function fuzzTryMakeCommand()
     var MTA_str = uneval(MTA);
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
     if (MTA_str != rnd.lastDumpedMTA) {
-      dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { if (Random.twister) { Random.twister.import_mta(" + MTA_str + "); } }"));
+      dumpln(fuzzRecord(oPrefix, 'mta', "fun: function() { if (Random.twister) { Random.twister.import_mta(" + MTA_str + "); } }"));
       rnd.lastDumpedMTA = MTA_str;
     }
-    dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { if (Random.twister) { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); } }"));
+    dumpln(fuzzRecord(oPrefix, 'mti', "fun: function() { if (Random.twister) { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); } }"));
   }
 
   if (dumpEachSeed) {
@@ -395,11 +394,11 @@ function playFuns()
   if (command == null)
     return false;
 
-  if (command.origCount != null)
-    dumpln("origCount: " + command.origCount);
+  if ("note" in command)
+    dumpln("Playback: " + command.note);
 
   if (command.fun) {
-    fuzzTryCommand(command.fun, "origCount==" + command.origCount);
+    fuzzTryCommand(command.fun, command.note);
   }
 
   return command;
@@ -438,7 +437,7 @@ function recordFuns()
     var commands = fuzzTryMakeCommand();
 
     for (var i = 0; i < commands.length; ++i)
-      output += fuzzRecord(oPrefix, fuzzCount + "fun: function() { " + commands[i].str + " }") + "\n";
+      output += fuzzRecord(oPrefix, fuzzCount, "fun: function() { " + commands[i].str + " }") + "\n";
 
     var countAfterImmed = fuzzCount - numImmediate;
     if((countAfterImmed >= 0) && (countAfterImmed % stepsPerInterval === 0)) {
@@ -451,16 +450,16 @@ function recordFuns()
   dumpln("// Paste this into the script, replacing the first two lines:\n\n" + output);
 }
 
-function fuzzRecord(prefix, count, x)
+function fuzzRecord(prefix, note, x)
 {
-  function lineUp(s)
+  function lineUp(s, n)
   {
     s = "" + s;
-    while (s.length < 5)
+    while (s.length < n)
       s = " " + s;
     return s;
   }
-  return prefix + "fuzzCommands.push({ origCount: " + lineUp(count) + ", " + x.replace(/<\/script/g, "<\\/script") + " });";
+  return prefix + "fuzzCommands.push({ note: " + lineUp(simpleSource(note), 6) + ", " + x.replace(/<\/script/g, "<\\/script") + " });";
 }
 
 

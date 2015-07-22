@@ -154,8 +154,8 @@ def createReproFile(fuzzerJS, extraPrefs, lines, logPrefix):
     quittage = [
         extraPrefs,
         "// DDEND\n",
-        "fuzzCommands.push({origCount: 8888, rest: true, timeout: 3000});\n",
-        "fuzzCommands.push({origCount: 9999, fun: function() { fuzzPriv.quitApplication(); } });\n"
+        'fuzzCommands.push({note: "done", rest: true, timeout: 3000});\n',
+        'fuzzCommands.push({note: "quit", fun: function() { fuzzPriv.quitApplication(); } });\n',
         "\n",
         "function user_pref() { /* Allow randomPrefs.py to parse user_pref lines from this file */ }\n",
     ]

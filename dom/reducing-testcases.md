@@ -9,12 +9,13 @@ Browser engine developers appreciate reduced testcases, because they are easier 
 
 ```
 var fuzzCommands = [
-  ...
   // DDBEGIN
-  ... a large number of generated functions ...
+  { note: 101,    fun: function() { ... } },
+  { note: 102,    fun: function() { ... } },
+  ...
   // DDEND
-  { origCount: 10000, rest: true },
-  { origCount: 10001, fun: function() { fuzzPriv.quitApplication(); } },
+  { note: 'done', rest: true },
+  { note: 'quit', fun: function() { fuzzPriv.quitApplication(); } },
 ];
 ```
 

@@ -15,7 +15,7 @@ function serializeDOMAsScript(splitTextNodes, splitStyleAttributes)
   {
     for (var i = 0; i < cs.length; ++i) {
       var c = cs[i];
-      dumpln(fuzzRecord(oPrefix2, 0, "fun: function() { " + c + " }"));
+      dumpln(fuzzRecord(oPrefix2, note, "fun: function() { " + c + " }"));
     }
   }
 
