@@ -23,6 +23,8 @@ If you want to use these scripts to compile SpiderMonkey or Firefox, install the
 1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.0.0) to get an msys shell.
 2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories.
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
+4. Make sure you install at least Microsoft Visual Studio 2013 (Community Edition is recommended) as per the build instructions above in the Setup section.
+5. Run `start-shell-msvc2013.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files\ \(x86\)/Git/bin/git.exe`.
 
 
 ### Mac
@@ -54,3 +56,31 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 3. Install gdb:
   * Debian/Ubuntu: ```sudo apt-get install gdb```
   * Fedora: ???
+
+
+## Running funfuzz
+
+To run all of the domfuzz and js fuzzers which tests builds every 8 hours:
+
+`python -u funfuzz/loopBot.py -b "--random" --target-time 28800 | tee ~/log-loopBotPy.txt`
+
+To run only the js fuzzers which compiles shells with random configurations every 8 hours and tests them:
+
+`python -u funfuzz/loopBot.py -b "--random" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
+
+In js mode, loopBot.py makes use of [compileShell.py](js/compileShell.py), jsfunfuzz, [compareJIT.py](js/compareJIT.py) (if testing deterministic builds), randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository) and [autoBisect.py](autobisect-js/autoBisect.py) (if the mozilla repository is present).
+
+
+## FAQ:
+
+Q: What platforms does funfuzz run on?
+
+A: compileShell has been tested on Windows 7 and 8.1 (with MozillaBuild 2.0.0), Mac OS X 10.10 Yosemite and Ubuntu 12.04 and later. Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
+
+Fedora Linux has not been tested extensively and there may be a few bugs along the way.
+
+Support for Windows XP and Mac OS X 10.6 Snow Leopard have been removed.
+
+Q: What version of Python does funfuzz require?
+
+A: We recommend the Python 2.7.x series. There is no support for Python3 yet.
