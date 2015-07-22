@@ -55,3 +55,8 @@ The options accepted by -b are also available via funfuzz/js/buildOptions.py:
                         Build shells with --enable-simulator=arm64, only
                         applicable to 64-bit shells. Defaults to "False".
 ```
+
+## Additional information
+* compileShell
+  * [More examples](examples-compileShell.md)
+  * [FAQ](faq-compileShell.md)
