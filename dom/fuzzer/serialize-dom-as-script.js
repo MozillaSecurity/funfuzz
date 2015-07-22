@@ -184,12 +184,6 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
               for (var prop, j = 0; (prop = n.style.item(j)); ++j) {
                 var value = n.style.getPropertyValue(prop);
                 var priority = n.style.getPropertyPriority(prop);
-
-                // This should be a more precise regexp so it doesn't catch things like "inline-box"
-                if (value.indexOf("e+") != -1 || value.indexOf("e-") != -1) {
-                  dumpln("A style property has exponential notation (bug 373875), " + value);
-                }
-
                 cs.push(nodeStr + ".style.setProperty(" + simpleSource(prop) + ", " + simpleSource(value) + ", " + simpleSource(priority) + ");");
               }
             } else { // not splitting a style attribute
