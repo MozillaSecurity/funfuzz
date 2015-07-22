@@ -2143,6 +2143,9 @@ Invalid AudioContextState transition
 # Bug 1186682
 Assertion failure: outputTrack->GetEnd() == GraphTimeToStreamTime(interval.mStart) (Samples missing),
 
+# Bug 1186689
+Assertion failure: !mIsMapped (Someone forgot to call Unmap()),
+
 
 ################################
 #                              #
