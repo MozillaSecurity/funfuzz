@@ -73,14 +73,14 @@ In js mode, loopBot.py makes use of [compileShell.py](js/compileShell.py), jsfun
 
 ## FAQ:
 
-Q: What platforms does funfuzz run on?
+**Q: What platforms does funfuzz run on?**
 
-A: compileShell has been tested on Windows 7 and 8.1 (with MozillaBuild 2.0.0), Mac OS X 10.10 Yosemite and Ubuntu 12.04 and later. Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
+**A:** compileShell has been tested on Windows 7 and 8.1 (with MozillaBuild 2.0.0), Mac OS X 10.10 Yosemite and Ubuntu 12.04 and later. Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
 
 Support for Windows XP and Mac OS X 10.6 Snow Leopard have been removed.
 
-Q: What version of Python does funfuzz require?
+**Q: What version of Python does funfuzz require?**
 
-A: We recommend the Python 2.7.x series. There is no support for Python3 yet.
+**A:** We recommend the Python 2.7.x series. There is no support for Python3 yet.
