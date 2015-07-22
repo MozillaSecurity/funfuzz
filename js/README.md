@@ -77,6 +77,8 @@ To compile a debug 64-bit shell with AddressSanitizer (ASan) support, do:
 
 `funfuzz/js/compileShell.py -b "--enable-debug --enable-nspr-build --build-with-asan -R ~/trees/mozilla-central"`
 
+Note that this uses git to clone a specific known working revision of LLVM into `~/llvm`, compiles it, then uses this specific revision to compile SpiderMonkey.
+
 To compile an optimized 64-bit shell with Valgrind support, do:
 
 `funfuzz/js/compileShell.py -b "--enable-optimize --enable-nspr-build --build-with-valgrind -R ~/trees/mozilla-central"`
@@ -104,9 +106,13 @@ A: Moving forward, NSPR is compiled along with SpiderMonkey in the js build syst
 
 This flag is usually recommended for bisection and compatibility purposes, where the earliest possible revision that could be compiled is still prior to this change.
 
+Q: What are average build times for SpiderMonkey?
+
+A: On a decent Linux machine or a powerful Mac, both with 4 or more cores, 3-4 minutes on average. On Windows, probably 5-10 minutes. On an ARM ODROID board, up to an hour.
+
 Q: Do these build configure flags get passed into the js configure scripts?
 
-No, they are independent. We only implemented the most-useful flags in the harness.
+No, they are independent. We only implemented the flags that are most useful for fuzzing in the harness.
 
 Q: Will the gecko-dev Git mirror of mozilla-central be supported?
 
