@@ -137,28 +137,30 @@ function serializeHTML(n, outputXML)
     }
   }
 
-  function serializeDoctype()
-  {
-    var node = document.doctype;
-    if (!node)
-      return "";
-
-    // Based on http://stackoverflow.com/a/10162353/3011305
-    var html = ("<!DOCTYPE "
-              + node.name
-              + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
-              + (!node.publicId && node.systemId ? ' SYSTEM' : '')
-              + (node.systemId ? ' "' + node.systemId + '"' : '')
-              + '>');
-    return html;
-  }
-
   if (n) {
     return serializeSubtree(n, outputXML);
   } else {
     return serializeDoctype() + serializeSubtree(document.documentElement, outputXML);
   }
 }
+
+
+function serializeDoctype()
+{
+  var node = document.doctype;
+  if (!node)
+    return "";
+
+  // Based on http://stackoverflow.com/a/10162353/3011305
+  var html = ("<!DOCTYPE "
+            + node.name
+            + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+            + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+            + (node.systemId ? ' "' + node.systemId + '"' : '')
+            + '>');
+  return html;
+}
+
 
 function serializeXML(n)
 {
