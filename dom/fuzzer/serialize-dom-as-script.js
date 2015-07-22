@@ -26,10 +26,6 @@ function serializeDOMAsScript(root, splitTextNodes, splitStyleAttributes)
 
 function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
 {
-  function warn(s) {
-    dumpln(s);
-  }
-
   var rootStr = null;
   var magic = false;
 
@@ -57,7 +53,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
     } else if (root == null) {
       cs.push("document.removeChild(document.documentElement);");
     } else {
-      warn("Missing root!?");
+      dumpln("Missing root!?");
       createRoot = true;
     }
 
@@ -132,7 +128,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
       }
       ix = o.length;
       o[ix] = n;
-      warn("serializeDOMAsScript indexed a " + description + " as o[" + ix + "].");
+      dumpln("serializeDOMAsScript indexed a " + description + " as o[" + ix + "].");
     }
     return "o[" + ix + "]";
   }
@@ -191,7 +187,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
 
                 // This should be a more precise regexp so it doesn't catch things like "inline-box"
                 if (value.indexOf("e+") != -1 || value.indexOf("e-") != -1) {
-                  warn("A style property has exponential notation (bug 373875), " + value);
+                  dumpln("A style property has exponential notation (bug 373875), " + value);
                 }
 
                 cs.push(nodeStr + ".style.setProperty(" + simpleSource(prop) + ", " + simpleSource(value) + ", " + simpleSource(priority) + ");");
@@ -250,7 +246,7 @@ function serializeTreeAsScript(root, splitTextNodes, splitStyleAttributes)
         break;
 
       default:
-        warn("serializeDOMAsScript: " + nodeStr + " has unrecognized node type " + n.nodeType + ".");
+        dumpln("serializeDOMAsScript: " + nodeStr + " has unrecognized node type " + n.nodeType + ".");
     }
 
     // Finally, add this node to its parent (or closest surviving ancestor).
