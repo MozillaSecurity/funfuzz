@@ -5,9 +5,6 @@ var fuzzerSlurpFrames = (function() {
 
   function makeCommand()
   {
-    if (o.length > 500)
-      return [];
-
     if (slurpQueue.length && rnd(5)) {
       var frameExpr = slurpQueue.shift();
       return "fuzzerSlurpFrames.slurp(" + frameExpr + ");";
@@ -20,8 +17,7 @@ var fuzzerSlurpFrames = (function() {
         void commandQueue.shift();
     }
 
-    switch(rnd(6)) {
-    case 0:
+    if (rnd(10) === 0 && o.length < 500) {
       var uri = fuzzSrcTreePathToURI(Random.pick(fuzzValues.srcTreeReftestFilenames));
       if (uri.substr(0, 5) != "file:" || location.protocol != "file:") {
         // No point loading a non-same-origin page and attempting to slurp it.
@@ -39,9 +35,9 @@ var fuzzerSlurpFrames = (function() {
         newFrame + ".src = " + simpleSource(uri) + ";",
         "(document.body || document.documentElement).appendChild(" + newFrame + ");"
       ];
-    default:
-      return [];
     }
+
+    return [];
   }
 
   function slurpSoon(frameExpr)
