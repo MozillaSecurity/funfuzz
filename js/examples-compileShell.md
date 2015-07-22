@@ -1,4 +1,4 @@
-### More examples:
+### Examples:
 
 To compile a debug 64-bit deterministic shell used for profiling, do:
 
