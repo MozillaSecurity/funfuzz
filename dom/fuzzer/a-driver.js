@@ -10,7 +10,6 @@ var dumpEachCommand = false; // Can be set to true by using the "Record as it go
 var dumpEachSeed = false; // Can be set to true if makeCommand has side effects, such as crashing, so you have to reduce "the hard way".
 var pleaseSerializeDOMAsScript = false; // Can be set to true (and often is) ...
 var gPageCompleted = false;
-var reportAllErrors = false;
 
 // Treat internal errors (makeCommand throwing or generating syntax errors) as bugs,
 // unless a module tells us not to by setting this to false.
@@ -284,8 +283,7 @@ function fuzzTryCommand(fun, note)
       errorAsString = "[cannot convert this exception to string!]";
     }
 
-    if (reportAllErrors)
-      dumpln("Thrown from " + note + ": " + errorAsString);
+    dumpln("Thrown from " + note + ": " + errorAsString);
   }
 
   clearTimeout(failtimer);
