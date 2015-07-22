@@ -62,11 +62,11 @@ var fuzzerSlurpFrames = (function() {
   {
     try {
       var oldOLen = o.length;
-      var cs = serializeTreeAsScript(frameObj.contentDocument.documentElement);
+      var cs = scriptizeNode(frameObj.contentDocument.documentElement, "o[" + o.length + "]");
       var newOLen = o.length;
 
-      // Undo what serializeTreeAsScript just did, because we want to redo it ourselves.
-      // (This is smelly; serializeTreeAsScript should be refactored to handle this use case better.)
+      // Undo what scriptizeNode just did, because we want to redo it ourselves.
+      // (This is smelly; scriptizeNode should be refactored to handle this use case better.)
       for (var i = oldOLen; i < newOLen; ++i) {
         o[i] = null;
       }
