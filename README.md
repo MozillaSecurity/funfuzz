@@ -1,4 +1,4 @@
-This repository contains two JavaScript-based fuzzers. [jsfunfuzz](js) tests JavaScript engines and can run in a JavaScript shell. [DOMFuzz](dom) tests layout and other parts of browser engines through DOM API calls.
+This repository contains two JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell. [DOMFuzz](dom) tests layout and other parts of browser engines through DOM API calls.
 
 Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](autobisect-js).
 
