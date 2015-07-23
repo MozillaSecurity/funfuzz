@@ -3,6 +3,13 @@ user_pref("browser.tabs.remote.autostart", false);
 user_pref("browser.tabs.remote.autostart.1", false);
 user_pref("browser.tabs.remote.autostart.2", false);
 
+// Allow installing the dom fuzz helper extension.
+user_pref("extensions.enabledScopes", 5);
+user_pref("extensions.autoDisableScopes", 0);
+user_pref("extensions.update.notifyUser", false);
+user_pref("extensions.installDistroAddons", false);
+user_pref("xpinstall.signatures.required", false);
+
 // Extend the time before slow script dialogs appear.
 user_pref("dom.max_chrome_script_run_time", 75);
 user_pref("dom.max_script_run_time", 60);
@@ -16,11 +23,6 @@ user_pref("dom.disable_window_status_change", false);
 user_pref("dom.disable_window_move_resize", false);
 user_pref("dom.disable_open_during_load", false);
 user_pref("dom.disable_window_flip", false);
-user_pref("extensions.enabledScopes", 5);
-user_pref("extensions.autoDisableScopes", 0);
-user_pref("extensions.update.notifyUser", false);
-user_pref("extensions.installDistroAddons", false);
-user_pref("xpinstall.signatures.required", false);
 user_pref("security.fileuri.strict_origin_policy", false);
 user_pref("dom.min_background_timeout_value", 4);
 user_pref("dom.successive_dialog_time_limit", 0);
