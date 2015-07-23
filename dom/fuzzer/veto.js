@@ -72,7 +72,6 @@ function fuzzInitBlacklists()
                 "addTextTrack",      // bug 1010707
                 "rowspan",           // slow enough to "hang" a debug build, but not an opt build
                 "createMirror",      // this gadget can trigger the slow-script dialog (e.g. with ImageData.data)
-                "MediaSource",       // bug 1183482
             ]
         },
         {
