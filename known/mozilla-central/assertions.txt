@@ -2146,6 +2146,12 @@ Assertion failure: outputTrack->GetEnd() == GraphTimeToStreamTime(interval.mStar
 # Bug 1186689
 Assertion failure: !mIsMapped (Someone forgot to call Unmap()),
 
+# Bug 1186708
+Assertion failure: !mIsSome,
+
+# Bug 1186720
+Assertion failure: false (MOZ_ASSERT_UNREACHABLE: Any line break inside ruby box should have been suppressed),
+
 
 ################################
 #                              #
