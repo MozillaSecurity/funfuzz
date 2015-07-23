@@ -171,10 +171,9 @@ def randomFlagSet(shellPath):
             #args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-regalloc=testbed') and chance(.2):
             args.append('--ion-regalloc=testbed')
-        # --ion-check-range-analysis is disabled until bug 1181796 is fixed.
-        # if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
-        #     if chance(.3):
-        #         args.append('--ion-check-range-analysis')
+        if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
+            if chance(.3):
+                args.append('--ion-check-range-analysis')
         if shellSupportsFlag(shellPath, '--ion-extra-checks'):
             if chance(.3):
                 args.append('--ion-extra-checks')
@@ -207,9 +206,7 @@ def basicFlagSets(shellPath):
         ]
         if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
             basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
-                                  # --ion-check-range-analysis is disabled until bug 1181796 is fixed.
-                                  # '--non-writable-jitcode', '--ion-check-range-analysis',
-                                  '--non-writable-jitcode',
+                                  '--non-writable-jitcode', '--ion-check-range-analysis',
                                   '--ion-extra-checks', '--no-sse3'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
@@ -230,9 +227,7 @@ def basicFlagSets(shellPath):
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
             if shellSupportsFlag(shellPath, '--no-sse3'):
                 basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off',
-                                      # --ion-check-range-analysis is disabled until bug 1181796 is fixed.
-                                      # '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-                                      '--ion-eager', '--no-sse3'])
+                                      '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
     else:
         basicFlagList = [
@@ -253,9 +248,7 @@ def basicFlagSets(shellPath):
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
             if shellSupportsFlag(shellPath, '--no-sse3'):
                 basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
-                                      # --ion-check-range-analysis is disabled until bug 1181796 is fixed.
-                                      # '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-                                      '--ion-eager', '--no-sse3'])
+                                      '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
         return basicFlagList
 
 
