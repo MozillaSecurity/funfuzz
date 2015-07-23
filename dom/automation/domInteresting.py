@@ -179,22 +179,22 @@ class AmissLogHandler:
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
-                print "Ignoring memory leaks (bug 622315)"  # testcase in comment 2
+                # print "Ignoring memory leaks (bug 622315)"  # testcase in comment 2
                 self.expectedToLeak = True
             if "nsCARenderer::Render failure" in msg:
-                print "Ignoring memory leaks (bug 840688)"
+                # print "Ignoring memory leaks (bug 840688)"
                 self.expectedToLeak = True
             if "ASSERTION: Appshell already destroyed" in msg:
-                print "Ignoring memory leaks (bug 933730)"
+                # print "Ignoring memory leaks (bug 933730)"
                 self.expectedToLeak = True
             if "Did not receive all required callbacks" in msg:
-                print "Ignoring memory leaks (bug 973384)"
+                # print "Ignoring memory leaks (bug 973384)"
                 self.expectedToLeak = True
             if "leaking" in msg:
-                print "Ignoring memory leaks"
+                # print "Ignoring memory leaks"
                 self.expectedToLeak = True
             if self.nsassertionCount == 100:
-                print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
+                # print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
                 self.expectedToHang = True
 
         assertionSeverity, newAssertion = detect_assertions.scanLine(self.knownPath, msgLF)
