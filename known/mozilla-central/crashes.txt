@@ -35,10 +35,6 @@ nsContentUtils::GetOfflineAppManifest
 # Bug 635153
 nsStyleContext::HasPseudoElementData
 
-# Bug 607053
-XPCNativeScriptableInfo::GetCallback
-XPC_WN_Helper_GetProperty
-
 # Bug 665335
 nsDocAccessible::FireDelayedAccessibleEvent
 
@@ -298,13 +294,6 @@ nsSVGEffects::InvalidateRenderingObservers
 
 # Bug 1074584
 mozilla::WebGLFramebuffer::FramebufferTexture2D
-
-# Bug 1183363
-mozilla::dom::CanvasRenderingContext2D::IsPointInPath
-CanvasRenderingContext2D
-
-# Bug 1183896
-nsTableRowFrame::ReflowChildren
 
 # Bug 1183954
 nsStructuredCloneContainer::AddRef

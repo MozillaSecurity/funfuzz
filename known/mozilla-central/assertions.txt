@@ -2119,9 +2119,6 @@ ASSERTION: unknown block-size unit: 'bSizeCoord.GetUnit() == eStyleUnit_Auto || 
 # Bug 1169423
 Assertion failure: !oldScopedRuleProcessorHash.Get(scope) (duplicate rule processors for same scope element?)
 
-# Bug 1183394
-ASSERTION: Must have state machine to start state machine thread: 'mDecoderStateMachine', file dom/media/MediaDecoder.cpp
-
 # Bug 1183421
 ASSERTION: Negative descent???: 'aMetrics.BSize(aMetrics.GetWritingMode()) - aMetrics.BlockStartAscent() >= 0', file layout/generic/nsTextFrame.cpp
 
@@ -2146,11 +2143,15 @@ Assertion failure: outputTrack->GetEnd() == GraphTimeToStreamTime(interval.mStar
 # Bug 1186689
 Assertion failure: !mIsMapped (Someone forgot to call Unmap()),
 
-# Bug 1186708
-Assertion failure: !mIsSome,
-
 # Bug 1186720
 Assertion failure: false (MOZ_ASSERT_UNREACHABLE: Any line break inside ruby box should have been suppressed),
+
+# Bug 1186768
+Assertion failure: !(mBits & eHaveFontSize) || mFontSize == aCoord,
+
+# Bug 1186769
+ASSERTION: Failed Dispatch after xpcom-shutdown-threads: 'false', file xpcom/threads/nsThread.cpp
+ASSERTION: Failed NS_DispatchToMainThread() in shutdown; leaking: 'false', file xpcom/glue/nsThreadUtils.cpp
 
 
 ################################
