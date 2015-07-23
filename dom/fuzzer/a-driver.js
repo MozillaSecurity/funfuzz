@@ -8,7 +8,6 @@ var fuzzIsStrictMode = (function() { return !this; })();
 
 var dumpEachCommand = false; // Can be set to true by using the "Record as it goes" reduction strategy and setting it to record.  Also, some fuzzers always set this to true.
 var dumpEachSeed = false; // Can be set to true if makeCommand has side effects, such as crashing, so you have to reduce "the hard way".
-var pleaseSerializeDOMAsScript = false; // Can be set to true (and often is) ...
 var gPageCompleted = false;
 
 // Treat internal errors (makeCommand throwing or generating syntax errors) as bugs,
