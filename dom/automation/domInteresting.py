@@ -244,6 +244,9 @@ class AmissLogHandler:
 
         if "goQuitApplication" in msg:
             self.expectChromeFailure = True
+        if "JavaScript error: self-hosted" in msg:
+            # Bug 1186741: ignore this and future chrome failures
+            self.expectChromeFailure = True
         if (not self.expectChromeFailure) and chromeFailure(msg) and not knownChromeFailure(msg):
             self.printAndLog("@@@ " + msg)
             self.sawChromeFailure = True
@@ -287,6 +290,7 @@ def jsInChrome(msg):
             "resource://modules/" in msg or
             "resource://gre/modules/" in msg or
             "resource://gre/components/" in msg or
+            "self-hosted" in msg or
             False) and not (
                 "xbl-marquee.xml" in msg or  # chrome://xbl-marquee/content/xbl-marquee.xml
                 "videocontrols.xml" in msg  # chrome://global/content/bindings/videocontrols.xml
@@ -349,6 +353,12 @@ def knownChromeFailure(msg):
         "this.keyManager_ is null" in msg or                                            # mostly happens when i manually quit during a fuzz run
         "pbu_privacyContextFromWindow" in msg or                                        # bug 931304 whenfixed 'pb'
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
+        ("PeerConnection.js" in msg and "not callable" in msg) or                       # Bug 1186696
+        ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
+        ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
+        ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
+        ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
+        ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
 
