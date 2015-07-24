@@ -60,7 +60,7 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
                 "strokeText",        // bug 943622
                 "strokeRect",        // bug 986902
-                ".arc",              // bug 943587
+                "arc",               // bug 943587, bug 1187210
                 "isPointInStroke",   // bug 989669
                 "scale",             // bug 1017942
                 "quadraticCurveTo",  // bug 1017942
