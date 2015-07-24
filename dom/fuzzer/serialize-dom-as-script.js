@@ -24,7 +24,7 @@ function serializeDOMAsScript(splitTextNodes, splitStyleAttributes)
     q("prol", ["var root = document.documentElement; while(root.firstChild) { root.removeChild(root.firstChild); }"]);
   }
 
-  dumpln("// DD" + "BEGIN");
+  dumpln(oPrefix2 + "// DD" + "BEGIN");
 
   if (document.documentElement) {
     q("seri", scriptizeAttributes(document.documentElement, "document.documentElement", splitStyleAttributes));
