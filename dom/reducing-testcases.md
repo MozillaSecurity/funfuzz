@@ -55,7 +55,9 @@ view-source:https://bug366012.bugzilla.mozilla.org/attachment.cgi?id=250556
 
 ## Reducing non-layout testcases
 
-* Replace variables with their values
+1. Replace variables with their values
+2. Rename o[n] variables until things make sense
+3. Call serializeFuzzCommands() to move the fuzz-generated code into a flat script
 
 
 ## File the bug

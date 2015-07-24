@@ -18,6 +18,7 @@ visit-nodes.js
 
 serialize-dom-as-html.js
 serialize-dom-as-script.js
+serialize-fuzz-commands.js
 serialize-string.js
 
 properties-to-avoid.js
