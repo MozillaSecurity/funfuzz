@@ -16,8 +16,8 @@ var fuzzInternalErrorsAreBugs = true;
 
 var fuzzCount;
 
-var oPrefix  = "  /*FRCA1*/ "; // most recording output, including all random commands
-var oPrefix2 = "  /*FRCA2*/ "; // dom reconstruction
+// loopdomfuzz.py splices lines with this prefix into the repro file.
+var fuzzRecordPrefix = "  /*FRCA1*/ ";
 
 
 function fuzzOnload(ev)
@@ -85,8 +85,8 @@ function startFuzzing(kickoff)
     if (recordMode) {
       recordSomehow();
     } else {
-      dumpln(oPrefix + "var fuzzSettings = [" + fuzzSettings + "];");
-      dumpln(oPrefix + "var fuzzCommands = [];");
+      dumpln(fuzzRecordPrefix + "var fuzzSettings = [" + fuzzSettings + "];");
+      dumpln(fuzzRecordPrefix + "var fuzzCommands = [];");
 
       kickoff();
 
@@ -134,7 +134,7 @@ function immedChunk(changes)
       }
 
       if (dumpEachCommand) {
-        dumpln(fuzzRecord(oPrefix, immedCount, "rest: true"));
+        dumpln(fuzzRecord(immedCount, "rest: true"));
       }
 
     }
@@ -164,10 +164,10 @@ function fuzzTryMakeCommand()
     var MTA_str = uneval(MTA);
     // More complicated, but results in a much shorter script, making SpiderMonkey happier.
     if (MTA_str != rnd.lastDumpedMTA) {
-      dumpln(fuzzRecord(oPrefix, 'mta', "fun: function() { if (Random.twister) { Random.twister.import_mta(" + MTA_str + "); } }"));
+      dumpln(fuzzRecord('mta', "fun: function() { if (Random.twister) { Random.twister.import_mta(" + MTA_str + "); } }"));
       rnd.lastDumpedMTA = MTA_str;
     }
-    dumpln(fuzzRecord(oPrefix, 'mti', "fun: function() { if (Random.twister) { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); } }"));
+    dumpln(fuzzRecord('mti', "fun: function() { if (Random.twister) { Random.twister.import_mti(" + MTI + "); void (fuzzTryMakeCommand()); } }"));
   }
 
   if (dumpEachSeed) {
@@ -224,7 +224,7 @@ function fuzzTryMakeCommand()
       continue;
     }
     if (dumpEachCommand) {
-      dumpln(fuzzRecord(oPrefix, immedCount, "fun: function() { " + s + " }"));
+      dumpln(fuzzRecord(immedCount, "fun: function() { " + s + " }"));
     }
     commands.push({str: s, fun: f});
   }
@@ -427,29 +427,29 @@ function recordFuns()
   var fuzzCommands = [];
 
   var output =
-     oPrefix + "var fuzzSettings = [" + fuzzSettings + "];\n" +
-     oPrefix + "var fuzzCommands = [];\n" +
-     oPrefix + "// DD" + "BEGIN\n";
+     fuzzRecordPrefix + "var fuzzSettings = [" + fuzzSettings + "];\n" +
+     fuzzRecordPrefix + "var fuzzCommands = [];\n" +
+     fuzzRecordPrefix + "// DD" + "BEGIN\n";
 
   for (var fuzzCount = 1; fuzzCount <= maxSteps; ++fuzzCount)
   {
     var commands = fuzzTryMakeCommand();
 
     for (var i = 0; i < commands.length; ++i)
-      output += fuzzRecord(oPrefix, fuzzCount, "fun: function() { " + commands[i].str + " }") + "\n";
+      output += fuzzRecord(fuzzCount, "fun: function() { " + commands[i].str + " }") + "\n";
 
     var countAfterImmed = fuzzCount - numImmediate;
     if((countAfterImmed >= 0) && (countAfterImmed % stepsPerInterval === 0)) {
-      output += fuzzRecord(oPrefix, fuzzCount, "rest: true") + "\n";
+      output += fuzzRecord(fuzzCount, "rest: true") + "\n";
     }
   }
 
-  output += oPrefix + "// DD" + "END\n";
+  output += fuzzRecordPrefix + "// DD" + "END\n";
 
   dumpln("// Paste this into the script, replacing the first two lines:\n\n" + output);
 }
 
-function fuzzRecord(prefix, note, x)
+function fuzzRecord(note, x)
 {
   function lineUp(s, n)
   {
@@ -458,7 +458,7 @@ function fuzzRecord(prefix, note, x)
       s = " " + s;
     return s;
   }
-  return prefix + "fuzzCommands.push({ note: " + lineUp(simpleSource(note), 6) + ", " + x.replace(/<\/script/g, "<\\/script") + " });";
+  return fuzzRecordPrefix + "fuzzCommands.push({ note: " + lineUp(simpleSource(note), 6) + ", " + x.replace(/<\/script/g, "<\\/script") + " });";
 }
 
 

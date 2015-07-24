@@ -143,7 +143,7 @@ def createReproFile(fuzzerJS, extraPrefs, lines, logPrefix):
             possibleDoctype = [afterColon(docTypes[0]) + "\n"]
 
     [jbefore, jafter] = fuzzSplice(fuzzerJS)
-    fuzzlines = linesStartingWith(lines, "  /*FRCA")
+    fuzzlines = [line[12:] for line in linesStartingWith(lines, "  /*FRCA1*/ ")]
     if len(fuzzlines) < 3:
         fuzzlines = [
             "// Startup crash?\n",
@@ -154,8 +154,8 @@ def createReproFile(fuzzerJS, extraPrefs, lines, logPrefix):
     quittage = [
         extraPrefs,
         "// DDEND\n",
-        'fuzzCommands.push({note: "done", rest: true, timeout: 3000});\n',
-        'fuzzCommands.push({note: "quit", fun: function() { fuzzPriv.quitApplication(); } });\n',
+        'fuzzCommands.push({ note: "done", rest: true, timeout: 3000});\n',
+        'fuzzCommands.push({ note: "quit", fun: function() { fuzzPriv.quitApplication(); } });\n',
         "\n",
         "function user_pref() { /* Allow randomPrefs.py to parse user_pref lines from this file */ }\n",
     ]

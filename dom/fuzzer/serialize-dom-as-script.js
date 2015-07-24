@@ -15,7 +15,7 @@ function serializeDOMAsScript(splitTextNodes, splitStyleAttributes)
   {
     for (var i = 0; i < cs.length; ++i) {
       var c = cs[i];
-      dumpln(fuzzRecord(oPrefix2, note, "fun: function() { " + c + " }"));
+      dumpln(fuzzRecord(note, "fun: function() { " + c + " }"));
     }
   }
 
@@ -24,7 +24,7 @@ function serializeDOMAsScript(splitTextNodes, splitStyleAttributes)
     q("prol", ["var root = document.documentElement; while(root.firstChild) { root.removeChild(root.firstChild); }"]);
   }
 
-  dumpln(oPrefix2 + "// DD" + "BEGIN");
+  dumpln(fuzzRecordPrefix + "// DD" + "BEGIN");
 
   if (document.documentElement) {
     q("seri", scriptizeAttributes(document.documentElement, "document.documentElement", splitStyleAttributes));
