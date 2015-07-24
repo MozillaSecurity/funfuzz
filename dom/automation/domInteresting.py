@@ -318,6 +318,7 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "this.UIModule is undefined" in msg) or                # Bug 877013
         ("browser.js" in msg and "this._cps2 is undefined" in msg) or                   # Bug 877013
         ("browser.js" in msg and "this.button is null" in msg) or                       # Bug 877013
+        ("BrowserUtils.jsm" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 1187207
         ("downloads.js" in msg and "\"Cu\" is read-only" in msg) or                     # Bug 1175877
         ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1186346
         ("nsSidebar.js" in msg and "NS_NOINTERFACE" in msg) or                          # Bug 1186365
@@ -355,6 +356,7 @@ def knownChromeFailure(msg):
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
         ("PeerConnection.js" in msg and "not callable" in msg) or                       # Bug 1186696
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
+        ("PeerConnectionIdp.jsm" in msg and "sdp is " in msg) or                        # Bug 1187206
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
