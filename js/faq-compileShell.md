@@ -14,6 +14,19 @@ This flag is usually recommended for bisection and compatibility purposes, where
 
 On a decent Linux machine or a powerful Mac, both with 4 or more cores, 3-4 minutes on average. On Windows, probably 5-10 minutes. On an ARM ODROID board, up to an hour.
 
+**Q: How do I get a shell with a patch to be compiled together?**
+
+Use the -P notation, e.g.:
+
+`funfuzz/js/compileShell.py -b "--enable-debug --enable-more-deterministic --enable-nspr-build -R ~/trees/mozilla-inbound -P ~/patch.diff"`
+
+assuming:
+* mq is activated in ~/.hgrc
+* There are no other patches in the mq stack
+* Patch is in ~/patch.diff and can be applied cleanly
+  * Test by first doing `patch -p1 --dry-run < ~/patch.diff` in the base directory of the repository listed by -R, or the default.
+* There is only one patch needed. If more than one patch is needed, first do a roll-up patch.
+
 **Q: Do these build configure flags get passed into the js configure scripts?**
 
 No, they are independent. We only implemented the flags that are most useful for fuzzing in the harness.
