@@ -2153,6 +2153,9 @@ Assertion failure: !(mBits & eHaveFontSize) || mFontSize == aCoord,
 ASSERTION: Failed Dispatch after xpcom-shutdown-threads: 'false', file xpcom/threads/nsThread.cpp
 ASSERTION: Failed NS_DispatchToMainThread() in shutdown; leaking: 'false', file xpcom/glue/nsThreadUtils.cpp
 
+# Bug 1187204
+Assertion failure: false (Should not have an existing pref cache for this address),
+
 
 ################################
 #                              #
