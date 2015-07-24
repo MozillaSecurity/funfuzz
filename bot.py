@@ -301,6 +301,9 @@ def parseOpts():
         elif sps.isLinux and platform.machine() != "x86_64":
             # Bug 855881
             options.testType = 'js'
+        elif sps.isLinux:
+            # Bug 1186717
+            options.testType = 'js'
         else:
             options.testType = random.choice(['js', 'dom'])
             print "Randomly fuzzing: " + options.testType
