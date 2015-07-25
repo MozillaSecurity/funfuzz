@@ -1,6 +1,6 @@
 This repository contains two JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell. [DOMFuzz](dom) tests layout and other parts of browser engines through DOM API calls.
 
-Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](autobisect-js).
+Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](autobisect-js/README.md).
 
 
 ## Setup
@@ -72,9 +72,9 @@ To test a patch (assuming patch is in ~/patch.diff) against a specific branch (a
 
 `python -u funfuzz/loopBot.py -b "--enable-debug --enable-more-deterministic --enable-nspr-build -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
-In js mode, loopBot.py makes use of [compileShell.py](js/compileShell.py), jsfunfuzz, [compareJIT.py](js/compareJIT.py) (if testing deterministic builds), randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository) and [autoBisect.py](autobisect-js/autoBisect.py) (if the mozilla repository is present).
+In js mode, loopBot.py makes use of [compileShell.py](js/compileShell.py), jsfunfuzz, [compareJIT.py](js/compareJIT.py) (if testing deterministic builds), randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository) and [autoBisect.py](autobisect-js/README.md) (if the mozilla repository is present).
 
-The parameters in `-b` get passed into [compileShell.py](js/compileShell.py) and [autoBisect.py](autobisect-js/autoBisect.py).
+The parameters in `-b` get passed into [compileShell.py](js/compileShell.py) and [autoBisect.py](autobisect-js/README.md).
 
 
 ## FAQ:
