@@ -28,9 +28,9 @@ Q: Does autoBisect work on nightly SpiderMonkey js shells yet?
 
 No, not yet. Currently it only uses ["tinderbox-builds" js shells](https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-macosx64-debug/) by default, which are stored on a per-checkin basis only for the past month. Patches accepted!
 
-Q: How does autoBisect compare to [mozregression](http://mozilla.github.io/mozregression/)?
+Q: How does autoBisect compare with [mozregression](http://mozilla.github.io/mozregression/)?
 
-When autoBisect was proposed and written in 2009, mozregression did not yet exist. Since 2010, both have been developed independently of each other.
+When autoBisect was proposed and written in 2009, mozregression did not exist yet. Since 2010, both have been developed independently of each other.
 
 autoBisect was [first written](https://bugzilla.mozilla.org/show_bug.cgi?id=482536) (in Bash) [with results](https://bugzilla.mozilla.org/show_bug.cgi?id=476655#c8) in March 2009.
 
