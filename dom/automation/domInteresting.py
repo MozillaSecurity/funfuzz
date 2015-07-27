@@ -363,6 +363,7 @@ def knownChromeFailure(msg):
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
+        ("process-content.js" in msg and "EXPORTED_SYMBOLS is not an array" in msg) or  # Bug 1188169
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
 
