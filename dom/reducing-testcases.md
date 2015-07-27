@@ -96,7 +96,7 @@ For non-layout testcases, a slow or allocation-heavy testcase might trip Firefox
 
 ### Testcases with long lines
 
-For text nodes, you can use `serializeDOMAsScript(null, true, true);` to split the text node into a bunch of `node.data += char` lines.
+For text nodes, you can use `serializeDOMAsScript(true, true);` to split the text node into a bunch of `node.data += char` lines.
 
 For stylesheets, you can often remove the document-emptying script, and move the stylesheet contents into markup as a `<style>` element:
 
