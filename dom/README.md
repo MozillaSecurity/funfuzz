@@ -19,8 +19,8 @@ defaults write com.apple.CrashReporter DialogType server
 
 Running `./loopdomfuzz.py build` will:
 * Figure out which version of Firefox you are testing and use appropriate ignore lists.
-* Create temporary Firefox profiles with the [dom fuzz helper extension](extension/) installed, [appropriate settings](automation/constant-prefs.js), and some [random settings](automation/randomPrefs.py) as well.
-* In a loop, open Firefox to a random file from the reftest suite, and load random DOM fuzzer modules into it. (If a bug is found, it will place a file in a wtmp*/ directory, and try to reduce it with Lithium.)
+* Create temporary Firefox profiles with the [DOMFuzz Helper extension](extension/) installed, [appropriate settings](automation/constant-prefs.js), and some [random settings](automation/randomPrefs.py) as well.
+* In a loop, open Firefox to a random file from the reftest suite, and load random DOMFuzz modules into it. (If a bug is found, it will place a file in a wtmp*/ directory, and try to reduce it with Lithium.)
 
 |build| must be a directory containing a build of Firefox:
 * A Firefox object directory, built locally with --enable-tests

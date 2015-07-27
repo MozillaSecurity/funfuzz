@@ -1,4 +1,4 @@
-When the fuzzer starts on a page, [main.js](../main.js) will choose a subset of modules to enable. The enabled modules will have their makeCommand functions called many times.
+When DOMFuzz starts on a page, [main.js](../main.js) will choose a subset of modules to enable. The enabled modules will have their makeCommand functions called many times.
 
 
 ### makeCommand functions
@@ -12,7 +12,7 @@ The effect of the generated commands (on the DOM) must not depend on the state o
 
 ### Weight
 
-A DOM fuzzer module's weight should be chosen based on:
+A module's weight should be chosen based on:
 
 * The quantity and severity of bugs you expect it to find
 * How frustrating it is to reduce bugs it finds

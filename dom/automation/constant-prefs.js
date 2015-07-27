@@ -3,7 +3,7 @@ user_pref("browser.tabs.remote.autostart", false);
 user_pref("browser.tabs.remote.autostart.1", false);
 user_pref("browser.tabs.remote.autostart.2", false);
 
-// Allow installing the dom fuzz helper extension.
+// Allow installing the DOMFuzz Helper extension.
 user_pref("extensions.enabledScopes", 5);
 user_pref("extensions.autoDisableScopes", 0);
 user_pref("extensions.update.notifyUser", false);

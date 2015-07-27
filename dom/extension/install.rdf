@@ -33,7 +33,7 @@
     </em:targetApplication>
 
     <!-- Front End MetaData -->
-    <em:name>DOM Fuzzer</em:name>
+    <em:name>DOMFuzz Helper</em:name>
     <em:description>For testing Gecko</em:description>
     <em:creator>Jesse Ruderman</em:creator>
   </Description>

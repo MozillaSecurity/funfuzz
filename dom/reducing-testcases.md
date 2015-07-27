@@ -1,4 +1,4 @@
-This document assumes you found a bug with the DOM fuzzer and want to make a reduced testcase.
+This document assumes you found a bug with DOMFuzz and want to make a reduced testcase.
 
 Browser engine developers appreciate reduced testcases, because they are easier to understand and stable over time. They can often add these tests directly to regression test suites, ensuring the bug doesn't resurface and giving your fuzzer a new starting point (if you use the test suite as a corpus).
 

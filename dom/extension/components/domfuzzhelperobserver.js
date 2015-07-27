@@ -25,7 +25,7 @@ function DOMFuzzHelperObserver() {
 }
 
 DOMFuzzHelperObserver.prototype = {
-  classDescription: "DOM fuzz helper observer",
+  classDescription: "DOMFuzz helper observer",
   classID:          Components.ID("{73DD0F4A-B201-44A1-8C56-D1D72432B02A}"),
   contractID:       "@squarefree.com/dom-fuzz-helper-observer;1",
   _xpcom_categories: [
