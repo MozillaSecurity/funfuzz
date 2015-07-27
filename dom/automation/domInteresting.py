@@ -2,9 +2,11 @@
 
 """
 
-Runs Firefox with DOM fuzzing.  Identifies output that indicates that a bug has been found.
+Runs Firefox with a fresh profile, with prefs appropriate for fuzzing or retesting fuzz bugs.
+Identifies output that indicates that a bug has been found.
 
-We run runbrowser.py through a (s)ubprocess.  runbrowser.py (i)mports automation.py.  This setup allows us to postprocess all automation.py output, including crash logs.
+We run runbrowser.py through a (s)ubprocess.  runbrowser.py (i)mports automation.py.
+This setup allows us to postprocess all automation.py output, including crash logs.
 
         i                  i                     s*                i                  s
 bot.py --> loopdomfuzz.py --> domInteresting.py --> runbrowser.py --> automation.py+ --> firefox-bin
