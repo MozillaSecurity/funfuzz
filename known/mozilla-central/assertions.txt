@@ -2229,3 +2229,6 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1187123
 Assertion failure: (l.asBits >> 47) <= JSVAL_TAG_OBJECT,
 
+# Bug 1188586
+Assertion failure: base.isNumber() && power.isNumber(),
+
