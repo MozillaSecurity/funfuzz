@@ -32,11 +32,11 @@ If the page contains...     | Try replacing it with...
 -----------------------     | ------------------------
 Accented characters         | 'x'
 Chinese characters          | ' x ' (the whitespace lets it wrap)
-<small>                     | <span> or <span style="font-size: smaller">
-Canvas with no drawing      | <div style="inline-block; width: 300px; height: 150px;">
+\<small\>                   | \<span\> or \<span style="font-size: smaller"\>
+Canvas with no drawing      | \<div style="inline-block; width: 300px; height: 150px;"\>
 -moz-appearance             | smallish width and height
 Percentage widths           | Pixel widths (find them using computed styles)
-No doctype                  | <!DOCTYPE html>, plus rules from [quirk.css](https://dxr.mozilla.org/mozilla-central/source/layout/style/quirk.css) if needed
+No doctype                  | \<!DOCTYPE html\>, plus rules from [quirk.css](https://dxr.mozilla.org/mozilla-central/source/layout/style/quirk.css) if needed
 { rest: true }              | { fun: function() { document.documentElement.offsetHeight; } }
 
 ### Try to reduce dynamism
