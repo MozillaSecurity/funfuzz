@@ -10,19 +10,19 @@ Q: Compilation has finished breaking. How do I know when the builds were working
 
 Q: What should I do with the known broken changeset ranges to prevent autoBisect from retesting those revisions?
 
-...
+You can add them to the known broken range functions in [knownBrokenEarliestWorking.py](knownBrokenEarliestWorking.py). Add the first bad and first good changeset **Mercurial** hashes of the build breakage and its fix, along with a short comment.
 
 Q: The testcase is giving out assorted varied exit codes as it gets executed by older binaries. How can I fixate to a particular interesting exit code?
 
-...
+Pass in the "-w" argument along with the desired exit code to autoBisect. If it is negative, e.g. -11, pass in 128 - (**exit code number**), e.g. 128 - (-11) = 128 + 11 = 139, or "-w 139".
 
 Q: The testcase is intermittent and giving weird results! What should I do to try and get more reliable results?
 
-...
+You can try using interestingness tests to look out for the desired symptom, see [the examples](examples-autoBisect.md).
 
 Q: What happens when a new operating system is released, and we now have a new changeset hash that has to be updated as the earliest known working revision?
 
-...
+You can add the earliest known working **Mercurial** revision to the earliestKnownWorkingRev function in [knownBrokenEarliestWorking.py](knownBrokenEarliestWorking.py).
 
 Q: Does autoBisect work on nightly SpiderMonkey js shells yet?
 
