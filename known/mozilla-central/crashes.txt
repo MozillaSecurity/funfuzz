@@ -313,4 +313,6 @@ js::jit::Assembler::bind
 
 # Bug 1183448
 NativeSetExistingDataProperty
+GetExistingProperty
+js::NativeGetProperty
 
