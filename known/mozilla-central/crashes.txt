@@ -308,9 +308,6 @@ nsStructuredCloneContainer::AddRef
 # Bug 1108413 (Only with --ion-sink=on)
 #js::jit::LiveInterval::addRangeAtHead
 
-# Bug 1130672
-js::jit::Assembler::bind
-
 # Bug 1183448
 NativeSetExistingDataProperty
 GetExistingProperty
