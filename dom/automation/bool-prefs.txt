@@ -120,6 +120,7 @@ dom.new_bindings
 dom.mozNetworkStats.enabled
 dom.network.enabled
 dom.network.metered
+dom.permissions.enabled
 dom.placeholder.show_on_focus
 dom.send_after_paint_to_content
 dom.server-events.enabled
