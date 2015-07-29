@@ -1,20 +1,36 @@
-autoBisect will help you to find out when a changeset introduced problems. It can also point you at a changeset that may have exposed the issue if it is a latent bug.
+autoBisect will help you to find out when a changeset introduced problems. It can also point at a changeset that may have exposed the issue.
 
-It helps with work allocation since the engineer that most recently worked on the code is the one most likely to know how to fix the bug, assuming he/she introduced it. If not, he/she may be able to forward the bug to someone more knowledgeable.
+It helps with work allocation:
 
-## Find out which changeset introduced problems using autoBisect
+* The engineer that most recently worked on the code is the one most likely to know how to fix the bug.
+* If not, the engineer may be able to forward to someone more knowledgeable.
 
-For SpiderMonkey, assuming the testcase requires "--fuzzing-safe --no-threads --ion-eager" as runtime flags, use the following while compiling locally:
+## Find changeset that introduced problems using autoBisect
+
+For SpiderMonkey, use the following while compiling locally:
 
 `funfuzz/autobisect-js/autoBisect.py -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic --enable-nspr-build"`
 
-This will take about 45 - 60 minutes on a relatively recent powerful computer on Linux / Mac, assuming each compilation takes about 3 minutes, and we should be able to find the problem within 16+ tests. For Windows where each compilation is assumed to take 6 minutes, it may take about 2 hours.
+assuming the testcase requires "--fuzzing-safe --no-threads --ion-eager" as runtime flags.
 
-If you have an internet connection, and the testcase causes problems with (1) a downloaded js shell and (2) these problems started happening within the last month, you can try bisecting using downloaded builds:
+This will take about:
+
+* **45 - 60 minutes** on a relatively recent powerful computer on Linux / Mac
+  * assuming each compilation takes about 3 minutes
+  * we should be able to find the problem within 16+ tests.
+* **2 hours** on Windows
+  * where each compilation is assumed to take 6 minutes.
+
+If you have an internet connection, and the testcase causes problems with:
+
+* a [downloaded js shell](https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-central-macosx64-debug/latest/jsshell-mac64.zip)
+* these problems started happening within the last month
+
+you can try bisecting using downloaded builds:
 
 `funfuzz/autobisect-js/autoBisect.py -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug" -T`
 
-This should be much faster, taking less than 5 minutes total assuming a fast internet connection, since it is only downloading, rather than having to compile shells.
+This should take < 5 minutes total assuming a fast internet connection, since it does not need to compile shells.
 
 Refer to [compileShell.py documentation](../js/README.md) for parameters to be passed into "-b".
 
