@@ -2211,9 +2211,6 @@ Assertion failure: type == MIRType_Object,
 # Bug 1180047
 Assertion failure: !IsInternalFunctionObject(*obj),
 
-# Bug 1181336
-Assertion failure: !call->hasSingleTarget(),
-
 # Bug 1182865
 Assertion failure: this->is<T>(),
 
@@ -2225,6 +2222,9 @@ Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) ||
 
 # Bug 1185746
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
+
+# Bug 1185957
+Assertion failure: !call->hasSingleTarget(),
 
 # Bug 1187123
 Assertion failure: (l.asBits >> 47) <= JSVAL_TAG_OBJECT,
