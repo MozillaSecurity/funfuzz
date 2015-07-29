@@ -1,6 +1,6 @@
 *jsfunfuzz* creates random JavaScript function bodies (including invalid ones) to test many parts of JavaScript engines.
 
-The largest module of jsfunfuzz is [gen-grammar.js](jsfunfuzz/gen-grammar.js).  thinking loosely in terms of "statements", "expressions", "lvalues", "literals", etc. It's almost a context-free grammar fuzzer... |cat| and |totallyRandom| especially make it seem like one.
+The largest module of jsfunfuzz is [gen-grammar.js](gen-grammar.js).  thinking loosely in terms of "statements", "expressions", "lvalues", "literals", etc. It's almost a context-free grammar fuzzer... |cat| and |totallyRandom| especially make it seem like one.
 
 Once it creates a function body, it does the following things with it:
 * Splits it in half and tries to compile each half, mostly to find bugs in the compiler's error-handling.
@@ -15,14 +15,14 @@ To test an existing SpiderMonkey shell called `./js`, run:
 
 `funfuzz/js/loopjsfunfuzz.py --random-flags --comparejit 20 mozilla-central ./js`
 
-* `--random-flags` tells it to use [shellFlags.py](shellFlags.py) to
-* `--comparejit` tells it to run [compareJIT.py](compareJIT.py) on most of the generated code, detecting bugs where adding optimization flags like --ion-eager changes the output.
+* `--random-flags` tells it to use [shellFlags.py](../shellFlags.py) to
+* `--comparejit` tells it to run [compareJIT.py](../compareJIT.py) on most of the generated code, detecting bugs where adding optimization flags like --ion-eager changes the output.
 * `20` tells it to kill any instance that runs for more than 20 seconds
-* `mozilla-central` tells it to use the known-bugs lists (for assertions and crashes) in [known/mozilla-central/](../known/mozilla-central/).
+* `mozilla-central` tells it to use the known-bugs lists (for assertions and crashes) in [known/mozilla-central/](../../known/mozilla-central/).
 
-If loopjsfunfuzz detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [jsInteresting.py](jsInteresting.py) or [compareJIT.py](compareJIT.py) as the "interestingness test".
+If loopjsfunfuzz detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [jsInteresting.py](../jsInteresting.py) or [compareJIT.py](../compareJIT.py) as the "interestingness test".
 
-Using [bot.py](../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loopjsfunfuzz.py for parallelism.
+Using [bot.py](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loopjsfunfuzz.py for parallelism.
 
 Through randorderfuzz, if the harness detects tests in the mozilla-central tree, it may load or incorporate tests into its fuzzing input in a random order.
 
