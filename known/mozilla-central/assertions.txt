@@ -2193,9 +2193,6 @@ Assertion failure: !cx->isExceptionPending(),
 # Bug 1122993
 Assertion failure: parent->isNative(),
 
-# Bug 1136806
-Assertion failure: !isInList(),
-
 # Bug 1157566
 Assertion failure: self->contains(cx, aprop),
 
