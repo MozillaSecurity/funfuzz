@@ -63,8 +63,6 @@ function makeDOMFuzzHelper(aWindow) {
 
       runSoon: runSoon.bind(this),
 
-      enableAccessibility: enableAccessibility.bind(this),
-
       // Garbage collection (those not covered by import of getJSTestingFunctions)
       GC:                         function() { Components.utils.getJSTestingFunctions().gc.apply(this, arguments); },
       forceShrinkingGC:           function() { Cu.forceShrinkingGC(); },
@@ -87,22 +85,16 @@ function makeDOMFuzzHelper(aWindow) {
       reftestList: reftestList.bind(this),
       cssPropertyDatabase: cssPropertyDatabase.bind(this),
       webidlDatabase: webidlDatabase.bind(this),
-
-      printToFile: printToFile(aWindow),
-
-      openAboutMemory: function(compartments, verbose) {
-        aWindow.open((compartments ? "about:compartments" : "about:memory") + (verbose ? "?verbose" : ""));
-      },
-
-      openAboutNewtab: function() { aWindow.open("about:newtab"); },
-
       comparePixels: comparePixels(aWindow),
 
-      callDrawWindow: callDrawWindow(aWindow),
-
+      // Requests for things that Firefox or users do sometimes
+      getMemoryReports: getMemoryReports.bind(this),
+      printToFile: printToFile(aWindow),
+      openAboutNewtab: function() { aWindow.open("about:newtab"); },
       resizeTo: safeResizeTo(aWindow),
-
       trustedKeyEvent: trustedKeyEvent(aWindow),
+      callDrawWindow: callDrawWindow(aWindow),
+      enableAccessibility: enableAccessibility.bind(this),
   };
 
   var testingFunctions = Components.utils.getJSTestingFunctions();
@@ -359,6 +351,15 @@ function printToFile(window)
         webBrowserPrint.print(printSettings, null);
     });
   };
+}
+
+
+function getMemoryReports(anonymize)
+{
+  // This is one of the things that happens when you use the "Measure" button on about:memory
+  // (about:memory does a bunch of post-processing, including assertions about nonnegative numbers)
+  var mrm = Cc["@mozilla.org/memory-reporter-manager;1"].getService(Ci.nsIMemoryReporterManager);
+  mrm.getReports(function(){}, null, function(){}, null, !!anonymize);
 }
 
 

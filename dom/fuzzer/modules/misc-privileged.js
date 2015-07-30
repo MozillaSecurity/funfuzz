@@ -23,7 +23,7 @@ var fuzzerChromeCode = (function() {
       return [];
     case 7:
       if (rnd(3) === 0) {
-        return "fuzzPriv.openAboutMemory(" + rndBoolStr() + ", " + rndBoolStr() + ");";
+        return "fuzzPriv.getMemoryReports(" + rndBoolStr() + ");";
       }
       return [];
     case 8:

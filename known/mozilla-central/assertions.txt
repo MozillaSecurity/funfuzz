@@ -2159,6 +2159,9 @@ Assertion failure: false (Should not have an existing pref cache for this addres
 # Bug 1187213
 ASSERTION: NS_BLOCK_HAS_FIRST_LETTER_STYLE state out of sync: 'haveFirstLetterStyle == ((mState & NS_BLOCK_HAS_FIRST_LETTER_STYLE) != 0)', file layout/generic/nsBlockFrame.cpp
 
+# Bug 1189168
+Assertion failure: NS_IsMainThread(),
+
 
 ################################
 #                              #
