@@ -55,7 +55,7 @@ especially after updating major/minor OS versions. This sometimes manifests on M
   * Fedora: (Fedora is known to work, however the exact library names are unknown for now.)
 3. Install gdb:
   * Debian/Ubuntu: ```sudo apt-get install gdb```
-  * Fedora: ???
+  * Fedora: Please ensure that all development packages are installed (see ```rpm -qa "*devel"```), and run ```yum install gdb```
 
 
 ## Running funfuzz
