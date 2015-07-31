@@ -132,12 +132,12 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('47e92bae09fd')  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
     if '--non-writable-jitcode' in flags:
         required.append('b46d6692fe50')  # m-c 248578 Fx41, 1st w/--non-writable-jitcode, see bug 977805
+    if '--no-unboxed-objects' in flags:
+        required.append('322487136b28')  # m-c 244297 Fx41, 1st w/--no-unboxed-objects, see bug 1162199
     if '--ion-extra-checks' in flags:
         required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    if '--unboxed-objects' in flags:
-        required.append('7820fd141998')  # m-c 225967 Fx38, 1st w/--unboxed-objects, see bug 1116855
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
