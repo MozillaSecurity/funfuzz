@@ -2238,3 +2238,6 @@ Assertion failure: base.isNumber() && power.isNumber(),
 # Bug 1189980
 Assertion failure: obj == callInfo.thisArg() && value == callInfo.getArg(0),
 
+# Bug 1190002
+Assertion failure: HasSSE2(),
+
