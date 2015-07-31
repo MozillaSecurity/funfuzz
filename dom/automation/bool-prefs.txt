@@ -123,6 +123,7 @@ dom.network.enabled
 dom.network.metered
 dom.permissions.enabled
 dom.placeholder.show_on_focus
+dom.requestcontext.enabled
 dom.send_after_paint_to_content
 dom.server-events.enabled
 dom.serviceWorkers.enabled
