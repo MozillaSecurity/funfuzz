@@ -2235,3 +2235,6 @@ Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cell
 # Bug 1188586
 Assertion failure: base.isNumber() && power.isNumber(),
 
+# Bug 1189980
+Assertion failure: obj == callInfo.thisArg() && value == callInfo.getArg(0),
+
