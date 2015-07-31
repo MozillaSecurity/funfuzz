@@ -94,6 +94,7 @@ dom.cycle_collector.incremental
 dom.global-constructor.disable.mozContact
 dom.mozContacts.enabled
 dom.navigator-property.disable.mozContacts
+dom.always_stop_slow_scripts
 dom.archivereader.enabled
 dom.audiochannel.mutedByDefault
 dom.disable_image_src_set

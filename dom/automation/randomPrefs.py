@@ -29,12 +29,14 @@ intPrefs = {
     "gfx.hidpi.enabled":                          lambda: random.choice([0, 1, 2]),
     "image.mem.hard_limit_decoded_image_kb":      lambda: random.randrange(0, 66560),
     "dom.max_script_run_time":                    lambda: random.choice([0, 5, 60, 60, 60, 60]),  # NB: constant-prefs.js also usually sets it to 60
+    "media.preload.default":                      lambda: random.randrange(0, 4),  # empty, none, metadata, auto
+    "media.preload.auto":                         lambda: random.randrange(0, 4),  # undefined, none, metadata, enough
 }
 
 strPrefs = {
     "layout.css.devPixelsPerPx":                  lambda: random.choice(["-1.0", "1.0", "2.0"]),  # float prefs are string prefs
     "intl.uidirection.en":                        lambda: "rtl",
-    "gfx.canvas.azure.backends":                  lambda: "skia", # cg, direct2d, skia, cairo
+    "gfx.canvas.azure.backends":                  lambda: "skia",  # cg, direct2d, skia, cairo
 }
 
 
