@@ -50,7 +50,6 @@ def runBrowser():
         # The correct fix is to use virtualenv: https://bugzilla.mozilla.org/show_bug.cgi?id=903616#c12
         # For now, just try again.
         from automation import Automation
-    import automationutils
 
     automation = Automation()
 
@@ -63,12 +62,13 @@ def runBrowser():
     xrePath = os.path.dirname(theapp)
 
     if options.valgrind:
-        print "About to use valgrind"
-        debuggerInfoVG = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False)
-        debuggerInfoVG["args"] = options.vgargs.split(" ")
-        if automation.IS_MAC:
-            debuggerInfoVG["args"].append("--dsymutil=yes")
-        slowness = 3.0
+        raise Exception("runbrowser isn't working with Valgrind at the moment.")
+        #print "About to use valgrind"
+        #debuggerInfoVG = automationutils.getDebuggerInfo(oldcwd, "valgrind", "", False)
+        #debuggerInfoVG["args"] = options.vgargs.split(" ")
+        #if automation.IS_MAC:
+        #    debuggerInfoVG["args"].append("--dsymutil=yes")
+        #slowness = 3.0
     else:
         debuggerInfoVG = None
         slowness = 1.0
