@@ -2,13 +2,21 @@
 
 **Q: Compilation is broken! How do I use autoBisect to see when the builds broke?**
 
-...
+Specify the failing revision hash in the "-e" parameter, along with desired "-b" options to build the desired SpiderMonkey build configuration. This failing revision hash must be from **Mercurial**.
+
+```funfuzz/autobisect-js/autoBisect.py -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic --enable-nspr-build"```
+
+When done, find the first working revision hash after the breakage, as below.
 
 **Q: Compilation has finished breaking. How do I know when the builds were working again?**
 
-...
+Similar to the above, but use "-s" instead of "-e".
+
+```funfuzz/autobisect-js/autoBisect.py -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic --enable-nspr-build```
 
 **Q: What should I do with the known broken changeset ranges to prevent autoBisect from retesting those revisions?**
+
+(This assumes you have the first bad and first good revision hashes as per the 2 questions above.)
 
 You can add them to the known broken range functions in [knownBrokenEarliestWorking.py](knownBrokenEarliestWorking.py). Add the first bad and first good changeset **Mercurial** hashes of the build breakage and its fix, along with a short comment.
 
