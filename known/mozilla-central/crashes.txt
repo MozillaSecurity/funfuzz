@@ -298,6 +298,9 @@ mozilla::WebGLFramebuffer::FramebufferTexture2D
 # Bug 1183954
 nsStructuredCloneContainer::AddRef
 
+# Bug 1190036
+mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
+
 
 #############################
 #                           #
