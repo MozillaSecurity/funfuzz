@@ -24,7 +24,7 @@ However, this only works effectively if the bug was recent, because builds are o
 
 ```funfuzz/autobisect-js/autoBisect.py -p "--fuzzing-safe --no-threads --ion-eager 1189137.js" -b "--enable-debug --enable-more-deterministic --enable-nspr-build" -w 3```
 
-* To specify starting and ending revisions, use "-s" and "-e":
+* To specify **starting and ending revisions**, use "-s" and "-e":
 
 ```funfuzz/autobisect-js/autoBisect.py -s 7820fd141998 -e 'parents(322487136b28)' -p "--no-threads --ion-eager --unboxed-objects 1189137.js" -b "--enable-debug --enable-more-deterministic --enable-nspr-build" -o "Assertion failed"```
 
@@ -42,6 +42,6 @@ You could specify the assertion message this way too:
 
 "-i" should be the last argument on the command line.
 
-* To bisect bugs found by compareJIT:
+* To bisect **bugs found by compareJIT**:
 
 ```funfuzz/autobisect-js/autoBisect.py -s 6ec4eb9786d8 -p 1183423.js -b "--enable-debug --enable-more-deterministic --enable-nspr-build -R ~/trees/mozilla-central" -i ~/funfuzz/js/compareJIT.py --minlevel=6 mozilla-central```
