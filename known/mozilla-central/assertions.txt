@@ -2241,3 +2241,6 @@ Assertion failure: obj == callInfo.thisArg() && value == callInfo.getArg(0),
 # Bug 1190002
 Assertion failure: HasSSE2(),
 
+# Bug 1190147
+Assertion failure: Incompatible write to unboxed property,
+
