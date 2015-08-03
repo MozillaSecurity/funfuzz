@@ -124,10 +124,9 @@ function serializeHTML(n, outputXML)
 
         var serializedChildren = "";
         var childrenNeedXMLNS = !isHTML(n);
-        var i, child;
 
-        for (i = 0; (child = n.childNodes[i]); ++i)
-          serializedChildren += serializeSubtree(n.childNodes[i], childrenNeedXMLNS);
+        for (var child of n.childNodes)
+          serializedChildren += serializeSubtree(child, childrenNeedXMLNS);
 
         return start + serializedChildren + end;
 
