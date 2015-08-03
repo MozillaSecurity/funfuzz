@@ -2244,3 +2244,9 @@ Assertion failure: HasSSE2(),
 # Bug 1190147
 Assertion failure: Incompatible write to unboxed property,
 
+# Bug 1190272
+Assertion failure: isInt32(),
+Assertion failure: isString(),
+Assertion failure: isObjectOrNull(),
+Assertion failure: isNumber(),
+
