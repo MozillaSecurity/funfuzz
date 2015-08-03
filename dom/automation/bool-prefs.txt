@@ -229,6 +229,7 @@ layout.css.convertFromNode.enabled
 layout.css.getBoxQuads.enabled
 layout.css.DOMQuad.enabled
 layout.css.DOMPoint.enabled
+layout.css.unprefixing-service.globally-whitelisted
 layout.enable_japanese_specific_transform
 layout.float-fragments-inside-column.enabled
 layout.frame_rate.precise
