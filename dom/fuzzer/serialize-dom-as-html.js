@@ -50,17 +50,15 @@ function serializeHTML(n, outputXML)
 
   function serializeAttributes(n)
   {
-    var i, attr;
     var r = "";
-    for (i = 0; (attr = n.attributes[i]); ++i)
+    for (var attr of n.attributes)
       r += " " + attr.name + "=\"" + quoteEscape(htmlEscape(attr.value)) + "\"";
     return r;
   }
 
   function hasNonTextChildren(n)
   {
-    var i, child;
-    for (i = 0; (child = n.childNodes[i]); ++i)
+    for (var child of n.childNodes)
       if (child.nodeType != 3)
         return true;
     return false;
