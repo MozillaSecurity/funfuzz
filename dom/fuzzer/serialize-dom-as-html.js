@@ -111,10 +111,14 @@ function serializeHTML(n, outputXML)
 
       } else if (htmlish && (tag in CDATAElements)) {
 
-        if (hasNonTextChildren(n))
+        var inner = n.innerHTML;
+        if (hasNonTextChildren(n)) {
           dumpln("serializeHTML: Can't serialize " + tag + " element with element children as HTML!");
-        // Should check for and warn if e.g. "<\/script>" appears.
-        return start + n.innerHTML + end;
+        }
+        if (inner.indexOf("<\/") != -1) {
+          dumpln("serializeHTML: this <" + tag + ">'s contents may break out!");
+        }
+        return start + inner + end;
 
       } else {
 
