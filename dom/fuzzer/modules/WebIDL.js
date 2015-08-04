@@ -171,21 +171,24 @@ var fuzzerWebIDL = (function () {
         return "/* " + ifaceName + " has a weird member */";
       }
 
-      if (propertyIsAnnoying(eval(instance), member.name) && rnd(100)) {
+      var annoying = propertyIsAnnoying(eval(instance), member.name);
+      if (annoying && rnd(100)) {
         return "/* the property " + member.name + " on our " + ifaceName + " is considered annoying */";
       }
+
+      // In case we accidentally call HTMLDocument.write, or accidentally overwrite something important on Window...
+      var prefix = (!correctIface || annoying) ? "fuzzInternalErrorsAreBugs = false; " : "";
 
       var memberExpr = instance + "[" + simpleSource(member.name) + "]";
       if (member.type == "attribute") {
         if (rnd(2)) {
           return "fuzzerWebIDL.rv = " + memberExpr + ";";
         } else {
-          var prefix = correctIface ? "" : "fuzzInternalErrorsAreBugs = false; "; // We might be overwriting something important on |window|
           return prefix + memberExpr + " = " + gimmei(member.idlType) + ";";
         }
       }
       if (member.type == "operation") {
-        return "fuzzerWebIDL.rv = " + (memberExpr + "(" + argumentList(member.arguments) + ")") + ";";
+        return prefix + "fuzzerWebIDL.rv = " + (memberExpr + "(" + argumentList(member.arguments) + ")") + ";";
       }
       if (member.type == "const") {
         return memberExpr + ";";
