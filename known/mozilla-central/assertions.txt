@@ -2162,6 +2162,9 @@ ASSERTION: NS_BLOCK_HAS_FIRST_LETTER_STYLE state out of sync: 'haveFirstLetterSt
 # Bug 1189168
 Assertion failure: NS_IsMainThread(),
 
+# Bug 1190646
+ASSERTION: Stretching should be in the vertical direction: 'isVertical', file layout/mathml/nsMathMLChar.cpp
+
 
 ################################
 #                              #
