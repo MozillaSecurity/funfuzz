@@ -155,7 +155,7 @@ var fuzzerWebIDL = (function () {
     return Things.reserve() + " = " + (rnd(10) ? "new " : "") + ifaceName + "(" + argumentList(Random.index(constructors).arguments) + ")" + ";";
   }
 
-  function createInstanceTweaker(ifaceName, instance, reasonable)
+  function createInstanceTweaker(ifaceName, instance, correctIface)
   {
     var iface = db[ifaceName];
     var members = allMembers(iface);
@@ -180,7 +180,7 @@ var fuzzerWebIDL = (function () {
         if (rnd(2)) {
           return "fuzzerWebIDL.rv = " + memberExpr + ";";
         } else {
-          var prefix = reasonable ? "" : "fuzzInternalErrorsAreBugs = false; "; // We might be overwriting something important on |window|
+          var prefix = correctIface ? "" : "fuzzInternalErrorsAreBugs = false; "; // We might be overwriting something important on |window|
           return prefix + memberExpr + " = " + gimmei(member.idlType) + ";";
         }
       }
@@ -259,19 +259,19 @@ var fuzzerWebIDL = (function () {
       return construct(i);
     }
     var instance;
-    var reasonable;
+    var correctIface;
     if (rnd(100)) {
       instance = Things.instance(i);
-      reasonable = true;
+      correctIface = true;
     } else {
       instance = Things.any();
-      reasonable = false;
+      correctIface = false;
     }
     if (instance == "o[-1]") {
       return construct(i);
     }
 
-    var tweaker = createInstanceTweaker(i, instance, reasonable);
+    var tweaker = createInstanceTweaker(i, instance, correctIface);
     if (typeof tweaker == "function") {
       if (rnd(30) === 0) {
         favoriteTweakers.push(tweaker);
