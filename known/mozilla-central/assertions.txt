@@ -2220,12 +2220,6 @@ Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i],
 # Bug 1174547
 Assertion failure: type == MIRType_Object,
 
-# Bug 1180047
-Assertion failure: !IsInternalFunctionObject(*obj),
-
-# Bug 1182865
-Assertion failure: this->is<T>(),
-
 # Bug 1182866
 Assertion failure: data.s.payload.why == why,
 
@@ -2261,9 +2255,6 @@ Assertion failure: isInt32(),
 Assertion failure: isString(),
 Assertion failure: isObjectOrNull(),
 Assertion failure: isNumber(),
-
-# Bug 1190727
-Assertion failure: resultPairObj->getDenseInitializedLength() == 2,
 
 # Bug 1190733
 Assertion failure: index < initializedLength(),
