@@ -2165,6 +2165,9 @@ Assertion failure: NS_IsMainThread(),
 # Bug 1190646
 ASSERTION: Stretching should be in the vertical direction: 'isVertical', file layout/mathml/nsMathMLChar.cpp
 
+# Bug 1190676
+Assertion failure: cycleStackMarker == ps->mCycleMarker,
+
 
 ################################
 #                              #
