@@ -116,6 +116,7 @@ function fuzzInitBlacklists()
                 "fonts",             // bug 1187068
                 "exploreProperties", // bug 1187068
                 "open",              // bug 1187068
+                "requestFullScreen", // bug 1190669
             ]
         },
         {
