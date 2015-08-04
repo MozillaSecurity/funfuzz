@@ -52,7 +52,6 @@ user_pref("general.warnOnAboutConfig", false);
 user_pref("browser.displayedE10SPrompt.1", 5);
 user_pref("browser.newtabpage.introShown", true);
 user_pref("browser.reader.detectedFirstArticle", true);
-user_pref("browser.readinglist.introShown", true);
 user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
 
 // Suppress automatic safe mode after crashes.
