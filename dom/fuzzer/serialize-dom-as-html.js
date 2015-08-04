@@ -2,15 +2,10 @@
  * SERIALIZING AS HTML/XHTML *
  *****************************/
 
-// This function turns an HTML DOM into either HTML or XHTML.
+// Turns an HTML DOM into HTML markup.
+// Warn about common problems that prevent a faithful HTML serialization.
 
-// If outputXML is false, attempt to output as HTML.  (HTML enables fast-and-loose reduction, but not all DOMs can be serialized as HTML.  serializeHTML will complain about some unserializable features in HTML mode, but it won't detect things like block-in-inline and missing table parts!)
-
-// If outputXML is true, output as XML.
-// It should work on XHTML DOMs with "normal" use of MathML and SVG,
-// but serializeXML is more reliable.
-
-function serializeHTML(n, outputXML)
+function serializeHTML(n)
 {
   // List from http://www.cs.tut.fi/~jkorpela/html/empty.html#html
   var emptyElements = {
@@ -64,16 +59,11 @@ function serializeHTML(n, outputXML)
     return false;
   }
 
-  // Elements without namespace serialized in XML will get this namespace.
   var HTML_NS = "http://www.w3.org/1999/xhtml";
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var MATHML_NS = "http://www.w3.org/1998/Math/MathML"
 
-  function isHTML(n)
-  {
-    return (n.namespaceURI == null || n.namespaceURI == HTML_NS);
-  }
-
-  // uses outputXML from its closure
-  function serializeSubtree(n, addXMLNSforHTML)
+  function serializeSubtree(n, contextNamespace)
   {
     switch(n.nodeType) {
 
@@ -87,30 +77,30 @@ function serializeHTML(n, outputXML)
       return "<!--" + n.data + "-->";
 
     case 1:
-      var needXMLNS = (addXMLNSforHTML || !isHTML(n)) && !n.hasAttribute("xmlns");
-      var xmlnsString = needXMLNS ? (" xmlns=\"" + (n.namespaceURI || HTML_NS) + "\"") : "";
-
       var tag = n.tagName;
-      if (isHTML(n))
+      var namespace = n.namespaceURI || HTML_NS;
+      if (namespace == HTML_NS)
         tag = tag.toLowerCase();
-      var start = "<" + tag + xmlnsString + serializeAttributes(n) + ">";
+      var start = "<" + tag + serializeAttributes(n) + ">";
       var end = "<" + "/" + tag + ">";
 
-      if (!outputXML && needXMLNS) {
-        // This warning is not quite right, since MathML and SVG are sometimes ok!
-        dumpln("serializeHTML: Serializing an element with namespace " + n.namespaceURI + " as HTML won't work very well!");
+      // HTML5 allows entering XML-like sections with <math> and <svg> tags.
+      if (!(
+          namespace == contextNamespace ||
+          (contextNamespace == HTML_NS && namespace == MATHML_NS && tag == "math") ||
+          (contextNamespace == HTML_NS && namespace == SVG_NS && tag == "svg")
+         )) {
+        dumpln("serializeHTML: What's this <" + tag + " xmlns=\"" + namespace + "\"> doing in a " + contextNamespace + " context?");
       }
 
-      var htmlish = !outputXML && isHTML(n);
-
-      if (htmlish && (tag in emptyElements)) {
-
+      if (namespace == HTML_NS && tag in emptyElements) {
+        // This element should be empty.
         if (n.childNodes.length > 0)
           dumpln("serializeHTML: Can't serialize " + tag + " element with children as HTML!");
         return start;
 
-      } else if (htmlish && (tag in CDATAElements)) {
-
+      } else if (namespace == HTML_NS && tag in CDATAElements) {
+        // This element should have text children only.
         var inner = n.innerHTML;
         if (hasNonTextChildren(n)) {
           dumpln("serializeHTML: Can't serialize " + tag + " element with element children as HTML!");
@@ -121,13 +111,10 @@ function serializeHTML(n, outputXML)
         return start + inner + end;
 
       } else {
-
+        // This element can have element children.
         var serializedChildren = "";
-        var childrenNeedXMLNS = !isHTML(n);
-
         for (var child of n.childNodes)
-          serializedChildren += serializeSubtree(child, childrenNeedXMLNS);
-
+          serializedChildren += serializeSubtree(child, namespace);
         return start + serializedChildren + end;
 
       }
@@ -139,9 +126,9 @@ function serializeHTML(n, outputXML)
   }
 
   if (n) {
-    return serializeSubtree(n, outputXML);
+    return serializeSubtree(n, HTML_NS);
   } else {
-    return serializeDoctype() + serializeSubtree(document.documentElement, outputXML);
+    return serializeDoctype() + serializeSubtree(document.documentElement, HTML_NS);
   }
 }
 
