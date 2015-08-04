@@ -53,6 +53,7 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.quitApplicationSoon", this);
       messageManager.addMessageListener("DOMFuzzHelper.quitWithLeakCheck", this);
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
+      messageManager.addMessageListener("DOMFuzzHelper.enableAccessibility", this);
       messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
 
       messageManager.loadFrameScript("chrome://domfuzzhelper/content/fuzzPriv.js", true);
@@ -101,6 +102,17 @@ DOMFuzzHelperObserver.prototype = {
 
       case "DOMFuzzHelper.getBinDirectory":
         return getBinDirectory();
+
+      case "DOMFuzzHelper.enableAccessibility":
+        try {
+          Components.classes["@mozilla.org/accessibilityService;1"]
+            .getService(Components.interfaces.nsIAccessibleRetrieval);
+          dump("Enabled accessibility!\n");
+        } catch(e) {
+          dump("Couldn't enable accessibility: " + e + "\n");
+        }
+
+        break;
 
       default:
         dumpln("Unrecognized message sent to domfuzzhelperobserver.js");

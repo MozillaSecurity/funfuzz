@@ -147,13 +147,8 @@ function runSoon(f)
 
 function enableAccessibility()
 {
-  try {
-    Components.classes["@mozilla.org/accessibilityService;1"]
-      .getService(Components.interfaces.nsIAccessibleRetrieval);
-    dump("Enabled accessibility!\n");
-  } catch(e) {
-    dump("Couldn't enable accessibility: " + e + "\n");
-  }
+	dumpln("fuzzPriv.enableAccessibility");
+        sendAsyncMessage('DOMFuzzHelper.enableAccessibility', {});
 }
 
 function sendMemoryPressureNotification()
