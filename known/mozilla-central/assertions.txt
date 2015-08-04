@@ -2174,6 +2174,9 @@ ServiceWorkerContainer.cpp
 # Bug 1190705
 failed assertion "n64 == n32"
 
+# Bug 1191112
+Assertion failure: isEmpty(),
+
 
 ################################
 #                              #
