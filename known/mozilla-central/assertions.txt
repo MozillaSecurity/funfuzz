@@ -2168,6 +2168,9 @@ ASSERTION: Stretching should be in the vertical direction: 'isVertical', file la
 # Bug 1190676
 Assertion failure: cycleStackMarker == ps->mCycleMarker,
 
+# Bug 1190703
+ServiceWorkerContainer.cpp
+
 
 ################################
 #                              #
