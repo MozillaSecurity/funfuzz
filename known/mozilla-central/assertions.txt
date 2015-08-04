@@ -2171,6 +2171,9 @@ Assertion failure: cycleStackMarker == ps->mCycleMarker,
 # Bug 1190703
 ServiceWorkerContainer.cpp
 
+# Bug 1190705
+failed assertion "n64 == n32"
+
 
 ################################
 #                              #
