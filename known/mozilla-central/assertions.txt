@@ -2265,3 +2265,6 @@ Assertion failure: isNumber(),
 # Bug 1190727
 Assertion failure: resultPairObj->getDenseInitializedLength() == 2,
 
+# Bug 1190733
+Assertion failure: index < initializedLength(),
+
