@@ -233,7 +233,6 @@ layout.css.unprefixing-service.globally-whitelisted
 layout.enable_japanese_specific_transform
 layout.float-fragments-inside-column.enabled
 layout.frame_rate.precise
-layout.frames.force_resizability
 layout.imagevisibility.enabled
 layout.interruptible-reflow.enabled
 layout.gpu-scaling.enabled
