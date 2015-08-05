@@ -22,6 +22,7 @@ isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
 isWin = (platform.system() == 'Windows')
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)
+# Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
 isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
