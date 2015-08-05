@@ -140,6 +140,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
+    if sps.isWin:
+        required.append('8937836d3c93')  # m-c 226774 Fx38, 1st w/ successful MSVC 2013 and 2015 builds, see bug 1119072
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
@@ -164,8 +166,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
         # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
         required.append('5ad5f92387a2')  # m-c 179476 Fx31, see bug 1173992
-    if sps.isWin:
-        required.append('abfaf0ccae19')  # m-c 169626 Fx30, 1st w/reliably successful Win builds, see bug 974739
     if sps.isMac:
         required.append('f9374ef0fbed')  # m-c 163848 Fx29, prior builds have issues with Xcode 6.3 and above
     required.append('df3c2a1e86d3')  # m-c 160479 Fx29, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs, see bug 927685
