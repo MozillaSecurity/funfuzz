@@ -2250,14 +2250,12 @@ Assertion failure: base.isNumber() && power.isNumber(),
 # Bug 1190002 (Only with --unboxed-arrays)
 #Assertion failure: HasSSE2(),
 
-# Bug 1190147 (Only with --unboxed-arrays)
-#Assertion failure: Incompatible write to unboxed property,
-
 # Bug 1190272 (Only with --unboxed-arrays)
 #Assertion failure: isInt32(),
 #Assertion failure: isString(),
 #Assertion failure: isObjectOrNull(),
 #Assertion failure: isNumber(),
+#Assertion failure: Incompatible write to unboxed property,
 
 # Bug 1190733 (Only with --unboxed-arrays)
 #Assertion failure: index < initializedLength(),
