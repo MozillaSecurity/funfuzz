@@ -2235,9 +2235,6 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1185957
 Assertion failure: !call->hasSingleTarget(),
 
-# Bug 1187123
-Assertion failure: (l.asBits >> 47) <= JSVAL_TAG_OBJECT,
-
 # Bug 1188290
 Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cellp).maybeInRememberedSet(nursery_),
 
