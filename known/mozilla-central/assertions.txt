@@ -2226,6 +2226,9 @@ Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i],
 # Bug 1174547
 Assertion failure: type == MIRType_Object,
 
+# Bug 1175755
+Assertion failure: !empty(),
+
 # Bug 1182866
 Assertion failure: data.s.payload.why == why,
 
