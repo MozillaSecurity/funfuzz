@@ -89,8 +89,9 @@ ASSERTION: Final iteration still has unfrozen items, this shouldn't happen unles
 
 ASSERTION: dirtyness out of sync: '(mMinWidth == NS_INTRINSIC_WIDTH_UNKNOWN) == (mPrefWidth == NS_INTRINSIC_WIDTH_UNKNOWN)', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: dirtyness out of sync: '(mMinWidth == NS_INTRINSIC_WIDTH_UNKNOWN) == (mPrefWidthPctExpand == NS_INTRINSIC_WIDTH_UNKNOWN)', file layout/tables/BasicTableLayoutStrategy.cpp
-ASSERTION: How is col_width nscoord_MAX if space isn't?: 'col_width != nscoord_MAX', file layout/tables/BasicTableLayoutStrategy.cpp
-ASSERTION: How is col_width_before_adjust nscoord_MAX if space isn't?: 'col_width_before_adjust != nscoord_MAX', file layout/tables/BasicTableLayoutStrategy.cpp
+ASSERTION: How is col_iSize nscoord_MAX if space isn't?: 'col_iSize != nscoord_MAX', file layout/tables/BasicTableLayoutStrategy.cpp
+ASSERTION: How is col_iSize_before_adjust nscoord_MAX if space isn't?: 'col_iSize_before_adjust != nscoord_MAX', file layout/tables/BasicTableLayoutStrategy.cpp
+
 
 ASSERTION: Bogus computed width: 'mComputedWidth >= 0', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: Bogus computed width: 'ComputedWidth() >= 0', file layout/generic/nsHTMLReflowState.cpp
