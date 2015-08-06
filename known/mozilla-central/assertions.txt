@@ -2170,6 +2170,7 @@ ASSERTION: Stretching should be in the vertical direction: 'isVertical', file la
 
 # Bug 1190676
 Assertion failure: cycleStackMarker == ps->mCycleMarker,
+Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
 
 # Bug 1190703
 ServiceWorkerContainer.cpp
