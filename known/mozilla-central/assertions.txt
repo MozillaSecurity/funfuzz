@@ -372,6 +372,8 @@ ASSERTION: bits don't correspond to style change reason: '!(aIntrinsicDirty == e
 # Bug 481089
 ASSERTION: Negative containing block height!: 'cbSize.BSize(wm) >= 0', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: Negative containing block width!: 'cbSize.ISize(wm) >= 0', file layout/generic/nsHTMLReflowState.cpp
+ASSERTION: Negative containing block isize!: 'cbSize.ISize(wm) >= 0', file layout/generic/nsHTMLReflowState.cpp
+ASSERTION: Negative containing block bsize!: 'cbSize.BSize(wm) >= 0', file layout/generic/nsHTMLReflowState.cpp
 
 # Bug 481301
 ASSERTION: wrong thread: 'PR_GetCurrentThread() == gSocketThread', file netwerk/protocol/http/src/nsHttpTransaction.cpp
