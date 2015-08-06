@@ -2180,6 +2180,9 @@ Assertion failure: isEmpty(),
 # Bug 1191180
 Assertion failure: mCertificate,
 
+# Bug 1191956
+ASSERTION: mChannel must be valid if we're OPENED.: 'mChannel', file dom/base/nsXMLHttpRequest.cpp
+
 
 ################################
 #                              #
