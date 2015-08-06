@@ -2186,6 +2186,9 @@ Assertion failure: mCertificate,
 # Bug 1191956
 ASSERTION: mChannel must be valid if we're OPENED.: 'mChannel', file dom/base/nsXMLHttpRequest.cpp
 
+# Bug 1191981
+ASSERTION: cancel with non-failure status code: 'NS_FAILED(status)', file netwerk/base/nsInputStreamPump.cpp
+
 
 ################################
 #                              #
