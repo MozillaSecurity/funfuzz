@@ -60,32 +60,53 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 
 ## Running funfuzz
 
-To run all of the domfuzz and js fuzzers which tests builds every 8 hours:
+To run **all of the domfuzz and js fuzzers** which test builds every 8 hours:
 
 `python -u funfuzz/loopBot.py -b "--random" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
-To run only the js fuzzers which compiles shells with random configurations every 8 hours and tests them:
+To run **only the js fuzzers** which compiles shells with random configurations every 8 hours and tests them:
 
 `python -u funfuzz/loopBot.py -b "--random" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
-To test a patch (assuming patch is in ~/patch.diff) against a specific branch (assuming **Mercurial** mozilla-inbound is in ~/trees/mozilla-inbound), using a debug 64-bit deterministic shell configuration with NSPR, every 8 hours:
+To test **a patch** (assuming patch is in ~/patch.diff) against a specific branch (assuming **Mercurial** mozilla-inbound is in ~/trees/mozilla-inbound), using a debug 64-bit deterministic shell configuration with NSPR, every 8 hours:
 
 `python -u funfuzz/loopBot.py -b "--enable-debug --enable-more-deterministic --enable-nspr-build -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
-In js mode, loopBot.py makes use of [compileShell.py](js/compileShell.py), jsfunfuzz, [compareJIT.py](js/compareJIT.py) (if testing deterministic builds), randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository) and [autoBisect.py](autobisect-js/README.md) (if the mozilla repository is present).
+In js mode, loopBot.py makes use of:
 
-The parameters in `-b` get passed into [compileShell.py](js/compileShell.py) and [autoBisect.py](autobisect-js/README.md).
+* [compileShell](js/compileShell.py)
+* [jsfunfuzz](js/jsfunfuzz)
+* [compareJIT](js/compareJIT.py) (if testing deterministic builds)
+* randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository)
+* [autoBisect](autobisect-js/README.md) (if the mozilla repository is present).
+
+The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [autoBisect](autobisect-js/README.md).
 
 
 ## FAQ:
 
 **Q: What platforms does funfuzz run on?**
 
-**A:** compileShell has been tested on Windows 7 and 8.1 (with MozillaBuild 2.0.0), Mac OS X 10.10 Yosemite and Ubuntu 12.04 and later. Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
+**A:** compileShell has been tested on:
+
+* Windows 7 through 8.1, with [MozillaBuild 2.0.0](https://wiki.mozilla.org/MozillaBuild)
+  * Windows 10 [requires a patch](https://bugzilla.mozilla.org/show_bug.cgi?id=1173060#c9) on top of MozillaBuild 2.0.0
+* Mac OS X 10.10
+* Ubuntu 14.04 LTS and later (best supported on 15.04)
+* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
 
-Support for Windows XP and Mac OS X 10.6 Snow Leopard have been removed.
+The following operating systems are old and while they may still work, be prepared to **expect issues** along the way:
+
+* Windows Vista
+* Mac OS X 10.7 through 10.9
+* Ubuntu Linux 12.04 LTS
+
+Support for the following operating systems **have been removed**:
+
+* Windows XP
+* Mac OS X 10.6
 
 **Q: What version of Python does funfuzz require?**
 
