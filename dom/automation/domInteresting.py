@@ -364,6 +364,8 @@ def knownChromeFailure(msg):
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
         ("process-content.js" in msg and "EXPORTED_SYMBOLS is not an array" in msg) or  # Bug 1188169
+        ("nsPrompter.js" in msg and "openModalWindow on a hidden window" in msg) or     # Bug 1186727
+        ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
 
