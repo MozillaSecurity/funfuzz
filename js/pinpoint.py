@@ -52,8 +52,8 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
                 ["-i"] + itest
             )
             print sps.shellify(autobisectCmd)
-            subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect", "w"), stderr=subprocess.STDOUT)
-            print "Done running autobisect. Log: " + logPrefix + "-autobisect"
+            subprocess.call(autobisectCmd, stdout=open(logPrefix + "-autobisect.txt", "w"), stderr=subprocess.STDOUT)
+            print "Done running autobisect. Log: " + logPrefix + "-autobisect.txt"
 
     return (lithResult, lithDetails)
 
