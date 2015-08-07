@@ -227,7 +227,7 @@ def sendEmail(subject, body, receiver):
         toAddr = 'jruderman@gmail.com'
     elif receiver == 'gkwong':
         fromAddr = 'gkwong+fuzzbot@mozilla.com'
-        toAddr = 'swader@gmail.com'
+        toAddr = 'gkwong@mozilla.com'
 
     msg = MIMEText(body)
     msg['Subject'] = subject
