@@ -68,12 +68,6 @@ def knownBrokenRanges(options):
         hgrange('8a416fedec44', '7f9252925e26'),  # Fx41, broken spidermonkey
     ]
 
-    if sps.isARMv7l:
-        skips.extend([
-            hgrange('688d526f9313', '280aa953c868'),  # Fx29-30, broken ARM builds
-            hgrange('35e7af3e86fd', 'a393ec07bc6a'),  # Fx32, broken ARM builds
-        ])
-
     if sps.isMac:
         skips.extend([
             hgrange('5e45fba743aa', '8e5d8f34c53e'),  # Fx39, broken Mac builds due to jemalloc
@@ -104,16 +98,12 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     # These should be in descending order, or bisection will break at earlier changesets.
 
-    offthreadCompileFlag = asmNopFillFlag = asmPoolMaxOffsetFlag = gczealValueFlag = False
+    offthreadCompileFlag = gczealValueFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after these flags needs to be a number, so we look for the string instead.
         if '--ion-offthread-compile=' in entry:
             offthreadCompileFlag = True
-        elif '--arm-asm-nop-fill=' in entry:
-            asmNopFillFlag = True
-        elif '--asm-pool-max-offset=' in entry:
-            asmPoolMaxOffsetFlag = True
         elif '--gc-zeal=' in entry:
             gczealValueFlag = True
 
@@ -136,6 +126,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
     if sps.isWin:
         required.append('8937836d3c93')  # m-c 226774 Fx38, 1st w/ successful MSVC 2013 and 2015 builds, see bug 1119072
+    if sps.isLinux:
+        required.append('6ec9033a4535')  # m-c 217796 Fx36, previous builds fail on some Linux variants with different compiler versions
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
@@ -148,10 +140,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('e8558ecd9b16')  # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
     if options.enableNsprBuild:
         required.append('a459b02a9ca4')  # m-c 194734 Fx33, 1st w/--enable-nspr-build, see bug 975011
-    if asmPoolMaxOffsetFlag:
-        required.append('f114c4101f02')  # m-c 194525 Fx33, 1st w/--asm-pool-max-offset=1024, see bug 1026919
-    if asmNopFillFlag:
-        required.append('f1bacafe789c')  # m-c 192164 Fx33, 1st w/--arm-asm-nop-fill=0, see bug 1020834
     if offthreadCompileFlag:
         required.append('f0d67b1ccff9')  # m-c 188901 Fx33, 1st w/--ion-offthread-compile=off, see bug 1020364
     if '--no-native-regexp' in flags:
@@ -160,9 +148,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
         # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
         required.append('5ad5f92387a2')  # m-c 179476 Fx31, see bug 1173992
-    if sps.isMac:
-        required.append('f9374ef0fbed')  # m-c 163848 Fx29, prior builds have issues with Xcode 6.3 and above
-    required.append('df3c2a1e86d3')  # m-c 160479 Fx29, prior non-threadsafe builds act weirdly with threadsafe-only flags from later revs, see bug 927685
+    required.append('f9374ef0fbed')  # m-c 163848 Fx29, prior builds have issues with Xcode 6.3 and above
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 
