@@ -79,13 +79,6 @@ def knownBrokenRanges(options):
             hgrange('5e45fba743aa', '8e5d8f34c53e'),  # Fx39, broken Mac builds due to jemalloc
         ])
 
-    if sps.isWin:
-        skips.extend([
-            hgrange('f6d5a48271b6', 'dc128b242d8a'),  # Fx29, broken Windows builds due to ICU
-            hgrange('17c463691232', 'f76b7bc18dbc'),  # Fx29-30, build breakage
-            hgrange('d959285c827e', 'edf5e2dc9198'),  # Fx33, build breakage
-        ])
-
     if options.enableMoreDeterministic:
         skips.extend([
             hgrange('4a04ca5ed7d3', '406904577dfc'),  # Fx33, see bug 1030014
@@ -153,7 +146,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('aa33f4725177')  # m-c 198804 Fx34, 1st w/--ion-loop-unrolling=on, see bug 1039458
     if '--no-threads' in flags:
         required.append('e8558ecd9b16')  # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
-    if sps.isMozBuild64 or options.enableNsprBuild:  # 64-bit builds have peculiar complexities prior to this
+    if options.enableNsprBuild:
         required.append('a459b02a9ca4')  # m-c 194734 Fx33, 1st w/--enable-nspr-build, see bug 975011
     if asmPoolMaxOffsetFlag:
         required.append('f114c4101f02')  # m-c 194525 Fx33, 1st w/--asm-pool-max-offset=1024, see bug 1026919
