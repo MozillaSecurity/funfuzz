@@ -319,3 +319,6 @@ NativeSetExistingDataProperty
 GetExistingProperty
 js::NativeGetProperty
 
+# Bug 1193057
+js::ScopeCoordinateName
+
