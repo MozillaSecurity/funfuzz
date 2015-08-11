@@ -2260,6 +2260,6 @@ Assertion failure: base.isNumber() && power.isNumber(),
 # Bug 1190733 (Only with --unboxed-arrays)
 #Assertion failure: index < initializedLength(),
 
-# Bug 1193213
-Assertion failure: this->is<T>(),
+# Bug 1193213 (Only with --unboxed-arrays)
+#Assertion failure: this->is<T>(),
 
