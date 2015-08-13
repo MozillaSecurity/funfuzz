@@ -2263,3 +2263,6 @@ Assertion failure: base.isNumber() && power.isNumber(),
 # Bug 1193213 (Only with --unboxed-arrays)
 #Assertion failure: this->is<T>(),
 
+# Bug 1194022
+Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token requires contextual specifier to be parsed unambiguously),
+
