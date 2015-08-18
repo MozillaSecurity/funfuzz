@@ -325,3 +325,6 @@ js::TraceRoot
 # Bug 1193543 (Only with --unboxed-arrays)
 #js::gc::Arena::finalize
 
+# Bug 1195590
+js::jit::Simulator::decodeType01
+

@@ -2266,3 +2266,6 @@ Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token r
 # Bug 1195588
 Assertion failure: num.isNumber(),
 
+# Bug 1195590
+Assertion failure: Invalid caller frame type when exiting from Ion frame.,
+
