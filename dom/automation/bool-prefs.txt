@@ -328,6 +328,7 @@ privacy.popups.showBrowserMessage
 privacy.popups.usecustom
 privacy.sanitize.sanitizeOnShutdown
 prompts.tab_modal.enabled
+security.sri.enable
 security.ssl.enable_false_start
 security.warn_entering_secure
 security.warn_entering_weak
