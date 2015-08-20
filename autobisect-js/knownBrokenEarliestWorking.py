@@ -109,6 +109,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if "--ion-shared-stubs=on" in flags:
+        required.append('3655d19ce241')  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
     if options.enableSimulatorArm64:
         # This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
         required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
