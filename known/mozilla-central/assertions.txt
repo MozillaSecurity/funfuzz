@@ -2248,9 +2248,6 @@ Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) ||
 # Bug 1185746
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
 
-# Bug 1185957
-Assertion failure: !call->hasSingleTarget(),
-
 # Bug 1188290
 Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cellp).maybeInRememberedSet(nursery_),
 
