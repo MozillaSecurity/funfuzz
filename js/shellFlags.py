@@ -204,6 +204,7 @@ def basicFlagSets(shellPath):
             # https://hg.mozilla.org/mozilla-central/file/e3bf27190360/js/src/tests/lib/tests.py#l12
             ['--fuzzing-safe', '--no-threads', '--ion-eager'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager'],
             ['--fuzzing-safe', '--no-threads', '--baseline-eager'],
             ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
             ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
