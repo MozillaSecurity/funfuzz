@@ -265,7 +265,6 @@ media.navigator.video.enabled
 media.peerconnection.enabled
 media.peerconnection.video.enabled
 media.useAudioChannelAPI
-media.useAudioChannelService
 media.webvtt.enabled
 media.webvtt.regions.enabled
 media.hardware-video-decoding.enabled
