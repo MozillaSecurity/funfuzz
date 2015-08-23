@@ -2269,3 +2269,7 @@ Assertion failure: Invalid caller frame type when exiting from Ion frame.,
 # Bug 1196648
 Assertion failure: it.isBaselineJS() || it.isIonJS(),
 
+# Bug 1197604
+Assertion failure: !frame_->isHandlingException(),
+Assertion failure: hasScript(),
+
