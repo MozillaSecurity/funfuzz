@@ -61,7 +61,7 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-incremental-gc') and chance(.1):
         args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
 
-    # Disabled until bug 1190733 and bug 1193213 are fixed.
+    # Disabled until bug 1193213 is fixed.
     # if shellSupportsFlag(shellPath, '--unboxed-arrays') and chance(.2):
     #     args.append("--unboxed-arrays")  # --unboxed-arrays landed in bug 1146597
 

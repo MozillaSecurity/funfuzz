@@ -2251,9 +2251,6 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1188290
 Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cellp).maybeInRememberedSet(nursery_),
 
-# Bug 1190733 (Only with --unboxed-arrays)
-#Assertion failure: index < initializedLength(),
-
 # Bug 1193213 (Only with --unboxed-arrays)
 #Assertion failure: this->is<T>(),
 
