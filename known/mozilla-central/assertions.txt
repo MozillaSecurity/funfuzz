@@ -2251,22 +2251,13 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1188290
 Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cellp).maybeInRememberedSet(nursery_),
 
-# Bug 1193213 (Only with --unboxed-arrays)
-#Assertion failure: this->is<T>(),
-
 # Bug 1195578
 Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token requires contextual specifier to be parsed unambiguously),
 
 # Bug 1195590
 Assertion failure: Invalid caller frame type when exiting from Ion frame.,
 
-# Bug 1196648
-Assertion failure: it.isBaselineJS() || it.isIonJS(),
-
 # Bug 1197604
 Assertion failure: !frame_->isHandlingException(),
 Assertion failure: hasScript(),
-
-# Bug 1198090
-Assertion failure: CurrentThreadIsGCSweeping() || CurrentThreadIsHandlingInitFailure(),
 
