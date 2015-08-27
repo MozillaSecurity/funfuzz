@@ -2254,9 +2254,6 @@ Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cell
 # Bug 1195578
 Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token requires contextual specifier to be parsed unambiguously),
 
-# Bug 1195590
-Assertion failure: Invalid caller frame type when exiting from Ion frame.,
-
 # Bug 1197604
 Assertion failure: !frame_->isHandlingException(),
 Assertion failure: hasScript(),
