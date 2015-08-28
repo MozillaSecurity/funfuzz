@@ -566,8 +566,9 @@ def bisectUsingTboxBins(options):
 
         print 'Numeric ID ' + mID + ' was tested.',
 
-        # Exit infinite loop once we have tested both the starting point and the ending point.
-        if len(urlsTbox) == 2 and mID in testedIDs:
+        #  Exit infinite loop once we have tested the starting point, ending point and any points
+        #  in the middle with results returning "incomplete".
+        if (len(urlsTbox) - middleRevSkippedNum) <= 2 and mID in testedIDs:
             break
         elif len(urlsTbox) < 2:
             print 'urlsTbox is: ' + str(urlsTbox)
