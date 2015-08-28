@@ -665,6 +665,14 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
             return newIndex, idNum, tboxCacheFolder, skippedChangesetNum
         else:
             skippedChangesetNum += 1
+            if len(urls) == 4:
+                #  If we have [good, untested, incomplete, bad], after testing the middle changeset that
+                #  has the "incomplete" result, the offset will push us the boundary changeset with the
+                #  "bad" result. In this case, switch to the beginning changeset so the offset of 1 will
+                #  push us into the untested changeset, avoiding a loop involving
+                #  "incomplete->bad->incomplete->bad->..."
+                #  See https://github.com/MozillaSecurity/funfuzz/issues/18
+                preferredIndex = 0
 
 
 def getHgwebMozillaOrg(branchName):
