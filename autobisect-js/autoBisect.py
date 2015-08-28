@@ -519,7 +519,7 @@ def bisectUsingTboxBins(options):
 
     # Download and test starting point.
     print '\nExamining starting point...'
-    sID, startResult, sReason, sPosition, urlsTbox, testedIDs = testBuildOrNeighbour(
+    sID, startResult, sReason, sPosition, urlsTbox, testedIDs, startSkippedNum = testBuildOrNeighbour(
         options, 0, urlsTbox, buildType, testedIDs)
     if sID is None:
         raise Exception('No complete builds were found.')
@@ -527,7 +527,7 @@ def bisectUsingTboxBins(options):
 
     # Download and test ending point.
     print '\nExamining ending point...'
-    eID, endResult, eReason, ePosition, urlsTbox, testedIDs = testBuildOrNeighbour(
+    eID, endResult, eReason, ePosition, urlsTbox, testedIDs, endSkippedNum = testBuildOrNeighbour(
         options, len(urlsTbox) - 1, urlsTbox, buildType, testedIDs)
     if eID is None:
         raise Exception('No complete builds were found.')
@@ -552,7 +552,7 @@ def bisectUsingTboxBins(options):
             mPosition = len(sortedUrlsTbox)
 
         # Test the middle revision. If it is not a complete build, test ones around it.
-        mID, mResult, mReason, mPosition, urlsTbox, testedIDs = testBuildOrNeighbour(
+        mID, mResult, mReason, mPosition, urlsTbox, testedIDs, middleRevSkippedNum = testBuildOrNeighbour(
             options, mPosition, urlsTbox, buildType, testedIDs)
         if mID is None:
             print 'Middle ID is None.'
@@ -625,6 +625,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
     Downloads a build. If the build is incomplete, find a working neighbour, then return results.
     '''
     offset = None
+    skippedChangesetNum = 0
 
     while True:
         if offset is None:
@@ -660,7 +661,9 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
                                                                                  INCOMPLETE_NOTE)),
                                                 idNum)
                     continue
-            return newIndex, idNum, tboxCacheFolder
+            return newIndex, idNum, tboxCacheFolder, skippedChangesetNum
+        else:
+            skippedChangesetNum += 1
 
 
 def getHgwebMozillaOrg(branchName):
@@ -828,7 +831,9 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
     '''
     Tests the build. If the build is incomplete, find a working neighbour, then return results.
     '''
-    finalIndex, idNum, tboxCacheFolder = getBuildOrNeighbour((not options.browserOptions), preferredIndex, urls, buildType)
+    finalIndex, idNum, tboxCacheFolder, skippedNum = getBuildOrNeighbour(
+        (not options.browserOptions), preferredIndex, urls, buildType
+    )
 
     if idNum is None:
         result, reason = None, None
@@ -845,7 +850,7 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
         # Adds the result and reason to testedIDs
         testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
 
-    return idNum, result, reason, finalIndex, urls, testedIDs
+    return idNum, result, reason, finalIndex, urls, testedIDs, skippedNum
 
 
 def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
