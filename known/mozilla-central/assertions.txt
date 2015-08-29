@@ -2261,3 +2261,7 @@ Assertion failure: hasScript(),
 # Bug 1199578
 Assertion failure: AnyTypedArrayLength(source) <= target->length() - offset,
 
+# Bug 1199898
+Assertion failure: iter->isInterruptCheck(),
+Assertion failure: *iter == ool->lir,
+
