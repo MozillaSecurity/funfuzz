@@ -2266,5 +2266,5 @@ Assertion failure: iter->isInterruptCheck(),
 Assertion failure: *iter == ool->lir,
 
 # Bug 1199935
-Assertion failure: lengthDouble < 2147483647,
+Assertion failure: lengthDouble
 
