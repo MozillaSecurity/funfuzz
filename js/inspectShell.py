@@ -15,6 +15,9 @@ import subprocesses as sps
 
 path2 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'lithium', 'interestingness'))
 sys.path.append(path2)
+if not os.path.exists(path2):
+    print "Please check out Lithium and FuzzManager side-by-side with funfuzz. Links in https://github.com/MozillaSecurity/funfuzz/#setup"
+    sys.exit(2)
 import envVars
 
 
