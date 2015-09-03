@@ -2265,3 +2265,6 @@ Assertion failure: AnyTypedArrayLength(source) <= target->length() - offset,
 Assertion failure: iter->isInterruptCheck(),
 Assertion failure: *iter == ool->lir,
 
+# Bug 1201459
+MOZ_CRASH(Given MIRType cannot be unboxed.)
+

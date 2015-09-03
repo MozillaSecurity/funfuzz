@@ -317,3 +317,6 @@ js::jit::Assembler::bind
 # Bug 1193521
 js::TraceRoot
 
+# Bug 1201459
+js::jit::MUnbox::New
+
