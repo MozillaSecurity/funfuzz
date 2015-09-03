@@ -2268,3 +2268,6 @@ Assertion failure: *iter == ool->lir,
 # Bug 1201459
 MOZ_CRASH(Given MIRType cannot be unboxed.)
 
+# Bug 1201469
+Assertion failure: resume->block() == *block,
+
