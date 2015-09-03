@@ -50,6 +50,7 @@ def runLithium(lithArgs, logPrefix, targetTime):
     subprocess.call(["gzip", "-f", lithlogfn])
     return r
 
+
 def readLithiumResult(lithlogfn):
     with open(lithlogfn) as f:
         for line in f:
@@ -58,7 +59,7 @@ def readLithiumResult(lithlogfn):
             if line.startswith("Lithium result: interesting"):
                 return (LITH_RETESTED_STILL_INTERESTING, None)
             elif line.startswith("Lithium result: succeeded, reduced to: "):
-                reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip() # e.g. "4 lines"
+                reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
                 return (LITH_FINISHED, reducedTo)
             elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
                 return (LITH_NO_REPRO, None)
