@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--ion-instruction-reordering=on') and chance(.2):
+        args.append("--ion-instruction-reordering=on")  # --ion-instruction-reordering=on landed in bug 1195545
+
     if shellSupportsFlag(shellPath, '--ion-shared-stubs=on') and chance(.2):
         args.append("--ion-shared-stubs=on")  # --ion-shared-stubs=on landed in bug 1168756
 
