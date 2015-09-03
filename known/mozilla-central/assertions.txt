@@ -2265,6 +2265,3 @@ Assertion failure: AnyTypedArrayLength(source) <= target->length() - offset,
 Assertion failure: iter->isInterruptCheck(),
 Assertion failure: *iter == ool->lir,
 
-# Bug 1199935
-Assertion failure: lengthDouble
-
