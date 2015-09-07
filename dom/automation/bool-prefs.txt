@@ -160,7 +160,6 @@ gfx.downloadable_fonts.disable_cache
 gfx.downloadable_fonts.enabled
 gfx.filter.nearest.force-enabled
 gfx.font_rendering.graphite.enabled
-gfx.font_rendering.directwrite.enabled
 gfx.font_rendering.directwrite.use_gdi_table_loading
 gfx.font_rendering.fallback.always_use_cmaps
 gfx.font_rendering.opentype_svg.enabled
