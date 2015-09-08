@@ -10,6 +10,7 @@ path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, 'util'))
 sys.path.append(path2)
 import subprocesses as sps
 
+
 class CrashWatcher:
 
     '''
@@ -92,7 +93,7 @@ class CrashWatcher:
             # Bug 507876 is a breakpad issue that means too-much-recursion crashes don't give me stack traces on Mac
             # (and Linux, but differently).
             # The combination means we lose.
-            if (msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff")):
+            if msg.startswith("Crash address: 0xffffffffbf7ff") or msg.startswith("Crash address: 0x5f3fff"):
                 #self.noteCallback("This crash is at the Mac stack guard page. It is probably a too-much-recursion crash or a stack buffer overflow.")
                 self.crashMightBeTooMuchRecursion = True
             if self.crashMightBeTooMuchRecursion and msg.startswith(" 3 ") and not self.crashIsKnown:
@@ -123,7 +124,7 @@ class CrashWatcher:
             self.crashProcessor = "mac crash reporter"
             expectAfterFunctionName = " + "
 
-        if False: # self.crashProcessor != "cdb" and not crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
+        if False:  # self.crashProcessor != "cdb" and not crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
             # TODO: if DOMFuzz keeps hitting this kind of problem, look for a more specific way to ignore these bogus crashes
             # that does not also ignore anything that just fails to, for example, trace the stack up through JIT code.
             # (See email thread between Jesse and Gary titled "Mac crashes not being detected as interesting")
@@ -135,6 +136,7 @@ class CrashWatcher:
         elif not detect_interesting_crashes.amiss(self.knownPath, crashlog, True):
             self.crashIsKnown = True
 
+
 def crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
     # Lack of 'main' could mean:
     #   * This build only has breakpad symbols, not native symbols
@@ -142,7 +144,8 @@ def crashWasProcessedCorrectly(crashText, expectAfterFunctionName):
     # This code does not handle too-much-recursion crashes well.
     # But it only matters for the rare case of too-much-recursion crashes on Mac/Linux without breakpad.
     for j in ["main", "XRE_main", "exit"]:
-        if (" " + j + expectAfterFunctionName) in crashText:
+        needle = " " + j + expectAfterFunctionName
+        if needle in crashText:
             # We have enough symbols from Firefox
             return True
     return False
