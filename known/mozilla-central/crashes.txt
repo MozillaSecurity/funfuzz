@@ -319,4 +319,5 @@ js::jit::Assembler::bind
 
 # Bug 1201459
 js::jit::MUnbox::New
+js::jit::MUnbox::Infallible
 
