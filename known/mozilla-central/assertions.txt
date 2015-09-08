@@ -2258,6 +2258,9 @@ Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token r
 Assertion failure: !frame_->isHandlingException(),
 Assertion failure: hasScript(),
 
+# Bug 1199171
+Assertion failure: data >> 28 != 0xf (The instruction does not have condition code),
+
 # Bug 1199578
 Assertion failure: AnyTypedArrayLength(source) <= target->length() - offset,
 
