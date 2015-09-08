@@ -5,6 +5,7 @@ import findIgnoreLists
 
 ready = False
 
+
 def amiss(knownPath, crashLogFilename, verbose):
     if not ready:
         readIgnoreLists(knownPath)
@@ -36,6 +37,7 @@ def amiss(knownPath, crashLogFilename, verbose):
 TOO_MUCH_RECURSION_MAGIC = "[TMR] "
 EXPLOITABLE_MAGIC = "[EXPLOITABLE] "
 
+
 def readIgnoreLists(knownPath):
     global ignoreList
     global ready
@@ -44,6 +46,7 @@ def readIgnoreLists(knownPath):
         readIgnoreList(filename)
     ready = True
     #print "detect_interesting_crashes is ready (ignoring %d strings)" % (len(ignoreList))
+
 
 def readIgnoreList(filename):
     with open(filename) as ignoreFile:
@@ -63,6 +66,7 @@ def readIgnoreList(filename):
                 raise Exception("Typo in crashes.txt?")
             ignoreList.append({"seenCount": 0, "needCount": needCount, "exploitable": exploitable, "theString": line})
 
+
 def isKnownCrashSignature(line, exploitable):
     global ignoreList
     for ig in ignoreList:
@@ -72,6 +76,7 @@ def isKnownCrashSignature(line, exploitable):
                 if ig["seenCount"] >= ig["needCount"]:
                     return True
     return False
+
 
 def resetCounts():
     global ignoreList
