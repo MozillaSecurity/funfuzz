@@ -2274,6 +2274,3 @@ MOZ_CRASH(Given MIRType cannot be unboxed.)
 # Bug 1201469
 Assertion failure: resume->block() == *block,
 
-# Bug 1202522
-Assertion failure: this->is<T>(),
-
