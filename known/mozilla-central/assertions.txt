@@ -2257,9 +2257,9 @@ Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token r
 # Bug 1196545
 Assertion failure: framePushed_ >= uint32_t(-value),
 
-# Bug 1197604
-Assertion failure: !frame_->isHandlingException(),
-Assertion failure: hasScript(),
+# Bug 1197604 (Probably fixed)
+#Assertion failure: !frame_->isHandlingException(),
+#Assertion failure: hasScript(),
 
 # Bug 1199171
 Assertion failure: data >> 28 != 0xf (The instruction does not have condition code),
