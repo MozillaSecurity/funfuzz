@@ -2271,3 +2271,13 @@ MOZ_CRASH(Given MIRType cannot be unboxed.)
 # Bug 1201469
 Assertion failure: resume->block() == *block,
 
+# Bug 1203789 (Only with --unboxed-arrays)
+Assertion failure: isString(),
+
+# Bug 1203790 (Only with --unboxed-arrays)
+Assertion failure: [barrier verifier] Unmarked edge: unboxed_object,
+
+# Bug 1203791
+Assertion failure: !builder || !hasPendingIonBuilder(),
+Assertion failure: script->ionScript()->isRecompiling(),
+Assertion failure: hasBaselineScript(),
