@@ -210,6 +210,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--no-threads', '--baseline-eager'],
             ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
             ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
+            ['--fuzzing-safe', '--no-threads', '--no-ion'],  # See bug 1203862
         ]
         if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
             basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
