@@ -2276,6 +2276,7 @@ Assertion failure: isString(),
 
 # Bug 1203790 (Only with --unboxed-arrays)
 Assertion failure: [barrier verifier] Unmarked edge: unboxed_object,
+Assertion failure: [barrier verifier] Unmarked edge: objectElements,
 
 # Bug 1203791
 Assertion failure: !builder || !hasPendingIonBuilder(),
