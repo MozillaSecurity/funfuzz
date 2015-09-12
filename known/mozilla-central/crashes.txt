@@ -317,7 +317,3 @@ js::jit::Assembler::bind
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1201459
-js::jit::MUnbox::New
-js::jit::MUnbox::Infallible
-

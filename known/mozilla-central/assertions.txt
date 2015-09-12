@@ -2248,9 +2248,6 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1188290
 Assertion failure: bufferCell.has(this, CellPtrEdge(cellp)) || !CellPtrEdge(cellp).maybeInRememberedSet(nursery_),
 
-# Bug 1195578
-Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token requires contextual specifier to be parsed unambiguously),
-
 # Bug 1196545
 Assertion failure: framePushed_ >= uint32_t(-value),
 
@@ -2264,12 +2261,6 @@ Assertion failure: data >> 28 != 0xf (The instruction does not have condition co
 # Bug 1199898
 Assertion failure: iter->isInterruptCheck(),
 Assertion failure: *iter == ool->lir,
-
-# Bug 1201459
-MOZ_CRASH(Given MIRType cannot be unboxed.)
-
-# Bug 1201469
-Assertion failure: resume->block() == *block,
 
 # Bug 1203789 (Only with --unboxed-arrays)
 Assertion failure: isString(),
