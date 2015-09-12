@@ -2281,3 +2281,6 @@ Assertion failure: [barrier verifier] Unmarked edge: unboxed_object,
 Assertion failure: !builder || !hasPendingIonBuilder(),
 Assertion failure: script->ionScript()->isRecompiling(),
 Assertion failure: hasBaselineScript(),
+
+# Bug 1204165
+Assertion failure: this->is<T>(),
