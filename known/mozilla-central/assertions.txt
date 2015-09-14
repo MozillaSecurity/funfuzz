@@ -2279,3 +2279,6 @@ Assertion failure: this->is<T>(),
 
 # Bug 1204368
 Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token requires contextual specifier to be parsed unambiguously),
+
+# Bug 1204700
+Assertion failure: !has(reg),
