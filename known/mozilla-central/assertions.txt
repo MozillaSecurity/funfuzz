@@ -2282,3 +2282,6 @@ Assertion failure: next.type != TOK_DIV && next.type != TOK_REGEXP (next token r
 
 # Bug 1204700
 Assertion failure: !has(reg),
+
+# Bug 1204722
+Assertion failure: isObjectOrNull(),
