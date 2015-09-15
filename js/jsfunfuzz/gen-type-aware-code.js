@@ -204,6 +204,38 @@ var makeEvilCallback;
     return s;
   }
 
+  // Emit a method call expression, in one of the following forms:
+  //   Array.prototype.push.apply(a1, [x])
+  //   Array.prototype.push.call(a1, x)
+  //   a1.push(x)
+  function method(d, b, clazz, obj, meth, arglist)
+  {
+    // Sometimes ignore our arguments
+    if (rnd(10) == 0)
+      arglist = [];
+
+    // Stuff in extra arguments
+    while (rnd(2))
+      arglist.push(val(d, b));
+
+    // Emit a method call expression
+    switch (rnd(4)) {
+      case 0:  return clazz + ".prototype." + meth + ".apply(" + obj + ", [" + arglist.join(", ") + "])";
+      case 1:  return clazz + ".prototype." + meth + ".call(" + [obj].concat(arglist).join(", ") + ")";
+      default: return obj + "." + meth + "(" + arglist.join(", ") + ")";
+    }
+  }
+
+  function severalargs(f)
+  {
+    var arglist = [];
+    arglist.push(f());
+    while (rnd(2)) {
+      arglist.push(f());
+    }
+    return arglist;
+  }
+
   var builderStatementMakers = Random.weighted([
     // a: Array
     { w: 1,  v: function(d, b) { return assign(d, b, "a", "[]"); } },
@@ -222,24 +254,31 @@ var makeEvilCallback;
     { w: 1,  v: function(d, b) { return "/*ADP-1*/Object.defineProperty(" + m("a") + ", " + arrayIndex(d, b) + ", " + makePropertyDescriptor(d, b) + ");"; } },
     { w: 1,  v: function(d, b) { return "/*ADP-2*/Object.defineProperty(" + m("a") + ", " + arrayIndex(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "get: " + makeEvilCallback(d,b) + ", set: " + makeEvilCallback(d, b) + " });"; } },
     { w: 1,  v: function(d, b) { return "/*ADP-3*/Object.defineProperty(" + m("a") + ", " + arrayIndex(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
+
     // Array mutators
-    { w: 5,  v: function(d, b) { return "Array.prototype.push.call("    + m("a") + ", " + val(d, b) + ");"; } },
-    { w: 5,  v: function(d, b) { return "Array.prototype.pop.call("     + m("a") + ");"; } },
-    { w: 5,  v: function(d, b) { return "Array.prototype.unshift.call(" + m("a") + ", " + val(d, b) + ");"; } },
-    { w: 5,  v: function(d, b) { return "Array.prototype.shift.call("   + m("a") + ");"; } },
-    { w: 3,  v: function(d, b) { return "Array.prototype.reverse.call(" + m("a") + ");"; } },
-    { w: 3,  v: function(d, b) { return "Array.prototype.sort.call("    + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
-    { w: 1,  v: function(d, b) { return "Array.prototype.splice.call("  + m("a") + ", " + (arrayIndex(d, b) - arrayIndex(d, b)) + ", " + arrayIndex(d, b) + ");" ; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "push", severalargs(() => val(d, b))) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "pop", []) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "unshift", severalargs(() => val(d, b))) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "shift", []) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "reverse", []) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "sort", [makeEvilCallback(d, b)]) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "splice", [arrayIndex(d, b) - arrayIndex(d, b), arrayIndex(d, b)]) + ";"; } },
 
     // Array accessors
-    { w: 1,  v: function(d, b) { return assign(d, b, "s", m("a") + ".join('')"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "s", m("a") + ".join(', ')"); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".concat(" + m("at") + ")"); } }, // can actually take multiple arrays
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", m("a") + ".slice(" + (arrayIndex(d, b) - arrayIndex(d, b)) + ", " + (arrayIndex(d, b) - arrayIndex(d, b)) + ")"); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "s", method(d, b, "Array", m("a"), "join", [m("s")])); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "concat", severalargs(() => m("at")))); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "slice", [arrayIndex(d, b) - arrayIndex(d, b), arrayIndex(d, b) - arrayIndex(d, b)])); } },
+
     // Array iterators
-    { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["filter", "forEach", "every", "map", "some"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
-    { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ");"; } },
-    { w: 3,  v: function(d, b) { return "Array.prototype." + Random.index(["reduce, reduceRight"]) + ".call(" + m("a") + ", " + makeEvilCallback(d, b) + ", " + m() + ");"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "forEach", [makeEvilCallback(d, b)]) + ";"; } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "map", [makeEvilCallback(d, b)])); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "filter", [makeEvilCallback(d, b)])); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "v", method(d, b, "Array", m("a"), "some", [makeEvilCallback(d, b)])); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "v", method(d, b, "Array", m("a"), "every", [makeEvilCallback(d, b)])); } },
+
+    // Array reduction, either with a starting value or with the default of starting with the first two elements.
+    { w: 1,  v: function(d, b) { return assign(d, b, "v", method(d, b, "Array", m("a"), Random.index(["reduce, reduceRight"]), [makeEvilCallback(d, b)])); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "v", method(d, b, "Array", m("a"), Random.index(["reduce, reduceRight"]), [makeEvilCallback(d, b), val(d, b)])); } },
 
     // Typed Objects (aka Binary Data)
     // http://wiki.ecmascript.org/doku.php?id=harmony:typed_objects (does not match what's in spidermonkey as of 2014-02-11)
