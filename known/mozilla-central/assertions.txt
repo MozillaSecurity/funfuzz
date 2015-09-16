@@ -2285,3 +2285,6 @@ Assertion failure: !has(reg),
 
 # Bug 1204722
 Assertion failure: isObjectOrNull(),
+
+# Bug 1205130
+Assertion failure: base[size - 1] == 0,
