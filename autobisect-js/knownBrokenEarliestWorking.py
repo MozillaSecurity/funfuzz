@@ -48,19 +48,6 @@ def knownBrokenRanges(options):
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange('dbeea0e93b56', 'b980c2dee2e7'),  # Fx29, broken non-threadsafe
-        hgrange('464e261cbcbe', '8838fe37b98d'),  # Fx29, broken non-threadsafe
-        hgrange('d633e3ff2013', 'bcbe93f41547'),  # Fx29, broken non-threadsafe
-        hgrange('f97076de7eb0', '609fa13b17d0'),  # Fx29, broken non-threadsafe
-        hgrange('995f7402235b', '6c899a1064f3'),  # Fx30, broken non-threadsafe
-        hgrange('d2c4ae312b66', 'abfaf0ccae19'),  # Fx30, broken non-threadsafe
-        hgrange('7cff27cb2845', 'ff5ca7959511'),  # Fx30, broken build config w/ NSPR
-        hgrange('07c0cf637290', 'f2adbe2a41c0'),  # Fx31, broken non-threadsafe
-        hgrange('99a6ee6466f5', '5c9119729bbf'),  # Fx32, unstable spidermonkey
-        hgrange('93dce4b831f3', '143ce643d1b3'),  # Fx32, asserts when run with --thread-count=1
-        hgrange('573458d10426', '5a50315d4d7d'),  # Fx33, broken non-threadsafe
-        hgrange('6b285759568c', 'e498b157651e'),  # Fx34, broken ICU
-        hgrange('03242a11d044', '31714af41f2c'),  # Fx35, broken spidermonkey due to let changes
         hgrange('b160657339f8', '06d07689a043'),  # Fx36, unstable spidermonkey
         hgrange('1c9c64027cac', 'ef7a85ec6595'),  # Fx37, unstable spidermonkey
         hgrange('7c25be97325d', 'd426154dd31d'),  # Fx38, broken spidermonkey
@@ -75,8 +62,6 @@ def knownBrokenRanges(options):
 
     if options.enableMoreDeterministic:
         skips.extend([
-            hgrange('4a04ca5ed7d3', '406904577dfc'),  # Fx33, see bug 1030014
-            hgrange('752ce35b166b', 'e6e63113336d'),  # Fx35, see bug 1069704
             hgrange('1d672188b8aa', 'ea7dabcd215e'),  # Fx40, see bug 1149739
         ])
 
@@ -136,23 +121,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
         required.append('03c6a758c9e8')  # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
-    if '--no-incremental-gc' in flags:
-        required.append('35025fd9e99b')  # m-c 211115 Fx36, 1st w/--no-incremental-gc, see bug 958492
-    if '--ion-loop-unrolling=on' in flags:
-        required.append('aa33f4725177')  # m-c 198804 Fx34, 1st w/--ion-loop-unrolling=on, see bug 1039458
-    if '--no-threads' in flags:
-        required.append('e8558ecd9b16')  # m-c 195999 Fx34, 1st w/--no-threads, see bug 1031529
-    if options.enableNsprBuild:
-        required.append('a459b02a9ca4')  # m-c 194734 Fx33, 1st w/--enable-nspr-build, see bug 975011
-    if offthreadCompileFlag:
-        required.append('f0d67b1ccff9')  # m-c 188901 Fx33, 1st w/--ion-offthread-compile=off, see bug 1020364
-    if '--no-native-regexp' in flags:
-        required.append('43acd23f5a98')  # m-c 183413 Fx32, 1st w/--no-native-regexp, see bug 976446
-    if options.enableSimulatorArm32:
-        # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
-        # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
-        required.append('5ad5f92387a2')  # m-c 179476 Fx31, see bug 1173992
-    required.append('f9374ef0fbed')  # m-c 163848 Fx29, prior builds have issues with Xcode 6.3 and above
+    required.append('54be5416ae5d')  # m-c 213474 Fx36, prior builds have issues with Xcode 7.0 and above
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 
