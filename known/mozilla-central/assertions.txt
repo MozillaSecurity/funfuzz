@@ -2282,3 +2282,6 @@ Assertion failure: isObjectOrNull(),
 
 # Bug 1205130
 Assertion failure: base[size - 1] == 0,
+
+# Bug 1205842
+Assertion failure: !iter->hasLiveDefUses(),
