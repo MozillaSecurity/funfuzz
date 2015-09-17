@@ -224,7 +224,6 @@ layout.css.text-align-true-value.enabled
 layout.css.text-combine-upright.enabled
 layout.css.vertical-text.enabled
 layout.css.visited_links_enabled
-layout.css.will-change.enabled
 layout.css.convertFromNode.enabled
 layout.css.getBoxQuads.enabled
 layout.css.DOMQuad.enabled
