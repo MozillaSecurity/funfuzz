@@ -319,3 +319,6 @@ js::jit::Assembler::bind
 
 # Bug 1205870
 js::UnboxedArrayObject::create
+
+# Bug 1206247
+js::GetCodeCoverageSummary
