@@ -2260,23 +2260,23 @@ Assertion failure: iter->isInterruptCheck(),
 Assertion failure: *iter == ool->lir,
 
 # Bug 1203790 (Only with --unboxed-arrays)
-Assertion failure: [barrier verifier] Unmarked edge: unboxed_object,
-Assertion failure: [barrier verifier] Unmarked edge: objectElements,
+#Assertion failure: [barrier verifier] Unmarked edge: unboxed_object,
+#Assertion failure: [barrier verifier] Unmarked edge: objectElements,
 
 # Bug 1203791
 Assertion failure: !builder || !hasPendingIonBuilder(),
 Assertion failure: script->ionScript()->isRecompiling(),
 Assertion failure: hasBaselineScript(),
 
-# Bug 1204165
-Assertion failure: this->is<T>(),
+# Bug 1204165 (Only with --unboxed-arrays)
+#Assertion failure: this->is<T>(),
 
 # Bug 1204700
 Assertion failure: !has(reg),
 
-# Bug 1204722
-Assertion failure: isObjectOrNull(),
-Assertion failure: isString(),
+# Bug 1204722 (Only with --unboxed-arrays)
+#Assertion failure: isObjectOrNull(),
+#Assertion failure: isString(),
 
 # Bug 1205130
 Assertion failure: base[size - 1] == 0,
