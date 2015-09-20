@@ -2263,11 +2263,6 @@ Assertion failure: *iter == ool->lir,
 #Assertion failure: [barrier verifier] Unmarked edge: unboxed_object,
 #Assertion failure: [barrier verifier] Unmarked edge: objectElements,
 
-# Bug 1203791
-Assertion failure: !builder || !hasPendingIonBuilder(),
-Assertion failure: script->ionScript()->isRecompiling(),
-Assertion failure: hasBaselineScript(),
-
 # Bug 1204165 (Only with --unboxed-arrays)
 #Assertion failure: this->is<T>(),
 
