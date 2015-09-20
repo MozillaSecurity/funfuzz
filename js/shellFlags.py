@@ -65,7 +65,7 @@ def randomFlagSet(shellPath):
         args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
 
     # Stop testing --unboxed-arrays until the following bugs are fixed:
-    # bug 1203790, bug 1204165, bug 1204722, bug 1205870, bug 1206265
+    # bug 1203790, bug 1204165, bug 1204722, bug 1205870
     # if shellSupportsFlag(shellPath, '--unboxed-arrays') and chance(.2):
     #     args.append("--unboxed-arrays")  # --unboxed-arrays landed in bug 1146597
 
