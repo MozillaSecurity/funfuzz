@@ -170,7 +170,6 @@ gfx.use_text_smoothing_setting
 gfx.xrender.enabled
 image.decode-immediately.enabled
 image.downscale-during-decode.enabled
-image.high_quality_downscaling.enabled
 image.mem.discardable
 image.multithreaded_decoding.enabled
 intl.locale.matchOS
