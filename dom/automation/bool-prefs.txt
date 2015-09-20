@@ -238,7 +238,6 @@ layout.scroll.root-frame-containers
 layout.word_select.eat_space_to_next_word
 layout.word_select.stop_at_punctuation
 mathml.scale_stretchy_operators.enabled
-media.audio_data.enabled
 media.autoplay.enabled
 media.block-play-until-visible
 media.dash.enabled
