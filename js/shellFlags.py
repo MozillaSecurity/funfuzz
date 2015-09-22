@@ -43,6 +43,10 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, '--ion-sincos=on') and chance(.5):
+        sincosValue = "on" if chance(0.5) else "off"
+        args.append("--ion-sincos=" + sincosValue)  # --ion-sincos=[on|off] landed in bug 984018
+
     if shellSupportsFlag(shellPath, '--ion-instruction-reordering=on') and chance(.2):
         args.append("--ion-instruction-reordering=on")  # --ion-instruction-reordering=on landed in bug 1195545
 

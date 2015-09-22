@@ -94,6 +94,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if "--ion-sincos=on" in flags:
+        required.append('3dec2b935295')  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
     if "--ion-instruction-reordering=on" in flags:
         required.append('59d2f2e62420')  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
     if "--ion-shared-stubs=on" in flags:
