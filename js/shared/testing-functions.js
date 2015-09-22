@@ -118,6 +118,13 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
     // Causes JIT code to always be preserved by GCs afterwards (see https://bugzilla.mozilla.org/show_bug.cgi?id=750834)
     { w: 5,  v: function(d, b) { return prefix + "gcPreserveCode" + "();"; } },
+
+    // Generate an LCOV trace (but throw away the returned string)
+    { w: 1,  v: function(d, b) { return "void " + prefix + "getLcovInfo" + "();"; } },
+    { w: 1,  v: function(d, b) { return "void " + prefix + "getLcovInfo" + "(" + fGlobal(d, b) + ");"; } },
+
+    // Enable the deprecated, non-standard __noSuchMethod__ feature
+    { w: 1,  v: function(d, b) { return prefix + "enableNoSuchMethod();"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
