@@ -26,7 +26,10 @@ isWin64 = ('PROGRAMFILES(X86)' in os.environ)
 isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
-isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # For MozillaBuild 2.0.0
+if os.environ.get('MOZ_MSVCBITS'):
+    isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # For MozillaBuild 2.0.0
+else:
+    isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])  # For MozillaBuild 1.x
 
 noMinidumpMsg = r'''
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
