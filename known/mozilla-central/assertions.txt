@@ -2263,3 +2263,6 @@ Assertion failure: !iter->hasLiveDefUses(),
 
 # Bug 1205880
 Assertion failure: collectCoverage(),
+
+# Bug 1207454
+Assertion failure: foundAnyDebuggers,
