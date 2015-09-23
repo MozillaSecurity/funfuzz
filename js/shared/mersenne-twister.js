@@ -5,7 +5,7 @@
 // Changes by Jesse Ruderman:
 //   * Use intish/int32 rather than uint32 for intermediate calculations
 //     (see https://bugzilla.mozilla.org/show_bug.cgi?id=883748#c1)
-//   * Added funcitons for exporting/importing the entire PRNG state
+//   * Added functions for exporting/importing the entire PRNG state
 //   * Removed parts not needed for fuzzing
 
 // in this program, procedure descriptions and comments of original source code were not removed.
