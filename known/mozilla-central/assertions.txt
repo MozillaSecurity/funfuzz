@@ -2266,3 +2266,6 @@ Assertion failure: collectCoverage(),
 
 # Bug 1207454
 Assertion failure: foundAnyDebuggers,
+
+# Bug 1207569
+Assertion failure: OOM_maxAllocations ==
