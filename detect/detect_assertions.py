@@ -12,6 +12,7 @@ ready = False
 
 (NO_ASSERT, NON_FATAL_ASSERT, FATAL_ASSERT) = range(3)
 
+
 # Called directly by domInteresting.py and jsInteresting.py
 # Returns (severity, new) where |severity| is the enum above and |new| is a bool
 def scanLine(knownPath, line):
@@ -32,14 +33,15 @@ def scanLine(knownPath, line):
         return (NO_ASSERT, False)
     return (severity, assertionIsNew(line))
 
+
 def assertionSeverity(line):
     if "###!!! ASSERT" in line:
         return NON_FATAL_ASSERT
     if "###!!! ABORT" in line:
         return FATAL_ASSERT
     if line.startswith("Assertion failure:"):
-         # MOZ_ASSERT; spidermonkey; nss
-         return FATAL_ASSERT
+        # MOZ_ASSERT; spidermonkey; nss
+        return FATAL_ASSERT
     if line.startswith("Assertion failed:"):
         # assert.h e.g. as used by harfbuzz
         # Lots of JS tests use this to indicate failure, but we don't care when transcluding those tests into fuzz testcases
@@ -51,6 +53,7 @@ def assertionSeverity(line):
         return NON_FATAL_ASSERT
     return NO_ASSERT
 
+
 def readIgnoreLists(knownPath):
     global ready
     for filename in findIgnoreLists.findIgnoreLists(knownPath, "assertions.txt"):
@@ -58,16 +61,17 @@ def readIgnoreLists(knownPath):
     ready = True
     print "detect_assertions is ready (ignoring %d strings without filenames and %d strings with filenames)" % (len(simpleIgnoreList), len(twoPartIgnoreList))
 
+
 def readIgnoreList(filename):
     global ready
     with open(filename) as ignoreFile:
         for line in ignoreFile:
             line = line.rstrip()
-            if ((len(line) > 0) and not line.startswith("#")):
+            if (len(line) > 0) and not line.startswith("#"):
                 mpi = line.find(", file ")  # NS_ASSERTION and friends use this format
-                if (mpi == -1):
+                if mpi == -1:
                     mpi = line.find(": file ")  # NS_ABORT uses this format
-                if (mpi == -1):
+                if mpi == -1:
                     simpleIgnoreList.append(line)
                 else:
                     twoPartIgnoreList.append((line[:mpi+7], line[mpi+7:]))
