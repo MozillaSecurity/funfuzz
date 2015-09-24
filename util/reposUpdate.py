@@ -13,6 +13,8 @@ import logging
 import os
 import subprocesses as sps
 
+from copy import deepcopy
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,10 @@ def updateRepo(repo):
         sps.timeSubprocess(['hg', 'log', '-r', 'default'], cwd=repo, vb=True)
     elif repoType == 'git':
         # Ignore exit codes so the loop can continue retrying up to number of counts.
-        sps.timeSubprocess([GITBINARY, 'fetch'],
+        gitenv = deepcopy(os.environ)
+        if sps.isWin:
+            gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
+        sps.timeSubprocess([GITBINARY, 'fetch'], env=gitenv,
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
         sps.timeSubprocess([GITBINARY, 'merge', '--ff-only', 'origin/master'],
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
