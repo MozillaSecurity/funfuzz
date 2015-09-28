@@ -320,5 +320,5 @@ js::jit::Assembler::bind
 # Bug 1206247
 js::GetCodeCoverageSummary
 
-# Bug 1208890
+# Bug 1209107
 js::ModuleEnvironmentObject::getOwnPropertyDescriptor
