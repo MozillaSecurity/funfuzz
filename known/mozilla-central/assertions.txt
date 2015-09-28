@@ -2252,9 +2252,6 @@ Assertion failure: !has(reg),
 # Bug 1205130
 Assertion failure: base[size - 1] == 0,
 
-# Bug 1205842
-Assertion failure: !iter->hasLiveDefUses(),
-
 # Bug 1205880
 Assertion failure: collectCoverage(),
 
