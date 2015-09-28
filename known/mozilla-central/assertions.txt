@@ -2205,18 +2205,12 @@ ASSERTION: cancel with non-failure status code: 'NS_FAILED(status)', file netwer
 ################################
 
 
-# Bug 1101561 (JSBugMon seems to say this might be WFM)
-#Assertion failure: isObject(),
-
 # Bug 1106543, bug 1140125
 Assertion failure: !cx->asJSContext()->isExceptionPending(),
 Assertion failure: !parser->context->asJSContext()->isExceptionPending(),
 
 # Bug 1108413 (Only with --ion-sink=on)
 #Assertion failure: isLowered(),
-
-# Bug 1111506
-Assertion failure: inited == !getPrototype(key).isUndefined(),
 
 # Bug 1118536
 Assertion failure: !cx->isExceptionPending(),
