@@ -104,7 +104,7 @@ def addParserOptions():
         randomizeBool(['--enable-hardfp'], 0.1, 0.1,
                       dest='enableHardFp',
                       help='Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".')
-    randomizeBool(['--enable-nspr-build'], 0.5, 0.99,
+    randomizeBool(['--enable-nspr-build'], 0, 0,  # Earliest known working revs all use in-tree NSPR
                   dest='enableNsprBuild',
                   help='Build the shell using (in-tree) NSPR. This is the default on Windows. ' +
                   'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' +
