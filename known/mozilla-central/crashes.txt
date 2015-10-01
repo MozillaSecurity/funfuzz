@@ -322,3 +322,6 @@ js::GetCodeCoverageSummary
 
 # Bug 1209107
 js::ModuleEnvironmentObject::getOwnPropertyDescriptor
+
+# Bug 1210607
+PopulateReportBlame
