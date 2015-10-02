@@ -2249,9 +2249,6 @@ Assertion failure: !has(reg),
 # Bug 1205130
 Assertion failure: base[size - 1] == 0,
 
-# Bug 1205880
-Assertion failure: collectCoverage(),
-
 # Bug 1207454
 Assertion failure: foundAnyDebuggers,
 
