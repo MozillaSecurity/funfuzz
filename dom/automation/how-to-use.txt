@@ -9,7 +9,7 @@ It will:
 
 |build| must be a directory, either:
 * A Firefox object directory, built locally with --enable-tests
-* A Tinderbox build that was downloaded using fuzzing/util/downloadBuild.py
+* A Tinderbox build that was downloaded using funfuzz/util/downloadBuild.py
 
 
 Crashes:
