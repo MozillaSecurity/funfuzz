@@ -166,6 +166,7 @@ gfx.font_rendering.directwrite.use_gdi_table_loading
 gfx.font_rendering.fallback.always_use_cmaps
 gfx.font_rendering.opentype_svg.enabled
 gfx.missing_fonts.notify
+gfx.offscreencanvas.enabled
 gfx.use_text_smoothing_setting
 #gfx.prefer-mesa-llvmpipe # Bug 868787
 gfx.xrender.enabled
