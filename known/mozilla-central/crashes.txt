@@ -320,8 +320,5 @@ js::jit::Assembler::bind
 # Bug 1209107
 js::ModuleEnvironmentObject::getOwnPropertyDescriptor
 
-# Bug 1210607
-PopulateReportBlame
-
 # Bug 1211331
 js::UncheckedUnwrap
