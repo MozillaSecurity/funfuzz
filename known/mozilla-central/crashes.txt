@@ -322,3 +322,6 @@ js::ModuleEnvironmentObject::getOwnPropertyDescriptor
 
 # Bug 1210607
 PopulateReportBlame
+
+# Bug 1211331
+js::UncheckedUnwrap
