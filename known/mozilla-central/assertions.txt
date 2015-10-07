@@ -2260,3 +2260,6 @@ Assertion failure: OOM_maxAllocations ==
 
 # Bug 1212605
 Assertion failure: CheckLexicalNameConflict(cx, lexicalScope, varObj, name),
+
+# Bug 1212390
+Assertion failure: maxAllocations >= 0 && maxAllocations
