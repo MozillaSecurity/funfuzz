@@ -2257,6 +2257,3 @@ Assertion failure: foundAnyDebuggers,
 
 # Bug 1207569
 Assertion failure: OOM_maxAllocations ==
-
-# Bug 1211100
-Assertion failure: (base.emplaceBack(pcToOffset(jumpTargets[i]))),
