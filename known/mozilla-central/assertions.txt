@@ -2257,3 +2257,6 @@ Assertion failure: foundAnyDebuggers,
 
 # Bug 1207569
 Assertion failure: OOM_maxAllocations ==
+
+# Bug 1212605
+Assertion failure: CheckLexicalNameConflict(cx, lexicalScope, varObj, name),
