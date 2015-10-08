@@ -314,9 +314,6 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1209107
-js::ModuleEnvironmentObject::getOwnPropertyDescriptor
-
 # Bug 1211331
 js::UncheckedUnwrap
 
