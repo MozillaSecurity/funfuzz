@@ -2255,9 +2255,6 @@ Assertion failure: base[size - 1] == 0,
 # Bug 1207454
 Assertion failure: foundAnyDebuggers,
 
-# Bug 1212605
-Assertion failure: CheckLexicalNameConflict(cx, lexicalScope, varObj, name),
-
 # Bug 1212390
 Assertion failure: maxAllocations >= 0 && maxAllocations
 
