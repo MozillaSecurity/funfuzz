@@ -711,6 +711,7 @@ def obtainShell(shell, updateToRev=None):
 
     if useS3Cache:
         s3CacheObj.compressAndUploadDirTarball(shell.getShellCacheDir(), shell.getS3TarballWithExtFullPath())
+        os.remove(shell.getS3TarballWithExtFullPath())
 
 
 def updateRepo(repo, rev):

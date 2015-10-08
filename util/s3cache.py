@@ -74,7 +74,6 @@ class S3Cache(object):
         print 'Creating archive...'
         shutil.make_archive(directory, 'bztar', directory)
         self.uploadFileToS3(tarball_path)
-        os.remove(tarball_path)
 
     def uploadFileToS3(self, filename):
         '''Uploads file to S3.'''
