@@ -796,11 +796,6 @@ ABORT: should already have refreshed style rule: 'ea->mStyleRuleRefreshTime == m
 # Bug 721910
 ASSERTION: bad method name: 'Error', file js/xpconnect/src/XPCWrappedNativeInfo.cpp
 
-# Bug 654923
-Assertion failure: !global->nativeLookup(id),
-Assertion failure: !global->nativeLookup(cx, id),
-Assertion failure: !SHAPE_FETCH(spp),
-
 # Bug 655443
 ASSERTION: EnsureReflowFlushAndPaint() called with no docshell!: 'mDocShell', file dom/base/nsGlobalWindow.cpp
 # Bug 655443 whenfixed 'x'
@@ -889,9 +884,6 @@ ASSERTION: mBufferSize and mAttrCount are expected to be the same.: 'mAttrCount 
 ABORT: image ratio with nonsense width: 'aIntrinsicRatio.width >= 0', file layout/base/nsCSSRendering.cpp
 # Bug 690619
 ABORT: image ratio with nonsense height: 'aIntrinsicRatio.height >= 0', file layout/base/nsCSSRendering.cpp
-
-# Bug 688303
-Assertion failure: functionObjectClassesInitialized(),
 
 # Bug 688945
 ASSERTION: selection could not be collapsed after insert.: '(NS_SUCCEEDED(result))', file editor/libeditor/base/CreateElementTxn.cpp
