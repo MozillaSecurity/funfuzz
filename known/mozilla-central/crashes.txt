@@ -319,3 +319,6 @@ js::UncheckedUnwrap
 
 # Bug 1212734 (Only with --unboxed-arrays)
 #js::UnboxedArrayObject::setInitializedLength
+
+# Bug 1214006
+JSScript::traceChildren
