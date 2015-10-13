@@ -2252,3 +2252,6 @@ Assertion failure: !ion || ion == ((js::jit::IonScript*)0x1),
 
 # Bug 1212719
 Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously looked up with a different modifier, potentially making tokenization non-deterministic),
+
+# Bug 1214049
+Assertion failure: !cx->compartment()->hasObjectPendingMetadata(),
