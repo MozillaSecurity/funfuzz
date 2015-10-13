@@ -2244,9 +2244,6 @@ Assertion failure: (*mode & PACKED_TAG_MASK) == 0 && (p.type & ~PACKED_TAG_MASK)
 # Bug 1205130
 Assertion failure: base[size - 1] == 0,
 
-# Bug 1207454
-Assertion failure: foundAnyDebuggers,
-
 # Bug 1207574
 Assertion failure: !ion || ion == ((js::jit::IonScript*)0x1),
 
