@@ -322,3 +322,6 @@ js::UncheckedUnwrap
 
 # Bug 1214006
 JSScript::traceChildren
+
+# Bug 1214548
+js::GetCodeCoverageSummary
