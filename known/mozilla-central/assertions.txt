@@ -2219,9 +2219,6 @@ Assertion failure: exprStack == stackDepth,
 # Bug 1174322
 Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i], val)),
 
-# Bug 1175755
-Assertion failure: !empty(),
-
 # Bug 1182866
 Assertion failure: data.s.payload.why == why,
 
@@ -2246,9 +2243,6 @@ Assertion failure: !ion || ion == ((js::jit::IonScript*)0x1),
 
 # Bug 1212719
 Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously looked up with a different modifier, potentially making tokenization non-deterministic),
-
-# Bug 1214049
-Assertion failure: !cx->compartment()->hasObjectPendingMetadata(),
 
 # Bug 1214397
 Assertion failure: uintptr_t(str) > 0x1000,

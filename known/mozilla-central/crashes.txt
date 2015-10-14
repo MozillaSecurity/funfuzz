@@ -314,14 +314,8 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1211331
-js::UncheckedUnwrap
-
 # Bug 1212734 (Only with --unboxed-arrays)
 #js::UnboxedArrayObject::setInitializedLength
-
-# Bug 1214006
-JSScript::traceChildren
 
 # Bug 1214548
 js::GetCodeCoverageSummary
