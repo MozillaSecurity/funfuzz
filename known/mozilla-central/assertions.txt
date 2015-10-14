@@ -2252,3 +2252,6 @@ Assertion failure: !cx->compartment()->hasObjectPendingMetadata(),
 
 # Bug 1214397
 Assertion failure: uintptr_t(str) > 0x1000,
+
+# Bug 1214781
+Assertion failure: !cx->runtime()->hadOutOfMemory,
