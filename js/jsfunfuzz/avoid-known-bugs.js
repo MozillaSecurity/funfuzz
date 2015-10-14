@@ -26,6 +26,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("dumpStringRepresentation") == -1  // shows memory addresses
        && code.indexOf("evalInWorker") == -1              // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("getBacktrace") == -1              // getBacktrace returns memory addresses which differs depending on flags
+       && code.indexOf("getLcovInfo") == -1
        && code.indexOf("load") == -1                      // load()ed regression test might output dates, etc
        && code.indexOf("offThreadCompileScript") == -1    // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("oomAfterAllocations") == -1
