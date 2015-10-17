@@ -2246,9 +2246,3 @@ Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously look
 
 # Bug 1214397
 Assertion failure: uintptr_t(str) > 0x1000,
-
-# Bug 1214781
-Assertion failure: !cx->runtime()->hadOutOfMemory,
-
-# Bug 1214846
-Assertion failure: cx->isExceptionPending(),
