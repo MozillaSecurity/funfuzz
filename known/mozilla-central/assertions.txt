@@ -2246,3 +2246,6 @@ Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously look
 
 # Bug 1214397
 Assertion failure: uintptr_t(str) > 0x1000,
+
+# Bug 1215992
+Assertion failure: curEntry->pcOffset() == pcOffset && curEntry->isForOp(),

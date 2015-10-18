@@ -316,3 +316,6 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 
 # Bug 1212734 (Only with --unboxed-arrays)
 #js::UnboxedArrayObject::setInitializedLength
+
+# Bug 1215992
+js::jit::BaselineInspector::commonGetPropFunction
