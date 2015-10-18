@@ -8,6 +8,7 @@ def firstLine(s):
     '''Returns the first line of any series of text with / without line breaks.'''
     return s.split('\n')[0]
 
+
 def fuzzDice(filename):
     '''Returns the lines of the file, except for the one line containing DICE'''
     before = []
@@ -20,6 +21,7 @@ def fuzzDice(filename):
         for line in f:
             after.append(line)
     return [before, after]
+
 
 def fuzzSplice(filename):
     '''Returns the lines of a file, minus the ones between the two lines containing SPLICE'''
@@ -38,6 +40,7 @@ def fuzzSplice(filename):
             after.append(line)
     return [before, after]
 
+
 def linesWith(lines, searchFor):
     '''Returns the lines from an array that contain a given string'''
     matchingLines = []
@@ -46,6 +49,7 @@ def linesWith(lines, searchFor):
             matchingLines.append(line)
     return matchingLines
 
+
 def linesStartingWith(lines, searchFor):
     '''Returns the lines from an array that start with a given string'''
     matchingLines = []
@@ -53,6 +57,7 @@ def linesStartingWith(lines, searchFor):
         if line.startswith(searchFor):
             matchingLines.append(line)
     return matchingLines
+
 
 def writeLinesToFile(lines, filename):
     '''Writes lines to a given filename.'''
