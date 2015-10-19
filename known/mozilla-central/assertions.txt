@@ -2249,3 +2249,8 @@ Assertion failure: analysis().usesScopeChain(),
 
 # Bug 1216151
 Assertion failure: !hasLazyGroup(),
+
+# Bug 1216277
+Assertion failure: nativeOffset >= entry.endOffset.offset(),
+Assertion failure: (attempts_->append(OptimizationAttempt(strategy, outcome))),
+Assertion failure: length() % sizeof(uint32_t) == 0,
