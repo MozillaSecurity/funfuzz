@@ -35,8 +35,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
 
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
 
-    (lithResult, lithDetails) = strategicReduction(logPrefix, infilename, lithArgs, bisectRepo,
-                                                   buildOptionsStr, targetTime, suspiciousLevel)
+    (lithResult, lithDetails) = strategicReduction(logPrefix, infilename, lithArgs, targetTime, suspiciousLevel)
 
     print "\nDone running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:"
     print sps.shellify([lithiumpy, "--strategy=check-only"] + lithArgs) + '\n'
@@ -58,7 +57,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
     return (lithResult, lithDetails)
 
 
-def strategicReduction(logPrefix, infilename, lithArgs, bisectRepo, buildOptionsStr, targetTime, lev):
+def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     '''Reduce jsfunfuzz output files using Lithium by using various strategies.'''
     reductionCount = [0]  # This is an array because Python does not like assigning to upvars.
     backupFilename = infilename + '-backup'
