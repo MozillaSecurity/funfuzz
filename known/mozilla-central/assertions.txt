@@ -2241,9 +2241,6 @@ Assertion failure: base[size - 1] == 0,
 # Bug 1212719
 Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously looked up with a different modifier, potentially making tokenization non-deterministic),
 
-# Bug 1214397
-Assertion failure: uintptr_t(str) > 0x1000,
-
 # Bug 1215992
 Assertion failure: curEntry->pcOffset() == pcOffset && curEntry->isForOp(),
 
