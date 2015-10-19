@@ -19,6 +19,7 @@ import lithOps
 
 lengthLimit = 1000000
 
+
 def lastLine(err):
     lines = err.split("\n")
     if len(lines) >= 2:
@@ -39,6 +40,7 @@ def ignoreSomeOfStderr(e):
         else:
             lines.append(line)
     return "\n".join(lines)
+
 
 # For use by loopjsfunfuzz.py
 def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOptionsStr, timeout, targetTime):
@@ -156,6 +158,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
     jsInteresting.deleteLogs(prefix0)
     return jsInteresting.JS_FINE
 
+
 def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
     issues = []
     summary = ""
@@ -184,17 +187,17 @@ def parseOptions(args):
     parser = OptionParser()
     parser.disable_interspersed_args()
     parser.add_option("--minlevel",
-                      type = "int", dest = "minimumInterestingLevel",
-                      default = jsInteresting.JS_OVERALL_MISMATCH,
-                      help = "minimum js/jsInteresting.py level for lithium to consider the testcase interesting")
+                      type="int", dest="minimumInterestingLevel",
+                      default=jsInteresting.JS_OVERALL_MISMATCH,
+                      help="minimum js/jsInteresting.py level for lithium to consider the testcase interesting")
     parser.add_option("--timeout",
-                      type = "int", dest = "timeout",
-                      default = 10,
-                      help = "timeout in seconds")
+                      type="int", dest="timeout",
+                      default=10,
+                      help="timeout in seconds")
     parser.add_option("--flags",
-                      dest = "flagsSpaceSep",
-                      default = "",
-                      help = "space-separated list of one set of flags")
+                      dest="flagsSpaceSep",
+                      default="",
+                      help="space-separated list of one set of flags")
     options, args = parser.parse_args(args)
     if len(args) != 3:
         raise Exception("Wrong number of positional arguments. Need 3 (knownPath, jsengine, infilename).")
@@ -206,6 +209,7 @@ def parseOptions(args):
         raise Exception("js shell does not exist: " + options.jsengine)
     return options
 
+
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
 def init(args):
     global gOptions
@@ -213,6 +217,7 @@ def init(args):
 def interesting(args, tempPrefix):
     actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions.knownPath, gOptions.timeout, False, False)
     return actualLevel >= gOptions.minimumInterestingLevel
+
 
 def main():
     import tempfile
