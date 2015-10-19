@@ -2249,3 +2249,9 @@ Assertion failure: uintptr_t(str) > 0x1000,
 
 # Bug 1215992
 Assertion failure: curEntry->pcOffset() == pcOffset && curEntry->isForOp(),
+
+# Bug 1216126
+Assertion failure: analysis().usesScopeChain(),
+
+# Bug 1216151
+Assertion failure: !hasLazyGroup(),
