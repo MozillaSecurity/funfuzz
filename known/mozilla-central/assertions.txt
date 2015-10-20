@@ -2257,3 +2257,6 @@ Assertion failure: !hasLazyGroup(),
 Assertion failure: nativeOffset >= entry.endOffset.offset(),
 Assertion failure: (attempts_->append(OptimizationAttempt(strategy, outcome))),
 Assertion failure: length() % sizeof(uint32_t) == 0,
+
+# Bug 1216599
+Assertion failure: p,
