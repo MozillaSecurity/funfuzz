@@ -93,10 +93,10 @@ def parseOptions():
 
 class MyHTMLParser(HTMLParser):
 
-    def getHrefLinks(self, html):
-        '''
-        Returns href links as a list.
-        '''
+    def getHrefLinks(self, html, baseURI):
+        thirdslash = find_nth(baseURI, "/", 0, 3)
+        self.basepath = baseURI[thirdslash:]  # e.g. "/pub/firefox/tinderbox-builds/"
+
         self.hrefLinksList = []
         self.feed(html)
         return self.hrefLinksList
@@ -108,20 +108,34 @@ class MyHTMLParser(HTMLParser):
         for attr in attrs:
             if not aTagFound:
                 break
-            if aTagFound and attr[0] == 'href' and attr[1][:1] not in ('?', '/'):
-                self.hrefLinksList.append(attr[1])
+            if aTagFound and attr[0] == 'href':
+                if attr[1][0] == '/':
+                    # Convert site-relative URI to fully-relative URI
+                    if attr[1].startswith(self.basepath):
+                        self.hrefLinksList.append(attr[1][len(self.basepath):])
+                elif attr[1][0] != '?':
+                    # Already fully relative
+                    self.hrefLinksList.append(attr[1])
+
+
+def find_nth(haystack, needle, start, n):
+    for _ in range(n):
+        start = haystack.find(needle, start + 1)
+        if start == -1:
+            return -1
+    return start
 
 
 def httpDirList(directory):
     '''
-    Reads in an input directory and returns the href links in the directory as a list.
+    Reads an Apache-style directory listing and returns a list of its contents, as relative URLs.
     '''
     print "Looking in " + directory + " ..."
     page = readFromURL(directory)
     sps.vdump('Finished reading from: ' + directory)
 
     parser = MyHTMLParser()
-    fileList = parser.getHrefLinks(page)
+    fileList = parser.getHrefLinks(page, directory)
     return fileList
 
 
@@ -292,7 +306,7 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     '''
     Returns the list of URLs of builds (e.g. 1386614507) that are present in tinderbox-builds/.
     '''
-    buildsHttpDir = 'https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/' + \
+    buildsHttpDir = 'https://ftp.mozilla.org/pub/firefox/tinderbox-builds/' + \
                     buildType + '/'
     dirNames = httpDirList(buildsHttpDir)
 
