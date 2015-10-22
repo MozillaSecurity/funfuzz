@@ -67,6 +67,8 @@ user_pref("browser.newtabpage.directory.ping", "");
 user_pref("browser.newtabpage.directory.source", 'data:application/json,{"testing":1}');
 user_pref("browser.safebrowsing.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
+user_pref("privacy.trackingprotection.enabled", false);
+user_pref("privacy.trackingprotection.pbmode.enabled", false);
 user_pref("browser.search.update", false);
 user_pref("browser.webapps.checkForUpdates", 0);
 user_pref("app.update.enabled", false);
