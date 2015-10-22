@@ -2244,19 +2244,8 @@ Assertion failure: aIndex < mLength,
 # Bug 1212719
 Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously looked up with a different modifier, potentially making tokenization non-deterministic),
 
-# Bug 1215992
-Assertion failure: curEntry->pcOffset() == pcOffset && curEntry->isForOp(),
-
 # Bug 1216126
 Assertion failure: analysis().usesScopeChain(),
-
-# Bug 1216151
-Assertion failure: !hasLazyGroup(),
-
-# Bug 1216277
-Assertion failure: nativeOffset >= entry.endOffset.offset(),
-Assertion failure: (attempts_->append(OptimizationAttempt(strategy, outcome))),
-Assertion failure: length() % sizeof(uint32_t) == 0,
 
 # Bug 1216599
 Assertion failure: p,
