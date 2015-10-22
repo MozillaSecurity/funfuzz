@@ -2249,3 +2249,6 @@ Assertion failure: analysis().usesScopeChain(),
 
 # Bug 1216599
 Assertion failure: p,
+
+# Bug 1217593
+Assertion failure: Modified registers between VM call and OsiPoint,
