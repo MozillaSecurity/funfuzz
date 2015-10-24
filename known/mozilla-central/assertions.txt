@@ -2249,3 +2249,6 @@ Assertion failure: p,
 
 # Bug 1217593
 Assertion failure: Modified registers between VM call and OsiPoint,
+
+# Bug 1218065
+Assertion failure: current,
