@@ -2252,3 +2252,6 @@ Assertion failure: Modified registers between VM call and OsiPoint,
 
 # Bug 1218065
 Assertion failure: current,
+
+# Bug 1218196
+Assertion failure: JSOp(*pc) == JSOP_IFNE || JSOp(*pc) == JSOP_IFEQ,

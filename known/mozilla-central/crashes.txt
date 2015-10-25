@@ -319,3 +319,6 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 
 # Bug 1216126
 js::jit::BaselineScript::icEntryFromPCOffset
+
+# Bug 1218196
+js::jit::MBasicBlock::pop
