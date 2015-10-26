@@ -6,6 +6,7 @@ import re
 import shutil
 import stat
 import subprocess
+import sys
 from HTMLParser import HTMLParser
 
 from optparse import OptionParser
@@ -271,11 +272,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'extracting...',
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
                 print 'completed!'
-
-                stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
-                stackwalkUrl = 'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/osx/minidump_stackwalk'
-                downloadURL(stackwalkUrl, stackwalk)
-                os.chmod(stackwalk, stat.S_IRWXU)
+                downloadMDSW(buildDir, "macosx64")
                 gotApp = True
             if remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
                 print 'Downloading crash reporter symbols...',
@@ -285,6 +282,24 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
                 gotSyms = True
     return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
+
+
+def downloadMDSW(buildDir, manifestPlatform):
+    '''Download the minidump_stackwalk[.exe] binary for this platform'''
+
+    THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+    TOOLTOOL_PY = os.path.join(THIS_SCRIPT_DIRECTORY, "tooltool", "tooltool.py")
+
+    # Find the tooltool manifest for this platform
+    manifestFilename = os.path.join(THIS_SCRIPT_DIRECTORY, "tooltool", manifestPlatform + ".manifest")
+
+    # Download the binary (using tooltool)
+    subprocess.check_call([sys.executable, TOOLTOOL_PY, "-m", manifestFilename, "fetch"], cwd=buildDir)
+
+    # Mark the binary as executable
+    if platform.system() != 'Windows':
+        stackwalkBin = os.path.join(buildDir, "minidump_stackwalk")
+        os.chmod(stackwalkBin, stat.S_IRWXU)
 
 
 def moveCrashInjector(tests):
