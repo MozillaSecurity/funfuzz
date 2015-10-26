@@ -1,6 +1,7 @@
 import os
 import platform
 import sys
+import subprocesses
 
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,7 +18,7 @@ def createCollector(tool):
     assert tool == "DOMFuzz" or tool == "jsfunfuzz"
 
     # XXX directory name for other machines?
-    sigCacheDir = os.path.join(os.path.expanduser("~"), "sigcache")
+    sigCacheDir = os.path.join(subprocesses.normExpUserPath("~"), "sigcache")
 
     collector = Collector(tool=tool, sigCacheDir=sigCacheDir)
 
