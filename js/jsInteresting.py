@@ -28,14 +28,13 @@ import FTB.Signatures.CrashInfo as CrashInfo
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-JS_LEVELS = 7
+JS_LEVELS = 6
 JS_LEVEL_NAMES = [
     "fine",
     "jsfunfuzz did not finish",
     "jsfunfuzz decided to exit",
     "overall mismatch",
     "valgrind error",
-    "malloc error",
     "new assert or crash"
 ]
 assert len(JS_LEVEL_NAMES) == JS_LEVELS
@@ -45,7 +44,6 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
     JS_DECIDED_TO_EXIT,                 # correctness (only jsfunfuzzLevel)
     JS_OVERALL_MISMATCH,                # correctness (only compareJIT)
     JS_VG_AMISS,                        # memory safety
-    JS_MALLOC_ERROR,                    # memory safety
     JS_NEW_ASSERT_OR_CRASH              # memory safety or other issue that is definitely a bug
 ) = range(JS_LEVELS)
 
@@ -94,7 +92,7 @@ class ShellResult:
                 auxCrashData = f.readlines()
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
-            lev = max(lev, JS_MALLOC_ERROR)
+            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         elif runinfo.rc == 0 and not inCompareJIT:
             # We might have(??) run jsfunfuzz directly, so check for special kinds of bugs
             for line in out:
