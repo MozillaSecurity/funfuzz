@@ -226,7 +226,7 @@ def parseOptions(args):
 
     # For jsInteresting:
     options.valgrind = False
-    options.shellIsDeterministic = True
+    options.shellIsDeterministic = True  # We shouldn't be in compareJIT with a non-deterministic build
     options.collector = createCollector.createCollector("jsfunfuzz")
 
     return options
