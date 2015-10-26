@@ -211,6 +211,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
             print 'extracting...',
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
+            mIfyMozcrash(testsDir)
             print 'completed!'
             gotTests = True
         if remotefn.endswith('.reftest.tests.zip') and wantTests:
@@ -308,6 +309,25 @@ def moveCrashInjector(tests):
     crashinject = os.path.join(testsBin, "crashinject.exe")
     if os.path.exists(crashinject):
         shutil.move(crashinject, os.path.join(testsBin, "crashinject-disabled.exe"))
+
+
+def mIfyMozcrash(testsDir):
+    # Terrible hack to pass "-m" to breakpad through mozcrash
+    mozcrashDir = os.path.join(testsDir, "mozbase", "mozcrash", "mozcrash")
+    mozcrashPy = os.path.join(mozcrashDir, "mozcrash.py")
+    #print mozcrashPy
+    mozcrashPyBak = os.path.join(mozcrashDir, "mozcrash.py.bak")
+    shutil.copyfile(mozcrashPy, mozcrashPyBak)
+    with open(mozcrashPy, "w") as outfile:
+        with open(mozcrashPyBak) as infile:
+            for line in infile:
+                needle = "[self.stackwalk_binary, "
+                i = line.find(needle)
+                if i != -1:
+                    j = i + len(needle)
+                    outfile.write(line[0:j] + '"-m", ' + line[j:])
+                else:
+                    outfile.write(line)
 
 
 def isNumericSubDir(n):

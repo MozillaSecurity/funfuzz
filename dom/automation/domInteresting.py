@@ -24,6 +24,7 @@ import os
 import signal
 import glob
 import re
+import platform
 from optparse import OptionParser
 from tempfile import mkdtemp
 import subprocess
@@ -36,15 +37,21 @@ p1 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, '
 sys.path.insert(0, p1)
 import detect_assertions
 import detect_malloc_errors
-import detect_crashes
 import detect_leaks
 import findIgnoreLists
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
 import subprocesses as sps
+import createCollector
+
+# From FuzzManager (in sys.path thanks to import createCollector above)
+import FTB.Signatures.CrashInfo as CrashInfo
+
 
 close_fds = sys.platform != 'win32'
+
+DOMI_MARKER = "[domInteresting.py] "  # For FuzzManager/FTB/AssertionHelper.py
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -52,14 +59,13 @@ close_fds = sys.platform != 'win32'
 # Lithium is allowed to go to a higher level.
 (
     DOM_FINE,
-    DOM_TIMED_OUT_UNEXPECTEDLY,
+    DOM_UNEXPECTED_HANG,
     DOM_ABNORMAL_EXIT,
     DOM_FUZZER_COMPLAINED,
     DOM_VG_AMISS,
-    DOM_NEW_LEAK,
-    DOM_MALLOC_ERROR,
+    DOM_UNEXPECTED_LEAK,
     DOM_NEW_ASSERT_OR_CRASH
-) = range(8)
+) = range(7)
 
 oldcwd = os.getcwd()
 #os.chdir(SCRIPT_DIRECTORY)
@@ -110,14 +116,13 @@ valgrindComplaintRegexp = re.compile(r"^==\d+== ")
 
 
 class AmissLogHandler:
-    def __init__(self, knownPath):
-        self.newAssertionFailure = False
+    def __init__(self, knownPath, valgrind):
         self.mallocFailure = False
         self.knownPath = knownPath
-        self.FRClines = []
+        self.valgrind = valgrind
         self.theapp = None
         self.pid = None
-        self.fullLogHead = []
+        self.fullLog = []
         self.summaryLog = []
         self.expectedToHang = True
         self.expectedToLeak = True
@@ -127,33 +132,23 @@ class AmissLogHandler:
         self.sawFatalAssertion = False
         self.fuzzerComplained = False
         self.timedOut = False
-        self.goingDownHard = False
         self.sawValgrindComplaint = False
         self.expectChromeFailure = False
         self.sawChromeFailure = False
-
-        self.crashWatcher = detect_crashes.CrashWatcher(knownPath, True, lambda note: self.printAndLog("%%% " + note))
+        self.sawNewNonfatalAssertion = False
 
     def processLine(self, msgLF):
         msgLF = stripBeeps(msgLF)
+        if not self.timedOut:
+            self.fullLog.append(msgLF)
         msg = msgLF.rstrip("\n")
 
-        self.crashWatcher.processOutputLine(msg)
-        if self.crashWatcher.crashProcessor and len(self.summaryLog) < 300:
-            self.summaryLog.append(msgLF)
-
-        if len(self.fullLogHead) < 100000:
-            self.fullLogHead.append(msgLF)
         pidprefix = "INFO | automation.py | Application pid:"
         if self.pid is None and msg.startswith(pidprefix):
             self.pid = int(msg[len(pidprefix):])
-            #print "Firefox pid: " + str(self.pid)
         theappPrefix = "theapp: "
         if self.theapp is None and msg.startswith(theappPrefix):
             self.theapp = msg[len(theappPrefix):]
-            #print "self.theapp " + repr(self.theapp)
-        if msg.find("FRC") != -1:
-            self.FRClines.append(msgLF)
         if msg == "Not expected to hang":
             self.expectedToHang = False
         if msg == "Not expected to leak":
@@ -163,23 +158,27 @@ class AmissLogHandler:
         if msg.startswith("Rendered inconsistently") and not self.expectedToRenderInconsistently and self.nsassertionCount == 0:
             # Ignoring testcases with assertion failures (or nscoord_MAX warnings) because of bug 575011 and bug 265084, more or less.
             self.fuzzerComplained = True
-            self.printAndLog("@@@ " + msg)
+            self.printAndLog(DOMI_MARKER + msg)
         if msg.startswith("Leaked until "):
             self.sawOMGLEAK = True
-            self.printAndLog("@@@ " + msg)
+            self.printAndLog(DOMI_MARKER + msg)
         if msg.startswith("FAILURE:"):
             self.fuzzerComplained = True
-            self.printAndLog("@@@ " + msg)
+            self.printAndLog(DOMI_MARKER + msg)
         if "[object nsXPCComponents_Classes" in msg:
             # See 'escalationAttempt' in fuzzer-combined.js
             # A successful attempt will output something like:
             #   Release: [object nsXPCComponents_Classes]
             #   Debug: [object nsXPCComponents_Classes @ 0x12036b880 (native @ 0x1203678d0)]
             self.fuzzerComplained = True
-            self.printAndLog("@@@ " + msg)
+            self.printAndLog(DOMI_MARKER + "nsXPCComponents_Classes")
 
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
+            newNonfatalAssertion = detect_assertions.scanLine(self.knownPath, msg)
+            if newNonfatalAssertion and not (self.expectedToLeak and "ASSERTION: Component Manager being held past XPCOM shutdown" in msg):
+                self.sawNewNonfatalAssertion = True
+                self.printAndLog(DOMI_MARKER + newNonfatalAssertion)
             if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
                 # print "Ignoring memory leaks (bug 622315)"  # testcase in comment 2
                 self.expectedToLeak = True
@@ -196,44 +195,18 @@ class AmissLogHandler:
                 # print "Ignoring memory leaks"
                 self.expectedToLeak = True
             if self.nsassertionCount == 100:
-                # print "domInteresting.py: not considering it a failure if browser hangs, because assertions are slow with stack-printing on. Please test in opt builds too, or fix the assertion bugs."
+                # print """domInteresting.py: not considering it a failure if browser hangs, because assertions
+                # are slow with stack-printing on.
+                # Please test in opt builds too, or fix the assertion bugs."""
                 self.expectedToHang = True
-
-        assertionSeverity, newAssertion = detect_assertions.scanLine(self.knownPath, msgLF)
-
-        # Treat these fatal assertions as crashes. This lets us distinguish call sites and makes ASan signatures match.
-        overlyGenericAssertion = (
-            "You can't dereference a NULL" in msg or
-            ("Assertion failure: false," in msg) or
-            ("Assertion failure: value" in msg and "BindingUtils.h" in msg) or
-            ("Assertion failure: i < Length() (invalid array index)" in msg)
-        )
-
-        newAssertion = newAssertion and (
-            not overlyGenericAssertion and
-            not (self.expectedToLeak and "ASSERTION: Component Manager being held past XPCOM shutdown" in msg) and
-            not (self.expectedToLeak and "Tear-off objects remain in hashtable at shutdown" in msg) and
-            not ("Assertion failed: _cairo_status_is_error" in msg and sps.isWin) and  # A frequent error that I cannot reproduce
-            not ("JS_IsExceptionPending" in msg) and  # Bug 735081, bug 735082
-            not (self.goingDownHard and sps.isWin) and  # Bug 763182
-            True)
-
-        if newAssertion:
-            self.newAssertionFailure = True
-            self.printAndLog("@@@ " + msg)
-        if assertionSeverity == detect_assertions.FATAL_ASSERT:
-            self.sawFatalAssertion = True
-            self.goingDownHard = True
-            if not overlyGenericAssertion:
-                self.crashWatcher.crashIsKnown = True
 
         if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
             self.mallocFailure = True
-            self.printAndLog("@@@ Malloc is unhappy")
+            self.printAndLog(DOMI_MARKER + "Malloc is unhappy")
         if self.valgrind and valgrindComplaintRegexp.match(msg):
             if not self.sawValgrindComplaint:
                 self.sawValgrindComplaint = True
-                self.printAndLog("@@@ First Valgrind complaint")
+                self.printAndLog(DOMI_MARKER + "First Valgrind complaint")
             if len(self.summaryLog) < 100:
                 self.summaryLog.append(msgLF)
         if (msg.startswith("TEST-UNEXPECTED-FAIL | automation.py | application timed out") or
@@ -241,8 +214,6 @@ class AmissLogHandler:
                 "Shutdown too long, probably frozen, causing a crash" in msg):
             # A hang was caught by either automation.py or by RunWatchdog (toolkit/components/terminator/nsTerminator.cpp)
             self.timedOut = True
-            self.goingDownHard = True
-            self.crashWatcher.crashIsKnown = True
 
         if "goQuitApplication" in msg:
             self.expectChromeFailure = True
@@ -250,14 +221,14 @@ class AmissLogHandler:
             # Bug 1186741: ignore this and future chrome failures
             self.expectChromeFailure = True
         if (not self.expectChromeFailure) and chromeFailure(msg) and not knownChromeFailure(msg):
-            self.printAndLog("@@@ " + msg)
+            self.printAndLog(DOMI_MARKER + msg)
             self.sawChromeFailure = True
 
         return msgLF
 
     def printAndLog(self, msg):
         print "$ " + msg
-        self.fullLogHead.append(msg + "\n")
+        self.fullLog.append(msg + "\n")
         self.summaryLog.append(msg + "\n")
 
 
@@ -368,6 +339,7 @@ def knownChromeFailure(msg):
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
+        ("self-hosted" in msg and "NS_ERROR" in msg) or                                 # Bug 1216682
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
@@ -410,6 +382,7 @@ class FigureOutDirs:
                     not os.environ.get('MINIDUMP_STACKWALK_CGI', None) and
                     os.path.exists(possible_stackwalk)):
                 self.stackwalk = possible_stackwalk
+            self.hgRev = downloadedBuildRev(browserDir)
         elif os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "_tests")):
             # browserDir is an objdir (more convenient for local builds)
             #self.appDir = browserDir
@@ -417,8 +390,11 @@ class FigureOutDirs:
             self.reftestScriptDir = os.path.join(browserDir, "_tests", "reftest")
             self.utilityDir = os.path.join(browserDir, "dist", "bin")  # on mac, looking inside the app would also work!
             self.symbolsDir = os.path.join(browserDir, "dist", "crashreporter-symbols")
+            self.hgRev = hgRepoRev(findSrcDir(browserDir))  # welcome to assumptionville
         else:
             usage("browserDir does not appear to be a valid build: " + repr(browserDir))
+
+        print "hgRev = " + self.hgRev
 
         #if not os.path.exists(self.appDir):
         #  raise Exception("Oops! appDir does not exist!")
@@ -433,6 +409,22 @@ class FigureOutDirs:
             self.symbolsDir = None
         if self.symbolsDir:
             self.symbolsDir = getFullPath(self.symbolsDir)
+
+
+def hgRepoRev(repoDir):
+    return subprocess.check_output(['hg', '-R', repoDir, 'log', '-r', 'default', '--template', '{node|short}'])
+
+
+def downloadedBuildRev(browserDir):
+    downloadDir = os.path.join(browserDir, "download")
+    for fn in os.listdir(downloadDir):
+        if fn.startswith("firefox-") and fn.endswith(".txt"):
+            with open(os.path.join(downloadDir, fn)) as f:
+                _buildId = f.readline()
+                hgURL = f.readline()
+                return hgURL.split("/")[-1][0:12]
+            raise Exception("Missing rev in file")
+    return Exception("Missing file with rev")
 
 
 def findSrcDir(objDir):
@@ -456,101 +448,109 @@ def removeIfExists(filename):
         os.remove(filename)
 
 
-def rdfInit(args):
-    """
-    Returns (levelAndLines, options).
+class BrowserConfig:
 
-    levelAndLines is a function that runs Firefox in a clean profile and analyzes Firefox's output for bugs.
-    """
+    def __init__(self, args, collector):
+        parser = OptionParser(usage="%prog [options] browserDir [testcaseURL]")
+        parser.add_option("--valgrind",
+                          action="store_true", dest="valgrind",
+                          default=False,
+                          help="use valgrind with a reasonable set of options")
+        parser.add_option("-m", "--minlevel",
+                          type="int", dest="minimumInterestingLevel",
+                          default=DOM_FINE + 1,
+                          help="minimum domfuzz level for lithium to consider the testcase interesting")
+        parser.add_option("--background",
+                          action="store_true", dest="background",
+                          default=False,
+                          help="Run the browser in the background on Mac (e.g. for local reduction)")
+        options, args = parser.parse_args(args)
 
-    parser = OptionParser(usage="%prog [options] browserDir [testcaseURL]")
-    parser.add_option("--valgrind",
-                      action="store_true", dest="valgrind",
-                      default=False,
-                      help="use valgrind with a reasonable set of options")
-    parser.add_option("-m", "--minlevel",
-                      type="int", dest="minimumInterestingLevel",
-                      default=DOM_FINE + 1,
-                      help="minimum domfuzz level for lithium to consider the testcase interesting")
-    parser.add_option("--background",
-                      action="store_true", dest="background",
-                      default=False,
-                      help="Run the browser in the background on Mac (e.g. for local reduction)")
-    options, args = parser.parse_args(args)
+        if len(args) < 1:
+            usage("Missing browserDir argument")
+        browserDir = args[0]
 
-    if len(args) < 1:
-        usage("Missing browserDir argument")
-    browserDir = args[0]
-    dirs = FigureOutDirs(getFullPath(browserDir))
+        # Standalone domInteresting:  Optional. Load this URL or file (rather than the Bugzilla front page)
+        # loopdomfuzz:                Optional. Test (and possibly splice/reduce) only this URL, rather than looping (but note the prefs file isn't maintained)
+        # Lithium:                    Required. Reduce this file.
+        options.argURL = args[1] if len(args) > 1 else ""
+        options.browserDir = browserDir  # used by loopdomfuzz
 
-    # Standalone domInteresting:  Optional. Load this URL or file (rather than the Bugzilla front page)
-    # loopdomfuzz:                Optional. Test (and possibly splice/reduce) only this URL, rather than looping (but note the prefs file isn't maintained)
-    # Lithium:                    Required. Reduce this file.
-    options.argURL = args[1] if len(args) > 1 else ""
+        self.dirs = FigureOutDirs(getFullPath(browserDir))
+        self.options = options
+        self.env = self.initEnv()
+        self.knownPath = "mozilla-central"
+        self.collector = collector
+        self.runBrowserOptions = self.initRunBrowserOptions()
+        self.pc = createProgramConfiguration(self.dirs.hgRev, None)
 
-    options.browserDir = browserDir  # used by loopdomfuzz
+    def initEnv(self):
+        env = os.environ.copy()
+        env['MOZ_FUZZING_SAFE'] = '1'
+        env['REFTEST_FILES_DIR'] = self.dirs.reftestFilesDir
+        env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release/bin/llvm-symbolizer")
+        if self.dirs.stackwalk:
+            env['MINIDUMP_STACKWALK'] = self.dirs.stackwalk
+        return env
 
-    runBrowserOptions = []
-    if options.background:
-        runBrowserOptions.append("--background")
-    if dirs.symbolsDir:
-        runBrowserOptions.append("--symbols-dir=" + dirs.symbolsDir)
+    def initRunBrowserOptions(self):
+        runBrowserOptions = []
+        if self.options.background:
+            runBrowserOptions.append("--background")
+        if self.dirs.symbolsDir:
+            runBrowserOptions.append("--symbols-dir=" + self.dirs.symbolsDir)
 
-    env = os.environ.copy()
-    env['MOZ_FUZZING_SAFE'] = '1'
-    env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
-    env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release/bin/llvm-symbolizer")
-    if dirs.stackwalk:
-        env['MINIDUMP_STACKWALK'] = dirs.stackwalk
-    runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
+        if self.options.valgrind:
+            runBrowserOptions.append("--valgrind")
 
-    knownPath = "mozilla-central"
+            suppressions = ""
+            for suppressionsFile in findIgnoreLists.findIgnoreLists(self.knownPath, "valgrind.txt"):
+                suppressions += "--suppressions=" + suppressionsFile + " "
 
-    if options.valgrind:
-        runBrowserOptions.append("--valgrind")
+            vgargs = (
+                "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
+                "--gen-suppressions=all" + " " +
+                suppressions +
+                "--child-silent-after-fork=yes" + " " +  # First part of the workaround for bug 658840
+                # "--leak-check=full" + " " +
+                # "--show-possibly-lost=no" + " " +
+                "--smc-check=all-non-file" + " " +
+                # "--track-origins=yes" + " " +
+                # "--num-callers=50" + " " +
+                "--quiet"
+            )
 
-        suppressions = ""
-        for suppressionsFile in findIgnoreLists.findIgnoreLists(knownPath, "valgrind.txt"):
-            suppressions += "--suppressions=" + suppressionsFile + " "
+            runBrowserOptions.append("--vgargs=" + vgargs)  # spaces are okay here
 
-        vgargs = (
-            "--error-exitcode=" + str(VALGRIND_ERROR_EXIT_CODE) + " " +
-            "--gen-suppressions=all" + " " +
-            suppressions +
-            "--child-silent-after-fork=yes" + " " +  # First part of the workaround for bug 658840
-            # "--leak-check=full" + " " +
-            # "--show-possibly-lost=no" + " " +
-            "--smc-check=all-non-file" + " " +
-            # "--track-origins=yes" + " " +
-            # "--num-callers=50" + " " +
-            "--quiet"
-        )
+        return runBrowserOptions
 
-        runBrowserOptions.append("--vgargs=" + vgargs)  # spaces are okay here
 
-    def levelAndLines(url, logPrefix=None, extraPrefs="", quiet=False, leaveProfile=False):
-        """Run Firefox using the profile created above, detecting bugs and stuff."""
+
+class BrowserResult:
+
+    def __init__(self, cfg, url, logPrefix, extraPrefs="", quiet=False, leaveProfile=False):
+        """Run Firefox once, detect bugs, and determine a 'level' based on the most severe unknown bug."""
 
         profileDir = mkdtemp(prefix="domfuzz-rdf-profile")
         createDOMFuzzProfile(profileDir)
         writePrefs(profileDir, extraPrefs)
 
-        runBrowserArgs = [dirs.reftestScriptDir, dirs.utilityDir, profileDir]
+        runBrowserArgs = [cfg.dirs.reftestScriptDir, cfg.dirs.utilityDir, profileDir]
 
         assert logPrefix  # :(
         leakLogFile = logPrefix + "-leaks.txt"
 
+        runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
         runbrowser = subprocess.Popen(
-            runbrowserpy + ["--leak-log-file=" + leakLogFile] + runBrowserOptions + runBrowserArgs + [url],
+            runbrowserpy + ["--leak-log-file=" + leakLogFile] + cfg.runBrowserOptions + runBrowserArgs + [url],
             stdin=None,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            env=env,
+            stderr=subprocess.STDOUT,  # Hmm, CrashInfo.fromRawCrashData expects them separate, but I like them together...
+            env=cfg.env,
             close_fds=close_fds
         )
 
-        alh = AmissLogHandler(knownPath)
-        alh.valgrind = options.valgrind
+        alh = AmissLogHandler(cfg.knownPath, cfg.options.valgrind)
 
         # Bug 718208
         if extraPrefs.find("inflation") != -1:
@@ -574,85 +574,88 @@ def rdfInit(args):
 
         lev = DOM_FINE
 
-        if status < 0 and os.name == 'posix':
-            # The program was terminated by a signal, which usually indicates a crash.
-            signum = -status
-            if signum != signal.SIGKILL and signum != signal.SIGTERM and not alh.crashWatcher.crashProcessor:
-                # We did not detect a breakpad/ASan crash in the output, but it looks like the process crashed.
-                # Look for a core file (to feed to gdb) or log from the Mac crash reporter.
-                wantStack = True
-                assert alh.theapp
-                crashLog = sps.grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
-                if crashLog:
-                    alh.crashWatcher.readCrashLog(crashLog)
-                else:
-                    alh.printAndLog("@@@ The browser crashed, but did not leave behind any crash information!")
-                    lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-
-        if alh.newAssertionFailure:
-            lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
         if alh.mallocFailure:
-            lev = max(lev, DOM_MALLOC_ERROR)
+            lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
         if alh.fuzzerComplained or alh.sawChromeFailure:
             lev = max(lev, DOM_FUZZER_COMPLAINED)
         if alh.sawValgrindComplaint:
             lev = max(lev, DOM_VG_AMISS)
+        if alh.sawNewNonfatalAssertion:
+            lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
 
-        if alh.timedOut:
-            if alh.expectedToHang or options.valgrind:
-                alh.printAndLog("%%% An expected hang")
-            else:
-                alh.printAndLog("@@@ Unexpected hang")
-                lev = max(lev, DOM_TIMED_OUT_UNEXPECTEDLY)
-        elif alh.crashWatcher.crashProcessor:
-            if alh.crashWatcher.crashIsKnown:
-                alh.printAndLog("%%% Known crash (from " + alh.crashWatcher.crashProcessor + ")" + alh.crashWatcher.crashSignature)
-            else:
-                alh.printAndLog("@@@ New crash (from " + alh.crashWatcher.crashProcessor + ")" + alh.crashWatcher.crashSignature)
-                lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
-        elif options.valgrind and status == VALGRIND_ERROR_EXIT_CODE:
-            # Disabled due to leaks in the glxtest process that Firefox forks on Linux.
-            # (Second part of the workaround for bug 658840.)
-            # (We detect Valgrind warnings as they happen, instead.)
-            #alh.printAndLog("@@@ Valgrind complained via exit code")
-            #lev = max(lev, DOM_VG_AMISS)
-            pass
-        elif status < 0 and os.name == 'posix':
-            signame = getSignalName(signum, "unknown signal")
-            print "DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")"
-        elif status == 1:
-            alh.printAndLog("%%% Exited with status 1 (OOM or plugin crash?)")
-        elif status == -2147483645 and sps.isWin:
-            alh.printAndLog("%%% Exited with status -2147483645 (plugin issue, bug 867263?)")
-        elif status != 0 and not (sps.isWin and alh.sawFatalAssertion):
-            alh.printAndLog("@@@ Abnormal exit (status %d)" % status)
-            lev = max(lev, DOM_ABNORMAL_EXIT)
-
+        # Leak stuff
         if 'user_pref("layers.use-deprecated-textures", true);' in extraPrefs:
             # Bug 933569
             # Doing the change *here* only works because this is a small leak that shouldn't affect the reads in alh
             alh.expectedToLeak = True
-
-        if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(knownPath, leakLogFile, verbose=not quiet) and not alh.expectedToLeak:
-            alh.printAndLog("@@@ Unexpected leak or leak pattern")
+        if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(cfg.knownPath, leakLogFile, verbose=not quiet) and not alh.expectedToLeak:
+            alh.printAndLog(DOMI_MARKER + "Leak (trace-refcnt)")
             alh.printAndLog("Leak details: " + os.path.basename(leakLogFile))
-            lev = max(lev, DOM_NEW_LEAK)
+            lev = max(lev, DOM_UNEXPECTED_LEAK)
         else:
             if alh.sawOMGLEAK and not alh.expectedToLeak:
-                lev = max(lev, DOM_NEW_LEAK)
+                lev = max(lev, DOM_UNEXPECTED_LEAK)
             if leakLogFile:
                 # Remove the main leak log file, plus any plugin-process leak log files
                 for f in glob.glob(leakLogFile + "*"):
                     os.remove(f)
 
-        if (lev > DOM_FINE) and logPrefix:
+        # Do various stuff based on how the process exited
+        if alh.timedOut:
+            if alh.expectedToHang or cfg.options.valgrind:
+                alh.printAndLog("%%% An expected hang")
+            else:
+                alh.printAndLog(DOMI_MARKER + "Unexpected hang")
+                lev = max(lev, DOM_UNEXPECTED_HANG)
+        elif status < 0 and os.name == 'posix':
+            signum = -status
+            signame = getSignalName(signum, "unknown signal")
+            print "DOMFUZZ INFO | domInteresting.py | Terminated by signal " + str(signum) + " (" + signame + ")"
+        elif status == 1:
+            alh.printAndLog("%%% Exited with status 1 (crash?)")
+        elif status == -2147483645 and sps.isWin:
+            alh.printAndLog("%%% Exited with status -2147483645 (plugin issue, bug 867263?)")
+        elif status != 0:
+            alh.printAndLog(DOMI_MARKER + "Abnormal exit (status %d)" % status)
+            lev = max(lev, DOM_ABNORMAL_EXIT)
+
+        # Always look for crash information in stderr.
+        linesWithoutLineBreaks = [s.rstrip() for s in alh.fullLog]
+        crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], linesWithoutLineBreaks, cfg.pc)
+
+        # If the program crashed but we didn't find crash info in stderr (breakpad/asan),
+        # poll for a core file (to feed to gdb) or log from the Mac crash reporter.
+        if isinstance(crashInfo, CrashInfo.NoCrashInfo) and status < 0 and os.name == 'posix':
+            signum = -status
+            if signum != signal.SIGKILL and signum != signal.SIGTERM:
+                wantStack = True
+                assert alh.theapp
+                crashLog = sps.grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
+                if crashLog:
+                    with open(crashLog) as f:
+                        auxCrashData = f.readlines()
+                    crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], linesWithoutLineBreaks, cfg.pc, auxCrashData=auxCrashData)
+                else:
+                    alh.printAndLog(DOMI_MARKER + "The browser crashed, but did not leave behind any crash information!")
+                    lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
+
+        createCollector.printCrashInfo(crashInfo)
+        if not isinstance(crashInfo, CrashInfo.NoCrashInfo):
+            lev = max(lev, DOM_NEW_ASSERT_OR_CRASH)
+
+        match = cfg.collector.search(crashInfo)
+        if match[0] is not None:
+            createCollector.printMatchingSignature(match)
+            lev = DOM_FINE
+
+        if lev > DOM_FINE:
             with open(logPrefix + "-output.txt", "w") as outlog:
-                outlog.writelines(alh.fullLogHead)
+                outlog.writelines(alh.fullLog)
             subprocess.call(["gzip", logPrefix + "-output.txt"])
             with open(logPrefix + "-summary.txt", "w") as summaryLogFile:
                 summaryLogFile.writelines(alh.summaryLog)
 
-        if (lev == DOM_FINE) and logPrefix:
+        if lev == DOM_FINE:
             removeIfExists(logPrefix + "-core.gz")
             removeIfExists(logPrefix + "-crash.txt")
 
@@ -660,9 +663,10 @@ def rdfInit(args):
             shutil.rmtree(profileDir)
 
         print "DOMFUZZ INFO | domInteresting.py | " + str(lev)
-        return (lev, alh.FRClines)
 
-    return levelAndLines, options  # return a closure along with the set of options
+        self.level = lev
+        self.lines = alh.fullLog
+        self.crashInfo = crashInfo
 
 
 def usage(note):
@@ -672,31 +676,54 @@ def usage(note):
     sys.exit(2)
 
 
+def createProgramConfiguration(hgRev, args):
+    s = platform.system()
+    if s == "Darwin":
+        osname = "macosx"
+        is64 = platform.architecture()[0] == "64bit"
+    elif s == "Linux":
+        osname = "linux"
+        is64 = platform.machine() == "x86_64"
+    elif s == 'Windows':
+        osname = "windows"
+        is64 = False
+    else:
+        raise Exception("Unknown platform.system(): " + s)
+
+    return createCollector.ProgramConfiguration(
+        "mozilla-central",
+        "x86-64" if is64 else "x86",
+        osname,
+        hgRev,
+        args=args
+    )
+
+
 # For use by Lithium
 def init(args):
-    global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
-    levelAndLinesForLithium, options = rdfInit(args)
-    minimumInterestingLevel = options.minimumInterestingLevel
-    lithiumURL = options.argURL
+    global bcForLithium
+    bcForLithium = BrowserConfig(args, createCollector.createCollector("DOMFuzz"))
 def interesting(args, tempPrefix):
-    global levelAndLinesForLithium, deleteProfileForLithium, minimumInterestingLevel, lithiumURL, extraPrefsForLithium
-    extraPrefs = randomPrefs.grabExtraPrefs(lithiumURL) # Re-scan testcase (and prefs file) in case Lithium changed them
-    actualLevel, lines = levelAndLinesForLithium(lithiumURL, logPrefix=tempPrefix, extraPrefs=extraPrefs)
-    return actualLevel >= minimumInterestingLevel
+    global bcForLithium
+    bc = bcForLithium
+    url = bc.options.argURL
+    extraPrefs = randomPrefs.grabExtraPrefs(url)  # Re-scan testcase (and prefs file) in case Lithium changed them
+    br = BrowserResult(bc, url, tempPrefix, extraPrefs=extraPrefs)
+    return br.level >= bc.options.minimumInterestingLevel
 
 
 # For direct (usually manual) invocations
 def directMain():
     logPrefix = os.path.join(mkdtemp(prefix="domfuzz-rdf-main"), "t")
     print logPrefix
-    levelAndLines, options = rdfInit(sys.argv[1:])
-    if options.argURL:
-        extraPrefs = randomPrefs.grabExtraPrefs(options.argURL)
+    bc = BrowserConfig(sys.argv[1:], createCollector.createCollector("DOMFuzz"))
+    if bc.options.argURL:
+        extraPrefs = randomPrefs.grabExtraPrefs(bc.options.argURL)
     else:
         extraPrefs = ""
-    level, lines = levelAndLines(options.argURL or "about:blank", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
-    print level
-    sys.exit(level)
+    br = BrowserResult(bc, bc.options.argURL or "about:blank", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
+    print br.level
+    sys.exit(br.level)
 
 
 if __name__ == "__main__":

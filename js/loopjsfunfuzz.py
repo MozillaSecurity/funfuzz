@@ -16,8 +16,8 @@ p0 = os.path.dirname(os.path.abspath(__file__))
 interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
+import createCollector
 import fileManipulation
-import inspectShell
 import lithOps
 import linkJS
 import subprocesses as sps
@@ -116,7 +116,7 @@ def jsFilesIn(root):
             if filename.endswith('.js')]
 
 
-def many_timed_runs(targetTime, wtmpDir, args):
+def many_timed_runs(targetTime, wtmpDir, args, collector):
     options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
     startTime = time.time()
@@ -140,7 +140,7 @@ def many_timed_runs(targetTime, wtmpDir, args):
             os.remove(fuzzjs)
             if len(os.listdir(wtmpDir)) == 0:
                 os.rmdir(wtmpDir)
-            return (lithOps.HAPPY, None)
+            break
 
         # Construct command needed to loop jsfunfuzz fuzzing.
         jsInterestingArgs = []
@@ -154,14 +154,14 @@ def many_timed_runs(targetTime, wtmpDir, args):
             jsInterestingArgs.extend(engineFlags)
         jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout*(1000/2))])
         jsInterestingArgs.extend(['-f', fuzzjs])
-        jsunhappyOptions = jsInteresting.parseOptions(jsInterestingArgs)
+        jsInterestingOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
         iteration += 1
         logPrefix = sps.normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))
 
-        level = jsInteresting.jsfunfuzzLevel(jsunhappyOptions, logPrefix)
+        res = jsInteresting.ShellResult(jsInterestingOptions, jsInterestingOptions.jsengineWithArgs, logPrefix, False)
 
-        if level != jsInteresting.JS_FINE:
+        if res.lev != jsInteresting.JS_FINE:
             showtail(logPrefix + "-out.txt")
             showtail(logPrefix + "-err.txt")
 
@@ -178,30 +178,34 @@ def many_timed_runs(targetTime, wtmpDir, args):
             itest = [interestingpy]
             if options.valgrind:
                 itest.append("--valgrind")
-            itest.append("--minlevel=" + str(level))
+            itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
             (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                          options.repo, options.buildOptionsStr, targetTime, level)
-            if targetTime:
-                return (lithResult, lithDetails)
+                                                          options.repo, options.buildOptionsStr, targetTime, res.lev)
+
+            # Upload with final output
+            if lithResult == lithOps.LITH_FINISHED:
+                fargs = jsInterestingOptions.jsengineWithArgs[:-1] + [filenameToReduce]
+                retestResult = jsInteresting.ShellResult(jsInterestingOptions, fargs, logPrefix + "-final", False)
+                if retestResult.lev > jsInteresting.JS_FINE:
+                    res = retestResult
+            quality = lithOps.ddsize(filenameToReduce) + (0 if lithResult == lithOps.LITH_FINISHED else 1000000)
+            collector.submit(res.crashInfo, filenameToReduce, quality)
 
         else:
-            shellIsDeterministic = inspectShell.queryBuildConfiguration(options.jsEngine, 'more-deterministic')
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
-            if options.useCompareJIT and level == jsInteresting.JS_FINE and \
-                    shellIsDeterministic and flagsAreDeterministic:
+            if options.useCompareJIT and res.lev == jsInteresting.JS_FINE and \
+                    jsInterestingOptions.shellIsDeterministic and flagsAreDeterministic:
                 linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
-                (lithResult, lithDetails) = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
-                                                                  logPrefix + "-cj", options.knownPath, options.repo,
-                                                                  options.buildOptionsStr, options.timeout, targetTime)
-                if lithResult == lithOps.HAPPY:
+                anyBug = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
+                                               logPrefix + "-cj", options.repo,
+                                               options.buildOptionsStr, targetTime, jsInterestingOptions)
+                if not anyBug:
                     os.remove(jitcomparefilename)
-                if targetTime and lithResult != lithOps.HAPPY:
-                    jsInteresting.deleteLogs(logPrefix)
-                    return (lithResult, lithDetails)
+
             jsInteresting.deleteLogs(logPrefix)
 
 
@@ -261,4 +265,4 @@ assert mightUseDivision("eval('//x'); a / b;")
 
 
 if __name__ == "__main__":
-    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:])
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], createCollector.createCollector("jsfunfuzz"))

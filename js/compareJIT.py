@@ -2,7 +2,6 @@
 
 import os
 import pinpoint
-import subprocess
 import sys
 
 from optparse import OptionParser
@@ -15,6 +14,10 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import subprocesses as sps
 import lithOps
+import createCollector
+
+# From FuzzManager (in sys.path thanks to import createCollector above)
+import FTB.Signatures.CrashInfo as CrashInfo
 
 
 lengthLimit = 1000000
@@ -28,9 +31,8 @@ def lastLine(err):
 
 
 def ignoreSomeOfStderr(e):
-    rawlines = e.split("\n")
     lines = []
-    for line in rawlines:
+    for line in e:
         if line.endswith("malloc: enabling scribbling to detect mods to free blocks"):
             # MallocScribble prints a line that includes the process's pid.  We don't want to include that pid in the comparison!
             pass
@@ -39,24 +41,33 @@ def ignoreSomeOfStderr(e):
             pass
         else:
             lines.append(line)
-    return "\n".join(lines)
+    return lines
 
 
 # For use by loopjsfunfuzz.py
-def compareJIT(jsEngine, flags, infilename, logPrefix, knownPath, repo, buildOptionsStr, timeout, targetTime):
-    lev = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", knownPath, timeout, False, True)
+# Returns True if any kind of bug is found
+def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, targetTime, options):
+    lev = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)[0]
 
     if lev != jsInteresting.JS_FINE:
-        itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(timeout), knownPath]
+        itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(options.timeout), options.knownPath]
         (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
         print "Retesting " + infilename + " after running Lithium:"
-        print compareLevel(jsEngine, flags, infilename, logPrefix + "-final", knownPath, timeout, True, False)
-        return (lithResult, lithDetails)
-    else:
-        return (lithOps.HAPPY, None)
+        cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
+        if cl[0] != jsInteresting.JS_FINE:
+            quality = lithOps.ddsize(infilename) + (0 if lithResult == lithOps.LITH_FINISHED else 1000000)
+            print "compareJIT: Uploading " + infilename + " with quality " + str(quality)
+            options.collector.submit(cl[1], infilename, quality)
+        return True
+
+    return False
 
 
-def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, showDetailedDiffs, quickMode):
+def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
+    # options dict must be one we can pass to jsInteresting.ShellResult
+    # we also use it directly for knownPath, timeout, and collector
+    # Return: (lev, crashInfo) or (jsInteresting.JS_FINE, None)
+
     combos = shellFlags.basicFlagSets(jsEngine)
 
     if quickMode:
@@ -71,46 +82,37 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
     for i in range(0, len(commands)):
         prefix = logPrefix + "-r" + str(i)
         command = commands[i]
-        (lev, issues, r) = jsInteresting.baseLevel(command, timeout, knownPath, prefix)
+        r = jsInteresting.ShellResult(options, command, prefix, True)
 
-        with open(prefix + "-out.txt") as f:
-            r.out = f.read(lengthLimit)
-        with open(prefix + "-err.txt") as f:
-            r.err = f.read(lengthLimit)
-
-        oom = jsInteresting.hitMemoryLimit(r.err)
-        if (not oom) and (len(r.err) + 5 > lengthLimit):
-            # The output was too long for Python to read it in all at once. Assume the worst.
-            oom = "stderr too long"
-
+        oom = jsInteresting.oomed(r.err)
         r.err = ignoreSomeOfStderr(r.err)
 
-        if (r.rc == 1 or r.rc == 2) and (r.out.find('[[script] scriptArgs*]') != -1 or r.err.find('[scriptfile] [scriptarg...]') != -1):
+        if (r.rc == 1 or r.rc == 2) and (anyLineContains(r.out, '[[script] scriptArgs*]') or anyLineContains(r.err, '[scriptfile] [scriptarg...]')):
             print "Got usage error from:"
             print "  " + sps.shellify(command)
             assert i > 0
             jsInteresting.deleteLogs(prefix)
-        elif lev > jsInteresting.JS_OVERALL_MISMATCH:
+        elif r.lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
-            print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT found a more serious bug"], lev, r.elapsedtime)
+            print infilename + " | " + jsInteresting.summaryString(r.issues + ["compareJIT found a more serious bug"], r.lev, r.runinfo.elapsedtime)
             with open(logPrefix + "-summary.txt", 'wb') as f:
-                f.write('\n'.join(issues + [sps.shellify(command), "compareJIT found a more serious bug"]) + '\n')
+                f.write('\n'.join(r.issues + [sps.shellify(command), "compareJIT found a more serious bug"]) + '\n')
             print "  " + sps.shellify(command)
-            return lev
-        elif lev != jsInteresting.JS_FINE:
-            print infilename + " | " + jsInteresting.summaryString(issues + ["compareJIT is not comparing output, because the shell exited strangely"], lev, r.elapsedtime)
+            return (r.lev, r.crashInfo)
+        elif r.lev != jsInteresting.JS_FINE or r.rc != 0:
+            print infilename + " | " + jsInteresting.summaryString(r.issues + ["compareJIT is not comparing output, because the shell exited strangely"], r.lev, r.runinfo.elapsedtime)
             print "  " + sps.shellify(command)
             jsInteresting.deleteLogs(prefix)
             if i == 0:
-                return jsInteresting.JS_FINE
+                return (jsInteresting.JS_FINE, None)
         elif oom:
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
-            message = "compareJIT is not comparing output: OOM (" + oom + ")"
-            print infilename + " | " + jsInteresting.summaryString(issues + [message], lev, r.elapsedtime)
+            message = "compareJIT is not comparing output: OOM"
+            print infilename + " | " + jsInteresting.summaryString(r.issues + [message], r.lev, r.runinfo.elapsedtime)
             jsInteresting.deleteLogs(prefix)
             if i == 0:
-                return jsInteresting.JS_FINE
+                return (jsInteresting.JS_FINE, None)
         elif i == 0:
             # Stash output from this run (the first one), so for subsequent runs, we can compare against it.
             (r0, prefix0) = (r, prefix)
@@ -121,13 +123,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
                 # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
                 # This should only affect asm.js diagnostics on stderr.
                 fpuAsmMsg = "asm.js type error: Disabled by lack of floating point support"
-                fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err
+                fpuOptionDisabledAsm = anyLineContains(r0.err, fpuAsmMsg) or anyLineContains(r.err, fpuAsmMsg)
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
                 return (fpuOptionDisabledAsm and fpuOptionDiffers)
 
             def optionDisabledAsmOnOneSide():
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"
-                optionDisabledAsm = asmMsg in r0.err or asmMsg in r.err
+                optionDisabledAsm = anyLineContains(r0.err, asmMsg) or anyLineContains(r.err, asmMsg)
                 optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
                 return (optionDisabledAsm and optionDiffers)
 
@@ -137,36 +139,42 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, knownPath, timeout, sho
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 rerunCommand = sps.shellify(['~/funfuzz/js/compareJIT.py', "--flags="+' '.join(flags),
-                                             "--timeout="+str(timeout), knownPath, jsEngine,
+                                             "--timeout="+str(options.timeout), options.knownPath, jsEngine,
                                              os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
                 with open(logPrefix + "-summary.txt", 'wb') as f:
                     f.write(rerunCommand + "\n\n" + summary)
-                print infilename + " | " + jsInteresting.summaryString(issues, jsInteresting.JS_OVERALL_MISMATCH, r.elapsedtime)
+                print infilename + " | " + jsInteresting.summaryString(issues, jsInteresting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)
                 if quickMode:
                     print rerunCommand
                 if showDetailedDiffs:
                     print summary
                     print ""
-                return jsInteresting.JS_OVERALL_MISMATCH
+                # Create a crashInfo object with empty stdout, and stderr showing diffs
+                pc = createCollector.ProgramConfiguration.fromBinary(jsEngine)
+                pc.addProgramArguments(flags)
+                crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)
+                return (jsInteresting.JS_OVERALL_MISMATCH, crashInfo)
             else:
                 #print "compareJIT: match"
                 jsInteresting.deleteLogs(prefix)
 
     # All matched :)
     jsInteresting.deleteLogs(prefix0)
-    return jsInteresting.JS_FINE
+    return (jsInteresting.JS_FINE, None)
 
 
 def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
     issues = []
     summary = ""
     if mismatchErr:
-        issues.append("Mismatch on stderr")
+        issues.append("[compareJIT.py] Mismatch on stderr")
+        summary += "[compareJIT.py] Mismatch on stderr\n"
         summary += diffFiles(prefix0 + "-err.txt", prefix + "-err.txt")
     if mismatchOut:
-        issues.append("Mismatch on stdout")
+        issues.append("[compareJIT.py] Mismatch on stdout")
+        summary += "[compareJIT.py] Mismatch on stdout\n"
         summary += diffFiles(prefix0 + "-out.txt", prefix + "-out.txt")
     return (summary, issues)
 
@@ -181,6 +189,14 @@ def diffFiles(f1, f2):
     else:
         s += diff[:10000] + "\n(truncated after 10000 bytes)... \n\n"
     return s
+
+
+def anyLineContains(lines, needle):
+    for line in lines:
+        if needle in line:
+            return True
+
+    return False
 
 
 def parseOptions(args):
@@ -207,6 +223,12 @@ def parseOptions(args):
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not os.path.exists(options.jsengine):
         raise Exception("js shell does not exist: " + options.jsengine)
+
+    # For jsInteresting:
+    options.valgrind = False
+    options.shellIsDeterministic = True
+    options.collector = createCollector.createCollector("jsfunfuzz")
+
     return options
 
 
@@ -215,13 +237,13 @@ def init(args):
     global gOptions
     gOptions = parseOptions(args)
 def interesting(args, tempPrefix):
-    actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions.knownPath, gOptions.timeout, False, False)
+    actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
     return actualLevel >= gOptions.minimumInterestingLevel
 
 
 def main():
     import tempfile
     options = parseOptions(sys.argv[1:])
-    print compareLevel(options.jsengine, options.flags, options.infilename, tempfile.mkdtemp("compareJITmain"), options.knownPath, options.timeout, True, False)
+    print compareLevel(options.jsengine, options.flags, options.infilename, tempfile.mkdtemp("compareJITmain"), options, True, False)[0]
 if __name__ == "__main__":
     main()

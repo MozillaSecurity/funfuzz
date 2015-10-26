@@ -12,26 +12,24 @@ sys.path.append(p1)
 import timedRun
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
 sys.path.append(p2)
-import detect_assertions
-import detect_crashes
 import detect_malloc_errors
 import findIgnoreLists
 p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
-import fileManipulation
 import subprocesses as sps
+import createCollector
+
+# From FuzzManager (in sys.path thanks to import createCollector above)
+import FTB.Signatures.CrashInfo as CrashInfo
 
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
 # Fuzzing will note the level, and pass it to Lithium.
 # Lithium is allowed to go to a higher level.
-JS_LEVELS = 10
+JS_LEVELS = 7
 JS_LEVEL_NAMES = [
     "fine",
-    "known crash",
-    "timed out",
-    "abnormal",
     "jsfunfuzz did not finish",
     "jsfunfuzz decided to exit",
     "overall mismatch",
@@ -42,9 +40,6 @@ JS_LEVEL_NAMES = [
 assert len(JS_LEVEL_NAMES) == JS_LEVELS
 (
     JS_FINE,
-    JS_KNOWN_CRASH,                     # frustrates understanding of stdout; not even worth reducing
-    JS_TIMED_OUT,                       # frustrates understanding of stdout; not even worth reducing
-    JS_ABNORMAL_EXIT,                   # frustrates understanding of stdout; can mean several things
     JS_DID_NOT_FINISH,                  # correctness (only jsfunfuzzLevel)
     JS_DECIDED_TO_EXIT,                 # correctness (only jsfunfuzzLevel)
     JS_OVERALL_MISMATCH,                # correctness (only compareJIT)
@@ -57,139 +52,118 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-def baseLevel(runthis, timeout, knownPath, logPrefix, valgrind=False):
-    if valgrind:
-        runthis = (
-            inspectShell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
-            valgrindSuppressions(knownPath) +
-            runthis)
+class ShellResult:
 
-    preexec_fn = ulimitSet if os.name == 'posix' else None
-    runinfo = timedRun.timed_run(runthis, timeout, logPrefix, preexec_fn=preexec_fn)
-    sta = runinfo.sta
+    # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
+    def __init__(self, options, runthis, logPrefix, inCompareJIT):
+        # This relies on the shell being a local one from compileShell.py:
+        pc = createCollector.ProgramConfiguration.fromBinary(runthis[0])
+        pc.addProgramArguments(runthis[1:])
 
-    if sta == timedRun.CRASHED:
-        sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True)
+        if options.valgrind:
+            runthis = (
+                inspectShell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
+                valgrindSuppressions(options.knownPath) +
+                runthis)
 
-    lev = JS_FINE
-    issues = []
-    sawAssertion = False
+        preexec_fn = ulimitSet if os.name == 'posix' else None
+        runinfo = timedRun.timed_run(runthis, options.timeout, logPrefix, preexec_fn=preexec_fn)
 
-    if detect_malloc_errors.amiss(logPrefix):
-        issues.append("malloc error")
-        lev = max(lev, JS_MALLOC_ERROR)
-
-    if valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
-        issues.append("valgrind reported an error")
-        lev = max(lev, JS_VG_AMISS)
-        valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
-    else:
-        valgrindErrorPrefix = None
-
-    def printNote(note):
-        print "%%% " + note
-    crashWatcher = detect_crashes.CrashWatcher(knownPath, False, printNote)
-
-    with open(logPrefix + "-err.txt", "rb") as err:
-        for line in err:
-            assertionSeverity, assertionIsNew = detect_assertions.scanLine(knownPath, line)
-            crashWatcher.processOutputLine(line.rstrip())
-            if assertionIsNew:
-                issues.append(line.rstrip())
-                lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-            if assertionSeverity == detect_assertions.FATAL_ASSERT:
-                sawAssertion = True
-                lev = max(lev, JS_KNOWN_CRASH)
-            if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
-                issues.append(line.rstrip())
-
-    if sta == timedRun.CRASHED and not sawAssertion:
-        crashWatcher.readCrashLog(logPrefix + "-crash.txt")
-
-    if sawAssertion:
-        # Ignore the crash log, since we've already seen a new assertion failure.
-        pass
-    elif crashWatcher.crashProcessor:
-        crashFrom = " (from " + crashWatcher.crashProcessor + ")"
-        if crashWatcher.crashIsKnown:
-            issues.append("known crash" + crashFrom)
-            lev = max(lev, JS_KNOWN_CRASH)
-        else:
-            issues.append("unknown crash" + crashFrom)
-            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-    elif sta == timedRun.TIMED_OUT:
-        issues.append("timed out")
-        lev = max(lev, JS_TIMED_OUT)
-    elif sta == timedRun.ABNORMAL and not (valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE):
-        issues.append("abnormal exit")
-        lev = max(lev, JS_ABNORMAL_EXIT)
-
-    return (lev, issues, runinfo)
-
-
-def jsfunfuzzLevel(options, logPrefix, quiet=False):
-    (lev, issues, runinfo) = baseLevel(options.jsengineWithArgs, options.timeout, options.knownPath, logPrefix, valgrind=options.valgrind)
-
-    if lev == JS_FINE:
-        # Check for unexplained exits and for jsfunfuzz saying "Found a bug".
-        understoodExit = False
-
-        # Read in binary mode, because otherwise Python on Windows will
-        # throw a fit when it encounters certain unicode.  Note that this
-        # makes line endings platform-specific.
-
-        if '-dm-' in options.jsengineWithArgs[0]:
-            # Since this is an --enable-more-deterministic build, we should get messages on stderr
-            # if the shell quit() or terminate() functions are called.
-            # (We use a sketchy filename-matching check because it's faster than inspecting the binary.)
-            with open(logPrefix + "-err.txt", "rb") as f:
-                for line in f:
-                    if "terminate called" in line or "quit called" in line:
-                        understoodExit = True
-                    if "can't allocate region" in line:
-                        understoodExit = True
-        else:
-            understoodExit = True
-
-        with open(logPrefix + "-out.txt", "rb") as f:
-            for line in f:
-                if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
-                    understoodExit = True
-                if line.startswith("Found a bug: "):
-                    understoodExit = True
-                    if not ("NestTest" in line and oomed(logPrefix)):
-                        lev = JS_DECIDED_TO_EXIT
-                        issues.append(line.rstrip())
-                        # FIXME: if not quiet:
-                        # FIXME:     output everything between this line and "jsfunfuzz stopping due to finding a bug."
-
-        if not understoodExit:
-            issues.append("jsfunfuzz didn't finish")
-            lev = JS_DID_NOT_FINISH
-
-    # FIXME: if not quiet:
-    # FIXME:     output the last tryItOut line
-
-    if lev <= JS_ABNORMAL_EXIT:  # JS_ABNORMAL_EXIT and below (inclusive) will be ignored.
-        sps.vdump("jsfunfuzzLevel is ignoring a baseLevel of " + str(lev))
         lev = JS_FINE
         issues = []
+        auxCrashData = []
 
-    if lev != JS_FINE:
-        # FIXME: compareJIT failures do not generate this -summary file.
-        statusIssueList = []
-        for i in issues:
-            statusIssueList.append('Status: ' + i)
-        assert len(statusIssueList) != 0
-        fileManipulation.writeLinesToFile(
-            ['Number: ' + logPrefix + '\n',
-             'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
-            [i + '\n' for i in statusIssueList],
-            logPrefix + '-summary.txt')
+        # FuzzManager expects a list of strings rather than an iterable, so bite the
+        # bullet and 'readlines' everything into memory.
+        with open(logPrefix + "-out.txt") as f:
+            out = f.readlines()
+        with open(logPrefix + "-err.txt") as f:
+            err = f.readlines()
 
-    if not quiet:
+        if options.valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
+            issues.append("valgrind reported an error")
+            lev = max(lev, JS_VG_AMISS)
+            valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
+            for line in err:
+                if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
+                    issues.append(line.rstrip())
+        elif runinfo.sta == timedRun.CRASHED:
+            sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True)
+            with open(logPrefix + "-crash.txt") as f:
+                auxCrashData = f.readlines()
+        elif detect_malloc_errors.amiss(logPrefix):
+            issues.append("malloc error")
+            lev = max(lev, JS_MALLOC_ERROR)
+        elif runinfo.rc == 0 and not inCompareJIT:
+            # We might have(??) run jsfunfuzz directly, so check for special kinds of bugs
+            for line in out:
+                if line.startswith("Found a bug: ") and not ("NestTest" in line and oomed(err)):
+                    lev = JS_DECIDED_TO_EXIT
+                    issues.append(line.rstrip())
+            if options.shellIsDeterministic and not understoodJsfunfuzzExit(out, err) and not oomed(err):
+                issues.append("jsfunfuzz didn't finish")
+                lev = JS_DID_NOT_FINISH
+
+        # Copy non-crash issues to where FuzzManager's "AssertionHelper.py" can see it.
+        if lev != JS_FINE:
+            for issue in issues:
+                err.append("[jsInteresting.py] " + issue)
+
+        # Finally, make a CrashInfo object and parse stack traces for asan/crash/assertion bugs
+        crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
+
+        createCollector.printCrashInfo(crashInfo)
+        if not isinstance(crashInfo, CrashInfo.NoCrashInfo):
+            lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
+
+        match = options.collector.search(crashInfo)
+        if match[0] is not None:
+            createCollector.printMatchingSignature(match)
+            lev = JS_FINE
+
         print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
-    return lev
+
+        self.lev = lev
+        self.out = out
+        self.err = err
+        self.issues = issues
+        self.crashInfo = crashInfo
+        self.match = match
+        self.runinfo = runinfo
+        self.rc = runinfo.rc
+
+#        return (lev, issues, runinfo, out, err, auxCrashData)
+#        return (lev, crashInfo)
+
+        #if lev != JS_FINE:
+        #    # FIXME: compareJIT failures do not generate this -summary file.
+        #    statusIssueList = []
+        #    for i in issues:
+        #        statusIssueList.append('Status: ' + i)
+        #    assert len(statusIssueList) != 0
+        #    fileManipulation.writeLinesToFile(
+        #        ['Number: ' + logPrefix + '\n',
+        #         'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
+        #        [i + '\n' for i in statusIssueList],
+        #        logPrefix + '-summary.txt')
+
+        #if not quiet:
+
+
+def understoodJsfunfuzzExit(out, err):
+    for line in err:
+        if "terminate called" in line or "quit called" in line:
+            return True
+        if "can't allocate region" in line:
+            return True
+
+    for line in out:
+        if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
+            return True
+        if line.startswith("Found a bug: "):
+            return True
+
+    return False
 
 
 def hitMemoryLimit(err):
@@ -211,12 +185,11 @@ def hitMemoryLimit(err):
     return None
 
 
-def oomed(logPrefix):
+def oomed(err):
     # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they run out of memory
-    with open(logPrefix + "-err.txt", "rb") as f:
-        for line in f:
-            if hitMemoryLimit(line):
-                return True
+    for line in err:
+        if hitMemoryLimit(line):
+            return True
     return False
 
 
@@ -286,28 +259,35 @@ def parseOptions(args):
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
     options.jsengineWithArgs = args[1:]
+    options.collector = createCollector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
+    options.shellIsDeterministic = inspectShell.queryBuildConfiguration(options.jsengineWithArgs[0], 'more-deterministic')
+
     return options
 
 
-# loopjsfunfuzz.py uses parseOptions and jsfunfuzzLevel
-# compareJIT.py uses baseLevel
+# loopjsfunfuzz.py uses parseOptions and ShellResult [with inCompareJIT = False]
+# compareJIT.py uses ShellResult [with inCompareJIT = True]
 
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
 def init(args):
     global gOptions
     gOptions = parseOptions(args)
 def interesting(args, tempPrefix):
-    actualLevel = jsfunfuzzLevel(gOptions, tempPrefix, quiet=True)
+    options = gOptions
+    # options, runthis, logPrefix, inCompareJIT
+    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
     truncateFile(tempPrefix + "-out.txt", 1000000)
     truncateFile(tempPrefix + "-err.txt", 1000000)
-    return actualLevel >= gOptions.minimumInterestingLevel
+    return res.lev >= gOptions.minimumInterestingLevel
 
 
 # For direct, manual use
 def main():
     options = parseOptions(sys.argv[1:])
-    print jsfunfuzzLevel(options, "m")
+    tempPrefix = "m"
+    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
+    print res.lev
 if __name__ == "__main__":
     main()

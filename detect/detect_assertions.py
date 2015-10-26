@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 
 # Recognizes NS_ASSERTIONs based on condition, text, and filename (ignoring irrelevant parts of the path)
-# Recognizes JS_ASSERT based on condition only :(
-# Recognizes ObjC exceptions based on message, since there is no stack information available, at least on Tiger.
+# (FuzzManager's AssertionHelper.py handles fatal assertions of all flavors.)
 
 import findIgnoreLists
+import re
 
 simpleIgnoreList = []
 twoPartIgnoreList = []
 ready = False
 
-(NO_ASSERT, NON_FATAL_ASSERT, FATAL_ASSERT) = range(3)
-
 
 # Called directly by domInteresting.py and jsInteresting.py
-# Returns (severity, new) where |severity| is the enum above and |new| is a bool
 def scanLine(knownPath, line):
     global ignoreList
     if not ready:
@@ -22,36 +19,12 @@ def scanLine(knownPath, line):
 
     line = line.strip("\x07").rstrip("\n")
 
-    if "Aborting on channel error" in line:
-        # A child is aborting due to a crash in the parent.
-        # It would be great if we could correctly detect both assertions and crashes in both parent and child processes,
-        # but I have no clue how to do either.
-        # (See bug 986379 for an example of a bug that can trigger it -- but only if privacy.sanitize.sanitizeOnShutdown is true??)
-        return (NON_FATAL_ASSERT, False)
-    severity = assertionSeverity(line)
-    if severity == NO_ASSERT:
-        return (NO_ASSERT, False)
-    return (severity, assertionIsNew(line))
-
-
-def assertionSeverity(line):
     if "###!!! ASSERT" in line:
-        return NON_FATAL_ASSERT
-    if "###!!! ABORT" in line:
-        return FATAL_ASSERT
-    if line.startswith("Assertion failure:"):
-        # MOZ_ASSERT; spidermonkey; nss
-        return FATAL_ASSERT
-    if line.startswith("Assertion failed:"):
-        # assert.h e.g. as used by harfbuzz
-        # Lots of JS tests use this to indicate failure, but we don't care when transcluding those tests into fuzz testcases
-        return FATAL_ASSERT
-    if ": failed assertion" in line:
-        # Skia
-        return FATAL_ASSERT
-    if "Mozilla has caught an Obj-C exception" in line:
-        return NON_FATAL_ASSERT
-    return NO_ASSERT
+        line = re.sub("^\\[\\d+\\]\\s+", "", line, count=1)  # Strip leading [PID], if present
+        if assertionIsNew(line):
+            return line
+
+    return None
 
 
 def readIgnoreLists(knownPath):
@@ -68,9 +41,7 @@ def readIgnoreList(filename):
         for line in ignoreFile:
             line = line.rstrip()
             if (len(line) > 0) and not line.startswith("#"):
-                mpi = line.find(", file ")  # NS_ASSERTION and friends use this format
-                if mpi == -1:
-                    mpi = line.find(": file ")  # NS_ABORT uses this format
+                mpi = line.find(", file ")
                 if mpi == -1:
                     simpleIgnoreList.append(line)
                 else:

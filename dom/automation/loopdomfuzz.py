@@ -23,6 +23,7 @@ import subprocesses as sps
 from fileManipulation import fuzzDice, fuzzSplice, linesStartingWith, writeLinesToFile
 import lithOps
 import linkJS
+import createCollector
 
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, os.pardir))
@@ -46,8 +47,8 @@ def linkFuzzer(target_fn):
 
 # If targetTime is None, this loops forever.
 # If targetTime is a number, tries not to run for more than targetTime seconds.
-#   But if it finds a bug in the browser, it may run for less time, or even for 50% more time.
-def many_timed_runs(targetTime, tempDir, args, quiet=True):
+#   But if it finds a bug in the browser, for about 50% more time while it runs Lithium.
+def many_timed_runs(targetTime, tempDir, args, collector, quiet=True):
     startTime = time.time()
     iteration = 0
 
@@ -55,10 +56,9 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
     linkFuzzer(fuzzerJS)
     os.environ["DOM_FUZZER_SCRIPT"] = fuzzerJS
 
-    levelAndLines, options = domInteresting.rdfInit(args)
-    browserDir = options.browserDir
-
-    reftestFilesDir = domInteresting.FigureOutDirs(browserDir).reftestFilesDir
+    bc = domInteresting.BrowserConfig(args, collector)
+    browserDir = bc.options.browserDir
+    reftestFilesDir = bc.dirs.reftestFilesDir
     reftestURLs = getURLs(os.path.abspath(reftestFilesDir))
 
     while True:
@@ -67,32 +67,32 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
             os.remove(fuzzerJS)
             if len(os.listdir(tempDir)) == 0:
                 os.rmdir(tempDir)
-            return (lithOps.HAPPY, None)
+            break
 
         iteration += 1
 
-        url = options.argURL or (random.choice(reftestURLs) + randomHash())
+        url = bc.options.argURL or (random.choice(reftestURLs) + randomHash())
         extraPrefs = randomPrefs.randomPrefs()
 
         logPrefix = os.path.join(tempDir, "q" + str(iteration))
         now = datetime.datetime.isoformat(datetime.datetime.now(), " ")
         print
         print "%%% " + now + " starting q" + str(iteration) + ": " + url
-        level, lines = levelAndLines(url, logPrefix=logPrefix, extraPrefs=extraPrefs, quiet=quiet)
+        result = domInteresting.BrowserResult(bc, url, logPrefix, extraPrefs=extraPrefs, quiet=quiet)
 
-        if level > domInteresting.DOM_FINE:
+        if result.level > domInteresting.DOM_FINE:
             print "loopdomfuzz.py: will try reducing from " + url
-            rFN = createReproFile(fuzzerJS, extraPrefs, lines, logPrefix)
+            rFN = createReproFile(fuzzerJS, extraPrefs, result.lines, logPrefix)
             if platform.system() == "Windows":
                 rFN = rFN.replace("/", "\\")  # Ensure both Lithium and Firefox understand the filename
-            extraRDFArgs = ["--valgrind"] if options.valgrind else []
-            lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % level, browserDir, rFN]
+            extraRDFArgs = ["--valgrind"] if bc.options.valgrind else []
+            lithArgs = [domInterestingpy] + extraRDFArgs + ["-m%d" % result.level, browserDir, rFN]
             (lithresult, lithdetails) = lithOps.runLithium(lithArgs, logPrefix, targetTime and targetTime//2)
+
             if lithresult == lithOps.LITH_NO_REPRO:
-                os.remove(rFN)
                 print "%%% Lithium can't reproduce. One more shot to see if it's reproducible at all."
-                level2, _ = levelAndLines(url, logPrefix=logPrefix+"-retry", extraPrefs=extraPrefs)
-                if level2 > domInteresting.DOM_FINE:
+                retestResult = domInteresting.BrowserResult(bc, url, logPrefix+"-retry", extraPrefs=extraPrefs)
+                if retestResult.level > domInteresting.DOM_FINE:
                     print "%%% Lithium can't reproduce, but I can!"
                     with open(logPrefix + "-repro-only.txt", "w") as reproOnlyFile:
                         reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
@@ -104,11 +104,18 @@ def many_timed_runs(targetTime, tempDir, args, quiet=True):
                         sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
                         sorryFile.write(domInterestingpy + " " + browserDir + " " + url + "\n")
                     lithresult = lithOps.NO_REPRO_AT_ALL
-            print ""
-            if targetTime:
-                return (lithresult, lithdetails)
+            elif lithresult == lithOps.LITH_FINISHED:
+                # Upload the output and crash information for the reduced testcase, not the original
+                reducedResult = domInteresting.BrowserResult(bc, rFN, logPrefix+"-final", extraPrefs=extraPrefs)
+                if reducedResult.level > domInteresting.DOM_FINE:
+                    result = reducedResult
 
-        if options.argURL:
+            if collector:
+                quality = lithOps.ddsize(rFN) + (0 if lithresult == lithOps.LITH_FINISHED else 1000000)
+                print "Testcase quality = " + str(quality)
+                collector.submit(result.crashInfo, rFN, quality)
+
+        if bc.options.argURL:
             break
 
 
@@ -223,4 +230,4 @@ def afterColon(s):
 
 
 if __name__ == "__main__":
-    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], quiet=False)
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], createCollector.createCollector("DOMFuzz"), quiet=False)
