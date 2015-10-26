@@ -273,6 +273,8 @@ function regexCharacterClass()
     re += "^";
   }
 
+  var lo, hi;
+
   for (var i = 0; i < ranges; ++i) {
     if (rnd(100) == 0) {
       // Confuse things by tossing in an extra "-"
