@@ -1,5 +1,4 @@
 import os
-import platform
 import sys
 import subprocesses
 
@@ -11,7 +10,6 @@ if not os.path.exists(fuzzManagerPath):
     sys.exit(2)
 sys.path.append(fuzzManagerPath)
 from Collector.Collector import Collector
-from FTB.ProgramConfiguration import ProgramConfiguration
 
 
 def createCollector(tool):
