@@ -18,6 +18,7 @@ p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p3)
 import subprocesses as sps
 import createCollector
+import fileManipulation
 
 # From FuzzManager (in sys.path thanks to import createCollector above)
 import FTB.Signatures.CrashInfo as CrashInfo
@@ -123,6 +124,13 @@ class ShellResult:
 
         print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
 
+        if lev != JS_FINE:
+            fileManipulation.writeLinesToFile(
+                ['Number: ' + logPrefix + '\n',
+                 'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
+                ['Status: ' + i + "\n" for i in issues],
+                logPrefix + '-summary.txt')
+
         self.lev = lev
         self.out = out
         self.err = err
@@ -131,23 +139,6 @@ class ShellResult:
         self.match = match
         self.runinfo = runinfo
         self.rc = runinfo.rc
-
-#        return (lev, issues, runinfo, out, err, auxCrashData)
-#        return (lev, crashInfo)
-
-        #if lev != JS_FINE:
-        #    # FIXME: compareJIT failures do not generate this -summary file.
-        #    statusIssueList = []
-        #    for i in issues:
-        #        statusIssueList.append('Status: ' + i)
-        #    assert len(statusIssueList) != 0
-        #    fileManipulation.writeLinesToFile(
-        #        ['Number: ' + logPrefix + '\n',
-        #         'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
-        #        [i + '\n' for i in statusIssueList],
-        #        logPrefix + '-summary.txt')
-
-        #if not quiet:
 
 
 def understoodJsfunfuzzExit(out, err):
