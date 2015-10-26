@@ -10,7 +10,7 @@ from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from inspectShell import testJsShellOrXpcshell
 
 p0 = os.path.dirname(os.path.abspath(__file__))
-lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, 'lithium', 'lithium.py'))
+lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'lithium', 'lithium.py'))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))
 
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
