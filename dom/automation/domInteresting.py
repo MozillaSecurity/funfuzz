@@ -412,7 +412,7 @@ class FigureOutDirs:
 
 
 def hgRepoRev(repoDir):
-    return subprocess.check_output(['hg', '-R', repoDir, 'log', '-r', 'default', '--template', '{node|short}'])
+    return subprocess.check_output(['hg', '-R', repoDir, 'log', '-r', '.', '--template', '{node|short}'])
 
 
 def downloadedBuildRev(browserDir):
