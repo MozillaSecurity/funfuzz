@@ -72,6 +72,9 @@ function fuzzInitBlacklists()
                 "addTextTrack",      // bug 1010707
                 "rowspan",           // slow enough to "hang" a debug build, but not an opt build
                 "createMirror",      // this gadget can trigger the slow-script dialog (e.g. with ImageData.data)
+                "preserve-3d",       // bug 1216832
+                "will-change",       // bug 1216832
+                "willChange",        // bug 1216832
             ]
         },
         {
@@ -117,6 +120,7 @@ function fuzzInitBlacklists()
                 "exploreProperties", // bug 1187068
                 "open",              // bug 1187068
                 "requestFullScreen", // bug 1190669
+                "createShadowRoot",  // bug 1217531
             ]
         },
         {
