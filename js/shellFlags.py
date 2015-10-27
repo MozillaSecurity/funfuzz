@@ -43,6 +43,9 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    if shellSupportsFlag(shellPath, "--execute='version(185);'"):
+        args.append("--execute='version(185);'")  # We need this until at least bug 932517 lands
+
     if shellSupportsFlag(shellPath, '--ion-sincos=on') and chance(.5):
         sincosValue = "on" if chance(0.5) else "off"
         args.append("--ion-sincos=" + sincosValue)  # --ion-sincos=[on|off] landed in bug 984018
