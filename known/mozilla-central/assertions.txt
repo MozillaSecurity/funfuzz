@@ -2238,9 +2238,6 @@ Assertion failure: base[size - 1] == 0,
 # Bug 1212278
 Assertion failure: aIndex < mLength,
 
-# Bug 1212719
-Assertion failure: false (MOZ_ASSERT_UNREACHABLE: this token was previously looked up with a different modifier, potentially making tokenization non-deterministic),
-
 # Bug 1216126
 Assertion failure: analysis().usesScopeChain(),
 
