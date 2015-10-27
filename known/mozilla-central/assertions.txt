@@ -2255,3 +2255,6 @@ Assertion failure: current,
 
 # Bug 1218196
 Assertion failure: JSOp(*pc) == JSOP_IFNE || JSOp(*pc) == JSOP_IFEQ,
+
+# Bug 1218900
+Assertion failure: phaseNestingDepth == 0,
