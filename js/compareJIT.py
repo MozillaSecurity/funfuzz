@@ -18,6 +18,7 @@ import createCollector
 
 # From FuzzManager (in sys.path thanks to import createCollector above)
 import FTB.Signatures.CrashInfo as CrashInfo
+from FTB.ProgramConfiguration import ProgramConfiguration
 
 
 lengthLimit = 1000000
@@ -152,7 +153,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                     print summary
                     print ""
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
-                pc = createCollector.ProgramConfiguration.fromBinary(jsEngine)
+                pc = ProgramConfiguration.fromBinary(jsEngine)
                 pc.addProgramArguments(flags)
                 crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)
                 return (jsInteresting.JS_OVERALL_MISMATCH, crashInfo)

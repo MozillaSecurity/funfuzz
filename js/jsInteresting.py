@@ -22,6 +22,7 @@ import fileManipulation
 
 # From FuzzManager (in sys.path thanks to import createCollector above)
 import FTB.Signatures.CrashInfo as CrashInfo
+from FTB.ProgramConfiguration import ProgramConfiguration
 
 
 # Levels of unhappiness.
@@ -56,7 +57,7 @@ class ShellResult:
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, inCompareJIT):
         # This relies on the shell being a local one from compileShell.py:
-        pc = createCollector.ProgramConfiguration.fromBinary(runthis[0])
+        pc = ProgramConfiguration.fromBinary(runthis[0])
         pc.addProgramArguments(runthis[1:])
 
         if options.valgrind:

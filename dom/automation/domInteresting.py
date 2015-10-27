@@ -47,7 +47,7 @@ import createCollector
 
 # From FuzzManager (in sys.path thanks to import createCollector above)
 import FTB.Signatures.CrashInfo as CrashInfo
-
+from FTB.ProgramConfiguration import ProgramConfiguration
 
 close_fds = sys.platform != 'win32'
 
@@ -690,7 +690,7 @@ def createProgramConfiguration(hgRev, args):
     else:
         raise Exception("Unknown platform.system(): " + s)
 
-    return createCollector.ProgramConfiguration(
+    return ProgramConfiguration(
         "mozilla-central",
         "x86-64" if is64 else "x86",
         osname,
