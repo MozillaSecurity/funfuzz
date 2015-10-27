@@ -322,6 +322,4 @@ js::jit::BaselineScript::icEntryFromPCOffset
 
 # Bug 1218065
 js::GetSrcNoteOffset
-
-# Bug 1218196
 js::jit::MBasicBlock::pop
