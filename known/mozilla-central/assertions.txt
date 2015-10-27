@@ -2247,3 +2247,6 @@ Assertion failure: phaseNestingDepth == 0,
 
 # Bug 1218986
 Assertion failure: *p->value().unsafeGet() == ObjectValue(*proxy),
+
+# Bug 1219044
+Assertion failure: JSVAL_IS_DOUBLE_IMPL(data),
