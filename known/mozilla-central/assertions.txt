@@ -2244,3 +2244,6 @@ Assertion failure: JSOp(*pc) == JSOP_IFNE || JSOp(*pc) == JSOP_IFEQ,
 
 # Bug 1218900
 Assertion failure: phaseNestingDepth == 0,
+
+# Bug 1218986
+Assertion failure: *p->value().unsafeGet() == ObjectValue(*proxy),
