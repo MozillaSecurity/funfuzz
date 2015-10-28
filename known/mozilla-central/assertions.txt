@@ -2253,3 +2253,6 @@ Assertion failure: JSVAL_IS_DOUBLE_IMPL(data),
 
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
+
+# Bug 1219363
+Assertion failure: (IdIsIndex(a, &indexA)),
