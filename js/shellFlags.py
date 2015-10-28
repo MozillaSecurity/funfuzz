@@ -43,8 +43,12 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
-    if shellSupportsFlag(shellPath, "--execute='version(185);'"):
-        args.append("--execute='version(185);'")  # We need this until at least bug 932517 lands
+    # Bug 932517 has landed to fix this issue. Keeping this around for archives:
+    #   Original breakage in m-c rev 269359 : https://hg.mozilla.org/mozilla-central/rev/a0ccab2a6e28
+    #   Fix in m-c rev 269896: https://hg.mozilla.org/mozilla-central/rev/3bb8446a6d8d
+    # Anything in-between involving let probably needs "-e 'version(185);'" to see if we can bypass breakage
+    # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
+    #     args.append("--execute='version(185);'")  # We need this until at least bug 932517 lands
 
     if shellSupportsFlag(shellPath, '--ion-sincos=on') and chance(.5):
         sincosValue = "on" if chance(0.5) else "off"
