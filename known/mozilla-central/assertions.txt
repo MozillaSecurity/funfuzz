@@ -2256,3 +2256,6 @@ Assertion failure: inited == !getPrototype(key).isUndefined(),
 
 # Bug 1219363
 Assertion failure: (IdIsIndex(a, &indexA)),
+
+# Bug 1219408
+Assertion failure: scope,

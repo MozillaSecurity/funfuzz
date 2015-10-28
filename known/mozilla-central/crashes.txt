@@ -326,3 +326,6 @@ js::jit::MBasicBlock::pop
 
 # Bug 1219363
 SortComparatorIntegerIds
+
+# Bug 1219408
+JSObject::getClass
