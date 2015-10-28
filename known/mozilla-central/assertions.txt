@@ -2250,3 +2250,6 @@ Assertion failure: *p->value().unsafeGet() == ObjectValue(*proxy),
 
 # Bug 1219044
 Assertion failure: JSVAL_IS_DOUBLE_IMPL(data),
+
+# Bug 1219128
+Assertion failure: inited == !getPrototype(key).isUndefined(),
