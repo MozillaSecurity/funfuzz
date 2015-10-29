@@ -320,10 +320,6 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 # Bug 1216126
 js::jit::BaselineScript::icEntryFromPCOffset
 
-# Bug 1218065
-js::GetSrcNoteOffset
-js::jit::MBasicBlock::pop
-
 # Bug 1219363
 SortComparatorIntegerIds
 
