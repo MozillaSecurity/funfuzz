@@ -2232,6 +2232,9 @@ Assertion failure: framePushed_ >= uint32_t(-value),
 # Bug 1205130
 Assertion failure: base[size - 1] == 0,
 
+# Bug 1212389
+Assertion failure: result ([OOM] Is it really infallible?),
+
 # Bug 1216126
 Assertion failure: analysis().usesScopeChain(),
 
