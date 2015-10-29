@@ -2252,3 +2252,6 @@ Assertion failure: (IdIsIndex(a, &indexA)),
 
 # Bug 1219408
 Assertion failure: scope,
+
+# Bug 1219905
+Assertion failure: cx->isExceptionPending(),
