@@ -325,3 +325,6 @@ SortComparatorIntegerIds
 
 # Bug 1219408
 JSObject::getClass
+
+# Bug 1219954
+js::AutoStableStringChars::initTwoByte
