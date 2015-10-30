@@ -2238,6 +2238,9 @@ Assertion failure: result ([OOM] Is it really infallible?),
 # Bug 1216126
 Assertion failure: analysis().usesScopeChain(),
 
+# Bug 1216140
+Assertion failure: scope == cx->global() || scope == &cx->global()->lexicalScope()
+
 # Bug 1216599
 Assertion failure: p,
 
