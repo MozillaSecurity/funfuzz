@@ -2222,9 +2222,6 @@ Assertion failure: data.s.payload.why == why,
 # Bug 1184389
 Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
 
-# Bug 1196545
-Assertion failure: framePushed_ >= uint32_t(-value),
-
 # Bug 1197604 (Probably fixed)
 #Assertion failure: !frame_->isHandlingException(),
 #Assertion failure: hasScript(),
@@ -2243,12 +2240,6 @@ Assertion failure: scope == cx->global() || scope == &cx->global()->lexicalScope
 
 # Bug 1216599
 Assertion failure: p,
-
-# Bug 1218900
-Assertion failure: phaseNestingDepth == 0,
-
-# Bug 1219044
-Assertion failure: JSVAL_IS_DOUBLE_IMPL(data),
 
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
