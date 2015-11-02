@@ -92,6 +92,7 @@ user_pref("browser.snippets.enabled", false);
 user_pref("browser.snippets.firstrunHomepage.enabled", false);
 user_pref("browser.snippets.syncPromo.enabled", false);
 user_pref("general.useragent.updates.enabled", false);
+user_pref("media.gmp-manager.url.override", "http://127.0.0.1:6/dummy-gmp-manager.xml");
 
 // Prevent the fuzzer from accidentally contacting servers.
 //   Note: Since we are not actually running a proxy on port 6,
