@@ -29,7 +29,7 @@ function serializeFuzzCommandsSegment(start, end, indent)
             } else if (c.rest) {
                 // A timeout. Grab the remainder through recursion instead of iteration, indenting them in a setTimeout block.
                 var timerCallbackBlock = serializeFuzzCommandsSegment(i + 1, end, indent + "    ");
-                var timeout = ("timeout" in c) ? c.timeout : (inverval != undefined) ? interval : fuzzSettings[3];
+                var timeout = ("timeout" in c) ? c.timeout : (interval != undefined) ? interval : fuzzSettings[3];
                 return s + indent + "setTimeout(function() {\n" + timerCallbackBlock + indent + "}, " + timeout + ");\n";
             }
         }
