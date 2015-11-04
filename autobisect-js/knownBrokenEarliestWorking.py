@@ -60,6 +60,10 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('5e45fba743aa', '8e5d8f34c53e'),  # Fx39, broken Mac builds due to jemalloc
         ])
+        if options.enableSimulatorArm32:
+            skips.extend([
+                hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit Mac ARM-simulator builds
+            ])
 
     if options.enableMoreDeterministic:
         skips.extend([
