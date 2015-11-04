@@ -2250,3 +2250,6 @@ Assertion failure: scope,
 
 # Bug 1219905
 Assertion failure: cx->isExceptionPending(),
+
+# Bug 1221359
+Assertion failure: pseudoReturnOffset - offsetBeforePush == 8,
