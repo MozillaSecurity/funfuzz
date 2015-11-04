@@ -301,6 +301,9 @@ nsStructuredCloneContainer::AddRef
 # Bug 1190036
 mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 
+# Bug 1221332
+nsHTMLEditRules::GetNodesForOperation
+
 
 #############################
 #                           #

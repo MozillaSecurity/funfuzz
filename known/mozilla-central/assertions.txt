@@ -2022,7 +2022,7 @@ Assertion failure: nsIntRegion(itemDrawRect).Contains(opaquePixels),
 Assertion failure: applyState.mGaps.mHandled == applyState.mGaps.mCount (Unprocessed justification gaps),
 
 # Bug 1153636
-Assertion failure: (NS_IsMainThread() && aType && aTypeAtom) || (!NS_IsMainThread() && aType && !aTypeString.IsEmpty()) || aAllEvents (Missing type),
+Assertion failure: (NS_IsMainThread() && aEventMessage && aTypeAtom) || (!NS_IsMainThread() && aEventMessage && !aTypeString.IsEmpty()) || aAllEvents (Missing type),
 
 # Bug 1153695
 Assertion failure: !nif || (!mFloats.ContainsFrame(nif) && !mFrames.ContainsFrame(nif)),
@@ -2181,6 +2181,37 @@ ASSERTION: mChannel must be valid if we're OPENED.: 'mChannel', file dom/base/ns
 
 # Bug 1191981
 ASSERTION: cancel with non-failure status code: 'NS_FAILED(status)', file netwerk/base/nsInputStreamPump.cpp
+
+# Bug 1210745
+Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
+
+# Bug 989628 (skia canvas)
+: failed assertion "!segmentCount && !closeCount"
+
+# Bug 1018527 (skia canvas)
+: failed assertion "rect.fLeft <= rect.fRight && rect.fTop <= rect.fBottom"
+
+# Bug 1221272 (skia canvas)
+: failed assertion "top <= bot"
+
+# Bug 1221304 (skia canvas)
+: failed assertion "set_normal_unitnormal(fPrevPt, currPt, fRadius, normal, unitNormal)"
+
+# Bug 1221312 (skia canvas)
+: failed assertion "normalB.setLength(((float)(fRadius) / ( sqrtf(((1.0f) + dot)/2))))"
+
+# Bug 1221322 (skia canvas)
+: failed assertion "contains_inclusive(*devBounds, pts[0])"
+
+# Bug 1221370
+Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
+Assertion failure: mDecoderStateMachine (Must be called after Load().),
+
+# Bug 1221418
+Assertion failure: mActorDestroyed,
+
+# Bug 1221421
+Assertion failure: this->is<T>(),
 
 
 ################################
