@@ -2256,3 +2256,6 @@ Assertion failure: pseudoReturnOffset - offsetBeforePush == 8,
 
 # Bug 1221361
 Assertion failure: HasMOVWT(),
+
+# Bug 1221378
+Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
