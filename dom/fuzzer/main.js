@@ -61,8 +61,10 @@ function fuzzAddInitialNodes()
 
 function makeCommand()
 {
-  var f = Random.index(fuzzActiveModules);
-  var s = window[f].makeCommand();
+  var moduleName = Random.index(fuzzActiveModules);
+  var module = window[moduleName];
+  if (!module) { throw "Missing module: " + moduleName; }
+  var s = module.makeCommand();
 
   if (typeof(s) == "string") {
     if (fuzzBlacklistVeto(s))
@@ -72,7 +74,7 @@ function makeCommand()
       if (fuzzBlacklistVeto(s[i]))
         return [];
   } else {
-    return "/* OMG WTF " + f + " */";
+    return "/* OMG WTF " + moduleName + " */";
   }
   return s;
 }
