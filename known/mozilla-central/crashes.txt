@@ -326,3 +326,6 @@ js::ModuleObject::evaluate
 
 # Bug 1219954
 js::AutoStableStringChars::initTwoByte
+
+# Bug 1221385
+js::jit::ExecutableAllocator::releasePoolPages

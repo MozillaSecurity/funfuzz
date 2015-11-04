@@ -2259,3 +2259,7 @@ Assertion failure: HasMOVWT(),
 
 # Bug 1221378
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
+
+# Bug 1221385
+Assertion failure: m_refCount == 1,
+Assertion failure: jrt_->mutatingBackedgeList_,
