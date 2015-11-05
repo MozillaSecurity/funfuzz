@@ -304,6 +304,15 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 # Bug 1221332
 nsHTMLEditRules::GetNodesForOperation
 
+# Bug 1221852 - opt
+mozilla::dom::SharedWorkerBinding::get_port
+
+# Bug 1221852 - debug
+mozilla::dom::binding_detail::DoGetOrCreateDOMReflector<mozilla::dom::MessagePort
+
+# Bug 1221855
+mozilla::dom::ScriptProcessorNodeEngine::SizeOfExcludingThis
+
 
 #############################
 #                           #

@@ -882,6 +882,7 @@ ASSERTION: mBufferSize and mAttrCount are expected to be the same.: 'mAttrCount 
 
 # Bug 682647
 ABORT: image ratio with nonsense width: 'aIntrinsicRatio.width >= 0', file layout/base/nsCSSRendering.cpp
+ASSERTION: unexpected max block size: 'aBSize >= 0', file layout/generic/nsFloatManager.cpp
 # Bug 690619
 ABORT: image ratio with nonsense height: 'aIntrinsicRatio.height >= 0', file layout/base/nsCSSRendering.cpp
 
@@ -1457,7 +1458,7 @@ ASSERTION: Must not InvalidateRenderingObservers() under nsISVGChildFrame::Reflo
 ASSERTION: Do not call under nsISVGChildFrame::ReflowSVG!: '!OuterSVGIsCallingReflowSVG(aFrame)', file layout/svg/nsSVGUtils.cpp
 
 # Bug 836946
-ASSERTION: should not be zero if we haven't allocated all pref percent: '(!spanHasNonPctPref || nonPctTotalPrefWidth != 0) && nonPctColCount != 0', file layout/tables/BasicTableLayoutStrategy.cpp
+ASSERTION: should not be zero if we haven't allocated all pref percent: '(!spanHasNonPctPref || nonPctTotalPrefISize != 0) && nonPctColCount != 0', file layout/tables/BasicTableLayoutStrategy.cpp
 
 # Bug 839931
 ASSERTION: Transform has a component other than scale and translate: 'aTransform.xy == 0 && aTransform.yx == 0', file MaskLayerImageCache.h
@@ -2206,12 +2207,36 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1221370
 Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
 Assertion failure: mDecoderStateMachine (Must be called after Load().),
+# Bug 1221881
+ASSERTION: Should have state machine.: 'mDecoderStateMachine != nullptr', file dom/media/MediaDecoder.cpp
 
 # Bug 1221418
 Assertion failure: mActorDestroyed,
 
 # Bug 1221421
 Assertion failure: this->is<T>(),
+
+# Bug 1221863
+Assertion failure: mCommonParams.metadata().name() == databaseName,
+
+# Bug 1221868
+ASSERTION: How did we get a child with a current doc?: 'child->GetComposedDoc() == nullptr', file dom/base/nsINode.cpp
+
+# Bug 1221869
+ASSERTION: frame still referencing style context: 'mFrameRefCnt == 0', file layout/style/nsStyleContext.cpp
+
+# Bug 1221874
+ASSERTION: writing-mode mismatch: 'aWritingMode == GetWritingMode()', file WritingModes.h
+
+# Bug 1221888
+ASSERTION: we should have saved a frame property: 'Not Reached', file layout/base/nsCSSRendering.cpp
+
+# Bug 1221889
+ASSERTION: Incorrectly ignoring blocking!: 'mStartBlocking == GraphImpl()->mStateComputedTime || aTime <= mStartBlocking', file dom/media/MediaStreamGraph.cpp
+
+# Bug 1221904
+ASSERTION: Invalid offset: 'uint32_t(aOffset) <= mSkipChars->mCharCount', file gfx/thebes/gfxSkipChars.cpp
+ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterator(iter).ConvertOriginalToSkipped(offset + length) <= mTextRun->GetLength()', file layout/generic/nsTextFrame.cpp
 
 
 ################################
