@@ -44,7 +44,8 @@ def loopSequence(cmdSequence, waitTime):
                 subprocess.check_call(cmd)
             except subprocess.CalledProcessError as e:
                 print "Something went wrong when calling: " + repr(cmd)
-                print repr(e)
+                import traceback
+                print(traceback.format_exc())
                 print "Waiting %d seconds..." % waitTime
                 time.sleep(waitTime)
                 break
