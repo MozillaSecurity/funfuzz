@@ -53,9 +53,9 @@ def updateRepo(repo):
     repoType = typeOfRepo(repo)
 
     if repoType == 'hg':
-        sps.timeSubprocess(['/usr/bin/env', 'hg', 'pull', '-u'],
+        sps.timeSubprocess(['hg', 'pull', '-u'],
                            ignoreStderr=True, combineStderr=True, cwd=repo, vb=True)
-        sps.timeSubprocess(['/usr/bin/env', 'hg', 'log', '-r', 'default'], cwd=repo, vb=True)
+        sps.timeSubprocess(['hg', 'log', '-r', 'default'], cwd=repo, vb=True)
     elif repoType == 'git':
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
