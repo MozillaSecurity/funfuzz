@@ -41,11 +41,11 @@ def loopSequence(cmdSequence, waitTime):
         print "localLoop #%d!" % i
         for cmd in cmdSequence:
             try:
-                subprocess.check_call(cmd)
+                subprocess.check_output(cmd)
             except subprocess.CalledProcessError as e:
-                print "Something went wrong when calling: " + repr(cmd)
+                print "Status: exit code %d with output: %s" % (e.returncode, e.output)
                 import traceback
-                print(traceback.format_exc())
+                print traceback.format_exc()
                 print "Waiting %d seconds..." % waitTime
                 time.sleep(waitTime)
                 break
