@@ -701,7 +701,6 @@ var incDecOps = [
 
 var specialProperties = [
   "__iterator__", "__count__",
-  "__noSuchMethod__",
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
