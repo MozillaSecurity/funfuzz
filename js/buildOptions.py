@@ -246,8 +246,6 @@ def areArgsValid(args):
             return False, 'Asan is not yet supported on Windows.'
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
-        if sps.isMac:
-            return False, 'Disable testing Mac ARM-simulators until bug 939157 and bug 1221299 are fixed.'
         if sps.isARMv7l:
             return False, 'Does not make sense to run the ARM simulator on ARM hardware.'
         if sps.isWin:
