@@ -19,7 +19,7 @@ def findIgnoreLists(targetRepo, needle):
     r = []
     assert not targetRepo.startswith("/")
     for name in sorted(os.listdir(REPO_PARENT_PATH)):
-        if name.startswith("fuzzing") or name.startswith("funfuzz"):
+        if name.startswith("funfuzz"):
             knownPath = os.path.join(REPO_PARENT_PATH, name, "known", targetRepo)
             if os.path.isdir(knownPath):
                 while os.path.basename(knownPath) != "known":
