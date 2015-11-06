@@ -1320,8 +1320,8 @@ ASSERTION: Mixed wrapping data and nonwrapping data on the same line: 'mCurrentL
 ASSERTION: why?: 'false', file layout/base/nsDisplayList.cpp
 
 # print-to-file bs
-ASSERTION: QueryInterface needed
-ASSERTION: Should only call DidPaint on root presshells: 'mPresContext->IsRoot()', file layout/base/nsPresShell.cpp
+#ASSERTION: QueryInterface needed
+#ASSERTION: Should only call DidPaint on root presshells: 'mPresContext->IsRoot()', file layout/base/nsPresShell.cpp
 
 # Bug 789299
 ASSERTION: Surface not allowed to be used as source!
@@ -2237,6 +2237,9 @@ ASSERTION: Incorrectly ignoring blocking!: 'mStartBlocking == GraphImpl()->mStat
 # Bug 1221904
 ASSERTION: Invalid offset: 'uint32_t(aOffset) <= mSkipChars->mCharCount', file gfx/thebes/gfxSkipChars.cpp
 ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterator(iter).ConvertOriginalToSkipped(offset + length) <= mTextRun->GetLength()', file layout/generic/nsTextFrame.cpp
+
+# Bug 1222202
+ASSERTION: QueryInterface needed
 
 
 ################################
