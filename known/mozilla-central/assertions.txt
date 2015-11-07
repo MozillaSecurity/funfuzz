@@ -2315,3 +2315,7 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1221385
 Assertion failure: m_refCount == 1,
 Assertion failure: jrt_->mutatingBackedgeList_,
+
+# Bug 1222675
+Assertion failure: result ([OOM] Is it really infallible?),
+Assertion failure: !unknownProperties(),
