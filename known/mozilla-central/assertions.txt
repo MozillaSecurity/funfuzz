@@ -2189,6 +2189,9 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 989628 (skia canvas)
 : failed assertion "!segmentCount && !closeCount"
 
+# Bug 989863 (skia canvas)
+: failed assertion "tolDevBounds.contains(actualBounds)"
+
 # Bug 1018527 (skia canvas)
 : failed assertion "rect.fLeft <= rect.fRight && rect.fTop <= rect.fBottom"
 

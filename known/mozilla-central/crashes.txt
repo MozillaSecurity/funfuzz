@@ -313,6 +313,12 @@ mozilla::dom::binding_detail::DoGetOrCreateDOMReflector<mozilla::dom::MessagePor
 # Bug 1221855
 mozilla::dom::ScriptProcessorNodeEngine::SizeOfExcludingThis
 
+# Bug 1207798 (with MOZ_DISABLE_NONLOCAL_CONNECTIONS)
+nsSocketTransport::InitiateSocket
+
+# Bug 1222280
+nsContentUtils::IsImageSrcSetDisabled
+
 
 #############################
 #                           #
