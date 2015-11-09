@@ -2319,3 +2319,6 @@ Assertion failure: jrt_->mutatingBackedgeList_,
 # Bug 1222675
 Assertion failure: result ([OOM] Is it really infallible?),
 Assertion failure: !unknownProperties(),
+
+# Bug 1222905
+Assertion failure: !isEmptyShape(),
