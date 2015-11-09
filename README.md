@@ -53,6 +53,7 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 2. Install 32-bit libraries to compile 32-bit binaries:
   * Debian/Ubuntu: ```sudo apt-get install lib32z1 gcc-multilib g++-multilib```
   * Fedora: (Fedora is known to work, however the exact library names are unknown for now.)
+  ** Note that parts of the code which contain ```if isLinux and float(platform.linux_distribution()[1]) > 15.04``` might fail on Fedora, as they assume Ubuntu's versioning scheme. Patches welcome.
 3. Install gdb:
   * Debian/Ubuntu: ```sudo apt-get install gdb```
   * Fedora: Please ensure that all development packages are installed (see ```rpm -qa "*devel"```), and run ```yum install gdb```
