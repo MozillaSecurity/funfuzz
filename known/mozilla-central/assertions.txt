@@ -2099,13 +2099,6 @@ Assertion failure: false (Unable to find document prescontext and base URI),
 # Bug 1161277 (Skia)
 : failed assertion "fLength >= 0"
 
-# My skia assertion bugs almost never get fixed, and most are not security issues.
-# Hopefully, running non-debug ASan builds will find the serious bugs.
-# If they start getting fixed, add a separate ignore for each one:
-#   https://bugzilla.mozilla.org/buglist.cgi?quicksearch=ALL%20reporter%3Ajrud%20su%3Askia%20kw%3Aassertion
-gfx/skia/trunk/
-gfx\skia\trunk\
-
 # Bug 1162813
 ASSERTION: Unexpected paragraph separator: 'Not Reached', file layout/base/nsBidi.cpp
 
