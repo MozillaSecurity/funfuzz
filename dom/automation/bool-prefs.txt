@@ -322,7 +322,7 @@ privacy.donottrackheader.enabled
 privacy.item.cookies
 privacy.popups.showBrowserMessage
 privacy.popups.usecustom
-#privacy.sanitize.sanitizeOnShutdown  # Bug 1215885
+privacy.sanitize.sanitizeOnShutdown
 prompts.tab_modal.enabled
 security.sri.enable
 security.ssl.enable_false_start
