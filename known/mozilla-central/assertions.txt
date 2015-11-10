@@ -124,9 +124,6 @@ ASSERTION: nscoord subtraction will reach or pass nscoord_MAX: '(int64_t)a - (in
 # Bug 410267 [nscoord_MAX]
 ASSERTION: Bad min, pref, max widths!: 'minWidth <= prefWidth && prefWidth <= maxWidth', file layout/xul/nsSprocketLayout.cpp
 ASSERTION: bad pref, min, max size: '(boxSizes->min <= boxSizes->pref && boxSizes->pref <= boxSizes->max)', file layout/xul/nsSprocketLayout.cpp
-# Bug 410428 [nscoord_MAX]
-ASSERTION: No unconstrainedsize arithmetic, please: 'NS_UNCONSTRAINEDSIZE != margin.top', file layout/tables/nsTableOuterFrame.cpp
-ASSERTION: No unconstrainedsize arithmetic, please: 'NS_UNCONSTRAINEDSIZE != margin.bottom', file layout/tables/nsTableOuterFrame.cpp
 # Bug 411319 (huge width)
 ASSERTION: should no longer use unconstrained widths: 'availSize.width != NS_UNCONSTRAINEDSIZE', file layout/generic/nsFirstLetterFrame.cpp
 ASSERTION: should no longer use unconstrained inline size: 'availSize.ISize(wm) != NS_UNCONSTRAINEDSIZE', file layout/generic/nsFirstLetterFrame.cpp
@@ -211,12 +208,6 @@ ASSERTION: Can't solve for both start and end
 # Bug 397568
 ASSERTION: Unable to locate an XBL binding.: 'protoBinding', file content/xbl/src/nsXBLService.cpp
 
-# Bug 417848
-ASSERTION: Bogus height: 'ComputedHeight() == NS_UNCONSTRAINEDSIZE || ComputedHeight() >= 0', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: Bogus block-size: 'ComputedBSize() == NS_UNCONSTRAINEDSIZE || ComputedBSize() >= 0', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: bad height: 'metrics.height>=0', file layout/generic/nsLineLayout.cpp
-ASSERTION: bad height: 'metrics.Height() >= 0', file layout/generic/nsLineLayout.cpp
-
 # Bug 421174
 ASSERTION: Wrong element being closed: 'content->NodeInfo()->Equals(debugTagAtom, debugNameSpaceID) || isTemplateElement', file dom/xml/nsXMLContentSink.cpp
 
@@ -251,11 +242,6 @@ ASSERTION: No more pct width to distribute, but there are still cols that need s
 # Bug 757269
 ASSERTION: Computed overflow area must contain frame bounds: 'aNewSize.width == 0 || aNewSize.height == 0 || r->width == nscoord_MAX || r->height == nscoord_MAX || (mState & NS_FRAME_SVG_LAYOUT) || r->Contains(nsRect(nsPoint(0,0), aNewSize))', file layout/generic/nsFrame.cpp
 
-# Bug 437162
-ASSERTION: Request list is not empty.: 'mRequests.entryCount == 0', file netwerk/base/nsLoadGroup.cpp
-ASSERTION: Foreground URLs are active.: 'mForegroundCount == 0', file netwerk/base/nsLoadGroup.cpp
-ASSERTION: Shouldn't be busy here: '!IsBusy()', file uriloader/base/nsDocLoader.cpp
-ASSERTION: Overwriting an existing document channel!: '(loadFlags & nsIChannel::LOAD_REPLACE) || !(mDocumentRequest.get())', file uriloader/base/nsDocLoader.cpp
 # Bug 675518
 ASSERTION: Request list is not empty.: 'mRequests.entryCount == 0', file netwerk/base/nsLoadGroup.cpp
 ASSERTION: Foreground URLs are active.: 'mForegroundCount == 0', file netwerk/base/nsLoadGroup.cpp
@@ -266,9 +252,6 @@ ASSERTION: Overwriting an existing document channel!: '(loadFlags & nsIChannel::
 ASSERTION: nsHTMLDocument::Reset() - Wyciwyg Channel  still exists!: '!mWyciwygChannel', file dom/html/nsHTMLDocument.cpp
 ASSERTION: nsHTMLDocument::StopDocumentLoad(): Trying to remove nonexistent wyciwyg channel!: 'mWyciwygChannel', file dom/html/nsHTMLDocument.cpp
 ASSERTION: nsHTMLDocument::Close(): Trying to remove nonexistent wyciwyg channel!: 'mWyciwygChannel', file dom/html/nsHTMLDocument.cpp
-
-# Bug 439258
-ASSERTION: anonymous nodes should not be in child lists: '!aOldChild->IsRootOfAnonymousSubtree()', file layout/base/nsCSSFrameConstructor.cpp
 
 # Bug 441680
 ASSERTION: Shouldn't have unconstrained stuff here thanks to ComputeAutoSize: '
@@ -283,16 +266,10 @@ ASSERTION: A frame but no DOM element!?: 'requestingElement', file docshell/base
 ASSERTION: anonymous block with no children?: 'frameForArea', file layout/base/nsCSSRendering.cpp
 ASSERTION: anonymous block with no children?: 'frameForArea', file layout/generic/nsFrame.cpp
 
-# Bug 444702
-ASSERTION: negative row frame height: 'rowFrame->GetSize().height >= 0', file layout/tables/nsTableFrame.cpp
-
 # Bug 576927
 ABORT: negative lengths and percents should be rejected by parser: 'sizeValue->IsCalcUnit()', file layout/style/nsRuleNode.cpp
 # Bug 887573
 ASSERTION: FindNextLargerFontSize failed: '*aSize >= parentSize', file layout/style/nsRuleNode.cpp
-
-# Bug 460209
-ASSERTION: media list must be nonempty: 'media->Count() != 0', file layout/style/nsCSSParser.cpp
 
 # Bug 615342 ?
 ASSERTION: wrong thread: 'PR_GetCurrentThread() == gSocketThread', file netwerk/protocol/http/src/nsHttpConnection.cpp
@@ -343,9 +320,6 @@ ASSERTION: If the text doesn't fit, and we have a break opportunity, why didn't 
 # Bug 469917
 ASSERTION: nsJSURI not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file dom/jsurl/nsJSProtocolHandler.cpp
 
-# Bug 474377
-ASSERTION: must be in the same rule tree as parent: 'r1 == r2', file layout/style/nsStyleContext.cpp
-
 # I give up on XBL for a while.
 ASSERTION: Already have a document.  Unbind first!: '!GetCurrentDoc() && !IsInDoc()', file dom/base/nsGenericDOMDataNode.cpp
 ASSERTION: Already have a parent.  Unbind first!: '!GetParent() || aParent == GetParent()', file dom/base/nsGenericDOMDataNode.cpp
@@ -361,9 +335,6 @@ ASSERTION: Disagreement about whether it's a block or not: 'fromLine->IsBlock() 
 
 # Bug 463711
 ASSERTION: nsPlatformCharset not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()'
-
-# Bug 569193
-ASSERTION: Column set should be complete if the available height is unconstrained: 'NS_FRAME_IS_FULLY_COMPLETE(aStatus) || aReflowState.AvailableHeight() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsColumnSetFrame.cpp
 
 # Bug 478135
 ASSERTION: bits don't correspond to style change reason: 'aIntrinsicDirty != eStyleChange || aBitToAdd == NS_FRAME_IS_DIRTY', file layout/base/nsPresShell.cpp
@@ -389,13 +360,6 @@ ASSERTION: Intrinsic ratio has a negative component!: 'aIntrinsicRatio.width >= 
 # Bug 493641
 ASSERTION: #text does not have contents: '!mHTMLEditor->IsTextNode(aSource)', file editor/libeditor/html/nsHTMLEditRules.cpp
 
-# Bug 493910
-ASSERTION: This coordinate should be constrained: 'a != nscoord_MAX', file nsCoord.h
-ASSERTION: unconstrained block size on totally empty line: 'NS_UNCONSTRAINEDSIZE != aFloatAvailableSpace.mRect.BSize(outerWM)', file layout/generic/nsBlockFrame.cpp
-ABORT: file layout/generic/nsBlockFrame.cpp
-
-# Bug 495546
-ASSERTION: Should only iterate over direct children: 'startContainer == thisDomNode', file dom/html/nsHTMLMediaElement.cpp
 # Bug 497734
 ASSERTION: Should delay load event while loading in document: '!IsInDoc() || mDelayingLoadEvent', file dom/html/nsHTMLMediaElement.cpp
 ASSERTION: Should delay load event (if in document) during load: 'mDelayingLoadEvent', file dom/html/HTMLMediaElement.cpp
@@ -408,19 +372,12 @@ ASSERTION: invalid row height calculation: '(extraUsed == extra)', file layout/t
 # Bug 500532?
 ASSERTION: invalid row height calculation: '(extraUsed == extraComputedHeight)', file layout/tables/nsTableRowGroupFrame.cpp
 
-# Bug 500847
-ASSERTION: More UnblockOnload() calls than BlockOnload() calls; dropping call: 'Not Reached', file dom/base/nsDocument.cpp
-# Bug 500847-x
-ASSERTION: Shouldn't have a count of zero here, since we stabilized in PostUnblockOnloadEvent: 'mOnloadBlockCount != 0', file dom/base/nsDocument.cpp
 # Bug 670324
 ASSERTION: Expecting to be paused for pagehide before disconnect: 'mPauseState & nsSMILTimeContainer::PAUSE_PAGEHIDE', file dom/smil/nsSMILAnimationController.cpp
 # Bug 670324 comment 26
 ASSERTION: More UnblockOnload() calls than BlockOnload() calls; dropping call: 'Not Reached', file dom/base/nsDocument.cpp
 ASSERTION: Destroying a currently-showing document: '!mIsShowing', file dom/base/nsDocument.cpp
-
-# Bug 501870
-ASSERTION: The computed caption margin is auto
-ASSERTION: The computed inner margin is auto
+ASSERTION: Document leaked to shutdown, then the observer service dropped its ref to us so we were able to go away.: '!mObservingAppThemeChanged', file dom/base/nsDocument.cpp
 
 # Bug 512743
 ASSERTION: Should have a precomputed inline-size!: 'aReflowState.ComputedISize()
@@ -450,9 +407,6 @@ ASSERTION: How can OnStopRequest fire while we're suspended?: 'mSuspendCount == 
 # Bug 527825
 ASSERTION: col can own border only at the table edge: 'aIter.IsTableTopMost() || aIter.IsTableBottomMost()', file layout/tables/nsTableFrame.cpp
 
-# Bug 531589
-ASSERTION: cannot get ptop: 'ptop', file dom/base/nsGlobalWindow.cpp
-
 # Bug 536654
 ASSERTION: frame to add has different parent: 'IsEmpty() || FirstChild()->GetParent() == aFrameList.FirstChild()->GetParent()', file layout/generic/nsFrameList.cpp
 
@@ -474,18 +428,12 @@ ASSERTION: No integers in range; 0 is supposed to be in range: 'low <= high', fi
 # Bug 563481
 ASSERTION: Want to fire mutation events, but it's not safe: '(aNode->IsNodeOfType(nsINode::eCONTENT) && static_cast<nsIContent*>(aNode)-> IsInNativeAnonymousSubtree()) || sScriptBlockerCount == sRemovableScriptBlockerCount', file dom/base/nsContentUtils.cpp
 
-# Bug 540078
-ASSERTION: GetMinimumWidgetSize was ignored: 'rect->width == indicator_size', file widget/gtk2/gtk2drawing.c
-
 # Bug 564099
 ASSERTION: Success status set too early!: 'NPRES_DONE != mStreamStatus', file dom/plugins/BrowserStreamChild.cpp
 ASSERTION: Success status set too early!: 'NPRES_DONE != mStreamStatus', file dom/plugins/ipc/BrowserStreamChild.cpp
 
 # Bug 566159
 ASSERTION: should have done initial reflow by now
-
-# Bug 570038
-ASSERTION: inline-size less than zero: 'aContainingBlockISize >= 0', file layout/base/nsLayoutUtils.cpp
 
 # Bug 570386
 ASSERTION: ComputeLineHeight screwed up: 'lineHeight >= 0', file layout/generic/nsHTMLReflowState.cpp
@@ -517,15 +465,9 @@ ASSERTION: null parent passed to nsHTMLEditUtils::IsListItem: 'node', file edito
 # Bug 573324
 ASSERTION: consider quit stopper out of bounds: 'mConsiderQuitStopper > 0', file toolkit/components/startup/nsAppStartup.cpp
 
-# Bug 575464
-ASSERTION: parser should have ensured no nonnegative lengths: 'aValue.IsCalcUnit()', file layout/style/nsRuleNode.cpp
-
 # Bug 591480
 ASSERTION: Losing track of existing primary frame: '!aFrame || !mPrimaryFrame || aFrame == mPrimaryFrame', file nsIContent.h
 ASSERTION: Unexpected primary frame: 'area->mArea->GetPrimaryFrame() == mImageFrame', file layout/generic/nsImageMap.cpp
-
-# Bug 580129
-ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
 
 # Bug 584208
 ASSERTION: aFrame shouldn't be in reflow; we'll lie if it is: '!(aFrame->GetStateBits() & NS_FRAME_IN_REFLOW)', file layout/generic/nsHTMLReflowState.cpp
@@ -538,20 +480,9 @@ ASSERTION: frame crosses fixed continuation boundary: 'flowLength->mEndFlowOffse
 # Bug 588278
 ASSERTION: root of native anonymous subtree must have parent equal to binding parent: '!IsRootOfNativeAnonymousSubtree() || (GetParent() && GetBindingParent() == GetParent())', file nsIContent.h
 
-# Bug 591075
-ASSERTION: negative widths not allowed: 'aResult >= 0', file layout/base/nsLayoutUtils.cpp
-ASSERTION: Non-zero percentage values not currently supported: 'minWidth.GetPercentValue() == 0.0f', file layout/xul/nsBox.cpp
 # Bug 454308
 ASSERTION: Non-zero percentage values not currently supported: 'minWidth.GetPercentValue() == 0.0f', file layout/xul/nsBox.cpp
 ASSERTION: Non-zero percentage values not currently supported: 'position->mMinHeight.GetPercentValue() == 0.0f', file layout/xul/nsBox.cpp
-
-# Bug 591998
-ASSERTION: bad aListVisibleBounds: 'r.GetBounds() == aListVisibleBounds', file layout/base/nsDisplayList.cpp
-ASSERTION: bad aListVisibleBounds: 'r.GetBounds().IsEqualInterior(aListVisibleBounds)', file layout/base/nsDisplayList.cpp
-# Bug 636229
-ASSERTION: Wrong bounds: 'bounds == aChildren.GetBounds(aBuilder)', file layout/base/FrameLayerBuilder.cpp
-# Bug 651342
-ASSERTION: Wrong bounds: 'bounds.IsEqualInterior(aChildren.GetBounds(aBuilder))', file layout/base/FrameLayerBuilder.cpp
 
 # Bug 593550
 ASSERTION: Frame region deletion was requested but we couldn't delete it: '!frameSet.Contains(mFloats[i].mFrame)', file layout/generic/nsFloatManager.cpp
@@ -561,9 +492,6 @@ ASSERTION: out-of-bounds <option> index: 'aIndex <= numOptions', file layout/for
 
 # Bug 595613
 ASSERTION: unexpected negative value: '!aClampNegativeToZero || aStyle.GetCoordValue() >= 0', file layout/generic/nsFrame.cpp
-
-# Bug 597240
-ABORT: float should be in this block unless it was marked as pushed float: 'aFloat->GetParent() == mBlock || (aFloat->GetStateBits() & NS_FRAME_IS_PUSHED_FLOAT)', file layout/generic/nsBlockReflowState.cpp
 
 # Bug 601308
 ASSERTION: Inserting element child when we already have one: 'Error', file dom/base/nsDocument.cpp
@@ -628,14 +556,6 @@ ASSERTION: Shouldn't have unconstrained stuff here Thanks to the rules of reflow
 ASSERTION: Give me something to work with: '!aMIMEType.IsEmpty() || !aFileExt.IsEmpty()', file uriloader/exthandler/nsExternalHelperAppService.cpp
 ASSERTION: Empty aExtension parameter!: '!aExtension.IsEmpty()', file uriloader/exthandler/nsExternalHelperAppService.cpp
 
-# Bug 613455
-ASSERTION: Bogus width: 'ComputedWidth() >= 0', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: Bogus inline-size: 'ComputedISize() >= 0', file layout/generic/nsHTMLReflowState.cpp
-
-# Bug 613629
-ASSERTION: negative width!: 'aMarginRect.width >= 0', file layout/generic/nsFloatManager.cpp
-ASSERTION: negative height!: 'aMarginRect.height >= 0', file layout/generic/nsFloatManager.cpp
-
 # Bug 613700
 ASSERTION: Doing nscoord addition with values > nscoord_MAX: 'a < nscoord_MAX && b < nscoord_MAX', file nsCoord.h
 ASSERTION: width less than zero: 'result >= 0', file layout/base/nsLayoutUtils.cpp
@@ -678,9 +598,6 @@ ABORT: imgCacheEntry release isn't thread-safe!: '_mOwningThread.GetThread() == 
 # Bug 616027
 ASSERTION: mForm should be null at this point!: '!mForm', file dom/html/nsGenericHTMLElement.cpp
 
-# Bug 616052
-ASSERTION: Couldn't find placeholder!: 'firstFrame', file layout/generic/nsHTMLReflowState.cpp
-
 # Bug 616250
 ASSERTION: We shouldn't be reentering here: '!mFrameIsUpdatingScrollbar', file layout/generic/nsGfxScrollFrame.cpp
 
@@ -689,9 +606,6 @@ ASSERTION: If it's incomplete and has no nif yet, it must flag a nif reflow.: 'n
 
 # <script>goQuitApplication(); alert(5);</script>
 ASSERTION: Uh, IsInModalState() called w/o a reachable top window?: 'Error', file dom/base/nsGlobalWindow.cpp
-
-# Bug 617089
-ASSERTION: A Box's child is constantly growing!!!!!: 'passes < 10', file layout/xul/nsSprocketLayout.cpp
 
 # Bug 617232
 ASSERTION: Couldn't find the attribute in its parent!: 'Error', file content/xslt/src/xpath/txMozillaXPathTreeWalker.cpp
@@ -708,9 +622,6 @@ ASSERTION: no sink?: 'mSink', file parser/htmlparser/src/nsExpatDriver.cpp
 # Bug 862580
 ASSERTION: no sink?: 'mSink', file parser/htmlparser/src/nsExpatDriver.cpp
 ASSERTION: content sink not found!: 'mSink', file parser/htmlparser/src/nsExpatDriver.cpp
-
-# Bug 621596
-ABORT: parser should have rejected value: 'aCoord.IsCalcUnit()', file layout/style/nsComputedDOMStyle.cpp
 
 # Bug 622214
 ASSERTION: Detaching editor when it's already detached.: '!mOSHE || !mOSHE->HasDetachedEditor()', file docshell/base/nsDocShell.cpp
@@ -787,12 +698,6 @@ ASSERTION: Don't schedule the same document multiple times: 'mAnimationFrameList
 # Bug 645405?
 ABORT: observers should have unregistered: 'ObserverCount() == 0', file layout/base/nsRefreshDriver.cpp
 
-# Bug 650572
-ASSERTION: editor cannot get selection: 'selection', file editor/libeditor/text/nsTextEditRules.cpp
-
-# Bug 652976
-ABORT: should already have refreshed style rule: 'ea->mStyleRuleRefreshTime == mPresContext->RefreshDriver()->MostRecentRefresh()', file layout/style/nsAnimationManager.cpp
-
 # Bug 721910
 ASSERTION: bad method name: 'Error', file js/xpconnect/src/XPCWrappedNativeInfo.cpp
 
@@ -834,16 +739,6 @@ AsyncChannel
 # Bug 665237 ?
 SyncChannel
 
-# Bug 665329
-Assertion failure: t->suppress_tracing == 0,
-
-# Bug 665330
-Assertion failure: lock->owner == 0,
-Assertion failure: lock->owner != me,
-
-# Bug 667321
-ASSERTION: Why PreDestroy hasn't been called?: '!mDocWeak || mDidPreDestroy', file editor/libeditor/base/nsEditor.cpp
-
 # Bug 668943
 ASSERTION: asked to construct a frame for a node that already has a frame: '!child->GetPrimaryFrame() || child->GetPrimaryFrame()->GetContent() != child', file layout/base/nsCSSFrameConstructor.cpp
 ASSERTION: setting NEEDS_FRAME on a node that already has a frame?: '!child->GetPrimaryFrame() || child->GetPrimaryFrame()->GetContent() != child', file layout/base/nsCSSFrameConstructor.cpp
@@ -860,19 +755,12 @@ ASSERTION: fragments shouldn't have doctype declarations: 'Not Reached', file do
 ASSERTION: mStateMaintainer should exist.: 'mStateMaintainer', file composer/src/nsEditingSession.cpp
 ASSERTION: bad state, null mDocWeak: 'mDocWeak', file libeditor/base/nsEditor.cpp
 
-# Bug 675550
-ASSERTION: Before-spacing inside a ligature!: 'i == aStart || aSpacing[i - aStart].mBefore == 0', file gfx/thebes/gfxFont.cpp
-
 # Bug 675552
 ASSERTION: unexpected block frame: '!nsLayoutUtils::GetAsBlock(aFrame) || !aFrame->GetStyleDisplay()->IsBlockOutside()', file layout/generic/TextOverflow.cpp
 ASSERTION: unexpected block frame: '!nsLayoutUtils::GetAsBlock(aFrame) || !aFrame->IsBlockOutside()', file layout/generic/TextOverflow.cpp
 
 # Bug 678936
 ASSERTION: GetOwner: 'Not Reached', file uriloader/exthandler/nsExternalProtocolHandler.cpp
-
-# Bug 681489
-ASSERTION: right marker for 'clip': 'mRight.mStyle->mType != NS_STYLE_TEXT_OVERFLOW_CLIP || !needRight', file layout/generic/TextOverflow.cpp
-ASSERTION: left marker for 'clip': 'mLeft.mStyle->mType != NS_STYLE_TEXT_OVERFLOW_CLIP || !needLeft', file layout/generic/TextOverflow.cpp
 
 # Bug 682644
 ASSERTION: aIndex is out of range: 'aIndex < mLength', file docshell/shistory/src/nsSHistory.cpp
@@ -883,8 +771,6 @@ ASSERTION: mBufferSize and mAttrCount are expected to be the same.: 'mAttrCount 
 # Bug 682647
 ABORT: image ratio with nonsense width: 'aIntrinsicRatio.width >= 0', file layout/base/nsCSSRendering.cpp
 ASSERTION: unexpected max block size: 'aBSize >= 0', file layout/generic/nsFloatManager.cpp
-# Bug 690619
-ABORT: image ratio with nonsense height: 'aIntrinsicRatio.height >= 0', file layout/base/nsCSSRendering.cpp
 
 # Bug 688945
 ASSERTION: selection could not be collapsed after insert.: '(NS_SUCCEEDED(result))', file editor/libeditor/base/CreateElementTxn.cpp
@@ -907,9 +793,6 @@ ASSERTION: Primary child list can have at most one frame in it: 'aListID != kPri
 
 # Bug 692553
 ASSERTION: Uh, EnterModalState() called w/o a reachable top window?: 'Error', file dom/base/nsGlobalWindow.cpp
-
-# Bug 691581
-ASSERTION: mFUnitsConvFactor not valid: 'mFUnitsConvFactor > 0.0f', file gfxFont.h
 
 # Bug 693419
 ASSERTION: How did we end up with a presshell if our parent doesn't have one?: '!parent || mDocument->IsStaticDocument() || parent->GetShell()', file layout/base/nsPresContext.cpp
@@ -936,11 +819,6 @@ ASSERTION: Wrong root:
 ASSERTION: Bad root:
 ASSERTION: unexpected disconnected nodes: 'aDisconnected', file dom/base/nsContentUtils.cpp
 
-# Bug 695964
-ASSERTION: Can't get a delta for an untransformed frame!: 'aFrame->GetStyleDisplay()->HasTransform()', file layout/base/nsDisplayList.cpp
-ASSERTION: If we don't have a transform, then we must be at least attempting to preserve the transforms of our children: 'aFrame->GetStyleDisplay()->mTransformStyle == NS_STYLE_TRANSFORM_STYLE_PRESERVE_3D', file layout/base/nsDisplayList.cpp
-ASSERTION: If we don't have a transform, then we must have another reason to have an nsDisplayTransform created: 'aFrame->GetStyleDisplay()->mTransformStyle == NS_STYLE_TRANSFORM_STYLE_PRESERVE_3D || aFrame->GetStyleDisplay()->mBackfaceVisibility == NS_STYLE_BACKFACE_VISIBILITY_HIDDEN', file layout/base/nsDisplayList.cpp
-
 # Bug 695969
 ASSERTION: Don't pass invalid prefixes to nsDocument::CreateElem, check caller.: 'NS_SUCCEEDED(nsContentUtils::CheckQName(qName, nsAware))', file dom/base/nsDocument.cpp
 
@@ -951,12 +829,6 @@ ASSERTION: SVG frame expected: 'kid->IsFrameOfType(nsIFrame::eSVG) || kid->IsSVG
 # Bug 696626
 ASSERTION: Negative width passed to nsWindow::Resize: '(aWidth >=0 )', file widget/windows/nsWindow.cpp
 ASSERTION: Negative height passed to nsWindow::Resize: '(aHeight >=0 )', file widget/windows/nsWindow.cpp
-
-# Bug 696869
-ABORT: negative duration forbidden: 'duration >= 0.0', file layout/style/nsTransitionManager.cpp
-
-# Bug 696936
-ASSERTION: Perspective must be positive!: 'aDepth > 0.0f', file gfx/thebes/gfx3DMatrix.cpp
 
 # Bug 893340
 ASSERTION: PopGecko() called without matching call to PushGecko()!: '(item.mWindow == aWindow) && (item.mWidget == aWidget)', file widget/cocoa/nsAppShell.mm
@@ -985,11 +857,6 @@ ASSERTION: Unbalanced HideMenuAndDockForWindow calls: 'sDockHiddenCount >= 0', f
 # Bug 700089
 ASSERTION: Should have a full-screen doc when full-screen!: '!IsFullScreenDoc() || sFullScreenDoc != nullptr', file dom/base/nsDocument.cpp
 
-# Bug 709899
-ASSERTION: Full-screen root should be a full-screen doc...: 'root->IsFullScreenDoc()', file dom/base/nsDocument.cpp
-# Bug 709899 (see whenfixed-jesse)
-ASSERTION: Full-screen element should be in doc: 'element->IsInDoc()', file dom/base/nsDocument.cpp
-
 # Bug 698977
 ASSERTION: Must have parent here: 'aContent->GetParent()', file layout/base/nsCSSFrameConstructor.cpp
 ASSERTION: no common ancestor at all???: 'gPreventAssertInCompareTreePosition || parent', file layout/base/nsLayoutUtils.cpp
@@ -999,9 +866,6 @@ ASSERTION: Document already knows about this Link!: '!entry', file dom/base/nsDo
 
 # Bug 699360
 ASSERTION: Our frame tree is likely to be bogus!: '!(styleChange & nsChangeHint_ReconstructFrame)', file layout/base/nsFrameManager.cpp
-
-# Bug 699563
-ABORT: Failed to create pixman images?: 'src && dest', file gfx/layers/basic/BasicLayerManager.cpp
 
 # Bug 699722
 ASSERTION: Framesets should not be positioned and should not float: '!disp->IsAbsolutelyPositioned() && !disp->IsFloating()', file layout/generic/nsFrameSetFrame.cpp
@@ -1028,9 +892,6 @@ ABORT: negative scaling factors must be handled manually: 'aScale >= 0.0f', file
 # Bug 709429
 ASSERTION: JoinNode called with a non-text left node!: 'Error', file editor/txtsvc/src/nsTextServicesDocument.cpp
 ASSERTION: Non element nodes passed to ElementsSameStyle.: '(firstElement && secondElement)', file editor/libeditor/html/nsHTMLCSSUtils.cpp
-
-# Bug 710149
-ASSERTION: Unexpected surface type change: 'mType == aSimilarTo->GetType()', file gfx/thebes/gfxCachedTempSurface.cpp
 
 # Bug 714667
 ASSERTION: data loss - incomplete row needed more height than available, on top of page: 'rowMetrics.height <= rowReflowState.availableHeight', file layout/tables/nsTableRowGroupFrame.cpp
@@ -1087,9 +948,6 @@ ASSERTION: We don't handle correct positioning of fixed frames with scrollbars i
 # Bug 728974
 ABORT: Only 'lang' should be unrecognized!: 'aMappedAttrName == nsGkAtoms::lang', file content/svg/content/src/nsSVGElement.cpp
 
-# Bug 729431
-ASSERTION: orphan selection descendant: 'n || !aNode->IsSelectionDescendant()', file dom/base/nsRange.cpp
-
 # Bug 729851
 ASSERTION: Precomputed tab widths are missing!: 'mTabWidths && mTabWidths->mLimit >= i', file layout/generic/nsTextFrame.cpp
 ASSERTION: Precomputed tab widths are missing!: 'mTabWidths && mTabWidths->mLimit + startOffset >= i', file layout/generic/nsTextFrame.cpp
@@ -1114,9 +972,6 @@ ASSERTION: Reflowing while a resize is pending is wasteful: '!(GetStateBits() & 
 
 # Bug 739332
 ASSERTION: aRequest should be pending!: 'mDeferRequests.Contains(aRequest) || mAsyncRequests.Contains(aRequest) || mNonAsyncExternalScriptInsertedRequests.Contains(aRequest) || mXSLTRequests.Contains(aRequest) || mPreloads.Contains(aRequest, PreloadRequestComparator()) || mParserBlockingRequest', file dom/base/nsScriptLoader.cpp
-
-# Bug 740199
-ASSERTION: Current inflation container for text frame is wrong: 'inflationContainer->GetFirstInFlow() == presContext->mCurrentInflationContainer->GetFirstInFlow()', file layout/generic/nsTextFrame.cpp
 
 # Bug 741304
 Mozilla has caught an Obj-C exception [NSInternalInconsistencyException: Invalid parameter not satisfying: _transitionedWindowBeforeContents != nil]
@@ -1284,20 +1139,6 @@ Assertion failure: GetReadyStateEnum() == nsIDocument::READYSTATE_COMPLETE (Bad 
 # Bug 797078
 Assertion failure: GetReadyStateEnum() == nsIDocument::READYSTATE_LOADING (Bad readyState),
 
-# Bug 779707
-ASSERTION: Not yet suspended!: 'mParentSuspended', file dom/workers/WorkerPrivate.cpp
-ASSERTION: Not yet suspended!: 'mSuspended', file dom/workers/WorkerPrivate.cpp
-ASSERTION: Mismatched busy count mods!: 'aIncrease || mBusyCount', file dom/workers/WorkerPrivate.cpp
-# Bug 919044
-Assertion failure: !mParentSuspended (Suspended more than once!),
-ASSERTION: Suspended more than once!: '!mParentSuspended', file dom/workers/WorkerPrivate.cpp
-ASSERTION: Already suspended!: '!mSuspended', file dom/workers/WorkerPrivate.cpp
-ASSERTION: Not yet suspended!: 'mParentSuspended', file dom/workers/WorkerPrivate.cpp
-# Bug 919044 whenfixed 'b'
-Assertion failure: mParentSuspended,
-# Bug 919044 whenfixed 'c'
-ASSERTION: Shouldn't have anything queued!: 'aStatus != Terminating || mQueuedRunnables.IsEmpty()', file dom/workers/WorkerPrivate.cpp
-
 # Bug 780725
 ASSERTION: Unexpected anchorNode: 'anchorNode == aRoot || anchorNode == firstChild || anchorNode == lastChild', file dom/base/nsContentUtils.cpp
 ASSERTION: Unexpected focusNode: 'focusNode == aRoot || focusNode == firstChild || focusNode == lastChild', file dom/base/nsContentUtils.cpp
@@ -1362,13 +1203,8 @@ ASSERTION: charset name must be canonical: 'canonicalName.Equals(aCharSetID)', f
 # Bug 803372
 ASSERTION: container didn't take ownership: 'Not Reached', file layout/style/StyleRule.cpp
 
-# Bug 613817
-ASSERTION: reflow state computed incorrect inline size
 # Bug 803381
 ASSERTION: reflow state computed incorrect inline size
-ASSERTION: non-root frame's desired size changed during an incremental reflow
-# Bug 803562
-ASSERTION: reflow roots should be reflowed at existing size and svg.css should ensure we have no padding/border/margin: 'aReflowState.ComputedWidth() == GetSize().width && aReflowState.ComputedHeight() == GetSize().height', file layout/svg/nsSVGForeignObjectFrame.cpp
 ASSERTION: non-root frame's desired size changed during an incremental reflow
 
 # Bug 803946
@@ -1448,10 +1284,6 @@ ASSERTION: DidReflow() was never called: '!(childFrame->GetStateBits() & NS_FRAM
 # Bug 827220
 ABORT: could not interpolate values: 'ok', file layout/style/nsTransitionManager.cpp
 
-# Bug 827239
-ASSERTION: Going to leak style data
-Assertion failure: mPresArenaAllocCount == 0 (Some pres arena objects were not freed),
-
 # Bug 832033
 ASSERTION: aDuringUpdate lies!: 'aDuringUpdate == OuterSVGIsCallingReflowSVG(aFrame)', file layout/svg/nsSVGUtils.cpp
 ASSERTION: Must not InvalidateRenderingObservers() under nsISVGChildFrame::ReflowSVG!: '!OuterSVGIsCallingReflowSVG(aFrame)', file layout/svg/nsSVGUtils.cpp
@@ -1474,9 +1306,6 @@ ASSERTION: FBO not supported: 'Error', file gfx/2d/QuartzSupport.mm
 # Bug 840688 ?
 ASSERTION: Unexpected OpenGL Error: 'Error', file gfx/2d/QuartzSupport.mm
 ASSERTION: nsCARenderer::Render failure: 'Not Reached', file dom/plugins/base/nsPluginInstanceOwner.cpp
-
-# Bug 843086
-ASSERTION: Should not be initializing plugin without a frame: 'Not Reached', file dom/plugins/base/nsPluginInstanceOwner.cpp
 
 # Bug 843474
 ASSERTION: Observers still registered
@@ -1631,9 +1460,6 @@ ASSERTION: Extra shutdown CC
 # Bug 886215
 ASSERTION: Children of not selected deck panel are not accessible.: 'Not Reached', file accessible/src/generic/Accessible.cpp
 
-# Bug 887520
-ABORT: must be an inherited or reset SID: '0 <= aSID && aSID < nsStyleStructID_Length', file nsRuleNode.h
-
 # Bug 887647
 ASSERTION: unexpected size: 'aFrameArea.Size() == aForFrame->VisualBorderRectRelativeToSelf().Size()', file layout/base/nsCSSRendering.cpp
 ASSERTION: unexpected size: 'aForFrame->GetType() == nsGkAtoms::fieldSetFrame || aFrameArea.Size() == aForFrame->GetSize()', file layout/base/nsCSSRendering.cpp
@@ -1678,10 +1504,6 @@ ASSERTION: unexpected color unit: 'eCSSUnit_Null == backColorValue->GetUnit()', 
 # Bug 895323
 ASSERTION: Bullet and accessible are in sync already!: 'Not Reached', file accessible/src/html/HTMLListAccessible.cpp
 
-# Bug 897384
-ASSERTION: Abs pos whose parent is not the abs pos containing block?: 'aNewFrame->GetParent() == mAbsoluteItems.containingBlock', file layout/base/nsCSSFrameConstructor.cpp
-ASSERTION: unknown out of flow frame type: 'disp->mDisplay == NS_STYLE_DISPLAY_POPUP', file layout/generic/nsHTMLReflowState.cpp
-
 # Bug 898923
 ASSERTION: parser should have rejected negative length: 'widthValue.IsCalcUnit()', file layout/style/nsRuleNode.cpp
 
@@ -1693,14 +1515,6 @@ ASSERTION: expected aContainer to be NS_FRAME_IS_DIRTY: 'aContainer->GetStateBit
 
 # Bug 914012
 ASSERTION: Whoever was caching this font group should have called UpdateFontList on it: '!mUserFontSet || mCurrGeneration == GetGeneration()', file gfxFont.h
-
-# Bug 914457
-ASSERTION: Non preserves axis aligned transform with clipped child should have forced intermediate surface: 'is2D && matrix.PreservesAxisAlignedRectangles()', file gfx/layers/Layers.cpp
-
-# Bug 914501
-ASSERTION: frame tree not empty, but caller reported complete status: 'aSubtreeRoot->GetPrevInFlow()', file layout/base/nsLayoutUtils.cpp
-ASSERTION: Placeholder relationship should have been torn down already; this might mean we have a stray placeholder in the tree.: '!placeholder || nsLayoutUtils::IsProperAncestorFrame(aDestructRoot, placeholder)', file layout/generic/nsFrame.cpp
-ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFrame.h
 
 # Bug 914919
 ASSERTION: Bad rect edge:
@@ -1773,9 +1587,6 @@ ASSERTION: Incorrect aState.mPrevChild before inserting line at end: 'aState.mPr
 # Bug 949990
 Assertion failure: isNode() || isIterator() || isSnapshot(),
 
-# Bug 950324
-ASSERTION: unexpected anchored chunk edges: 'aLeftEdge <= aRightEdge', file layout/svg/SVGTextFrame.cpp
-
 # Bug 950325
 Assertion failure: IsSuspended(),
 
@@ -1790,9 +1601,6 @@ ASSERTION: Should have positive clock time.: 'clock_time >= mStartTime', file co
 
 # Bug 951904
 Assertion failure: false (should have already reflowed the kid),
-
-# Bug 962719
-ASSERTION: Shouldn't have already notified of finish *and* have output!: '!streamHasOutput[i] || !stream->mNotifiedFinished', file content/media/MediaStreamGraph.cpp
 
 # Bug 973384
 ASSERTION: Did not receive all required callbacks!: 'NS_FAILED(mResult) || mExpectedCallbacks == 0', file netwerk/base/nsAsyncRedirectVerifyHelper.cpp
@@ -1821,9 +1629,6 @@ Assertion failure: curWeight >= 0.0f (weights are non-negative),
 
 # Bug 989593
 Assertion failed: (isfinite(p.x) && isfinite(p.y)),
-
-# Bug 989677
-Assertion failure: NS_IsMainThread() || aStrategy == DECODE_ASYNC,
 
 # Bug 989706
 ASSERTION: rounding error in width reduction???: 'border.left + border.right <= borderImgArea.width && border.top + border.bottom <= borderImgArea.height', file layout/base/nsCSSRendering.cpp
@@ -1889,14 +1694,8 @@ ASSERTION: InitialOverflowProperty must be set first.: 'hasInitialOverflowProper
 # Bug 765861 (see bug 1015563)
 availableFreeSpace's sign should match isUsingFlexGrow
 
-# Bug 967267
-Assertion failure: mStyleScopes.Contains(cur),
-
 # Happens randomly on startup, not interesting for fuzzing.
 ASSERTION: mTempFile not equal to mTargetFile: 'Error', file netwerk/base/nsFileStreams.cpp
-
-# Bug 1032613
-Assertion failure: FrameMaintainsOverflow(this) (Non-display SVG do not maintain visual overflow rects),
 
 # Bug 1033348
 ASSERTION: Unhandled border style!!: 'Not Reached', file layout/base/nsCSSRenderingBorders.cpp
@@ -1920,9 +1719,6 @@ ASSERTION: dirty rect not set: 'aBuilder->GetDirtyRect().width >= 0 || !aBuilder
 
 # Bug 1058949
 ASSERTION: How did we end up with a negative min-size?: 'aNewMinSize >= 0', file layout/generic/nsFlexContainerFrame.cpp
-
-# Bug 1059519
-ASSERTION: Bounds computation mismatch: 'mContainerBounds.IsEqualInterior(mAccumulatedChildBounds)', file layout/base/FrameLayerBuilder.cpp
 
 # Bug 1060155
 Assertion failure: false (Only operate on BGRA8
@@ -1957,18 +1753,12 @@ Assertion failure: HasEverBeenBound(),
 # Bug 1127525
 Assertion failure: !isIncrementalGCInProgress(),
 
-# Bug 1127534
-Assertion failure: nsContentUtils::IsSystemPrincipal(triggeringPrincipal),
-
 # Bug 1133615
 ASSERTION: expected descendants to be handled by now: 'aData->mDescendants.IsEmpty()', file layout/base/RestyleTracker.cpp
 
 # Bug 1133619
 ASSERTION: containing block bsize must be constrained:
 ASSERTION: unexpected containing block block-size:
-
-# Bug 1133622
-ASSERTION: Audio output key not found: 'Error', file dom/media/MediaStreamGraph.cpp
 
 # Bug 1186147
 ASSERTION: ReflowChild with unconstrained container width!: 'aContainerSize.width != NS_UNCONSTRAINEDSIZE', file layout/generic/nsContainerFrame.cpp
@@ -2039,15 +1829,11 @@ ASSERTION: should not have added restyles: 'haveNonAnimation || !mHavePendingNon
 
 # Bug 1153759
 ASSERTION: inline-size less than zero: 'result >= 0', file layout/base/nsLayoutUtils.cpp
+# Bug 1223232
+ASSERTION: inline-size less than zero: 'aContainingBlockISize >= 0', file layout/base/nsLayoutUtils.cpp
 
 # Bug 1153782
 ASSERTION: Should have a block here!: '!next || !frame->IsInlineOutside()', file layout/base/nsCSSFrameConstructor.cpp
-
-# Bug 1156238
-Assertion failure: nsLayoutUtils::IsAncestorFrameCrossDoc(Builder()->RootReferenceFrame(), aAnimatedGeometryRoot),
-
-# Bug 1156257
-Assertion failure: firstWrappedChild (anonymous grid item is empty (shouldn't happen)),
 
 # Bug 1156585
 Assertion failure: effectiveInternalFormat != 0,
@@ -2085,9 +1871,6 @@ ASSERTION: letter frames and orthogonal floats with auto block-size shouldn't br
 # Bug 1157990
 Assertion failure: compositor->GetBackendType() == LayersBackend::LAYERS_OPENGL,
 
-# Bug 1158031
-Assertion failure: subBlobCount,
-
 # Bug 1158406
 ASSERTION: expecting a spawned plugin: 'Not Reached', file dom/base/nsObjectLoadingContent.cpp
 ASSERTION: Got data for channel with no connected final listener: 'Not Reached', file dom/base/nsObjectLoadingContent.cpp
@@ -2095,9 +1878,6 @@ Assertion failure: sCallbackRuntime,
 
 # Bug 1158412
 Assertion failure: false (Unable to find document prescontext and base URI),
-
-# Bug 1161277 (Skia)
-: failed assertion "fLength >= 0"
 
 # Bug 1162813
 ASSERTION: Unexpected paragraph separator: 'Not Reached', file layout/base/nsBidi.cpp
@@ -2111,64 +1891,21 @@ Assertion failure: !oldScopedRuleProcessorHash.Get(scope) (duplicate rule proces
 # Bug 1183421
 ASSERTION: Negative descent???: 'aMetrics.BSize(aMetrics.GetWritingMode()) - aMetrics.BlockStartAscent() >= 0', file layout/generic/nsTextFrame.cpp
 
-# Bug 1183431
-ASSERTION: block direction mismatch: 'hypotheticalBox.mWritingMode.GetBlockDir() == cbwm.GetBlockDir()', file layout/generic/nsHTMLReflowState.cpp
-
-# Bug 1184807
-ASSERTION: Failed NS_DispatchToMainThread() in shutdown; leaking: 'false', file xpcom/glue/nsThreadUtils.cpp
-
-# Bug 1185176
-Assertion failure: mStream (How come we don't have a stream here?),
-
 # Bug 1185185
 Assertion failure: aCoord.IsCoordPercentCalcUnit(),
 
-# Bug 1185191, bug 1185192
+# Bug 1185191
 Invalid AudioContextState transition
 
 # Bug 1186682
 Assertion failure: outputTrack->GetEnd() == GraphTimeToStreamTime(interval.mStart) (Samples missing),
 
-# Bug 1186689
-Assertion failure: !mIsMapped (Someone forgot to call Unmap()),
-
-# Bug 1186720
-Assertion failure: false (MOZ_ASSERT_UNREACHABLE: Any line break inside ruby box should have been suppressed),
-
-# Bug 1186768
-Assertion failure: !(mBits & eHaveFontSize) || mFontSize == aCoord,
-
 # Bug 1186769
 ASSERTION: Failed Dispatch after xpcom-shutdown-threads: 'false', file xpcom/threads/nsThread.cpp
 ASSERTION: Failed NS_DispatchToMainThread() in shutdown; leaking: 'false', file xpcom/glue/nsThreadUtils.cpp
 
-# Bug 1187204
-Assertion failure: false (Should not have an existing pref cache for this address),
-
 # Bug 1187213
 ASSERTION: NS_BLOCK_HAS_FIRST_LETTER_STYLE state out of sync: 'haveFirstLetterStyle == ((mState & NS_BLOCK_HAS_FIRST_LETTER_STYLE) != 0)', file layout/generic/nsBlockFrame.cpp
-
-# Bug 1189168
-Assertion failure: NS_IsMainThread(),
-
-# Bug 1190646
-ASSERTION: Stretching should be in the vertical direction: 'isVertical', file layout/mathml/nsMathMLChar.cpp
-
-# Bug 1190676
-Assertion failure: cycleStackMarker == ps->mCycleMarker,
-Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
-
-# Bug 1190703
-ServiceWorkerContainer.cpp
-
-# Bug 1190705
-failed assertion "n64 == n32"
-
-# Bug 1191112
-Assertion failure: isEmpty(),
-
-# Bug 1191180
-Assertion failure: mCertificate,
 
 # Bug 1191956
 ASSERTION: mChannel must be valid if we're OPENED.: 'mChannel', file dom/base/nsXMLHttpRequest.cpp
@@ -2221,9 +1958,6 @@ ASSERTION: How did we get a child with a current doc?: 'child->GetComposedDoc() 
 # Bug 1221869
 ASSERTION: frame still referencing style context: 'mFrameRefCnt == 0', file layout/style/nsStyleContext.cpp
 
-# Bug 1221874
-ASSERTION: writing-mode mismatch: 'aWritingMode == GetWritingMode()', file WritingModes.h
-
 # Bug 1221888
 ASSERTION: we should have saved a frame property: 'Not Reached', file layout/base/nsCSSRendering.cpp
 
@@ -2236,6 +1970,23 @@ ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterat
 
 # Bug 1222202
 ASSERTION: QueryInterface needed
+
+# Bug 1223282
+ASSERTION: The computed caption margin is auto?: 'NS_AUTOMARGIN != aCaptionMargin.IStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.BStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.BEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
+# Bug 1223282 'inner'
+ASSERTION: The computed inner margin is auto?: 'NS_AUTOMARGIN != aInnerMargin.IStart(aWM) && NS_AUTOMARGIN != aInnerMargin.IEnd(aWM) && NS_AUTOMARGIN != aInnerMargin.BStart(aWM) && NS_AUTOMARGIN != aInnerMargin.BEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
+# Bug 1223282 ?
+ASSERTION: The computed caption margin is auto?: 'NS_AUTOMARGIN != aCaptionMargin.IStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.IEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
+
+# Bug 1223285
+ASSERTION: After-spacing inside a ligature!: 'i - 1 <= aStart || aSpacing[i - 1 - aStart].mAfter == 0', file gfx/thebes/gfxTextRun.cpp
+
+# Win32 releng machines can't do WebGL, or something.
+ASSERTION: Fallback WARP ANGLE context failed to initialize.: 'Error', file gfx/gl/GLLibraryEGL.cpp
+ASSERTION: WGL supports NV_DX_interop without supplying its functions.: 'Error', file gfx/gl/GLContextProviderWGL.cpp
+
+# Bug 1223301
+ASSERTION: unconstrained block size on totally empty line: 'NS_UNCONSTRAINEDSIZE != aFloatAvailableSpace.mRect.BSize(outerWM)', file layout/generic/nsBlockFrame.cpp
 
 
 ################################

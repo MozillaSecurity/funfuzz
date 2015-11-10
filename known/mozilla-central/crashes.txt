@@ -201,17 +201,9 @@ ScaledFontBase::CopyGlyphsToBuilder
 # Bug 897367
 [TMR] nsDocShell::EnsureContentViewer
 
-# Bug 897384
-InvalidateFrame
-
 # Bug 873260 (ASan opt)
 nsTransitionManager::StyleContextChanged
 mozilla::RestyleManager::ComputeStyleChangeFor
-
-# Bug 914501
-mozilla::ElementRestyler::RestyleContentChildren
-nsIFrame::IsFloating
-mozilla::layout::FrameChildListIterator::FrameChildListIterator(nsIFrame const*)
 
 # Bug 914536
 js::CloneScript
@@ -237,9 +229,6 @@ nsScanner::SetDocumentCharset
 # Bug 949893
 mozilla::dom::DOMProxyHandler::EnsureExpandoObject
 
-# Bug 949937
-mozilla::layers::TextureParent::RecvInit
-
 # Bug 975784
 mozilla::dom::MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode
 
@@ -252,12 +241,6 @@ nsContentIterator::NextNode
 
 # Bug 993570
 nsLayoutUtils::SurfaceFromElement
-
-# Bug 1000432
-mozilla::dom::WrapNewBindingObject<mozilla::dom::TextTrackList>
-mozilla::dom::WrapNewBindingObject<mozilla::dom::TextTrack>
-mozilla::dom::WrapNewBindingObjectHelper<nsRefPtr<mozilla::dom::TextTrackList>
-mozilla::dom::WrapNewBindingObjectHelper<nsRefPtr<mozilla::dom::TextTrack>
 
 # Pfft
 Crashed:: com.apple.audio.IOThread.client
@@ -272,10 +255,6 @@ mozilla::RestyleTracker::AddPendingRestyle
 
 # Bug 1072792
 mozilla::a11y::Accessible::BindToParent
-
-# Bug 1127697, bug 1133622
-mozilla::dom::HTMLMediaElement::EndSrcMediaStreamPlayback
-mozilla::dom::HTMLMediaElement::CheckProgress
 
 # Bug 1140125
 js::frontend::CompileScript
@@ -295,12 +274,6 @@ nsSVGEffects::InvalidateRenderingObservers
 # Bug 1074584
 mozilla::WebGLFramebuffer::FramebufferTexture2D
 
-# Bug 1183954
-nsStructuredCloneContainer::AddRef
-
-# Bug 1190036
-mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
-
 # Bug 1221332
 nsHTMLEditRules::GetNodesForOperation
 
@@ -318,6 +291,9 @@ nsSocketTransport::InitiateSocket
 
 # Bug 1222280
 nsContentUtils::IsImageSrcSetDisabled
+
+# Bug 1223281
+nsSVGPathGeometryFrame::DidSetStyleContext
 
 
 #############################
