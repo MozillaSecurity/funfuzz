@@ -1988,6 +1988,17 @@ ASSERTION: WGL supports NV_DX_interop without supplying its functions.: 'Error',
 # Bug 1223301
 ASSERTION: unconstrained block size on totally empty line: 'NS_UNCONSTRAINEDSIZE != aFloatAvailableSpace.mRect.BSize(outerWM)', file layout/generic/nsBlockFrame.cpp
 
+# Bug 1223520
+Assertion failure: mOutputBuffer[halfSize].i == 0,
+
+# Bug 1223522
+ASSERTION: We can't be complete AND have overflow frames!: '!NS_FRAME_IS_COMPLETE(aStatus) || !GetOverflowFrames()', file layout/generic/nsInlineFrame.cpp
+
+# Bug 1223553
+ASSERTION: Unexpected aDocument: 'aDocument == mDocument', file layout/base/nsPresShell.cpp
+ASSERTION: Should be in an update while creating frames: 'mUpdateCount != 0', file layout/base/nsCSSFrameConstructor.cpp
+ASSERTION: Should be in an update while destroying frames: 'mUpdateCount != 0', file layout/base/nsCSSFrameConstructor.cpp
+
 
 ################################
 #                              #

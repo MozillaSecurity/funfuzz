@@ -295,6 +295,16 @@ nsContentUtils::IsImageSrcSetDisabled
 # Bug 1223281
 nsSVGPathGeometryFrame::DidSetStyleContext
 
+# Bug 1167752
+mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
+
+# Bug 1062770
+LateWriteObserver::Observe
+
+# Bug 1223568
+# Hit MOZ_CRASH(Unexpected justify-content value)
+MainAxisPositionTracker::MainAxisPositionTracker
+
 
 #############################
 #                           #
