@@ -95,7 +95,6 @@ ASSERTION: How is col_iSize_before_adjust nscoord_MAX if space isn't?: 'col_iSiz
 
 ASSERTION: Bogus computed width: 'mComputedWidth >= 0', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: Bogus computed width: 'ComputedWidth() >= 0', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: unexpected content area width: 'aContentArea.width >= 0', file layout/generic/nsFloatManager.cpp
 
 # Bug 402384 (only the fourth is unique)
 ASSERTION: Doing nscoord addition with values > nscoord_MAX: 'a < nscoord_MAX && b < nscoord_MAX', file nsCoord.h
@@ -1937,6 +1936,12 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1221322 (skia canvas)
 : failed assertion "contains_inclusive(*devBounds, pts[0])"
 
+# Bug 1223695 (skia canvas)
+: failed assertion "__null != texture"
+
+# Bug 1223740 (skia canvas)
+: failed assertion "(int16_t)x == x"
+
 # Bug 1221370
 Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
 Assertion failure: mDecoderStateMachine (Must be called after Load().),
@@ -1998,6 +2003,30 @@ ASSERTION: We can't be complete AND have overflow frames!: '!NS_FRAME_IS_COMPLET
 ASSERTION: Unexpected aDocument: 'aDocument == mDocument', file layout/base/nsPresShell.cpp
 ASSERTION: Should be in an update while creating frames: 'mUpdateCount != 0', file layout/base/nsCSSFrameConstructor.cpp
 ASSERTION: Should be in an update while destroying frames: 'mUpdateCount != 0', file layout/base/nsCSSFrameConstructor.cpp
+
+# Bug 1223670
+Assertion failure: cycleStackMarker == ps->mCycleMarker,
+
+# Bug 1223673
+Assertion failure: !aSelection || !mSelection,
+
+# Bug 1223674
+ASSERTION: Bogus inline-size: 'ComputedISize() >= 0', file layout/generic/nsHTMLReflowState.cpp
+
+# Bug 1223688
+Assertion failure: aFromBlock.HasPropertyBit(aPropID) (oops),
+
+# Bug 1223694
+Assertion failure: mStyleScopes.Contains(cur),
+
+# Bug 1223724
+ASSERTION: must be in the same rule tree as parent: 'r1 == r2', file layout/style/nsStyleContext.cpp
+
+# Bug 1223727
+ASSERTION: unexpected content area inline size: 'aContentArea.ISize(aWM) >= 0', file layout/generic/nsFloatManager.cpp
+
+# Bug 1223734
+Assertion failure: false (Should not have an existing pref cache for this address),
 
 
 ################################

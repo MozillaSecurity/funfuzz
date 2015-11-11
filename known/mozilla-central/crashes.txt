@@ -10,6 +10,8 @@ sk_out_of_memory
 operator new
 # OOM with message "Trying to allocate an infallible array that's too big"
 nsTArrayInfallibleAllocator::SizeTooBig
+# OOM
+NS_ABORT_OOM
 
 # I am not interested in startup crashes.
 nsCommandLine::EnumerateHandlers
