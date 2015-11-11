@@ -39,7 +39,7 @@ Assertion failure: 0 == rv,
 
 # HUGE AND SPECIAL WIDTHS
 
-# Widths just generally suck, especially NS_UNCONSTRAINEDSIZE.
+# It's very easy to get Gecko to assert with huge widths and heights.
 # This general issue is the topic of bug 575011, bug 265084, and bug 765861.
 
 ASSERTION: this shouldn't happen anymore: 'NS_UNCONSTRAINEDSIZE != aComputedWidth && NS_UNCONSTRAINEDSIZE != aAvailWidth', file layout/generic/nsHTMLReflowState.cpp
@@ -86,15 +86,11 @@ ASSERTION: Our containing block must not have unconstrained inline-size!: 'aCBSi
 ASSERTION: Shouldn't be incomplete if availableHeight is UNCONSTRAINED.: 'aReflowState.AvailableHeight() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsBlockFrame.cpp
 ASSERTION: Shouldn't be incomplete if availableBSize is UNCONSTRAINED.: 'aReflowState.AvailableBSize() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsBlockFrame.cpp
 ASSERTION: Final iteration still has unfrozen items, this shouldn't happen unless there was nscoord under/overflow.: 'Error', file layout/generic/nsFlexContainerFrame.cpp
-
 ASSERTION: dirtyness out of sync: '(mMinWidth == NS_INTRINSIC_WIDTH_UNKNOWN) == (mPrefWidth == NS_INTRINSIC_WIDTH_UNKNOWN)', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: dirtyness out of sync: '(mMinWidth == NS_INTRINSIC_WIDTH_UNKNOWN) == (mPrefWidthPctExpand == NS_INTRINSIC_WIDTH_UNKNOWN)', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: How is col_iSize nscoord_MAX if space isn't?: 'col_iSize != nscoord_MAX', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: How is col_iSize_before_adjust nscoord_MAX if space isn't?: 'col_iSize_before_adjust != nscoord_MAX', file layout/tables/BasicTableLayoutStrategy.cpp
-
-
-ASSERTION: Bogus computed width: 'mComputedWidth >= 0', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: Bogus computed width: 'ComputedWidth() >= 0', file layout/generic/nsHTMLReflowState.cpp
+ASSERTION: Bogus computed isize
 
 # Bug 402384 (only the fourth is unique)
 ASSERTION: Doing nscoord addition with values > nscoord_MAX: 'a < nscoord_MAX && b < nscoord_MAX', file nsCoord.h
