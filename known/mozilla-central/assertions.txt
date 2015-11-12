@@ -2068,9 +2068,6 @@ Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) ||
 #Assertion failure: !frame_->isHandlingException(),
 #Assertion failure: hasScript(),
 
-# Bug 1205130
-Assertion failure: base[size - 1] == 0,
-
 # Bug 1212389
 Assertion failure: result ([OOM] Is it really infallible?),
 
@@ -2095,6 +2092,9 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 # Bug 1221385
 Assertion failure: m_refCount == 1,
 Assertion failure: jrt_->mutatingBackedgeList_,
+
+# Bug 1221747
+Assertion failure: base[size - 1] == 0,
 
 # Bug 1222675
 Assertion failure: result ([OOM] Is it really infallible?),
