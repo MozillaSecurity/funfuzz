@@ -169,6 +169,7 @@ gfx.offscreencanvas.enabled
 gfx.use_text_smoothing_setting
 #gfx.prefer-mesa-llvmpipe # Bug 868787
 gfx.xrender.enabled
+gl.multithreaded
 image.decode-immediately.enabled
 image.downscale-during-decode.enabled
 image.mem.discardable
