@@ -23,7 +23,7 @@ def parse(filename, add_result_callback):
                 pos = 0
                 while pos < len(parts):
                     # https://hg.mozilla.org/mozilla-central/file/866777368827/layout/tools/reftest/print-manifest-dirs.py#l42
-                    K = ['fails', 'needs-focus', 'random', 'skip', 'asserts', 'slow', 'require-or', 'silentfail', 'pref', 'test-pref', 'ref-pref', 'fuzzy', 'default-preferences']
+                    K = ['fails', 'needs-focus', 'random', 'skip', 'asserts', 'slow', 'require-or', 'silentfail', 'pref', 'test-pref', 'ref-pref', 'fuzzy', 'default-preferences', 'chaos-mode']
                     part = parts[pos]
                     if any([part.startswith(k) for k in K]):
                         # fails, fails-if(...), asserts(3)
