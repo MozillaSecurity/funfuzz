@@ -2024,6 +2024,18 @@ ASSERTION: unexpected content area inline size: 'aContentArea.ISize(aWM) >= 0', 
 # Bug 1223734
 Assertion failure: false (Should not have an existing pref cache for this address),
 
+# Bug 1224559
+ASSERTION: Why did this not get handled while processing mRestyleRoots?: '!element->HasFlag(collector->tracker->RootBit()) || (element->GetFlattenedTreeParent() && (!element->GetFlattenedTreeParent()->GetPrimaryFrame() || element->GetFlattenedTreeParent()->GetPrimaryFrame()->IsLeaf() || element->GetCrossShadowCurrentDoc()->GetShell()->FrameManager() ->GetDisplayContentsStyleFor(element))) || (aData->mChangeHint & nsChangeHint_ReconstructFrame)', file layout/base/RestyleTracker.cpp
+
+# Bug 1224564
+ASSERTION: why should we have flushed style again?: 'mPresShell && currentGeneration == mPresShell->GetPresContext()->GetRestyleGeneration()', file layout/style/nsComputedDOMStyle.cpp
+
+# Bug 1224574
+ASSERTION: Bogus block-size: 'ComputedBSize() == NS_UNCONSTRAINEDSIZE || ComputedBSize() >= 0', file layout/generic/nsHTMLReflowState.cpp
+
+# Bug 1224580
+Assertion failure: mSearchParams == aSearchParams,
+
 
 ################################
 #                              #
