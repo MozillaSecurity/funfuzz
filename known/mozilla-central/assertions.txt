@@ -2111,3 +2111,6 @@ Assertion failure: !unknownProperties(),
 
 # Bug 1222905
 Assertion failure: !isEmptyShape(),
+
+# Bug 1224710
+Assertion failure: aIndex < mLength,
