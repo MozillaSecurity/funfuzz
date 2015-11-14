@@ -326,5 +326,9 @@ js::jit::BaselineScript::icEntryFromPCOffset
 # Bug 1221385
 js::jit::ExecutableAllocator::releasePoolPages
 
+# Bug 1221747
+IonScriptCounts
+js::jit::CodeGenerator::maybeCreateScriptCounts
+
 # Bug 1222917
 array_length_setter
