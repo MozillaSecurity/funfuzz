@@ -2117,3 +2117,6 @@ Assertion failure: aIndex < mLength,
 
 # Bug 1224883
 Assertion failure: calleeScript->hasBaselineScript(),
+
+# Bug 1224895
+Assertion failure: !constant(),
