@@ -307,6 +307,9 @@ LateWriteObserver::Observe
 # Hit MOZ_CRASH(Unexpected justify-content value)
 MainAxisPositionTracker::MainAxisPositionTracker
 
+# Bug 1225003
+mozilla::WebAudioDecodeJob::SizeOfExcludingThis
+
 
 #############################
 #                           #

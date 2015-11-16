@@ -2036,6 +2036,9 @@ ASSERTION: Bogus block-size: 'ComputedBSize() == NS_UNCONSTRAINEDSIZE || Compute
 # Bug 1224580
 Assertion failure: mSearchParams == aSearchParams,
 
+# Bug 1218799
+Assertion failure: PR_GetCurrentThread() == mOwningThread,
+
 
 ################################
 #                              #
