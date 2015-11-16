@@ -2095,6 +2095,9 @@ Assertion failure: p,
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
 
+# Bug 1219883
+Assertion failure: !constant(),
+
 # Bug 1221361
 Assertion failure: HasMOVWT(),
 
@@ -2120,9 +2123,6 @@ Assertion failure: aIndex < mLength,
 
 # Bug 1224883
 Assertion failure: calleeScript->hasBaselineScript(),
-
-# Bug 1224895
-Assertion failure: !constant(),
 
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
