@@ -2123,3 +2123,6 @@ Assertion failure: calleeScript->hasBaselineScript(),
 
 # Bug 1224895
 Assertion failure: !constant(),
+
+# Bug 1225041
+Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
