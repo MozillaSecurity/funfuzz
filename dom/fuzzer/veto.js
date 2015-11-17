@@ -33,21 +33,13 @@ function fuzzInitBlacklists()
                 "cloneNode",         // can create exponentially many nodes
                 "KEEPLISTENER",      // mutation events can loop/nest infinitely
                 "OMGback",           // bfcache is reliable, as explained where OMGback lives
-                "float",             // bug 460705, bug 493910
                 "collapse",          // bug 513106
-                "-moz-border",       // bug 543648
-                "MozBorder",         // bug 543648
                 "execCommand",       // bug 543651
                 "MathML",            // bug 544453
-                "repeating-radial-gradient", // bug 557348
-                "repeating-linear-gradient",
-                "radial-gradient",
                 "letter-spacing",    // can be slow
                 "letterSpacing",     // can be slow
                 "autoplay",          // bug 573426 (windows only)
-                "shadow",            // bug 595042
                 "filter",            // bug 612213
-                "position",          // bug 622314
                 "break-word",        // bug 628358
                 "padding",           // bug 628358
                 "-moz-grid",         // bug 628358
@@ -60,7 +52,6 @@ function fuzzInitBlacklists()
                 "notification",      // general badness when spammed (bug 897367, bug 866653)
                 "strokeText",        // bug 943622
                 "strokeRect",        // bug 986902
-                "arc",               // bug 943587, bug 1187210
                 "isPointInStroke",   // bug 989669
                 "scale",             // bug 1017942
                 "quadraticCurveTo",  // bug 1017942
@@ -75,6 +66,8 @@ function fuzzInitBlacklists()
                 "preserve-3d",       // bug 1216832
                 "will-change",       // bug 1216832
                 "willChange",        // bug 1216832
+                "sideways",          // bug 1225586
+                "history",           // bug 1225637
             ]
         },
         {
@@ -87,8 +80,6 @@ function fuzzInitBlacklists()
                 "contentEditable",   // bug 718282, bug 771431
                 "designMode",        // bug 718282?
                 "execCommand",       // bug 718282?
-                "atom",              // bug 397206
-                "rss",               // bug 397206
                 "mask",              // bug 728632
                 "clip",              // bug 728632
                 "filter",            // bug 728632
@@ -116,11 +107,8 @@ function fuzzInitBlacklists()
                 "\\u",               // bug 963878
                 "rowspan",           // annoying timing-dependent leaks
                 "color",             // bug 991373
-                "fonts",             // bug 1187068
-                "exploreProperties", // bug 1187068
-                "open",              // bug 1187068
-                "requestFullScreen", // bug 1190669
                 "createShadowRoot",  // bug 1217531
+                "AudioContext",      // bug 1223691
             ]
         },
         {

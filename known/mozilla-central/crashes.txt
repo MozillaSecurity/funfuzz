@@ -10,6 +10,8 @@ sk_out_of_memory
 operator new
 # OOM with message "Trying to allocate an infallible array that's too big"
 nsTArrayInfallibleAllocator::SizeTooBig
+# OOM
+NS_ABORT_OOM
 
 # I am not interested in startup crashes.
 nsCommandLine::EnumerateHandlers
@@ -201,17 +203,9 @@ ScaledFontBase::CopyGlyphsToBuilder
 # Bug 897367
 [TMR] nsDocShell::EnsureContentViewer
 
-# Bug 897384
-InvalidateFrame
-
 # Bug 873260 (ASan opt)
 nsTransitionManager::StyleContextChanged
 mozilla::RestyleManager::ComputeStyleChangeFor
-
-# Bug 914501
-mozilla::ElementRestyler::RestyleContentChildren
-nsIFrame::IsFloating
-mozilla::layout::FrameChildListIterator::FrameChildListIterator(nsIFrame const*)
 
 # Bug 914536
 js::CloneScript
@@ -221,9 +215,6 @@ GrTextureStripAtlas::validate
 
 # Bug 931395
 mozilla::FrameLayerBuilder::BuildContainerLayerFor
-
-# Bug 926717
-TreeMatchContext::AssertHasAllStyleScopes
 
 # Bug 943550
 mozilla::gl::GLContext::raw_fTexImage2D
@@ -236,9 +227,6 @@ nsScanner::SetDocumentCharset
 
 # Bug 949893
 mozilla::dom::DOMProxyHandler::EnsureExpandoObject
-
-# Bug 949937
-mozilla::layers::TextureParent::RecvInit
 
 # Bug 975784
 mozilla::dom::MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode
@@ -253,12 +241,6 @@ nsContentIterator::NextNode
 # Bug 993570
 nsLayoutUtils::SurfaceFromElement
 
-# Bug 1000432
-mozilla::dom::WrapNewBindingObject<mozilla::dom::TextTrackList>
-mozilla::dom::WrapNewBindingObject<mozilla::dom::TextTrack>
-mozilla::dom::WrapNewBindingObjectHelper<nsRefPtr<mozilla::dom::TextTrackList>
-mozilla::dom::WrapNewBindingObjectHelper<nsRefPtr<mozilla::dom::TextTrack>
-
 # Pfft
 Crashed:: com.apple.audio.IOThread.client
 
@@ -272,10 +254,6 @@ mozilla::RestyleTracker::AddPendingRestyle
 
 # Bug 1072792
 mozilla::a11y::Accessible::BindToParent
-
-# Bug 1127697, bug 1133622
-mozilla::dom::HTMLMediaElement::EndSrcMediaStreamPlayback
-mozilla::dom::HTMLMediaElement::CheckProgress
 
 # Bug 1140125
 js::frontend::CompileScript
@@ -295,11 +273,33 @@ nsSVGEffects::InvalidateRenderingObservers
 # Bug 1074584
 mozilla::WebGLFramebuffer::FramebufferTexture2D
 
-# Bug 1183954
-nsStructuredCloneContainer::AddRef
+# Bug 1221332
+nsHTMLEditRules::GetNodesForOperation
 
-# Bug 1190036
-mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
+# Bug 1221852 - opt
+mozilla::dom::SharedWorkerBinding::get_port
+
+# Bug 1221852 - debug
+mozilla::dom::binding_detail::DoGetOrCreateDOMReflector<mozilla::dom::MessagePort
+
+# Bug 1222280
+nsContentUtils::IsImageSrcSetDisabled
+
+# Bug 1167752
+mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
+
+# Bug 1062770
+LateWriteObserver::Observe
+
+# Bug 1225003
+mozilla::WebAudioDecodeJob::SizeOfExcludingThis
+
+# Hit MOZ_CRASH(Shutdown too long, probably frozen, causing a crash.) at toolkit/components/terminator/nsTerminator.cpp:151
+# Intermittent / don't care
+mozilla::(anonymous namespace)::RunWatchdog
+
+# Bug 1225327
+mozilla::dom::MediaRecorder::Session::SizeOfExcludingThis
 
 
 #############################
@@ -314,14 +314,15 @@ mozilla::dom::DataTransferBinding::getFilesAndDirectories_promiseWrapper
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1212734 (Only with --unboxed-arrays)
-#js::UnboxedArrayObject::setInitializedLength
-
 # Bug 1216126
 js::jit::BaselineScript::icEntryFromPCOffset
 
-# Bug 1218065
-js::GetSrcNoteOffset
+# Bug 1221385
+js::jit::ExecutableAllocator::releasePoolPages
 
-# Bug 1218196
-js::jit::MBasicBlock::pop
+# Bug 1221747
+IonScriptCounts
+js::jit::CodeGenerator::maybeCreateScriptCounts
+
+# Bug 1222917
+array_length_setter

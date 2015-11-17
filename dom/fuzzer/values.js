@@ -185,7 +185,7 @@ var fuzzValues = {
     "foo/bar",
     "application/octet-stream",
     // Plugins
-    "application/x-shockwave-flash",
+    // "application/x-shockwave-flash",  // bug 1158406, bug 1210352
     "application/x-test", // Mozilla's test plugin
   ],
 

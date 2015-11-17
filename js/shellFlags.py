@@ -43,6 +43,13 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    # See bug 932517, which had landed to fix this issue. Keeping this around for archives:
+    #   Original breakage in m-c rev 269359 : https://hg.mozilla.org/mozilla-central/rev/a0ccab2a6e28
+    #   Fix in m-c rev 269896: https://hg.mozilla.org/mozilla-central/rev/3bb8446a6d8d
+    # Anything in-between involving let probably needs "-e 'version(185);'" to see if we can bypass breakage
+    # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
+    #     args.append("--execute='version(185);'")
+
     if shellSupportsFlag(shellPath, '--ion-sincos=on') and chance(.5):
         sincosValue = "on" if chance(0.5) else "off"
         args.append("--ion-sincos=" + sincosValue)  # --ion-sincos=[on|off] landed in bug 984018
@@ -67,10 +74,6 @@ def randomFlagSet(shellPath):
 
     if shellSupportsFlag(shellPath, '--no-incremental-gc') and chance(.1):
         args.append("--no-incremental-gc")  # --no-incremental-gc landed in bug 958492
-
-    # Disabled until bug 1212734 is fixed.
-    # if shellSupportsFlag(shellPath, '--unboxed-arrays') and chance(.2):
-    #     args.append("--unboxed-arrays")  # --unboxed-arrays landed in bug 1146597
 
     if shellSupportsFlag(shellPath, '--no-unboxed-objects') and chance(.2):
         args.append("--no-unboxed-objects")  # --no-unboxed-objects landed in bug 1162199

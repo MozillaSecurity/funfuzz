@@ -217,6 +217,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         "dumpObject = function() { };\n",
         "dumpStringRepresentation = function() { };\n",
         "evalInWorker = function() { };\n",
+        "getBacktrace = function() { };\n",
         "getLcovInfo = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "printProfilerEvents = function() { };\n",

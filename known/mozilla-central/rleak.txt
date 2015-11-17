@@ -17,6 +17,7 @@ SIZE medium. when known to leak, allowed to entrain unknown objects.
   LEAK nsNPAPIPluginInstance           # Java
   LEAK nsLocalFile                     # Intermittent, but frequent, at least in the range 2011-08-20 to 2011-09-14
   LEAK BackstagePass                   # Intermittent, but frequent (don't know what the root of the leak is -- idle service? timer?)
+  LEAK MediaMemoryTracker              # Bug 1224573
 
 SIZE tiny. objects that should never entrain others. (last group is also the default for unknown objects)
 

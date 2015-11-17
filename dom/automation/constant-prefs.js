@@ -10,9 +10,9 @@ user_pref("extensions.update.notifyUser", false);
 user_pref("extensions.installDistroAddons", false);
 user_pref("xpinstall.signatures.required", false);
 
-// Extend the time before slow script dialogs appear.
-user_pref("dom.max_chrome_script_run_time", 75);
-user_pref("dom.max_script_run_time", 60);
+// For slow scripts (both chrome and content), stop the script rather than bringing up a modal dialog.
+// The extra testing of the slow-script dialog is not worth the slowdown.
+user_pref("dom.always_stop_slow_scripts", true);
 
 // Set additional prefs for fuzzing.
 user_pref("browser.dom.window.dump.enabled", true);
@@ -92,6 +92,7 @@ user_pref("browser.snippets.enabled", false);
 user_pref("browser.snippets.firstrunHomepage.enabled", false);
 user_pref("browser.snippets.syncPromo.enabled", false);
 user_pref("general.useragent.updates.enabled", false);
+user_pref("media.gmp-manager.url.override", "http://127.0.0.1:6/dummy-gmp-manager.xml");
 
 // Prevent the fuzzer from accidentally contacting servers.
 //   Note: Since we are not actually running a proxy on port 6,
@@ -105,6 +106,7 @@ user_pref("general.useragent.updates.enabled", false);
 user_pref("network.proxy.share_proxy_settings", true);
 user_pref("network.proxy.type", 2);
 user_pref("network.proxy.autoconfig_url", "data:text/plain,function FindProxyForURL(url, host) { if (host == 'localhost' || host == '127.0.0.1') { return 'DIRECT'; } else { return 'PROXY 127.0.0.1:6'; } }");
+user_pref("network.proxy.use_direct_on_fail", false);
 
 // Prefs from Christoph (?)
 user_pref("network.jar.open-unsafe-types", true);
