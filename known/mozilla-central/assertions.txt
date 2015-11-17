@@ -2039,6 +2039,30 @@ Assertion failure: mSearchParams == aSearchParams,
 # Bug 1218799
 Assertion failure: PR_GetCurrentThread() == mOwningThread,
 
+# Bug 1225005
+Assertion failure: containingBlockWidth >= 0,
+Assertion failure: containingBlockHeight >= 0,
+
+# Bug 1225118
+ASSERTION: huh?: 'contentSize >= 0', file layout/generic/nsGridContainerFrame.cpp
+
+# Bug 1225125
+Assertion failure: aTarget (Don't create a gfxContext without a DrawTarget),
+
+# Bug 1225314
+ASSERTION: reflow state computed incorrect inline size: 'reflowState.ComputedISize() == size.ISize(wm) - reflowState.ComputedLogicalBorderPadding().IStartEnd(wm)', file layout/base/nsPresShell.cpp
+ASSERTION: non-root frame's desired size changed during an incremental reflow: '(target == rootFrame && size.BSize(wm) == NS_UNCONSTRAINEDSIZE) || (desiredSize.ISize(wm) == size.ISize(wm) && desiredSize.BSize(wm) == size.BSize(wm))', file layout/base/nsPresShell.cpp
+ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
+
+# Bug 1225365
+ASSERTION: shared StringBuffer in SizeOfIncludingThisMustBeUnshared: '!IsReadonly()', file xpcom/string/nsSubstring.cpp
+
+# Bug 1225368
+Assertion failure: !sz.IsFrozen(),
+
+# Bug 1225376
+Assertion failure: alignSelf != 6 && alignSelf != 7 (Grid's 'align-self' axis is never parallel to the container's inline axis, so these should've computed to 'start' already),
+
 
 ################################
 #                              #
