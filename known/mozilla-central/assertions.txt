@@ -1941,9 +1941,6 @@ ASSERTION: Should have state machine.: 'mDecoderStateMachine != nullptr', file d
 # Bug 1221418
 Assertion failure: mActorDestroyed,
 
-# Bug 1221421
-Assertion failure: this->is<T>(),
-
 # Bug 1221863
 Assertion failure: mCommonParams.metadata().name() == databaseName,
 
@@ -2117,9 +2114,6 @@ Assertion failure: base[size - 1] == 0,
 # Bug 1222675
 Assertion failure: result ([OOM] Is it really infallible?),
 Assertion failure: !unknownProperties(),
-
-# Bug 1222905
-Assertion failure: !isEmptyShape(),
 
 # Bug 1224710
 Assertion failure: aIndex < mLength,
