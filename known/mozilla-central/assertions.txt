@@ -2039,6 +2039,9 @@ Assertion failure: !sz.IsFrozen(),
 # Bug 1225376
 Assertion failure: alignSelf != 6 && alignSelf != 7 (Grid's 'align-self' axis is never parallel to the container's inline axis, so these should've computed to 'start' already),
 
+# Bug 1223655 (intermittent in both regression-testing and fuzzing) (comment 8 indicates they're on it)
+ASSERTION: Track not found: 'Error', file dom/media/MediaStreamGraph.cpp
+
 
 ################################
 #                              #
