@@ -527,8 +527,8 @@ ASSERTION: No document in Destroy()!: 'mDocument', file layout/base/nsDocumentVi
 ASSERTION: There must always be an XMost PO!: 'smallestPO', file layout/printing/nsPrintEngine.cpp
 
 # Bug 610952
-ASSERTION: aToIndex is out of range: 'aToIndex < mLength', file docshell/shistory/src/nsSHistory.cpp
-ASSERTION: aFromIndex is out of range: 'aFromIndex < mLength', file docshell/shistory/src/nsSHistory.cpp
+ASSERTION: aToIndex is out of range: 'aToIndex < mLength', file docshell/shistory/nsSHistory.cpp
+ASSERTION: aFromIndex is out of range: 'aFromIndex < mLength', file docshell/shistory/nsSHistory.cpp
 
 # Bug 611150
 ASSERTION: mParser should have been null'd out: '!mParser', file dom/html/nsHTMLDocument.cpp
@@ -620,8 +620,8 @@ ASSERTION: content sink not found!: 'mSink', file parser/htmlparser/src/nsExpatD
 
 # Bug 622214
 ASSERTION: Detaching editor when it's already detached.: '!mOSHE || !mOSHE->HasDetachedEditor()', file docshell/base/nsDocShell.cpp
-ASSERTION: We're going to overwrite an owning ref!: '!(aData && mEditorData)', file docshell/shistory/src/nsSHEntry.cpp
-ASSERTION: We're going to overwrite an owning ref!: '!(aData && mShared->mEditorData)', file docshell/shistory/src/nsSHEntry.cpp
+ASSERTION: We're going to overwrite an owning ref!: '!(aData && mEditorData)', file docshell/shistory/nsSHEntry.cpp
+ASSERTION: We're going to overwrite an owning ref!: '!(aData && mShared->mEditorData)', file docshell/shistory/nsSHEntry.cpp
 
 # Bug 622315
 ASSERTION: Entry added to loadgroup twice, don't do that: 'PL_DHASH_ENTRY_IS_FREE(entry)', file netwerk/base/nsLoadGroup.cpp
@@ -658,7 +658,7 @@ ASSERTION: Scroll area should be inside client rect: 'r.width >= 0', file layout
 ASSERTION: Scroll area should be inside client rect: 'r.height >= 0', file layout/generic/nsGfxScrollFrame.cpp
 
 # Bug 627650
-ASSERTION: SHEntry already contains viewer: '!aViewer || !mContentViewer', file docshell/shistory/src/nsSHEntry.cpp
+ASSERTION: SHEntry already contains viewer: '!aViewer || !mContentViewer', file docshell/shistory/nsSHEntry.cpp
 ASSERTION: User did not call nsIContentViewer::Destroy: '!mPresShell && !mPresContext', file layout/base/nsDocumentViewer.cpp
 
 # Bug 630786
@@ -684,7 +684,7 @@ ASSERTION: This is not supposed to fail!: 'Error', file js/xpconnect/src/XPCWrap
 ASSERTION: Prettyprint binding doesn't implement nsIObserver: 'binding', file dom/xml/nsXMLPrettyPrinter.cpp
 
 # Bug 645229, bug 186675
-ASSERTION: Adding a child where we already have a child? This may misbehave: 'Error', file docshell/shistory/src/nsSHEntry.cpp
+ASSERTION: Adding a child where we already have a child? This may misbehave: 'Error', file docshell/shistory/nsSHEntry.cpp
 
 # Bug 645405
 ASSERTION: Shouldn't have a paint event posted for this document: 'mBeforePaintTargets.IndexOf(aDocument) == mBeforePaintTargets.NoIndex', file layout/base/nsRefreshDriver.cpp
@@ -711,7 +711,7 @@ ASSERTION: nsDefaultURIFixup not thread-safe: '_mOwningThread.GetThread() == PR_
 ASSERTION: nsHttpChannelAuthProvider not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file netwerk/protocol/http/nsHttpChannelAuthProvider.cpp
 ASSERTION: nsLayoutHistoryState not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file layout/base/nsLayoutHistoryState.cpp
 ASSERTION: nsLoadGroup not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file netwerk/base/nsLoadGroup.cpp
-ASSERTION: nsSHEntry not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file docshell/shistory/src/nsSHEntry.cpp
+ASSERTION: nsSHEntry not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file docshell/shistory/nsSHEntry.cpp
 ASSERTION: nsSimpleURI not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file netwerk/base/nsSimpleURI.cpp
 ASSERTION: nsStandardURL not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file netwerk/base/nsStandardURL.cpp
 ASSERTION: nsURILoader not thread-safe: '_mOwningThread.GetThread() == PR_GetCurrentThread()', file uriloader/base/nsURILoader.cpp
@@ -758,7 +758,7 @@ ASSERTION: unexpected block frame: '!nsLayoutUtils::GetAsBlock(aFrame) || !aFram
 ASSERTION: GetOwner: 'Not Reached', file uriloader/exthandler/nsExternalProtocolHandler.cpp
 
 # Bug 682644
-ASSERTION: aIndex is out of range: 'aIndex < mLength', file docshell/shistory/src/nsSHistory.cpp
+ASSERTION: aIndex is out of range: 'aIndex < mLength', file docshell/shistory/nsSHistory.cpp
 
 # Bug 682646
 ASSERTION: mBufferSize and mAttrCount are expected to be the same.: 'mAttrCount == mBufferSize', file dom/base/nsMappedAttributes.cpp
