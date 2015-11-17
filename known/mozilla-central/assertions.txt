@@ -2042,6 +2042,9 @@ Assertion failure: alignSelf != 6 && alignSelf != 7 (Grid's 'align-self' axis is
 # Bug 1223655 (intermittent in both regression-testing and fuzzing) (comment 8 indicates they're on it)
 ASSERTION: Track not found: 'Error', file dom/media/MediaStreamGraph.cpp
 
+# Bug 1225643
+Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
+
 
 ################################
 #                              #
