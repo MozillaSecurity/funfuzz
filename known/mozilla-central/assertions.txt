@@ -639,7 +639,7 @@ ASSERTION: Shouldn't have any kids: 'GetChildCount() == 0', file dom/html/MediaD
 # Bug 622370
 ASSERTION: Must have a principal!: 'mOwner', file netwerk/protocol/wyciwyg/nsWyciwygChannel.cpp
 
-# Bug 623436
+# Bug 623436, bug 1225637
 ASSERTION: no SHEntry for a non-transient viewer?: 'NS_IsAboutBlank(mCurrentURI)', file docshell/base/nsDocShell.cpp
 
 # Bug 398103
@@ -683,7 +683,7 @@ ASSERTION: This is not supposed to fail!: 'Error', file js/xpconnect/src/XPCWrap
 # Bug 714566?
 ASSERTION: Prettyprint binding doesn't implement nsIObserver: 'binding', file dom/xml/nsXMLPrettyPrinter.cpp
 
-# Bug 645229, bug 186675
+# Bug 645229, bug 186675, bug 1225637
 ASSERTION: Adding a child where we already have a child? This may misbehave: 'Error', file docshell/shistory/nsSHEntry.cpp
 
 # Bug 645405
