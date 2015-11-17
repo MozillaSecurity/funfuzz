@@ -1938,6 +1938,9 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1223740 (skia canvas)
 : failed assertion "(int16_t)x == x"
 
+# Bug 1225381 (skia canvas)
+: failed assertion "n64 == n32"
+
 # Bug 1221370
 Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
 Assertion failure: mDecoderStateMachine (Must be called after Load().),
