@@ -216,9 +216,6 @@ GrTextureStripAtlas::validate
 # Bug 931395
 mozilla::FrameLayerBuilder::BuildContainerLayerFor
 
-# Bug 926717
-TreeMatchContext::AssertHasAllStyleScopes
-
 # Bug 943550
 mozilla::gl::GLContext::raw_fTexImage2D
 mozilla::gl::GLContext::fTexImage2D
@@ -285,24 +282,14 @@ mozilla::dom::SharedWorkerBinding::get_port
 # Bug 1221852 - debug
 mozilla::dom::binding_detail::DoGetOrCreateDOMReflector<mozilla::dom::MessagePort
 
-# Bug 1221855
-mozilla::dom::ScriptProcessorNodeEngine::SizeOfExcludingThis
-
 # Bug 1222280
 nsContentUtils::IsImageSrcSetDisabled
-
-# Bug 1223281
-nsSVGPathGeometryFrame::DidSetStyleContext
 
 # Bug 1167752
 mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
 
 # Bug 1062770
 LateWriteObserver::Observe
-
-# Bug 1223568
-# Hit MOZ_CRASH(Unexpected justify-content value)
-MainAxisPositionTracker::MainAxisPositionTracker
 
 # Bug 1225003
 mozilla::WebAudioDecodeJob::SizeOfExcludingThis
