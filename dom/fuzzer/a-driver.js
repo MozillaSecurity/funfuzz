@@ -251,10 +251,11 @@ function fuzzTryCommand(fun, note)
 {
   function fail()
   {
-    // In addition to uncatchable exceptions, this can happen because of:
+    // In addition to "uncatchable exception" bugs, this can happen because of:
     // * Something prevented clearTimeout from working (e.g. window.__proto__ = otherWindow)
     // * XHR (freezes scripts in some windows but not all)
     // * window.open (spins the event loop)
+    // * dom.always_stop_slow_scripts
     // So, no "FAILURE:".
     dumpln("Uncatchable exception from " + note + "!?");
     fuzzPriv.quitApplicationSoon();

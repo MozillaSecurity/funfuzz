@@ -28,7 +28,7 @@ intPrefs = {
     "accessibility.force_disabled":               lambda: random.choice([-1, 0, 1]),
     "gfx.hidpi.enabled":                          lambda: random.choice([0, 1, 2]),
     "image.mem.hard_limit_decoded_image_kb":      lambda: random.randrange(0, 66560),
-    "dom.max_script_run_time":                    lambda: random.choice([0, 5, 60, 60, 60, 60]),  # NB: constant-prefs.js also usually sets it to 60
+    "dom.max_script_run_time":                    lambda: random.choice([0, 5, 60]),
     "media.preload.default":                      lambda: random.randrange(0, 4),  # empty, none, metadata, auto
     "media.preload.auto":                         lambda: random.randrange(0, 4),  # undefined, none, metadata, enough
 }

@@ -10,9 +10,9 @@ user_pref("extensions.update.notifyUser", false);
 user_pref("extensions.installDistroAddons", false);
 user_pref("xpinstall.signatures.required", false);
 
-// Extend the time before slow script dialogs appear.
-user_pref("dom.max_chrome_script_run_time", 75);
-user_pref("dom.max_script_run_time", 60);
+// For slow scripts (both chrome and content), stop the script rather than bringing up a modal dialog.
+// The extra testing of the slow-script dialog is not worth the slowdown.
+user_pref("dom.always_stop_slow_scripts", true);
 
 // Set additional prefs for fuzzing.
 user_pref("browser.dom.window.dump.enabled", true);
