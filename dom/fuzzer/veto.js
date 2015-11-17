@@ -66,6 +66,7 @@ function fuzzInitBlacklists()
                 "preserve-3d",       // bug 1216832
                 "will-change",       // bug 1216832
                 "willChange",        // bug 1216832
+                "sideways",          // bug 1225586
             ]
         },
         {
