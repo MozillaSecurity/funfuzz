@@ -106,6 +106,7 @@ user_pref("media.gmp-manager.url.override", "http://127.0.0.1:6/dummy-gmp-manage
 user_pref("network.proxy.share_proxy_settings", true);
 user_pref("network.proxy.type", 2);
 user_pref("network.proxy.autoconfig_url", "data:text/plain,function FindProxyForURL(url, host) { if (host == 'localhost' || host == '127.0.0.1') { return 'DIRECT'; } else { return 'PROXY 127.0.0.1:6'; } }");
+user_pref("network.proxy.use_direct_on_fail", false);
 
 // Prefs from Christoph (?)
 user_pref("network.jar.open-unsafe-types", true);
