@@ -170,12 +170,12 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
     issues = []
     summary = ""
     if mismatchErr:
-        issues.append("[compareJIT.py] Mismatch on stderr")
-        summary += "[compareJIT.py] Mismatch on stderr\n"
+        issues.append("[Non-crash bug] Mismatch on stderr")
+        summary += "[Non-crash bug] Mismatch on stderr\n"
         summary += diffFiles(prefix0 + "-err.txt", prefix + "-err.txt")
     if mismatchOut:
-        issues.append("[compareJIT.py] Mismatch on stdout")
-        summary += "[compareJIT.py] Mismatch on stdout\n"
+        issues.append("[Non-crash bug] Mismatch on stdout")
+        summary += "[Non-crash bug] Mismatch on stdout\n"
         summary += diffFiles(prefix0 + "-out.txt", prefix + "-out.txt")
     return (summary, issues)
 

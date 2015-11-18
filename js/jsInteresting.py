@@ -107,7 +107,7 @@ class ShellResult:
         # Copy non-crash issues to where FuzzManager's "AssertionHelper.py" can see it.
         if lev != JS_FINE:
             for issue in issues:
-                err.append("[jsInteresting.py] " + issue)
+                err.append("[Non-crash bug] " + issue)
 
         # Finally, make a CrashInfo object and parse stack traces for asan/crash/assertion bugs
         crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)

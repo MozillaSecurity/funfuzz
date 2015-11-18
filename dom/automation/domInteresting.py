@@ -51,7 +51,7 @@ from FTB.ProgramConfiguration import ProgramConfiguration
 
 close_fds = sys.platform != 'win32'
 
-DOMI_MARKER = "[domInteresting.py] "  # For FuzzManager/FTB/AssertionHelper.py
+DOMI_MARKER = "[Non-crash bug] "  # For FuzzManager/FTB/AssertionHelper.py
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
