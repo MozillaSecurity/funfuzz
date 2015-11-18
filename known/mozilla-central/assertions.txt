@@ -1351,7 +1351,6 @@ ASSERTION: aAfter is not our child: '!aAfter || (aAfter->Manager() == Manager() 
 ASSERTION: this type of frame can't have overflow containers: '(aProperty != nsContainerFrame::OverflowContainersProperty() && aProperty != nsContainerFrame::ExcessOverflowContainersProperty()) || IsFrameOfType(nsIFrame::eCanContainOverflowContainers)', file layout/generic/nsContainerFrame.cpp
 ABORT: unexpected frame type: file layout/base/nsCSSFrameConstructor.cpp
 # Bug 856235 'x'
-# (Also note typo in assertion message)
 Assertion failure: IsFrameOfType(nsIFrame::eCanContainOverflowContainers) || !(props->Get(this, nsContainerFrame::OverflowContainersProperty()) || props->Get(this, nsContainerFrame::ExcessOverflowContainersProperty())) (this type of frame should't have overflow containers),
 
 # Bug 856269
