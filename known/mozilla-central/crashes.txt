@@ -276,12 +276,6 @@ mozilla::WebGLFramebuffer::FramebufferTexture2D
 # Bug 1221332
 nsHTMLEditRules::GetNodesForOperation
 
-# Bug 1221852 - opt
-mozilla::dom::SharedWorkerBinding::get_port
-
-# Bug 1221852 - debug
-mozilla::dom::binding_detail::DoGetOrCreateDOMReflector<mozilla::dom::MessagePort
-
 # Bug 1222280
 nsContentUtils::IsImageSrcSetDisabled
 
@@ -290,9 +284,6 @@ mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
 
 # Bug 1062770
 LateWriteObserver::Observe
-
-# Bug 1225003
-mozilla::WebAudioDecodeJob::SizeOfExcludingThis
 
 # Hit MOZ_CRASH(Shutdown too long, probably frozen, causing a crash.) at toolkit/components/terminator/nsTerminator.cpp:151
 # Intermittent / don't care

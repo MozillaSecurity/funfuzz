@@ -261,8 +261,6 @@ ASSERTION: A frame but no DOM element!?: 'requestingElement', file docshell/base
 ASSERTION: anonymous block with no children?: 'frameForArea', file layout/base/nsCSSRendering.cpp
 ASSERTION: anonymous block with no children?: 'frameForArea', file layout/generic/nsFrame.cpp
 
-# Bug 576927
-ABORT: negative lengths and percents should be rejected by parser: 'sizeValue->IsCalcUnit()', file layout/style/nsRuleNode.cpp
 # Bug 887573
 ASSERTION: FindNextLargerFontSize failed: '*aSize >= parentSize', file layout/style/nsRuleNode.cpp
 
@@ -1802,9 +1800,6 @@ Assertion failure: applyState.mGaps.mHandled == applyState.mGaps.mCount (Unproce
 # Bug 1153636
 Assertion failure: (NS_IsMainThread() && aEventMessage && aTypeAtom) || (!NS_IsMainThread() && aEventMessage && !aTypeString.IsEmpty()) || aAllEvents (Missing type),
 
-# Bug 1153695
-Assertion failure: !nif || (!mFloats.ContainsFrame(nif) && !mFrames.ContainsFrame(nif)),
-
 # Bug 1153696
 Only inner-<svg>/<use> is expected to have mRect set
 
@@ -1931,11 +1926,10 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1225381 (skia canvas)
 : failed assertion "n64 == n32"
 
-# Bug 1221370
-Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
-Assertion failure: mDecoderStateMachine (Must be called after Load().),
 # Bug 1221881
 ASSERTION: Should have state machine.: 'mDecoderStateMachine != nullptr', file dom/media/MediaDecoder.cpp
+Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
+Assertion failure: mDecoderStateMachine (Must be called after Load().),
 
 # Bug 1221418
 Assertion failure: mActorDestroyed,
@@ -1958,16 +1952,6 @@ ASSERTION: Incorrectly ignoring blocking!: 'mStartBlocking == GraphImpl()->mStat
 # Bug 1221904
 ASSERTION: Invalid offset: 'uint32_t(aOffset) <= mSkipChars->mCharCount', file gfx/thebes/gfxSkipChars.cpp
 ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterator(iter).ConvertOriginalToSkipped(offset + length) <= mTextRun->GetLength()', file layout/generic/nsTextFrame.cpp
-
-# Bug 1222202
-ASSERTION: QueryInterface needed
-
-# Bug 1223282
-ASSERTION: The computed caption margin is auto?: 'NS_AUTOMARGIN != aCaptionMargin.IStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.BStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.BEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
-# Bug 1223282 'inner'
-ASSERTION: The computed inner margin is auto?: 'NS_AUTOMARGIN != aInnerMargin.IStart(aWM) && NS_AUTOMARGIN != aInnerMargin.IEnd(aWM) && NS_AUTOMARGIN != aInnerMargin.BStart(aWM) && NS_AUTOMARGIN != aInnerMargin.BEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
-# Bug 1223282 ?
-ASSERTION: The computed caption margin is auto?: 'NS_AUTOMARGIN != aCaptionMargin.IStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.IEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
 
 # Bug 1223285
 ASSERTION: After-spacing inside a ligature!: 'i - 1 <= aStart || aSpacing[i - 1 - aStart].mAfter == 0', file gfx/thebes/gfxTextRun.cpp
@@ -2018,19 +2002,10 @@ Assertion failure: PR_GetCurrentThread() == mOwningThread,
 Assertion failure: containingBlockWidth >= 0,
 Assertion failure: containingBlockHeight >= 0,
 
-# Bug 1225118
-ASSERTION: huh?: 'contentSize >= 0', file layout/generic/nsGridContainerFrame.cpp
-
-# Bug 1225125
-Assertion failure: aTarget (Don't create a gfxContext without a DrawTarget),
-
 # Bug 1225314
 ASSERTION: reflow state computed incorrect inline size: 'reflowState.ComputedISize() == size.ISize(wm) - reflowState.ComputedLogicalBorderPadding().IStartEnd(wm)', file layout/base/nsPresShell.cpp
 ASSERTION: non-root frame's desired size changed during an incremental reflow: '(target == rootFrame && size.BSize(wm) == NS_UNCONSTRAINEDSIZE) || (desiredSize.ISize(wm) == size.ISize(wm) && desiredSize.BSize(wm) == size.BSize(wm))', file layout/base/nsPresShell.cpp
 ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
-
-# Bug 1225365
-ASSERTION: shared StringBuffer in SizeOfIncludingThisMustBeUnshared: '!IsReadonly()', file xpcom/string/nsSubstring.cpp
 
 # Bug 1225368
 Assertion failure: !sz.IsFrozen(),
