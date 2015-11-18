@@ -130,11 +130,7 @@ def main():
     options = parseOpts()
 
     collector = createCollector.createCollector("DOMFuzz" if options.testType == 'dom' else "jsfunfuzz")
-
-    # XXX temporarily using refreshFromZip() instead of refresh()
-    collector.refreshFromZip("/Users/jruderman/FuzzManager/server/files/signatures.zip")
-
-    return
+    refreshSignatures(collector)
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
     print options.tempDir
@@ -193,6 +189,14 @@ def printMachineInfo():
         import resource
         print "Corefile size (soft limit, hard limit) is: " + \
               repr(resource.getrlimit(resource.RLIMIT_CORE))
+
+
+def refreshSignatures(collector):
+    if collector.serverHost == "127.0.0.1":
+        # The test server does not serve files
+        collector.refreshFromZip(os.path.expanduser("~/FuzzManager/server/files/signatures.zip"))
+    else:
+        collector.refresh()
 
 
 def ensureBuild(options):
