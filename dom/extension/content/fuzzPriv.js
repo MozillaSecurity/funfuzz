@@ -263,7 +263,6 @@ function setZoomLevel(window)
                        .getInterface(Components.interfaces.nsIWebNavigation)
                        .QueryInterface(Components.interfaces.nsIDocShell)
                        .contentViewer
-                       .QueryInterface(Components.interfaces.nsIMarkupDocumentViewer);
 
     if (textOrFull == "text")
       viewer.textZoom = +factor;
