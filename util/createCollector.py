@@ -1,6 +1,6 @@
 import os
 import sys
-import subprocesses
+
 
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,13 +14,7 @@ from Collector.Collector import Collector
 
 def createCollector(tool):
     assert tool == "DOMFuzz" or tool == "jsfunfuzz"
-
-    sigCacheDir = os.path.join(subprocesses.normExpUserPath("~"), "fuzzsigcache")
-    if not os.path.exists(sigCacheDir):
-        os.mkdir(sigCacheDir)
-
-    collector = Collector(tool=tool, sigCacheDir=sigCacheDir)
-
+    collector = Collector(tool=tool)
     return collector
 
 
