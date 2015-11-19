@@ -985,9 +985,6 @@ ASSERTION: frame should be clean when getting special height reflow: '!mFlags.mS
 # I don't even (32-bit Linux only, involves font inflation, not reproducible)
 ASSERTION: somebody should have checked for screen width change and triggered a reflow: 'Not Reached', file layout/base/nsPresContext.cpp
 
-# Bug 748426
-Assertion failure: nelements <=
-
 # Bug 757413
 ASSERTION: null parameters passed in: 'nullptr != aFrame && nullptr != aState', file layout/base/nsFrameManager.cpp
 
