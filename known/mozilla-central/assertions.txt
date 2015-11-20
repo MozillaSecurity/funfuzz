@@ -2100,3 +2100,6 @@ Assertion failure: calleeScript->hasBaselineScript(),
 
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
+
+# Bug 1226445
+Assertion failure: framePushed_ >= uint32_t(-value),
