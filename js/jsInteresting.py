@@ -90,7 +90,7 @@ class ShellResult:
         elif runinfo.sta == timedRun.CRASHED:
             sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True)
             with open(logPrefix + "-crash.txt") as f:
-                auxCrashData = f.readlines()
+                auxCrashData = [line.strip() for line in f.readlines()]
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
