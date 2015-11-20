@@ -255,9 +255,6 @@ mozilla::RestyleTracker::AddPendingRestyle
 # Bug 1072792
 mozilla::a11y::Accessible::BindToParent
 
-# Bug 1140125
-js::frontend::CompileScript
-
 # Bug 1140251
 nsINode::IsEditableInternal
 
