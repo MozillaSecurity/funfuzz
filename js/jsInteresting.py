@@ -283,13 +283,14 @@ def main():
     tempPrefix = "m"
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
     print res.lev
-    if res.lev >= options.minimumInterestingLevel and options.submit:
-        testcaseFilename = options.jsengineWithArgs[-1]
-        print "Submitting " + testcaseFilename
-        quality = 0
-        options.collector.submit(res.crashInfo, testcaseFilename, quality)
-    else:
-        print "Not submitting (not interesting)"
+    if options.submit:
+        if res.lev >= options.minimumInterestingLevel:
+            testcaseFilename = options.jsengineWithArgs[-1]
+            print "Submitting " + testcaseFilename
+            quality = 0
+            options.collector.submit(res.crashInfo, testcaseFilename, quality)
+        else:
+            print "Not submitting (not interesting)"
 
 
 if __name__ == "__main__":
