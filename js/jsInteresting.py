@@ -19,6 +19,7 @@ sys.path.append(p3)
 import subprocesses as sps
 import createCollector
 import fileManipulation
+import lithOps
 
 # From FuzzManager (in sys.path thanks to import createCollector above)
 import FTB.Signatures.CrashInfo as CrashInfo
@@ -236,6 +237,10 @@ def parseOptions(args):
                       action="store_true", dest="valgrind",
                       default=False,
                       help="use valgrind with a reasonable set of options")
+    parser.add_option("--submit",
+                      action="store_true", dest="submit",
+                      default=False,
+                      help="submit to fuzzmanager (if interesting)")
     parser.add_option("--minlevel",
                       type="int", dest="minimumInterestingLevel",
                       default=JS_FINE + 1,
@@ -279,5 +284,14 @@ def main():
     tempPrefix = "m"
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
     print res.lev
+    if res.lev >= options.minimumInterestingLevel and options.submit:
+        testcaseFilename = options.jsengineWithArgs[-1]
+        print "Submitting " + testcaseFilename
+        quality = 0
+        options.collector.submit(res.crashInfo, testcaseFilename, quality)
+    else:
+        print "Not submitting (not interesting)"
+
+
 if __name__ == "__main__":
     main()
