@@ -2063,9 +2063,6 @@ Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) ||
 # Bug 1212389
 Assertion failure: result ([OOM] Is it really infallible?),
 
-# Bug 1216126
-Assertion failure: analysis().usesScopeChain(),
-
 # Bug 1216599
 Assertion failure: p,
 
