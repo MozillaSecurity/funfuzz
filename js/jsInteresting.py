@@ -58,7 +58,7 @@ class ShellResult:
     def __init__(self, options, runthis, logPrefix, inCompareJIT):
         # This relies on the shell being a local one from compileShell.py:
         pc = ProgramConfiguration.fromBinary(runthis[0])
-        pc.addProgramArguments(runthis[1:])
+        pc.addProgramArguments(runthis[1:-1])
 
         if options.valgrind:
             runthis = (
