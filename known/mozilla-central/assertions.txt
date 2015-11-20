@@ -2034,9 +2034,6 @@ Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
 # Bug 1108413 (Only with --ion-sink=on)
 #Assertion failure: isLowered(),
 
-# Bug 1118536
-Assertion failure: !cx->isExceptionPending(),
-
 # Bug 1122993
 Assertion failure: parent->isNative(),
 

@@ -261,9 +261,6 @@ nsINode::IsEditableInternal
 # Bug 1140268
 nsHTMLReflowState::InitConstraints
 
-# Bug 1118536
-js::GlobalObject::new_
-
 # Bug 1156581
 nsSVGEffects::InvalidateRenderingObservers
 
