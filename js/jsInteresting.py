@@ -19,7 +19,6 @@ sys.path.append(p3)
 import subprocesses as sps
 import createCollector
 import fileManipulation
-import lithOps
 
 # From FuzzManager (in sys.path thanks to import createCollector above)
 import FTB.Signatures.CrashInfo as CrashInfo
