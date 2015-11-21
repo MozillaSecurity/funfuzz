@@ -2089,3 +2089,6 @@ Assertion failure: framePushed_ >= uint32_t(-value),
 
 # Bug 1226888
 Assertion failure: bufferVal.has(this, ValueEdge(vp)) || !ValueEdge(vp).maybeInRememberedSet(nursery_),
+
+# Bug 1226896
+Assertion failure: !cx->isExceptionPending(),
