@@ -2049,10 +2049,6 @@ Assertion failure: data.s.payload.why == why,
 # Bug 1184389
 Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
 
-# Bug 1197604 (Probably fixed)
-#Assertion failure: !frame_->isHandlingException(),
-#Assertion failure: hasScript(),
-
 # Bug 1212389
 Assertion failure: result ([OOM] Is it really infallible?),
 
