@@ -13,8 +13,7 @@ var fuzzerChromeCode = (function() {
   {
     switch(rnd(50)) {
     case 4:
-      //return "fuzzPriv.zoom(\"text\", " + (0.1 * (rnd(100) + 1)) + ");"; // bug 576927
-      return [];
+      return "fuzzPriv.zoom(\"text\", " + (0.1 * (rnd(100) + 1)) + ");";
     case 5:
       return "fuzzPriv.zoom(\"full\", " + (0.1 * (rnd(100) + 1)) + ");";
     case 6:

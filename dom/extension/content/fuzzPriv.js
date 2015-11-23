@@ -95,6 +95,7 @@ function makeDOMFuzzHelper(aWindow) {
       trustedKeyEvent: trustedKeyEvent(aWindow),
       callDrawWindow: callDrawWindow(aWindow),
       enableAccessibility: enableAccessibility.bind(this),
+      zoom: setZoomLevel(aWindow),
   };
 
   var testingFunctions = Components.utils.getJSTestingFunctions();
@@ -255,7 +256,6 @@ function comparePixels(aWindow)
   };
 }
 
-/*
 function setZoomLevel(window)
 {
   return function setZoomLevelInner(textOrFull, factor) {
@@ -263,7 +263,6 @@ function setZoomLevel(window)
                        .getInterface(Components.interfaces.nsIWebNavigation)
                        .QueryInterface(Components.interfaces.nsIDocShell)
                        .contentViewer
-                       .QueryInterface(Components.interfaces.nsIMarkupDocumentViewer);
 
     if (textOrFull == "text")
       viewer.textZoom = +factor;
@@ -271,7 +270,6 @@ function setZoomLevel(window)
       viewer.fullZoom = +factor;
   }
 }
-*/
 
 function safeResizeTo(aWindow)
 {

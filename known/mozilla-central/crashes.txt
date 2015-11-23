@@ -255,17 +255,11 @@ mozilla::RestyleTracker::AddPendingRestyle
 # Bug 1072792
 mozilla::a11y::Accessible::BindToParent
 
-# Bug 1140125
-js::frontend::CompileScript
-
 # Bug 1140251
 nsINode::IsEditableInternal
 
 # Bug 1140268
 nsHTMLReflowState::InitConstraints
-
-# Bug 1118536
-js::GlobalObject::new_
 
 # Bug 1156581
 nsSVGEffects::InvalidateRenderingObservers
@@ -276,12 +270,6 @@ mozilla::WebGLFramebuffer::FramebufferTexture2D
 # Bug 1221332
 nsHTMLEditRules::GetNodesForOperation
 
-# Bug 1221852 - opt
-mozilla::dom::SharedWorkerBinding::get_port
-
-# Bug 1221852 - debug
-mozilla::dom::binding_detail::DoGetOrCreateDOMReflector<mozilla::dom::MessagePort
-
 # Bug 1222280
 nsContentUtils::IsImageSrcSetDisabled
 
@@ -290,9 +278,6 @@ mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
 
 # Bug 1062770
 LateWriteObserver::Observe
-
-# Bug 1225003
-mozilla::WebAudioDecodeJob::SizeOfExcludingThis
 
 # Hit MOZ_CRASH(Shutdown too long, probably frozen, causing a crash.) at toolkit/components/terminator/nsTerminator.cpp:151
 # Intermittent / don't care
@@ -314,9 +299,6 @@ mozilla::dom::MediaRecorder::Session::SizeOfExcludingThis
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1216126
-js::jit::BaselineScript::icEntryFromPCOffset
-
 # Bug 1221385
 js::jit::ExecutableAllocator::releasePoolPages
 
@@ -324,5 +306,7 @@ js::jit::ExecutableAllocator::releasePoolPages
 IonScriptCounts
 js::jit::CodeGenerator::maybeCreateScriptCounts
 
-# Bug 1222917
-array_length_setter
+# Bug 1226445
+js::jit::JitStubFrameLayout::maybeStubPtr
+js::jit::CommonFrameLayout::prevFrameLocalSize
+js::jit::RecompileOnStackBaselineScriptsForDebug

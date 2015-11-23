@@ -583,7 +583,7 @@ var fuzzerRandomClasses = (function() {
         } else {
           var cssText = randomStatement();
           var holder = (rnd(5) ? "null" : Things.instance("Element"));
-          var scoped = (rnd(300) === 0); // infrequent: bug 926717
+          var scoped = (rnd(5) === 0);
           return "fuzzerRandomClasses.addSheet(" + slot + ", " + simpleSource(cssText) + ", " + holder + ", " + scoped + ");";
         }
 

@@ -261,8 +261,6 @@ ASSERTION: A frame but no DOM element!?: 'requestingElement', file docshell/base
 ASSERTION: anonymous block with no children?: 'frameForArea', file layout/base/nsCSSRendering.cpp
 ASSERTION: anonymous block with no children?: 'frameForArea', file layout/generic/nsFrame.cpp
 
-# Bug 576927
-ABORT: negative lengths and percents should be rejected by parser: 'sizeValue->IsCalcUnit()', file layout/style/nsRuleNode.cpp
 # Bug 887573
 ASSERTION: FindNextLargerFontSize failed: '*aSize >= parentSize', file layout/style/nsRuleNode.cpp
 
@@ -987,9 +985,6 @@ ASSERTION: frame should be clean when getting special height reflow: '!mFlags.mS
 # I don't even (32-bit Linux only, involves font inflation, not reproducible)
 ASSERTION: somebody should have checked for screen width change and triggered a reflow: 'Not Reached', file layout/base/nsPresContext.cpp
 
-# Bug 748426
-Assertion failure: nelements <=
-
 # Bug 757413
 ASSERTION: null parameters passed in: 'nullptr != aFrame && nullptr != aState', file layout/base/nsFrameManager.cpp
 
@@ -1351,7 +1346,6 @@ ASSERTION: aAfter is not our child: '!aAfter || (aAfter->Manager() == Manager() 
 ASSERTION: this type of frame can't have overflow containers: '(aProperty != nsContainerFrame::OverflowContainersProperty() && aProperty != nsContainerFrame::ExcessOverflowContainersProperty()) || IsFrameOfType(nsIFrame::eCanContainOverflowContainers)', file layout/generic/nsContainerFrame.cpp
 ABORT: unexpected frame type: file layout/base/nsCSSFrameConstructor.cpp
 # Bug 856235 'x'
-# (Also note typo in assertion message)
 Assertion failure: IsFrameOfType(nsIFrame::eCanContainOverflowContainers) || !(props->Get(this, nsContainerFrame::OverflowContainersProperty()) || props->Get(this, nsContainerFrame::ExcessOverflowContainersProperty())) (this type of frame should't have overflow containers),
 
 # Bug 856269
@@ -1803,9 +1797,6 @@ Assertion failure: applyState.mGaps.mHandled == applyState.mGaps.mCount (Unproce
 # Bug 1153636
 Assertion failure: (NS_IsMainThread() && aEventMessage && aTypeAtom) || (!NS_IsMainThread() && aEventMessage && !aTypeString.IsEmpty()) || aAllEvents (Missing type),
 
-# Bug 1153695
-Assertion failure: !nif || (!mFloats.ContainsFrame(nif) && !mFrames.ContainsFrame(nif)),
-
 # Bug 1153696
 Only inner-<svg>/<use> is expected to have mRect set
 
@@ -1932,11 +1923,10 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1225381 (skia canvas)
 : failed assertion "n64 == n32"
 
-# Bug 1221370
-Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
-Assertion failure: mDecoderStateMachine (Must be called after Load().),
 # Bug 1221881
 ASSERTION: Should have state machine.: 'mDecoderStateMachine != nullptr', file dom/media/MediaDecoder.cpp
+Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
+Assertion failure: mDecoderStateMachine (Must be called after Load().),
 
 # Bug 1221418
 Assertion failure: mActorDestroyed,
@@ -1959,16 +1949,6 @@ ASSERTION: Incorrectly ignoring blocking!: 'mStartBlocking == GraphImpl()->mStat
 # Bug 1221904
 ASSERTION: Invalid offset: 'uint32_t(aOffset) <= mSkipChars->mCharCount', file gfx/thebes/gfxSkipChars.cpp
 ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterator(iter).ConvertOriginalToSkipped(offset + length) <= mTextRun->GetLength()', file layout/generic/nsTextFrame.cpp
-
-# Bug 1222202
-ASSERTION: QueryInterface needed
-
-# Bug 1223282
-ASSERTION: The computed caption margin is auto?: 'NS_AUTOMARGIN != aCaptionMargin.IStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.BStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.BEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
-# Bug 1223282 'inner'
-ASSERTION: The computed inner margin is auto?: 'NS_AUTOMARGIN != aInnerMargin.IStart(aWM) && NS_AUTOMARGIN != aInnerMargin.IEnd(aWM) && NS_AUTOMARGIN != aInnerMargin.BStart(aWM) && NS_AUTOMARGIN != aInnerMargin.BEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
-# Bug 1223282 ?
-ASSERTION: The computed caption margin is auto?: 'NS_AUTOMARGIN != aCaptionMargin.IStart(aWM) && NS_AUTOMARGIN != aCaptionMargin.IEnd(aWM)', file layout/tables/nsTableOuterFrame.cpp
 
 # Bug 1223285
 ASSERTION: After-spacing inside a ligature!: 'i - 1 <= aStart || aSpacing[i - 1 - aStart].mAfter == 0', file gfx/thebes/gfxTextRun.cpp
@@ -2019,19 +1999,10 @@ Assertion failure: PR_GetCurrentThread() == mOwningThread,
 Assertion failure: containingBlockWidth >= 0,
 Assertion failure: containingBlockHeight >= 0,
 
-# Bug 1225118
-ASSERTION: huh?: 'contentSize >= 0', file layout/generic/nsGridContainerFrame.cpp
-
-# Bug 1225125
-Assertion failure: aTarget (Don't create a gfxContext without a DrawTarget),
-
 # Bug 1225314
 ASSERTION: reflow state computed incorrect inline size: 'reflowState.ComputedISize() == size.ISize(wm) - reflowState.ComputedLogicalBorderPadding().IStartEnd(wm)', file layout/base/nsPresShell.cpp
 ASSERTION: non-root frame's desired size changed during an incremental reflow: '(target == rootFrame && size.BSize(wm) == NS_UNCONSTRAINEDSIZE) || (desiredSize.ISize(wm) == size.ISize(wm) && desiredSize.BSize(wm) == size.BSize(wm))', file layout/base/nsPresShell.cpp
 ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
-
-# Bug 1225365
-ASSERTION: shared StringBuffer in SizeOfIncludingThisMustBeUnshared: '!IsReadonly()', file xpcom/string/nsSubstring.cpp
 
 # Bug 1225368
 Assertion failure: !sz.IsFrozen(),
@@ -2060,15 +2031,8 @@ Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
 ################################
 
 
-# Bug 1106543, bug 1140125
-Assertion failure: !cx->asJSContext()->isExceptionPending(),
-Assertion failure: !parser->context->asJSContext()->isExceptionPending(),
-
 # Bug 1108413 (Only with --ion-sink=on)
 #Assertion failure: isLowered(),
-
-# Bug 1118536
-Assertion failure: !cx->isExceptionPending(),
 
 # Bug 1122993
 Assertion failure: parent->isNative(),
@@ -2085,24 +2049,14 @@ Assertion failure: data.s.payload.why == why,
 # Bug 1184389
 Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
 
-# Bug 1197604 (Probably fixed)
-#Assertion failure: !frame_->isHandlingException(),
-#Assertion failure: hasScript(),
-
 # Bug 1212389
 Assertion failure: result ([OOM] Is it really infallible?),
-
-# Bug 1216126
-Assertion failure: analysis().usesScopeChain(),
 
 # Bug 1216599
 Assertion failure: p,
 
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
-
-# Bug 1219883
-Assertion failure: !constant(),
 
 # Bug 1221361
 Assertion failure: HasMOVWT(),
@@ -2129,3 +2083,12 @@ Assertion failure: calleeScript->hasBaselineScript(),
 
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
+
+# Bug 1226445
+Assertion failure: framePushed_ >= uint32_t(-value),
+
+# Bug 1226888
+Assertion failure: bufferVal.has(this, ValueEdge(vp)) || !ValueEdge(vp).maybeInRememberedSet(nursery_),
+
+# Bug 1226896
+Assertion failure: !cx->isExceptionPending(),

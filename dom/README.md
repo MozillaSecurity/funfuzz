@@ -15,6 +15,12 @@ When fuzzing a browser, you may want to disable GUI crash dialogs. You'll still 
 defaults write com.apple.CrashReporter DialogType server
 ```
 
+To allow `atos` to work:
+
+```
+sudo /usr/sbin/DevToolsSecurity --enable
+```
+
 ## Running
 
 Running `./loopdomfuzz.py build` will:
