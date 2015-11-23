@@ -306,9 +306,6 @@ js::jit::ExecutableAllocator::releasePoolPages
 IonScriptCounts
 js::jit::CodeGenerator::maybeCreateScriptCounts
 
-# Bug 1222917
-array_length_setter
-
 # Bug 1226445
 js::jit::JitStubFrameLayout::maybeStubPtr
 js::jit::CommonFrameLayout::prevFrameLocalSize
