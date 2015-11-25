@@ -1664,7 +1664,7 @@ ASSERTION: Different attrs at same position: '!attrName->Equals(attr2->NodeInfo(
 ABORT: woke up from delay w/o being delayed?: 'mConnecting == CONNECTING_DELAYED', file netwerk/protocol/websocket/WebSocketChannel.cpp
 
 # Bug 1017685
-Mozilla has caught an Obj-C exception [NSInvalidArgumentException: *** -[_NSConcreteUserNotification setUserInfo:]. UserInfo too big. Encoded data greater than 1k.]
+Mozilla has caught an Obj-C exception [NSInvalidArgumentException: *** -[_NSConcreteUserNotification setUserInfo:]. UserInfo too big. Encoded data greater than
 
 # Bug 1018394
 Assertion failure: mExtraForgetSkippableCalls == 0 (Forget to reset extra forget skippable calls?),
