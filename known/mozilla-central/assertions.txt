@@ -2068,27 +2068,9 @@ Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().last
 Assertion failure: m_refCount == 1,
 Assertion failure: jrt_->mutatingBackedgeList_,
 
-# Bug 1221747
-Assertion failure: base[size - 1] == 0,
-
 # Bug 1222675
 Assertion failure: result ([OOM] Is it really infallible?),
 Assertion failure: !unknownProperties(),
 
-# Bug 1224710
-Assertion failure: aIndex < mLength,
-
-# Bug 1224883
-Assertion failure: calleeScript->hasBaselineScript(),
-
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
-
-# Bug 1226445
-Assertion failure: framePushed_ >= uint32_t(-value),
-
-# Bug 1226888
-Assertion failure: bufferVal.has(this, ValueEdge(vp)) || !ValueEdge(vp).maybeInRememberedSet(nursery_),
-
-# Bug 1226896
-Assertion failure: !cx->isExceptionPending(),

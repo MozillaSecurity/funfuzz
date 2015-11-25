@@ -301,12 +301,3 @@ mozilla::dom::MediaRecorder::Session::SizeOfExcludingThis
 
 # Bug 1221385
 js::jit::ExecutableAllocator::releasePoolPages
-
-# Bug 1221747
-IonScriptCounts
-js::jit::CodeGenerator::maybeCreateScriptCounts
-
-# Bug 1226445
-js::jit::JitStubFrameLayout::maybeStubPtr
-js::jit::CommonFrameLayout::prevFrameLocalSize
-js::jit::RecompileOnStackBaselineScriptsForDebug
