@@ -11,7 +11,7 @@ twoPartIgnoreList = []
 ready = False
 
 
-# Called directly by domInteresting.py and jsInteresting.py
+# Called directly by domInteresting.py
 def scanLine(knownPath, line):
     global ignoreList
     if not ready:
