@@ -68,6 +68,7 @@ function fuzzInitBlacklists()
                 "willChange",        // bug 1216832
                 "sideways",          // bug 1225586
                 "history",           // bug 1225637
+                "offerToReceive",    // bug 1227482
             ]
         },
         {
