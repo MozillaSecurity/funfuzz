@@ -175,30 +175,31 @@ class AmissLogHandler:
 
         if msg.find("###!!! ASSERTION") != -1:
             self.nsassertionCount += 1
-            newNonfatalAssertion = detect_assertions.scanLine(self.knownPath, msg)
-            if newNonfatalAssertion and not (self.expectedToLeak and "ASSERTION: Component Manager being held past XPCOM shutdown" in msg):
-                self.sawNewNonfatalAssertion = True
-                self.printAndLog(DOMI_MARKER + newNonfatalAssertion)
-            if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
-                # print "Ignoring memory leaks (bug 622315)"  # testcase in comment 2
-                self.expectedToLeak = True
-            if "nsCARenderer::Render failure" in msg:
-                # print "Ignoring memory leaks (bug 840688)"
-                self.expectedToLeak = True
-            if "ASSERTION: Appshell already destroyed" in msg:
-                # print "Ignoring memory leaks (bug 933730)"
-                self.expectedToLeak = True
-            if "Did not receive all required callbacks" in msg:
-                # print "Ignoring memory leaks (bug 973384)"
-                self.expectedToLeak = True
-            if "leaking" in msg:
-                # print "Ignoring memory leaks"
-                self.expectedToLeak = True
-            if self.nsassertionCount == 100:
-                # print """domInteresting.py: not considering it a failure if browser hangs, because assertions
-                # are slow with stack-printing on.
-                # Please test in opt builds too, or fix the assertion bugs."""
-                self.expectedToHang = True
+
+        newNonfatalAssertion = detect_assertions.scanLine(self.knownPath, msg)
+        if newNonfatalAssertion and not (self.expectedToLeak and "ASSERTION: Component Manager being held past XPCOM shutdown" in msg):
+            self.sawNewNonfatalAssertion = True
+            self.printAndLog(DOMI_MARKER + newNonfatalAssertion)
+        if msg.find("Foreground URLs are active") != -1 or msg.find("Entry added to loadgroup twice") != -1:
+            # print "Ignoring memory leaks (bug 622315)"  # testcase in comment 2
+            self.expectedToLeak = True
+        if "nsCARenderer::Render failure" in msg:
+            # print "Ignoring memory leaks (bug 840688)"
+            self.expectedToLeak = True
+        if "ASSERTION: Appshell already destroyed" in msg:
+            # print "Ignoring memory leaks (bug 933730)"
+            self.expectedToLeak = True
+        if "Did not receive all required callbacks" in msg:
+            # print "Ignoring memory leaks (bug 973384)"
+            self.expectedToLeak = True
+        if "leaking" in msg:
+            # print "Ignoring memory leaks"
+            self.expectedToLeak = True
+        if self.nsassertionCount == 100:
+            # print """domInteresting.py: not considering it a failure if browser hangs, because assertions
+            # are slow with stack-printing on.
+            # Please test in opt builds too, or fix the assertion bugs."""
+            self.expectedToHang = True
 
         if not self.mallocFailure and detect_malloc_errors.scanLine(msgLF):
             self.mallocFailure = True

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-# Recognizes NS_ASSERTIONs based on condition, text, and filename (ignoring irrelevant parts of the path)
+# Recognizes non-fatal assertions:
+#   * NS_ASSERTIONs, based on condition, text, and filename (ignoring irrelevant parts of the path)
+#   * Obj-C exceptions caught by Mozilla code
 # (FuzzManager's AssertionHelper.py handles fatal assertions of all flavors.)
 
 import findIgnoreLists
@@ -21,6 +23,9 @@ def scanLine(knownPath, line):
 
     if "###!!! ASSERT" in line:
         line = re.sub("^\\[\\d+\\]\\s+", "", line, count=1)  # Strip leading [PID], if present
+        if assertionIsNew(line):
+            return line
+    elif "Mozilla has caught an Obj-C exception" in line:
         if assertionIsNew(line):
             return line
 
