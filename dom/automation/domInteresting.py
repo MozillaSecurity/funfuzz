@@ -358,6 +358,7 @@ def knownChromeFailure(msg):
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
         ("PeerConnection.js" in msg and "not callable" in msg) or                       # Bug 1186696
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
+        ("PeerConnection.js" in msg and "2152398858" in msg) or                         # Bug 1227496
         ("PeerConnectionIdp.jsm" in msg and "sdp is " in msg) or                        # Bug 1187206
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
