@@ -2013,8 +2013,32 @@ Assertion failure: alignSelf != 6 && alignSelf != 7 (Grid's 'align-self' axis is
 # Bug 1223655 (intermittent in both regression-testing and fuzzing) (comment 8 indicates they're on it)
 ASSERTION: Track not found: 'Error', file dom/media/MediaStreamGraph.cpp
 
+# Bug 1225592
+Assertion failure: mSizes.Length() >= explicitGridOffset + aFunctions.mMinSizingFunctions.Length(),
+
 # Bug 1225643
 Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
+
+# Bug 1227465
+ASSERTION: Must have a computed inline size: 'aReflowState.ComputedISize() !=
+
+# Bug 1227468
+ASSERTION: inline-size less than zero: 'aContainingBlockISize >= 0', file layout/base/nsLayoutUtils.cpp
+
+# Bug 1227489
+ASSERTION: writing-mode mismatch: 'aWritingMode.IgnoreSideways() == GetWritingMode().IgnoreSideways()', file WritingModes.h
+
+# Bug 1227493
+ASSERTION: dirtyness out of sync:
+
+# Bug 1227498
+Assertion failure: mStyleScopes.Contains(cur),
+
+# Bug 1227501
+Assertion failure: 0 <= aProperty && aProperty < eCSSProperty_COUNT (out of range),
+
+# Bug 1227525
+Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-contents frame unconstrained available height, so it should be complete),
 
 
 ################################
