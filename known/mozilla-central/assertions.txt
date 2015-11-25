@@ -2040,6 +2040,12 @@ Assertion failure: 0 <= aProperty && aProperty < eCSSProperty_COUNT (out of rang
 # Bug 1227525
 Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-contents frame unconstrained available height, so it should be complete),
 
+# Bug 1228127
+: failed assertion "!SkScalarIsNaN(c->fX) && !SkScalarIsNaN(c->fY)"
+
+# Bug 1228128
+: failed assertion "is_between_unsorted(r->fY, tmp[0].fY, tmp[1].fY)"
+
 
 ################################
 #                              #
