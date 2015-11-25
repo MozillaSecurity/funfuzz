@@ -190,7 +190,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
                 retestResult = jsInteresting.ShellResult(jsInterestingOptions, fargs, logPrefix + "-final", False)
                 if retestResult.lev > jsInteresting.JS_FINE:
                     res = retestResult
-            quality = lithOps.ddsize(filenameToReduce) + (0 if lithResult == lithOps.LITH_FINISHED else 1000000)
+                    quality = 0
+                else:
+                    quality = 6
+            else:
+                quality = 10
+
+            # ddsize = lithOps.ddsize(filenameToReduce)
             collector.submit(res.crashInfo, filenameToReduce, quality)
 
         else:

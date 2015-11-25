@@ -94,12 +94,14 @@ def many_timed_runs(targetTime, tempDir, args, collector, quiet=True):
                 retestResult = domInteresting.BrowserResult(bc, url, logPrefix+"-retry", extraPrefs=extraPrefs)
                 if retestResult.level > domInteresting.DOM_FINE:
                     print "%%% Lithium can't reproduce, but I can!"
+                    quality = 9
                     with open(logPrefix + "-repro-only.txt", "w") as reproOnlyFile:
                         reproOnlyFile.write("I was able to reproduce an issue at the same URL, but Lithium was not.\n\n")
                         reproOnlyFile.write(domInterestingpy + " " + browserDir + " " + url + "\n")
                     lithresult = lithOps.NO_REPRO_EXCEPT_BY_URL
                 else:
                     print "%%% Lithium can't reproduce, and neither can I."
+                    quality = 10
                     with open(logPrefix + "-sorry.txt", "w") as sorryFile:
                         sorryFile.write("I wasn't even able to reproduce with the same URL.\n\n")
                         sorryFile.write(domInterestingpy + " " + browserDir + " " + url + "\n")
@@ -109,10 +111,14 @@ def many_timed_runs(targetTime, tempDir, args, collector, quiet=True):
                 reducedResult = domInteresting.BrowserResult(bc, rFN, logPrefix+"-final", extraPrefs=extraPrefs)
                 if reducedResult.level > domInteresting.DOM_FINE:
                     result = reducedResult
+                    quality = 0
+                else:
+                    quality = 6
+            else:
+                quality = 12
 
             if collector:
-                quality = lithOps.ddsize(rFN) + (0 if lithresult == lithOps.LITH_FINISHED else 1000000)
-                print "Testcase quality = " + str(quality)
+                # ddsize = lithOps.ddsize(rFN)
                 collector.submit(result.crashInfo, rFN, quality)
 
         if bc.options.argURL:
