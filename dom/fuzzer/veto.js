@@ -110,6 +110,7 @@ function fuzzInitBlacklists()
                 "color",             // bug 991373
                 "createShadowRoot",  // bug 1217531
                 "AudioContext",      // bug 1223691
+                "worker",            // bug 1228456
             ]
         },
         {
