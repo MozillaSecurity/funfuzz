@@ -2104,3 +2104,6 @@ Assertion failure: !unknownProperties(),
 
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
+
+# Bug 1228575
+Assertion failure: !entry->shape(),
