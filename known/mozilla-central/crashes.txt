@@ -286,6 +286,12 @@ mozilla::(anonymous namespace)::RunWatchdog
 # Bug 1225327
 mozilla::dom::MediaRecorder::Session::SizeOfExcludingThis
 
+# Bug 1153636 'd' (with mozilla::dom::workers::WorkerRunnable::Run on the stack)
+mozilla::EventListenerManager::AddEventListenerInternal
+
+# Bug 1228670
+GetMaxOptionBSize
+
 
 #############################
 #                           #

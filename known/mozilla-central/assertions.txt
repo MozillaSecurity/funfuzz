@@ -1760,6 +1760,7 @@ StickyTimeDuration
 # My guess was that trustedKeyEvent could trigger a 'keypress' without a corresponding 'keydown' (and without having a 'repeat' flag)
 # If I see the latter assertion with a different Obj-C assertion, I'll want to file it.
 Mozilla has caught an Obj-C exception [NSInternalInconsistencyException: Invalid parameter not satisfying: NSEventMaskFromType(type) & (KeyMask|NSFlagsChangedMask)]
+Mozilla has caught an Obj-C exception [NSInternalInconsistencyException: Invalid parameter not satisfying: _NSEventMask64FromType(type) & (KeyMask|NSFlagsChangedMask)]
 Assertion failure: isAsmJS(),
 
 # Bug 1140043
@@ -2045,6 +2046,30 @@ Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-content
 
 # Bug 1228128
 : failed assertion "is_between_unsorted(r->fY, tmp[0].fY, tmp[1].fY)"
+
+# Bug 1228484
+Assertion failure: !Graph() || Graph() == aStream->Graph(),
+
+# Bug 820667? (with slow printing of non-fatal assertions)
+Assertion failure: (((bool)(__builtin_expect(!!(!NS_FAILED_impl( owningThread->Dispatch(this, nsIEventTarget::DISPATCH_NORMAL))), 1)))),
+
+# Bug 1228677
+Assertion failure: (loadInfo->GetSecurityMode() & nsILoadInfo::SEC_REQUIRE_CORS_DATA_INHERITS) == 0 (can not enforce CORS when calling Open2()),
+
+# Bug 1228683
+Assertion failure: face < mFaceCount,
+
+# Bug 1228687
+Assertion failure: gl->IsCurrent(),
+
+# Bug 1228707 (mozilla::ErrorResult::~ErrorResult | ?? | nsDOMMutationObserver::HandleMutation)
+Assertion failure: !Failed(),
+
+# Bug 1228708 (mozilla::ErrorResult::~ErrorResult | ?? | FunctionCallTxn::UndoTransaction)
+Assertion failure: !Failed(),
+
+# Bug 1228711
+Assertion failure: false (Unexpected GL error.),
 
 
 ################################
