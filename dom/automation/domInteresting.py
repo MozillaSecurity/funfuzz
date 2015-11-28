@@ -362,6 +362,7 @@ def knownChromeFailure(msg):
         ("PeerConnectionIdp.jsm" in msg and "sdp is " in msg) or                        # Bug 1187206
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
+        ("vtt.jsm" in msg and "navigator is not defined" in msg) or                     # Bug 1228721
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
         ("process-content.js" in msg and "EXPORTED_SYMBOLS is not an array" in msg) or  # Bug 1188169
