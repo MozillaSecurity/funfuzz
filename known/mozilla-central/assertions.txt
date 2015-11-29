@@ -2071,6 +2071,12 @@ Assertion failure: !Failed(),
 # Bug 1228711
 Assertion failure: false (Unexpected GL error.),
 
+# Bug 1228788 (FATAL ERROR: AsyncShutdown timeout in profile-before-change Conditions: [{"name":"Media shutdown: blocking on media thread")
+ABORT: file dom/media/MediaManager.cpp
+
+# Bug 1228789
+ASSERTION: CSSUnprefixingService returned an unrecognized type of gradient function: 'Error', file layout/style/nsCSSParser.cpp
+
 
 ################################
 #                              #
