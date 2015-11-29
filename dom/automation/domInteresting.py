@@ -320,6 +320,7 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "this.UIModule is undefined" in msg) or                # Bug 877013
         ("browser.js" in msg and "this._cps2 is undefined" in msg) or                   # Bug 877013
         ("browser.js" in msg and "this.button is null" in msg) or                       # Bug 877013
+        ("browser.js" in msg and "PanelUI.panel is undefined" in msg) or                # Bug 1228793
         ("BrowserUtils.jsm" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 1187207
         ("downloads.js" in msg and "\"Cu\" is read-only" in msg) or                     # Bug 1175877
         ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1186346
@@ -364,12 +365,15 @@ def knownChromeFailure(msg):
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
         ("vtt.jsm" in msg and "navigator is not defined" in msg) or                     # Bug 1228721
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
+        ("Webapps.js" in msg and "aApp is null" in msg) or                              # Bug 1228795
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
         ("process-content.js" in msg and "EXPORTED_SYMBOLS is not an array" in msg) or  # Bug 1188169
         ("nsPrompter.js" in msg and "openModalWindow on a hidden window" in msg) or     # Bug 1186727
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
+        ("CSSUnprefixingService.js" in msg and "position is undefined" in msg) or       # Bug 1228796
+        ("CSSUnprefixingService.js" in msg and "args[1].name is undefined" in msg) or   # Bug 1228797
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
