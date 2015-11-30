@@ -374,6 +374,7 @@ def knownChromeFailure(msg):
         ("System JS" in msg) or                                                         # Bug 987222
         ("CSSUnprefixingService.js" in msg and "position is undefined" in msg) or       # Bug 1228796
         ("CSSUnprefixingService.js" in msg and "args[1].name is undefined" in msg) or   # Bug 1228797
+        ("tab-content.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or                # Bug 1228801
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
