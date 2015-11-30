@@ -565,6 +565,7 @@ ASSERTION: unexpected size: 'mRect.width == desiredSize.Width() && mRect.height 
 
 # Bug 614457
 ASSERTION: col group can own border only at the table edge: 'aIter.IsTableTopMost() || aIter.IsTableBottomMost()', file layout/tables/nsTableFrame.cpp
+ASSERTION: col group can own border only at the table edge: 'aIter.IsTableBStartMost() || aIter.IsTableBEndMost()', file layout/tables/nsTableFrame.cpp
 
 # Bug 614501 (a11y)
 ASSERTION: should only care when we have an outside bullet: 'mContent->GetPrimaryFrame()->GetStyleDisplay()->mDisplay == NS_STYLE_DISPLAY_LIST_ITEM && HaveOutsideBullet()', file layout/generic/nsBlockFrame.cpp
@@ -2061,6 +2062,7 @@ Assertion failure: face < mFaceCount,
 
 # Bug 1228687
 Assertion failure: gl->IsCurrent(),
+Assertion failure: IsCurrent(),
 
 # Bug 1228707 (mozilla::ErrorResult::~ErrorResult | ?? | nsDOMMutationObserver::HandleMutation)
 Assertion failure: !Failed(),
@@ -2076,6 +2078,25 @@ ABORT: file dom/media/MediaManager.cpp
 
 # Bug 1228789
 ASSERTION: CSSUnprefixingService returned an unrecognized type of gradient function: 'Error', file layout/style/nsCSSParser.cpp
+
+# Bug 1228871
+ASSERTION: Shouldn't have anything queued!: 'aStatus != Terminating || mQueuedRunnables.IsEmpty()', file dom/workers/WorkerPrivate.cpp
+
+# Bug 1228876
+ASSERTION: Options collection broken: 'opt == mOptions->ItemAsOption(index++)', file dom/html/HTMLSelectElement.cpp
+
+# Bug 1228882
+ASSERTION: element already removed from map: 'mElements.Contains(aElement)', file dom/base/DirectionalityUtils.cpp
+
+# Bug 1228886
+Assertion failure: false (Failed to zero texture data.),
+
+# Bug 1228887 (DOM Notifications)
+Assertion failure: !JS_IsExceptionPending(cx),
+Assertion failure: !cx->isExceptionPending(),
+
+# Bug 1228890
+Assertion failure: !mSyncLoopTarget,
 
 
 ################################

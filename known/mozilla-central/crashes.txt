@@ -288,6 +288,15 @@ mozilla::EventListenerManager::AddEventListenerInternal
 # Bug 1228670
 GetMaxOptionBSize
 
+# Bug 1228882
+[EXPLOITABLE] mozilla::nsTextNodeDirectionalityMap::GetDirectionalityMap
+[EXPLOITABLE] mozilla::nsTextNodeDirectionalityMap::RemoveElementFromMap
+[EXPLOITABLE] mozilla::ResetDir
+
+# Bug 1228885
+mozilla::WebGLTexture::MemoryUsage
+mozilla::WebGLMemoryTracker::CollectReports
+
 
 #############################
 #                           #
