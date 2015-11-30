@@ -279,10 +279,6 @@ mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
 # Bug 1062770
 LateWriteObserver::Observe
 
-# Hit MOZ_CRASH(Shutdown too long, probably frozen, causing a crash.) at toolkit/components/terminator/nsTerminator.cpp:151
-# Intermittent / don't care
-mozilla::(anonymous namespace)::RunWatchdog
-
 # Bug 1225327
 mozilla::dom::MediaRecorder::Session::SizeOfExcludingThis
 
