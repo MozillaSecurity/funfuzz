@@ -2098,6 +2098,12 @@ Assertion failure: !cx->isExceptionPending(),
 # Bug 1228890
 Assertion failure: !mSyncLoopTarget,
 
+# Bug 1228916
+Assertion failure: aThebesContext->CurrentOp() == CompositionOp::OP_OVER,
+
+# Bug 1228937
+Assertion failure: gFactoryOps->IsEmpty(),
+
 
 ################################
 #                              #
