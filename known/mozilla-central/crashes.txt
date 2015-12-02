@@ -297,6 +297,17 @@ GetMaxOptionBSize
 mozilla::WebGLTexture::MemoryUsage
 mozilla::WebGLMemoryTracker::CollectReports
 
+# Bug 1229240
+mozilla::dom::MediaStreamTrackBinding::applyConstraints_promiseWrapper
+
+# Bug 1229253
+mozilla::dom::MediaRecorder::SizeOfExcludingThis
+
+# Bug 1229449 (top: debug)
+mozilla::PeerConnectionImpl::CheckThreadInt
+# Bug 1229449 (top: opt)
+mozilla::PeerConnectionImpl::RecordEndOfCallTelemetry
+
 
 #############################
 #                           #

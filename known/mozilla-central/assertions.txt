@@ -2104,6 +2104,18 @@ Assertion failure: aThebesContext->CurrentOp() == CompositionOp::OP_OVER,
 # Bug 1228937
 Assertion failure: gFactoryOps->IsEmpty(),
 
+# Bug 1229225
+Assertion failure: false (We should have caught all other errors.),
+
+# Bug 1229424
+ASSERTION: CalcDifference() returned bigger hint than MaxDifference(): 'NS_IsHintSubset(difference, maxDifference)', file layout/style/nsStyleContext.cpp
+
+# Bug 1229437
+Assertion failure: aFloat->GetParent() == mBlock || (aFloat->GetStateBits() & NS_FRAME_IS_PUSHED_FLOAT) (float should be in this block unless it was marked as pushed float),
+
+# Bug 1229458
+Assertion failure: !IsReadonly() (shared StringBuffer in SizeOfIncludingThisMustBeUnshared),
+
 
 ################################
 #                              #
