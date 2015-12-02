@@ -361,6 +361,7 @@ def knownChromeFailure(msg):
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is null" in msg) or          # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
+        ("vtt.jsm" in msg and "navigator is not defined" in msg) or                     # Bug 1228721
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("Webapps.js" in msg and "aApp is null" in msg) or                              # Bug 1228795
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
