@@ -360,8 +360,10 @@ def knownChromeFailure(msg):
         ("PeerConnection.js" in msg and "not callable" in msg) or                       # Bug 1186696
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
         ("PeerConnection.js" in msg and "2152398858" in msg) or                         # Bug 1227496
+        ("PeerConnection.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or             # Minor symptom in bug 1229449
         ("PeerConnectionIdp.jsm" in msg and "sdp is " in msg) or                        # Bug 1187206
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
+        ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is null" in msg) or          # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
         ("vtt.jsm" in msg and "navigator is not defined" in msg) or                     # Bug 1228721
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
@@ -372,9 +374,9 @@ def knownChromeFailure(msg):
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
-        ("CSSUnprefixingService.js" in msg and "position is undefined" in msg) or       # Bug 1228796
-        ("CSSUnprefixingService.js" in msg and "args[1].name is undefined" in msg) or   # Bug 1228797
+        ("CSSUnprefixingService.js" in msg) or                                          # Code going away (bug 1213126?)
         ("tab-content.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or                # Bug 1228801
+        ("PerformanceStats.jsm" in msg and ".isMonitoringJank" in msg) or               # Bug 1221761
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
