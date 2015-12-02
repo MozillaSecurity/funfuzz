@@ -312,3 +312,6 @@ mozilla::WebGLMemoryTracker::CollectReports
 
 # Bug 1221385
 js::jit::ExecutableAllocator::releasePoolPages
+
+# Bug 1229698
+DispatchToTracer
