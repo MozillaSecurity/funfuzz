@@ -506,7 +506,7 @@ def rdfInit(args):
     env = os.environ.copy()
     env['MOZ_FUZZING_SAFE'] = '1'
     env['REFTEST_FILES_DIR'] = dirs.reftestFilesDir
-    env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build/Release/bin/llvm-symbolizer")
+    env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build-release/bin/llvm-symbolizer")
     if dirs.stackwalk:
         env['MINIDUMP_STACKWALK'] = dirs.stackwalk
     runbrowserpy = [sys.executable, "-u", os.path.join(THIS_SCRIPT_DIRECTORY, "runbrowser.py")]
