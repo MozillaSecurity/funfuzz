@@ -69,6 +69,7 @@ function fuzzInitBlacklists()
                 "sideways",          // bug 1225586
                 "history",           // bug 1225637
                 "offerToReceive",    // bug 1227482
+                "colors",            // bug 1229473 (border-[position]-colors)
             ]
         },
         {
