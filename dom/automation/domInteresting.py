@@ -322,8 +322,6 @@ def knownChromeFailure(msg):
         ("browser.js" in msg and "this.button is null" in msg) or                       # Bug 877013
         ("browser.js" in msg and "PanelUI.panel is undefined" in msg) or                # Bug 1228793
         ("BrowserUtils.jsm" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 1187207
-        ("downloads.js" in msg and "\"Cu\" is read-only" in msg) or                     # Bug 1175877
-        ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1186346
         ("nsSidebar.js" in msg and "NS_NOINTERFACE" in msg) or                          # Bug 1186365
         ("amInstallTrigger.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or           # Bug 1186694
         ("browser.xml" in msg and "this.docShell is null" in msg) or                    # Bug 919362
@@ -357,25 +355,20 @@ def knownChromeFailure(msg):
         "this.keyManager_ is null" in msg or                                            # mostly happens when i manually quit during a fuzz run
         "pbu_privacyContextFromWindow" in msg or                                        # bug 931304 whenfixed 'pb'
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
-        ("PeerConnection.js" in msg and "not callable" in msg) or                       # Bug 1186696
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
         ("PeerConnection.js" in msg and "2152398858" in msg) or                         # Bug 1227496
         ("PeerConnection.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or             # Minor symptom in bug 1229449
-        ("PeerConnectionIdp.jsm" in msg and "sdp is " in msg) or                        # Bug 1187206
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is null" in msg) or          # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
-        ("vtt.jsm" in msg and "navigator is not defined" in msg) or                     # Bug 1228721
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("Webapps.js" in msg and "aApp is null" in msg) or                              # Bug 1228795
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
-        ("process-content.js" in msg and "EXPORTED_SYMBOLS is not an array" in msg) or  # Bug 1188169
         ("nsPrompter.js" in msg and "openModalWindow on a hidden window" in msg) or     # Bug 1186727
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
         ("CSSUnprefixingService.js" in msg) or                                          # Code going away (bug 1213126?)
-        ("tab-content.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or                # Bug 1228801
         ("PerformanceStats.jsm" in msg and ".isMonitoringJank" in msg) or               # Bug 1221761
 
         # opening dev tools while simultaneously opening and closing tabs is mean
