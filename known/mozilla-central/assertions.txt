@@ -794,9 +794,6 @@ ASSERTION: Overwriting an existing document channel!
 # Bug 693419?
 ASSERTION: EventListener with no context or scope?: 'aScopeObject && aContext', file dom/src/events/nsJSEventListener.cpp
 
-# Bug 693512
-ASSERTION: Residual translation out of range: '-0.5 <= mResidualTranslation.x && mResidualTranslation.x < 0.5 && -0.5 <= mResidualTranslation.y && mResidualTranslation.y < 0.5', file Layers.h
-
 # Bug 694507
 ASSERTION: Should only get this value in quirks mode: 'aPresContext->CompatibilityMode() == eCompatibility_NavQuirks', file layout/style/nsRuleNode.cpp
 
@@ -892,9 +889,6 @@ ASSERTION: data loss - incomplete row needed more height than available, on top 
 
 # Bug 716452
 ASSERTION: SVG frames should not get here: '!aNonSVGFrame->IsFrameOfType(nsIFrame::eSVG)', file layout/svg/nsSVGIntegrationUtils.cpp
-
-# Bug 717454
-ABORT: must have a computed width: 'rs->ComputedWidth() !=
 
 # Bug 717514
 ASSERTION: bullets should not be containers: 'aFrame->GetType() != nsGkAtoms::bulletFrame || isInline', file layout/base/nsLayoutUtils.cpp
@@ -1919,17 +1913,6 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1223695 (skia canvas)
 : failed assertion "__null != texture"
 
-# Bug 1223740 (skia canvas)
-: failed assertion "(int16_t)x == x"
-
-# Bug 1225381 (skia canvas)
-: failed assertion "n64 == n32"
-
-# Bug 1221881
-ASSERTION: Should have state machine.: 'mDecoderStateMachine != nullptr', file dom/media/MediaDecoder.cpp
-Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
-Assertion failure: mDecoderStateMachine (Must be called after Load().),
-
 # Bug 1221418
 Assertion failure: mActorDestroyed,
 
@@ -1947,10 +1930,6 @@ ASSERTION: we should have saved a frame property: 'Not Reached', file layout/bas
 
 # Bug 1221889
 ASSERTION: Incorrectly ignoring blocking!: 'mStartBlocking == GraphImpl()->mStateComputedTime || aTime <= mStartBlocking', file dom/media/MediaStreamGraph.cpp
-
-# Bug 1221904
-ASSERTION: Invalid offset: 'uint32_t(aOffset) <= mSkipChars->mCharCount', file gfx/thebes/gfxSkipChars.cpp
-ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterator(iter).ConvertOriginalToSkipped(offset + length) <= mTextRun->GetLength()', file layout/generic/nsTextFrame.cpp
 
 # Bug 1223285
 ASSERTION: After-spacing inside a ligature!: 'i - 1 <= aStart || aSpacing[i - 1 - aStart].mAfter == 0', file gfx/thebes/gfxTextRun.cpp
@@ -1994,9 +1973,6 @@ ASSERTION: why should we have flushed style again?: 'mPresShell && currentGenera
 # Bug 1224574
 ASSERTION: Bogus block-size: 'ComputedBSize() == NS_UNCONSTRAINEDSIZE || ComputedBSize() >= 0', file layout/generic/nsHTMLReflowState.cpp
 
-# Bug 1218799
-Assertion failure: PR_GetCurrentThread() == mOwningThread,
-
 # Bug 1225005
 Assertion failure: containingBlockWidth >= 0,
 Assertion failure: containingBlockHeight >= 0,
@@ -2006,17 +1982,8 @@ ASSERTION: reflow state computed incorrect inline size: 'reflowState.ComputedISi
 ASSERTION: non-root frame's desired size changed during an incremental reflow: '(target == rootFrame && size.BSize(wm) == NS_UNCONSTRAINEDSIZE) || (desiredSize.ISize(wm) == size.ISize(wm) && desiredSize.BSize(wm) == size.BSize(wm))', file layout/base/nsPresShell.cpp
 ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
 
-# Bug 1225368
-Assertion failure: !sz.IsFrozen(),
-
-# Bug 1225376
-Assertion failure: alignSelf != 6 && alignSelf != 7 (Grid's 'align-self' axis is never parallel to the container's inline axis, so these should've computed to 'start' already),
-
 # Bug 1223655 (intermittent in both regression-testing and fuzzing) (comment 8 indicates they're on it)
 ASSERTION: Track not found: 'Error', file dom/media/MediaStreamGraph.cpp
-
-# Bug 1225592
-Assertion failure: mSizes.Length() >= explicitGridOffset + aFunctions.mMinSizingFunctions.Length(),
 
 # Bug 1225643
 Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
@@ -2035,9 +2002,6 @@ ASSERTION: dirtyness out of sync:
 
 # Bug 1227498
 Assertion failure: mStyleScopes.Contains(cur),
-
-# Bug 1227501
-Assertion failure: 0 <= aProperty && aProperty < eCSSProperty_COUNT (out of range),
 
 # Bug 1227525
 Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-contents frame unconstrained available height, so it should be complete),
@@ -2064,12 +2028,6 @@ Assertion failure: face < mFaceCount,
 Assertion failure: gl->IsCurrent(),
 Assertion failure: IsCurrent(),
 
-# Bug 1228707 (mozilla::ErrorResult::~ErrorResult | ?? | nsDOMMutationObserver::HandleMutation)
-Assertion failure: !Failed(),
-
-# Bug 1228708 (mozilla::ErrorResult::~ErrorResult | ?? | FunctionCallTxn::UndoTransaction)
-Assertion failure: !Failed(),
-
 # Bug 1228711
 Assertion failure: false (Unexpected GL error.),
 
@@ -2081,9 +2039,6 @@ ASSERTION: CSSUnprefixingService returned an unrecognized type of gradient funct
 
 # Bug 1228871
 ASSERTION: Shouldn't have anything queued!: 'aStatus != Terminating || mQueuedRunnables.IsEmpty()', file dom/workers/WorkerPrivate.cpp
-
-# Bug 1228876
-ASSERTION: Options collection broken: 'opt == mOptions->ItemAsOption(index++)', file dom/html/HTMLSelectElement.cpp
 
 # Bug 1228882
 ASSERTION: element already removed from map: 'mElements.Contains(aElement)', file dom/base/DirectionalityUtils.cpp
@@ -2112,9 +2067,6 @@ ASSERTION: CalcDifference() returned bigger hint than MaxDifference(): 'NS_IsHin
 
 # Bug 1229437
 Assertion failure: aFloat->GetParent() == mBlock || (aFloat->GetStateBits() & NS_FRAME_IS_PUSHED_FLOAT) (float should be in this block unless it was marked as pushed float),
-
-# Bug 1229458
-Assertion failure: !IsReadonly() (shared StringBuffer in SizeOfIncludingThisMustBeUnshared),
 
 
 ################################
