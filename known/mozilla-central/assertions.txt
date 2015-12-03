@@ -2077,6 +2077,12 @@ Assertion failure: mIdleTimer,
 # Bug 1229999
 Assertion failure: aStart >= nsStyleGridLine::kMinLine && aStart <= nsStyleGridLine::kMaxLine (invalid start line),
 
+# Bug 1230092
+ASSERTION: QueryInterface needed: 'query_result.get() == mRawPtr', file nsCOMPtr.h
+
+# Bug 1230115
+Mozilla has caught an Obj-C exception [NSMallocException: NSImage: Insufficient memory to allocate pixel data buffer
+
 
 ################################
 #                              #
