@@ -1722,7 +1722,7 @@ ASSERTION: aElement should be the element and not the pseudo-element: 'pseudoTyp
 Assertion failure: false (should have already reflowed the anonymous block child),
 
 # Bug 1072827
-ABORT: clamped(): aMax must be greater than or equal to aMin: 'aMax >= aMin', file nsAlgorithm.h
+Assertion failure: aMax >= aMin (clamped(): aMax must be greater than or equal to aMin),
 
 # Bug 1074584
 Assertion failure: HasEverBeenBound(),
