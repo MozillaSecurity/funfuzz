@@ -2068,6 +2068,15 @@ ASSERTION: CalcDifference() returned bigger hint than MaxDifference(): 'NS_IsHin
 # Bug 1229437
 Assertion failure: aFloat->GetParent() == mBlock || (aFloat->GetStateBits() & NS_FRAME_IS_PUSHED_FLOAT) (float should be in this block unless it was marked as pushed float),
 
+# Bug 1229988
+Assertion failure: aTarget (Don't create a gfxContext without a DrawTarget),
+
+# Bug 1229997
+Assertion failure: mIdleTimer,
+
+# Bug 1229999
+Assertion failure: aStart >= nsStyleGridLine::kMinLine && aStart <= nsStyleGridLine::kMaxLine (invalid start line),
+
 
 ################################
 #                              #

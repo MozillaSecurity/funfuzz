@@ -299,6 +299,9 @@ mozilla::PeerConnectionImpl::CheckThreadInt
 # Bug 1229449 (top: opt)
 mozilla::PeerConnectionImpl::RecordEndOfCallTelemetry
 
+# Bug 1229988
+gfxContext::gfxContext
+
 
 #############################
 #                           #
