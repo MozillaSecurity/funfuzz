@@ -371,6 +371,7 @@ def knownChromeFailure(msg):
         ("System JS" in msg) or                                                         # Bug 987222
         ("CSSUnprefixingService.js" in msg) or                                          # Code going away (bug 1213126?)
         ("PerformanceStats.jsm" in msg and ".isMonitoringJank" in msg) or               # Bug 1221761
+        ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1230087
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
