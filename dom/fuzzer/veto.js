@@ -70,6 +70,8 @@ function fuzzInitBlacklists()
                 "history",           // bug 1225637
                 "offerToReceive",    // bug 1227482
                 "colors",            // bug 1229473 (border-[position]-colors)
+                "open",              // bug 1230336 (window.open)
+                "table",             // bug 391879 (non-debug) (mini #4)
             ]
         },
         {
