@@ -1,4 +1,4 @@
-# To generate this list: python list_reftests.py | sort | grep -v "image/test/reftest/" | grep -v 394810-1.html | grep -v 284852.html | grep -v 752340.html | grep -v 1038887.xhtml | pbcopy
+# To generate this list: python list_reftests.py | sort | grep -v "image/test/reftest/" | grep -v 394810-1.html | grep -v 284852.html | grep -v 752340.html | grep -v 1038887.xhtml | grep -v 802902.html | pbcopy
 
 accessible/tests/crashtests/448064.xhtml
 docshell/base/crashtests/369126-1.html
@@ -1854,7 +1854,6 @@ layout/base/crashtests/772306.html
 layout/base/crashtests/788360.html
 layout/base/crashtests/793848.html
 layout/base/crashtests/795646.html
-layout/base/crashtests/802902.html
 layout/base/crashtests/806056-1.html
 layout/base/crashtests/806056-2.html
 layout/base/crashtests/812665.html
