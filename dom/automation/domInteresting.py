@@ -324,6 +324,7 @@ def knownChromeFailure(msg):
         ("BrowserUtils.jsm" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 1187207
         ("nsSidebar.js" in msg and "NS_NOINTERFACE" in msg) or                          # Bug 1186365
         ("amInstallTrigger.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or           # Bug 1186694
+        ("amInstallTrigger.js" in msg and "NS_NOINTERFACE" in msg) or                   # Bug 1230343
         ("browser.xml" in msg and "this.docShell is null" in msg) or                    # Bug 919362
         ("places.js" in msg and "PlacesUIUtils is not defined" in msg) or               # Bug 801436
         ("places.js" in msg and "this._places is null" in msg) or                       # Bug 893322
@@ -344,6 +345,7 @@ def knownChromeFailure(msg):
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 949926
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or   # bug 978524
         ("LoginManagerParent.jsm" in msg and "this._recipeManager is null" in msg) or   # bug 1167872
+        ("LoginManagerParent.jsm" in msg and "this._recipeManager.getRecipesForHost is null" in msg) or   # bug 1167872 plus ion-eager changing the message?
         ("nsDOMIdentity.js, line " in msg) or                                           # Intentional messages about misusing the API
         ("IdpSandbox.jsm, line " in msg) or                                             # Intentional messages about misusing the API
         "DOMIdentity.jsm" in msg or                                                     # Bug 973397, bug 973398
@@ -358,6 +360,8 @@ def knownChromeFailure(msg):
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
         ("PeerConnection.js" in msg and "2152398858" in msg) or                         # Bug 1227496
         ("PeerConnection.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or             # Minor symptom in bug 1229449
+        ("PeerConnection.js" in msg and "e is null" in msg) or                          # Bug 1230381
+        ("PeerConnection.js" in msg and "e is undefined" in msg) or                     # Bug 1230381
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is null" in msg) or          # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
@@ -372,6 +376,8 @@ def knownChromeFailure(msg):
         ("CSSUnprefixingService.js" in msg) or                                          # Code going away (bug 1213126?)
         ("PerformanceStats.jsm" in msg and ".isMonitoringJank" in msg) or               # Bug 1221761
         ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1230087
+        ("MainProcessSingleton.js" in msg and "NS_ERROR_ILLEGAL_VALUE" in msg) or       # Bug 1230388
+        ("content-sessionStore.js" in msg) or                                           # Bug 1195295 removes some broken code
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
