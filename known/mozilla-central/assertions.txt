@@ -2083,6 +2083,58 @@ ASSERTION: QueryInterface needed: 'query_result.get() == mRawPtr', file nsCOMPtr
 # Bug 1230115
 Mozilla has caught an Obj-C exception [NSMallocException: NSImage: Insufficient memory to allocate pixel data buffer
 
+# Bug 1230319
+ASSERTION: don't call InitScriptRun with aborted shaping state: 'aTextRun->GetShapingState() != gfxTextRun::eShapingState_Aborted', file gfx/thebes/gfxTextRun.cpp
+
+# Bug 1230378
+Assertion failure: mFloats.ContainsFrame(nif),
+
+# Bug 1230386
+Assertion failure: !MustReframeForBeforePseudo() (shouldn't need to reframe ::before as we would have had eRestyle_Subtree and wouldn't get in here),
+
+# Bug 1230394
+Assertion failure: !mActor || mActor->mDestroyed (Cannot use a texture on several IPC channels.),
+
+# Bug 1230400
+Assertion failure: mLoadGroup,
+
+# Bug 1230401
+ASSERTION: Already frozen!: '!mFrozen', file dom/workers/WorkerPrivate.cpp
+ASSERTION: Not yet frozen!: 'mFrozen', file dom/workers/WorkerPrivate.cpp
+
+# Bug 1230405  (what to do with ASSERT_UNLESS_FUZZING ??)
+dom/indexedDB/ActorsParent.cpp
+
+# Bug 1230406
+Assertion failure: graph->GraphRate() == aCtx->SampleRate(),
+
+# Bug 1230408
+Assertion failure: false (MOZ_ASSERT_UNREACHABLE: Any line break inside ruby box should have been suppressed),
+
+# Bug 1230422
+Assertion failure: !mAsyncStream,
+
+# Bug 1230424
+ASSERTION: unexpected anchored chunk edges: 'aVisIStartEdge <= aVisIEndEdge', file layout/svg/SVGTextFrame.cpp
+
+# Bug 1230425
+Assertion failure: mFrame->Combines3DTransformWithAncestors() || IsTransformSeparator(),
+
+# Bug 1230639
+ASSERTION: All class values should be StoresOwnData and parsedvia Element::BeforeSetAttr, so available here: 'otherClasses || aData->mModType == nsIDOMMutationEvent::REMOVAL', file layout/style/nsCSSRuleProcessor.cpp
+
+# Bug 1230692 (within mozilla::WebAudioDecodeJob::OnFailure)
+Assertion failure: !Failed(),
+
+# Bug 1230698 (within NS_CreateJSTimeoutHandler)
+Assertion failure: !Failed(),
+
+# Bug 1230700 (within mozilla::dom::Notification::ShowInternal)
+Assertion failure: !Failed(),
+
+# Bug 1230696
+Assertion failure: hasPerspective (Why did we create nsDisplayPerspective?)
+
 
 ################################
 #                              #

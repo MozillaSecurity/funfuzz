@@ -302,6 +302,19 @@ mozilla::PeerConnectionImpl::RecordEndOfCallTelemetry
 # Bug 1229988
 gfxContext::gfxContext
 
+# Bug 1230384
+nsTypeAheadFind::GetSearchContainers
+
+# Bug 1230428
+SpeechTaskCallback::OnWillSpeakWord
+SpeechTaskCallback::OnResume
+
+# Bug 1224291 (AddressSanitizer: memcpy-param-overlap)
+[EXPLOITABLE] memmove16
+
+# Bug 1230440
+[TMR] mozilla::layers::BasicContainerLayer::ComputeEffectiveTransforms
+
 
 #############################
 #                           #
