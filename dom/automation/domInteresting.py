@@ -359,7 +359,7 @@ def knownChromeFailure(msg):
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
         ("PeerConnection.js" in msg and "2152398858" in msg) or                         # Bug 1227496
-        ("PeerConnection.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or             # Minor symptom in bug 1229449
+        ("PeerConnection.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or             # Bug 1230930
         ("PeerConnection.js" in msg and "e is null" in msg) or                          # Bug 1230381
         ("PeerConnection.js" in msg and "e is undefined" in msg) or                     # Bug 1230381
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
