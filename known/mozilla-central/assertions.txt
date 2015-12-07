@@ -2132,8 +2132,14 @@ Assertion failure: !Failed(),
 # Bug 1230700 (within mozilla::dom::Notification::ShowInternal)
 Assertion failure: !Failed(),
 
+# Bug 1230704 (within mozilla::dom::AbortablePromise::DoAbort)
+Assertion failure: !Failed(),
+
 # Bug 1230696
 Assertion failure: hasPerspective (Why did we create nsDisplayPerspective?)
+
+# Bug 1223561
+Assertion failure: !aBuilder->IsForPainting() || !ShouldInTopLayerForFullscreen(elem),
 
 
 ################################
