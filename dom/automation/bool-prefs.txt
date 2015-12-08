@@ -218,6 +218,7 @@ layout.css.float-logical-values.enabled
 layout.css.grid.enabled
 layout.css.grid-template-subgrid-value.enabled
 layout.css.masking.enabled
+layout.css.prefixes.webkit
 layout.css.report_errors
 layout.css.scroll-behavior.property-enabled
 layout.css.scroll-snap.enabled
