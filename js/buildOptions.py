@@ -121,6 +121,14 @@ def addParserOptions():
                   dest='enableSimulatorArm64',
                   help='Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. ' +
                   'Defaults to "%(default)s".')
+    parser.add_argument('--enable-arm-simulator',
+                        dest='enableArmSimulatorObsolete',
+                        action='store_true',
+                        default=False,
+                        help='Build the shell using --enable-arm-simulator for legacy purposes. ' +
+                        'This flag is obsolete and is the equivalent of --enable-simulator=arm, ' +
+                        'use --enable-simulator=[arm|arm64] instead. ' +
+                        'Defaults to "%(default)s".')
 
     return parser, randomizer
 
@@ -130,6 +138,9 @@ def parseShellOptions(inputArgs):
 
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args(inputArgs.split())
+
+    if buildOptions.enableArmSimulatorObsolete:
+        buildOptions.enableSimulatorArm32 = True
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
@@ -298,6 +309,9 @@ def main():
     print 'Here are some sample random build configurations that can be generated:'
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args()
+
+    if buildOptions.enableArmSimulatorObsolete:
+        buildOptions.enableSimulatorArm32 = True
 
     for _ in range(30):
         buildOptions = generateRandomConfigurations(parser, randomizer)
