@@ -2206,3 +2206,9 @@ Assertion failure: !entry->shape(),
 # Bug 1229698
 Assertion failure: GetProxyExtra(obj, ProxyObject::grayLinkExtraSlot(obj)).isUndefined(),
 Assertion failure: addr % CellSize == 0,
+
+# Bug 1231163
+Assertion failure: script()->compartment()->randomNumberGenerator.isSome() (MRandom JIT code depends on RNG being initialized),
+
+# Bug 1231170
+Assertion failure: lastEntryId < events.size(),

@@ -333,3 +333,6 @@ js::jit::ExecutableAllocator::releasePoolPages
 
 # Bug 1229698
 DispatchToTracer
+
+# Bug 1231170
+js::TraceLoggerThread::eventText
