@@ -2203,10 +2203,6 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1228575
 Assertion failure: !entry->shape(),
 
-# Bug 1229698
-Assertion failure: GetProxyExtra(obj, ProxyObject::grayLinkExtraSlot(obj)).isUndefined(),
-Assertion failure: addr % CellSize == 0,
-
 # Bug 1231163
 Assertion failure: script()->compartment()->randomNumberGenerator.isSome() (MRandom JIT code depends on RNG being initialized),
 
