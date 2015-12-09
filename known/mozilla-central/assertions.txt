@@ -2206,3 +2206,6 @@ Assertion failure: script()->compartment()->randomNumberGenerator.isSome() (MRan
 
 # Bug 1231170
 Assertion failure: lastEntryId < events.size(),
+
+# Bug 1231386
+Assertion failure: !cx->isExceptionPending(),
