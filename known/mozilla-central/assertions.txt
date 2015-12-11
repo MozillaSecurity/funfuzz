@@ -2210,5 +2210,3 @@ Assertion failure: lastEntryId < events.size(),
 # Bug 1231386
 Assertion failure: !cx->isExceptionPending(),
 
-# Bug 1231758
-Assertion failure: emitOption != DefineVars && emitOption != AnnexB,
