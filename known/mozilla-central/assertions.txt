@@ -2201,9 +2201,6 @@ Assertion failure: !unknownProperties(),
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
-# Bug 1231163
-Assertion failure: script()->compartment()->randomNumberGenerator.isSome() (MRandom JIT code depends on RNG being initialized),
-
 # Bug 1231170
 Assertion failure: lastEntryId < events.size(),
 
