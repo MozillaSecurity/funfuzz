@@ -48,17 +48,24 @@ def ignoreSomeOfStderr(e):
 # For use by loopjsfunfuzz.py
 # Returns True if any kind of bug is found
 def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, targetTime, options):
-    lev = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)[0]
+    cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)
+    lev = cl[0]
 
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(options.timeout), options.knownPath]
         (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
-        print "Retesting " + infilename + " after running Lithium:"
-        cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
-        if cl[0] != jsInteresting.JS_FINE:
-            quality = lithOps.ddsize(infilename) + (0 if lithResult == lithOps.LITH_FINISHED else 1000000)
-            print "compareJIT: Uploading " + infilename + " with quality " + str(quality)
-            options.collector.submit(cl[1], infilename, quality)
+        if lithResult == lithOps.LITH_FINISHED:
+            print "Retesting " + infilename + " after running Lithium:"
+            retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
+            if retest_cl[0] != jsInteresting.JS_FINE:
+                cl = retest_cl
+                quality = 0
+            else:
+                quality = 6
+        else:
+            quality = 10
+        print "compareJIT: Uploading " + infilename + " with quality " + str(quality)
+        options.collector.submit(cl[1], infilename, quality)
         return True
 
     return False
