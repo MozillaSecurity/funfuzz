@@ -2212,3 +2212,6 @@ Assertion failure: !cx->isExceptionPending(),
 
 # Bug 1232159
 Assertion failure: false,
+
+# Bug 1232386
+Assertion failure: !cx->isExceptionPending(),
