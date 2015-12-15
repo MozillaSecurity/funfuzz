@@ -361,6 +361,7 @@ webgl.default-no-alpha
 webgl.disable-angle
 webgl.disable-extensions
 webgl.disabled
+webgl.dxgl.enabled
 webgl.enable-draft-extensions
 webgl.enable-prototype-webgl2
 webgl.force-enabled
