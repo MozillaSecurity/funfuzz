@@ -538,7 +538,7 @@ def ensureBuild(options):
 
                 bDir = cshell.getShellCacheDir()
                 # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
-                #   js-js-dbg-opt-64-dm-nsprBuild-linux
+                #   js-js-dbg-opt-64-dm-linux
                 # This is because options.testType gets prepended along with a dash later.
                 bType = buildOptions.computeShellType(options.buildOptions)[3:]
                 bSrc = (

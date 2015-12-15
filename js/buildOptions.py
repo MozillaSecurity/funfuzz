@@ -104,12 +104,6 @@ def addParserOptions():
         randomizeBool(['--enable-hardfp'], 0.1, 0.1,
                       dest='enableHardFp',
                       help='Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".')
-    randomizeBool(['--enable-nspr-build'], 0, 0,  # Earliest known working revs all use in-tree NSPR
-                  dest='enableNsprBuild',
-                  help='Build the shell using (in-tree) NSPR. This is the default on Windows. ' +
-                  'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' +
-                  'Using --enable-nspr-build creates a JS shell that is more like the browser. ' +
-                  'Defaults to "%(default)s".')
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
@@ -193,8 +187,6 @@ def computeShellType(buildOptions):
         fileName.append('asan')
     if buildOptions.buildWithVg:
         fileName.append('vg')
-    if buildOptions.enableNsprBuild:
-        fileName.append('nsprBuild')
     if buildOptions.enableOomBreakpoint:
         fileName.append('oombp')
     if buildOptions.enableSimulatorArm32 or buildOptions.enableSimulatorArm64:

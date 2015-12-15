@@ -2,9 +2,9 @@
 
 To compile a SpiderMonkey shell, run:
 
-`funfuzz/js/compileShell.py -b "--enable-debug --enable-more-deterministic --enable-nspr-build -R ~/trees/mozilla-central"`
+`funfuzz/js/compileShell.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central"`
 
-in order to get a debug 64-bit deterministic shell with NSPR compiled, off the **Mercurial** repository located at ~/trees/mozilla-central.
+in order to get a debug 64-bit deterministic shell, off the **Mercurial** repository located at ~/trees/mozilla-central.
 
 Clone the repository to that location using:
 
@@ -40,11 +40,6 @@ The options accepted by -b are also available via funfuzz/js/buildOptions.py:
                         Requires --enable-hardfp for ARM platforms.
   --run-with-valgrind   Run the shell under Valgrind. Requires --build-with-
                         valgrind.
-  --enable-nspr-build   Build the shell using (in-tree) NSPR. This is the
-                        default on Windows. On POSIX platforms, shells default
-                        to --enable-posix-nspr-emulation. Using --enable-nspr-
-                        build creates a JS shell that is more like the
-                        browser. Defaults to "False".
   --enable-more-deterministic
                         Build shells with --enable-more-deterministic.
                         Defaults to "False".

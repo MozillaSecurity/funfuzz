@@ -4,7 +4,7 @@
 
 Specify the failing revision hash in the "-e" parameter, along with desired "-b" options to build the desired SpiderMonkey build configuration. This failing revision hash must be from **Mercurial**.
 
-```funfuzz/autobisect-js/autoBisect.py -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic --enable-nspr-build"```
+```funfuzz/autobisect-js/autoBisect.py -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic"```
 
 When done, find the first working revision hash after the breakage, as below.
 
@@ -12,7 +12,7 @@ When done, find the first working revision hash after the breakage, as below.
 
 Similar to the above, but use "-s" instead of "-e".
 
-```funfuzz/autobisect-js/autoBisect.py -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic --enable-nspr-build```
+```funfuzz/autobisect-js/autoBisect.py -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic```
 
 **Q: What should I do with the known broken changeset ranges to prevent autoBisect from retesting those revisions?**
 

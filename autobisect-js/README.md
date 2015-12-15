@@ -9,7 +9,7 @@ It helps with work allocation:
 
 For SpiderMonkey, use the following while compiling locally:
 
-`funfuzz/autobisect-js/autoBisect.py -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic --enable-nspr-build"`
+`funfuzz/autobisect-js/autoBisect.py -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic"`
 
 assuming the testcase requires "--fuzzing-safe --no-threads --ion-eager" as runtime flags.
 

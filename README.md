@@ -69,9 +69,9 @@ To run **only the js fuzzers** which compiles shells with random configurations 
 
 `python -u funfuzz/loopBot.py -b "--random" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
-To test **a patch** (assuming patch is in ~/patch.diff) against a specific branch (assuming **Mercurial** mozilla-inbound is in ~/trees/mozilla-inbound), using a debug 64-bit deterministic shell configuration with NSPR, every 8 hours:
+To test **a patch** (assuming patch is in ~/patch.diff) against a specific branch (assuming **Mercurial** mozilla-inbound is in ~/trees/mozilla-inbound), using a debug 64-bit deterministic shell configuration, every 8 hours:
 
-`python -u funfuzz/loopBot.py -b "--enable-debug --enable-more-deterministic --enable-nspr-build -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
+`python -u funfuzz/loopBot.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
 In js mode, loopBot.py makes use of:
 
