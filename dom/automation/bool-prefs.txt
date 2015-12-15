@@ -114,6 +114,7 @@ dom.image.srcset.enabled
 dom.imagecapture.enabled
 dom.indexedDB.enabled
 dom.indexedDB.experimental
+dom.ipc.plugins.asyncdrawing.enabled
 dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
 dom.ipc.plugins.java.enabled
