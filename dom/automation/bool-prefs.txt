@@ -253,6 +253,7 @@ media.mediasource.format-reader
 media.mediasource.format-reader.webm
 media.mediasource.mp4.enabled
 media.mediasource.webm.enabled
+media.mediasource.webm.audio.enabled
 media.ogg.enabled
 media.opus.enabled
 media.raw.enabled
