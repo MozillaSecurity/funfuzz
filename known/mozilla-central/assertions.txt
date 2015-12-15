@@ -2204,9 +2204,6 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1231170
 Assertion failure: lastEntryId < events.size(),
 
-# Bug 1231386
-Assertion failure: !cx->isExceptionPending(),
-
 # Bug 1231925
 Assertion failure: !cx->isExceptionPending(),
 
