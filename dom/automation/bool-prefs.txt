@@ -359,6 +359,7 @@ webgl.angle.force-warp
 webgl.can-lose-context-in-foreground
 webgl.default-no-alpha
 webgl.disable-angle
+webgl.disable-DOM-blit-uploads
 webgl.disable-extensions
 webgl.disabled
 webgl.dxgl.enabled
@@ -371,4 +372,5 @@ webgl.lose-context-on-memory-pressure
 webgl.restore-context-when-visible
 webgl.min_capability_mode
 webgl.prefer-16bpp
+webgl.webgl2-compat-mode
 xpinstall.whitelist.required
