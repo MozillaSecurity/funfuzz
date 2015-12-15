@@ -97,7 +97,6 @@ dom.navigator-property.disable.mozContacts
 dom.always_stop_slow_scripts
 dom.archivereader.enabled
 dom.audiochannel.mutedByDefault
-dom.disable_image_src_set
 dom.enable_resource_timing
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
