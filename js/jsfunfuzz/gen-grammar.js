@@ -968,6 +968,21 @@ if (typeof evalcx == "function") {
   ]);
 }
 
+function makeNewGlobalArg(d, b)
+{
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+
+  // Make an options object to pass to the |newGlobal| shell builtin.
+  var propStrs = [];
+  if (rnd(2))
+    propStrs.push("sameZoneAs: " + makeExpr(d - 1, b));
+  if (rnd(2))
+    propStrs.push("cloneSingletons: " + makeBoolean(d - 1, b));
+  if (rnd(2))
+    propStrs.push("disableLazyParsing: " + makeBoolean(d - 1, b));
+  return "{ " + propStrs.join(", ") + " }";
+}
+
 function makeGlobal(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
@@ -975,13 +990,12 @@ function makeGlobal(d, b)
   if (rnd(10))
     return "this";
 
-  var gs = Random.index([
-    "evalcx('')",
-    "evalcx('lazy')",
-    "newGlobal({sameZoneAs: {}})", // same zone
-    "newGlobal({sameZoneAs: " + makeExpr(d - 2, b) + "})", // other zone
-    "newGlobal()", // new zone
-  ]);
+  var gs;
+  switch(rnd(4)) {
+    case 0:  gs = "evalcx('')"; break;
+    case 1:  gs = "evalcx('lazy')"; break;
+    default: gs = "newGlobal(" + makeNewGlobalArg(d - 1, b) + ")"; break;
+  }
 
   if (rnd(2))
     gs = "fillShellSandbox(" + gs + ")";
