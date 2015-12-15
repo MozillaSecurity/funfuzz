@@ -652,7 +652,7 @@ def makeTestRev(options):
     return testRev
 
 
-def obtainShell(shell, updateToRev=None):
+def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
     '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
@@ -713,6 +713,11 @@ def obtainShell(shell, updateToRev=None):
 
     if useS3Cache:
         s3CacheObj.compressAndUploadDirTarball(shell.getShellCacheDir(), shell.getS3TarballWithExtFullPath())
+        if updateLatestTxt:
+            # So js-dbg-64-dm-darwin-cdcd33fd6e39 becomes js-dbg-64-dm-darwin-latest.txt with
+            # js-dbg-64-dm-darwin-cdcd33fd6e39 as its contents.
+            txtInfo = '-'.join(shell.getS3TarballWithExt().split('-')[:-1] + ['latest']) + '.txt'
+            s3CacheObj.uploadStrToS3('', txtInfo, shell.getS3TarballWithExt())
         os.remove(shell.getS3TarballWithExtFullPath())
 
 
