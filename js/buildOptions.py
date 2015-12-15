@@ -113,6 +113,12 @@ def addParserOptions():
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
+    parser.add_argument('--enable-oom-breakpoint'  # Extra debugging help for OOM assertions
+                        dest='enableOomBreakpoint',
+                        action='store_true',
+                        default=False,
+                        help='Build shells with --enable-oom-breakpoint. ' +
+                        'Defaults to "%(default)s".')
     randomizeBool(['--enable-simulator=arm'], 0.3, 0,
                   dest='enableSimulatorArm32',
                   help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
@@ -189,6 +195,8 @@ def computeShellType(buildOptions):
         fileName.append('vg')
     if buildOptions.enableNsprBuild:
         fileName.append('nsprBuild')
+    if buildOptions.enableOomBreakpoint:
+        fileName.append('oombp')
     if buildOptions.enableSimulatorArm32 or buildOptions.enableSimulatorArm64:
         fileName.append('armSim')
     if sps.isARMv7l:

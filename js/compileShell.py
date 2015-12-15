@@ -466,6 +466,8 @@ def cfgBin(shell, binToBeCompiled):
         if shell.buildOptions.enableMoreDeterministic:
             # Fuzzing tweaks for more useful output, implemented in bug 706433
             cfgCmdList.append('--enable-more-deterministic')
+        if shell.buildOptions.enableOomBreakpoint:  # Extra debugging help for OOM assertions
+            cfgCmdList.append('--enable-oom-breakpoint')
 
         if shell.buildOptions.buildWithVg:
             cfgCmdList.append('--enable-valgrind')
