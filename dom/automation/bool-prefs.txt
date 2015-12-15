@@ -201,7 +201,6 @@ layout.css.contain.enabled
 layout.css.display-contents.enabled
 layout.css.DOMMatrix.enabled
 layout.css.object-fit-and-position.enabled
-layout.css.ruby.enabled
 layers.deaa.enabled
 layers.enable-tiles
 layout.event-regions.enabled
