@@ -107,7 +107,7 @@ def addParserOptions():
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
-    parser.add_argument('--enable-oom-breakpoint'  # Extra debugging help for OOM assertions
+    parser.add_argument('--enable-oom-breakpoint',  # Extra debugging help for OOM assertions
                         dest='enableOomBreakpoint',
                         action='store_true',
                         default=False,
