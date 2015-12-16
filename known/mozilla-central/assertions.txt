@@ -2153,6 +2153,20 @@ ASSERTION: Bounds computation mismatch: 'mContainerBounds.Contains(mAccumulatedC
 # Bug 1232875
 Assertion failure: !parent->GetPrevInFlow() (Col group should always be in a first-in-flow table frame),
 
+# Bug 1233135
+Assertion failure: fieldsetContentDisplay->mDisplay == 1 (bug in nsRuleNode::ComputeDisplayData?),
+
+# Bug 1233148
+ASSERTION: Wrong parent style context: 'Error', file layout/base/RestyleManager.cpp
+ASSERTION: Style contexts are not in the same style context tree: 'top1 == top2', file layout/base/RestyleManager.cpp
+ASSERTION: frame still referencing style context: 'mFrameRefCnt == 0', file layout/style/nsStyleContext.cpp
+
+# Bug 1233174
+ASSERTION: Residual translation out of range: '-0.5 <= (&transformed)->x && (&transformed)->x < 0.5 && -0.5 <= (&transformed)->y && (&transformed)->y < 0.5', file Layers.h
+
+# Bug 1233191
+Assertion failure: !prevChildWasAnonGridItem (two anon grid items in a row),
+
 
 ################################
 #                              #
