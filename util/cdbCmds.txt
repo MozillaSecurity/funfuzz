@@ -1,8 +1,20 @@
+.echo Toggle for 32-bit/64-bit modes
+.echo See http://people.mozilla.org/~aklotz/windbgcheatsheet.html
+!wow64exts.sw
 .echo Display lines in stack trace
 .lines
-~kn 250
 .echo .ecxr switches to the exception context frame
 .ecxr
+.echo Inspect program counter, equivalent of gdb's "x/i $pc"
+u
+.echo Inspect eip (32-bit) register, equivalent of gdb's "x/b $eax"
+db @@c++(@eip) L4
+.echo Inspect rip (64-bit) register, equivalent of gdb's "x/b $rax"
+db @@c++(@rip) L8
+.echo To switch frames: .frame /r /c <frame number>
+.echo Then inspect locals using: dv <locals in this frame>
+.echo Running !exploitable
 !exploitable -v
-~*kPn 250
+.echo Backtrace of faulting thread, limited to 250 frames
+~#kn 250
 q
