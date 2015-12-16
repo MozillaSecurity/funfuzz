@@ -2180,9 +2180,6 @@ Assertion failure: self->contains(cx, aprop),
 # Bug 1174322
 Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i], val)),
 
-# Bug 1182866
-Assertion failure: data.s.payload.why == why,
-
 # Bug 1184389
 Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
 
