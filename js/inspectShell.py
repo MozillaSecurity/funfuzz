@@ -20,6 +20,9 @@ if not os.path.exists(path2):
     sys.exit(2)
 import envVars
 
+RUN_NSPR_LIB = ''
+RUN_PLDS_LIB = ''
+RUN_PLC_LIB = ''
 
 if sps.isWin:
     # Update if the following changes:
@@ -40,6 +43,9 @@ if sps.isWin:
     RUN_ICUTUD_LIB_EXCL_EXT = 'icutud'
 
     RUN_MOZGLUE_LIB = 'mozglue.dll'
+    RUN_NSPR_LIB = 'nspr4.dll'
+    RUN_PLDS_LIB = 'plds4.dll'
+    RUN_PLC_LIB = 'plc4.dll'
     RUN_TESTPLUG_LIB = 'testplug.dll'
 elif platform.system() == 'Darwin':
     RUN_MOZGLUE_LIB = 'libmozglue.dylib'
@@ -48,7 +54,7 @@ elif platform.system() == 'Linux':
 
 # These include running the js shell (mozglue) and should be in dist/bin.
 # At least Windows required the ICU libraries.
-ALL_RUN_LIBS = [RUN_MOZGLUE_LIB]
+ALL_RUN_LIBS = [RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB]
 if sps.isWin:
     ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
     for icu_ver in (52, 55, 56):
