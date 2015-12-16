@@ -333,3 +333,6 @@ js::jit::ExecutableAllocator::releasePoolPages
 
 # Bug 1231170
 js::TraceLoggerThread::eventText
+
+# Bug 1232859
+js::jit::Compile
