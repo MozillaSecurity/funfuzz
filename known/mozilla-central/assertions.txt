@@ -2218,3 +2218,6 @@ Assertion failure: !cx->isExceptionPending(),
 
 # Bug 1232386
 Assertion failure: !cx->isExceptionPending(),
+
+# Bug 1233175
+Assertion failure: !isSharedMemory,
