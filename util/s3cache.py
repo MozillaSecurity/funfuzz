@@ -84,4 +84,12 @@ class S3Cache(object):
         k = Key(self.bucket)
         k.key = destpath
         k.set_contents_from_filename(filename, reduced_redundancy=True)
+
+    def uploadStrToS3(self, destDir, filename, contents):
+        '''Uploads a string to an S3 file.'''
+        print 'Uploading %s to Amazon S3 bucket %s' % (filename, self.bucket_name)
+
+        k2 = Key(self.bucket)
+        k2.key = os.path.join(destDir, filename)
+        k2.set_contents_from_string(contents, reduced_redundancy=True)
         print  # This newline is needed to get the path of the compiled binary printed on a newline.

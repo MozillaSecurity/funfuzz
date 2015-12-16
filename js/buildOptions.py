@@ -104,15 +104,15 @@ def addParserOptions():
         randomizeBool(['--enable-hardfp'], 0.1, 0.1,
                       dest='enableHardFp',
                       help='Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".')
-    randomizeBool(['--enable-nspr-build'], 0, 0,  # Earliest known working revs all use in-tree NSPR
-                  dest='enableNsprBuild',
-                  help='Build the shell using (in-tree) NSPR. This is the default on Windows. ' +
-                  'On POSIX platforms, shells default to --enable-posix-nspr-emulation. ' +
-                  'Using --enable-nspr-build creates a JS shell that is more like the browser. ' +
-                  'Defaults to "%(default)s".')
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
+    parser.add_argument('--enable-oom-breakpoint',  # Extra debugging help for OOM assertions
+                        dest='enableOomBreakpoint',
+                        action='store_true',
+                        default=False,
+                        help='Build shells with --enable-oom-breakpoint. ' +
+                        'Defaults to "%(default)s".')
     randomizeBool(['--enable-simulator=arm'], 0.3, 0,
                   dest='enableSimulatorArm32',
                   help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
@@ -121,6 +121,14 @@ def addParserOptions():
                   dest='enableSimulatorArm64',
                   help='Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. ' +
                   'Defaults to "%(default)s".')
+    parser.add_argument('--enable-arm-simulator',
+                        dest='enableArmSimulatorObsolete',
+                        action='store_true',
+                        default=False,
+                        help='Build the shell using --enable-arm-simulator for legacy purposes. ' +
+                        'This flag is obsolete and is the equivalent of --enable-simulator=arm, ' +
+                        'use --enable-simulator=[arm|arm64] instead. ' +
+                        'Defaults to "%(default)s".')
 
     return parser, randomizer
 
@@ -130,6 +138,9 @@ def parseShellOptions(inputArgs):
 
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args(inputArgs.split())
+
+    if buildOptions.enableArmSimulatorObsolete:
+        buildOptions.enableSimulatorArm32 = True
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
@@ -176,8 +187,8 @@ def computeShellType(buildOptions):
         fileName.append('asan')
     if buildOptions.buildWithVg:
         fileName.append('vg')
-    if buildOptions.enableNsprBuild:
-        fileName.append('nsprBuild')
+    if buildOptions.enableOomBreakpoint:
+        fileName.append('oombp')
     if buildOptions.enableSimulatorArm32 or buildOptions.enableSimulatorArm64:
         fileName.append('armSim')
     if sps.isARMv7l:
@@ -298,6 +309,9 @@ def main():
     print 'Here are some sample random build configurations that can be generated:'
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args()
+
+    if buildOptions.enableArmSimulatorObsolete:
+        buildOptions.enableSimulatorArm32 = True
 
     for _ in range(30):
         buildOptions = generateRandomConfigurations(parser, randomizer)

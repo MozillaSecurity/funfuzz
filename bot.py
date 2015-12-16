@@ -172,7 +172,7 @@ def printMachineInfo():
 
     # FIXME: Should have if os.path.exists(path to git) or something
     #print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
-    print "Python version: " + sys.version[:5]
+    print "Python version: " + sys.version.split()[0]
     print "Number of cores visible to OS: " + str(multiprocessing.cpu_count())
     print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
 
@@ -216,11 +216,11 @@ def ensureBuild(options):
             with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
                 bRev = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0]
                 cshell = compileShell.CompiledShell(options.buildOptions, bRev)
-                compileShell.obtainShell(cshell)
+                compileShell.obtainShell(cshell, updateLatestTxt=True)
 
                 bDir = cshell.getShellCacheDir()
                 # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
-                #   js-js-dbg-opt-64-dm-nsprBuild-linux
+                #   js-js-dbg-opt-64-dm-linux
                 # This is because options.testType gets prepended along with a dash later.
                 bType = buildOptions.computeShellType(options.buildOptions)[3:]
                 bSrc = (

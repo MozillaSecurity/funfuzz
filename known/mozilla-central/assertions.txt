@@ -565,6 +565,7 @@ ASSERTION: unexpected size: 'mRect.width == desiredSize.Width() && mRect.height 
 
 # Bug 614457
 ASSERTION: col group can own border only at the table edge: 'aIter.IsTableTopMost() || aIter.IsTableBottomMost()', file layout/tables/nsTableFrame.cpp
+ASSERTION: col group can own border only at the table edge: 'aIter.IsTableBStartMost() || aIter.IsTableBEndMost()', file layout/tables/nsTableFrame.cpp
 
 # Bug 614501 (a11y)
 ASSERTION: should only care when we have an outside bullet: 'mContent->GetPrimaryFrame()->GetStyleDisplay()->mDisplay == NS_STYLE_DISPLAY_LIST_ITEM && HaveOutsideBullet()', file layout/generic/nsBlockFrame.cpp
@@ -793,9 +794,6 @@ ASSERTION: Overwriting an existing document channel!
 # Bug 693419?
 ASSERTION: EventListener with no context or scope?: 'aScopeObject && aContext', file dom/src/events/nsJSEventListener.cpp
 
-# Bug 693512
-ASSERTION: Residual translation out of range: '-0.5 <= mResidualTranslation.x && mResidualTranslation.x < 0.5 && -0.5 <= mResidualTranslation.y && mResidualTranslation.y < 0.5', file Layers.h
-
 # Bug 694507
 ASSERTION: Should only get this value in quirks mode: 'aPresContext->CompatibilityMode() == eCompatibility_NavQuirks', file layout/style/nsRuleNode.cpp
 
@@ -891,9 +889,6 @@ ASSERTION: data loss - incomplete row needed more height than available, on top 
 
 # Bug 716452
 ASSERTION: SVG frames should not get here: '!aNonSVGFrame->IsFrameOfType(nsIFrame::eSVG)', file layout/svg/nsSVGIntegrationUtils.cpp
-
-# Bug 717454
-ABORT: must have a computed width: 'rs->ComputedWidth() !=
 
 # Bug 717514
 ASSERTION: bullets should not be containers: 'aFrame->GetType() != nsGkAtoms::bulletFrame || isInline', file layout/base/nsLayoutUtils.cpp
@@ -1664,7 +1659,7 @@ ASSERTION: Different attrs at same position: '!attrName->Equals(attr2->NodeInfo(
 ABORT: woke up from delay w/o being delayed?: 'mConnecting == CONNECTING_DELAYED', file netwerk/protocol/websocket/WebSocketChannel.cpp
 
 # Bug 1017685
-Mozilla has caught an Obj-C exception [NSInvalidArgumentException: *** -[_NSConcreteUserNotification setUserInfo:]. UserInfo too big. Encoded data greater than 1k.]
+Mozilla has caught an Obj-C exception [NSInvalidArgumentException: *** -[_NSConcreteUserNotification setUserInfo:]. UserInfo too big. Encoded data greater than
 
 # Bug 1018394
 Assertion failure: mExtraForgetSkippableCalls == 0 (Forget to reset extra forget skippable calls?),
@@ -1727,7 +1722,7 @@ ASSERTION: aElement should be the element and not the pseudo-element: 'pseudoTyp
 Assertion failure: false (should have already reflowed the anonymous block child),
 
 # Bug 1072827
-ABORT: clamped(): aMax must be greater than or equal to aMin: 'aMax >= aMin', file nsAlgorithm.h
+Assertion failure: aMax >= aMin (clamped(): aMax must be greater than or equal to aMin),
 
 # Bug 1074584
 Assertion failure: HasEverBeenBound(),
@@ -1760,6 +1755,7 @@ StickyTimeDuration
 # My guess was that trustedKeyEvent could trigger a 'keypress' without a corresponding 'keydown' (and without having a 'repeat' flag)
 # If I see the latter assertion with a different Obj-C assertion, I'll want to file it.
 Mozilla has caught an Obj-C exception [NSInternalInconsistencyException: Invalid parameter not satisfying: NSEventMaskFromType(type) & (KeyMask|NSFlagsChangedMask)]
+Mozilla has caught an Obj-C exception [NSInternalInconsistencyException: Invalid parameter not satisfying: _NSEventMask64FromType(type) & (KeyMask|NSFlagsChangedMask)]
 Assertion failure: isAsmJS(),
 
 # Bug 1140043
@@ -1917,17 +1913,6 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 1223695 (skia canvas)
 : failed assertion "__null != texture"
 
-# Bug 1223740 (skia canvas)
-: failed assertion "(int16_t)x == x"
-
-# Bug 1225381 (skia canvas)
-: failed assertion "n64 == n32"
-
-# Bug 1221881
-ASSERTION: Should have state machine.: 'mDecoderStateMachine != nullptr', file dom/media/MediaDecoder.cpp
-Assertion failure: aFailureHandling == DontAssertDispatchSuccess ||
-Assertion failure: mDecoderStateMachine (Must be called after Load().),
-
 # Bug 1221418
 Assertion failure: mActorDestroyed,
 
@@ -1945,10 +1930,6 @@ ASSERTION: we should have saved a frame property: 'Not Reached', file layout/bas
 
 # Bug 1221889
 ASSERTION: Incorrectly ignoring blocking!: 'mStartBlocking == GraphImpl()->mStateComputedTime || aTime <= mStartBlocking', file dom/media/MediaStreamGraph.cpp
-
-# Bug 1221904
-ASSERTION: Invalid offset: 'uint32_t(aOffset) <= mSkipChars->mCharCount', file gfx/thebes/gfxSkipChars.cpp
-ASSERTION: Text run does not map enough text for our reflow: 'gfxSkipCharsIterator(iter).ConvertOriginalToSkipped(offset + length) <= mTextRun->GetLength()', file layout/generic/nsTextFrame.cpp
 
 # Bug 1223285
 ASSERTION: After-spacing inside a ligature!: 'i - 1 <= aStart || aSpacing[i - 1 - aStart].mAfter == 0', file gfx/thebes/gfxTextRun.cpp
@@ -1992,9 +1973,6 @@ ASSERTION: why should we have flushed style again?: 'mPresShell && currentGenera
 # Bug 1224574
 ASSERTION: Bogus block-size: 'ComputedBSize() == NS_UNCONSTRAINEDSIZE || ComputedBSize() >= 0', file layout/generic/nsHTMLReflowState.cpp
 
-# Bug 1218799
-Assertion failure: PR_GetCurrentThread() == mOwningThread,
-
 # Bug 1225005
 Assertion failure: containingBlockWidth >= 0,
 Assertion failure: containingBlockHeight >= 0,
@@ -2004,17 +1982,176 @@ ASSERTION: reflow state computed incorrect inline size: 'reflowState.ComputedISi
 ASSERTION: non-root frame's desired size changed during an incremental reflow: '(target == rootFrame && size.BSize(wm) == NS_UNCONSTRAINEDSIZE) || (desiredSize.ISize(wm) == size.ISize(wm) && desiredSize.BSize(wm) == size.BSize(wm))', file layout/base/nsPresShell.cpp
 ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
 
-# Bug 1225368
-Assertion failure: !sz.IsFrozen(),
-
-# Bug 1225376
-Assertion failure: alignSelf != 6 && alignSelf != 7 (Grid's 'align-self' axis is never parallel to the container's inline axis, so these should've computed to 'start' already),
-
 # Bug 1223655 (intermittent in both regression-testing and fuzzing) (comment 8 indicates they're on it)
 ASSERTION: Track not found: 'Error', file dom/media/MediaStreamGraph.cpp
 
 # Bug 1225643
 Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
+
+# Bug 1227465
+ASSERTION: Must have a computed inline size: 'aReflowState.ComputedISize() !=
+
+# Bug 1227468
+ASSERTION: inline-size less than zero: 'aContainingBlockISize >= 0', file layout/base/nsLayoutUtils.cpp
+
+# Bug 1227489
+ASSERTION: writing-mode mismatch: 'aWritingMode.IgnoreSideways() == GetWritingMode().IgnoreSideways()', file WritingModes.h
+
+# Bug 1227493
+ASSERTION: dirtyness out of sync:
+
+# Bug 1227498
+Assertion failure: mStyleScopes.Contains(cur),
+
+# Bug 1227525
+Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-contents frame unconstrained available height, so it should be complete),
+
+# Bug 1228127
+: failed assertion "!SkScalarIsNaN(c->fX) && !SkScalarIsNaN(c->fY)"
+
+# Bug 1228128
+: failed assertion "is_between_unsorted(r->fY, tmp[0].fY, tmp[1].fY)"
+
+# Bug 1228484
+Assertion failure: !Graph() || Graph() == aStream->Graph(),
+
+# Bug 820667? (with slow printing of non-fatal assertions)
+Assertion failure: (((bool)(__builtin_expect(!!(!NS_FAILED_impl( owningThread->Dispatch(this, nsIEventTarget::DISPATCH_NORMAL))), 1)))),
+
+# Bug 1228677
+Assertion failure: (loadInfo->GetSecurityMode() & nsILoadInfo::SEC_REQUIRE_CORS_DATA_INHERITS) == 0 (can not enforce CORS when calling Open2()),
+
+# Bug 1228683
+Assertion failure: face < mFaceCount,
+
+# Bug 1228687
+Assertion failure: gl->IsCurrent(),
+Assertion failure: IsCurrent(),
+
+# Bug 1228711
+Assertion failure: false (Unexpected GL error.),
+
+# Bug 1228788 (FATAL ERROR: AsyncShutdown timeout in profile-before-change Conditions: [{"name":"Media shutdown: blocking on media thread")
+ABORT: file dom/media/MediaManager.cpp
+
+# Bug 1228789
+ASSERTION: CSSUnprefixingService returned an unrecognized type of gradient function: 'Error', file layout/style/nsCSSParser.cpp
+
+# Bug 1228871
+ASSERTION: Shouldn't have anything queued!: 'aStatus != Terminating || mQueuedRunnables.IsEmpty()', file dom/workers/WorkerPrivate.cpp
+
+# Bug 1228882
+ASSERTION: element already removed from map: 'mElements.Contains(aElement)', file dom/base/DirectionalityUtils.cpp
+
+# Bug 1228886
+Assertion failure: false (Failed to zero texture data.),
+
+# Bug 1228887 (DOM Notifications)
+Assertion failure: !JS_IsExceptionPending(cx),
+Assertion failure: !cx->isExceptionPending(),
+
+# Bug 1228890
+Assertion failure: !mSyncLoopTarget,
+
+# Bug 1228916
+Assertion failure: aThebesContext->CurrentOp() == CompositionOp::OP_OVER,
+
+# Bug 1228937
+Assertion failure: gFactoryOps->IsEmpty(),
+
+# Bug 1229225
+Assertion failure: false (We should have caught all other errors.),
+
+# Bug 1229424
+ASSERTION: CalcDifference() returned bigger hint than MaxDifference(): 'NS_IsHintSubset(difference, maxDifference)', file layout/style/nsStyleContext.cpp
+
+# Bug 1229437
+Assertion failure: aFloat->GetParent() == mBlock || (aFloat->GetStateBits() & NS_FRAME_IS_PUSHED_FLOAT) (float should be in this block unless it was marked as pushed float),
+
+# Bug 1229988
+Assertion failure: aTarget (Don't create a gfxContext without a DrawTarget),
+
+# Bug 1229997
+Assertion failure: mIdleTimer,
+
+# Bug 1229999
+Assertion failure: aStart >= nsStyleGridLine::kMinLine && aStart <= nsStyleGridLine::kMaxLine (invalid start line),
+
+# Bug 1230092
+ASSERTION: QueryInterface needed: 'query_result.get() == mRawPtr', file nsCOMPtr.h
+
+# Bug 1230115
+Mozilla has caught an Obj-C exception [NSMallocException: NSImage: Insufficient memory to allocate pixel data buffer
+
+# Bug 1230319
+ASSERTION: don't call InitScriptRun with aborted shaping state: 'aTextRun->GetShapingState() != gfxTextRun::eShapingState_Aborted', file gfx/thebes/gfxTextRun.cpp
+
+# Bug 1230378
+Assertion failure: mFloats.ContainsFrame(nif),
+
+# Bug 1230386
+Assertion failure: !MustReframeForBeforePseudo() (shouldn't need to reframe ::before as we would have had eRestyle_Subtree and wouldn't get in here),
+
+# Bug 1230394
+Assertion failure: !mActor || mActor->mDestroyed (Cannot use a texture on several IPC channels.),
+
+# Bug 1230400
+Assertion failure: mLoadGroup,
+
+# Bug 1230401
+ASSERTION: Already frozen!: '!mFrozen', file dom/workers/WorkerPrivate.cpp
+ASSERTION: Not yet frozen!: 'mFrozen', file dom/workers/WorkerPrivate.cpp
+
+# Bug 1230405  (what to do with ASSERT_UNLESS_FUZZING ??)
+dom/indexedDB/ActorsParent.cpp
+
+# Bug 1230406
+Assertion failure: graph->GraphRate() == aCtx->SampleRate(),
+
+# Bug 1230408
+Assertion failure: false (MOZ_ASSERT_UNREACHABLE: Any line break inside ruby box should have been suppressed),
+
+# Bug 1230422
+Assertion failure: !mAsyncStream,
+
+# Bug 1230424
+ASSERTION: unexpected anchored chunk edges: 'aVisIStartEdge <= aVisIEndEdge', file layout/svg/SVGTextFrame.cpp
+
+# Bug 1230425
+Assertion failure: mFrame->Combines3DTransformWithAncestors() || IsTransformSeparator(),
+
+# Bug 1230639
+ASSERTION: All class values should be StoresOwnData and parsedvia Element::BeforeSetAttr, so available here: 'otherClasses || aData->mModType == nsIDOMMutationEvent::REMOVAL', file layout/style/nsCSSRuleProcessor.cpp
+
+# Bug 1230692 (within mozilla::WebAudioDecodeJob::OnFailure)
+Assertion failure: !Failed(),
+
+# Bug 1230698 (within NS_CreateJSTimeoutHandler)
+Assertion failure: !Failed(),
+
+# Bug 1230700 (within mozilla::dom::Notification::ShowInternal)
+Assertion failure: !Failed(),
+
+# Bug 1230704 (within mozilla::dom::AbortablePromise::DoAbort)
+Assertion failure: !Failed(),
+
+# Bug 1230696
+Assertion failure: hasPerspective (Why did we create nsDisplayPerspective?)
+
+# Bug 1223561
+Assertion failure: !aBuilder->IsForPainting() || !ShouldInTopLayerForFullscreen(elem),
+
+# Bug 1232823
+Assertion failure: aVideoType != MediaSourceEnum::Other || aAudioType != MediaSourceEnum::Other,
+
+# Bug 1232829
+Assertion failure: GetRefreshDriver() (Refresh driver should still be valid inside WillRefresh),
+
+# Bug 1232856
+ASSERTION: Bounds computation mismatch: 'mContainerBounds.Contains(mAccumulatedChildBounds)', file layout/base/FrameLayerBuilder.cpp
+
+# Bug 1232875
+Assertion failure: !parent->GetPrevInFlow() (Col group should always be in a first-in-flow table frame),
 
 
 ################################
@@ -2063,32 +2200,24 @@ Assertion failure: HasMOVWT(),
 
 # Bug 1221378
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
+Assertion failure: !entry->shape(),
 
 # Bug 1221385
 Assertion failure: m_refCount == 1,
 Assertion failure: jrt_->mutatingBackedgeList_,
 
-# Bug 1221747
-Assertion failure: base[size - 1] == 0,
-
 # Bug 1222675
 Assertion failure: result ([OOM] Is it really infallible?),
 Assertion failure: !unknownProperties(),
 
-# Bug 1224710
-Assertion failure: aIndex < mLength,
-
-# Bug 1224883
-Assertion failure: calleeScript->hasBaselineScript(),
-
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
-# Bug 1226445
-Assertion failure: framePushed_ >= uint32_t(-value),
+# Bug 1231170
+Assertion failure: lastEntryId < events.size(),
 
-# Bug 1226888
-Assertion failure: bufferVal.has(this, ValueEdge(vp)) || !ValueEdge(vp).maybeInRememberedSet(nursery_),
+# Bug 1231925
+Assertion failure: !cx->isExceptionPending(),
 
-# Bug 1226896
+# Bug 1232386
 Assertion failure: !cx->isExceptionPending(),

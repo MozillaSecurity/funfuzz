@@ -57,9 +57,8 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--ion-instruction-reordering=on') and chance(.2):
         args.append("--ion-instruction-reordering=on")  # --ion-instruction-reordering=on landed in bug 1195545
 
-    # Disabled until bug 1226816 is fixed.
-    # if shellSupportsFlag(shellPath, '--ion-shared-stubs=on') and chance(.2):
-    #     args.append("--ion-shared-stubs=on")  # --ion-shared-stubs=on landed in bug 1168756
+    if shellSupportsFlag(shellPath, '--ion-shared-stubs=on') and chance(.2):
+        args.append("--ion-shared-stubs=on")  # --ion-shared-stubs=on landed in bug 1168756
 
     if shellSupportsFlag(shellPath, '--non-writable-jitcode') and chance(.3):
         args.append("--non-writable-jitcode")  # --non-writable-jitcode landed in bug 977805

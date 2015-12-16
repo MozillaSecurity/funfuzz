@@ -97,7 +97,6 @@ dom.navigator-property.disable.mozContacts
 dom.always_stop_slow_scripts
 dom.archivereader.enabled
 dom.audiochannel.mutedByDefault
-dom.disable_image_src_set
 dom.enable_resource_timing
 dom.event.clipboardevents.enabled
 dom.event.contextmenu.enabled
@@ -114,6 +113,7 @@ dom.image.srcset.enabled
 dom.imagecapture.enabled
 dom.indexedDB.enabled
 dom.indexedDB.experimental
+dom.ipc.plugins.asyncdrawing.enabled
 dom.ipc.plugins.enabled.i386
 dom.ipc.plugins.unloadASAP
 dom.ipc.plugins.java.enabled
@@ -200,8 +200,6 @@ layout.css.contain.enabled
 layout.css.display-contents.enabled
 layout.css.DOMMatrix.enabled
 layout.css.object-fit-and-position.enabled
-layout.css.unicode-range.enabled
-layout.css.ruby.enabled
 layers.deaa.enabled
 layers.enable-tiles
 layout.event-regions.enabled
@@ -216,7 +214,9 @@ layout.css.expensive-style-struct-assertions.enabled
 layout.css.flexbox.enabled
 layout.css.float-logical-values.enabled
 layout.css.grid.enabled
+layout.css.grid-template-subgrid-value.enabled
 layout.css.masking.enabled
+layout.css.prefixes.webkit
 layout.css.report_errors
 layout.css.scroll-behavior.property-enabled
 layout.css.scroll-snap.enabled
@@ -224,6 +224,7 @@ layout.css.sticky.enabled
 layout.css.supports-rule.enabled
 layout.css.text-align-true-value.enabled
 layout.css.text-combine-upright.enabled
+layout.css.text-emphasis.enabled
 layout.css.vertical-text.enabled
 layout.css.visited_links_enabled
 layout.css.convertFromNode.enabled
@@ -251,6 +252,7 @@ media.mediasource.format-reader
 media.mediasource.format-reader.webm
 media.mediasource.mp4.enabled
 media.mediasource.webm.enabled
+media.mediasource.webm.audio.enabled
 media.ogg.enabled
 media.opus.enabled
 media.raw.enabled
@@ -356,8 +358,10 @@ webgl.angle.force-warp
 webgl.can-lose-context-in-foreground
 webgl.default-no-alpha
 webgl.disable-angle
+webgl.disable-DOM-blit-uploads
 webgl.disable-extensions
 webgl.disabled
+webgl.dxgl.enabled
 webgl.enable-draft-extensions
 webgl.enable-prototype-webgl2
 webgl.force-enabled
@@ -367,4 +371,5 @@ webgl.lose-context-on-memory-pressure
 webgl.restore-context-when-visible
 webgl.min_capability_mode
 webgl.prefer-16bpp
+webgl.webgl2-compat-mode
 xpinstall.whitelist.required

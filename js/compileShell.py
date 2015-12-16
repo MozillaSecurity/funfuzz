@@ -62,16 +62,12 @@ class CompiledShell(object):
         self.buildOptions = buildOpts
 
         self.jsObjdir = ''
-        self.nsprObjdir = ''
 
         self.cfg = ''
         self.destDir = ''
         self.addedEnv = ''
         self.fullEnv = ''
-        self.jsBuildSystemConsidersNspr = None
         self.jsCfgFile = ''
-        self.jsUsesNoThreadsFlag = None
-        self.nsprCfgFile = ''
 
     def getCfgCmdExclEnv(self):
         return self.cfg
@@ -94,15 +90,6 @@ class CompiledShell(object):
     def getHgHash(self):
         return self.hgHash
 
-    def getJsBuildSystemConsidersNspr(self):
-        return self.jsBuildSystemConsidersNspr
-
-    def setJsBuildSystemConsidersNspr(self):
-        # This rev is when js build system compiles NSPR together when compiling threadsafe builds
-        # Landed in m-c rev ID 194734 (from TBPL) and in mid-July 2014, when Fx33 was nightly.
-        self.jsBuildSystemConsidersNspr = hgCmds.existsAndIsAncestor(
-            self.getRepoDir(), 'a459b02a9ca472fa10299b5cb6c0456fe492c78a', '.')
-
     def getJsCfgPath(self):
         self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
         assert os.path.isfile(self.jsCfgFile)
@@ -114,34 +101,11 @@ class CompiledShell(object):
     def setJsObjdir(self, oDir):
         self.jsObjdir = oDir
 
-    def getJsUsesNoThreadsFlag(self):
-        return self.jsUsesNoThreadsFlag
-
-    def setJsUsesNoThreadsFlag(self):
-        # This rev is when --enable/disable-threadsafe was replaced by the --no-threads flag.
-        # Landed in m-c rev ID 195996 (from TBPL) and in end-July 2014, when Fx34 was nightly.
-        self.jsUsesNoThreadsFlag = hgCmds.existsAndIsAncestor(
-            self.getRepoDir(), '35038c3324ee08b29924059da9b117940e740bd7', '.')
-
-    def getNsprCfgPath(self):
-        self.nsprCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirNsprSrc(), 'configure'))
-        assert os.path.isfile(self.nsprCfgFile)
-        return self.nsprCfgFile
-
-    def getNsprObjdir(self):
-        return self.nsprObjdir
-
-    def setNsprObjdir(self, oDir):
-        self.nsprObjdir = oDir
-
     def getRepoDir(self):
         return self.buildOptions.repoDir
 
     def getRepoDirJsSrc(self):
         return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
-
-    def getRepoDirNsprSrc(self):
-        return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'nsprpub'))
 
     def getRepoName(self):
         return hgCmds.getRepoNameFromHgrc(self.buildOptions.repoDir)
@@ -163,7 +127,7 @@ class CompiledShell(object):
             os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if sps.isWin else '')))
 
     def getShellCompiledRunLibsPath(self):
-        lDir = self.getJsObjdir() if self.getJsBuildSystemConsidersNspr() else self.getNsprObjdir()
+        lDir = self.getJsObjdir()
         libsList = [
             sps.normExpUserPath(os.path.join(lDir, 'dist', 'bin', runLib))
             for runLib in inspectShell.ALL_RUN_LIBS
@@ -224,14 +188,6 @@ def autoconfRun(cwDir):
 def cfgJsCompile(shell):
     '''Configures, compiles and copies a js shell according to required parameters.'''
     print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
-    shell.setJsBuildSystemConsidersNspr()
-    shell.setJsUsesNoThreadsFlag()
-
-    if shell.buildOptions.enableNsprBuild and not shell.getJsBuildSystemConsidersNspr():
-        os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
-        shell.setNsprObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-nspr')))
-        compileNspr(shell)
-
     os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
     shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
 
@@ -239,7 +195,7 @@ def cfgJsCompile(shell):
     configureTryCount = 0
     while True:
         try:
-            cfgBin(shell, 'js')
+            cfgBin(shell)
             break
         except Exception as e:
             configureTryCount += 1
@@ -260,7 +216,7 @@ def cfgJsCompile(shell):
         envDump(shell, compileLog)
 
 
-def cfgBin(shell, binToBeCompiled):
+def cfgBin(shell):
     '''This function configures a binary according to required parameters.'''
     cfgCmdList = []
     cfgEnvDt = copy.deepcopy(os.environ)
@@ -282,15 +238,12 @@ def cfgBin(shell, binToBeCompiled):
             cfgEnvDt['CC'] = 'gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
             cfgEnvDt['CXX'] = 'g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7'
         cfgCmdList.append('sh')
-        if binToBeCompiled == 'nspr':
-            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-        else:
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-            # From mjrosenb: things might go wrong if these three lines are not present for
-            # compiling ARM on a 64-bit host machine. Not needed if compiling on the board itself.
-            # cfgCmdList.append('--target=arm-linux-gnueabi')
-            # cfgCmdList.append('--with-arch=armv7-a')
-            # cfgCmdList.append('--with-thumb')
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        # From mjrosenb: things might go wrong if these three lines are not present for
+        # compiling ARM on a 64-bit host machine. Not needed if compiling on the board itself.
+        # cfgCmdList.append('--target=arm-linux-gnueabi')
+        # cfgCmdList.append('--with-arch=armv7-a')
+        # cfgCmdList.append('--with-thumb')
         if not shell.buildOptions.enableHardFp:
             cfgCmdList.append('--target=arm-linux-gnueabi')
     elif shell.buildOptions.enable32 and os.name == 'posix':
@@ -315,10 +268,7 @@ def cfgBin(shell, binToBeCompiled):
             if sps.isProgramInstalled('brew'):
                 cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
             cfgCmdList.append('sh')
-            if binToBeCompiled == 'nspr':
-                cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            else:
-                cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
             cfgCmdList.append('--enable-macos-target=10.5')
             if shell.buildOptions.buildWithAsan:
@@ -342,10 +292,7 @@ def cfgBin(shell, binToBeCompiled):
                 cfgEnvDt['CC'] = 'gcc -m32' + SSE2_FLAGS
                 cfgEnvDt['CXX'] = 'g++ -m32' + SSE2_FLAGS
             cfgCmdList.append('sh')
-            if binToBeCompiled == 'nspr':
-                cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            else:
-                cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i686-pc-linux')
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
@@ -356,10 +303,7 @@ def cfgBin(shell, binToBeCompiled):
                 cfgCmdList.append('--enable-simulator=arm')
         else:
             cfgCmdList.append('sh')
-            if binToBeCompiled == 'nspr':
-                cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            else:
-                cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.7 Lion and greater
     elif sps.isMac and sps.macVer() >= [10, 7] and not shell.buildOptions.enable32:
         if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
@@ -371,11 +315,7 @@ def cfgBin(shell, binToBeCompiled):
         if sps.isProgramInstalled('brew'):
             cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
         cfgCmdList.append('sh')
-        if binToBeCompiled == 'nspr':
-            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            cfgCmdList.append('--enable-64bit')
-        else:
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         cfgCmdList.append('--target=x86_64-apple-darwin12.5.0')  # Mountain Lion 10.8.5
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
@@ -385,14 +325,7 @@ def cfgBin(shell, binToBeCompiled):
     elif sps.isWin:
         cfgEnvDt['MAKE'] = 'mozmake'  # Workaround for bug 948534
         cfgCmdList.append('sh')
-        if binToBeCompiled == 'nspr':
-            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            if shell.buildOptions.enable32:
-                cfgCmdList.append('--enable-win32-target=WIN95')
-            else:
-                cfgCmdList.append('--enable-64bit')
-        else:
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.buildOptions.enable32:
             if shell.buildOptions.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
@@ -410,11 +343,7 @@ def cfgBin(shell, binToBeCompiled):
             cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
             cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
         cfgCmdList.append('sh')
-        if binToBeCompiled == 'nspr':
-            cfgCmdList.append(os.path.normpath(shell.getNsprCfgPath()))
-            cfgCmdList.append('--enable-64bit')
-        else:
-            cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
+        cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
@@ -423,60 +352,34 @@ def cfgBin(shell, binToBeCompiled):
         assert 'clang++' in cfgEnvDt['CXX']
         cfgCmdList.append('--disable-jemalloc')  # See bug 1146895
 
-    # For NSPR, specify "--disable-debug --enable-optimize" to generate an opt build.
-    # They can actually be used independently, but it's not recommended.
-    # https://developer.mozilla.org/en-US/docs/NSPR_build_instructions#Configure_options
     if shell.buildOptions.enableDbg:
-        # NSPR configure without options compiles debug by default
-        if binToBeCompiled == 'js':
-            cfgCmdList.append('--enable-debug')
-    elif shell.buildOptions.disableDbg or binToBeCompiled == 'nspr':
+        cfgCmdList.append('--enable-debug')
+    elif shell.buildOptions.disableDbg:
         cfgCmdList.append('--disable-debug')
 
     if shell.buildOptions.enableOpt:
         cfgCmdList.append('--enable-optimize' + ('=-O1' if shell.buildOptions.buildWithVg else ''))
-    elif binToBeCompiled == 'js' and shell.buildOptions.disableOpt:
-        # NSPR configure without options compiles debug by default
+    elif shell.buildOptions.disableOpt:
         cfgCmdList.append('--disable-optimize')
+    if shell.buildOptions.enableProfiling:
+        cfgCmdList.append('--enable-profiling')
 
-    if binToBeCompiled == 'nspr':
-        cfgCmdList.append('--prefix=' +
-                          sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
-    else:
-        if shell.buildOptions.enableProfiling:
-            cfgCmdList.append('--enable-profiling')
-        if shell.getJsUsesNoThreadsFlag() and shell.buildOptions.enableNsprBuild:
-            cfgCmdList.append('--enable-nspr-build')
-        else:
-            if shell.buildOptions.enableNsprBuild:
-                cfgCmdList.append('--enable-threadsafe')
-                if not shell.getJsBuildSystemConsidersNspr():
-                    cfgCmdList.append('--with-nspr-prefix=' +
-                                      sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist')))
-                    cfgCmdList.append('--with-nspr-cflags=-I' +
-                                      sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
-                    cfgCmdList.append('--with-nspr-libs=' + ' '.join([
-                        sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib',
-                                                         compileLib))
-                        for compileLib in inspectShell.ALL_COMPILE_LIBS
-                        ]))
-            else:
-                cfgCmdList.append('--disable-threadsafe')
+    if shell.buildOptions.enableMoreDeterministic:
+        # Fuzzing tweaks for more useful output, implemented in bug 706433
+        cfgCmdList.append('--enable-more-deterministic')
+    if shell.buildOptions.enableOomBreakpoint:  # Extra debugging help for OOM assertions
+        cfgCmdList.append('--enable-oom-breakpoint')
 
-        if shell.buildOptions.enableMoreDeterministic:
-            # Fuzzing tweaks for more useful output, implemented in bug 706433
-            cfgCmdList.append('--enable-more-deterministic')
+    if shell.buildOptions.buildWithVg:
+        cfgCmdList.append('--enable-valgrind')
+        cfgCmdList.append('--disable-jemalloc')
 
-        if shell.buildOptions.buildWithVg:
-            cfgCmdList.append('--enable-valgrind')
-            cfgCmdList.append('--disable-jemalloc')
-
-        # We add the following flags by default.
-        if os.name == 'posix':
-            cfgCmdList.append('--with-ccache')
-        cfgCmdList.append('--enable-gczeal')
-        cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
-        cfgCmdList.append('--disable-tests')
+    # We add the following flags by default.
+    if os.name == 'posix':
+        cfgCmdList.append('--with-ccache')
+    cfgCmdList.append('--enable-gczeal')
+    cfgCmdList.append('--enable-debug-symbols')  # gets debug symbols on opt shells
+    cfgCmdList.append('--disable-tests')
 
     if os.name == 'nt':
         # FIXME: Replace this with sps.shellify.
@@ -495,13 +398,12 @@ def cfgBin(shell, binToBeCompiled):
         envVarList.append(strToBeAppended)
     sps.vdump('Command to be run is: ' + sps.shellify(envVarList) + ' ' + sps.shellify(cfgCmdList))
 
-    wDir = shell.getNsprObjdir() if binToBeCompiled == 'nspr' else shell.getJsObjdir()
+    wDir = shell.getJsObjdir()
     assert os.path.isdir(wDir)
 
     if sps.isWin:
         changedCfgCmdList = []
         for entry in cfgCmdList:
-            # See bug 986715 comment 6 as to why we need forward slashes for NSPR
             # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
             #   but really, the whole thing likes forward slashes way better"
             # See bug 1038590 comment 9.
@@ -546,25 +448,6 @@ def compileJs(shell):
     else:
         print out
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
-
-
-def compileNspr(shell):
-    '''Compile a NSPR binary.'''
-    cfgBin(shell, 'nspr')
-    # Continue to use -j1 because NSPR does not yet seem to support parallel compilation very well.
-    # Even if we move to parallel compile NSPR in the future, we must beware of breaking old
-    # build during bisection. Maybe find the changeset that fixes this, and if before that, use -j1,
-    # and after that, use -jX ?
-    nsprCmdList = [MAKE_BINARY, '-C', shell.getNsprObjdir(), '-j1', '-s']
-    out = sps.captureStdout(nsprCmdList, combineStderr=True, ignoreExitCode=True,
-                            currWorkingDir=shell.getNsprObjdir(), env=shell.getEnvFull())[0]
-    for compileLib in inspectShell.ALL_COMPILE_LIBS:
-        if not sps.normExpUserPath(os.path.join(shell.getNsprObjdir(), 'dist', 'lib', compileLib)):
-            print out
-            raise Exception(MAKE_BINARY + " did not result in a NSPR binary.")
-
-    assert os.path.isdir(sps.normExpUserPath(
-        os.path.join(shell.getNsprObjdir(), 'dist', 'include', 'nspr')))
 
 
 def createBustedFile(filename, e):
@@ -650,7 +533,7 @@ def makeTestRev(options):
     return testRev
 
 
-def obtainShell(shell, updateToRev=None):
+def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
     '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
@@ -711,6 +594,11 @@ def obtainShell(shell, updateToRev=None):
 
     if useS3Cache:
         s3CacheObj.compressAndUploadDirTarball(shell.getShellCacheDir(), shell.getS3TarballWithExtFullPath())
+        if updateLatestTxt:
+            # So js-dbg-64-dm-darwin-cdcd33fd6e39 becomes js-dbg-64-dm-darwin-latest.txt with
+            # js-dbg-64-dm-darwin-cdcd33fd6e39 as its contents.
+            txtInfo = '-'.join(shell.getS3TarballWithExt().split('-')[:-1] + ['latest']) + '.txt'
+            s3CacheObj.uploadStrToS3('', txtInfo, shell.getS3TarballWithExt())
         os.remove(shell.getS3TarballWithExtFullPath())
 
 
