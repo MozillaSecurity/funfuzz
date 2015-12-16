@@ -340,7 +340,6 @@ def knownChromeFailure(msg):
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
-        ("self-hosted" in msg and "NS_ERROR" in msg) or                                 # Bug 1216682
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
