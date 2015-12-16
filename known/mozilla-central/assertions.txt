@@ -2141,6 +2141,18 @@ Assertion failure: hasPerspective (Why did we create nsDisplayPerspective?)
 # Bug 1223561
 Assertion failure: !aBuilder->IsForPainting() || !ShouldInTopLayerForFullscreen(elem),
 
+# Bug 1232823
+Assertion failure: aVideoType != MediaSourceEnum::Other || aAudioType != MediaSourceEnum::Other,
+
+# Bug 1232829
+Assertion failure: GetRefreshDriver() (Refresh driver should still be valid inside WillRefresh),
+
+# Bug 1232856
+ASSERTION: Bounds computation mismatch: 'mContainerBounds.Contains(mAccumulatedChildBounds)', file layout/base/FrameLayerBuilder.cpp
+
+# Bug 1232875
+Assertion failure: !parent->GetPrevInFlow() (Col group should always be in a first-in-flow table frame),
+
 
 ################################
 #                              #

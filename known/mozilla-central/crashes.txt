@@ -315,6 +315,10 @@ SpeechTaskCallback::OnResume
 # Bug 1230440
 [TMR] mozilla::layers::BasicContainerLayer::ComputeEffectiveTransforms
 
+# Bug 1232829
+nsRefreshDriver::RemoveRefreshObserver
+mozilla::dom::DocumentTimeline::WillRefresh
+
 
 #############################
 #                           #
