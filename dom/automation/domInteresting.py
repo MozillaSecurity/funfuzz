@@ -359,6 +359,7 @@ def knownChromeFailure(msg):
         "pbu_privacyContextFromWindow" in msg or                                        # bug 931304 whenfixed 'pb'
         ("PeerConnection.js" in msg and "NS_ERROR_FAILURE" in msg) or                   # Bug 978617
         ("PeerConnection.js" in msg and "Illegal constructor" in msg) or                # Bug 1186698
+        ("PeerConnection.js" in msg and "requires 'new'" in msg) or                     # Bug 1186698 testcase 2
         ("PeerConnection.js" in msg and "2152398858" in msg) or                         # Bug 1227496
         ("PeerConnection.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or             # Bug 1230930
         ("PeerConnection.js" in msg and "e is null" in msg) or                          # Bug 1230381
@@ -379,6 +380,7 @@ def knownChromeFailure(msg):
         ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1230087
         ("MainProcessSingleton.js" in msg and "NS_ERROR_ILLEGAL_VALUE" in msg) or       # Bug 1230388
         ("content-sessionStore.js" in msg) or                                           # Bug 1195295 removes some broken code
+        ("NS_ERROR_FAILURE: Failure" in msg) or                                         # Bug 1233254
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
