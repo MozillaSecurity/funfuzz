@@ -471,6 +471,10 @@ class BrowserConfig:
                           type="int", dest="minimumInterestingLevel",
                           default=DOM_FINE + 1,
                           help="minimum domfuzz level for lithium to consider the testcase interesting")
+        parser.add_option("--submit",
+                          action="store_true", dest="submit",
+                          default=False,
+                          help="submit to FuzzManager (if interesting)")
         parser.add_option("--background",
                           action="store_true", dest="background",
                           default=False,
@@ -727,14 +731,24 @@ def interesting(args, tempPrefix):
 def directMain():
     logPrefix = os.path.join(mkdtemp(prefix="domfuzz-rdf-main"), "t")
     print logPrefix
-    bc = BrowserConfig(sys.argv[1:], createCollector.createCollector("DOMFuzz"))
+    collector = createCollector.createCollector("DOMFuzz")
+    bc = BrowserConfig(sys.argv[1:], collector)
     if bc.options.argURL:
         extraPrefs = randomPrefs.grabExtraPrefs(bc.options.argURL)
     else:
         extraPrefs = ""
     br = BrowserResult(bc, bc.options.argURL or "about:blank", logPrefix, extraPrefs=extraPrefs, leaveProfile=True)
     print br.level
-    sys.exit(br.level)
+    if bc.options.submit:
+        if br.level >= bc.options.minimumInterestingLevel:
+            testcaseFilename = bc.options.argURL
+            print "Submitting " + testcaseFilename
+            quality = 0
+            collector.submit(br.crashInfo, testcaseFilename, quality)
+        else:
+            print "Not submitting (not interesting)"
+    else:
+        sys.exit(br.level)
 
 
 if __name__ == "__main__":
