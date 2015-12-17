@@ -2153,6 +2153,26 @@ ASSERTION: Bounds computation mismatch: 'mContainerBounds.Contains(mAccumulatedC
 # Bug 1232875
 Assertion failure: !parent->GetPrevInFlow() (Col group should always be in a first-in-flow table frame),
 
+# Bug 1233135
+Assertion failure: fieldsetContentDisplay->mDisplay == 1 (bug in nsRuleNode::ComputeDisplayData?),
+
+# Bug 1233148
+ASSERTION: Wrong parent style context: 'Error', file layout/base/RestyleManager.cpp
+ASSERTION: Style contexts are not in the same style context tree: 'top1 == top2', file layout/base/RestyleManager.cpp
+ASSERTION: frame still referencing style context: 'mFrameRefCnt == 0', file layout/style/nsStyleContext.cpp
+
+# Bug 1233174
+ASSERTION: Residual translation out of range: '-0.5 <= (&transformed)->x && (&transformed)->x < 0.5 && -0.5 <= (&transformed)->y && (&transformed)->y < 0.5', file Layers.h
+
+# Bug 1233191
+Assertion failure: !prevChildWasAnonGridItem (two anon grid items in a row),
+
+# Bug 1233478
+Assertion failure: aContainingBlockBSize != nscoord(1 << 30) || !aCoord.HasPercent() (caller must deal with %% of unconstrained block-size),
+
+# Bug 1233486
+ASSERTION: http must support nsIUploadChannel2: 'uploadChannel2', file dom/base/nsXMLHttpRequest.cpp
+
 
 ################################
 #                              #
@@ -2179,9 +2199,6 @@ Assertion failure: self->contains(cx, aprop),
 
 # Bug 1174322
 Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i], val)),
-
-# Bug 1182866
-Assertion failure: data.s.payload.why == why,
 
 # Bug 1184389
 Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
@@ -2216,8 +2233,14 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1231170
 Assertion failure: lastEntryId < events.size(),
 
-# Bug 1231925
-Assertion failure: !cx->isExceptionPending(),
-
 # Bug 1232386
 Assertion failure: !cx->isExceptionPending(),
+
+# Bug 1233175
+Assertion failure: !isSharedMemory,
+
+# Bug 1233302
+Assertion failure: fd >= 0 (Can't open /dev/urandom?!),
+
+# Bug 1233343
+Assertion failure: hasScript(),

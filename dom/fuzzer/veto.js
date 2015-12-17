@@ -67,6 +67,7 @@ function fuzzInitBlacklists()
                 "will-change",       // bug 1216832
                 "willChange",        // bug 1216832
                 "sideways",          // bug 1225586
+                "vertical",          // bug 1225586
                 "history",           // bug 1225637
                 "offerToReceive",    // bug 1227482
                 "colors",            // bug 1229473 (border-[position]-colors)

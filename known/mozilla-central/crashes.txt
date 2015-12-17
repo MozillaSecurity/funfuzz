@@ -71,6 +71,10 @@ nsCocoaWindow::SetTitle
 # rdar://13266035 (Reported using Mac OS X 10.8) (lone surrogate in <title> + full screen)
 _sendFullScreenMessageToDock
 nsCocoaWindow::MakeFullScreen
+# As seen on Mac OS X 10.11.2
+-[NSDockConnection(FullScreenMessages) sendFullScreenEnterForTransition:window:spaceName:backgroundWindows:participatingWindows:customAnimation:completionHandler:]
+# As seen on Mac OS X 10.11.2
+4  AppKit + 0x861b90
 
 # Bug 722771
 PreciseGCRunnable::Run
@@ -340,3 +344,10 @@ js::TraceLoggerThread::eventText
 
 # Bug 1232859
 js::jit::Compile
+
+# Bug 1233331
+js::jit::IonScript::incrementInvalidationCount
+js::AddTypePropertyId
+
+# Bug 1233343
+js::jit::JitFrameIterator::checkInvalidation

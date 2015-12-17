@@ -163,12 +163,13 @@ def parseOpts():
     else:
         earliestKnownQuery = kbew.earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
-    earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
+    earliestKnown = ''
 
     if options.startRepo is None:
         if options.useTreeherderBinaries:
             options.startRepo = 'default'
         else:
+            earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
             options.startRepo = earliestKnown
     elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
         raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
