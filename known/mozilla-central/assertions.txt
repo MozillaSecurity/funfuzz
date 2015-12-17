@@ -2167,6 +2167,12 @@ ASSERTION: Residual translation out of range: '-0.5 <= (&transformed)->x && (&tr
 # Bug 1233191
 Assertion failure: !prevChildWasAnonGridItem (two anon grid items in a row),
 
+# Bug 1233478
+Assertion failure: aContainingBlockBSize != nscoord(1 << 30) || !aCoord.HasPercent() (caller must deal with %% of unconstrained block-size),
+
+# Bug 1233486
+ASSERTION: http must support nsIUploadChannel2: 'uploadChannel2', file dom/base/nsXMLHttpRequest.cpp
+
 
 ################################
 #                              #
