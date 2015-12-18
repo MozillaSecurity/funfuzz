@@ -73,6 +73,7 @@ def knownBrokenRanges(options):
     if options.enableSimulatorArm32:
         skips.extend([
             hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit ARM-simulator builds
+            hgrange('f35d1107fe2e', 'bdf975ad2fcd'),  # Fx45, broken 32-bit ARM-simulator builds
         ])
 
     return skips
