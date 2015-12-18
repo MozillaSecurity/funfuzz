@@ -316,6 +316,7 @@ def knownChromeFailure(msg):
         ("webrtcUI.jsm" in msg) or                                                      # Bug 973318
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 949926
         ("FeedConverter.js" in msg and "2152398858" in msg) or                          # Bug 1227496 testcase 2
+        ("FeedConverter.js" in msg and "NS_ERROR_FAILURE" in msg) or                    # Bug 1233610
         ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or   # bug 978524
         ("LoginManagerParent.jsm" in msg and "this._recipeManager is null" in msg) or   # bug 1167872
         ("LoginManagerParent.jsm" in msg and "this._recipeManager.getRecipesForHost is null" in msg) or   # bug 1167872 plus ion-eager changing the message?

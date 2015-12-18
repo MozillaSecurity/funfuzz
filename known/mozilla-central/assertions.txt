@@ -2173,6 +2173,9 @@ Assertion failure: aContainingBlockBSize != nscoord(1 << 30) || !aCoord.HasPerce
 # Bug 1233486
 ASSERTION: http must support nsIUploadChannel2: 'uploadChannel2', file dom/base/nsXMLHttpRequest.cpp
 
+# Bug 1233613
+Assertion failure: shell,
+
 
 ################################
 #                              #
