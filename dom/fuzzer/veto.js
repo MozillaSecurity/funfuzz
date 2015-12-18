@@ -116,6 +116,7 @@ function fuzzInitBlacklists()
                 "createShadowRoot",  // bug 1217531
                 "AudioContext",      // bug 1223691
                 "worker",            // bug 1228456
+                "getFilesAndDirectories",  // bug 1233598
             ]
         },
         {
