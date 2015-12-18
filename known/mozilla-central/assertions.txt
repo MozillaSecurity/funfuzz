@@ -2239,9 +2239,6 @@ Assertion failure: lastEntryId < events.size(),
 # Bug 1232386
 Assertion failure: !cx->isExceptionPending(),
 
-# Bug 1233175
-Assertion failure: !isSharedMemory,
-
 # Bug 1233302
 Assertion failure: fd >= 0 (Can't open /dev/urandom?!),
 
