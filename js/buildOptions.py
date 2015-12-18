@@ -253,6 +253,8 @@ def areArgsValid(args):
             return False, 'We should test deterministic ASan builds.'
         if sps.isLinux:
             return False, 'FIXME: Figure out why compiling with Asan does not work in this harness.'
+        if sps.isMac:
+            return False, 'FIXME: Figure out why compiling with Asan broke again.'
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
