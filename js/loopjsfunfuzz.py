@@ -197,7 +197,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
                 quality = 10
 
             # ddsize = lithOps.ddsize(filenameToReduce)
+            print "Submitting " + filenameToReduce + " (quality=" + str(quality) + ") at " + sps.dateStr()
             collector.submit(res.crashInfo, filenameToReduce, quality)
+            print "Submitted " + filenameToReduce
 
         else:
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
