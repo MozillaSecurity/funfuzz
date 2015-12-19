@@ -2244,3 +2244,6 @@ Assertion failure: fd >= 0 (Can't open /dev/urandom?!),
 
 # Bug 1233343
 Assertion failure: hasScript(),
+
+# Bug 1233913
+Assertion failure: !cx->asJSContext()->isExceptionPending(),
