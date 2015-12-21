@@ -2236,9 +2236,6 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1232386
 Assertion failure: !cx->isExceptionPending(),
 
-# Bug 1233302
-Assertion failure: fd >= 0 (Can't open /dev/urandom?!),
-
 # Bug 1233343
 Assertion failure: hasScript(),
 
