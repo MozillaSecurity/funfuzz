@@ -2176,6 +2176,9 @@ ASSERTION: http must support nsIUploadChannel2: 'uploadChannel2', file dom/base/
 # Bug 1233613
 Assertion failure: shell,
 
+# Bug 1234409
+Assertion failure: mUnit == eCSSUnit_Percent (not a percent value),
+
 
 ################################
 #                              #
