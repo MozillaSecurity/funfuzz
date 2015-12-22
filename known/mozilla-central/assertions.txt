@@ -44,7 +44,8 @@ Assertion failure: 0 == rv,
 
 ASSERTION: this shouldn't happen anymore: 'NS_UNCONSTRAINEDSIZE != aComputedWidth && NS_UNCONSTRAINEDSIZE != aAvailWidth', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: shouldn't have unconstrained widths anymore: 'psd->mRightEdge != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLineLayout.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'psd->mRightEdge != NS_UNCONSTRAINEDSIZE && aWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLineLayout.cpp
+
+ASSERTION: shouldn't use unconstrained widths anymore
 ASSERTION: unconstrained widths no longer supported: 'aContainingBlockWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsLayoutUtils.cpp
 ASSERTION: unconstrained available width in reflow: 'NS_UNCONSTRAINEDSIZE != aAvailSpace.width', file layout/tables/nsTableRowFrame.cpp
 ASSERTION: bad width: 'Not Reached', file layout/generic/nsLineLayout.cpp
@@ -57,8 +58,6 @@ ASSERTION: bad width: 'metrics.width>=0', file layout/generic/nsLineLayout.cpp
 ASSERTION: bad width: 'metrics.Width() >= 0', file layout/generic/nsLineLayout.cpp
 ASSERTION: bad inline size: 'metrics.ISize(lineWM) >= 0', file layout/generic/nsLineLayout.cpp
 ASSERTION: bad block size: 'metrics.BSize(lineWM) >= 0', file layout/generic/nsLineLayout.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: '(mFrameType == NS_CSS_FRAME_TYPE_INLINE && !frame->IsFrameOfType(nsIFrame::eReplaced)) || frame->GetType() == nsGkAtoms::textFrame || mComputedWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'availableWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: shouldn't have unconstrained widths anymore: 'NS_UNCONSTRAINEDSIZE != aReflowState.availableWidth', file layout/generic/nsLineLayout.cpp
 ASSERTION: no unconstrained widths should be present anymore: 'NS_UNCONSTRAINEDSIZE != aReflowState.ComputedWidth()', file layout/generic/nsBlockReflowState.cpp
 ASSERTION: Invalid computed width: 'aComputedWidth >= 0', file layout/generic/nsHTMLReflowState.cpp
@@ -69,8 +68,8 @@ ASSERTION: Bogus availSize.ISize; should be bigger: '!inner || nsLayoutUtils::In
 ASSERTION: This shouldn't be called anymore: 'Not Reached', file layout/generic/nsLineLayout.cpp
 ASSERTION: switched constraints: 'NS_UNCONSTRAINEDSIZE != aWidth', file layout/generic/nsLineLayout.cpp
 ASSERTION: Shouldn't have unconstrained stuff here: 'aReflowState.ComputedWidth() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLeafFrame.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'aWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsPresShell.cpp
 ASSERTION: shouldn't happen anymore: 'aReflowState.availableWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsViewportFrame.cpp
+ASSERTION: shouldn't happen anymore: 'aReflowState.AvailableISize() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsViewportFrame.cpp
 ASSERTION: Must have a computed width: 'aReflowState.ComputedWidth() !=
 ASSERTION: Must have a useful width _somewhere_: 'aReflowState.ComputedWidth() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsAbsoluteContainingBlock.cpp
 ASSERTION: Should have real computed width by now: 'aReflowState.ComputedWidth() !=
@@ -100,8 +99,6 @@ ASSERTION: nscoord subtraction will reach or pass nscoord_MIN: '(int64_t)a - (in
 ASSERTION: bad width: 'width >= guess_min', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: didn't subtract all that we added: 'space == 0 && ((l2t == FLEX_PCT_LARGE) ? (-0.001f < basis.f && basis.f < 0.001f) : (basis.c == 0 || basis.c == nscoord_MAX))', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: no unconstrained widths should be present anymore: 'NS_UNCONSTRAINEDSIZE != aReflowState.ComputedWidth()', file layout/generic/nsBlockReflowState.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: '(mFrameType == NS_CSS_FRAME_TYPE_INLINE && !frame->IsFrameOfType(nsIFrame::eReplaced)) || frame->GetType() == nsGkAtoms::textFrame || mComputedWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'availableWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: this shouldn't happen anymore: 'NS_UNCONSTRAINEDSIZE != aComputedWidth && NS_UNCONSTRAINEDSIZE != aAvailWidth', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: unconstrained available width in reflow: 'NS_UNCONSTRAINEDSIZE != aAvailSpace.width', file layout/tables/nsTableRowFrame.cpp
 ASSERTION: unconstrained widths no longer supported: 'aContainingBlockWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsLayoutUtils.cpp
