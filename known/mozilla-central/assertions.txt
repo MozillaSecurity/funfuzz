@@ -2176,6 +2176,16 @@ Assertion failure: shell,
 # Bug 1234409
 Assertion failure: mUnit == eCSSUnit_Percent (not a percent value),
 
+# Bug 1234418
+Assertion failure: !std::isnan(clusterStart) (Should have cluster start),
+
+# Bug 1234622
+ASSERTION: nsView::CreateWidget without suitable parent widget??: 'Error', file view/nsView.cpp
+
+# Bug 1234701
+ASSERTION: Placeholder relationship should have been torn down already; this might mean we have a stray placeholder in the tree.: '!placeholder || nsLayoutUtils::IsProperAncestorFrame(aDestructRoot, placeholder)', file layout/generic/nsFrame.cpp
+ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFrame.h
+
 
 ################################
 #                              #

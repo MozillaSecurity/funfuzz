@@ -323,6 +323,10 @@ SpeechTaskCallback::OnResume
 nsRefreshDriver::RemoveRefreshObserver
 mozilla::dom::DocumentTimeline::WillRefresh
 
+# Bug 1234701
+nsLayoutUtils::GetFloatFromPlaceholder
+mozilla::layout::FrameChildListIterator::FrameChildListIterator
+
 
 #############################
 #                           #
