@@ -1889,26 +1889,8 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 989628 (skia canvas)
 : failed assertion "!segmentCount && !closeCount"
 
-# Bug 989863 (skia canvas)
-: failed assertion "tolDevBounds.contains(actualBounds)"
-
 # Bug 1018527 (skia canvas)
 : failed assertion "rect.fLeft <= rect.fRight && rect.fTop <= rect.fBottom"
-
-# Bug 1221272 (skia canvas)
-: failed assertion "top <= bot"
-
-# Bug 1221304 (skia canvas)
-: failed assertion "set_normal_unitnormal(fPrevPt, currPt, fRadius, normal, unitNormal)"
-
-# Bug 1221312 (skia canvas)
-: failed assertion "normalB.setLength(((float)(fRadius) / ( sqrtf(((1.0f) + dot)/2))))"
-
-# Bug 1221322 (skia canvas)
-: failed assertion "contains_inclusive(*devBounds, pts[0])"
-
-# Bug 1223695 (skia canvas)
-: failed assertion "__null != texture"
 
 # Bug 1221418
 Assertion failure: mActorDestroyed,
@@ -2005,6 +1987,7 @@ Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-content
 
 # Bug 1228127
 : failed assertion "!SkScalarIsNaN(c->fX) && !SkScalarIsNaN(c->fY)"
+: failed assertion "rs > 0 && SkScalarIsFinite(rs)"
 
 # Bug 1228128
 : failed assertion "is_between_unsorted(r->fY, tmp[0].fY, tmp[1].fY)"
@@ -2185,6 +2168,36 @@ ASSERTION: nsView::CreateWidget without suitable parent widget??: 'Error', file 
 # Bug 1234701
 ASSERTION: Placeholder relationship should have been torn down already; this might mean we have a stray placeholder in the tree.: '!placeholder || nsLayoutUtils::IsProperAncestorFrame(aDestructRoot, placeholder)', file layout/generic/nsFrame.cpp
 ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFrame.h
+
+# Bug 1229932
+: failed assertion "!r.isEmpty()"
+
+# Bug 1229946
+: failed assertion "result"
+
+# Bug 1229972
+: failed assertion "n64 == n32"
+
+# Bug 1229973
+: failed assertion "min <= max"
+
+# Bug 1229975
+: failed assertion "SkPathPriv::CheapComputeFirstDirection(path, &dir)"
+
+# Bug 1229977
+: failed assertion "results[0] >= 0"
+
+# Bug 1229983
+: failed assertion "0 <= dot && dot <= 1.0f + (1.0f / (1 << 12))"
+
+# Bug 1230096
+: failed assertion "len > 0.0f"
+
+# Bug 1230098
+: failed assertion "start >= 0 && stop > start"
+
+# Bug 1230111
+: failed assertion "0 == fAllocationCnt"
 
 
 ################################
