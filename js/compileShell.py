@@ -445,6 +445,10 @@ def compileJs(shell):
         for runLib in shell.getShellCompiledRunLibsPath():
             if os.path.isfile(runLib):
                 shutil.copy2(runLib, shell.getShellCacheDir())
+        if sps.isLinux:
+            # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
+            # files in the objdir or else the stacks from failing testcases will lack symbols.
+            shutil.rmtree(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
     else:
         print out
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
