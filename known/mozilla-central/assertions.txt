@@ -2261,9 +2261,8 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
 # Bug 1232386
 Assertion failure: !cx->isExceptionPending(),
+Assertion failure: !cx->asJSContext()->isExceptionPending(),
 
 # Bug 1233343
 Assertion failure: hasScript(),
 
-# Bug 1233913
-Assertion failure: !cx->asJSContext()->isExceptionPending(),
