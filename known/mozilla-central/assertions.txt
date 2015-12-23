@@ -2199,6 +2199,9 @@ ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFra
 # Bug 1230111
 : failed assertion "0 == fAllocationCnt"
 
+# Bug 1234726
+ASSERTION: must have content: 'aContent || !(aHint & nsChangeHint_ReconstructFrame)', file layout/base/nsStyleChangeList.cpp
+
 
 ################################
 #                              #

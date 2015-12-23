@@ -327,6 +327,9 @@ mozilla::dom::DocumentTimeline::WillRefresh
 nsLayoutUtils::GetFloatFromPlaceholder
 mozilla::layout::FrameChildListIterator::FrameChildListIterator
 
+# Bug 1234726
+nsCSSFrameConstructor::RecreateFramesForContent
+
 
 #############################
 #                           #
