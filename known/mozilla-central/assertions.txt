@@ -2262,3 +2262,5 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1233343
 Assertion failure: hasScript(),
 
+# Bug 1235194
+Assertion failure: args.rval().isObject(),
