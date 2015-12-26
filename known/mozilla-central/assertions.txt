@@ -2262,5 +2262,11 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1233343
 Assertion failure: hasScript(),
 
+# Bug 1234164
+Assertion failure: stub->monitorsThis() || *GetNextPc(pc) == JSOP_CHECKTHIS || *GetNextPc(pc) == JSOP_CHECKRETURN,
+
+# Bug 1234717
+Assertion failure: name == cx->names().dotThis,
+
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
