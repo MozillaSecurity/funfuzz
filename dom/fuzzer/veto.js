@@ -97,8 +97,6 @@ function fuzzInitBlacklists()
                 "@import",           // bug 842309
                 "webgl",             // bug 859542
                 "history",           // bug 860482
-                "embed",             // bug 1230110
-                "frame",             // bug 860482, bug 1230110
                 "object ",           // bug 860482
                 "object>",           // bug 860482
                 "object'",           // bug 860482
@@ -116,7 +114,6 @@ function fuzzInitBlacklists()
                 "createShadowRoot",  // bug 1217531
                 "AudioContext",      // bug 1223691
                 "worker",            // bug 1228456
-                "getFilesAndDirectories",  // bug 1233598
             ]
         },
         {

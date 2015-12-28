@@ -97,24 +97,11 @@ mozilla::dom::CanvasRenderingContext2D::DrawImage
 # Bug 698391
 mozilla::gfx::DrawTargetD2D::CreateGradientTexture
 
-# Bug 757413
-mozilla::layout::FrameChildListIterator::FrameChildListIterator
-
 # Bug 755570
 nsHTMLReflowState::ComputeContainingBlockRectangle
 
 # Bug 763819
 DocAccessible::GetAccessibleOrContainer
-
-# Bug 765111
-mozilla::gfx::GetImageFromSourceSurface
-mozilla::gfx::SetPaintPattern
-mozilla::dom::CanvasRenderingContext2D::Fill
-mozilla::dom::CanvasRenderingContext2D::Stroke
-CreateCGPattern
-CoreGraphics + 0x86db8
-# Bug 765111 + linux breakpad stack trace woes
- 0  libxul.so!mozilla::gfx::GetCairoSurfaceForSourceSurface
 
 # Bug 766434
 _cairo_surface_acquire_source_image
@@ -288,20 +275,11 @@ mozilla::EventListenerManager::AddEventListenerInternal
 [EXPLOITABLE] mozilla::nsTextNodeDirectionalityMap::RemoveElementFromMap
 [EXPLOITABLE] mozilla::ResetDir
 
-# Bug 1228885
-mozilla::WebGLTexture::MemoryUsage
-mozilla::WebGLMemoryTracker::CollectReports
-
 # Bug 1229240
 mozilla::dom::MediaStreamTrackBinding::applyConstraints_promiseWrapper
 
 # Bug 1229253
 mozilla::dom::MediaRecorder::SizeOfExcludingThis
-
-# Bug 1229449 (top: debug)
-mozilla::PeerConnectionImpl::CheckThreadInt
-# Bug 1229449 (top: opt)
-mozilla::PeerConnectionImpl::RecordEndOfCallTelemetry
 
 # Bug 1229988
 gfxContext::gfxContext
@@ -318,10 +296,6 @@ SpeechTaskCallback::OnResume
 
 # Bug 1230440
 [TMR] mozilla::layers::BasicContainerLayer::ComputeEffectiveTransforms
-
-# Bug 1232829
-nsRefreshDriver::RemoveRefreshObserver
-mozilla::dom::DocumentTimeline::WillRefresh
 
 # Bug 1234701
 nsLayoutUtils::GetFloatFromPlaceholder

@@ -7,7 +7,6 @@ SIZE huge. objects that can entrain just about anything.
 SIZE medium. when known to leak, allowed to entrain unknown objects.
 
        nsGenericElement
-  LEAK nsDNSService                    # Bug 102229 or bug 419562
   LEAK nsJVMManager                    # Bug 417630 and friends
   LEAK nsSimpleNestedURI               # Bug 403199
   LEAK nsHTMLDNSPrefetch::nsDeferrals  # Bug 463724
