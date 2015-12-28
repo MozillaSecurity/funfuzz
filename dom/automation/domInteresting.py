@@ -354,6 +354,7 @@ def knownChromeFailure(msg):
         ("MainProcessSingleton.js" in msg and "NS_ERROR_ILLEGAL_VALUE" in msg) or       # Bug 1230388
         ("content-sessionStore.js" in msg) or                                           # Bug 1195295 removes some broken code
         ("NS_ERROR_FAILURE: Failure" in msg) or                                         # Bug 1233254
+        ("BrowserUITelemetry.jsm" in msg and "undeclared variable item" in msg) or      # Bug 1234398
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or

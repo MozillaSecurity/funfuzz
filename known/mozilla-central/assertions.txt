@@ -44,7 +44,8 @@ Assertion failure: 0 == rv,
 
 ASSERTION: this shouldn't happen anymore: 'NS_UNCONSTRAINEDSIZE != aComputedWidth && NS_UNCONSTRAINEDSIZE != aAvailWidth', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: shouldn't have unconstrained widths anymore: 'psd->mRightEdge != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLineLayout.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'psd->mRightEdge != NS_UNCONSTRAINEDSIZE && aWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLineLayout.cpp
+
+ASSERTION: shouldn't use unconstrained widths anymore
 ASSERTION: unconstrained widths no longer supported: 'aContainingBlockWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsLayoutUtils.cpp
 ASSERTION: unconstrained available width in reflow: 'NS_UNCONSTRAINEDSIZE != aAvailSpace.width', file layout/tables/nsTableRowFrame.cpp
 ASSERTION: bad width: 'Not Reached', file layout/generic/nsLineLayout.cpp
@@ -57,8 +58,6 @@ ASSERTION: bad width: 'metrics.width>=0', file layout/generic/nsLineLayout.cpp
 ASSERTION: bad width: 'metrics.Width() >= 0', file layout/generic/nsLineLayout.cpp
 ASSERTION: bad inline size: 'metrics.ISize(lineWM) >= 0', file layout/generic/nsLineLayout.cpp
 ASSERTION: bad block size: 'metrics.BSize(lineWM) >= 0', file layout/generic/nsLineLayout.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: '(mFrameType == NS_CSS_FRAME_TYPE_INLINE && !frame->IsFrameOfType(nsIFrame::eReplaced)) || frame->GetType() == nsGkAtoms::textFrame || mComputedWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'availableWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: shouldn't have unconstrained widths anymore: 'NS_UNCONSTRAINEDSIZE != aReflowState.availableWidth', file layout/generic/nsLineLayout.cpp
 ASSERTION: no unconstrained widths should be present anymore: 'NS_UNCONSTRAINEDSIZE != aReflowState.ComputedWidth()', file layout/generic/nsBlockReflowState.cpp
 ASSERTION: Invalid computed width: 'aComputedWidth >= 0', file layout/generic/nsHTMLReflowState.cpp
@@ -69,8 +68,8 @@ ASSERTION: Bogus availSize.ISize; should be bigger: '!inner || nsLayoutUtils::In
 ASSERTION: This shouldn't be called anymore: 'Not Reached', file layout/generic/nsLineLayout.cpp
 ASSERTION: switched constraints: 'NS_UNCONSTRAINEDSIZE != aWidth', file layout/generic/nsLineLayout.cpp
 ASSERTION: Shouldn't have unconstrained stuff here: 'aReflowState.ComputedWidth() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLeafFrame.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'aWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsPresShell.cpp
 ASSERTION: shouldn't happen anymore: 'aReflowState.availableWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsViewportFrame.cpp
+ASSERTION: shouldn't happen anymore: 'aReflowState.AvailableISize() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsViewportFrame.cpp
 ASSERTION: Must have a computed width: 'aReflowState.ComputedWidth() !=
 ASSERTION: Must have a useful width _somewhere_: 'aReflowState.ComputedWidth() != NS_UNCONSTRAINEDSIZE', file layout/generic/nsAbsoluteContainingBlock.cpp
 ASSERTION: Should have real computed width by now: 'aReflowState.ComputedWidth() !=
@@ -100,8 +99,6 @@ ASSERTION: nscoord subtraction will reach or pass nscoord_MIN: '(int64_t)a - (in
 ASSERTION: bad width: 'width >= guess_min', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: didn't subtract all that we added: 'space == 0 && ((l2t == FLEX_PCT_LARGE) ? (-0.001f < basis.f && basis.f < 0.001f) : (basis.c == 0 || basis.c == nscoord_MAX))', file layout/tables/BasicTableLayoutStrategy.cpp
 ASSERTION: no unconstrained widths should be present anymore: 'NS_UNCONSTRAINEDSIZE != aReflowState.ComputedWidth()', file layout/generic/nsBlockReflowState.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: '(mFrameType == NS_CSS_FRAME_TYPE_INLINE && !frame->IsFrameOfType(nsIFrame::eReplaced)) || frame->GetType() == nsGkAtoms::textFrame || mComputedWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
-ASSERTION: shouldn't use unconstrained widths anymore: 'availableWidth != NS_UNCONSTRAINEDSIZE', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: this shouldn't happen anymore: 'NS_UNCONSTRAINEDSIZE != aComputedWidth && NS_UNCONSTRAINEDSIZE != aAvailWidth', file layout/generic/nsHTMLReflowState.cpp
 ASSERTION: unconstrained available width in reflow: 'NS_UNCONSTRAINEDSIZE != aAvailSpace.width', file layout/tables/nsTableRowFrame.cpp
 ASSERTION: unconstrained widths no longer supported: 'aContainingBlockWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsLayoutUtils.cpp
@@ -1892,26 +1889,8 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 # Bug 989628 (skia canvas)
 : failed assertion "!segmentCount && !closeCount"
 
-# Bug 989863 (skia canvas)
-: failed assertion "tolDevBounds.contains(actualBounds)"
-
 # Bug 1018527 (skia canvas)
 : failed assertion "rect.fLeft <= rect.fRight && rect.fTop <= rect.fBottom"
-
-# Bug 1221272 (skia canvas)
-: failed assertion "top <= bot"
-
-# Bug 1221304 (skia canvas)
-: failed assertion "set_normal_unitnormal(fPrevPt, currPt, fRadius, normal, unitNormal)"
-
-# Bug 1221312 (skia canvas)
-: failed assertion "normalB.setLength(((float)(fRadius) / ( sqrtf(((1.0f) + dot)/2))))"
-
-# Bug 1221322 (skia canvas)
-: failed assertion "contains_inclusive(*devBounds, pts[0])"
-
-# Bug 1223695 (skia canvas)
-: failed assertion "__null != texture"
 
 # Bug 1221418
 Assertion failure: mActorDestroyed,
@@ -2008,6 +1987,7 @@ Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-content
 
 # Bug 1228127
 : failed assertion "!SkScalarIsNaN(c->fX) && !SkScalarIsNaN(c->fY)"
+: failed assertion "rs > 0 && SkScalarIsFinite(rs)"
 
 # Bug 1228128
 : failed assertion "is_between_unsorted(r->fY, tmp[0].fY, tmp[1].fY)"
@@ -2176,6 +2156,52 @@ ASSERTION: http must support nsIUploadChannel2: 'uploadChannel2', file dom/base/
 # Bug 1233613
 Assertion failure: shell,
 
+# Bug 1234409
+Assertion failure: mUnit == eCSSUnit_Percent (not a percent value),
+
+# Bug 1234418
+Assertion failure: !std::isnan(clusterStart) (Should have cluster start),
+
+# Bug 1234622
+ASSERTION: nsView::CreateWidget without suitable parent widget??: 'Error', file view/nsView.cpp
+
+# Bug 1234701
+ASSERTION: Placeholder relationship should have been torn down already; this might mean we have a stray placeholder in the tree.: '!placeholder || nsLayoutUtils::IsProperAncestorFrame(aDestructRoot, placeholder)', file layout/generic/nsFrame.cpp
+ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFrame.h
+
+# Bug 1229932
+: failed assertion "!r.isEmpty()"
+
+# Bug 1229946
+: failed assertion "result"
+
+# Bug 1229972
+: failed assertion "n64 == n32"
+
+# Bug 1229973
+: failed assertion "min <= max"
+
+# Bug 1229975
+: failed assertion "SkPathPriv::CheapComputeFirstDirection(path, &dir)"
+
+# Bug 1229977
+: failed assertion "results[0] >= 0"
+
+# Bug 1229983
+: failed assertion "0 <= dot && dot <= 1.0f + (1.0f / (1 << 12))"
+
+# Bug 1230096
+: failed assertion "len > 0.0f"
+
+# Bug 1230098
+: failed assertion "start >= 0 && stop > start"
+
+# Bug 1230111
+: failed assertion "0 == fAllocationCnt"
+
+# Bug 1234726
+ASSERTION: must have content: 'aContent || !(aHint & nsChangeHint_ReconstructFrame)', file layout/base/nsStyleChangeList.cpp
+
 
 ################################
 #                              #
@@ -2233,17 +2259,14 @@ Assertion failure: !unknownProperties(),
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
-# Bug 1231170
-Assertion failure: lastEntryId < events.size(),
-
-# Bug 1232386
-Assertion failure: !cx->isExceptionPending(),
-
-# Bug 1233175
-Assertion failure: !isSharedMemory,
-
-# Bug 1233302
-Assertion failure: fd >= 0 (Can't open /dev/urandom?!),
-
 # Bug 1233343
 Assertion failure: hasScript(),
+
+# Bug 1234164
+Assertion failure: stub->monitorsThis() || *GetNextPc(pc) == JSOP_CHECKTHIS || *GetNextPc(pc) == JSOP_CHECKRETURN,
+
+# Bug 1234717
+Assertion failure: name == cx->names().dotThis,
+
+# Bug 1235194
+Assertion failure: args.rval().isObject(),

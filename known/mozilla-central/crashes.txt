@@ -323,6 +323,13 @@ SpeechTaskCallback::OnResume
 nsRefreshDriver::RemoveRefreshObserver
 mozilla::dom::DocumentTimeline::WillRefresh
 
+# Bug 1234701
+nsLayoutUtils::GetFloatFromPlaceholder
+mozilla::layout::FrameChildListIterator::FrameChildListIterator
+
+# Bug 1234726
+nsCSSFrameConstructor::RecreateFramesForContent
+
 
 #############################
 #                           #
@@ -338,9 +345,6 @@ mozilla::dom::DocumentTimeline::WillRefresh
 
 # Bug 1221385
 js::jit::ExecutableAllocator::releasePoolPages
-
-# Bug 1231170
-js::TraceLoggerThread::eventText
 
 # Bug 1232859
 js::jit::Compile
