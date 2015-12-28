@@ -368,7 +368,6 @@ def knownChromeFailure(msg):
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is null" in msg) or          # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
-        ("vtt.jsm" in msg and "navigator is not defined" in msg) or                     # Bug 1228721
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("Webapps.js" in msg and "aApp is null" in msg) or                              # Bug 1228795
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
@@ -378,11 +377,9 @@ def knownChromeFailure(msg):
         ("System JS" in msg) or                                                         # Bug 987222
         ("CSSUnprefixingService.js" in msg) or                                          # Code going away (bug 1213126?)
         ("PerformanceStats.jsm" in msg and ".isMonitoringJank" in msg) or               # Bug 1221761
-        ("tab-content.js" in msg and "content is null" in msg) or                       # Bug 1230087
         ("MainProcessSingleton.js" in msg and "NS_ERROR_ILLEGAL_VALUE" in msg) or       # Bug 1230388
         ("content-sessionStore.js" in msg) or                                           # Bug 1195295 removes some broken code
         ("NS_ERROR_FAILURE: Failure" in msg) or                                         # Bug 1233254
-        ("BrowserUITelemetry.jsm" in msg and "undeclared variable item" in msg) or      # Bug 1234398
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
