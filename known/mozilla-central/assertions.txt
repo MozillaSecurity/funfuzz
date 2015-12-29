@@ -2136,6 +2136,18 @@ ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFra
 # Bug 1234726
 ASSERTION: must have content: 'aContent || !(aHint & nsChangeHint_ReconstructFrame)', file layout/base/nsStyleChangeList.cpp
 
+# Bug 1235467
+Assertion failure: mContainerReferenceFrame == mBuilder->RootReferenceFrame(),
+
+# Bug 1235485
+Assertion failure: aParameters.Offset() == LayerIntPoint(0,0),
+
+# Bug 1235489
+Assertion failure: !StyleText()->HasTextEmphasis(),
+
+# Bug 1235490
+Assertion failure: cellData == mMap->GetDataAt(*aRow, mCol) (Giving caller bogus row?),
+
 
 ################################
 #                              #
