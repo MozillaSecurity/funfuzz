@@ -63,7 +63,7 @@ def updateRepo(repo):
             gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
         sps.timeSubprocess([GITBINARY, 'fetch'], env=gitenv,
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
-        sps.timeSubprocess([GITBINARY, 'merge', '--ff-only', 'origin/master'],
+        sps.timeSubprocess([GITBINARY, 'merge', '--ff-only'],
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
     else:
         raise Exception('Unknown repository type: ' + repoType)
