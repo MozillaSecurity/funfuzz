@@ -766,11 +766,6 @@ ASSERTION: unexpected max block size: 'aBSize >= 0', file layout/generic/nsFloat
 # Bug 688945
 ASSERTION: selection could not be collapsed after insert.: '(NS_SUCCEEDED(result))', file editor/libeditor/base/CreateElementTxn.cpp
 
-# Bug 691004
-ASSERTION: Dying in the middle of our own update?: 'mUpdateCount == 0', file nsCSSFrameConstructor.h
-# Bug 691004 (fragile-timing testcase on mini #2)
-ASSERTION: nsView::CreateWidget without suitable parent widget??: 'Error', file view/src/nsView.cpp
-
 # Bug 691330
 ASSERTION: Can't end drawing path inside ligature: 'ligatureRunEnd == end', file gfx/thebes/gfxFont.cpp
 ASSERTION: Can't draw path starting inside ligature: 'ligatureRunStart == start', file gfx/thebes/gfxFont.cpp
@@ -976,9 +971,6 @@ ASSERTION: frame should be clean when getting special height reflow: '!mFlags.mS
 
 # I don't even (32-bit Linux only, involves font inflation, not reproducible)
 ASSERTION: somebody should have checked for screen width change and triggered a reflow: 'Not Reached', file layout/base/nsPresContext.cpp
-
-# Bug 757413
-ASSERTION: null parameters passed in: 'nullptr != aFrame && nullptr != aState', file layout/base/nsFrameManager.cpp
 
 # Bug 755570
 ASSERTION: no containing block: 'nullptr != cbrs', file layout/generic/nsHTMLReflowState.cpp
@@ -1572,10 +1564,6 @@ Assertion failure: IsDedicatedWorker(),
 # Bug 950326 'x'
 Assertion failure: !IsSuspended(),
 
-# Bug 950509
-ASSERTION: Should have set up sync point: 'mSyncPointInDecodedStream >= 0', file content/media/MediaDecoderStateMachine.cpp
-ASSERTION: Should have positive clock time.: 'clock_time >= mStartTime', file content/media/MediaDecoderStateMachine.cpp
-
 # Bug 951904
 Assertion failure: false (should have already reflowed the kid),
 
@@ -1849,9 +1837,6 @@ Assertion failure: sCallbackRuntime,
 # Bug 1158412
 Assertion failure: false (Unable to find document prescontext and base URI),
 
-# Bug 1162813
-ASSERTION: Unexpected paragraph separator: 'Not Reached', file layout/base/nsBidi.cpp
-
 # Bug 1162814
 ASSERTION: unknown block-size unit: 'bSizeCoord.GetUnit() == eStyleUnit_Auto || bSizeCoord.HasPercent()', file layout/base/nsLayoutUtils.cpp
 
@@ -1888,9 +1873,6 @@ Assertion failure: aProgress & FLAG_SIZE_AVAILABLE,
 
 # Bug 989628 (skia canvas)
 : failed assertion "!segmentCount && !closeCount"
-
-# Bug 1018527 (skia canvas)
-: failed assertion "rect.fLeft <= rect.fRight && rect.fTop <= rect.fBottom"
 
 # Bug 1221418
 Assertion failure: mActorDestroyed,
@@ -1961,10 +1943,7 @@ ASSERTION: reflow state computed incorrect inline size: 'reflowState.ComputedISi
 ASSERTION: non-root frame's desired size changed during an incremental reflow: '(target == rootFrame && size.BSize(wm) == NS_UNCONSTRAINEDSIZE) || (desiredSize.ISize(wm) == size.ISize(wm) && desiredSize.BSize(wm) == size.BSize(wm))', file layout/base/nsPresShell.cpp
 ASSERTION: reflow roots should never split: 'status == NS_FRAME_COMPLETE', file layout/base/nsPresShell.cpp
 
-# Bug 1223655 (intermittent in both regression-testing and fuzzing) (comment 8 indicates they're on it)
-ASSERTION: Track not found: 'Error', file dom/media/MediaStreamGraph.cpp
-
-# Bug 1225643
+# Bug 1223670 (from dup)
 Assertion failure: lock->locked && pthread_equal(lock->owner, pthread_self()),
 
 # Bug 1227465
@@ -1992,9 +1971,6 @@ Assertion failure: (0 == ((contentsReflowStatus) & 0x1)) (We gave button-content
 # Bug 1228128
 : failed assertion "is_between_unsorted(r->fY, tmp[0].fY, tmp[1].fY)"
 
-# Bug 1228484
-Assertion failure: !Graph() || Graph() == aStream->Graph(),
-
 # Bug 820667? (with slow printing of non-fatal assertions)
 Assertion failure: (((bool)(__builtin_expect(!!(!NS_FAILED_impl( owningThread->Dispatch(this, nsIEventTarget::DISPATCH_NORMAL))), 1)))),
 
@@ -2008,12 +1984,6 @@ Assertion failure: face < mFaceCount,
 Assertion failure: gl->IsCurrent(),
 Assertion failure: IsCurrent(),
 
-# Bug 1228711
-Assertion failure: false (Unexpected GL error.),
-
-# Bug 1228788 (FATAL ERROR: AsyncShutdown timeout in profile-before-change Conditions: [{"name":"Media shutdown: blocking on media thread")
-ABORT: file dom/media/MediaManager.cpp
-
 # Bug 1228789
 ASSERTION: CSSUnprefixingService returned an unrecognized type of gradient function: 'Error', file layout/style/nsCSSParser.cpp
 
@@ -2022,9 +1992,6 @@ ASSERTION: Shouldn't have anything queued!: 'aStatus != Terminating || mQueuedRu
 
 # Bug 1228882
 ASSERTION: element already removed from map: 'mElements.Contains(aElement)', file dom/base/DirectionalityUtils.cpp
-
-# Bug 1228886
-Assertion failure: false (Failed to zero texture data.),
 
 # Bug 1228887 (DOM Notifications)
 Assertion failure: !JS_IsExceptionPending(cx),
@@ -2042,9 +2009,6 @@ Assertion failure: gFactoryOps->IsEmpty(),
 # Bug 1229225
 Assertion failure: false (We should have caught all other errors.),
 
-# Bug 1229424
-ASSERTION: CalcDifference() returned bigger hint than MaxDifference(): 'NS_IsHintSubset(difference, maxDifference)', file layout/style/nsStyleContext.cpp
-
 # Bug 1229437
 Assertion failure: aFloat->GetParent() == mBlock || (aFloat->GetStateBits() & NS_FRAME_IS_PUSHED_FLOAT) (float should be in this block unless it was marked as pushed float),
 
@@ -2053,12 +2017,6 @@ Assertion failure: aTarget (Don't create a gfxContext without a DrawTarget),
 
 # Bug 1229997
 Assertion failure: mIdleTimer,
-
-# Bug 1229999
-Assertion failure: aStart >= nsStyleGridLine::kMinLine && aStart <= nsStyleGridLine::kMaxLine (invalid start line),
-
-# Bug 1230092
-ASSERTION: QueryInterface needed: 'query_result.get() == mRawPtr', file nsCOMPtr.h
 
 # Bug 1230115
 Mozilla has caught an Obj-C exception [NSMallocException: NSImage: Insufficient memory to allocate pixel data buffer
@@ -2103,29 +2061,11 @@ Assertion failure: mFrame->Combines3DTransformWithAncestors() || IsTransformSepa
 # Bug 1230639
 ASSERTION: All class values should be StoresOwnData and parsedvia Element::BeforeSetAttr, so available here: 'otherClasses || aData->mModType == nsIDOMMutationEvent::REMOVAL', file layout/style/nsCSSRuleProcessor.cpp
 
-# Bug 1230692 (within mozilla::WebAudioDecodeJob::OnFailure)
-Assertion failure: !Failed(),
-
-# Bug 1230698 (within NS_CreateJSTimeoutHandler)
-Assertion failure: !Failed(),
-
-# Bug 1230700 (within mozilla::dom::Notification::ShowInternal)
-Assertion failure: !Failed(),
-
-# Bug 1230704 (within mozilla::dom::AbortablePromise::DoAbort)
-Assertion failure: !Failed(),
-
-# Bug 1230696
-Assertion failure: hasPerspective (Why did we create nsDisplayPerspective?)
-
 # Bug 1223561
 Assertion failure: !aBuilder->IsForPainting() || !ShouldInTopLayerForFullscreen(elem),
 
 # Bug 1232823
 Assertion failure: aVideoType != MediaSourceEnum::Other || aAudioType != MediaSourceEnum::Other,
-
-# Bug 1232829
-Assertion failure: GetRefreshDriver() (Refresh driver should still be valid inside WillRefresh),
 
 # Bug 1232856
 ASSERTION: Bounds computation mismatch: 'mContainerBounds.Contains(mAccumulatedChildBounds)', file layout/base/FrameLayerBuilder.cpp
@@ -2156,9 +2096,6 @@ ASSERTION: http must support nsIUploadChannel2: 'uploadChannel2', file dom/base/
 # Bug 1233613
 Assertion failure: shell,
 
-# Bug 1234409
-Assertion failure: mUnit == eCSSUnit_Percent (not a percent value),
-
 # Bug 1234418
 Assertion failure: !std::isnan(clusterStart) (Should have cluster start),
 
@@ -2177,9 +2114,6 @@ ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFra
 
 # Bug 1229972
 : failed assertion "n64 == n32"
-
-# Bug 1229973
-: failed assertion "min <= max"
 
 # Bug 1229975
 : failed assertion "SkPathPriv::CheapComputeFirstDirection(path, &dir)"
@@ -2201,6 +2135,18 @@ ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFra
 
 # Bug 1234726
 ASSERTION: must have content: 'aContent || !(aHint & nsChangeHint_ReconstructFrame)', file layout/base/nsStyleChangeList.cpp
+
+# Bug 1235467
+Assertion failure: mContainerReferenceFrame == mBuilder->RootReferenceFrame(),
+
+# Bug 1235485
+Assertion failure: aParameters.Offset() == LayerIntPoint(0,0),
+
+# Bug 1235489
+Assertion failure: !StyleText()->HasTextEmphasis(),
+
+# Bug 1235490
+Assertion failure: cellData == mMap->GetDataAt(*aRow, mCol) (Giving caller bogus row?),
 
 
 ################################
@@ -2270,3 +2216,6 @@ Assertion failure: name == cx->names().dotThis,
 
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
+
+# Bug 1235640
+Assertion failure: !isIndex(&dummy),
