@@ -2216,3 +2216,6 @@ Assertion failure: name == cx->names().dotThis,
 
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
+
+# Bug 1235640
+Assertion failure: !isIndex(&dummy),
