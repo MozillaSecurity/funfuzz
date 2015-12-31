@@ -329,3 +329,4 @@ js::jit::JitFrameIterator::checkInvalidation
 
 # Bug 1235989
 strlen
+strdup
