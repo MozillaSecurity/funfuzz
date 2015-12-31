@@ -61,9 +61,7 @@ def updateRepo(repo):
         gitenv = deepcopy(os.environ)
         if sps.isWin:
             gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
-        sps.timeSubprocess([GITBINARY, 'fetch'], env=gitenv,
-                           ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
-        sps.timeSubprocess([GITBINARY, 'merge', '--ff-only'],
+        sps.timeSubprocess([GITBINARY, 'pull', '--rebase'], env=gitenv,
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
     else:
         raise Exception('Unknown repository type: ' + repoType)
