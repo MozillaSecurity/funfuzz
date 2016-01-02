@@ -326,7 +326,3 @@ js::AddTypePropertyId
 
 # Bug 1233343
 js::jit::JitFrameIterator::checkInvalidation
-
-# Bug 1235989
-strlen
-strdup
