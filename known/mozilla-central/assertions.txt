@@ -2212,3 +2212,6 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1235640
 Assertion failure: !isIndex(&dummy),
+
+# Bug 1236638
+Assertion failure: [barrier verifier] Unmarked edge: atom,
