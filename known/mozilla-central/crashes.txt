@@ -317,9 +317,6 @@ nsCSSFrameConstructor::RecreateFramesForContent
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1221385
-js::jit::ExecutableAllocator::releasePoolPages
-
 # Bug 1232859
 js::jit::Compile
 
@@ -327,9 +324,6 @@ js::jit::Compile
 js::jit::IonScript::incrementInvalidationCount
 js::AddTypePropertyId
 
-# Bug 1233343
-js::jit::JitFrameIterator::checkInvalidation
-
-# Bug 1235874
-strlen
-strdup
+# Bug 1234663
+js::jit::ICStub::markCode
+js::jit::ICStub::trace

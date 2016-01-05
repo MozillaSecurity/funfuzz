@@ -2194,19 +2194,12 @@ Assertion failure: HasMOVWT(),
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
 Assertion failure: !entry->shape(),
 
-# Bug 1221385
-Assertion failure: m_refCount == 1,
-Assertion failure: jrt_->mutatingBackedgeList_,
-
 # Bug 1222675
 Assertion failure: result ([OOM] Is it really infallible?),
 Assertion failure: !unknownProperties(),
 
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
-
-# Bug 1233343
-Assertion failure: hasScript(),
 
 # Bug 1234717
 Assertion failure: name == cx->names().dotThis,
@@ -2216,3 +2209,6 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1235640
 Assertion failure: !isIndex(&dummy),
+
+# Bug 1236801
+Assertion failure: generation == table_->generation(),
