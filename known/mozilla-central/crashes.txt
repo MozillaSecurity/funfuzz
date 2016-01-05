@@ -323,3 +323,7 @@ js::jit::Compile
 # Bug 1233331
 js::jit::IonScript::incrementInvalidationCount
 js::AddTypePropertyId
+
+# Bug 1234663
+js::jit::ICStub::markCode
+js::jit::ICStub::trace
