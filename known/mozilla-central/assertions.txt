@@ -2209,3 +2209,6 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1235640
 Assertion failure: !isIndex(&dummy),
+
+# Bug 1236801
+Assertion failure: generation == table_->generation(),
