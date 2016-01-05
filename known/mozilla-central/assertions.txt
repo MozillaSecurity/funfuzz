@@ -2201,9 +2201,6 @@ Assertion failure: !unknownProperties(),
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
-# Bug 1233343
-Assertion failure: hasScript(),
-
 # Bug 1234717
 Assertion failure: name == cx->names().dotThis,
 
@@ -2212,6 +2209,3 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1235640
 Assertion failure: !isIndex(&dummy),
-
-# Bug 1236638
-Assertion failure: [barrier verifier] Unmarked edge: atom,

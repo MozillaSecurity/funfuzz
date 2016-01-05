@@ -323,6 +323,3 @@ js::jit::Compile
 # Bug 1233331
 js::jit::IonScript::incrementInvalidationCount
 js::AddTypePropertyId
-
-# Bug 1233343
-js::jit::JitFrameIterator::checkInvalidation
