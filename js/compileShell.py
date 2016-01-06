@@ -33,8 +33,6 @@ import envVars
 
 S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autoBisect
 
-# If one wants to bisect between 97464:e077c138cd5d to 150877:c62ad7dd57cd on Windows with
-# MSVC 2010, change "mozmake" in the line below back to "make".
 if sps.isWin:
     MAKE_BINARY = 'mozmake'
 else:
