@@ -10,7 +10,8 @@ function confused(s)
 function foundABug(summary, details)
 {
   // Magic pair of strings that jsInteresting.py looks for
-  printImportant("Found a bug: " + summary);
+  // Break up "Found a bug: " so internal js functions do not print this string deliberately
+  printImportant("Found" + " a bug: " + summary);
   if (details) {
     printImportant(details);
   }
