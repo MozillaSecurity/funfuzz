@@ -2187,9 +2187,6 @@ Assertion failure: p,
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
 
-# Bug 1221361
-Assertion failure: HasMOVWT(),
-
 # Bug 1221378
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
 Assertion failure: !entry->shape(),
