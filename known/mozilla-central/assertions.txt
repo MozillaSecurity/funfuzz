@@ -2198,14 +2198,8 @@ Assertion failure: !unknownProperties(),
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
-# Bug 1234717
-Assertion failure: name == cx->names().dotThis,
-
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
-
-# Bug 1235640
-Assertion failure: !isIndex(&dummy),
 
 # Bug 1236801
 Assertion failure: generation == table_->generation(),
