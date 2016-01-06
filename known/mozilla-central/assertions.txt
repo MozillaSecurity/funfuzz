@@ -2211,4 +2211,4 @@ Assertion failure: !isIndex(&dummy),
 Assertion failure: generation == table_->generation(),
 
 # Bug 1237153
-Assertion failure: defaultTimeBudget_ < 4294967295U,
+Assertion failure: defaultTimeBudget_
