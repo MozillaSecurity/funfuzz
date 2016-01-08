@@ -44,12 +44,14 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("'strict") == -1                 // see bug 743425
+       && code.indexOf(".script") == -1                 // see bug 1237464
+       && code.indexOf(".parameterNames") == -1         // see bug 1237464
+       && code.indexOf(".environment") == -1            // see bug 1237464
        && code.indexOf("Object.seal") == -1             // bug 937922
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
        && code.indexOf("Math.round") == -1              // bug 1236114
        && code.indexOf("disassemble") == -1             // bug 1237403
-       && code.indexOf("makeDebuggeeValue") == -1       // bug 1237464
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
