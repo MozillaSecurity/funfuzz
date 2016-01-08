@@ -44,6 +44,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
        && code.indexOf("'strict") == -1                 // see bug 743425
+       && code.indexOf("disassemble") == -1             // see bug 1237403 (related to asm.js)
        && code.indexOf(".script") == -1                 // see bug 1237464
        && code.indexOf(".parameterNames") == -1         // see bug 1237464
        && code.indexOf(".environment") == -1            // see bug 1237464
@@ -51,7 +52,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
        && code.indexOf("Math.round") == -1              // bug 1236114
-       && code.indexOf("disassemble") == -1             // bug 1237403
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
