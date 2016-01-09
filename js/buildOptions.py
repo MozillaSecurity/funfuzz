@@ -113,6 +113,12 @@ def addParserOptions():
                         default=False,
                         help='Build shells with --enable-oom-breakpoint. ' +
                         'Defaults to "%(default)s".')
+    parser.add_argument('--without-intl-api',  # Speeds up compilation but is non-default
+                        dest='enableWithoutIntlApi',
+                        action='store_true',
+                        default=False,
+                        help='Build shells using --without-intl-api. ' +
+                        'Defaults to "%(default)s".')
     randomizeBool(['--enable-simulator=arm'], 0.3, 0,
                   dest='enableSimulatorArm32',
                   help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
@@ -189,6 +195,8 @@ def computeShellType(buildOptions):
         fileName.append('vg')
     if buildOptions.enableOomBreakpoint:
         fileName.append('oombp')
+    if buildOptions.enableWithoutIntlApi:
+        fileName.append('intlDisabled')
     if buildOptions.enableSimulatorArm32 or buildOptions.enableSimulatorArm64:
         fileName.append('armSim')
     if sps.isARMv7l:

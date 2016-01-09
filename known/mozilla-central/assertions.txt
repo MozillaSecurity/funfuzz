@@ -2200,6 +2200,3 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1236801
 Assertion failure: generation == table_->generation(),
-
-# Bug 1237153
-Assertion failure: defaultTimeBudget_

@@ -367,6 +367,8 @@ def cfgBin(shell):
         cfgCmdList.append('--enable-more-deterministic')
     if shell.buildOptions.enableOomBreakpoint:  # Extra debugging help for OOM assertions
         cfgCmdList.append('--enable-oom-breakpoint')
+    if shell.buildOptions.enableWithoutIntlApi:  # Speeds up compilation but is non-default
+        cfgCmdList.append('--without-intl-api')
 
     if shell.buildOptions.buildWithVg:
         cfgCmdList.append('--enable-valgrind')
