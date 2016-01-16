@@ -2198,8 +2198,5 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
 
-# Bug 1239403
-Assertion failure: target->nargs() <= call->mir()->numStackArgs() - numNonArgsOnStack,
-
 # Bug 1239605
 Assertion failure: cx->compartment()->creationOptions().getSharedMemoryAndAtomicsEnabled(),
