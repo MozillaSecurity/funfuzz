@@ -2200,3 +2200,6 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1239605
 Assertion failure: cx->compartment()->creationOptions().getSharedMemoryAndAtomicsEnabled(),
+
+# Bug 1240538
+Assertion failure: !global->lookup(cx, id),
