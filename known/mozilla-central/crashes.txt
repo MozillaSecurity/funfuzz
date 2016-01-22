@@ -323,3 +323,8 @@ js::jit::Compile
 # Bug 1234663
 js::jit::ICStub::markCode
 js::jit::ICStub::trace
+
+# Bug 1241886
+EmitExpr
+js::wasm::IonCompileFunction
+start
