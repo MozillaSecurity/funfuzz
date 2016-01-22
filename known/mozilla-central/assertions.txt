@@ -2197,6 +2197,3 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
-
-# Bug 1236801
-Assertion failure: generation == table_->generation(),

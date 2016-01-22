@@ -63,8 +63,8 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--non-writable-jitcode') and chance(.3):
         args.append("--non-writable-jitcode")  # --non-writable-jitcode landed in bug 977805
 
-    if shellSupportsFlag(shellPath, "--execute='setJitCompilerOption(\"ion.forceinlineCaches\", 1)'") and chance(.1):
-        args.append("--execute='setJitCompilerOption(\"ion.forceinlineCaches\", 1)'")
+    if shellSupportsFlag(shellPath, "--execute=setJitCompilerOption('ion.forceinlineCaches',1)") and chance(.1):
+        args.append("--execute=setJitCompilerOption('ion.forceinlineCaches',1)")
 
     if shellSupportsFlag(shellPath, '--no-cgc') and chance(.1):
         args.append("--no-cgc")  # --no-cgc landed in bug 1126769

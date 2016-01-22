@@ -48,6 +48,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".script") == -1                 // see bug 1237464
        && code.indexOf(".parameterNames") == -1         // see bug 1237464
        && code.indexOf(".environment") == -1            // see bug 1237464
+       && code.indexOf(".onNewGlobalObject") == -1      // see bug 1238246
        && code.indexOf("Object.seal") == -1             // bug 937922
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
