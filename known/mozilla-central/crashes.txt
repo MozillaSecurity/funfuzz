@@ -327,3 +327,4 @@ js::jit::ICStub::trace
 # Bug 1241581
 js::wasm::ModuleData::serializedSize
 strlen
+start
