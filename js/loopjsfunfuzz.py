@@ -229,6 +229,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         "getLcovInfo = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "printProfilerEvents = function() { };\n",
+        "validategc = function() { };\n",
         "// DDBEGIN\n"
     ]
     with open(jsfunfuzzOutputFilename, 'rb') as f:

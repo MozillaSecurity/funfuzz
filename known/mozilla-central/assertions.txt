@@ -2197,3 +2197,6 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
+
+# Bug 1242111
+Assertion failure: !script->baselineScript()->active(),
