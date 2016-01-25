@@ -55,6 +55,8 @@ DOMFuzzHelperObserver.prototype = {
       messageManager.addMessageListener("DOMFuzzHelper.getProfileDirectory", this);
       messageManager.addMessageListener("DOMFuzzHelper.enableAccessibility", this);
       messageManager.addMessageListener("DOMFuzzHelper.getBinDirectory", this);
+      messageManager.addMessageListener("DOMFuzzHelper.enableBookmarksToolbar", this);
+      messageManager.addMessageListener("DOMFuzzHelper.disableBookmarksToolbar", this);
 
       messageManager.loadFrameScript("chrome://domfuzzhelper/content/fuzzPriv.js", true);
 
@@ -102,6 +104,14 @@ DOMFuzzHelperObserver.prototype = {
 
       case "DOMFuzzHelper.getBinDirectory":
         return getBinDirectory();
+
+      case "DOMFuzzHelper.enableBookmarksToolbar":
+        enableBookmarksToolbar();
+        break;
+
+      case "DOMFuzzHelper.disableBookmarksToolbar":
+        disableBookmarksToolbar();
+        break;
 
       case "DOMFuzzHelper.enableAccessibility":
         try {
@@ -169,6 +179,20 @@ function getBinDirectory()
                     .getService(Components.interfaces.nsIProperties)
                     .get("CurProcD", Components.interfaces.nsIFile);
   return d.path;
+}
+
+function enableBookmarksToolbar()
+{
+  let browserWindow = Services.wm.getMostRecentWindow("navigator:browser");
+  let personalToolbar = browserWindow.document.getElementById("PersonalToolbar");
+  browserWindow.setToolbarVisibility(personalToolbar, true);
+}
+
+function disableBookmarksToolbar()
+{
+  let browserWindow = Services.wm.getMostRecentWindow("navigator:browser");
+  let personalToolbar = browserWindow.document.getElementById("PersonalToolbar");
+  browserWindow.setToolbarVisibility(personalToolbar, false);
 }
 
 
