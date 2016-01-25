@@ -350,7 +350,7 @@ svg.smil.enabled
 svg.svg-iframe.enabled
 svg.transform-box.enabled
 toolkit.identity.debug
-toolkit.telemetry.enabled
+# toolkit.telemetry.enabled  # Bug 1242084
 view_source.syntax_highlight
 view_source.wrap_long_lines
 viewmanager.do_doublebuffering
