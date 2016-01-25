@@ -31,6 +31,10 @@ var fuzzerChromeCode = (function() {
       return "fuzzPriv.callDrawWindow(" + flags + ", " + scale + ");";
     case 9:
       return Random.index(["fuzzPriv", "window"]) + ".resizeTo(" + windowSize() + ");";
+    case 10:
+      return "fuzzPriv.enableBookmarksToolbar();";
+    case 11:
+      return "fuzzPriv.disableBookmarksToolbar();";
     default:
       return [];
     }
