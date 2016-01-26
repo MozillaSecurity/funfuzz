@@ -216,7 +216,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager'],
             ['--fuzzing-safe', '--no-threads', '--baseline-eager'],
-            # Temporarily disabled due to lots of mismatch on stdout spew:
+            # Temporarily disabled due to bug 1243031 - lots of mismatch on stdout spew:
             # ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
             ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
             ['--fuzzing-safe', '--no-threads', '--no-ion'],  # See bug 1203862
@@ -237,7 +237,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'],  # Not in jit_test.py though, see bug 848906 comment 1
-            # Temporarily disabled due to lots of mismatch on stdout spew:
+            # Temporarily disabled due to bug 1243031 - lots of mismatch on stdout spew:
             # ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
@@ -259,7 +259,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'],  # See bug 848906 comment 1
-            # Temporarily disabled due to lots of mismatch on stdout spew:
+            # Temporarily disabled due to bug 1243031 - lots of mismatch on stdout spew:
             # ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
