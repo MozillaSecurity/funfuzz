@@ -274,6 +274,10 @@ def areArgsValid(args):
         # since releng machines only test non-deterministic builds.
         if not args.enableMoreDeterministic:
             return False, 'We should test deterministic ASan builds.'
+        if sps.isLinux:  # https://github.com/MozillaSecurity/funfuzz/issues/25
+            return False, 'Linux ASan builds cannot yet submit to FuzzManager.'
+        if sps.isMac:  # https://github.com/MozillaSecurity/funfuzz/issues/25
+            return False, 'Mac ASan builds cannot yet submit to FuzzManager.'
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
