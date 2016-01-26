@@ -2188,10 +2188,6 @@ Assertion failure: inited == !getPrototype(key).isUndefined(),
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
 Assertion failure: !entry->shape(),
 
-# Bug 1222675
-Assertion failure: result ([OOM] Is it really infallible?),
-Assertion failure: !unknownProperties(),
-
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
