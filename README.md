@@ -42,6 +42,12 @@ If you want to use these scripts to compile SpiderMonkey or Firefox, install the
 
 especially after updating major/minor OS versions. This sometimes manifests on Mac OS X Combo updates.
 
+3. Install LLVM via Homebrew, to get llvm-symbolizer needed for symbolizing ASan crash stacks.
+
+  ```
+  brew install llvm
+  ```
+
 
 ### Linux
 
@@ -57,6 +63,8 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 3. Install gdb:
   * Debian/Ubuntu: ```sudo apt-get install gdb```
   * Fedora: Please ensure that all development packages are installed (see ```rpm -qa "*devel"```), and run ```yum install gdb```
+4. Install clang for clang/ASan builds:
+  * Debian/Ubuntu: ```sudo apt-get install clang```
 
 
 ## Running funfuzz
