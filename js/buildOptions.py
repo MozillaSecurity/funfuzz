@@ -270,8 +270,6 @@ def areArgsValid(args):
         # since releng machines only test non-deterministic builds.
         if not args.enableMoreDeterministic:
             return False, 'We should test deterministic ASan builds.'
-        if sps.isLinux:
-            return False, 'FIXME: Figure out why compiling with Asan does not work in this harness.'
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
