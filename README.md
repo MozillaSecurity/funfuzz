@@ -93,7 +93,7 @@ The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [a
 * Windows 7 through 8.1, with [MozillaBuild 2.0.0](https://wiki.mozilla.org/MozillaBuild)
   * Windows 10 [requires a patch](https://bugzilla.mozilla.org/show_bug.cgi?id=1173060#c9) on top of MozillaBuild 2.0.0
 * Mac OS X 10.10
-* Ubuntu 14.04 LTS and later (best supported on 15.04)
+* Ubuntu 14.04 LTS and later (best supported on 15.10)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
