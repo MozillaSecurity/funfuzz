@@ -95,7 +95,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     Returns a revset which evaluates to the first revision of the shell that
     compiles with |options| and runs jsfunfuzz successfully with |flags|.
     '''
-    assert (not sps.isMac) or (sps.macVer() >= [10, 7])  # Only Lion and above are supported with Clang 4.
+    assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
 
     # These should be in descending order, or bisection will break at earlier changesets.
 

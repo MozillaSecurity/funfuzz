@@ -35,6 +35,10 @@ S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autoBisect
 
 if sps.isWin:
     MAKE_BINARY = 'mozmake'
+    CLANG_PARAMS = ' -fallback'
+    # CLANG_ASAN_PARAMS = ' -fsanitize=address -Dxmalloc=myxmalloc'
+    # Note that we still have not yet managed to make ASan for Windows builds work.
+    CLANG_ASAN_PARAMS = ''
 else:
     MAKE_BINARY = 'make'
     CLANG_PARAMS = ' -Qunused-arguments'
@@ -220,14 +224,6 @@ def cfgBin(shell):
     cfgEnvDt = copy.deepcopy(os.environ)
     origCfgEnvDt = copy.deepcopy(os.environ)
     cfgEnvDt['AR'] = 'ar'
-    # Check for determinism to prevent LLVM compilation from happening on releng machines,
-    # since releng machines only test non-deterministic builds.
-    if shell.buildOptions.buildWithAsan and shell.buildOptions.enableMoreDeterministic:
-        llvmPath = envVars.findLlvmBinPath()
-        assert llvmPath is not None
-        CLANG_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang'))
-        CLANGPP_PATH = sps.normExpUserPath(os.path.join(llvmPath, 'clang++'))
-
     if sps.isARMv7l:
         # 32-bit shell on ARM boards, e.g. odroid boards.
         # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
@@ -245,17 +241,15 @@ def cfgBin(shell):
         if not shell.buildOptions.enableHardFp:
             cfgCmdList.append('--target=arm-linux-gnueabi')
     elif shell.buildOptions.enable32 and os.name == 'posix':
-        # 32-bit shell on Mac OS X 10.7 Lion and greater
+        # 32-bit shell on Mac OS X 10.10 Yosemite and greater
         if sps.isMac:
-            assert sps.macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
-            if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
-                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
-                    CLANG_ASAN_PARAMS + SSE2_FLAGS
-                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = CLANGPP_PATH + CLANG_PARAMS + \
-                    CLANG_ASAN_PARAMS + SSE2_FLAGS
-            else:  # Uses system clang
-                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang' + CLANG_PARAMS + SSE2_FLAGS
-                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++' + CLANG_PARAMS + SSE2_FLAGS
+            assert sps.macVer() >= [10, 10]  # We no longer support 10.9 Mavericks and prior.
+            # Uses system clang
+            cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang' + CLANG_PARAMS + SSE2_FLAGS
+            cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++' + CLANG_PARAMS + SSE2_FLAGS
+            if shell.buildOptions.buildWithAsan:
+                cfgEnvDt['CC'] += CLANG_ASAN_PARAMS
+                cfgEnvDt['CXX'] += CLANG_ASAN_PARAMS
             cfgEnvDt['CC'] = cfgEnvDt['CC'] + CLANG_X86_FLAG  # only needed for CC, not HOST_CC
             cfgEnvDt['CXX'] = cfgEnvDt['CXX'] + CLANG_X86_FLAG  # only needed for CXX, not HOST_CXX
             cfgEnvDt['RANLIB'] = 'ranlib'
@@ -267,8 +261,7 @@ def cfgBin(shell):
                 cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-            cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
-            cfgCmdList.append('--enable-macos-target=10.5')
+            cfgCmdList.append('--target=i386-apple-darwin14.5.0')  # Yosemite 10.10.5
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
             if shell.buildOptions.enableSimulatorArm32:
@@ -279,16 +272,16 @@ def cfgBin(shell):
         # 32-bit shell on 32/64-bit x86 Linux
         elif sps.isLinux and not sps.isARMv7l:
             cfgEnvDt['PKG_CONFIG_LIBDIR'] = '/usr/lib/pkgconfig'
-            if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
-                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
-                    CLANG_ASAN_PARAMS + SSE2_FLAGS + CLANG_X86_FLAG
-                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = CLANGPP_PATH + CLANG_PARAMS + \
-                    CLANG_ASAN_PARAMS + SSE2_FLAGS + CLANG_X86_FLAG
-            else:  # Uses system clang
-                # We might still be using GCC on Linux 32-bit, use clang only if we specify ASan
+            if shell.buildOptions.buildWithClang:
+                cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = 'clang' + CLANG_PARAMS + SSE2_FLAGS + CLANG_X86_FLAG
+                cfgEnvDt['CXX'] = cfgEnvDt['HOST_CXX'] = 'clang++' + CLANG_PARAMS + SSE2_FLAGS + CLANG_X86_FLAG
+            else:
                 # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
                 cfgEnvDt['CC'] = 'gcc -m32' + SSE2_FLAGS
                 cfgEnvDt['CXX'] = 'g++ -m32' + SSE2_FLAGS
+            if shell.buildOptions.buildWithAsan:
+                cfgEnvDt['CC'] += CLANG_ASAN_PARAMS
+                cfgEnvDt['CXX'] += CLANG_ASAN_PARAMS
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
             cfgCmdList.append('--target=i686-pc-linux')
@@ -302,19 +295,18 @@ def cfgBin(shell):
         else:
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-    # 64-bit shell on Mac OS X 10.7 Lion and greater
-    elif sps.isMac and sps.macVer() >= [10, 7] and not shell.buildOptions.enable32:
-        if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
-            cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
-            cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
-        else:  # Uses system clang
-            cfgEnvDt['CC'] = 'clang' + CLANG_PARAMS
-            cfgEnvDt['CXX'] = 'clang++' + CLANG_PARAMS
+    # 64-bit shell on Mac OS X 10.10 Yosemite and greater
+    elif sps.isMac and sps.macVer() >= [10, 10] and not shell.buildOptions.enable32:
+        cfgEnvDt['CC'] = 'clang' + CLANG_PARAMS
+        cfgEnvDt['CXX'] = 'clang++' + CLANG_PARAMS
+        if shell.buildOptions.buildWithAsan:
+            cfgEnvDt['CC'] += CLANG_ASAN_PARAMS
+            cfgEnvDt['CXX'] += CLANG_ASAN_PARAMS
         if sps.isProgramInstalled('brew'):
             cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        cfgCmdList.append('--target=x86_64-apple-darwin12.5.0')  # Mountain Lion 10.8.5
+        cfgCmdList.append('--target=x86_64-apple-darwin14.5.0')  # Yosemite 10.10.5
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
         if shell.buildOptions.enableSimulatorArm64:
@@ -322,6 +314,13 @@ def cfgBin(shell):
 
     elif sps.isWin:
         cfgEnvDt['MAKE'] = 'mozmake'  # Workaround for bug 948534
+        if shell.buildOptions.buildWithClang:
+            cfgEnvDt['CC'] = 'clang-cl.exe' + CLANG_PARAMS
+            cfgEnvDt['CXX'] = 'clang-cl.exe' + CLANG_PARAMS
+        # Note: Doesn't seem to work yet.
+        # if shell.buildOptions.buildWithAsan:
+        #     cfgEnvDt['CC'] += CLANG_ASAN_PARAMS
+        #     cfgEnvDt['CXX'] += CLANG_ASAN_PARAMS
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.buildOptions.enable32:
@@ -335,19 +334,29 @@ def cfgBin(shell):
             cfgCmdList.append('--target=x86_64-pc-mingw32')
             if shell.buildOptions.enableSimulatorArm64:
                 cfgCmdList.append('--enable-simulator=arm64')
+        # Note: Doesn't seem to work yet.
+        # if shell.buildOptions.buildWithAsan:
+        #     cfgCmdList.append('--enable-address-sanitizer')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
-        if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
-            cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
-            cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
+        if shell.buildOptions.buildWithClang:
+            cfgEnvDt['CC'] = 'clang' + CLANG_PARAMS
+            cfgEnvDt['CXX'] = 'clang++' + CLANG_PARAMS
+        if shell.buildOptions.buildWithAsan:
+            cfgEnvDt['CC'] += CLANG_ASAN_PARAMS
+            cfgEnvDt['CXX'] += CLANG_ASAN_PARAMS
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
 
-    if shell.buildOptions.buildWithAsan:
-        assert 'clang' in cfgEnvDt['CC']
-        assert 'clang++' in cfgEnvDt['CXX']
+    if shell.buildOptions.buildWithClang:
+        if sps.isWin:
+            assert 'clang-cl' in cfgEnvDt['CC']
+            assert 'clang-cl' in cfgEnvDt['CXX']
+        else:
+            assert 'clang' in cfgEnvDt['CC']
+            assert 'clang++' in cfgEnvDt['CXX']
         cfgCmdList.append('--disable-jemalloc')  # See bug 1146895
 
     if shell.buildOptions.enableDbg:

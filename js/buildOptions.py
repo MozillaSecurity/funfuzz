@@ -83,6 +83,10 @@ def addParserOptions():
                   dest='enableProfiling',
                   help='Build shells with --enable-profiling. Defaults to "%(default)s".')
 
+    # Alternative compiler for Linux and Windows. Clang is always turned on, on Macs.
+    randomizeBool(['--build-with-clang'], 0.5, 0.5,
+                  dest='buildWithClang',
+                  help='Build with clang. Defaults to "True" on Macs, "%(default)s" otherwise.')
     # Memory debuggers
     randomizeBool(['--build-with-asan'], 0.3, 0,
                   dest='buildWithAsan',
@@ -145,6 +149,9 @@ def parseShellOptions(inputArgs):
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args(inputArgs.split())
 
+    if sps.isMac:
+        buildOptions.buildWithClang = True  # Clang seems to be the only supported compiler
+
     if buildOptions.enableArmSimulatorObsolete:
         buildOptions.enableSimulatorArm32 = True
 
@@ -189,6 +196,8 @@ def computeShellType(buildOptions):
         fileName.append('prof')
     if buildOptions.enableMoreDeterministic:
         fileName.append('dm')
+    if buildOptions.buildWithClang:
+        fileName.append('clang')
     if buildOptions.buildWithAsan:
         fileName.append('asan')
     if buildOptions.buildWithVg:
@@ -255,6 +264,8 @@ def areArgsValid(args):
         return False, '--run-with-valgrind needs --build-with-valgrind.'
 
     if args.buildWithAsan:
+        if not args.buildWithClang:
+            return False, 'We should test ASan builds that are only compiled with Clang.'
         # Also check for determinism to prevent LLVM compilation from happening on releng machines,
         # since releng machines only test non-deterministic builds.
         if not args.enableMoreDeterministic:
