@@ -2195,6 +2195,9 @@ Assertion failure: !unknownProperties(),
 # Bug 1225041
 Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
+# Bug 1232685
+Assertion failure: data.maxArgv[0].isObject(),
+
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
 
