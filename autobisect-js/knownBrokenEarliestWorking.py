@@ -65,6 +65,11 @@ def knownBrokenRanges(options):
                 hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit Mac ARM-simulator builds
             ])
 
+    if not options.enableDbg:
+        skips.extend([
+            hgrange('a048c55e1906', 'ddaa87cfd7fa'),  # Fx46, broken opt builds w/ --enable-gczeal
+        ])
+
     if options.enableMoreDeterministic:
         skips.extend([
             hgrange('1d672188b8aa', 'ea7dabcd215e'),  # Fx40, see bug 1149739

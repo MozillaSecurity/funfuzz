@@ -96,6 +96,8 @@ function makeDOMFuzzHelper(aWindow) {
       callDrawWindow: callDrawWindow(aWindow),
       enableAccessibility: enableAccessibility.bind(this),
       zoom: setZoomLevel(aWindow),
+      enableBookmarksToolbar: function() { sendAsyncMessage('DOMFuzzHelper.enableBookmarksToolbar', {}) },
+      disableBookmarksToolbar: function() { sendAsyncMessage('DOMFuzzHelper.disableBookmarksToolbar', {}) },
   };
 
   var testingFunctions = Components.utils.getJSTestingFunctions();
