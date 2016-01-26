@@ -263,6 +263,10 @@ def areArgsValid(args):
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'
 
+    if args.buildWithClang:
+        if sps.isWin:
+            return False, 'Clang builds on Windows are not supported well yet.'
+
     if args.buildWithAsan:
         if not args.buildWithClang:
             return False, 'We should test ASan builds that are only compiled with Clang.'
@@ -270,10 +274,6 @@ def areArgsValid(args):
         # since releng machines only test non-deterministic builds.
         if not args.enableMoreDeterministic:
             return False, 'We should test deterministic ASan builds.'
-        if sps.isLinux:
-            return False, 'FIXME: Figure out why compiling with Asan does not work in this harness.'
-        if sps.isMac:
-            return False, 'FIXME: Figure out why compiling with Asan broke again.'
         if sps.isWin:
             return False, 'Asan is not yet supported on Windows.'
 
