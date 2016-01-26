@@ -245,9 +245,9 @@ def cfgBin(shell):
         if not shell.buildOptions.enableHardFp:
             cfgCmdList.append('--target=arm-linux-gnueabi')
     elif shell.buildOptions.enable32 and os.name == 'posix':
-        # 32-bit shell on Mac OS X 10.7 Lion and greater
+        # 32-bit shell on Mac OS X 10.10 Yosemite and greater
         if sps.isMac:
-            assert sps.macVer() >= [10, 7]  # We no longer support Snow Leopard 10.6 and prior.
+            assert sps.macVer() >= [10, 10]  # We no longer support 10.9 Mavericks and prior.
             if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
                 cfgEnvDt['CC'] = cfgEnvDt['HOST_CC'] = CLANG_PATH + CLANG_PARAMS + \
                     CLANG_ASAN_PARAMS + SSE2_FLAGS
@@ -267,8 +267,7 @@ def cfgBin(shell):
                 cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-            cfgCmdList.append('--target=i386-apple-darwin9.2.0')  # Leopard 10.5.2
-            cfgCmdList.append('--enable-macos-target=10.5')
+            cfgCmdList.append('--target=i386-apple-darwin14.5.0')  # Yosemite 10.10.5
             if shell.buildOptions.buildWithAsan:
                 cfgCmdList.append('--enable-address-sanitizer')
             if shell.buildOptions.enableSimulatorArm32:
@@ -302,8 +301,8 @@ def cfgBin(shell):
         else:
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-    # 64-bit shell on Mac OS X 10.7 Lion and greater
-    elif sps.isMac and sps.macVer() >= [10, 7] and not shell.buildOptions.enable32:
+    # 64-bit shell on Mac OS X 10.10 Yosemite and greater
+    elif sps.isMac and sps.macVer() >= [10, 10] and not shell.buildOptions.enable32:
         if shell.buildOptions.buildWithAsan:  # Uses custom compiled clang
             cfgEnvDt['CC'] = CLANG_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
             cfgEnvDt['CXX'] = CLANGPP_PATH + CLANG_PARAMS + CLANG_ASAN_PARAMS
@@ -314,7 +313,7 @@ def cfgBin(shell):
             cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
-        cfgCmdList.append('--target=x86_64-apple-darwin12.5.0')  # Mountain Lion 10.8.5
+        cfgCmdList.append('--target=x86_64-apple-darwin14.5.0')  # Yosemite 10.10.5
         if shell.buildOptions.buildWithAsan:
             cfgCmdList.append('--enable-address-sanitizer')
         if shell.buildOptions.enableSimulatorArm64:
