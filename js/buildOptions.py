@@ -263,6 +263,10 @@ def areArgsValid(args):
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'
 
+    if args.buildWithClang:
+        if sps.isWin:
+            return False, 'Clang builds on Windows are not supported well yet.'
+
     if args.buildWithAsan:
         if not args.buildWithClang:
             return False, 'We should test ASan builds that are only compiled with Clang.'
