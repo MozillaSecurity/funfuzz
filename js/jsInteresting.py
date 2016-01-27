@@ -88,9 +88,9 @@ class ShellResult:
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timedRun.CRASHED:
-            sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True)
-            with open(logPrefix + "-crash.txt") as f:
-                auxCrashData = [line.strip() for line in f.readlines()]
+            if sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True):
+                with open(logPrefix + "-crash.txt") as f:
+                    auxCrashData = [line.strip() for line in f.readlines()]
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
