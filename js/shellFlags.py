@@ -124,8 +124,9 @@ def randomFlagSet(shellPath):
         else:
             args.append("--no-sse4")
 
-    if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
-        args.append("--no-fpu")  # --no-fpu landed in bug 858022
+    # Temporarily disabled due to bug 1243031 - lots of mismatch on stdout spew:
+    # if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
+    #     args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
     if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
         args.append("--no-asmjs")
