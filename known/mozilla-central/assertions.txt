@@ -2206,6 +2206,3 @@ Assertion failure: data.maxArgv[0].isObject(),
 
 # Bug 1235194
 Assertion failure: args.rval().isObject(),
-
-# Bug 1242111
-Assertion failure: !script->baselineScript()->active(),
