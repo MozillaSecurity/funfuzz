@@ -35,9 +35,9 @@ def reapOoms():
         command = parts[4]
 
         # Look for firefox processes at risk of gobbling memory
-        if "MacOS/firefox-bin" in command and not command.startswith("/Applications/") and "-asan-" not in command:
+        if "MacOS/firefox-bin" in command and not command.startswith("/Applications/"):
             # Look for ones that are actually using too much memory (multiples of 1024 bytes)
-            if rss > 2*1024*1024 or vsz > 9*1024*1024:
+            if rss > 2*1024*1024 or (vsz > 9*1024*1024 and "-asan" not in command):
                 print "Killing: " + line
                 os.kill(pid, signal.SIGKILL)
 

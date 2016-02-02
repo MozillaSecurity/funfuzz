@@ -2133,6 +2133,15 @@ ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFra
 # Bug 1230111
 : failed assertion "0 == fAllocationCnt"
 
+# Bug 1242794
+: failed assertion "fPixelRef->info() == pixelRef->info()"
+
+# Bug 1242811
+: failed assertion "!plot->unique()"
+
+# Bug 1242822
+: failed assertion "x >= 0 && x + (startAlpha != 0) + middleCount + (stopAlpha != 0) <= fWidth"
+
 # Bug 1234726
 ASSERTION: must have content: 'aContent || !(aHint & nsChangeHint_ReconstructFrame)', file layout/base/nsStyleChangeList.cpp
 
@@ -2147,6 +2156,10 @@ Assertion failure: !StyleText()->HasTextEmphasis(),
 
 # Bug 1235490
 Assertion failure: cellData == mMap->GetDataAt(*aRow, mCol) (Giving caller bogus row?),
+
+# Bug 1242769
+Assertion failure: mInUpdate (Ending update while not in update),
+ASSERTION: bad aListVisibleBounds: 'r.GetBounds().IsEqualInterior(aListVisibleBounds)', file layout/base/nsDisplayList.cpp
 
 
 ################################
@@ -2190,9 +2203,4 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 
 # Bug 1232685
 Assertion failure: data.maxArgv[0].isObject(),
-
-# Bug 1235194
 Assertion failure: args.rval().isObject(),
-
-# Bug 1242111
-Assertion failure: !script->baselineScript()->active(),

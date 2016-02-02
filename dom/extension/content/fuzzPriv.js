@@ -369,6 +369,9 @@ function fontList()
 
 function reftestList()
 {
+  // We may want to switch to listing all files, not just top-level reftests,
+  // but we'd still want to exclude evil tests like 545291-1.html.
+
   var dir = extensionLocation().parent;
   dir.append("automation");
   return readFile(indir(dir, "urls-reftests"));
