@@ -2204,3 +2204,6 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1232685
 Assertion failure: data.maxArgv[0].isObject(),
 Assertion failure: args.rval().isObject(),
+
+# Bug 1245961
+Assertion failure: i < argc_,
