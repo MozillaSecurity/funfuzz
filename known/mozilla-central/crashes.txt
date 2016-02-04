@@ -304,6 +304,9 @@ mozilla::layout::FrameChildListIterator::FrameChildListIterator
 # Bug 1234726
 nsCSSFrameConstructor::RecreateFramesForContent
 
+# Bug 1245011
+nsGlobalWindow::HasActiveSpeechSynthesis
+
 
 #############################
 #                           #
