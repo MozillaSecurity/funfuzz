@@ -370,6 +370,7 @@ def knownChromeFailure(msg):
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
         ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("Webapps.js" in msg and "aApp is null" in msg) or                              # Bug 1228795
+        ("Webapps.js" in msg and "aApp.manifestURL is null" in msg) or                  # Bug 1228795?
         ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
         ("nsPrompter.js" in msg and "openModalWindow on a hidden window" in msg) or     # Bug 1186727
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
@@ -380,6 +381,7 @@ def knownChromeFailure(msg):
         ("MainProcessSingleton.js" in msg and "NS_ERROR_ILLEGAL_VALUE" in msg) or       # Bug 1230388
         ("content-sessionStore.js" in msg) or                                           # Bug 1195295 removes some broken code
         ("NS_ERROR_FAILURE: Failure" in msg) or                                         # Bug 1233254
+        ("nsINavBookmarksService.removeFolderChildren" in msg) or                       # Firefox randomly fails to start with this message
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
