@@ -39,7 +39,11 @@ def reapOoms():
             # Look for ones that are actually using too much memory (multiples of 1024 bytes)
             if rss > 2*1024*1024 or (vsz > 9*1024*1024 and "-asan" not in command):
                 print "Killing: " + line
-                os.kill(pid, signal.SIGKILL)
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except OSError as e:
+                    # We might race with something else that causes the process to die
+                    print e
 
 
 if __name__ == "__main__":
