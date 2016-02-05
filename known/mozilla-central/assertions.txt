@@ -2235,5 +2235,8 @@ Assertion failure: i < argc_,
 # Bug 1246112
 Assertion failure: isDebuggerEvalFrame(),
 
-# Bug <to be filed>
+# Bug 1246136
 Assertion failure: (expected != ExprType::Void) == !!*def,
+
+# Bug 1246154
+Assertion failure: start < end,
