@@ -56,6 +56,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Math.round") == -1              // bug 1236114
        && code.indexOf("localeCompare") == -1           // bug 1244502
        && code.indexOf(".filter") == -1                 // bug 1245187
+       && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
