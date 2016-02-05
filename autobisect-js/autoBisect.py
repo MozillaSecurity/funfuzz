@@ -636,12 +636,12 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
             offset = 0
         elif offset > 16:
             print 'Failed to find a working build after ~30 tries.'
-            return None, None, None
+            return None, None, None, None
         elif offset > 0:
             # Stop once we are testing beyond the start & end entries of the list
             if (preferredIndex + offset >= len(urls)) and (preferredIndex - offset < 0):
                 print 'Stop looping because everything within the range was tested.'
-                return None, None, None
+                return None, None, None, None
             offset = -offset
         else:
             offset = -offset + 1  # Alternate between positive and negative offsets
