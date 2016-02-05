@@ -556,6 +556,7 @@ ASSERTION: UpdateView called on view we don't own: 'view->GetViewManager() == th
 # Bug 613816
 ASSERTION: Why did this not get handled while processing mRestyleRoots?: '!element->HasFlag(collector->tracker->RootBit()) || (element->GetFlattenedTreeParent() && (!element->GetFlattenedTreeParent()->GetPrimaryFrame()|| element->GetFlattenedTreeParent()->GetPrimaryFrame()->IsLeaf())) || (aData.mChangeHint & nsChangeHint_ReconstructFrame)', file layout/base/RestyleTracker.cpp
 ASSERTION: Why did this not get handled while processing mRestyleRoots?: '!element->HasFlag(collector->tracker->RootBit()) || (element->GetFlattenedTreeParent() && (!element->GetFlattenedTreeParent()->GetPrimaryFrame() || element->GetFlattenedTreeParent()->GetPrimaryFrame()->IsLeaf() || element->GetCurrentDoc()->GetShell()->FrameManager() ->GetDisplayContentsStyleFor(element))) || (aData->mChangeHint & nsChangeHint_ReconstructFrame)', file layout/base/RestyleTracker.cpp
+ASSERTION: Why did this not get handled while processing mRestyleRoots?: '!element->HasFlag(RootBit()) || (element->GetFlattenedTreeParent() && (!element->GetFlattenedTreeParent()->GetPrimaryFrame() || element->GetFlattenedTreeParent()->GetPrimaryFrame()->IsLeaf() || element->GetCrossShadowCurrentDoc()->GetShell()->FrameManager() ->GetDisplayContentsStyleFor(element))) || (data->mChangeHint & nsChangeHint_ReconstructFrame)', file layout/base/RestyleTracker.cpp
 
 # Bug 613889
 ASSERTION: unexpected size: 'mRect.width == desiredSize.Width() && mRect.height == desiredSize.Height()', file layout/svg/nsSVGForeignObjectFrame.cpp
@@ -1954,6 +1955,7 @@ ASSERTION: inline-size less than zero: 'aContainingBlockISize >= 0', file layout
 
 # Bug 1227489
 ASSERTION: writing-mode mismatch: 'aWritingMode.IgnoreSideways() == GetWritingMode().IgnoreSideways()', file WritingModes.h
+ASSERTION: writing-mode mismatch: 'aOther.GetWritingMode().IgnoreSideways() == GetWritingMode().IgnoreSideways()', file WritingModes.h
 
 # Bug 1227493
 ASSERTION: dirtyness out of sync:
@@ -2069,6 +2071,7 @@ Assertion failure: aVideoType != MediaSourceEnum::Other || aAudioType != MediaSo
 
 # Bug 1232856
 ASSERTION: Bounds computation mismatch: 'mContainerBounds.Contains(mAccumulatedChildBounds)', file layout/base/FrameLayerBuilder.cpp
+ASSERTION: Bounds computation mismatch: 'mContainerBounds.IsEqualInterior(mAccumulatedChildBounds)', file layout/base/FrameLayerBuilder.cpp
 
 # Bug 1232875
 Assertion failure: !parent->GetPrevInFlow() (Col group should always be in a first-in-flow table frame),
@@ -2142,6 +2145,9 @@ ASSERTION: Null out-of-flow for placeholder?: 'outOfFlow', file nsPlaceholderFra
 # Bug 1242822
 : failed assertion "x >= 0 && x + (startAlpha != 0) + middleCount + (stopAlpha != 0) <= fWidth"
 
+# Bug 1244850
+: failed assertion "min <= max"
+
 # Bug 1234726
 ASSERTION: must have content: 'aContent || !(aHint & nsChangeHint_ReconstructFrame)', file layout/base/nsStyleChangeList.cpp
 
@@ -2160,6 +2166,24 @@ Assertion failure: cellData == mMap->GetDataAt(*aRow, mCol) (Giving caller bogus
 # Bug 1242769
 Assertion failure: mInUpdate (Ending update while not in update),
 ASSERTION: bad aListVisibleBounds: 'r.GetBounds().IsEqualInterior(aListVisibleBounds)', file layout/base/nsDisplayList.cpp
+
+# Bug 1244873
+Assertion failure: IsAncestor(aClip1, aClip2) || IsAncestor(aClip2, aClip1) (one of the scroll clips must be an ancestor of the other),
+
+# Bug 1244894 [with nsHTMLEditRules::BustUpInlinesAtRangeEndpoints, which is not inlined]
+Assertion failure: !Failed(),
+
+# Bug 1244898 [with mozilla::dom::SVGAnimationElement::ActivateByHyperlink]
+Assertion failure: !Failed(),
+
+# Bug 1244918
+Assertion failure: !isinf(t_min) && !isinf(t_max) (The first call to UpdateLinearParametersToIncludePoint should have made t_min and t_max non-infinite.),
+
+# Bug 1244947
+ASSERTION: Removing id entry that doesn't exist: '!aElement->OwnerDoc()->IsHTMLDocument() || mIdContentList.Contains(aElement)', file dom/base/nsDocument.cpp
+
+# Bug 1244951
+Assertion failure: false (This should not happen, setting the value should always work),
 
 
 ################################
@@ -2204,3 +2228,15 @@ Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
 # Bug 1232685
 Assertion failure: data.maxArgv[0].isObject(),
 Assertion failure: args.rval().isObject(),
+
+# Bug 1245961
+Assertion failure: i < argc_,
+
+# Bug 1246112
+Assertion failure: isDebuggerEvalFrame(),
+
+# Bug 1246136
+Assertion failure: (expected != ExprType::Void) == !!*def,
+
+# Bug 1246154
+Assertion failure: start < end,

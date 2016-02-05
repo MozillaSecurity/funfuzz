@@ -304,6 +304,9 @@ mozilla::layout::FrameChildListIterator::FrameChildListIterator
 # Bug 1234726
 nsCSSFrameConstructor::RecreateFramesForContent
 
+# Bug 1245011
+nsGlobalWindow::HasActiveSpeechSynthesis
+
 
 #############################
 #                           #
@@ -316,3 +319,10 @@ nsCSSFrameConstructor::RecreateFramesForContent
 
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
+
+# Bug 1232685
+GetProperty
+InternalConstruct
+
+# Bug 1245961
+js::Debugger::isCompilableUnit
