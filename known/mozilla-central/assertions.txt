@@ -2231,3 +2231,6 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1245961
 Assertion failure: i < argc_,
+
+# Bug 1246112
+Assertion failure: isDebuggerEvalFrame(),
