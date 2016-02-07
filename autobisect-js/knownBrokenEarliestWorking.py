@@ -110,6 +110,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if options.buildWithAsan:
+        required.append('d4e0e0e5d26d')  # m-c 268534 Fx44, 1st w/ reliable ASan builds w/ ICU, see bug 1214464
     if "--ion-sincos=on" in flags:
         required.append('3dec2b935295')  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
     if "--ion-instruction-reordering=on" in flags:
