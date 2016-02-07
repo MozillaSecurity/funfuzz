@@ -2222,9 +2222,6 @@ Assertion failure: inited == !getPrototype(key).isUndefined(),
 Assertion failure: obj->lastProperty() == templateObject->as<ArrayObject>().lastProperty(),
 Assertion failure: !entry->shape(),
 
-# Bug 1225041
-Assertion failure: CheckVarNameConflict(cx, lexicalScope, dn),
-
 # Bug 1232685
 Assertion failure: data.maxArgv[0].isObject(),
 Assertion failure: args.rval().isObject(),
