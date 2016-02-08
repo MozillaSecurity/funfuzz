@@ -323,6 +323,3 @@ nsGlobalWindow::HasActiveSpeechSynthesis
 # Bug 1232685
 GetProperty
 InternalConstruct
-
-# Bug 1245961
-js::Debugger::isCompilableUnit
