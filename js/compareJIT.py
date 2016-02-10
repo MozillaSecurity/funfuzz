@@ -127,11 +127,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         else:
             # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
-            def fpuOptionDisabledAsmOnOneSide():
-                # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
-                # This should only affect asm.js diagnostics on stderr.
-                fpuAsmMsg = "asm.js type error: Disabled by lack of floating point support"
-                fpuOptionDisabledAsm = anyLineContains(r0.err, fpuAsmMsg) or anyLineContains(r.err, fpuAsmMsg)
+            def fpuOptionDisabledAsmOnOneSide(fpuAsmMsg):
+                fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
                 return (fpuOptionDisabledAsm and fpuOptionDiffers)
 
@@ -141,7 +138,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
                 return (optionDisabledAsm and optionDiffers)
 
-            mismatchErr = (r.err != r0.err and not fpuOptionDisabledAsmOnOneSide() and not optionDisabledAsmOnOneSide())
+            mismatchErr = (r.err != r0.err
+                           # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
+                           # This should only affect asm.js diagnostics on stderr.
+                           and not fpuOptionDisabledAsmOnOneSide("asm.js type error: Disabled by lack of floating point support")
+                           # And also wasm stuff. See bug 1243031.
+                           and not fpuOptionDisabledAsmOnOneSide("WebAssembly is not supported on the current device")
+                           and not optionDisabledAsmOnOneSide())
             mismatchOut = (r.out != r0.out)
 
             if mismatchErr or mismatchOut:
