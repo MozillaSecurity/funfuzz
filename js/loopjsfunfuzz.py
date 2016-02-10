@@ -217,6 +217,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         "getLcovInfo = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "printProfilerEvents = function() { };\n",
+        "saveStack = function() { };\n",
         "validategc = function() { };\n",
         "// DDBEGIN\n"
     ]
