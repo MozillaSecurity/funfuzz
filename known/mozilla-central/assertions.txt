@@ -2226,8 +2226,5 @@ Assertion failure: !entry->shape(),
 Assertion failure: data.maxArgv[0].isObject(),
 Assertion failure: args.rval().isObject(),
 
-# Bug 1246112
-Assertion failure: isDebuggerEvalFrame(),
-
 # Bug 1246154
 Assertion failure: start < end,
