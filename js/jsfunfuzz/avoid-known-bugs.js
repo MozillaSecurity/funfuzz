@@ -51,6 +51,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".parameterNames") == -1         // see bug 1237464
        && code.indexOf(".environment") == -1            // see bug 1237464
        && code.indexOf(".onNewGlobalObject") == -1      // see bug 1238246
+       && code.indexOf(".takeCensus") == -1             // see bug 1247863
        && code.indexOf("Object.seal") == -1             // bug 937922
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
@@ -61,7 +62,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".sup") == -1                    // bug 1246552
        && code.indexOf(".exec") == -1                   // bug 1247701
        && code.indexOf("TypedObject") == -1             // bug 1247862
-       && code.indexOf(".takeCensus") == -1             // bug 1247863
        && code.indexOf("in ") == -1                     // bug 1247871
        && code.indexOf("defineSetter") == -1            // bug 1247877
        && code.indexOf("Math.imul") == -1               // bug 1247880
