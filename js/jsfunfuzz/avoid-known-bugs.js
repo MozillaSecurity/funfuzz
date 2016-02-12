@@ -55,11 +55,16 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
        && code.indexOf("Math.round") == -1              // bug 1236114
-       && code.indexOf("localeCompare") == -1           // bug 1244502
+       && code.indexOf(".call") == -1                   // bug 1244502
        && code.indexOf("with") == -1                    // bug 1245187
        && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
        && code.indexOf(".sup") == -1                    // bug 1246552
        && code.indexOf(".exec") == -1                   // bug 1247701
+       && code.indexOf("TypedObject") == -1             // bug 1247862
+       && code.indexOf(".takeCensus") == -1             // bug 1247863
+       && code.indexOf("in ") == -1                     // bug 1247871
+       && code.indexOf("defineSetter") == -1            // bug 1247877
+       && code.indexOf("Math.imul") == -1               // bug 1247880
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
