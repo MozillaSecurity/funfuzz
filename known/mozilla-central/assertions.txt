@@ -2228,3 +2228,6 @@ Assertion failure: args.rval().isObject(),
 
 # Bug 1246154
 Assertion failure: start < end,
+
+# Bug 1248202
+Assertion failure: hasOptimizations(),
