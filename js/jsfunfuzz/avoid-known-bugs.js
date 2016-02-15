@@ -63,7 +63,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".exec") == -1                   // bug 1247701
        && code.indexOf("TypedObject") == -1             // bug 1247862
        && code.indexOf("in ") == -1                     // bug 1247871
-       && code.indexOf("defineSetter") == -1            // bug 1247877
        && code.indexOf("Math.imul") == -1               // bug 1247880
        && code.indexOf("Float32Array") == -1            // bug 1248153
        && code.indexOf("Uint32Array") == -1             // bug 1248153
