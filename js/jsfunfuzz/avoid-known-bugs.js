@@ -32,7 +32,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("oomAfterAllocations") == -1
        && code.indexOf("oomAtAllocation") == -1
        && code.indexOf("printProfilerEvents") == -1       // causes diffs in --ion-eager vs --baseline-eager
-       && code.indexOf("saveStack") == -1
        && code.indexOf("validategc") == -1
        && code.indexOf("inIon") == -1                     // may become true after several iterations, or return a string with --no-ion
        && code.indexOf("inJit") == -1                     // may become true after several iterations, or return a string with --no-baseline
@@ -60,10 +59,8 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("with") == -1                    // bug 1245187
        && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
        && code.indexOf(".sup") == -1                    // bug 1246552
-       && code.indexOf(".exec") == -1                   // bug 1247701
        && code.indexOf("TypedObject") == -1             // bug 1247862
        && code.indexOf("in ") == -1                     // bug 1247871
-       && code.indexOf("defineSetter") == -1            // bug 1247877
        && code.indexOf("Math.imul") == -1               // bug 1247880
        && code.indexOf("Float32Array") == -1            // bug 1248153
        && code.indexOf("Uint32Array") == -1             // bug 1248153
