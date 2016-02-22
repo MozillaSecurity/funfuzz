@@ -324,5 +324,5 @@ nsGlobalWindow::HasActiveSpeechSynthesis
 GetProperty
 InternalConstruct
 
-# Bug 1249938
+# Bug 1249107
 ShortestPaths
