@@ -320,9 +320,5 @@ nsGlobalWindow::HasActiveSpeechSynthesis
 # Bug 1193521 (Observable symptom seems to have gone away)
 #js::TraceRoot
 
-# Bug 1232685
-GetProperty
-InternalConstruct
-
 # Bug 1249107
 ShortestPaths
