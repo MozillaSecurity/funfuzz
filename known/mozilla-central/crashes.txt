@@ -316,9 +316,3 @@ nsGlobalWindow::HasActiveSpeechSynthesis
 
 # Bug 1108413 (Only with --ion-sink=on)
 #js::jit::LiveInterval::addRangeAtHead
-
-# Bug 1193521 (Observable symptom seems to have gone away)
-#js::TraceRoot
-
-# Bug 1249107
-ShortestPaths
