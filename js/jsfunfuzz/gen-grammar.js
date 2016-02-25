@@ -883,10 +883,6 @@ var exprMakers =
   function (d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeExpr(d, b)   + ")"; },
   function (d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeNumber(d, b) + ")"; },
 
-  // Gecko wrappers
-  function(d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
-  function(d, b) { return "new XPCSafeJSObjectWrapper(" + makeExpr(d, b) + ")"; },
-
   // Harmony proxy creation: object, function without constructTrap, function with constructTrap
   function(d, b) { return makeId(d, b) + " = " + "Proxy.create(" + makeProxyHandler(d, b) + ", " + makeExpr(d, b) + ")"; },
   function(d, b) { return makeId(d, b) + " = " + "Proxy.createFunction(" + makeProxyHandler(d, b) + ", " + makeFunction(d, b) + ")"; },
@@ -965,6 +961,14 @@ if (typeof evalcx == "function") {
     function(d, b) { return makeGlobal(d, b); },
     function(d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeExpr(d, b) + ")"; },
     function(d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeGlobal(d, b) + ")"; },
+  ]);
+}
+
+// xpcshell (but not SpiderMonkey shell) has some XPC wrappers available.
+if (typeof XPCNativeWrapper == "function") {
+  exprMakers = exprMakers.extend([
+    function(d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
+    function(d, b) { return "new XPCSafeJSObjectWrapper(" + makeExpr(d, b) + ")"; },
   ]);
 }
 
@@ -1291,13 +1295,20 @@ var functionMakers = [
   function(d, b) { return "encodeURIComponent"; },
   function(d, b) { return "neuter"; },
   function(d, b) { return "objectEmulatingUndefined"; }, // spidermonkey shell object like the browser's document.all
-  function(d, b) { return "XPCNativeWrapper"; },
-  function(d, b) { return "XPCSafeJSObjectWrapper"; },
   function(d, b) { return makeProxyHandlerFactory(d, b); },
   function(d, b) { return makeShapeyConstructor(d, b); },
   function(d, b) { return Random.index(typedArrayConstructors); },
   function(d, b) { return Random.index(constructors); },
 ];
+
+if (typeof XPCNativeWrapper == "function") {
+  functionMakers = functionMakers.concat([
+    function(d, b) { return "XPCNativeWrapper"; },
+    function(d, b) { return "XPCSafeJSObjectWrapper"; },
+  ]);
+}
+
+
 
 var typedArrayConstructors = [
   "Int8Array",
