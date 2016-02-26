@@ -51,6 +51,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".environment") == -1            // see bug 1237464
        && code.indexOf(".onNewGlobalObject") == -1      // see bug 1238246
        && code.indexOf(".takeCensus") == -1             // see bug 1247863
+       && code.indexOf(".findScripts") == -1            // see bug 1250863
        && code.indexOf("Object.seal") == -1             // bug 937922
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
@@ -62,7 +63,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Math.imul") == -1               // bug 1247880
        && code.indexOf("Float32Array") == -1            // bug 1248153
        && code.indexOf("Uint32Array") == -1             // bug 1248153
-       && code.indexOf("majorGC") == -1                 // bug 1250863
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
