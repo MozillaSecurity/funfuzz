@@ -15,6 +15,7 @@ function whatToTestSpidermonkeyTrunk(code)
     allowIter: true,
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
+    // Ignore both within-process & across-process, e.g. nestTest mismatch & compareJIT
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("/*NODIFF*/") == -1                // Ignore diff testing on these labels
@@ -46,10 +47,12 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossIter: true
+    // within-process, e.g. ignore the following items for nestTest mismatch
        && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
     ,
 
     expectConsistentOutputAcrossJITs: true
+    // across-process (e.g. running js shell with different run-time options) e.g. compareJIT
        && code.indexOf("'strict") == -1                 // see bug 743425
        && code.indexOf("disassemble") == -1             // see bug 1237403 (related to asm.js)
        && code.indexOf("Object.seal") == -1             // bug 937922
