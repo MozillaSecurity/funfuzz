@@ -743,7 +743,7 @@ def getTimestampAndHashFromTboxFiles(folder):
     '''
     downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
     for fn in os.listdir(downloadDir):
-        if fn.startswith('firefox-') and fn.endswith('.txt'):
+        if fn.startswith('firefox-') and fn.endswith('.txt') and '_info' not in fn:
             with open(os.path.join(downloadDir, fn), 'rb') as f:
                 fContents = f.read().splitlines()
             break

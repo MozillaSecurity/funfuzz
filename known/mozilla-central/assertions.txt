@@ -2214,6 +2214,3 @@ Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i],
 
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
-
-# Bug 1248202
-Assertion failure: hasOptimizations(),
