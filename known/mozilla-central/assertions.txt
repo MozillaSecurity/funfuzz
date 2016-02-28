@@ -2217,3 +2217,7 @@ Assertion failure: inited == !getPrototype(key).isUndefined(),
 
 # Bug 1251919
 Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
+
+# Bug 1251921
+Assertion failure: args.rval().isObject(),
+Assertion failure: wrapped,
