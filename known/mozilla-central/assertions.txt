@@ -2221,3 +2221,6 @@ Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) ||
 # Bug 1251921
 Assertion failure: args.rval().isObject(),
 Assertion failure: wrapped,
+
+# Bug 1251922
+Assertion failure: isNurseryAllocAllowed(),
