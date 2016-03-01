@@ -62,7 +62,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Math.round") == -1              // bug 1246200
        && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
        && code.indexOf(".toString") == -1               // bug 1246552
-       && code.indexOf("TypedObject") == -1             // bug 1247862
        && code.indexOf("Math.imul") == -1               // bug 1247880
        && code.indexOf("Float32Array") == -1            // bug 1248153
        && code.indexOf("Uint32Array") == -1             // bug 1248153
