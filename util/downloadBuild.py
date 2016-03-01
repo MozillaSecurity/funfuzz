@@ -20,7 +20,6 @@ useCurl = False
 # Another bug for Windows??
 wgetMaybeNCC = ['--no-check-certificate']
 
-
 def readFromURL(url):
     '''
     Reads in a URL and returns its contents as a list.
@@ -403,7 +402,10 @@ def defaultBuildType(repoName, arch, debug):
 
 def main():
     options = parseOptions()
-    if options.downloadFolder[-1] == '"': options.downloadFolder = options.downloadFolder[:-1];
+    # On Windows, is a path surrounded with quotes ends with '\', the last quote is considered escaped and will be
+    # part of the option. This is not what the user expects, so remove any trailing quotes from paths:
+    options.remoteDir = options.remoteDir.rstrip('"');
+    options.downloadFolder = options.downloadFolder.rstrip('"');
     if options.remoteDir is not None:
         print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
     else:
