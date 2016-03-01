@@ -404,8 +404,8 @@ def main():
     options = parseOptions()
     # On Windows, is a path surrounded with quotes ends with '\', the last quote is considered escaped and will be
     # part of the option. This is not what the user expects, so remove any trailing quotes from paths:
-    options.remoteDir = options.remoteDir.rstrip('"');
-    options.downloadFolder = options.downloadFolder.rstrip('"');
+    options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"');
+    options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"');
     if options.remoteDir is not None:
         print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
     else:
