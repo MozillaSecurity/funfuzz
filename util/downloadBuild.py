@@ -402,7 +402,7 @@ def defaultBuildType(repoName, arch, debug):
 
 def main():
     options = parseOptions()
-    # On Windows, is a path surrounded with quotes ends with '\', the last quote is considered escaped and will be
+    # On Windows, if a path surrounded by quotes ends with '\', the last quote is considered escaped and will be
     # part of the option. This is not what the user expects, so remove any trailing quotes from paths:
     options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"');
     options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"');
