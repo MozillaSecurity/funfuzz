@@ -28,8 +28,9 @@ isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
 if os.environ.get('MOZ_MSVCBITS'):
     isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # For MozillaBuild 2.0.0
-else:
+elif os.environ.get('MOZ_TOOLS'):
     isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])  # For MozillaBuild 1.x
+# else do not set; the script is running stand-alone and the isMozBuild64 variable should not be needed.
 
 noMinidumpMsg = r'''
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
