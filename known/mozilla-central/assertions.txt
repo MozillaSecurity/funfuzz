@@ -2224,6 +2224,3 @@ Assertion failure: wrapped,
 
 # Bug 1251922
 Assertion failure: isNurseryAllocAllowed(),
-
-# Bug 1252019
-Assertion failure: isFunction(),
