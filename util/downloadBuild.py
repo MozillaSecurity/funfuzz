@@ -20,7 +20,6 @@ useCurl = False
 # Another bug for Windows??
 wgetMaybeNCC = ['--no-check-certificate']
 
-
 def readFromURL(url):
     '''
     Reads in a URL and returns its contents as a list.
@@ -65,6 +64,7 @@ def parseOptions():
         downloadFolder=os.getcwdu(),
         repoName='mozilla-central',
         enableJsShell=False,
+        wantTests=False,
     )
 
     parser.add_option('-c', '--compiletype', dest='compileType',
@@ -85,6 +85,8 @@ def parseOptions():
                            'from. The default is to grab the latest from mozilla-central.')
     parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
                       help='Sets the compile type to be fuzzed. Defaults to "%default".')
+    parser.add_option('-t', '--want-tests', dest='wantTests', action='store_true',
+                      help='Download tests. Defaults to "%default".')
 
     options, args = parser.parse_args()
     assert options.compileType in ['dbg', 'opt']
@@ -252,7 +254,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 downloadURL(stackwalkUrl, stackwalk)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
-            if remotefn.endswith('.win32.zip'):
+            if remotefn.endswith('.win32.zip') or remotefn.endswith('.win64.zip'):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
@@ -369,13 +371,13 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     return buildDirs
 
 
-def downloadLatestBuild(buildType, workingDir, getJsShell=False):
+def downloadLatestBuild(buildType, workingDir, getJsShell=False, wantTests=False):
     '''
     Downloads the latest build based on machine type, e.g. mozilla-central-macosx64-debug.
     '''
     # Try downloading the latest build first.
     for buildURL in reversed(getBuildList(buildType)):
-        if downloadBuild(buildURL, workingDir, jsShell=getJsShell):
+        if downloadBuild(buildURL, workingDir, jsShell=getJsShell, wantTests=False):
             return buildURL
     raise Exception("No complete builds found.")
 
@@ -420,8 +422,12 @@ def defaultBuildType(repoName, arch, debug):
 
 def main():
     options = parseOptions()
+    # On Windows, if a path surrounded by quotes ends with '\', the last quote is considered escaped and will be
+    # part of the option. This is not what the user expects, so remove any trailing quotes from paths:
+    options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"');
+    options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"');
     if options.remoteDir is not None:
-        print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell)
+        print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
     else:
         buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
         downloadLatestBuild(buildType, options.downloadFolder,
