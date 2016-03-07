@@ -107,7 +107,9 @@ def parseOpts():
             # Bug 1186717
             options.testType = 'js'
         else:
-            options.testType = random.choice(['js', 'dom'])
+            # dom fuzzing does not work with FuzzManager yet
+            #options.testType = random.choice(['js', 'dom'])
+            options.testType = 'js'
             print "Randomly fuzzing: " + options.testType
 
     if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
