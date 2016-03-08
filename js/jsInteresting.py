@@ -56,8 +56,9 @@ class ShellResult:
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, inCompareJIT):
+        pathToBinary = runthis[0]
         # This relies on the shell being a local one from compileShell.py:
-        pc = ProgramConfiguration.fromBinary(runthis[0])
+        pc = ProgramConfiguration.fromBinary(pathToBinary.split('.')[0])  # Ignore trailing ".exe" in Win
         pc.addProgramArguments(runthis[1:-1])
 
         if options.valgrind:
