@@ -267,7 +267,10 @@ def cfgBin(shell):
             if shell.buildOptions.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
-                cfgCmdList.append('--enable-arm-simulator')
+                # Newer configure.in changes mean that things blow up if unknown/removed configure
+                # options are entered, so specify it only if it's requested.
+                if shell.buildOptions.enableArmSimulatorObsolete:
+                    cfgCmdList.append('--enable-arm-simulator')
                 cfgCmdList.append('--enable-simulator=arm')
         # 32-bit shell on 32/64-bit x86 Linux
         elif sps.isLinux and not sps.isARMv7l:
@@ -290,7 +293,10 @@ def cfgBin(shell):
             if shell.buildOptions.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
-                cfgCmdList.append('--enable-arm-simulator')
+                # Newer configure.in changes mean that things blow up if unknown/removed configure
+                # options are entered, so specify it only if it's requested.
+                if shell.buildOptions.enableArmSimulatorObsolete:
+                    cfgCmdList.append('--enable-arm-simulator')
                 cfgCmdList.append('--enable-simulator=arm')
         else:
             cfgCmdList.append('sh')
@@ -327,7 +333,10 @@ def cfgBin(shell):
             if shell.buildOptions.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
-                cfgCmdList.append('--enable-arm-simulator')
+                # Newer configure.in changes mean that things blow up if unknown/removed configure
+                # options are entered, so specify it only if it's requested.
+                if shell.buildOptions.enableArmSimulatorObsolete:
+                    cfgCmdList.append('--enable-arm-simulator')
                 cfgCmdList.append('--enable-simulator=arm')
         else:
             cfgCmdList.append('--host=x86_64-pc-mingw32')
