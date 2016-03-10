@@ -14,7 +14,7 @@ from Collector.Collector import Collector
 
 def createCollector(tool):
     assert tool == "DOMFuzz" or tool == "jsfunfuzz"
-    sigCacheDir = None
+    sCacheDir = None
     cacheDir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
     if os.path.isdir(cacheDir):
         sCacheDir = cacheDir
