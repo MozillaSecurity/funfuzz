@@ -14,12 +14,12 @@ from Collector.Collector import Collector
 
 def createCollector(tool):
     assert tool == "DOMFuzz" or tool == "jsfunfuzz"
-    sCacheDir = None
     cacheDir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
-    if os.path.isdir(cacheDir):
-        sCacheDir = cacheDir
-    # Define sigCacheDir on instantiation else jsInteresting when run alone will complain
-    collector = Collector(sigCacheDir=sCacheDir, tool=tool)
+    try:
+        os.mkdir(cacheDir)
+    except OSError:
+        pass  # cacheDir already exists
+    collector = Collector(sigCacheDir=cacheDir, tool=tool)
     return collector
 
 
