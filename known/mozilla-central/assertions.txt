@@ -2221,6 +2221,3 @@ Assertion failure: wrapped,
 
 # Bug 1251922
 Assertion failure: isNurseryAllocAllowed(),
-
-# Bug 1254335
-Assertion failure: !possibleError->hasError(),
