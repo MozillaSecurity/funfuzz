@@ -108,29 +108,29 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
         # --chunksize=1: Reduce only individual lines, for only 1 round.
         lithResult, lithDetails = lithReduceCmd(['--strategy=minimize-balanced', '--chunksize=1'])
 
-    # Step 3: Run 1 instance of 2-line reduction after moving count=X to its own line and add a
-    # 1-line offset.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
-        intendedLines = []
-        with open(infilename, 'rb') as f:
-            for line in f.readlines():  # The testcase is likely to already be partially reduced.
-                if 'dumpln(cookie' not in line:  # jsfunfuzz-specific line ignore
-                    # This should be simpler than re.compile.
-                    intendedLines.append(line.replace('; count=', ';\ncount=')
-                                             .replace('; tryItOut("', ';\ntryItOut("')
-                                             # The 1-line offset is added here.
-                                             .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
-
-        writeLinesToFile(intendedLines, infilename)
-        print '\nRunning 1 instance of 2-line reduction after moving count=X to its own line...\n'
-        # --strategy=minimize-balanced does not seem to be relevant here...
-        lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
-
-    # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
-        print '\nRunning 1 instance of 2-line reduction again...\n'
-        # --strategy=minimize-balanced does not seem to be relevant here...
-        lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
+    # # Step 3: Run 1 instance of 2-line reduction after moving count=X to its own line and add a
+    # # 1-line offset.
+    # if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    #     intendedLines = []
+    #     with open(infilename, 'rb') as f:
+    #         for line in f.readlines():  # The testcase is likely to already be partially reduced.
+    #             if 'dumpln(cookie' not in line:  # jsfunfuzz-specific line ignore
+    #                 # This should be simpler than re.compile.
+    #                 intendedLines.append(line.replace('; count=', ';\ncount=')
+    #                                          .replace('; tryItOut("', ';\ntryItOut("')
+    #                                          # The 1-line offset is added here.
+    #                                          .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
+    #
+    #     writeLinesToFile(intendedLines, infilename)
+    #     print '\nRunning 1 instance of 2-line reduction after moving count=X to its own line...\n'
+    #     # --strategy=minimize-balanced does not seem to be relevant here...
+    #     lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
+    #
+    # # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
+    # if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    #     print '\nRunning 1 instance of 2-line reduction again...\n'
+    #     # --strategy=minimize-balanced does not seem to be relevant here...
+    #     lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH) and \
         fileContainsStr(infilename, 'isAsmJSCompilationAvailable')
