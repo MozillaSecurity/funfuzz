@@ -119,8 +119,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('59d2f2e62420')  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
     if "--ion-shared-stubs=on" in flags:
         required.append('3655d19ce241')  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
-    if options.enableSimulatorArm64:
-        # This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
+    if options.enableSimulatorArm32 or options.enableSimulatorArm64:
+        # For ARM64: This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
         required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:
         required.append('47e92bae09fd')  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
