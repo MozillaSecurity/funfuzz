@@ -144,7 +144,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
         required.append('03c6a758c9e8')  # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
-    required.append('54be5416ae5d')  # m-c 213474 Fx36, prior builds have issues with Xcode 7.0 and above
+    required.append('dc4b163f7db7')  # m-c 213475 Fx36, prior builds have issues with Xcode 7.0 and above
 
     return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
 
