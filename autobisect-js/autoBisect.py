@@ -173,11 +173,11 @@ def parseOpts():
             options.startRepo = 'default'
         else:
             options.startRepo = earliestKnown
-    elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
-        raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
-
-    if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
-        raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
+    # elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
+    #     raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
+    #
+    # if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
+    #     raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
     if options.parameters == '-e 42':
         print "Note: since no parameters were specified, we're just ensuring the shell does not crash on startup/shutdown."

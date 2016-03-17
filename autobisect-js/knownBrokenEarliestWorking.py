@@ -121,6 +121,9 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('3655d19ce241')  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
         # For ARM64: This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
+        # To bisect manually slightly further, use "-s dc4b163f7db7 -e f50a771d7d1b" and:
+        # Also comment out from https://github.com/MozillaSecurity/funfuzz/blob/bbc5d5c74dc96823ed3932eed1ab18c299bd806c/autobisect-js/autoBisect.py#L176
+        # (line 176) to line 180.
         required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:
         required.append('47e92bae09fd')  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
