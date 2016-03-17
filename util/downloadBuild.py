@@ -377,7 +377,7 @@ def downloadLatestBuild(buildType, workingDir, getJsShell=False, wantTests=False
     '''
     # Try downloading the latest build first.
     for buildURL in reversed(getBuildList(buildType)):
-        if downloadBuild(buildURL, workingDir, jsShell=getJsShell, wantTests=False):
+        if downloadBuild(buildURL, workingDir, jsShell=getJsShell, wantTests=wantTests):
             return buildURL
     raise Exception("No complete builds found.")
 
@@ -431,7 +431,7 @@ def main():
     else:
         buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
         downloadLatestBuild(buildType, options.downloadFolder,
-                            getJsShell=options.enableJsShell)
+                            getJsShell=options.enableJsShell, wantTests=options.wantTests)
 
 if __name__ == "__main__":
     main()
