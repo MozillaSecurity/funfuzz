@@ -23,7 +23,7 @@ This will take about:
 
 If you have an internet connection, and the testcase causes problems with:
 
-* a [downloaded js shell](https://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-central-macosx64-debug/latest/jsshell-mac64.zip)
+* a [downloaded js shell](https://archive.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-central-macosx64-debug/latest/jsshell-mac64.zip)
 * these problems started happening within the last month
 
 you can try bisecting using downloaded builds:

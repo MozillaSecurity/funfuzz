@@ -696,7 +696,7 @@ def getHgwebMozillaOrg(branchName):
 def getIdFromTboxUrl(url):
     '''
     Returns the numeric ID from the treeherder URL at:
-        https://ftp.mozilla.org/pub/mozilla.org/firefox/treeherder-builds/
+        https://archive.mozilla.org/pub/mozilla.org/firefox/treeherder-builds/
     '''
     return filter(None, url.split('/'))[-1]
 

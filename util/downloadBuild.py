@@ -343,7 +343,7 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     '''
     Returns the list of URLs of builds (e.g. 1386614507) that are present in tinderbox-builds/.
     '''
-    buildsHttpDir = 'https://ftp.mozilla.org/pub/firefox/tinderbox-builds/' + \
+    buildsHttpDir = 'https://archive.mozilla.org/pub/firefox/tinderbox-builds/' + \
                     buildType + '/'
     dirNames = httpDirList(buildsHttpDir)
 

@@ -2,7 +2,7 @@
 
 var fuzzerURLObjects = (function() {
 
-  var hostnames = ["mozilla.org", "www.mozilla.org", "ftp.mozilla.org", "localhost", "127.0.0.1", "10.0.0.1"];
+  var hostnames = ["mozilla.org", "www.mozilla.org", "archive.mozilla.org", "localhost", "127.0.0.1", "10.0.0.1"];
   var ports = [
     "80",  // http
     "443", // https
