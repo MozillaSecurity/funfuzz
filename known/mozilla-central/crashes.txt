@@ -22,14 +22,8 @@ nsJSNPRuntime.cpp
 # Bug 588278?
 nsHTMLEditor::GetElementOrigin
 
-# Bug 614144
-nsPNGEncoder::ConvertHostARGBRow
-
 # Bug 614495
 [TMR] RemoveBlockChild
-
-# rdar://8718869
- 1  AppKit
 
 # Bug 623147
 nsContentUtils::GetOfflineAppManifest
@@ -105,9 +99,6 @@ DocAccessible::GetAccessibleOrContainer
 
 # Bug 766434
 _cairo_surface_acquire_source_image
-
-# Bug 776375
-mozilla::MediaStreamGraphImpl::AppendMessage
 
 # Bug 789299
 _moz_cairo_pattern_create_for_surface
@@ -204,9 +195,6 @@ js::CloneScript
 # Bug 927368
 GrTextureStripAtlas::validate
 
-# Bug 931395
-mozilla::FrameLayerBuilder::BuildContainerLayerFor
-
 # Bug 943550
 mozilla::gl::GLContext::raw_fTexImage2D
 mozilla::gl::GLContext::fTexImage2D
@@ -252,9 +240,6 @@ nsINode::IsEditableInternal
 # Bug 1140268
 nsHTMLReflowState::InitConstraints
 
-# Bug 1156581
-nsSVGEffects::InvalidateRenderingObservers
-
 # Bug 1074584
 mozilla::WebGLFramebuffer::FramebufferTexture2D
 
@@ -266,17 +251,6 @@ mozilla::TextNodeCorrespondenceRecorder::TraverseAndRecord
 
 # Bug 1062770
 LateWriteObserver::Observe
-
-# Bug 1153636 'd' (with mozilla::dom::workers::WorkerRunnable::Run on the stack)
-mozilla::EventListenerManager::AddEventListenerInternal
-
-# Bug 1228882
-[EXPLOITABLE] mozilla::nsTextNodeDirectionalityMap::GetDirectionalityMap
-[EXPLOITABLE] mozilla::nsTextNodeDirectionalityMap::RemoveElementFromMap
-[EXPLOITABLE] mozilla::ResetDir
-
-# Bug 1229240
-mozilla::dom::MediaStreamTrackBinding::applyConstraints_promiseWrapper
 
 # Bug 1229253
 mozilla::dom::MediaRecorder::SizeOfExcludingThis
@@ -291,9 +265,6 @@ nsTypeAheadFind::GetSearchContainers
 SpeechTaskCallback::OnWillSpeakWord
 SpeechTaskCallback::OnResume
 
-# Bug 1224291 (AddressSanitizer: memcpy-param-overlap)
-[EXPLOITABLE] memmove16
-
 # Bug 1230440
 [TMR] mozilla::layers::BasicContainerLayer::ComputeEffectiveTransforms
 
@@ -301,11 +272,31 @@ SpeechTaskCallback::OnResume
 nsLayoutUtils::GetFloatFromPlaceholder
 mozilla::layout::FrameChildListIterator::FrameChildListIterator
 
-# Bug 1234726
-nsCSSFrameConstructor::RecreateFramesForContent
+# Bug 1234726 (DO NOT IMPORT LIKE THIS)
+#nsCSSFrameConstructor::RecreateFramesForContent
 
-# Bug 1245011
-nsGlobalWindow::HasActiveSpeechSynthesis
+# Bug 1253402
+SpeechTaskCallback::OnDidFinishSpeaking
+-[SpeechDelegate speechSynthesizer:didFinishSpeaking:]
+
+# Bug 1254276 (DO NOT IMPORT)
+AddressSanitizer: stack-overflow on address
+[TMR] PresShell::FlushPendingNotifications
+
+# Bug 1257090
+mozilla::dom::AudioContext::Suspend
+
+# Bug 1257096
+mozilla::dom::HTMLPropertiesCollection::EnsureFresh
+
+# Bug 1257717
+mozilla::gfx::GetBitmapForSurface
+
+# Bug 1257721
+nsDOMAttributeMap::GetSupportedNames
+
+# Bug 1144434 (ASan) (top frame only)
+nsSplittableFrame::GetNextInFlow
 
 
 #############################
