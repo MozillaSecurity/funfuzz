@@ -284,6 +284,8 @@ def knownChromeFailure(msg):
         "prompt aborted by user" in msg or                                              # thrown intentionally in nsPrompter.js
         "newPrompt.abortPrompt is not a function" in msg or                             # trying to do things after closing the window
         "nsIIOService.getProtocolHandler" in msg or                                     # bug 746878
+        ("WebContentConverter.js" in msg and "2152398858" in msg) or                    # bug 1258066
+        ("ContentLinkHandler.jsm" in msg and "2152398858" in msg) or                    # bug 1258066
         "tipElement is null" in msg or                                                  # bug 746893
         ("browser.xul" in msg and "gBrowserInit is not defined" in msg) or              # Bug 897867
         ("browser.js" in msg and "overlayText is null" in msg) or                       # Bug 797945
@@ -314,17 +316,15 @@ def knownChromeFailure(msg):
         ("webrtcUI.jsm" in msg and ".WebrtcIndicator is undefined" in msg) or           # Bug 949920
         ("webrtcUI.jsm" in msg and "getBrowserForWindow" in msg) or                     # Bug 950327
         ("webrtcUI.jsm" in msg) or                                                      # Bug 973318
+        ("ContentWebRTC.jsm" in msg and "NS_NOINTERFACE" in msg) or                     # Bug 1258019
         ("FeedConverter.js" in msg and "NS_ERROR_MALFORMED_URI" in msg) or              # Bug 949926
         ("FeedConverter.js" in msg and "2152398858" in msg) or                          # Bug 1227496 testcase 2
-        ("FeedConverter.js" in msg and "NS_ERROR_FAILURE" in msg) or                    # Bug 1233610
-        ("webappsUI_uninit" in msg and "nsIObserverService.removeObserver" in msg) or   # bug 978524
         ("LoginManagerParent.jsm" in msg and "this._recipeManager is null" in msg) or   # bug 1167872
         ("LoginManagerParent.jsm" in msg and "this._recipeManager.getRecipesForHost is null" in msg) or   # bug 1167872 plus ion-eager changing the message?
         ("nsDOMIdentity.js, line " in msg) or                                           # Intentional messages about misusing the API
         ("IdpSandbox.jsm, line " in msg) or                                             # Intentional messages about misusing the API
         "DOMIdentity.jsm" in msg or                                                     # Bug 973397, bug 973398
         "FxAccounts.jsm" in msg or                                                      # Intermittent errors on startup
-        "abouthealth.js" in msg or                                                      # Bug 895113
         "WindowsPrefSync.jsm" in msg or                                                 # Bug 947581
         "nsIFeedWriter::close" in msg or                                                # Bug 813408
         "SidebarUtils is not defined" in msg or                                         # Bug 856250
@@ -340,20 +340,18 @@ def knownChromeFailure(msg):
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is undefined" in msg) or     # Bug 1186702
         ("ProcessHangMonitor.jsm" in msg and "win.gBrowser is null" in msg) or          # Bug 1186702
         ("vtt.jsm" in msg and "result is undefined" in msg) or                          # Bug 1186742
-        ("Webapps.js" in msg and "this._window.top is null" in msg) or                  # Bug 1186743
         ("Webapps.js" in msg and "aApp is null" in msg) or                              # Bug 1228795
         ("Webapps.js" in msg and "aApp.manifestURL is null" in msg) or                  # Bug 1228795?
-        ("content.js" in msg and "reportSendingMsg is null" in msg) or                  # Bug 1186751
         ("nsPrompter.js" in msg and "openModalWindow on a hidden window" in msg) or     # Bug 1186727
         ("LoginManagerContent.jsm" in msg and "doc.documentElement is null" in msg) or  # Bug 1191948
         ("System JS : ERROR (null):0" in msg) or                                        # Bug 987048
         ("System JS" in msg) or                                                         # Bug 987222
-        ("CSSUnprefixingService.js" in msg) or                                          # Code going away (bug 1213126?)
-        ("PerformanceStats.jsm" in msg and ".isMonitoringJank" in msg) or               # Bug 1221761
+        ("CSSUnprefixingService.js" in msg) or                                          # Code going away
         ("MainProcessSingleton.js" in msg and "NS_ERROR_ILLEGAL_VALUE" in msg) or       # Bug 1230388
-        ("content-sessionStore.js" in msg) or                                           # Bug 1195295 removes some broken code
+        ("SessionHistory.jsm" in msg and "getDataAsBase64" in msg) or                   # Bug 1258023
         ("NS_ERROR_FAILURE: Failure" in msg) or                                         # Bug 1233254
         ("nsINavBookmarksService.removeFolderChildren" in msg) or                       # Firefox randomly fails to start with this message
+        ("addons.xpi\tWARN" in msg) or                                                  # Caught and dumped (InstallTrigger)
 
         # opening dev tools while simultaneously opening and closing tabs is mean
         ("devtools/framework/toolbox.js" in msg and "container is null: TBOX_destroy" in msg) or
@@ -605,6 +603,10 @@ class BrowserResult:
         if 'user_pref("layers.use-deprecated-textures", true);' in extraPrefs:
             # Bug 933569
             # Doing the change *here* only works because this is a small leak that shouldn't affect the reads in alh
+            alh.expectedToLeak = True
+        if 'user_pref("gfx.downloadable_fonts.disable_cache", true);' in extraPrefs:
+            # Bug 1258031
+            # This is a large leak. I don't remember what the comment above is about.
             alh.expectedToLeak = True
         if os.path.exists(leakLogFile) and status == 0 and detect_leaks.amiss(cfg.knownPath, leakLogFile, verbose=not quiet) and not alh.expectedToLeak:
             alh.printAndLog(DOMI_MARKER + "Leak (trace-refcnt)")
