@@ -889,6 +889,8 @@ var fuzzValues = {
     // Some examples with parameters
     ":nth-child(odd)",
     ":nth-child(even)",
+    ":nth-child(0)",
+    ":nth-child(3)",
     ":nth-last-child(-n+2)",
     ":nth-last-child(odd)",
     ":nth-of-type(2n+1)",
