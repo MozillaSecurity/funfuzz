@@ -323,13 +323,9 @@ def mIfyMozcrash(testsDir):
     with open(mozcrashPy, "w") as outfile:
         with open(mozcrashPyBak) as infile:
             for line in infile:
-                needle = "[self.stackwalk_binary, "
-                i = line.find(needle)
-                if i != -1:
-                    j = i + len(needle)
-                    outfile.write(line[0:j] + '"-m", ' + line[j:])
-                else:
-                    outfile.write(line)
+                outfile.write(line)
+                if line.strip() == "self.stackwalk_binary,":
+                    outfile.write("\"-m\",\n")
 
 
 def isNumericSubDir(n):
