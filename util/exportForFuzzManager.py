@@ -7,7 +7,7 @@ import re
 
 def fuzzManagerKnownBugs():
     bugs = []
-    sk = os.path.expanduser("~/fuzzsigcache/")
+    sk = os.path.expanduser("~/sigcache/")
     for fn in os.listdir(sk):
         if fn.endswith(".metadata"):
             with open(os.path.join(sk, fn)) as f:
