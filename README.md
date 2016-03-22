@@ -91,6 +91,19 @@ In js mode, loopBot.py makes use of:
 
 The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [autoBisect](autobisect-js/README.md).
 
+FuzzManager support got landed, so you will also need to create a ~/.fuzzmanagerconf file, similar to:
+
+```
+[Main]
+serverhost = <your hostname>
+serverport = <your port>
+serverproto = https
+serverauthtoken = <if any>
+sigdir = /Users/<your username>/sigcache/
+tool = jsfunfuzz
+```
+
+Replace anything between "<" and ">" with your desired parameters.
 
 ## FAQ:
 
