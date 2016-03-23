@@ -21,6 +21,10 @@ var fuzzerTestingFunctions = (function() {
 
   function makeCommand()
   {
+    if (rnd(200) === 0) {
+      return fuzzTestingFunctions.enableGCZeal() + "; try { " + fuzzSubCommand() + " } finally { fuzzPriv.gczeal(0); }";
+    }
+
     if (rnd(30)) {
       return [];
     }
@@ -28,10 +32,11 @@ var fuzzerTestingFunctions = (function() {
     return makeTestingFunctionCall();
   }
 
+  // "Pure" testing functions that should have no visible side effects
   function makeTestingFunctionCall()
   {
-    if (rnd(100) === 0) {
-      return fuzzTestingFunctions.enableGCZeal() + "; try { " + fuzzSubCommand() + " } finally { fuzzPriv.gczeal(0); }";
+    if (rnd(500) === 0) {
+      return fuzzTestingFunctions.enableGCZeal() + "; fuzzPriv.gczeal(0);";
     }
 
     if (rnd(3) === 0) {
