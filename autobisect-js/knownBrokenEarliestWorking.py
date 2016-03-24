@@ -111,6 +111,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if "--ion-pgo=on" in flags:
+        required.append('b0a0ff5fa705')  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:
         required.append('d4e0e0e5d26d')  # m-c 268534 Fx44, 1st w/ reliable ASan builds w/ ICU, see bug 1214464
     if "--ion-sincos=on" in flags:
