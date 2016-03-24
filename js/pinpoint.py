@@ -135,10 +135,8 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     # Step 5 (not always run): Run character reduction within interesting lines.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
             lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:
-        print '\nRunning symbol reduction...\n'
-        lithResult, lithDetails = lithReduceCmd(['--strategy=minimize-balanced', '--symbols'])
         print '\nRunning character reduction...\n'
-        lithResult, lithDetails = lithReduceCmd(['--strategy=minimize-balanced', '--char'])
+        lithResult, lithDetails = lithReduceCmd(['--char'])
 
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
@@ -159,7 +157,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     # Step 7: Run line reduction for a final time.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         print '\nRunning the final line reduction...\n'
-        lithResult, lithDetails = lithReduceCmd(['--strategy=minimize-balanced'])
+        lithResult, lithDetails = lithReduceCmd([])
 
     # Restore from backup if testcase can no longer be reproduced halfway through reduction.
     if lithResult != LITH_FINISHED and lithResult != LITH_PLEASE_CONTINUE:
