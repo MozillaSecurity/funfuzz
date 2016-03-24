@@ -168,9 +168,8 @@ def randomFlagSet(shellPath):
     if ion:
         if chance(.6):
             args.append("--ion-eager")
-        # Disabled due to bug 1257089
-        # if chance(.2):
-        #     args.append("--ion-gvn=off")
+        if chance(.2):
+            args.append("--ion-gvn=off")
         if chance(.2):
             args.append("--ion-licm=off")
         if shellSupportsFlag(shellPath, '--ion-edgecase-analysis=off') and chance(.2):
