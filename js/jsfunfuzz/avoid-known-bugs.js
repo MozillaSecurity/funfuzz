@@ -58,7 +58,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Object.seal") == -1             // bug 937922
        && code.indexOf("length") == -1                  // bug 1027846
        && code.indexOf("preventExtensions") == -1       // bug 1085299
-       && code.indexOf("with") == -1                    // bug 1245187
        && code.indexOf("Math.round") == -1              // bug 1246200
        && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
        && code.indexOf(".toString") == -1               // bug 1246552
