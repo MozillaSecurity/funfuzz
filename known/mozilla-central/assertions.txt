@@ -2109,7 +2109,3 @@ ASSERTION: incompatible writing modes: '(aWM).GetBlockDir() == mWritingMode.GetB
 #  Assertions hit by js shell  #
 #                              #
 ################################
-
-
-# Bug 1251919
-Assertion failure: comp == compartment || runtime()->isAtomsCompartment(comp) || (srcKind == JS::TraceKind::Object && InCrossCompartmentMap(static_cast<JSObject*>(src), tenured, thing.kind())),
