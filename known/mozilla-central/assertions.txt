@@ -2114,9 +2114,6 @@ ASSERTION: incompatible writing modes: '(aWM).GetBlockDir() == mWritingMode.GetB
 # Bug 1108413 (Only with --ion-sink=on)
 #Assertion failure: isLowered(),
 
-# Bug 1174322
-Assertion failure: (object->as<UnboxedPlainObject>().setValue(cx, properties[i], val)),
-
 # Bug 1219128
 Assertion failure: inited == !getPrototype(key).isUndefined(),
 
