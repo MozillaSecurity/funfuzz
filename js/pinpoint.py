@@ -15,7 +15,7 @@ autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'aut
 
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
-from fileManipulation import linesWith, writeLinesToFile
+import fileManipulation
 from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 import subprocesses as sps
 
@@ -87,7 +87,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     hasTryItOutRegex = re.compile('count=[0-9]+; tryItOut\("')
 
     with open(infilename, 'rb') as f:
-        for line in linesWith(f, '; tryItOut("'):
+        for line in fileManipulation.linesWith(f, '; tryItOut("'):
             # Checks if testcase came from jsfunfuzz or compareJIT.
             hasTryItOut = hasTryItOutRegex.match(line)
             if hasTryItOut:  # Stop searching after finding the first tryItOut line.
@@ -121,7 +121,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
                                              # The 1-line offset is added here.
                                              .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
 
-        writeLinesToFile(intendedLines, infilename)
+        fileManipulation.writeLinesToFile(intendedLines, infilename)
         print '\nRunning 1 instance of 2-line reduction after moving count=X to its own line...\n'
         lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
 
