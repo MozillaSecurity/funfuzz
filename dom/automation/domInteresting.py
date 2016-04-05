@@ -42,6 +42,7 @@ import findIgnoreLists
 
 path2 = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'util'))
 sys.path.append(path2)
+import fileManipulation
 import subprocesses as sps
 import createCollector
 
@@ -641,7 +642,7 @@ class BrowserResult:
 
         # Always look for crash information in stderr.
         linesWithoutLineBreaks = [s.rstrip() for s in alh.fullLog]
-        linesWithoutLineBreaks = truncateMid(linesWithoutLineBreaks, 5000, ["..."])
+        linesWithoutLineBreaks = fileManipulation.truncateMid(linesWithoutLineBreaks, 5000, ["..."])
         crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], linesWithoutLineBreaks, cfg.pc)
 
         # If the program crashed but we didn't find crash info in stderr (breakpad/asan),
@@ -688,12 +689,6 @@ class BrowserResult:
         self.level = lev
         self.lines = alh.fullLog
         self.crashInfo = crashInfo
-
-
-def truncateMid(a, limitEachSide, insertIfTruncated):
-    if len(a) <= limitEachSide + limitEachSide:
-        return a
-    return a[0:limitEachSide] + insertIfTruncated + a[-limitEachSide:]
 
 
 def usage(note):

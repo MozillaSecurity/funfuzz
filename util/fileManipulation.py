@@ -59,6 +59,13 @@ def linesStartingWith(lines, searchFor):
     return matchingLines
 
 
+def truncateMid(a, limitEachSide, insertIfTruncated):
+    '''Returns a list with the middle portion removed, if it has more than limitEachSide*2 items.'''
+    if len(a) <= limitEachSide + limitEachSide:
+        return a
+    return a[0:limitEachSide] + insertIfTruncated + a[-limitEachSide:]
+
+
 def writeLinesToFile(lines, filename):
     '''Writes lines to a given filename.'''
     with open(filename, 'wb') as f:
