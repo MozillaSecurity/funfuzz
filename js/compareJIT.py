@@ -53,7 +53,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
 
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(options.timeout), options.knownPath]
-        (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
+        (lithResult, lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
         if lithResult == lithOps.LITH_FINISHED:
             print "Retesting " + infilename + " after running Lithium:"
             retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
@@ -65,7 +65,11 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
         else:
             quality = 10
         print "compareJIT: Uploading " + infilename + " with quality " + str(quality)
-        options.collector.submit(cl[1], infilename, quality)
+
+        metadata = {}
+        if autoBisectLog:
+            metadata = {"autoBisectLog": ''.join(autoBisectLog)}
+        options.collector.submit(cl[1], infilename, quality, metadata=metadata)
         return True
 
     return False

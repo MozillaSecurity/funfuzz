@@ -55,7 +55,13 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
             subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
             print "Done running autobisect. Log: " + autoBisectLogFilename
 
-    return (lithResult, lithDetails)
+            with open(autoBisectLogFilename, 'rb') as f:
+                lines = f.readlines()
+                autoBisectLog = fileManipulation.truncateMid(lines, 50, ["..."])
+    else:
+        autoBisectLog = []
+
+    return (lithResult, lithDetails, autoBisectLog)
 
 
 def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):

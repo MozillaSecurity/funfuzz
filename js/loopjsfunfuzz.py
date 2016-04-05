@@ -181,8 +181,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            (lithResult, lithDetails) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                          options.repo, options.buildOptionsStr, targetTime, res.lev)
+            (lithResult, lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
+                                                                         options.repo, options.buildOptionsStr, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:
@@ -198,7 +198,11 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
 
             # ddsize = lithOps.ddsize(filenameToReduce)
             print "Submitting " + filenameToReduce + " (quality=" + str(quality) + ") at " + sps.dateStr()
-            collector.submit(res.crashInfo, filenameToReduce, quality)
+
+            metadata = {}
+            if autoBisectLog:
+                metadata = {"autoBisectLog": ''.join(autoBisectLog)}
+            collector.submit(res.crashInfo, filenameToReduce, quality, metadata=metadata)
             print "Submitted " + filenameToReduce
 
         else:
