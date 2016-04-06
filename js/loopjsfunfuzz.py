@@ -59,7 +59,7 @@ def parseOpts(args):
 
     options.knownPath = os.path.expanduser(args[1])
     # FIXME: findIgnoreLists.py should probably check this automatically.
-    reposWithKnownLists = ['mozilla-central', 'mozilla-esr31', 'ionmonkey', 'jscore', 'v8']
+    reposWithKnownLists = ['mozilla-central', 'ionmonkey', 'jscore', 'v8']
     if options.knownPath not in reposWithKnownLists:
         sps.vdump('Known bugs for the ' + options.knownPath + ' repository does not exist. Using the list for mozilla-central instead.')
         options.knownPath = 'mozilla-central'
