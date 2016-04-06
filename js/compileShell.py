@@ -503,6 +503,18 @@ def envDump(shell, log):
     elif sps.isWin:
         fmconfOS = 'windows'
 
+    # Extract the version from objdir-js/js/src/js.pc
+    majorVersion = ''
+    version = ''
+    jspcFilename = sps.normExpUserPath(os.path.join(shell.getJsObjdir(), 'js', 'src', 'js.pc'))
+    if os.path.isfile(jspcFilename):
+        with open(jspcFilename, 'rb') as f:
+            for line in f.readlines():
+                if line.startswith('Version: '):
+                    # Sample line: 'Version: 47.0a2'
+                    version = line.split(': ')[1].rstrip()
+                    majorVersion = version.split('.')[0]
+
     with open(log, 'ab') as f:
         f.write('# Information about shell:\n# \n')
 
@@ -527,9 +539,11 @@ def envDump(shell, log):
 
         f.write('\n')
         f.write('[Metadata]\n')
+        f.write('buildFlags = %s\n' % shell.buildOptions.buildOptionsStr)
+        f.write('majorVersion = %s\n' % majorVersion)
         f.write('pathPrefix = %s%s\n' % (shell.getRepoDir(),
                                          '/' if not shell.getRepoDir().endswith('/') else ''))
-        f.write('buildFlags = %s\n' % shell.buildOptions.buildOptionsStr)
+        f.write('version = %s\n' % version)
 
 
 def getLockDirPath(repoDir, tboxIdentifier=''):
