@@ -71,6 +71,9 @@ class CompiledShell(object):
         self.fullEnv = ''
         self.jsCfgFile = ''
 
+        self.jsMajorVersion = ''
+        self.jsVersion = ''
+
     def getCfgCmdExclEnv(self):
         return self.cfg
 
@@ -141,6 +144,19 @@ class CompiledShell(object):
 
     def getShellNameWithoutExt(self):
         return self.shellNameWithoutExt
+
+    # Version numbers
+    def getMajorVersion(self):
+        return self.jsMajorVersion
+
+    def setMajorVersion(self, jsMajorVersion):
+        self.jsMajorVersion = jsMajorVersion
+
+    def getVersion(self):
+        return self.jsVersion
+
+    def setVersion(self, jsVersion):
+        self.jsVersion = jsVersion
 
 
 def ensureCacheDir():
@@ -463,6 +479,11 @@ def compileJs(shell):
         for runLib in shell.getShellCompiledRunLibsPath():
             if os.path.isfile(runLib):
                 shutil.copy2(runLib, shell.getShellCacheDir())
+
+        majorVersion, version = extractVersions(shell.getJsObjdir())
+        shell.setMajorVersion(majorVersion)
+        shell.setVersion(version)
+
         if sps.isLinux:
             # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
             # files in the objdir or else the stacks from failing testcases will lack symbols.
@@ -503,18 +524,6 @@ def envDump(shell, log):
     elif sps.isWin:
         fmconfOS = 'windows'
 
-    # Extract the version from objdir-js/js/src/js.pc
-    majorVersion = ''
-    version = ''
-    jspcFilename = sps.normExpUserPath(os.path.join(shell.getJsObjdir(), 'js', 'src', 'js.pc'))
-    if os.path.isfile(jspcFilename):
-        with open(jspcFilename, 'rb') as f:
-            for line in f.readlines():
-                if line.startswith('Version: '):
-                    # Sample line: 'Version: 47.0a2'
-                    version = line.split(': ')[1].rstrip()
-                    majorVersion = version.split('.')[0]
-
     with open(log, 'ab') as f:
         f.write('# Information about shell:\n# \n')
 
@@ -540,10 +549,24 @@ def envDump(shell, log):
         f.write('\n')
         f.write('[Metadata]\n')
         f.write('buildFlags = %s\n' % shell.buildOptions.buildOptionsStr)
-        f.write('majorVersion = %s\n' % majorVersion)
+        f.write('majorVersion = %s\n' % shell.getMajorVersion())
         f.write('pathPrefix = %s%s\n' % (shell.getRepoDir(),
                                          '/' if not shell.getRepoDir().endswith('/') else ''))
-        f.write('version = %s\n' % version)
+        f.write('version = %s\n' % shell.getVersion())
+
+
+def extractVersions(objdir):
+    '''Extracts the version from <objdir>/js/src/js.pc and puts it into *.fuzzmanagerconf'''
+    jspcFilename = sps.normExpUserPath(os.path.join(objdir, 'js', 'src', 'js.pc'))
+    if os.path.isfile(jspcFilename):
+        with open(jspcFilename, 'rb') as f:
+            for line in f.readlines():
+                if line.startswith('Version: '):
+                    # Sample line: 'Version: 47.0a2'
+                    version = line.split(': ')[1].rstrip()
+                    majorVersion = version.split('.')[0]
+                    return majorVersion, version
+    return '', ''
 
 
 def getLockDirPath(repoDir, tboxIdentifier=''):
