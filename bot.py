@@ -194,10 +194,15 @@ def printMachineInfo():
 
 
 def refreshSignatures(collector):
+    '''Refresh signatures, copying from FuzzManager server to local sigcache'''
+    # Btw, you should make sure the server generates the file using
+    #     python manage.py export_signatures files/signatures.zip
+    # occasionally, e.g. as a cron job.
     if collector.serverHost == "127.0.0.1":
         # The test server does not serve files
-        collector.refreshFromZip(os.path.expanduser("~/FuzzManager/server/files/signatures.zip"))
+        collector.refreshFromZip(os.path.join(path0, "..", "FuzzManager", "server", "files", "signatures.zip"))
     else:
+        # A production server will serve files
         collector.refresh()
 
 
