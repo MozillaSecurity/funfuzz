@@ -16,4 +16,3 @@ x/8i $pc
 
 echo \n\nthread apply all backtrace\n\n
 thread apply all backtrace
-
