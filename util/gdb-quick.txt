@@ -1,6 +1,9 @@
 set pagination 0
 set backtrace limit 250
 
+# https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Hacking_Tips#Printing_the_JS_stack_%28from_gdb%29
+enable unwinder .* SpiderMonkey
+
 # CrashSignature trips up with "thread apply all backtrace" for now.
 echo \n\nbacktrace\n\n
 backtrace
