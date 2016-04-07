@@ -560,7 +560,7 @@ def extractVersions(objdir):
     jspcFilename = sps.normExpUserPath(os.path.join(objdir, 'js', 'src', 'js.pc'))
     if os.path.isfile(jspcFilename):
         with open(jspcFilename, 'rb') as f:
-            for line in f.readlines():
+            for line in f:
                 if line.startswith('Version: '):
                     # Sample line: 'Version: 47.0a2'
                     version = line.split(': ')[1].rstrip()

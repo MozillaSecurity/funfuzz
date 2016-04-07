@@ -120,7 +120,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         intendedLines = []
         with open(infilename, 'rb') as f:
-            for line in f.readlines():  # The testcase is likely to already be partially reduced.
+            for line in f:  # The testcase is likely to already be partially reduced.
                 if 'dumpln(cookie' not in line:  # jsfunfuzz-specific line ignore
                     # This should be simpler than re.compile.
                     intendedLines.append(line.replace('; count=', ';\ncount=')
@@ -149,7 +149,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         infileContents = []
         with open(infilename, 'rb') as f:
-            for line in f.readlines():
+            for line in f:
                 if 'NIGEBDD' in line:
                     infileContents.append(line.replace('NIGEBDD', 'DDBEGIN'))
                     infileContents.append('\n')  # The 1-line offset is added here.
