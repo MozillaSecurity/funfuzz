@@ -69,7 +69,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
         metadata = {}
         if autoBisectLog:
             metadata = {"autoBisectLog": ''.join(autoBisectLog)}
-        options.collector.submit(cl[1], infilename, quality, metadata=metadata)
+        options.collector.submit(cl[1], infilename, quality, metaData=metadata)
         return True
 
     return False

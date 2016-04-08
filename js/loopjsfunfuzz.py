@@ -202,7 +202,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             metadata = {}
             if autoBisectLog:
                 metadata = {"autoBisectLog": ''.join(autoBisectLog)}
-            collector.submit(res.crashInfo, filenameToReduce, quality, metadata=metadata)
+            collector.submit(res.crashInfo, filenameToReduce, quality, metaData=metadata)
             print "Submitted " + filenameToReduce
 
         else:
