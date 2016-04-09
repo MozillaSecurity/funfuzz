@@ -5,6 +5,10 @@ set backtrace limit 250
 echo \n\nenable unwinder .* SpiderMonkey\n\n
 enable unwinder .* SpiderMonkey
 
+# nbp mentioned over IRC to first run `backtrace 0` in order to work around a "gdb issue"
+echo \n\nbacktrace 0\n\n
+backtrace 0
+
 # CrashSignature trips up with "thread apply all backtrace" for now.
 echo \n\nbacktrace\n\n
 backtrace
