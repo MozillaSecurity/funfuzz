@@ -114,8 +114,8 @@ class MyHTMLParser(HTMLParser):
             if aTagFound and attr[0] == 'href':
                 if attr[1][0] == '/':
                     # Convert site-relative URI to fully-relative URI
-                    if attr[1].startswith(self.basepath):
-                        self.hrefLinksList.append(attr[1][len(self.basepath):])
+                    if self.basepath.split('/')[-1] in attr[1]:
+                        self.hrefLinksList.append(attr[1].split('/')[-1])
                 elif attr[1][0] != '?':
                     # Already fully relative
                     self.hrefLinksList.append(attr[1])
