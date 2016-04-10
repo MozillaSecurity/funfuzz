@@ -56,7 +56,6 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("'strict") == -1                 // see bug 743425
        && code.indexOf("disassemble") == -1             // see bug 1237403 (related to asm.js)
        && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
-       && code.indexOf(".toString") == -1               // bug 1246552
        && code.indexOf("Array.prototype") == -1         // bug 1253898
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
