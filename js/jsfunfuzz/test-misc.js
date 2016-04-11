@@ -38,7 +38,8 @@ function simpleDVGTest(code)
     eval(fullCode);
   } catch(e) {
     if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
-      foundABug("Wrong error message", e);
+      // Break up "Wrong error message line" intentionally, to prevent matching when contents of jsfunfuzz is printed.
+      foundABug("Wrong error " + "message", e);
     }
   }
 }
