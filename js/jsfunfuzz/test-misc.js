@@ -78,4 +78,3 @@ function tryHalves(code)
       dumpln("Second half compilation error: " + e);
   }
 }
-
