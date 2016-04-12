@@ -19,12 +19,12 @@ function whatToTestSpidermonkeyTrunk(code)
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("/*NODIFF*/") == -1                // Ignore diff testing on these labels
-       && code.indexOf(".script") == -1                 // Debugger; see bug 1237464
-       && code.indexOf(".parameterNames") == -1         // Debugger; see bug 1237464
-       && code.indexOf(".environment") == -1            // Debugger; see bug 1237464
-       && code.indexOf(".onNewGlobalObject") == -1      // Debugger; see bug 1238246
-       && code.indexOf(".takeCensus") == -1             // Debugger; see bug 1247863
-       && code.indexOf(".findScripts") == -1            // Debugger; see bug 1250863
+       && code.indexOf(".script") == -1                   // Debugger; see bug 1237464
+       && code.indexOf(".parameterNames") == -1           // Debugger; see bug 1237464
+       && code.indexOf(".environment") == -1              // Debugger; see bug 1237464
+       && code.indexOf(".onNewGlobalObject") == -1        // Debugger; see bug 1238246
+       && code.indexOf(".takeCensus") == -1               // Debugger; see bug 1247863
+       && code.indexOf(".findScripts") == -1              // Debugger; see bug 1250863
        && code.indexOf("Date") == -1                      // time marches on
        && code.indexOf("backtrace") == -1                 // shows memory addresses
        && code.indexOf("drainAllocationsLog") == -1       // drainAllocationsLog returns an object with a timestamp, see bug 1066313
