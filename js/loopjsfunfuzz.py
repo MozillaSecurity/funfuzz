@@ -235,6 +235,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
         "validategc = function() { };\n",
+        "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
     with open(jsfunfuzzOutputFilename, 'rb') as f:
