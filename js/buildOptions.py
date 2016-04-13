@@ -324,7 +324,6 @@ def getRandomValidRepo(treeLocation):
     if 'mozilla-esr45' in validRepos and chance(0.8):
         validRepos.remove('mozilla-esr45')
 
-    validRepos = ['mozilla-central']  # FIXME: Let's set to random configurations within m-c for now
     return os.path.realpath(sps.normExpUserPath(
         os.path.join(treeLocation, random.choice(validRepos))))
 
