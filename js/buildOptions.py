@@ -57,7 +57,6 @@ def addParserOptions():
                         help='Chooses sensible random build options. Defaults to "%(default)s".')
     parser.add_argument('-R', '--repoDir',
                         dest='repoDir',
-                        default=sps.normExpUserPath(os.path.join('~', 'trees', 'mozilla-central')),
                         help='Sets the source repository.')
     parser.add_argument('-P', '--patch',
                         dest='patchFile',
@@ -155,6 +154,14 @@ def parseShellOptions(inputArgs):
     if buildOptions.enableArmSimulatorObsolete:
         buildOptions.enableSimulatorArm32 = True
 
+    if buildOptions.enableRandom:
+        buildOptions = generateRandomConfigurations(parser, randomizer)
+    else:
+        buildOptions.buildOptionsStr = inputArgs
+        valid = areArgsValid(buildOptions)
+        if not valid[0]:
+            print 'WARNING: This set of build options is not tested well because: ' + valid[1]
+
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
         # Repositories do not get randomized if a repository is specified.
@@ -172,14 +179,6 @@ def parseShellOptions(inputArgs):
             hgCmds.ensureMqEnabled()
             buildOptions.patchFile = sps.normExpUserPath(buildOptions.patchFile)
             assert os.path.isfile(buildOptions.patchFile)
-
-    if buildOptions.enableRandom:
-        buildOptions = generateRandomConfigurations(parser, randomizer)
-    else:
-        buildOptions.buildOptionsStr = inputArgs
-        valid = areArgsValid(buildOptions)
-        if not valid[0]:
-            print 'WARNING: This set of build options is not tested well because: ' + valid[1]
 
     return buildOptions
 
@@ -306,6 +305,7 @@ def generateRandomConfigurations(parser, randomizer):
         buildOptions = parser.parse_args(randomArgs)
         if areArgsValid(buildOptions)[0]:
             buildOptions.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
+            buildOptions.enableRandom = True  # This has to be true since we are randomizing...
             return buildOptions
 
 
