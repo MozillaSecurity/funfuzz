@@ -124,15 +124,10 @@ function whatToTestSpidermonkeyMozilla45(code)
         && code.indexOf("length") == -1                  // bug 1027846
         && code.indexOf("preventExtensions") == -1       // bug 1085299
         // Check http://mzl.la/23CUVxs for the current state of ESR45-only differential testing issues
-        && code.indexOf("Math.imul") == -1               // see bug 1234736 - ESR45 only
         && code.indexOf("Math.round") == -1              // see bug 1236114 - ESR45 only
-        && code.indexOf("let") == -1                     // see bug 1237564 - ESR45 only
         && code.indexOf("use asm") == -1                 // see bug 1238461 - ESR45 only
         && code.indexOf("Math") == -1                    // see bug 1239075 - ESR45 only
-        && code.indexOf(".call") == -1                   // see bug 1244502 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
-        && code.indexOf(".exec") == -1                   // see bug 1247701 - ESR45 only
-        && code.indexOf("Math.imul") == -1               // see bug 1247880 - ESR45 only
         && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
         && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
