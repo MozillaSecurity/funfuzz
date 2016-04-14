@@ -18,7 +18,7 @@ from copy import deepcopy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ESR_NOW = 31
+ESR_NOW = 45
 ESR_NEXT = ESR_NOW + 7
 
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
