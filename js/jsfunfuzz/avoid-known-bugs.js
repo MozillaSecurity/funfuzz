@@ -59,6 +59,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("Array.prototype") == -1         // bug 1253898
        && code.indexOf("prototype") == -1               // bug 1263525
        && code.indexOf("arguments") == -1               // bug 1263811
+       && code.indexOf("Object.freeze") == -1           // bug 1265159
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
@@ -129,6 +130,7 @@ function whatToTestSpidermonkeyMozilla45(code)
         && code.indexOf("Math") == -1                    // see bug 1239075 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
         && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
+        && code.indexOf("Object.freeze") == -1           // bug 1265159
         && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
