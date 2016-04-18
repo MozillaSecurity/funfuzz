@@ -127,7 +127,6 @@ function whatToTestSpidermonkeyMozilla45(code)
         // Check http://mzl.la/23CUVxs for the current state of ESR45-only differential testing issues
         && code.indexOf("Math.round") == -1              // see bug 1236114 - ESR45 only
         && code.indexOf("use asm") == -1                 // see bug 1238461 - ESR45 only
-        && code.indexOf("Math") == -1                    // see bug 1239075 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
         && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
         && code.indexOf("Object.freeze") == -1           // bug 1265159
