@@ -3,6 +3,3 @@
 #  Assertions hit by js shell  #
 #                              #
 ################################
-
-# Bug 1234164
-Assertion failure: stub->monitorsThis() || *GetNextPc(pc) == JSOP_CHECKTHIS || *GetNextPc(pc) == JSOP_CHECKRETURN,
