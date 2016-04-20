@@ -20,10 +20,10 @@ If you want to use these scripts to compile SpiderMonkey or Firefox, install the
 
 ### Windows
 
-1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.0.0) to get an msys shell.
-2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories.
+1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.2.0) to get an msys shell.
+2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories. (32-bit works best for now)
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
-4. Make sure you install at least Microsoft Visual Studio 2013 (Community Edition is recommended) as per the build instructions above in the Setup section.
+4. Make sure you install at least Microsoft Visual Studio 2013 (Community Edition is recommended) as per the build instructions above in the Setup section. 2015 might work as well.
 5. Run `start-shell-msvc2013.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files\ \(x86\)/Git/bin/git.exe`.
 
 
@@ -111,8 +111,8 @@ Replace anything between "<" and ">" with your desired parameters.
 
 **A:** compileShell has been tested on:
 
-* Windows 7 through 8.1, with [MozillaBuild 2.0.0](https://wiki.mozilla.org/MozillaBuild)
-  * Windows 10 [requires a patch](https://bugzilla.mozilla.org/show_bug.cgi?id=1173060#c9) on top of MozillaBuild 2.0.0
+* Windows 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild) (Untested on Windows 8/8.1)
+  * Windows 10 [requires a patch](https://bugzilla.mozilla.org/show_bug.cgi?id=1173060#c9) on top of MozillaBuild 2.0.0 (Untested on MozillaBuild 2.2.0)
 * Mac OS X 10.11
 * Ubuntu 14.04 LTS and later (best supported on 15.10)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
