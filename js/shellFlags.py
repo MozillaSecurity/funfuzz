@@ -214,14 +214,13 @@ def basicFlagSets(shellPath):
     if shellSupportsFlag(shellPath, "--no-threads"):
         basicFlagList = [
             # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/mozilla-central/file/e3bf27190360/js/src/tests/lib/tests.py#l12
+            # https://hg.mozilla.org/mozilla-central/file/4feb4dd910a5/js/src/tests/lib/tests.py#l13
             ['--fuzzing-safe', '--no-threads', '--ion-eager'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--baseline-eager'],
-            ['--fuzzing-safe', '--no-threads', '--baseline-eager'],
-            ['--fuzzing-safe', '--no-threads', '--baseline-eager', '--no-fpu'],
-            ['--fuzzing-safe', '--no-threads', '--no-baseline', '--no-ion'],
-            ['--fuzzing-safe', '--no-threads', '--no-ion'],  # See bug 1203862
+            ['--fuzzing-safe', '--ion-offthread-compile=off'],
+            ['--fuzzing-safe', '--baseline-eager'],
+            ['--fuzzing-safe', '--baseline-eager', '--no-fpu'],
+            ['--fuzzing-safe', '--no-baseline', '--no-ion'],
         ]
         if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
             basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
