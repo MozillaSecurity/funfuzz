@@ -123,7 +123,6 @@ function whatToTestSpidermonkeyMozilla45(code)
         && code.indexOf("length") == -1                  // bug 1027846
         && code.indexOf("preventExtensions") == -1       // bug 1085299
         && code.indexOf("Math.round") == -1              // see bug 1236114 - ESR45 only
-        && code.indexOf("use asm") == -1                 // see bug 1238461 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
         && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
         && code.indexOf("arguments") == -1               // bug 1263811
