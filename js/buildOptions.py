@@ -314,17 +314,15 @@ def generateRandomConfigurations(parser, randomizer):
 
 def getRandomValidRepo(treeLocation):
     validRepos = []
-    for repo in ['mozilla-central', 'mozilla-aurora', 'mozilla-beta', 'mozilla-esr45']:
+    for repo in ['mozilla-central', 'mozilla-aurora', 'mozilla-esr45']:
         if os.path.isfile(sps.normExpUserPath(os.path.join(
                 treeLocation, repo, '.hg', 'hgrc'))):
             validRepos.append(repo)
 
     # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
-    if 'mozilla-aurora' in validRepos and chance(0.4):
+    if 'mozilla-aurora' in validRepos and chance(0.5):
         validRepos.remove('mozilla-aurora')
-    if 'mozilla-beta' in validRepos and chance(0.7):
-        validRepos.remove('mozilla-beta')
-    if 'mozilla-esr45' in validRepos and chance(0.8):
+    if 'mozilla-esr45' in validRepos and chance(0.9):
         validRepos.remove('mozilla-esr45')
 
     return os.path.realpath(sps.normExpUserPath(
