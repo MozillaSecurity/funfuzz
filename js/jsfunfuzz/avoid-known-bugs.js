@@ -55,7 +55,6 @@ function whatToTestSpidermonkeyTrunk(code)
     // across-process (e.g. running js shell with different run-time options) e.g. compareJIT
        && code.indexOf("'strict") == -1                 // see bug 743425
        && code.indexOf("disassemble") == -1             // see bug 1237403 (related to asm.js)
-       && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
@@ -122,7 +121,7 @@ function whatToTestSpidermonkeyMozilla45(code)
         && code.indexOf("preventExtensions") == -1       // bug 1085299
         && code.indexOf("Math.round") == -1              // see bug 1236114 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
-        && code.indexOf("Number.MAX_VALUE") == -1        // bug 1246200
+        && code.indexOf("Number.MAX_VALUE") == -1        // see bug 1246200 - ESR45 only
         && code.indexOf("arguments") == -1               // see bug 1263811 - ESR45 only
         && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
