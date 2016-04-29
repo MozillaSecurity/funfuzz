@@ -125,7 +125,6 @@ function whatToTestSpidermonkeyMozilla45(code)
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
         && code.indexOf("Number.MAX_VALUE") == -1        // see bug 1246200 - ESR45 only
         && code.indexOf("arguments") == -1               // see bug 1263811 - ESR45 only
-        && code.indexOf(".buffer") == -1                 // bug 1268224
         && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
 
   };
