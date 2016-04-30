@@ -260,6 +260,7 @@ ASSERTION: illegal width for mtable: 'aDesiredSize.width >= 0', file layout/math
 # Bug 597935
 ASSERTION: We must be allowed to sample *some* source pixels!: '!sourceRect.Intersect(subimage).IsEmpty()', file image/src/imgFrame.cpp
 ASSERTION: We must be allowed to sample *some* source pixels!: '!sourceRect.Intersect(subimage).IsEmpty()', file layout/base/nsLayoutUtils.cpp
+ASSERTION: We must be allowed to sample *some* source pixels
 
 # Bug 468202
 ASSERTION: 2 nodes do not have same parent: 'false', file editor/libeditor/base/JoinElementTxn.cpp
@@ -340,6 +341,7 @@ ASSERTION: Should delay load event (if in document) during load: 'mDelayingLoadE
 
 # Bug 499848
 ASSERTION: available space should never grow: 'aOldAvailableSpace.IStart(aWM) <= aNewAvailableSpace.IStart(aWM) && aOldAvailableSpace.IEnd(aWM) >= aNewAvailableSpace.IEnd(aWM)', file layout/generic/nsBlockFrame.cpp
+ASSERTION: available space should not grow on the start side and shrink on the end side
 
 # Bug 500532
 ASSERTION: invalid row height calculation: '(extraUsed == extra)', file layout/tables/nsTableRowGroupFrame.cpp
@@ -525,6 +527,7 @@ ASSERTION: Parser and editor disagree on blockness
 
 # Bug 613410
 ASSERTION: Shouldn't have unconstrained stuff here Thanks to the rules of reflow
+ASSERTION: Shouldn't have unconstrained stuff here thanks to the rules of reflow
 
 # Bug 613421
 ASSERTION: Give me something to work with: '!aMIMEType.IsEmpty() || !aFileExt.IsEmpty()', file uriloader/exthandler/nsExternalHelperAppService.cpp
@@ -670,7 +673,7 @@ ASSERTION: Adding a child where we already have a child? This may misbehave: 'Er
 # Bug 645405
 ASSERTION: Shouldn't have a paint event posted for this document: 'mBeforePaintTargets.IndexOf(aDocument) == mBeforePaintTargets.NoIndex', file layout/base/nsRefreshDriver.cpp
 # Bug 645405?
-ASSERTION: Don't schedule the same document multiple times: 'mAnimationFrameListenerDocs.IndexOf(aDocument) == mAnimationFrameListenerDocs.NoIndex', file layout/base/nsRefreshDriver.cpp
+ASSERTION: Don't schedule the same document multiple times
 # Bug 645405?
 ABORT: observers should have unregistered: 'ObserverCount() == 0', file layout/base/nsRefreshDriver.cpp
 
@@ -1860,6 +1863,7 @@ ASSERTION: We can't be complete AND have overflow frames!: '!NS_FRAME_IS_COMPLET
 ASSERTION: Unexpected aDocument: 'aDocument == mDocument', file layout/base/nsPresShell.cpp
 ASSERTION: Should be in an update while creating frames: 'mUpdateCount != 0', file layout/base/nsCSSFrameConstructor.cpp
 ASSERTION: Should be in an update while destroying frames: 'mUpdateCount != 0', file layout/base/nsCSSFrameConstructor.cpp
+ASSERTION: Instant counter updates are bad news: 'mUpdateCount != 0', file nsCSSFrameConstructor.h
 
 # Bug 1223673
 Assertion failure: !aSelection || !mSelection,
@@ -1875,6 +1879,7 @@ ASSERTION: unexpected content area inline size: 'aContentArea.ISize(aWM) >= 0', 
 
 # Bug 1224559
 ASSERTION: Why did this not get handled while processing mRestyleRoots?: '!element->HasFlag(collector->tracker->RootBit()) || (element->GetFlattenedTreeParent() && (!element->GetFlattenedTreeParent()->GetPrimaryFrame() || element->GetFlattenedTreeParent()->GetPrimaryFrame()->IsLeaf() || element->GetCrossShadowCurrentDoc()->GetShell()->FrameManager() ->GetDisplayContentsStyleFor(element))) || (aData->mChangeHint & nsChangeHint_ReconstructFrame)', file layout/base/RestyleTracker.cpp
+ASSERTION: Why did this not get handled while processing mRestyleRoots?: '!element->HasFlag(RootBit()) || (element->GetFlattenedTreeParent() && (!element->GetFlattenedTreeParent()->GetPrimaryFrame() || element->GetFlattenedTreeParent()->GetPrimaryFrame()->IsLeaf() || element->GetComposedDoc()->GetShell()->FrameManager() ->GetDisplayContentsStyleFor(element))) || (data->mChangeHint & nsChangeHint_ReconstructFrame)', file layout/base/RestyleTracker.cpp
 
 # Bug 1224564
 ASSERTION: why should we have flushed style again?: 'mPresShell && currentGeneration == mPresShell->GetPresContext()->GetRestyleGeneration()', file layout/style/nsComputedDOMStyle.cpp
@@ -2095,6 +2100,22 @@ ASSERTION: same content, different frames: 'cmp != 0', file layout/base/nsGenCon
 
 # Bug 1258012
 ASSERTION: incompatible writing modes: '(aWM).GetBlockDir() == mWritingMode.GetBlockDir()', file layout/generic/nsFloatManager.cpp
+
+# Bug 1258531
+Non preserves axis aligned transform with clipped child should have forced intermediate surface
+
+# Bug 1267263
+ASSERTION: SetCurrentTime failed: no decoder: 'mDecoder', file dom/html/HTMLMediaElement.cpp
+
+# Bug 1267280
+ASSERTION: How is this not part of an ib-split?: 'IsFramePartOfIBSplit(aParentFrame)', file layout/base/nsCSSFrameConstructor.cpp
+ASSERTION: Shouldn't call this: 'IsFramePartOfIBSplit(aFrame)', file layout/base/nsCSSFrameConstructor.cpp
+
+# Bug 1267285
+ASSERTION: huh?: 'pfd->mFrame == aFrame', file layout/generic/nsLineLayout.cpp
+
+# Bug 1269080
+ASSERTION: the given url scheme contains invalid characters: 'Error', file netwerk/base/nsSimpleURI.cpp
 
 
 ################################
