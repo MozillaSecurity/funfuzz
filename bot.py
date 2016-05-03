@@ -263,7 +263,8 @@ def ensureBuild(options):
         # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
         bDir = 'build'
         bType = downloadBuild.defaultBuildType(options.repoName, None, True)
-        bSrc = downloadBuild.downloadLatestBuild(bType, './', getJsShell=(options.testType == 'js'))
+        isJS = options.testType == 'js'
+        bSrc = downloadBuild.downloadLatestBuild(bType, './', getJsShell=isJS, wantTests=not isJS)
         bRev = ''
 
         # These two lines are only used for treeherder js shells:
