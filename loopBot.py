@@ -24,7 +24,7 @@ def buildOptionsASan():
 
 def botArgs():
     if sys.argv[1:] == ['--dom-defaults']:
-        return ["--test-type=dom", "--target-time=43200"]
+        return ["--test-type=dom", "--target-time=43200", "--use-treeherder-builds"]
     if sys.argv[1:] == ['--dom-asan']:
         return ["--test-type=dom", "--target-time=43200", "--build-options", buildOptionsASan()]
     return sys.argv[1:]
