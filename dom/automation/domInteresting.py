@@ -655,7 +655,7 @@ class BrowserResult:
                 crashLog = sps.grabCrashLog(alh.theapp, alh.pid, logPrefix, wantStack)
                 if crashLog:
                     with open(crashLog) as f:
-                        auxCrashData = f.readlines()
+                        auxCrashData = [s.rstrip() for s in f.readlines()]
                     crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], linesWithoutLineBreaks, cfg.pc, auxCrashData=auxCrashData)
                 else:
                     alh.printAndLog(DOMI_MARKER + "The browser crashed, but did not leave behind any crash information!")
