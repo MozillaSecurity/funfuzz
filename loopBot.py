@@ -19,18 +19,11 @@ def buildOptionsASan():
     srcdir = os.path.expanduser("~/trees/mozilla-central/")
     objdir = srcdir + "obj-firefox-asan/"
     return " ".join(["--mozconfig", mozconfig, "--repoDir", srcdir, "--objDir", objdir])
-def domDefaults():
-    botArgs = ["--test-type=dom", "--target-time=43200"]
-    scl = platform.uname()[1].startswith("fuzzer-") # e.g. "fuzzer-linux5.sec.scl3.mozilla.com" or just "fuzzer-win1"
-    if scl:
-        botArgs.extend(["--remote-host", "jruderman@fuzzer-linux5.sec.scl3.mozilla.com", "--basedir", "/home/jruderman/scl-fuzz-results/"])
-    if (platform.system() == "Linux" and i % 2 == 1) or (platform.system() == "Darwin" and not scl):
-        botArgs.extend(["--build-options", buildOptionsASan()])
-    print(repr(botArgs))
-    return botArgs
 def botArgs():
     if sys.argv[1:] == ['--dom-defaults']:
-        return domDefaults()
+        return ["--test-type=dom", "--target-time=43200"]
+    if sys.argv[1:] == ['--dom-asan']:
+        return ["--test-type=dom", "--target-time=43200", "--build-options", buildOptionsASan()]
     return sys.argv[1:]
 
 def loopSequence(cmdSequence, waitTime):
