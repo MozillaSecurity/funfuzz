@@ -243,7 +243,14 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
             if line.startswith(marker):
                 sline = line[len(marker):]
                 divisionIsInconsistent = sps.isWin  # Really 'if MSVC' -- revisit if we add clang builds on Windows
-                if not (divisionIsInconsistent and mightUseDivision(sline)):
+                if divisionIsInconsistent and mightUseDivision(sline):
+                    pass
+                elif "newGlobal" in sline and "wasmIsSupported" in sline:
+                    # We only override wasmIsSupported above for the main global.
+                    # Hopefully, any imported tests that try to use wasmIsSupported within a newGlobal
+                    # will do so in a straightforward way where everything is on one line.
+                    pass
+                else:
                     lines.append(sline)
     lines += [
         "\ntry{print(uneval(this));}catch(e){}\n",
