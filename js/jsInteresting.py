@@ -127,7 +127,7 @@ class ShellResult:
         if lev != JS_FINE:
             fileManipulation.writeLinesToFile(
                 ['Number: ' + logPrefix + '\n',
-                 'Command: ' + sps.shellify(options.jsengineWithArgs) + '\n'] +
+                 'Command: ' + sps.shellify(runthis) + '\n'] +
                 ['Status: ' + i + "\n" for i in issues],
                 logPrefix + '-summary.txt')
 
