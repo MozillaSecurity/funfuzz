@@ -189,7 +189,7 @@ def parseOpts():
 
 
 def findBlamedCset(options, repoDir, testRev):
-    print sps.dateStr()
+    print "%s | Bisecting on: %s" % (sps.dateStr(), repoDir)
 
     hgPrefix = ['hg', '-R', repoDir]
 
