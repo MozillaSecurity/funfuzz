@@ -679,7 +679,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
 
 
 def getHgwebMozillaOrg(branchName):
-    '''Returns the hgweb link of the respository, given a treeherder branch name.'''
+    '''Returns the hgweb link of the repository, given a treeherder branch name.'''
     hgWebAddrList = ['hg.mozilla.org']
     if branchName == 'mozilla-central':
         hgWebAddrList.append(branchName)
