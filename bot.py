@@ -58,15 +58,14 @@ def parseOpts():
     parser.set_defaults(
         repoName='mozilla-central',
         targetTime=15*60,       # 15 minutes
-        testType="auto",
         existingBuildDir=None,
         timeout=0,
         buildOptions=None,
         useTreeherderBuilds=False,
     )
 
-    parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
-        help='Test type: "js", "dom", or "auto" (which is usually random).')
+    parser.add_option('-t', '--test-type', dest='testType', choices=['js', 'dom'],
+        help='Test type: "js" or "dom"')
 
     parser.add_option("--build", dest="existingBuildDir",
         help="Use an existing build directory.")
@@ -95,22 +94,8 @@ def parseOpts():
     if len(args) > 0:
         print "Warning: bot.py does not use positional arguments"
 
-    if options.testType == 'auto':
-        if options.buildOptions is not None:
-            options.testType = 'js'
-        elif options.existingBuildDir:
-            options.testType = 'dom'
-        elif sps.isLinux and platform.machine() != "x86_64":
-            # Bug 855881
-            options.testType = 'js'
-        elif sps.isLinux:
-            # Bug 1186717
-            options.testType = 'js'
-        else:
-            # dom fuzzing does not work with FuzzManager yet
-            #options.testType = random.choice(['js', 'dom'])
-            options.testType = 'js'
-            print "Randomly fuzzing: " + options.testType
+    if not options.testType:
+        raise Exception('options.testType should first be set to "js" or "dom"')
 
     if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
