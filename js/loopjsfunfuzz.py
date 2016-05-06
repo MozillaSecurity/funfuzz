@@ -87,19 +87,17 @@ def linkFuzzer(target_fn, repo, prologue):
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
 
 
-def makeRegressionTestPrologue(repo, regressionTestListFile):
+def makeRegressionTestPrologue(repo):
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests"""
 
-    # We use json.dumps to escape strings (Windows paths have backslashes).
     return """
         const regressionTestsRoot = %s;
         const libdir = regressionTestsRoot + %s; // needed by jit-tests
-        var regressionTestList;
-        try { regressionTestList = read(%s).match(/.+/g); } catch(e) { }
+        const regressionTestList = %s;
     """ % (
         json.dumps(sps.normExpUserPath(repo) + os.sep),
         json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
-        json.dumps(os.path.abspath(sps.normExpUserPath(regressionTestListFile))),
+        json.dumps(inTreeRegressionTests(repo))
     )
 
 
@@ -122,11 +120,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
     startTime = time.time()
 
     if os.path.isdir(sps.normExpUserPath(options.repo)):
-        regressionTestListFile = sps.normExpUserPath(os.path.join(wtmpDir, "regression-tests.list"))
-        with open(regressionTestListFile, "wb") as f:
-            for fn in inTreeRegressionTests(options.repo):
-                f.write(fn + "\n")
-        regressionTestPrologue = makeRegressionTestPrologue(options.repo, regressionTestListFile)
+        regressionTestPrologue = makeRegressionTestPrologue(options.repo)
     else:
         regressionTestPrologue = ""
 
