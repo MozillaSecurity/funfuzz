@@ -271,7 +271,7 @@ var statementMakers = Random.weighted([
   //{ w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
-if (typeof oomTest == "function") {
+if (typeof oomTest == "function" && engine != ENGINE_SPIDERMONKEY_MOZILLA45) {
   statementMakers = statementMakers.concat([
     function(d, b) { return "oomTest(" + makeFunction(d, b-1) + ")"; },
   ]);
@@ -1314,7 +1314,7 @@ if (typeof XPCNativeWrapper == "function") {
   ]);
 }
 
-if (typeof oomTest == "function") {
+if (typeof oomTest == "function" && engine != ENGINE_SPIDERMONKEY_MOZILLA45) {
   functionMakers = functionMakers.concat([
     function(d, b) { return "oomTest"; }
   ]);
