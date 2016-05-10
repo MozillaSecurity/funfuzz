@@ -109,7 +109,7 @@ def inTreeRegressionTests(repo):
 
 def jsFilesIn(root):
     return [os.path.join(path, filename)
-            for path, dirs, files in os.walk(sps.normExpUserPath(root))
+            for path, _dirs, files in os.walk(sps.normExpUserPath(root))
             for filename in files
             if filename.endswith('.js')]
 
@@ -175,8 +175,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            (lithResult, lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                                         options.repo, options.buildOptionsStr, targetTime, res.lev)
+            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
+                                                                          options.repo, options.buildOptionsStr, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:
