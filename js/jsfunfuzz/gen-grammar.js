@@ -286,7 +286,7 @@ function makeUseRegressionTest(d, b)
     return "/* no regression tests found */";
   }
 
-  var maintest = Random.index(regressionTestList);
+  var maintest = regressionTestsRoot + Random.index(regressionTestList);
   var files = regressionTestDependencies(maintest);
 
   var s = "";

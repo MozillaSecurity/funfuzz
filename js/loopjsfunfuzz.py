@@ -89,26 +89,27 @@ def linkFuzzer(target_fn, repo, prologue):
 
 def makeRegressionTestPrologue(repo):
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
+    repo = sps.normExpUserPath(repo) + os.sep
 
     return """
         const regressionTestsRoot = %s;
         const libdir = regressionTestsRoot + %s; // needed by jit-tests
         const regressionTestList = %s;
     """ % (
-        json.dumps(sps.normExpUserPath(repo) + os.sep),
+        json.dumps(repo),
         json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
         json.dumps(inTreeRegressionTests(repo))
     )
 
 
 def inTreeRegressionTests(repo):
-    jitTests = jsFilesIn(os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
-    jsTests = jsFilesIn(os.path.join(repo, 'js', 'src', 'tests'))
+    jitTests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
+    jsTests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'tests'))
     return jitTests + jsTests
 
 
-def jsFilesIn(root):
-    return [os.path.join(path, filename)
+def jsFilesIn(repoPathLength, root):
+    return [os.path.join(path, filename)[repoPathLength:]
             for path, _dirs, files in os.walk(sps.normExpUserPath(root))
             for filename in files
             if filename.endswith('.js')]
