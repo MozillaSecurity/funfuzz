@@ -88,7 +88,7 @@ def linkFuzzer(target_fn, repo, prologue):
 
 
 def makeRegressionTestPrologue(repo):
-    """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests"""
+    """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
 
     return """
         const regressionTestsRoot = %s;
@@ -216,7 +216,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
 
 
 def jitCompareLines(jsfunfuzzOutputFilename, marker):
-    """Create a compareJIT file, using the lines marked by jsfunfuzz as valid for comparison"""
+    """Create a compareJIT file, using the lines marked by jsfunfuzz as valid for comparison."""
     lines = [
         "backtrace = function() { };\n",
         "dumpHeap = function() { };\n",
