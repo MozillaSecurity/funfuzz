@@ -160,7 +160,7 @@ class CompiledShell(object):
 
 
 def ensureCacheDir():
-    '''Returns a cache directory for compiled shells to live in, creating one if needed'''
+    """Return a cache directory for compiled shells to live in, and create one if needed."""
     cacheDir = os.path.join(sps.normExpUserPath('~'), 'shell-cache')
     ensureDir(cacheDir)
 
@@ -177,14 +177,14 @@ def ensureCacheDir():
 
 
 def ensureDir(directory):
-    '''Creates a directory, if it does not already exist'''
+    """Create a directory, if it does not already exist."""
     if not os.path.exists(directory):
         os.mkdir(directory)
     assert os.path.isdir(directory)
 
 
 def autoconfRun(cwDir):
-    '''Run autoconf binaries corresponding to the platform.'''
+    """Run autoconf binaries corresponding to the platform."""
     if sps.isMac:
         autoconf213MacBin = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213' \
                             if sps.isProgramInstalled('brew') else 'autoconf213'
@@ -204,7 +204,7 @@ def autoconfRun(cwDir):
 
 
 def cfgJsCompile(shell):
-    '''Configures, compiles and copies a js shell according to required parameters.'''
+    """Configures, compiles and copies a js shell according to required parameters."""
     print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
     os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
     shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
@@ -235,7 +235,7 @@ def cfgJsCompile(shell):
 
 
 def cfgBin(shell):
-    '''This function configures a binary according to required parameters.'''
+    """Configure a binary according to required parameters."""
     cfgCmdList = []
     cfgEnvDt = copy.deepcopy(os.environ)
     origCfgEnvDt = copy.deepcopy(os.environ)
@@ -454,7 +454,7 @@ def cfgBin(shell):
 
 
 def compileJs(shell):
-    '''This function compiles and copies a binary.'''
+    """Compile and copy a binary."""
     try:
         cmdList = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
         out = sps.captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
@@ -494,7 +494,7 @@ def compileJs(shell):
 
 
 def createBustedFile(filename, e):
-    '''Creates a .busted file with the exception message and backtrace included.'''
+    """Create a .busted file with the exception message and backtrace included."""
     with open(filename, 'wb') as f:
         f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
         f.write("Backtrace:\n")
@@ -503,8 +503,7 @@ def createBustedFile(filename, e):
 
 
 def envDump(shell, log):
-    '''Dumps environment to a .fuzzmanagerconf file.'''
-
+    """Dump environment to a .fuzzmanagerconf file."""
     # Platform and OS detection for the spec, part of which is in:
     #   https://wiki.mozilla.org/Security/CrashSignatures
     if sps.isARMv7l:
@@ -556,7 +555,7 @@ def envDump(shell, log):
 
 
 def extractVersions(objdir):
-    '''Extracts the version from <objdir>/js/src/js.pc and puts it into *.fuzzmanagerconf'''
+    """Extract the version from <objdir>/js/src/js.pc and put it into *.fuzzmanagerconf."""
     jspcFilename = sps.normExpUserPath(os.path.join(objdir, 'js', 'src', 'js.pc'))
     if os.path.isfile(jspcFilename):
         with open(jspcFilename, 'rb') as f:
@@ -570,7 +569,7 @@ def extractVersions(objdir):
 
 
 def getLockDirPath(repoDir, tboxIdentifier=''):
-    '''Returns the name of the lock directory, located in the cache directory by default.'''
+    """Return the name of the lock directory, which is in the cache directory by default."""
     lockDirNameList = ['shell', os.path.basename(repoDir), 'lock']
     if tboxIdentifier:
         lockDirNameList.append(tboxIdentifier)
@@ -593,7 +592,7 @@ def makeTestRev(options):
 
 
 def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
-    '''Obtain a js shell. Keep the objdir for now, especially .a files, for symbols.'''
+    """Obtain a js shell. Keep the objdir for now, especially .a files, for symbols."""
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"
 
@@ -662,7 +661,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
 
 
 def updateRepo(repo, rev):
-    '''Updates repository to the specified revision.'''
+    """Update repository to the specific revision."""
     # Print *with* a trailing newline to avoid breaking other stuff
     print "Updating to rev %s in the %s repository..." % (rev, repo)
     sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
@@ -670,7 +669,6 @@ def updateRepo(repo, rev):
 
 def main():
     """Build a shell and place it in the autoBisect cache."""
-
     usage = 'Usage: %prog [options]'
     parser = OptionParser(usage)
     parser.disable_interspersed_args()
