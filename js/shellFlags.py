@@ -10,8 +10,9 @@ path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path1)
 import subprocesses as sps
 
+
 def memoize(f, cache={}):
-    '''Function decorator that caches function results.'''
+    """Function decorator that caches function results."""
     # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
     def g(*args, **kwargs):
         key = (f, tuple(args), frozenset(kwargs.items()))
@@ -31,11 +32,10 @@ def chance(p):
 
 
 def randomFlagSet(shellPath):
-    '''
-    Returns a random list of command-line flags appropriate for the given shell.
-    Only works for spidermonkey js shell. Does not work for xpcshell.
-    '''
+    """Return a random list of CLI flags appropriate for the given shell.
 
+    Only works for spidermonkey js shell. Does not work for xpcshell.
+    """
     args = []
 
     ion = shellSupportsFlag(shellPath, "--ion") and chance(.8)
@@ -81,7 +81,7 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--no-unboxed-objects') and chance(.2):
         args.append("--no-unboxed-objects")  # --no-unboxed-objects landed in bug 1162199
 
-    #if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
+    # if shellSupportsFlag(shellPath, '--ion-sink=on') and chance(.2):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
 
     if shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
@@ -185,8 +185,8 @@ def randomFlagSet(shellPath):
             args.append("--ion-limit-script-size=off")
         # Backtracking (on by default as of 2015-04-15) and stupid landed in m-c changeset dc4887f61d2e
         # The stupid allocator isn't used by default and devs prefer not to have to fix fuzzbugs
-        #if shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
-            #args.append('--ion-regalloc=stupid')
+        # if shellSupportsFlag(shellPath, '--ion-regalloc=stupid') and chance(.2):
+            # args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-regalloc=testbed') and chance(.2):
             args.append('--ion-regalloc=testbed')
         if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
@@ -198,7 +198,7 @@ def randomFlagSet(shellPath):
     else:
         args.append("--no-ion")
 
-    #if chance(.05):
+    # if chance(.05):
     #    args.append("--execute=verifyprebarriers()")
 
     if chance(.05):
@@ -208,10 +208,7 @@ def randomFlagSet(shellPath):
 
 
 def basicFlagSets(shellPath):
-    '''
-    compareJIT uses these combinations of flags (as well as the original set of flags) when run
-    through Lithium and autoBisect.
-    '''
+    """These flag combos are used w/the original flag sets when run through Lithium & autoBisect."""
     if shellSupportsFlag(shellPath, "--no-threads"):
         basicFlagList = [
             # Parts of this flag permutation come from:
