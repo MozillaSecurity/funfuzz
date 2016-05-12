@@ -180,8 +180,7 @@ def randomFlagSet(shellPath):
             args.append("--ion-inlining=off")
         if chance(.2):
             args.append("--ion-osr=off")
-        # Bug 1271857 broke --ion-limit-script-size=off
-        if False and chance(.2):
+        if chance(.2):
             args.append("--ion-limit-script-size=off")
         # Backtracking (on by default as of 2015-04-15) and stupid landed in m-c changeset dc4887f61d2e
         # The stupid allocator isn't used by default and devs prefer not to have to fix fuzzbugs
