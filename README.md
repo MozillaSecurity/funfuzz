@@ -17,10 +17,7 @@ Some parts of the harness assume a clean **Mercurial** clone of the mozilla tree
 
 If you want to use these scripts to compile SpiderMonkey or Firefox, install the usual prerequisites for [building Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions) or [building SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Build_Documentation). There are [additional requirements for building with Address Sanitizer](https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer).
 
-After the addition of FuzzManager support, you will need to first install the following pip packages:
-* requests
-* numpy
-* boto (optional, only for S3 support)
+After the addition of FuzzManager support, you will need to first install the pip packages listed in requirements.txt of [FuzzManager](https://github.com/MozillaSecurity/FuzzManager).
 
 Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
 
