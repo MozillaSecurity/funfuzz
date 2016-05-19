@@ -26,7 +26,7 @@ if not (sps.isMac or sps.isWin):
 
 
 def isEC2VM():
-    '''Tests to see if the specified S3 cache is available.'''
+    """Test to see if the specified S3 cache is available."""
     if sps.isMac or not isBoto:
         return False
 
@@ -43,7 +43,7 @@ class S3Cache(object):
         self.bucket_name = bucket_name
 
     def connect(self):
-        '''Connects to the S3 bucket.'''
+        """Connect to the S3 bucket."""
         if not isBoto:
             return False
 
@@ -60,7 +60,7 @@ class S3Cache(object):
             return False
 
     def downloadFile(self, origin, dest):
-        '''Downloads files from S3.'''
+        """Download files from S3."""
         key = self.bucket.get_key(origin)
         if key is not None:
             key.get_contents_to_filename(dest)
@@ -70,13 +70,13 @@ class S3Cache(object):
             return False
 
     def compressAndUploadDirTarball(self, directory, tarball_path):
-        '''This function compresses a directory into a bz2 tarball and uploads it to S3.'''
+        """Compress a directory into a bz2 tarball and upload it to S3."""
         print 'Creating archive...'
         shutil.make_archive(directory, 'bztar', directory)
         self.uploadFileToS3(tarball_path)
 
     def uploadFileToS3(self, filename):
-        '''Uploads file to S3.'''
+        """Upload file to S3."""
         destDir = ''  # Root folder of the S3 bucket
         destpath = os.path.join(destDir, os.path.basename(filename))
         print 'Uploading %s to Amazon S3 bucket %s' % (filename, self.bucket_name)
@@ -86,7 +86,7 @@ class S3Cache(object):
         k.set_contents_from_filename(filename, reduced_redundancy=True)
 
     def uploadStrToS3(self, destDir, filename, contents):
-        '''Uploads a string to an S3 file.'''
+        """Upload a string to an S3 file."""
         print 'Uploading %s to Amazon S3 bucket %s' % (filename, self.bucket_name)
 
         k2 = Key(self.bucket)
