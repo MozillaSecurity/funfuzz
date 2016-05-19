@@ -14,10 +14,10 @@ import time
 
 
 def reapOoms():
-    ps = subprocess.check_output(
-        ["ps",
-         "-x",  # include processes which do not have a controlling terminal
-         "-o", "pid,rss,vsz,state,command"  # show process id, resident size, virtual size, "state", and command with arguments
+    ps = subprocess.check_output([
+        "ps",
+        "-x",  # include processes which do not have a controlling terminal
+        "-o", "pid,rss,vsz,state,command"  # show process id, resident size, virtual size, "state", and command with arguments
         ])
 
     lines = ps.split("\n")
