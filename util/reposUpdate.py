@@ -9,11 +9,11 @@
 #
 # Assumes that the repositories are located in ../../trees/*.
 
+from copy import deepcopy
 import logging
 import os
 import subprocesses as sps
 
-from copy import deepcopy
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ else:
 
 
 def typeOfRepo(r):
-    '''Returns the type of repository.'''
+    """Return the type of repository."""
     repoList = []
     repoList.append('.hg')
     repoList.append('.git')
@@ -48,7 +48,7 @@ def typeOfRepo(r):
 
 
 def updateRepo(repo):
-    '''Updates a repository. Returns False if missing; returns True if successful; raises an exception if updating fails.'''
+    """Update a repository. Return False if missing; return True if successful; raise an exception if updating fails."""
     assert os.path.isdir(repo)
     repoType = typeOfRepo(repo)
 
@@ -70,7 +70,7 @@ def updateRepo(repo):
 
 
 def updateRepos():
-    '''Updates Mercurial and Git repositories located in ~ and ~/trees .'''
+    """Update Mercurial and Git repositories located in ~ and ~/trees ."""
     trees = [
         os.path.normpath(os.path.join(REPO_PARENT_PATH)),
         os.path.normpath(os.path.join(REPO_PARENT_PATH, 'trees'))
