@@ -2117,6 +2117,9 @@ ASSERTION: huh?: 'pfd->mFrame == aFrame', file layout/generic/nsLineLayout.cpp
 # Bug 1269080
 ASSERTION: the given url scheme contains invalid characters: 'Error', file netwerk/base/nsSimpleURI.cpp
 
+# Bug 1274144
+ASSERTION: element already removed from map: 'mElements.Contains(aElement)', file dom/base/DirectionalityUtils.cpp
+
 
 ################################
 #                              #
