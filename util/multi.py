@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import platform
 import subprocess
 import os
 import sys
