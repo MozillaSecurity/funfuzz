@@ -25,9 +25,9 @@ runlithiumpy = [sys.executable, "-u", lithiumpy]
 
 
 def runLithium(lithArgs, logPrefix, targetTime):
-    """
-      Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
-      Returns a tuple of (lithlogfn, LITH_*, details).
+    """Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
+
+    Returns a tuple of (lithlogfn, LITH_*, details).
     """
     deletableLithTemp = None
     if targetTime:
@@ -72,7 +72,7 @@ def readLithiumResult(lithlogfn):
 
 
 def ddsize(fn):
-    '''Count the number of chars between DDBEGIN and DDEND in a file'''
+    """Count the number of chars between DDBEGIN and DDEND in a file."""
     count = 0
     with open(fn) as f:
         for line in f:
