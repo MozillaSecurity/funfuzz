@@ -669,6 +669,7 @@ def updateRepo(repo, rev):
 def verifyFullWinPageHeap(shellPath):
     """Turn on full page heap verification on Windows."""
     # More info: https://msdn.microsoft.com/en-us/library/windows/hardware/ff543097(v=vs.85).aspx
+    # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
     if sps.isWin:
         gflagsBin = os.path.join(os.getenv('PROGRAMW6432'), 'Debugging Tools for Windows (x64)', 'gflags.exe')
         if os.path.isfile(gflagsBin) and os.path.isfile(shellPath):
