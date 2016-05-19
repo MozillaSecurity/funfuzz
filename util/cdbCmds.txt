@@ -13,8 +13,12 @@ db @@c++(@eip) L4
 db @@c++(@rip) L8
 .echo To switch frames: .frame /r /c <frame number>
 .echo Then inspect locals using: dv <locals in this frame>
+.echo Running !analyze
+!analyze -v
 .echo Running !exploitable
 !exploitable -v
 .echo Backtrace of faulting thread, limited to 250 frames
 ~#kn 250
+.echo Backtrace, limited to 250 frames (should execute after .ecxr)
+kb 250
 q
