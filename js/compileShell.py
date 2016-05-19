@@ -597,6 +597,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
         # We would break JSBugMon.
         print 'Found cached shell...'
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
+        verifyFullWinPageHeap(shell.getShellCacheFullPath())
         return
     elif os.path.isfile(cachedNoShell):
         raise Exception("Found a cached shell that failed compilation...")
@@ -622,6 +623,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
                 z.extractall(shell.getShellCacheDir())
             # Delete tarball after downloading from S3
             os.remove(shell.getS3TarballWithExtFullPath())
+            verifyFullWinPageHeap(shell.getShellCacheFullPath())
             return
 
     try:
@@ -631,6 +633,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
             hgCmds.patchHgRepoUsingMq(shell.buildOptions.patchFile, shell.getRepoDir())
 
         cfgJsCompile(shell)
+        verifyFullWinPageHeap(shell.getShellCacheFullPath())
     except KeyboardInterrupt:
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
         raise
@@ -661,6 +664,14 @@ def updateRepo(repo, rev):
     # Print *with* a trailing newline to avoid breaking other stuff
     print "Updating to rev %s in the %s repository..." % (rev, repo)
     sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
+
+
+def verifyFullWinPageHeap(shellPath):
+    """Turn on full page heap verification on Windows."""
+    if sps.isWin:
+        gflagsBin = os.path.join(os.getenv('PROGRAMW6432'), 'Debugging Tools for Windows (x64)', 'gflags.exe')
+        if os.path.isfile(gflagsBin) and os.path.isfile(shellPath):
+            print subprocess.check_output([gflagsBin, '-p', '/enable', shellPath, '/full'])
 
 
 def main():
