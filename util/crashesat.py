@@ -46,7 +46,7 @@ def interesting(cliArgs, tempPrefix):
     if runinfo.sta == timedRun.CRASHED:
         if os.path.exists(crashLogName):
             # When using this script, remember to escape characters, e.g. "\(" instead of "(" !
-            found, foundSig = fileIngredients.fileContains(crashLogName, crashSig, regexEnabled)
+            found, _foundSig = fileIngredients.fileContains(crashLogName, crashSig, regexEnabled)
             if found:
                 print 'Exit status: ' + runinfo.msg + timeString
                 return True
