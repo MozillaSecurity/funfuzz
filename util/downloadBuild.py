@@ -20,10 +20,9 @@ useCurl = False
 # Another bug for Windows??
 wgetMaybeNCC = ['--no-check-certificate']
 
+
 def readFromURL(url):
-    '''
-    Reads in a URL and returns its contents as a list.
-    '''
+    """Read in a URL and returns its contents as a list."""
     inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', '-', url]
     p = subprocess.Popen(inpCmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
@@ -43,9 +42,7 @@ def readFromURL(url):
 
 
 def downloadURL(url, dest):
-    '''
-    Reads in a URL and downloads it to a destination.
-    '''
+    """Read in a URL and downloads it to a destination."""
     inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', dest, url]
     out, retVal = sps.captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
     if retVal != 0:
@@ -69,7 +66,7 @@ def parseOptions():
 
     parser.add_option('-c', '--compiletype', dest='compileType',
                       help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' +
-                           'Defaults to "%default".')
+                      'Defaults to "%default".')
     parser.add_option('-a', '--architecture',
                       dest='arch',
                       type='choice',
@@ -77,12 +74,12 @@ def parseOptions():
                       help='Test architecture. Only accepts "32" or "64"')
     parser.add_option('-w', '--downloadfolder', dest='downloadFolder',
                       help='Sets the folder to download builds in. Defaults to the current ' +
-                           'working directory, which is "%default".')
+                      'working directory, which is "%default".')
     parser.add_option('-r', '--repoName', dest='repoName',
                       help='Sets the repository to be fuzzed. Defaults to "%default".')
     parser.add_option('-d', '--remotedir', dest='remoteDir',
                       help='Sets the remote directory from which the files are to be obtained ' +
-                           'from. The default is to grab the latest from mozilla-central.')
+                      'from. The default is to grab the latest from mozilla-central.')
     parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
                       help='Sets the compile type to be fuzzed. Defaults to "%default".')
     parser.add_option('-t', '--want-tests', dest='wantTests', action='store_true',
@@ -130,9 +127,7 @@ def find_nth(haystack, needle, start, n):
 
 
 def httpDirList(directory):
-    '''
-    Reads an Apache-style directory listing and returns a list of its contents, as relative URLs.
-    '''
+    """Read an Apache-style directory listing and returns a list of its contents, as relative URLs."""
     print "Looking in " + directory + " ..."
     page = readFromURL(directory)
     sps.vdump('Finished reading from: ' + directory)
@@ -143,25 +138,19 @@ def httpDirList(directory):
 
 
 def unzip(fn, dest):
-    '''
-    Extracts .zip files to their destination.
-    '''
+    """Extract .zip files to their destination."""
     sps.captureStdout(['unzip', fn, '-d', dest])
 
 
 def untarbz2(fn, dest):
-    '''
-    Extracts .tar.bz2 files to their destination.
-    '''
+    """Extract .tar.bz2 files to their destination."""
     if not os.path.exists(dest):
         os.mkdir(dest)
     sps.captureStdout(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
 
 
 def undmg(fn, dest, mountpoint):
-    '''
-    Extracts .dmg files to their destination via a mount point.
-    '''
+    """Extract .dmg files to their destination via a mount point."""
     if os.path.exists(mountpoint):
         # If the mount point already exists, detach it first.
         sps.captureStdout(['hdiutil', 'detach', mountpoint, '-force'])
@@ -175,9 +164,7 @@ def undmg(fn, dest, mountpoint):
 
 
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
-    '''
-    Downloads the build specified, along with symbols and tests. Returns True when all are obtained.
-    '''
+    """Download the build specified, along with symbols and tests. Returns True when all are obtained."""
     wantSymbols = wantSymbols and not jsShell  # Bug 715365, js shell currently lacks native symbols
     wantTests = wantTests and not jsShell
     gotApp = False
@@ -288,8 +275,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
 
 
 def downloadMDSW(buildDir, manifestPlatform):
-    '''Download the minidump_stackwalk[.exe] binary for this platform'''
-
+    """Download the minidump_stackwalk[.exe] binary for this platform."""
     THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
     TOOLTOOL_PY = os.path.join(THIS_SCRIPT_DIRECTORY, "tooltool", "tooltool.py")
 
@@ -317,7 +303,7 @@ def mIfyMozcrash(testsDir):
     # Terrible hack to pass "-m" to breakpad through mozcrash
     mozcrashDir = os.path.join(testsDir, "mozbase", "mozcrash", "mozcrash")
     mozcrashPy = os.path.join(mozcrashDir, "mozcrash.py")
-    #print mozcrashPy
+    # print mozcrashPy
     mozcrashPyBak = os.path.join(mozcrashDir, "mozcrash.py.bak")
     shutil.copyfile(mozcrashPy, mozcrashPyBak)
     with open(mozcrashPy, "w") as outfile:
@@ -329,16 +315,12 @@ def mIfyMozcrash(testsDir):
 
 
 def isNumericSubDir(n):
-    '''
-    Returns True if input is a numeric directory, False if not. e.g. 1234/ returns True
-    '''
+    """Return True if input is a numeric directory, False if not. e.g. 1234/ returns True."""
     return re.match(r'^\d+$', n.split('/')[0])
 
 
 def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
-    '''
-    Returns the list of URLs of builds (e.g. 1386614507) that are present in tinderbox-builds/.
-    '''
+    """Return the list of URLs of builds (e.g. 1386614507) that are present in tinderbox-builds/."""
     buildsHttpDir = 'https://archive.mozilla.org/pub/firefox/tinderbox-builds/' + \
                     buildType + '/'
     dirNames = httpDirList(buildsHttpDir)
@@ -368,9 +350,7 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
 
 
 def downloadLatestBuild(buildType, workingDir, getJsShell=False, wantTests=False):
-    '''
-    Downloads the latest build based on machine type, e.g. mozilla-central-macosx64-debug.
-    '''
+    """Download the latest build based on machine type, e.g. mozilla-central-macosx64-debug."""
     # Try downloading the latest build first.
     for buildURL in reversed(getBuildList(buildType)):
         if downloadBuild(buildURL, workingDir, jsShell=getJsShell, wantTests=wantTests):
@@ -379,9 +359,7 @@ def downloadLatestBuild(buildType, workingDir, getJsShell=False, wantTests=False
 
 
 def mozPlatformDetails():
-    '''
-    Determines the platform of the system and returns the RelEng-specific build type.
-    '''
+    """Determine the platform of the system and returns the RelEng-specific build type."""
     s = platform.system()
     if s == "Darwin":
         return ("macosx", "macosx64", platform.architecture()[0] == "64bit")
@@ -394,9 +372,7 @@ def mozPlatformDetails():
 
 
 def mozPlatform(arch):
-    '''
-    Returns the native build type of the current machine.
-    '''
+    """Return the native build type of the current machine."""
     (name32, name64, native64) = mozPlatformDetails()
     if arch == "64":
         return name64
@@ -412,7 +388,7 @@ def mozPlatform(arch):
 
 
 def defaultBuildType(repoName, arch, debug):
-    '''Returns the default build type as per RelEng, e.g. mozilla-central-macosx-debug.'''
+    """Return the default build type as per RelEng, e.g. mozilla-central-macosx-debug."""
     return repoName + '-' + mozPlatform(arch) + ('-debug' if debug else '')
 
 
@@ -420,8 +396,8 @@ def main():
     options = parseOptions()
     # On Windows, if a path surrounded by quotes ends with '\', the last quote is considered escaped and will be
     # part of the option. This is not what the user expects, so remove any trailing quotes from paths:
-    options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"');
-    options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"');
+    options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"')
+    options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"')
     if options.remoteDir is not None:
         print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
     else:
