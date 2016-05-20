@@ -96,14 +96,11 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
 
     # These should be in descending order, or bisection will break at earlier changesets.
-
-    offthreadCompileFlag = gczealValueFlag = False
+    gczealValueFlag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after these flags needs to be a number, so we look for the string instead.
-        if '--ion-offthread-compile=' in entry:
-            offthreadCompileFlag = True
-        elif '--gc-zeal=' in entry:
+        if '--gc-zeal=' in entry:
             gczealValueFlag = True
 
     required = []
