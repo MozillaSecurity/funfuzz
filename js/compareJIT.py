@@ -52,7 +52,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
 
     if lev != jsInteresting.JS_FINE:
         itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(options.timeout), options.knownPath]
-        (lithResult, lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
+        (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
         if lithResult == lithOps.LITH_FINISHED:
             print "Retesting " + infilename + " after running Lithium:"
             retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
@@ -133,21 +133,21 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             def fpuOptionDisabledAsmOnOneSide(fpuAsmMsg):
                 fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
-                return (fpuOptionDisabledAsm and fpuOptionDiffers)
+                return fpuOptionDisabledAsm and fpuOptionDiffers
 
             def optionDisabledAsmOnOneSide():
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"
                 optionDisabledAsm = anyLineContains(r0.err, asmMsg) or anyLineContains(r.err, asmMsg)
                 optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
-                return (optionDisabledAsm and optionDiffers)
+                return optionDisabledAsm and optionDiffers
 
-            mismatchErr = (r.err != r0.err
+            mismatchErr = (r.err != r0.err and
                            # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
                            # This should only affect asm.js diagnostics on stderr.
-                           and not fpuOptionDisabledAsmOnOneSide("asm.js type error: Disabled by lack of floating point support")
+                           not fpuOptionDisabledAsmOnOneSide("asm.js type error: Disabled by lack of floating point support") and
                            # And also wasm stuff. See bug 1243031.
-                           and not fpuOptionDisabledAsmOnOneSide("WebAssembly is not supported on the current device")
-                           and not optionDisabledAsmOnOneSide())
+                           not fpuOptionDisabledAsmOnOneSide("WebAssembly is not supported on the current device") and
+                           not optionDisabledAsmOnOneSide())
             mismatchOut = (r.out != r0.out)
 
             if mismatchErr or mismatchOut:
@@ -171,7 +171,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)
                 return (jsInteresting.JS_OVERALL_MISMATCH, crashInfo)
             else:
-                #print "compareJIT: match"
+                # print "compareJIT: match"
                 jsInteresting.deleteLogs(prefix)
 
     # All matched :)
@@ -194,7 +194,7 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
 
 
 def diffFiles(f1, f2):
-    '''Return a command to diff two files, along with the diff output (if it's short)'''
+    """Return a command to diff two files, along with the diff output (if it's short)."""
     diffcmd = ["diff", "-u", f1, f2]
     s = ' '.join(diffcmd) + "\n\n"
     diff = sps.captureStdout(diffcmd, ignoreExitCode=True)[0]
@@ -250,6 +250,8 @@ def parseOptions(args):
 def init(args):
     global gOptions
     gOptions = parseOptions(args)
+
+
 def interesting(args, tempPrefix):
     actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
     return actualLevel >= gOptions.minimumInterestingLevel
@@ -259,5 +261,6 @@ def main():
     import tempfile
     options = parseOptions(sys.argv[1:])
     print compareLevel(options.jsengine, options.flags, options.infilename, tempfile.mkdtemp("compareJITmain"), options, True, False)[0]
+
 if __name__ == "__main__":
     main()
