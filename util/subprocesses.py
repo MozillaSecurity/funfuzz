@@ -32,13 +32,13 @@ elif os.environ.get('MOZ_TOOLS'):
     isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])  # For MozillaBuild 1.x
 # else do not set; the script is running stand-alone and the isMozBuild64 variable should not be needed.
 
-noMinidumpMsg = r'''
+noMinidumpMsg = r"""
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
 WARNING: Make sure the following key value exists in this key:
 WARNING: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps
 WARNING: Name: DumpType  Type: REG_DWORD
 WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs.85%29.aspx
-'''
+"""
 
 ########################
 #  Platform Detection  #
@@ -46,18 +46,13 @@ WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs
 
 
 def macVer():
-    '''
-    If system is a Mac, return the mac type.
-    '''
+    """If system is a Mac, return the mac type."""
     assert platform.system() == 'Darwin'
     return [int(x) for x in platform.mac_ver()[0].split('.')]
 
 
 def getFreeSpace(folder, mulVar):
-    '''
-    Return folder/drive free space in bytes if mulVar is 0.
-    Adapted from http://stackoverflow.com/a/2372171
-    '''
+    """Return folder/drive free space in bytes if mulVar is 0. Adapted from http://stackoverflow.com/a/2372171 ."""
     assert mulVar >= 0
     if platform.system() == 'Windows':
         free_bytes = ctypes.c_ulonglong(0)
@@ -76,9 +71,7 @@ def getFreeSpace(folder, mulVar):
 
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                   currWorkingDir=os.getcwdu(), env='NOTSET', verbosity=False):
-    '''
-    Captures standard output, returns the output as a string, along with the return value.
-    '''
+    """Capture standard output, return the output as a string, along with the return value."""
     if env == 'NOTSET':
         vdump(shellify(inputCmd))
         env = os.environ
@@ -154,7 +147,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
 
 
 def createWtmpDir(tmpDirBase):
-    '''Create wtmp<number> directory, incrementing the number if one is already found.'''
+    """Create wtmp<number> directory, incrementing the number if one is already found."""
     i = 1
     while True:
         tmpDirWithNum = 'wtmp' + str(i)
@@ -169,7 +162,7 @@ def createWtmpDir(tmpDirBase):
 
 
 def dateStr():
-    '''Equivalent of running `date` in bash, excluding the timezone.'''
+    """Equivalent of running `date` in bash, excluding the timezone."""
     # Try not to add the timezone. Python does not seem to be accurate about DST switchovers.
     # assert captureStdout(['date'])[0] == currDateTime # This fails on Windows
     # On Windows, there is a leading zero in the day of the date in time.asctime()
@@ -177,7 +170,7 @@ def dateStr():
 
 
 def disableCorefile():
-    '''When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX.'''
+    """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
     import resource  # module only available on POSIX
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
@@ -188,7 +181,7 @@ def getCoreLimit():
 
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
-    '''Finds the required crash log in the given crash reporter directory.'''
+    """Find the required crash log in the given crash reporter directory."""
     assert platform.system() == 'Darwin' and macVer() >= [10, 6]
     reportDirList = [os.path.expanduser('~'), '/']
     for baseDir in reportDirList:
@@ -225,7 +218,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                         return logPrefix + "-crash.txt"
                     else:
                         return fullfn
-                        #return open(fullfn).read()
+                        # return open(fullfn).read()
 
             except (OSError, IOError):
                 # Maybe the log was rotated out between when we got the list
@@ -236,7 +229,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
 
 
 def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
-    '''Returns the crash log if found.'''
+    """Return the crash log if found."""
     progname = os.path.basename(progfullname)
 
     useLogFiles = isinstance(logPrefix, str)
@@ -308,10 +301,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
 
 
 def constructCdbCommand(progfullname, crashedPID):
-    '''
-    Constructs a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a
-    stack trace.
-    '''
+    """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
     # On Windows Vista and above, look for a minidump.
     dumpFilename = normExpUserPath(os.path.join(
         '~', 'AppData', 'Local', 'CrashDumps', os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
@@ -350,7 +340,7 @@ def constructCdbCommand(progfullname, crashedPID):
 
 
 def isWinDumpingToDefaultLocation():
-    '''Checks whether Windows minidumps are enabled and set to go to Windows' default location.'''
+    """Check whether Windows minidumps are enabled and set to go to Windows' default location."""
     import _winreg
     # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
     # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
@@ -376,7 +366,7 @@ def isWinDumpingToDefaultLocation():
             try:
                 dumpFolderRegValue = _winreg.QueryValueEx(key, 'DumpFolder')
                 # %LOCALAPPDATA%\CrashDumps is the default location.
-                if not (dumpFolderRegValue[0] == '%LOCALAPPDATA%\CrashDumps' and
+                if not (dumpFolderRegValue[0] == r'%LOCALAPPDATA%\CrashDumps' and
                         dumpFolderRegValue[1] == _winreg.REG_EXPAND_SZ):
                     print '\nWARNING: Dumps are instead appearing at: ' + dumpFolderRegValue[0] + \
                         ' - all crashes will be uninteresting.\n'
@@ -400,10 +390,7 @@ def isWinDumpingToDefaultLocation():
 
 
 def constructGdbCommand(progfullname, crashedPID):
-    '''
-    Constructs a command that uses the POSIX debugger (gdb) to turn a minidump file into a
-    stack trace.
-    '''
+    """Construct a command that uses the POSIX debugger (gdb) to turn a minidump file into a stack trace."""
     # On Mac and Linux, look for a core file.
     coreFilename = None
     if isMac:
@@ -432,25 +419,25 @@ def constructGdbCommand(progfullname, crashedPID):
 
 
 def getAbsPathForAdjacentFile(filename):
-    '''Gets the absolute path of a particular file, given its base directory and filename.'''
+    """Get the absolute path of a particular file, given its base directory and filename."""
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
 def isProgramInstalled(program):
-    '''Checks if the specified program is installed.'''
+    """Check if the specified program is installed."""
     whichExit = captureStdout(['which', program], ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1]
     return whichExit == 0
 
 
 def rmDirIfEmpty(eDir):
-    '''Remove directory if empty.'''
+    """Remove directory if empty."""
     assert os.path.isdir(eDir)
     if not os.listdir(eDir):
         os.rmdir(eDir)
 
 
 def rmTreeIfExists(dirTree):
-    '''Remove a directory with all sub-directories and files if the directory exists.'''
+    """Remove a directory with all sub-directories and files if the directory exists."""
     if os.path.isdir(dirTree):
         rmTreeIncludingReadOnly(dirTree)
     assert not os.path.isdir(dirTree)
@@ -461,7 +448,7 @@ def rmTreeIncludingReadOnly(dirTree):
 
 
 def test_rmTreeIncludingReadOnly():
-    '''Run this function in the same directory as subprocesses.py to test.'''
+    """Run this function in the same directory as subprocesses.py to test."""
     testDir = 'test_rmTreeIncludingReadOnly'
     os.mkdir(testDir)
     readOnlyDir = os.path.join(testDir, 'nestedReadOnlyDir')
@@ -477,7 +464,7 @@ def test_rmTreeIncludingReadOnly():
 
 
 def handleRemoveReadOnly(func, path, exc):
-    '''Handle read-only files. Adapted from http://stackoverflow.com/q/1213706'''
+    """Handle read-only files. Adapted from http://stackoverflow.com/q/1213706 ."""
     if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
         if os.name == 'posix':
             # Ensure parent directory is also writeable.
@@ -514,10 +501,11 @@ def shellify(cmd):
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                    cwd=os.getcwdu(), env=os.environ, vb=False):
-    '''
-    Calculates how long a captureStdout command takes and prints it. Returns the stdout and return
-    value that captureStdout passes on.
-    '''
+    """
+    Calculate how long a captureStdout command takes and prints it.
+
+    Return the stdout and return value that captureStdout passes on.
+    """
     print 'Running `%s` now..' % shellify(command)
     startTime = time.time()
     stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
@@ -529,7 +517,7 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
 
 
 class Unbuffered:
-    '''From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u.'''
+    """From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u."""
 
     def __init__(self, stream):
         self.stream = stream
@@ -543,9 +531,7 @@ class Unbuffered:
 
 
 def vdump(inp):
-    '''
-    This function appends the word 'DEBUG' to any verbose output.
-    '''
+    """Append the word 'DEBUG' to any verbose output."""
     if verbose:
         print 'DEBUG -', inp
 
