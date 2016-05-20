@@ -275,7 +275,7 @@ def findBlamedCset(options, repoDir, testRev):
 
 
 def internalTestAndLabel(options):
-    '''Use autoBisectJs without interestingness tests to examine the revision of the js shell.'''
+    """Use autoBisectJs without interestingness tests to examine the revision of the js shell."""
     def inner(shellFilename, _hgHash):
         (stdoutStderr, exitCode) = inspectShell.testBinary(shellFilename, options.paramList,
                                                            options.buildOptions.runWithVg)
@@ -317,7 +317,7 @@ def internalTestAndLabel(options):
 
 
 def externalTestAndLabel(options, interestingness):
-    '''Make use of interestingness scripts to decide whether the changeset is good or bad.'''
+    """Make use of interestingness scripts to decide whether the changeset is good or bad."""
     conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
     conditionArgPrefix = interestingness[1:]
 
@@ -340,7 +340,6 @@ def externalTestAndLabel(options, interestingness):
 
 def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """If bisect blamed a merge, try to figure out why."""
-
     bisectLied = False
     missedCommonAncestor = False
 
@@ -400,7 +399,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
 
 
 def sanitizeCsetMsg(msg, repo):
-    '''Sanitizes changeset messages, removing email addresses.'''
+    """Sanitize changeset messages, removing email addresses."""
     msgList = msg.split('\n')
     sanitizedMsgList = []
     for line in msgList:
@@ -413,7 +412,7 @@ def sanitizeCsetMsg(msg, repo):
 
 
 def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
-    '''Tell hg what we learned about the revision.'''
+    """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
     outputResult = sps.captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
@@ -465,9 +464,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 
 
 def assertSaneJsBinary(cacheF):
-    '''
-    If the cache folder is present, check that the js binary is working properly.
-    '''
+    """If the cache folder is present, check that the js binary is working properly."""
     if os.path.isdir(cacheF):
         fList = os.listdir(cacheF)
         if 'build' in fList:
@@ -510,9 +507,7 @@ def assertSaneJsBinary(cacheF):
 
 
 def bisectUsingTboxBins(options):
-    '''
-    Downloads treeherder binaries and bisects them.
-    '''
+    """Download treeherder binaries and bisect them."""
     testedIDs = {}
     desiredArch = '32' if options.buildOptions.enable32 else '64'
     buildType = downloadBuild.defaultBuildType(options.nameOfTreeherderBranch, desiredArch, options.buildOptions.enableDbg)
@@ -522,7 +517,7 @@ def bisectUsingTboxBins(options):
 
     # Download and test starting point.
     print '\nExamining starting point...'
-    sID, startResult, sReason, sPosition, urlsTbox, testedIDs, startSkippedNum = testBuildOrNeighbour(
+    sID, startResult, _sReason, _sPosition, urlsTbox, testedIDs, _startSkippedNum = testBuildOrNeighbour(
         options, 0, urlsTbox, buildType, testedIDs)
     if sID is None:
         raise Exception('No complete builds were found.')
@@ -530,7 +525,7 @@ def bisectUsingTboxBins(options):
 
     # Download and test ending point.
     print '\nExamining ending point...'
-    eID, endResult, eReason, ePosition, urlsTbox, testedIDs, endSkippedNum = testBuildOrNeighbour(
+    eID, endResult, _eReason, _ePosition, urlsTbox, testedIDs, _endSkippedNum = testBuildOrNeighbour(
         options, len(urlsTbox) - 1, urlsTbox, buildType, testedIDs)
     if eID is None:
         raise Exception('No complete builds were found.')
@@ -555,7 +550,7 @@ def bisectUsingTboxBins(options):
             mPosition = len(sortedUrlsTbox)
 
         # Test the middle revision. If it is not a complete build, test ones around it.
-        mID, mResult, mReason, mPosition, urlsTbox, testedIDs, middleRevSkippedNum = testBuildOrNeighbour(
+        mID, mResult, _mReason, mPosition, urlsTbox, testedIDs, middleRevSkippedNum = testBuildOrNeighbour(
             options, mPosition, urlsTbox, buildType, testedIDs)
         if mID is None:
             print 'Middle ID is None.'
@@ -589,10 +584,10 @@ def bisectUsingTboxBins(options):
 
 
 def createTboxCacheFolder(cacheFolder):
-    '''
-    Attempt to create the treeherder js shell's cache folder if it does not exist. If it does, check
-    that its binaries are working properly.
-    '''
+    """Attempt to create the treeherder js shell's cache folder if it does not exist.
+
+    If it does, check that its binaries are working properly.
+    """
     try:
         os.mkdir(cacheFolder)
     except OSError:
@@ -606,9 +601,7 @@ def createTboxCacheFolder(cacheFolder):
 
 
 def ensureCacheDirHasCorrectIdNum(cacheFolder):
-    '''
-    Ensures that the cache folder is named with the correct numeric ID.
-    '''
+    """Ensure that the cache folder is named with the correct numeric ID."""
     srcUrlPath = sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
     if os.path.isfile(srcUrlPath):
         with open(srcUrlPath, 'rb') as f:
@@ -625,9 +618,7 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
 
 
 def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
-    '''
-    Downloads a build. If the build is incomplete, find a working neighbour, then return results.
-    '''
+    """Download a build. If the build is incomplete, find a working neighbour, then return results."""
     offset = None
     skippedChangesetNum = 0
 
@@ -679,7 +670,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
 
 
 def getHgwebMozillaOrg(branchName):
-    '''Returns the hgweb link of the repository, given a treeherder branch name.'''
+    """Return the hgweb link of the repository, given a treeherder branch name."""
     hgWebAddrList = ['hg.mozilla.org']
     if branchName == 'mozilla-central':
         hgWebAddrList.append(branchName)
@@ -694,17 +685,12 @@ def getHgwebMozillaOrg(branchName):
 
 
 def getIdFromTboxUrl(url):
-    '''
-    Returns the numeric ID from the treeherder URL at:
-        https://archive.mozilla.org/pub/mozilla.org/firefox/treeherder-builds/
-    '''
+    """Return numeric ID from treeherder at https://archive.mozilla.org/pub/mozilla.org/firefox/treeherder-builds/ ."""
     return filter(None, url.split('/'))[-1]
 
 
 def getOneBuild(isJsShell, url, buildType):
-    '''
-    Try to get a complete working build.
-    '''
+    """Try to get a complete working build."""
     idNum = getIdFromTboxUrl(url)
     tboxCacheFolder = sps.normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
                                                        'tboxjs-' + buildType + '-' + idNum))
@@ -731,16 +717,12 @@ def getOneBuild(isJsShell, url, buildType):
 
 
 def getTboxJsBinPath(baseDir):
-    '''
-    Returns the path to the treeherder js binary from a download folder.
-    '''
+    """Return the path to the treeherder js binary from a download folder."""
     return sps.normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if sps.isWin else 'js'))
 
 
 def getTimestampAndHashFromTboxFiles(folder):
-    '''
-    Returns timestamp and changeset information from the .txt file downloaded from treeherder.
-    '''
+    """Return timestamp and changeset information from the .txt file downloaded from treeherder."""
     downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
     for fn in os.listdir(downloadDir):
         if fn.startswith('firefox-') and fn.endswith('.txt') and '_info' not in fn:
@@ -752,18 +734,14 @@ def getTimestampAndHashFromTboxFiles(folder):
 
 
 def isTboxBinInteresting(options, downloadDir, csetHash):
-    '''
-    Test the required treeherder binary.
-    '''
+    """Test the required treeherder binary."""
     return options.testAndLabel(getTboxJsBinPath(downloadDir), csetHash)
 
 
 def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
-    '''
-    Returns formatted bisection results from using treeherder builds.
-    '''
-    sTimestamp, sHash, sResult, sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
-    eTimestamp, eHash, eResult, eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
+    """Return formatted bisection results from using treeherder builds."""
+    sTimestamp, sHash, sResult, _sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
+    eTimestamp, eHash, eResult, _eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
 
     print '\nParameters for compilation bisection:'
     pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
@@ -792,9 +770,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
 
 
 def readIncompleteBuildTxtFile(txtFile, idNum):
-    '''
-    Reads the INCOMPLETE_NOTE text file indicating that this particular build is incomplete.
-    '''
+    """Read the INCOMPLETE_NOTE text file indicating that this particular build is incomplete."""
     with open(txtFile, 'rb') as f:
         contentsF = f.read()
         if 'is incomplete.' not in contentsF:
@@ -806,7 +782,7 @@ def readIncompleteBuildTxtFile(txtFile, idNum):
 
 
 def rmOldLocalCachedDirs(cacheDir):
-    '''Removes old local cached directories, which were created four weeks ago.'''
+    """Remove old local cached directories, which were created four weeks ago."""
     # This is in autoBisect because it has a lock so we do not race while removing directories
     # Adapted from http://stackoverflow.com/a/11337407
     SECONDS_IN_A_DAY = 24 * 60 * 60
@@ -829,9 +805,7 @@ def rmOldLocalCachedDirs(cacheDir):
 
 
 def showRemainingNumOfTests(reqList):
-    '''
-    Display the approximate number of tests remaining.
-    '''
+    """Display the approximate number of tests remaining."""
     remainingTests = int(math.ceil(math.log(len(reqList), 2))) - 1
     wordTest = 'tests'
     if remainingTests == 1:
@@ -840,9 +814,7 @@ def showRemainingNumOfTests(reqList):
 
 
 def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
-    '''
-    Tests the build. If the build is incomplete, find a working neighbour, then return results.
-    '''
+    """Test the build. If the build is incomplete, find a working neighbour, then return results."""
     finalIndex, idNum, tboxCacheFolder, skippedNum = getBuildOrNeighbour(
         (not options.browserOptions), preferredIndex, urls, buildType
     )
@@ -866,9 +838,7 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
 
 
 def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
-    '''
-    Writes a text file indicating that this particular build is incomplete.
-    '''
+    """Write a text file indicating that this particular build is incomplete."""
     if os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
             os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
         sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
@@ -882,7 +852,7 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
 
 
 def main():
-    '''Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg.'''
+    """Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
     repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
