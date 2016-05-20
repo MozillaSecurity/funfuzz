@@ -26,13 +26,12 @@ from fileIngredients import fileContainsStr
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
     """
-       Run Lithium and autobisect.
+    Run Lithium and autobisect.
 
-       itest must be an array of the form [module, ...] where module is an interestingness module.
-       The module's "interesting" function must accept [...] + [jsEngine] + engineFlags + infilename
-       (If it's not prepared to accept engineFlags, engineFlags must be empty.)
+    itest must be an array of the form [module, ...] where module is an interestingness module.
+    The module's "interesting" function must accept [...] + [jsEngine] + engineFlags + infilename
+    (If it's not prepared to accept engineFlags, engineFlags must be empty.)
     """
-
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]
 
     (lithResult, lithDetails) = strategicReduction(logPrefix, infilename, lithArgs, targetTime, suspiciousLevel)
@@ -65,12 +64,12 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, bu
 
 
 def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
-    '''Reduce jsfunfuzz output files using Lithium by using various strategies.'''
+    """Reduce jsfunfuzz output files using Lithium by using various strategies."""
     reductionCount = [0]  # This is an array because Python does not like assigning to upvars.
     backupFilename = infilename + '-backup'
 
     def lithReduceCmd(strategy):
-        '''Lithium reduction commands accepting various strategies.'''
+        """Lithium reduction commands accepting various strategies."""
         reductionCount[0] += 1
         fullLithArgs = [x for x in (strategy + lithArgs) if x]  # Remove empty elements
         print sps.shellify([lithiumpy] + fullLithArgs)
@@ -91,7 +90,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
         origNumOfLines = int(lithDetails.split()[0])
 
     hasTryItOut = False
-    hasTryItOutRegex = re.compile('count=[0-9]+; tryItOut\("')
+    hasTryItOutRegex = re.compile(r'count=[0-9]+; tryItOut\("')
 
     with open(infilename, 'rb') as f:
         for line in fileManipulation.linesWith(f, '; tryItOut("'):
@@ -103,7 +102,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
     # Step 2: Run 1 instance of 1-line reduction after moving tryItOut and count=X around.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
 
-        tryItOutAndCountRegex = re.compile('"\);\ncount=([0-9]+); tryItOut\("', re.MULTILINE)
+        tryItOutAndCountRegex = re.compile(r'"\);\ncount=([0-9]+); tryItOut\("', re.MULTILINE)
         with open(infilename, 'rb') as f:
             infileContents = f.read()
             infileContents = re.sub(tryItOutAndCountRegex, ';\\\n"); count=\\1; tryItOut("\\\n',
@@ -124,9 +123,9 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
                 if 'dumpln(cookie' not in line:  # jsfunfuzz-specific line ignore
                     # This should be simpler than re.compile.
                     intendedLines.append(line.replace('; count=', ';\ncount=')
-                                             .replace('; tryItOut("', ';\ntryItOut("')
-                                             # The 1-line offset is added here.
-                                             .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
+                                         .replace('; tryItOut("', ';\ntryItOut("')
+                                         # The 1-line offset is added here.
+                                         .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
 
         fileManipulation.writeLinesToFile(intendedLines, infilename)
         print '\nRunning 1 instance of 2-line reduction after moving count=X to its own line...\n'
