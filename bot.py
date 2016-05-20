@@ -6,7 +6,6 @@
 import multiprocessing
 import os
 import platform
-import random
 import shutil
 import sys
 import tempfile
