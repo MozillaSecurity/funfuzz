@@ -383,7 +383,7 @@ class FigureOutDirs:
             usage("browserDir does not exist: %s" % browserDir)
 
         if os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "tests")):
-            # browserDir is a downloaded packaged build, perhaps downloaded with downloadBuild.py.  Great!
+            # browserDir is a downloaded packaged build, perhaps downloaded with downloadBuild.py --want-tests.  Great!
             #self.appDir = os.path.join(browserDir, "dist")
             self.reftestFilesDir = os.path.join(browserDir, "tests", "reftest", "tests")
             self.reftestScriptDir = os.path.join(browserDir, "tests", "reftest")
@@ -693,7 +693,7 @@ class BrowserResult:
 
 def usage(note):
     print note
-    print "(browserDir should be an objdir for a local build, or a Tinderbox build downloaded with downloadBuild.py)"
+    print "(browserDir should be an objdir for a local build, or a Tinderbox build downloaded with downloadBuild.py --want-tests)"
     print
     sys.exit(2)
 

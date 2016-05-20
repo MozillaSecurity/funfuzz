@@ -30,11 +30,11 @@ Running `./loopdomfuzz.py build` will:
 
 |build| must be a directory containing a build of Firefox:
 * A Firefox object directory, built locally with --enable-tests
-* A Treeherder build that was downloaded using funfuzz/util/downloadBuild.py
+* A Treeherder build that was downloaded using funfuzz/util/downloadBuild.py --want-tests
 
 Quick start:
 ```
-funfuzz/util/downloadBuild.py && funfuzz/util/multi.py 8 funfuzz/dom/automation/loopdomfuzz.py build
+funfuzz/util/downloadBuild.py --want-tests && funfuzz/util/multi.py 8 funfuzz/dom/automation/loopdomfuzz.py build
 ```
 
 
