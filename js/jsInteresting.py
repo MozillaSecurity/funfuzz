@@ -158,8 +158,7 @@ def understoodJsfunfuzzExit(out, err):
 
 
 def hitMemoryLimit(err):
-    """Does stderr indicate hitting a memory limit?"""
-
+    """Unsure if stderr indicates hitting a memory limit."""
     if "ReportOverRecursed called" in err:
         # --enable-more-deterministic
         return "ReportOverRecursed called"
@@ -200,7 +199,7 @@ def valgrindSuppressions(knownPath):
 
 
 def deleteLogs(logPrefix):
-    """Whoever calls baseLevel should eventually call deleteLogs (unless a bug was found)."""
+    """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
     os.remove(logPrefix + "-out.txt")
@@ -215,7 +214,7 @@ def deleteLogs(logPrefix):
 
 
 def ulimitSet():
-    '''When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX.'''
+    """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
     import resource  # module only available on POSIX
 
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
@@ -269,6 +268,8 @@ def parseOptions(args):
 def init(args):
     global gOptions
     gOptions = parseOptions(args)
+
+
 def interesting(args, tempPrefix):
     options = gOptions
     # options, runthis, logPrefix, inCompareJIT
