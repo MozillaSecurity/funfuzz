@@ -73,7 +73,7 @@ if sps.isWin:
 
 
 def archOfBinary(binary):
-    '''This function tests if a binary is 32-bit or 64-bit.'''
+    """Test if a binary is 32-bit or 64-bit."""
     unsplitFiletype = sps.captureStdout(['file', binary])[0]
     filetype = unsplitFiletype.split(':', 1)[1]
     if sps.isWin:
@@ -91,7 +91,7 @@ def archOfBinary(binary):
 
 
 def constructVgCmdList(errorCode=77):
-    '''Constructs default parameters needed to run valgrind with.'''
+    """Construct default parameters needed to run valgrind with."""
     vgCmdList = []
     vgCmdList.append('valgrind')
     if sps.isMac:
@@ -111,10 +111,10 @@ def constructVgCmdList(errorCode=77):
 
 
 def shellSupports(shellPath, args):
-    '''
-    This function returns True if the shell likes the args.
-    You can support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
-    '''
+    """Return True if the shell likes the args.
+
+    You can add support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
+    """
     retCode = testBinary(shellPath, args, False)[1]
     if retCode == 0:
         return True
@@ -129,7 +129,7 @@ def shellSupports(shellPath, args):
 
 
 def testBinary(shellPath, args, useValgrind):
-    '''Tests the given shell with the given args.'''
+    """Test the given shell with the given args."""
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     sps.vdump('The testing command is: ' + sps.shellify(testCmd))
     out, rCode = sps.captureStdout(testCmd, combineStderr=True, ignoreStderr=True,
@@ -140,19 +140,19 @@ def testBinary(shellPath, args, useValgrind):
 
 
 def testJsShellOrXpcshell(s):
-    '''This function tests if a binary is a js shell or xpcshell.'''
+    """Test if a binary is a js shell or xpcshell."""
     return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
 
 
 def queryBuildConfiguration(s, parameter):
-    '''Tests if a binary is compiled with specified parameters, in getBuildConfiguration().'''
+    """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'],
                      False)[0]
     return ans.find('true') != -1
 
 
 def testIsHardFpShellARM(s):
-    '''Tests if the ARM shell is compiled with hardfp support.'''
+    """Test if the ARM shell is compiled with hardfp support."""
     readelfBin = '/usr/bin/readelf'
     if os.path.exists(readelfBin):
         newEnv = envVars.envWithPath(os.path.dirname(os.path.abspath(s)))
@@ -163,7 +163,7 @@ def testIsHardFpShellARM(s):
 
 
 def verifyBinary(sh):
-    '''Verifies that the binary is compiled as intended.'''
+    """Verify that the binary is compiled as intended."""
     binary = sh.getShellCacheFullPath()
 
     assert archOfBinary(binary) == ('32' if sh.buildOptions.enable32 else '64')
