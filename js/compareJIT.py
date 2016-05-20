@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import os
-import pinpoint
 import sys
-
 from optparse import OptionParser
 
 import jsInteresting
+import pinpoint
 import shellFlags
 
 path0 = os.path.dirname(os.path.abspath(__file__))
