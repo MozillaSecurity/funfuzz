@@ -26,14 +26,14 @@ def parseOptions():
     parser = OptionParser()
     parser.add_option('-R', '--repo', dest='rDir',
                       help='Sets the repository to analyze..')
-    options, args = parser.parse_args()
+    options, _args = parser.parse_args()
     assert options.rDir is not None
     assert os.path.isdir(sps.normExpUserPath(options.rDir))
     return options
 
 
 def countCsets(revset, rdir):
-    '''Counts the number of changesets in the revsets by outputting ones and counting them.'''
+    """Count the number of changesets in the revsets by outputting ones and counting them."""
     listCmd = ['hg', 'log', '-r', revset, '--template=1']
     rangeIntersectionOnes = sps.captureStdout(listCmd, currWorkingDir=rdir)
     assert rangeIntersectionOnes[1] == 0
@@ -54,7 +54,7 @@ def main():
             print 'Number ' + str(cnt) + ': Compared against revset: ' + brokenRanges[j]
             overlap = countCsets(brokenRanges[i] + ' and ' + brokenRanges[j], repoDir)
             if overlap > 0:
-                print('Number of overlapping changesets: ' + str(overlap))
+                print 'Number of overlapping changesets: ' + str(overlap)
         cnt = 0
 
 
