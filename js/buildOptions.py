@@ -37,16 +37,16 @@ class Randomizer(object):
 
 
 def addParserOptions():
-    '''Adds parser options.'''
+    """Add parser options."""
     # Where to find the source dir and compiler, patching if necessary.
     parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
     randomizer = Randomizer()
 
     def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):
-        '''
-        Adds a randomized boolean option that defaults to False,
-        and has a [weight] chance of being changed to True when using --random.
-        '''
+        """Add a randomized boolean option that defaults to False.
+
+        Option also has a [weight] chance of being changed to True when using --random.
+        """
         randomizer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
         parser.add_argument(*name, action='store_true', default=False, **kwargs)
 
@@ -146,8 +146,7 @@ def addParserOptions():
 
 
 def parseShellOptions(inputArgs):
-    """Returns a 'buildOptions' object, which is intended to be immutable."""
-
+    """Return a 'buildOptions' object, which is intended to be immutable."""
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args(inputArgs.split())
 
@@ -187,7 +186,7 @@ def parseShellOptions(inputArgs):
 
 
 def computeShellType(buildOptions):
-    '''Returns configuration information of the shell.'''
+    """Return configuration information of the shell."""
     fileName = ['js']
     if buildOptions.enableDbg:
         fileName.append('dbg')
@@ -225,12 +224,12 @@ def computeShellType(buildOptions):
 
 
 def computeShellName(buildOptions, buildRev):
-    '''Returns the shell type together with the build revision.'''
+    """Return the shell type together with the build revision."""
     return computeShellType(buildOptions) + '-' + buildRev
 
 
 def areArgsValid(args):
-    '''Checks to see if chosen arguments are valid.'''
+    """Check to see if chosen arguments are valid."""
     if args.enableDbg and args.disableDbg:
         return False, 'Making a debug, non-debug build would be contradictory.'
     if args.enableOpt and args.disableOpt:
