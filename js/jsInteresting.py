@@ -158,7 +158,7 @@ def understoodJsfunfuzzExit(out, err):
 
 
 def hitMemoryLimit(err):
-    """Unsure if stderr indicates hitting a memory limit."""
+    """Returns True iff stderr text indicates that the shell hit a memory limit."""
     if "ReportOverRecursed called" in err:
         # --enable-more-deterministic
         return "ReportOverRecursed called"
