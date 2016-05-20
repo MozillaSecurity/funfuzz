@@ -41,9 +41,8 @@ JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loopjsfunfuzz.py for tradeoffs
 
 
 class BuildInfo(object):
-    '''
-    This object stores information related to the build, such as its directory, source and type.
-    '''
+    """Store information related to the build, such as its directory, source and type."""
+
     def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):
         self.buildDir = bDir
         self.buildType = bType
@@ -64,16 +63,16 @@ def parseOpts():
     )
 
     parser.add_option('-t', '--test-type', dest='testType', choices=['js', 'dom'],
-        help='Test type: "js" or "dom"')
+                      help='Test type: "js" or "dom"')
 
     parser.add_option("--build", dest="existingBuildDir",
-        help="Use an existing build directory.")
+                      help="Use an existing build directory.")
 
     parser.add_option('--repotype', dest='repoName',
-        help='Sets the repository to be fuzzed. Defaults to "%default".')
+                      help='Sets the repository to be fuzzed. Defaults to "%default".')
 
     parser.add_option("--target-time", dest="targetTime", type='int',
-        help="Nominal amount of time to run, in seconds")
+                      help="Nominal amount of time to run, in seconds")
 
     parser.add_option('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
                       help='Download builds from treeherder instead of compiling our own.')
@@ -86,8 +85,8 @@ def parseOpts():
 
     parser.add_option('--timeout', type='int', dest='timeout',
                       help='Sets the timeout for loopjsfunfuzz.py. ' +
-                           'Defaults to taking into account the speed of the computer and ' +
-                           'debugger (if any).')
+                      'Defaults to taking into account the speed of the computer and ' +
+                      'debugger (if any).')
 
     options, args = parser.parse_args()
     if len(args) > 0:
@@ -154,10 +153,10 @@ def printMachineInfo():
         print "gdb version: " + sps.captureStdout(['gdb', '--version'], combineStderr=True,
                                                   ignoreStderr=True, ignoreExitCode=True)[0]
     except (KeyboardInterrupt, Exception) as e:
-        print('Error involving gdb is: ' + repr(e))
+        print 'Error involving gdb is: ' + repr(e)
 
     # FIXME: Should have if os.path.exists(path to git) or something
-    #print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
+    # print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print "Python version: " + sys.version.split()[0]
     print "Number of cores visible to OS: " + str(multiprocessing.cpu_count())
     print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
@@ -178,7 +177,7 @@ def printMachineInfo():
 
 
 def refreshSignatures(collector):
-    '''Refresh signatures, copying from FuzzManager server to local sigcache'''
+    """Refresh signatures, copying from FuzzManager server to local sigcache."""
     # Btw, you should make sure the server generates the file using
     #     python manage.py export_signatures files/signatures.zip
     # occasionally, e.g. as a cron job.
@@ -222,8 +221,8 @@ def ensureBuild(options):
                         options.buildOptions.repoDir, bRev
                     ) +
                     '==============================================\n' +
-                    '|  Fuzzing %s js shell builds\n'  % cshell.getRepoName() +
-                    '|  DATE: %s\n'                    % sps.dateStr() +
+                    '|  Fuzzing %s js shell builds\n' % cshell.getRepoName() +
+                    '|  DATE: %s\n' % sps.dateStr() +
                     '==============================================\n\n')
 
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)
@@ -267,7 +266,7 @@ def loopFuzzingAndReduction(options, buildInfo, collector, i):
 
 
 def machineTimeoutDefaults(options):
-    '''Sets different defaults depending on the machine type or debugger used.'''
+    """Set different defaults depending on the machine type or debugger used."""
     if options.buildOptions.runWithVg:
         return 300
     elif sps.isARMv7l:
@@ -277,7 +276,7 @@ def machineTimeoutDefaults(options):
 
 
 def mtrArgsCreation(options, cshell):
-    '''Create many_timed_run arguments for compiled builds'''
+    """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []
     manyTimedRunArgs.append('--repo=' + sps.normExpUserPath(options.buildOptions.repoDir))
     manyTimedRunArgs.append("--build=" + options.buildOptions.buildOptionsStr)
