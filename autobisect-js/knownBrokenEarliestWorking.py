@@ -38,7 +38,7 @@ def knownBrokenRangesBrowser(options):
 
 
 def knownBrokenRanges(options):
-    '''Returns a list of revsets corresponding to known-busted revisions'''
+    """Return a list of revsets corresponding to known-busted revisions."""
     # Paste numbers into: https://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
@@ -92,10 +92,7 @@ def earliestKnownWorkingRevForBrowser(options):
 
 
 def earliestKnownWorkingRev(options, flags, skipRevs):
-    '''
-    Returns a revset which evaluates to the first revision of the shell that
-    compiles with |options| and runs jsfunfuzz successfully with |flags|.
-    '''
+    """Return a revset which evaluates to the first revision of the shell that compiles with |options| and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
 
     # These should be in descending order, or bisection will break at earlier changesets.
