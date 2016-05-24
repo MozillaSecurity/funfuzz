@@ -61,7 +61,7 @@ def getFreeSpace(folder, mulVar):
     else:
         retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)
 
-    return retVal / (1024 ** mulVar)
+    return retVal // (1024 ** mulVar)
 
 
 #####################
