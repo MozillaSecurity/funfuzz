@@ -120,7 +120,7 @@ function whatToTestSpidermonkeyMozilla45(code)
     // across-process (e.g. running js shell with different run-time options) e.g. compareJIT
         && code.indexOf("'strict") == -1                 // see bug 743425
         && code.indexOf("disassemble") == -1             // see bug 1237403 (related to asm.js)
-        && code.indexOf("length") == -1                  // bug 1027846
+        && code.indexOf(".length") == -1                 // bug 1027846
         && code.indexOf("preventExtensions") == -1       // bug 1085299
         && code.indexOf("Math.round") == -1              // see bug 1236114 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
