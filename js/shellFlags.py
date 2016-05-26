@@ -50,9 +50,8 @@ def randomFlagSet(shellPath):
     # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
     #     args.append("--execute='version(185);'")
 
-    # Bug 1274429
-    # if shellSupportsFlag(shellPath, '--ion-pgo=on') and chance(.2):
-    #     args.append("--ion-pgo=on")  # --ion-pgo=on landed in bug 1209515
+    if shellSupportsFlag(shellPath, '--ion-pgo=on') and chance(.2):
+        args.append("--ion-pgo=on")  # --ion-pgo=on landed in bug 1209515
 
     if shellSupportsFlag(shellPath, '--ion-sincos=on') and chance(.5):
         sincosValue = "on" if chance(0.5) else "off"
