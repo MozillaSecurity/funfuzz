@@ -15,7 +15,7 @@ import subprocesses as sps
 
 isBoto = False
 # We need to first install boto into MozillaBuild via psbootstrap on Windows
-if not (sps.isMac or sps.isWin):
+if not sps.isMac:
     try:
         from boto.s3.connection import S3Connection, Key
         import boto.exception
@@ -30,11 +30,10 @@ def isEC2VM():
     if sps.isMac or not isBoto:
         return False
 
-    if not sps.isWin:  # We need to first install boto into MozillaBuild via psbootstrap on Windows
-        try:
-            return bool(boto.utils.get_instance_metadata(num_retries=1, timeout=1)['instance-id'])
-        except KeyError:
-            return False
+    try:
+        return bool(boto.utils.get_instance_metadata(num_retries=1, timeout=1)['instance-id'])
+    except KeyError:
+        return False
 
 
 class S3Cache(object):
