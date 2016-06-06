@@ -493,18 +493,22 @@ var fuzzerRandomClasses = (function() {
 
   function randomRule()
   {
-    var importance;
-    var rule = randomSelector() + " { ";
+    return randomSelector() + " { " + randomDeclarationBlock(true) + "}";
+  }
+
+  function randomDeclarationBlock(allowImportant)
+  {
+    var block = "";
+
     var numProps = rnd(10);
 
     for (var i = 0; i < numProps; ++i) {
       var decl = randomDeclaration();
-      importance = Random.index(importances);
-      rule += decl.prop + ": " + decl.value + importance + "; ";
+      var importance = (allowImportant || rnd(1000)===0) ? Random.index(importances) : "";
+      block += decl.prop + ": " + decl.value + importance + "; ";
     }
 
-    rule += "}";
-    return rule;
+    return block;
   }
 
   function randomStatement()
@@ -619,13 +623,14 @@ var fuzzerRandomClasses = (function() {
 
   return {
     makeCommand: makeCommand,
-    addSheet: addSheet,                      // Random Classes callback
-    removeSheet: removeSheet,                // Random Classes callback
-    setHammer: setHammer,                    // Random Classes callback
-    randomDeclaration: randomDeclaration,    // Used by fuzzerRandomStyles
-    randomRule: randomRule,                  // Used by fuzzerDOMCSS
-    randomProperty: randomProperty,          // Used by fuzzerDOMStyle
-    propertyValue: propertyValue,            // Used by fuzzerCanvas
+    addSheet: addSheet,                              // Random Classes callback
+    removeSheet: removeSheet,                        // Random Classes callback
+    setHammer: setHammer,                            // Random Classes callback
+    randomDeclaration: randomDeclaration,            // Used by fuzzerRandomStyles
+    randomDeclarationBlock: randomDeclarationBlock,  // Used by fuzzerWebAnimations
+    randomRule: randomRule,                          // Used by fuzzerDOMCSS
+    randomProperty: randomProperty,                  // Used by fuzzerDOMStyle
+    propertyValue: propertyValue,                    // Used by fuzzerCanvas
   };
 })();
 
