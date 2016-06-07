@@ -389,8 +389,11 @@ ASSERTION: frame to add has different parent: 'IsEmpty() || FirstChild()->GetPar
 # Bug 537027
 ASSERTION: How did we get this namespace?: 'mNameSpace == kNameSpaceID_Unknown || mNameSpace == kNameSpaceID_None', file layout/style/StyleRule.cpp
 
-# Bug 391157
+# Bug 391157, bug 586628, bug 611532
 ASSERTION: We should have a margin here! (out of memory?): 'hasMargin', file layout/generic/nsFrame.cpp
+ASSERTION: We should have padding here! (out of memory?): 'hasPadding', file layout/generic/nsFrame.cpp
+ASSERTION: Returning bogus 0-sized margin, because this margin depends on layout & isn't cached!: 'Error', file layout/generic/nsFrame.cpp
+ASSERTION: Returning bogus 0-sized padding, because this padding depends on layout & isn't cached!: 'Error', file layout/generic/nsFrame.cpp
 
 # Bug 550364
 ASSERTION: Since we're in FLEX_FLEX_LARGE_ZERO case, all auto-width cols should have zero pref width.: 'col_width == 0 && colFrame->GetPrefCoord() == 0', file layout/tables/BasicTableLayoutStrategy.cpp
@@ -513,9 +516,6 @@ ASSERTION: aFromIndex is out of range: 'aFromIndex < mLength', file docshell/shi
 
 # Bug 611150
 ASSERTION: mParser should have been null'd out: '!mParser', file dom/html/nsHTMLDocument.cpp
-
-# Bug 611532
-ASSERTION: We should have padding here! (out of memory?): 'hasPadding', file layout/generic/nsFrame.cpp
 
 # Bug 612994
 ASSERTION: frame must not be dirty: '!NS_SUBTREE_DIRTY(this)', file layout/generic/nsFrame.cpp
