@@ -12,7 +12,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
   function enableGCZeal()
   {
-    var level = rnd(15);
+    var level = rnd(16);
     if (browser && level == 9) level = 0; // bug 815241
     var period = numberOfAllocs();
     return prefix + "gczeal" + "(" + level + ", " + period + ");";

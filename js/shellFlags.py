@@ -85,7 +85,8 @@ def randomFlagSet(shellPath):
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
 
     if shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
-        gczealValue = 14 if chance(0.5) else random.randint(0, 14)  # Focus test compacting GC (14)
+        # Focus testing on CheckHeapOnMovingGC (15), see https://hg.mozilla.org/mozilla-central/rev/69ea294ab4b6
+        gczealValue = 15 if chance(0.5) else random.randint(0, 15)
         args.append("--gc-zeal=" + str(gczealValue))  # --gc-zeal= landed in bug 1101602
 
     if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
