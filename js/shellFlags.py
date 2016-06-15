@@ -127,8 +127,9 @@ def randomFlagSet(shellPath):
         else:
             args.append("--no-sse4")
 
-    if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
-        args.append("--no-fpu")  # --no-fpu landed in bug 858022
+    # We should stop fuzzing --no-fpu according to the js devs...
+    # if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
+    #     args.append("--no-fpu")  # --no-fpu landed in bug 858022
 
     if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
         args.append("--no-asmjs")
@@ -216,7 +217,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off'],
             ['--fuzzing-safe', '--baseline-eager'],
-            ['--fuzzing-safe', '--baseline-eager', '--no-fpu'],
+            # ['--fuzzing-safe', '--baseline-eager', '--no-fpu'],  # --no-fpu seems to be deprecated now
             ['--fuzzing-safe', '--no-baseline', '--no-ion'],
         ]
         if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
@@ -235,7 +236,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'],  # Not in jit_test.py though, see bug 848906 comment 1
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],
+            # ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],  # --no-fpu seems to be deprecated now
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'])
@@ -256,7 +257,7 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'],  # See bug 848906 comment 1
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
+            # ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],  # --no-fpu seems to be deprecated now
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
