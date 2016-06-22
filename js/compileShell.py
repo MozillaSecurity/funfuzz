@@ -480,8 +480,8 @@ def compileJs(shell):
         shell.setMajorVersion(majorVersion)
         shell.setVersion(version)
 
-        if sps.isLinux or sps.isWin:
-            # Restrict this to only Linux and Windows for now. At least Mac OS X needs some (possibly *.a)
+        if sps.isLinux:
+            # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
             # files in the objdir or else the stacks from failing testcases will lack symbols.
             shutil.rmtree(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
     else:
