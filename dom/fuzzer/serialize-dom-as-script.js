@@ -97,7 +97,7 @@ function scriptizeAttributes(n, nodeStr, splitStyleAttributes) {
   var cs = [];
   // Adding each of the element's attributes.
   var nodeIsSVG = (n.namespaceURI == "http://www.w3.org/2000/svg");
-  for (var i = 0; (a = n.attributes[i]); i++) {
+  for (var a of n.attributes) {
     if (a.namespaceURI != "http://www.w3.org/2000/xmlns/") {
       if (splitStyleAttributes && a.name == "style" && n.style) {
         for (var prop, j = 0; (prop = n.style.item(j)); ++j) {
