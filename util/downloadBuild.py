@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import platform
 import re
@@ -9,7 +10,6 @@ import subprocess
 import sys
 from HTMLParser import HTMLParser
 
-from optparse import OptionParser
 import subprocesses as sps
 
 # Use curl/wget rather than urllib because urllib can't check certs.
@@ -52,9 +52,9 @@ def downloadURL(url, dest):
 
 
 def parseOptions():
-    usage = 'Usage: %prog [options]'
-    parser = OptionParser(usage)
-    parser.disable_interspersed_args()
+    usage = 'Usage: %(prog)s [options]'
+    parser = argparse.ArgumentParser(usage)
+    #parser.disable_interspersed_args() # not sure how to support this with argparse, doesn't seem used here anyways?
 
     parser.set_defaults(
         compileType='dbg',
@@ -64,31 +64,25 @@ def parseOptions():
         wantTests=False,
     )
 
-    parser.add_option('-c', '--compiletype', dest='compileType',
-                      help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' +
-                      'Defaults to "%default".')
-    parser.add_option('-a', '--architecture',
-                      dest='arch',
-                      type='choice',
-                      choices=['32', '64'],
-                      help='Test architecture. Only accepts "32" or "64"')
-    parser.add_option('-w', '--downloadfolder', dest='downloadFolder',
-                      help='Sets the folder to download builds in. Defaults to the current ' +
-                      'working directory, which is "%default".')
-    parser.add_option('-r', '--repoName', dest='repoName',
-                      help='Sets the repository to be fuzzed. Defaults to "%default".')
-    parser.add_option('-d', '--remotedir', dest='remoteDir',
-                      help='Sets the remote directory from which the files are to be obtained ' +
-                      'from. The default is to grab the latest from mozilla-central.')
-    parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
-                      help='Sets the compile type to be fuzzed. Defaults to "%default".')
-    parser.add_option('-t', '--want-tests', dest='wantTests', action='store_true',
-                      help='Download tests. Defaults to "%default".')
+    parser.add_argument('-c', '--compiletype', dest='compileType', choices=['dbg', 'opt'],
+                        help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' +
+                        'Defaults to "%(default)s".')
+    parser.add_argument('-a', '--architecture', dest='arch', choices=['32', '64'],
+                        help='Test architecture. Only accepts "32" or "64"')
+    parser.add_argument('-w', '--downloadfolder', dest='downloadFolder',
+                        help='Sets the folder to download builds in. Defaults to the current ' +
+                        'working directory, which is "%(default)s".')
+    parser.add_argument('-r', '--repoName', dest='repoName',
+                        help='Sets the repository to be fuzzed. Defaults to "%(default)s".')
+    parser.add_argument('-d', '--remotedir', dest='remoteDir',
+                        help='Sets the remote directory from which the files are to be obtained ' +
+                        'from. The default is to grab the latest.')
+    parser.add_argument('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
+                        help='Sets the compile type to be fuzzed. Defaults to "%(default)s".')
+    parser.add_argument('-t', '--want-tests', dest='wantTests', action='store_true',
+                        help='Download tests. Defaults to "%(default)s".')
 
-    options, args = parser.parse_args()
-    assert options.compileType in ['dbg', 'opt']
-    assert len(args) == 0
-    return options
+    return parser.parse_args()
 
 
 class MyHTMLParser(HTMLParser):
