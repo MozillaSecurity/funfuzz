@@ -12,42 +12,30 @@ from HTMLParser import HTMLParser
 
 import subprocesses as sps
 
-# Use curl/wget rather than urllib because urllib can't check certs.
-useCurl = False
-
-# A terrible hack to work around a common configuration problem.
-# (see bug 803764) (see bug 950256) -- (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org")
-# Another bug for Windows??
-wgetMaybeNCC = ['--no-check-certificate']
+import urllib
 
 
 def readFromURL(url):
     """Read in a URL and returns its contents as a list."""
-    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', '-', url]
-    p = subprocess.Popen(inpCmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    if not useCurl and p.returncode == 5:
-        print 'Unable to read from URL. If you installed wget using MacPorts, you should put ' + \
-              '"CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt" (without the quotes) ' + \
-              'in ~/.wgetrc'
-        raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
-    elif p.returncode != 0:
-        print 'inpCmdList is: ' + sps.shellify(inpCmdList)
-        print 'stdout: ' + repr(out)
-        print 'stderr: ' + repr(err)
-        raise Exception('The following exit code was returned: ' + str(p.returncode))
-    else:
-        # Ignore whatever verbose output wget spewed to stderr.
-        return out
+    return urllib.urlopen(url).read()
 
 
-def downloadURL(url, dest):
+def dlReport(count, bs, size):
+    transferred = (100 * count * bs) // size
+    if transferred < 100:
+        sys.stdout.write('\x08\x08\x08%2d%%' % transferred)
+        sys.stdout.flush()
+
+
+def downloadURL(url, dest, quiet=False):
     """Read in a URL and downloads it to a destination."""
-    inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', dest, url]
-    out, retVal = sps.captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
-    if retVal != 0:
-        print out
-        raise Exception('Return code is not 0, but is: ' + str(retVal))
+    quiet = quiet or not sys.stdout.isatty()
+    if not quiet:
+        sys.stdout.write('   ')
+        sys.stdout.flush()
+    urllib.urlretrieve(url, dest, dlReport if not quiet else None)
+    if not quiet:
+        sys.stdout.write('\x08\x08\x08')
     return dest
 
 
@@ -192,6 +180,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
             print 'Downloading common test files...',
             dlAction = downloadURL(remotefn, localfn)
             print 'extracting...',
+            sys.stdout.flush()
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
             mIfyMozcrash(testsDir)
@@ -201,6 +190,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
             print 'Downloading reftest files...',
             dlAction = downloadURL(remotefn, localfn)
             print 'extracting...',
+            sys.stdout.flush()
             unzip(dlAction, testsDir)
             print 'completed!'
         if remotefn.split('/')[-1].endswith('.txt'):
@@ -213,6 +203,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'Downloading js shell...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
+                sys.stdout.flush()
                 unzip(dlAction, appDir)
                 print 'completed!'
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
@@ -221,6 +212,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
+                sys.stdout.flush()
                 untarbz2(dlAction, appDir)
                 print 'completed!'
 
@@ -232,13 +224,14 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                     if remotefn.endswith('.linux-i686.tar.bz2') else
                     'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
                 )
-                downloadURL(stackwalkUrl, stackwalk)
+                downloadURL(stackwalkUrl, stackwalk, quiet=True)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
             if remotefn.endswith('.win32.zip') or remotefn.endswith('.win64.zip'):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
+                sys.stdout.flush()
                 unzip(dlAction, appDir)
                 print 'completed!'
 
@@ -248,12 +241,13 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                                  'cygstdc++-6.dll', 'cygwin1.dll']:
                     remoteURL = 'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s' % filename
                     localfile = os.path.join(buildDir, filename)
-                    downloadURL(remoteURL, localfile)
+                    downloadURL(remoteURL, localfile, quiet=True)
                 gotApp = True
             if remotefn.endswith('.mac.dmg') or remotefn.endswith('.mac64.dmg'):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
+                sys.stdout.flush()
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
                 print 'completed!'
                 downloadMDSW(buildDir, "macosx64")
@@ -262,6 +256,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'Downloading crash reporter symbols...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
+                sys.stdout.flush()
                 unzip(dlAction, symbolsDir)
                 print 'completed!'
                 gotSyms = True
