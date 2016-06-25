@@ -34,6 +34,7 @@ var fuzzerRandomClasses = (function() {
     return Random.pick(fuzzValues.numbersWithUnits);
   }
 
+  var angles = function() { return Random.pick(numbers) + Random.pick(['rad', 'grad', 'deg', 'turn']); };
   var numbers = fuzzValues.numbers;
   var heights = [lengths];
   var widths = [lengths, ["-moz-max-content", "-moz-min-content", "-moz-available", "-moz-fit-content"]];
@@ -231,6 +232,33 @@ var fuzzerRandomClasses = (function() {
     "margin": lengths,
     "opacity": ["0", "0.2", "1", numbers],
     "z-index": ["5", "0", "-200", numbers],
+    "transform": function () {
+      if (Random.chance(32)) {
+        return "none";
+      }
+      return nsep([function(){ return 'matrix(' + Random.pick([Make.number, function(){ return nsep(Make.number, 6, ','); }]) + ')'; },
+                   function(){ return 'translate(' + nsep(lengths, Random.range(1, 2), ',') + ')'; },
+                   function(){ return 'translateX(' + Random.pick(lengths) + ')'; },
+                   function(){ return 'translateY(' + Random.pick(lengths) + ')'; },
+                   function(){ return 'scale(' + nsep(Make.number, Random.range(1, 2), ',') + ')'; },
+                   function(){ return 'scaleX(' + Make.number() + ')'; },
+                   function(){ return 'scaleY(' + Make.number() + ')'; },
+                   function(){ return 'rotate(' + Random.pick(angles) + ')'; },
+                   function(){ return 'skew(' + nsep(angles, Random.range(1, 2), ',') + ')'; },
+                   function(){ return 'skewX(' + Random.pick(angles) + ')'; },
+                   function(){ return 'skewY(' + Random.pick(angles) + ')'; },
+                   function(){ return 'matrix3d(' + Random.pick([Make.number, function(){ return nsep(Make.number, 16, ','); }]) + ')'; },
+                   function(){ return 'translate3d(' + nsep(lengths, 3, ',') + ')'; },
+                   function(){ return 'translateZ(' + Random.pick(lengths) + ')'; },
+                   function(){ return 'scale3d(' + nsep(lengths, 3, ',') + ')'; },
+                   function(){ return 'scaleZ(' + Random.pick(lengths) + ')'; },
+                   function(){ return 'rotate3d(' + nsep(Make.number, 3, ',') + ',' + Random.pick(angles) + ')'; },
+                   function(){ return 'rotateX(' + Random.pick(angles) + ')'; },
+                   function(){ return 'rotateY(' + Random.pick(angles) + ')'; },
+                   function(){ return 'rotateZ(' + Random.pick(angles) + ')'; },
+                   function(){ return 'perspective(' + Random.pick(lengths) + ')'; }
+                   ], Random.range(0, 5), ' ');
+    },
 
     // Fonts & Text
     "letter-spacing": lengths,
@@ -434,9 +462,11 @@ var fuzzerRandomClasses = (function() {
     return Random.index(CSSPropList);
   }
 
-  function randomDeclaration()
+  function randomDeclaration(prop)
   {
-    var prop = randomProperty();
+    if (prop === undefined) {
+      prop = randomProperty();
+    }
     var value = propertyValue(prop);
 
     if (typeof value == "number")
