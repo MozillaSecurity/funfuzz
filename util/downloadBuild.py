@@ -46,6 +46,7 @@ def parseOptions():
         compileType='dbg',
         downloadFolder=os.getcwdu(),
         repoName='mozilla-central',
+        useAsan=False,
         enableJsShell=False,
         wantTests=False,
     )
@@ -55,6 +56,8 @@ def parseOptions():
                         'Defaults to "%(default)s".')
     parser.add_argument('-a', '--architecture', dest='arch', choices=['32', '64'],
                         help='Test architecture. Only accepts "32" or "64"')
+    parser.add_argument('-n', '--asan', dest='useAsan', action='store_true',
+                        help='Download Address Sanitizer build. Defaults to "%(default)s".')
     parser.add_argument('-w', '--downloadfolder', dest='downloadFolder',
                         help='Sets the folder to download builds in. Defaults to the current ' +
                         'working directory, which is "%(default)s".')
@@ -146,6 +149,7 @@ def undmg(fn, dest, mountpoint):
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
     """Download the build specified, along with symbols and tests. Returns True when all are obtained."""
     wantSymbols = wantSymbols and not jsShell  # Bug 715365, js shell currently lacks native symbols
+    wantSymbols = wantSymbols and '-asan' not in httpDir # doesn't make sense for asan
     wantTests = wantTests and not jsShell
     gotApp = False
     gotTests = False
@@ -374,9 +378,9 @@ def mozPlatform(arch):
         raise Exception("The arch passed to mozPlatform must be '64', '32', or None")
 
 
-def defaultBuildType(repoName, arch, debug):
+def defaultBuildType(repoName, arch, asan, debug):
     """Return the default build type as per RelEng, e.g. mozilla-central-macosx-debug."""
-    return repoName + '-' + mozPlatform(arch) + ('-debug' if debug else '')
+    return repoName + '-' + mozPlatform(arch) + ('-asan' if asan else '') + ('-debug' if debug else '')
 
 
 def main():
@@ -388,7 +392,7 @@ def main():
     if options.remoteDir is not None:
         print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
     else:
-        buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
+        buildType = defaultBuildType(options.repoName, options.arch, options.useAsan, (options.compileType == 'dbg'))
         downloadLatestBuild(buildType, options.downloadFolder,
                             getJsShell=options.enableJsShell, wantTests=options.wantTests)
 
