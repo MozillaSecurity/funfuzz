@@ -431,7 +431,7 @@ def hgRepoRev(repoDir):
 def downloadedBuildRev(browserDir):
     downloadDir = os.path.join(browserDir, "download")
     for fn in os.listdir(downloadDir):
-        if fn.startswith("firefox-") and fn.endswith(".txt"):
+        if re.search(r'^(target|firefox-.*)\.txt$', fn):
             with open(os.path.join(downloadDir, fn)) as f:
                 _buildId = f.readline()
                 hgURL = f.readline()
