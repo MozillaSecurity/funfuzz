@@ -10,8 +10,6 @@ import subprocess
 import sys
 from HTMLParser import HTMLParser
 
-import subprocesses as sps
-
 import urllib
 
 
@@ -121,28 +119,28 @@ def httpDirList(directory):
 
 def unzip(fn, dest):
     """Extract .zip files to their destination."""
-    sps.captureStdout(['unzip', fn, '-d', dest])
+    subprocess.check_output(['unzip', fn, '-d', dest])
 
 
 def untarbz2(fn, dest):
     """Extract .tar.bz2 files to their destination."""
     if not os.path.exists(dest):
         os.mkdir(dest)
-    sps.captureStdout(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
+    subprocess.check_output(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
 
 
 def undmg(fn, dest, mountpoint):
     """Extract .dmg files to their destination via a mount point."""
     if os.path.exists(mountpoint):
         # If the mount point already exists, detach it first.
-        sps.captureStdout(['hdiutil', 'detach', mountpoint, '-force'])
-    sps.captureStdout(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
+        subprocess.check_output(['hdiutil', 'detach', mountpoint, '-force'])
+    subprocess.check_output(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
     try:
         apps = [x for x in os.listdir(mountpoint) if x.endswith('app')]
         assert len(apps) == 1
         shutil.copytree(mountpoint + '/' + apps[0], dest + '/' + apps[0])
     finally:
-        sps.captureStdout(['hdiutil', 'detach', mountpoint])
+        subprocess.check_output(['hdiutil', 'detach', mountpoint])
 
 
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
