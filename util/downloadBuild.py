@@ -177,8 +177,9 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     fileHttpList = [httpDir + x for x in fileHttpRawList if '.' in x and 'mozilla.org' not in x]
 
     for remotefn in fileHttpList:
-        localfn = os.path.join(downloadFolder, remotefn.split('/')[-1])
-        if remotefn.endswith('.common.tests.zip') and wantTests:
+        fn = remotefn.split('/')[-1]
+        localfn = os.path.join(downloadFolder, fn)
+        if fn.endswith('.common.tests.zip') and wantTests:
             print 'Downloading common test files...',
             dlAction = downloadURL(remotefn, localfn)
             print 'extracting...',
@@ -188,20 +189,20 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
             mIfyMozcrash(testsDir)
             print 'completed!'
             gotTests = True
-        if remotefn.endswith('.reftest.tests.zip') and wantTests:
+        elif fn.endswith('.reftest.tests.zip') and wantTests:
             print 'Downloading reftest files...',
             dlAction = downloadURL(remotefn, localfn)
             print 'extracting...',
             sys.stdout.flush()
             unzip(dlAction, testsDir)
             print 'completed!'
-        if remotefn.split('/')[-1].endswith('.txt'):
+        elif fn.endswith('.txt'):
             print 'Downloading text file...',
             downloadURL(remotefn, localfn)
             print 'completed!'
             gotTxtFile = True
         if jsShell:
-            if remotefn.split('/')[-1].startswith('jsshell-'):
+            if re.search(r'^(jsshell-|target\.jsshell\.zip$)', fn):
                 print 'Downloading js shell...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
@@ -210,7 +211,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
         else:
-            if remotefn.endswith('.linux-i686.tar.bz2') or remotefn.endswith('.linux-x86_64.tar.bz2'):
+            if re.search(r'(\.linux-(x86_64|i686)(-asan)?|^target)\.tar\.bz2$', fn):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
@@ -223,13 +224,13 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
                 stackwalkUrl = (
                     'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk'
-                    if remotefn.endswith('.linux-i686.tar.bz2') else
+                    if '.linux-i686' in remotefn else
                     'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
                 )
                 downloadURL(stackwalkUrl, stackwalk, quiet=True)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
-            if remotefn.endswith('.win32.zip') or remotefn.endswith('.win64.zip'):
+            elif re.search(r'\.win(32|64)\.zip$', fn):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
@@ -245,7 +246,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                     localfile = os.path.join(buildDir, filename)
                     downloadURL(remoteURL, localfile, quiet=True)
                 gotApp = True
-            if remotefn.endswith('.mac.dmg') or remotefn.endswith('.mac64.dmg'):
+            elif re.search(r'(\.mac(64)?\.|^target)\.dmg$', fn):
                 print 'Downloading application...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
@@ -254,7 +255,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print 'completed!'
                 downloadMDSW(buildDir, "macosx64")
                 gotApp = True
-            if remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
+            elif remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
                 print 'Downloading crash reporter symbols...',
                 dlAction = downloadURL(remotefn, localfn)
                 print 'extracting...',
