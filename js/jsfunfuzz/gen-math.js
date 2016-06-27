@@ -1,7 +1,7 @@
 const NUM_MATH_FUNCTIONS = 6;
 
 var binaryMathOps = [
-  " * ", /* NODIFF " / " */, " % ",  // Bug 1245627
+  " * ", " / ", " % ",
   " + ", " - ",
   " ** ",
   " << ", " >> ", " >>> ",
