@@ -1,5 +1,23 @@
 var fuzzerMathMLAttributes = (function() {
 
+   function MathMLLength()
+   {
+     // See https://www.w3.org/TR/MathML/chapter2.html#type.length
+     switch (rnd(10)) {
+     case 0:
+       // namedspace
+       // https://www.w3.org/TR/MathML/chapter2.html#type.namedspace
+       return (rnd(2) ? "" : "negative") + Random.index(["veryverythin", "verythin", "thin", "medium", "thick", "verythick", "veryverythick"]) + "mathspace";
+     case 1:
+     case 2:
+       // number (deprecated since MathML 3)
+       return Random.pick(fuzzValues.numbers);
+     default:
+       // number unit
+       return Random.pick(fuzzValues.numbersWithUnits);
+     }
+  }
+
   function several(pickArg)
   {
     return function() {
@@ -46,12 +64,12 @@ var fuzzerMathMLAttributes = (function() {
     // New in MathML 2!
     "mathbackground": fuzzValues.colors,
     "mathcolor": fuzzValues.colors,
-    "mathsize": ["small", "normal", "big", fuzzValues.numbersWithUnits],
+    "mathsize": ["small", "normal", "big", MathMLLength],
     "mathvariant": ["normal", "bold", "italic", "bold-italic", "double-struck", "bold-fraktur", "script", "bold-script", "fraktur", "sans-serif", "bold-sans-serif", "sans-serif-italic", "sans-serif-bold-italic", "monospace", "initial", "tailed", "looped", "stretched"],
 
 
     // all tokens
-    "fontsize": fuzzValues.numbersWithUnits,
+    "fontsize": MathMLLength,
     "fontweight": ["normal", "bold"],
     "fontstyle": ["normal", "italic"],
     "fontfamily": [fuzzValues.fontFaces, "inherit"],
@@ -61,21 +79,21 @@ var fuzzerMathMLAttributes = (function() {
     "form": ["prefix", "postfix", "infix"],
     "fence": fuzzValues.booleans,
     "separator": fuzzValues.booleans,
-    "lspace": [fuzzValues.numbersWithUnits, mpaddedAttr], // also mpadded
-    "rspace": fuzzValues.numbersWithUnits,
+    "lspace": [MathMLLength, mpaddedAttr], // also mpadded
+    "rspace": MathMLLength,
     "stretchy": fuzzValues.booleans,
     "symmetric": fuzzValues.booleans,
-    "maxsize": ["infinity", fuzzValues.numbersWithUnits],
-    "minsize": fuzzValues.numbersWithUnits,
+    "maxsize": ["infinity", MathMLLength],
+    "minsize": MathMLLength,
     "largeop": fuzzValues.booleans,
     "movablelimits": fuzzValues.booleans,
     "accent": fuzzValues.booleans,
 
     // mspace, mpadded
-    "width": [fuzzValues.numbersWithUnits, mpaddedAttr],
-    "height": [fuzzValues.numbersWithUnits, mpaddedAttr],
-    "depth": [fuzzValues.numbersWithUnits, mpaddedAttr],
-    "voffset": [fuzzValues.numbersWithUnits, mpaddedAttr],
+    "width": [MathMLLength, mpaddedAttr],
+    "height": [MathMLLength, mpaddedAttr],
+    "depth": [MathMLLength, mpaddedAttr],
+    "voffset": [MathMLLength, mpaddedAttr],
 
     // ms
     "lquote": ["&quot;", "\"", "\'"],
@@ -83,13 +101,13 @@ var fuzzerMathMLAttributes = (function() {
 
 
     // mfrac
-    "linethickness": [0, 1, 2, 3, "thin", "medium", "thick"],
+    "linethickness": [0, 2, "thin", "medium", "thick", MathMLLength],
 
     // mstyle
     "scriptlevel": ["", "15", "+15", "+5", "-5", "+1", "-1", "3", fuzzValues.numbers],
     "displaystyle": fuzzValues.booleans,
     "scriptsizemultiplier": ["0.71", fuzzValues.numbers],
-    "scriptminsize": fuzzValues.numbersWithUnits,
+    "scriptminsize": MathMLLength,
     "background": [fuzzValues.colors, "transparent"],
 
     // mfenced
@@ -98,8 +116,8 @@ var fuzzerMathMLAttributes = (function() {
     "separators": [",", "", ";", ",;"],
 
     // msub, msup
-    "subscriptshift": fuzzValues.numbersWithUnits,
-    "superscriptshift": fuzzValues.numbersWithUnits,
+    "subscriptshift": MathMLLength,
+    "superscriptshift": MathMLLength,
 
     // mover, munder
     "accentunder": fuzzValues.booleans,
@@ -110,12 +128,12 @@ var fuzzerMathMLAttributes = (function() {
     "columnalign": horizAligns,
     // "groupalign": [groupAlignmentListList, groupAlignmentList], // list of lists for mtable, fewer for mtr or mtd
     "alignmentscope": several(fuzzValues.booleans),
-    "rowspacing": fuzzValues.numbersWithUnits,
-    "columnspacing": fuzzValues.numbersWithUnits,
+    "rowspacing": several(MathMLLength),
+    "columnspacing": several(MathMLLength),
     "rowlines": several(lines),
     "columnlines": several(lines),
     "frame": lines,
-    "framespacing": function() { return Random.pick(fuzzValues.numbersWithUnits) + " " + Random.pick(fuzzValues.numbersWithUnits); },
+    "framespacing": function() { return Random.pick(MathMLLength) + " " + Random.pick(MathMLLength); },
     "equalrows": fuzzValues.booleans,
     "equalcolumns": fuzzValues.booleans,
 
