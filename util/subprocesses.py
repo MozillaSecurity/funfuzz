@@ -21,6 +21,7 @@ isARMv7l = (platform.uname()[4] == 'armv7l')
 isLinux = (platform.system() == 'Linux')
 isMac = (platform.system() == 'Darwin')
 isWin = (platform.system() == 'Windows')
+isWin10 = isWin and (platform.uname()[2] == '10')
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
 isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
