@@ -6,6 +6,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 {
   var prefix = browser ? "fuzzPriv." : "";
 
+  function numberOfInstructions() { return Math.floor(Random.ludOneTo(10000)); }
   function numberOfAllocs() { return Math.floor(Random.ludOneTo(500)); }
   function gcSliceSize() { return Math.floor(Random.ludOneTo(0x100000000)); }
   function maybeCommaShrinking() { return rnd(5) ? "" : ", 'shrinking'"; }
@@ -125,6 +126,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
     // JIT bailout
     { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
+    { w: 10, v: function(d, b) { return prefix + "bailAfter" + "(" + numberOfInstructions() + ");"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
