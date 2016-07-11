@@ -122,14 +122,14 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // Generate an LCOV trace (but throw away the returned string)
     { w: 1,  v: function(d, b) { return "void " + prefix + "getLcovInfo" + "();"; } },
     { w: 1,  v: function(d, b) { return "void " + prefix + "getLcovInfo" + "(" + fGlobal(d, b) + ");"; } },
+
+    // JIT bailout
+    { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
   // https://mxr.mozilla.org/mozilla-central/source/js/src/shell/js.cpp
   var shellOnlyTestingFunctions = [
-    // JIT bailout
-    { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
-
     // ARM simulator settings
     // These throw when not in the ARM simulator.
     { w: 1,  v: function(d, b) { return tryCatch("(void" + prefix + "disableSingleStepProfiling" + "()" + ")"); } },
