@@ -164,16 +164,15 @@ var makeEvilCallback;
     // Options are in js.cpp: Evaluate() and ParseCompileOptions()
     return ("({ global: " + m("g") +
       ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
-      ", lineNumber: 42, newContext: " + makeBoolean(d, b) +
+      ", lineNumber: 42" +
       ", isRunOnce: " + makeBoolean(d, b) +
       ", noScriptRval: " + makeBoolean(d, b) +
+      ", sourceIsLazy: " + makeBoolean(d, b) +
       ", catchTermination: " + makeBoolean(d, b) +
-      ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) +
       ((rnd(5) == 0) ? (
         ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
-        ((rnd(2) == 0) ? (", elementProperty: " + m("s")) : "") +
-        ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "") +
-        ((rnd(2) == 0) ? (", sourcePolicy: " + Random.index(["'NO_SOURCE'", "'LAZY_SOURCE'", "'SAVE_SOURCE'"])) : "")
+        ((rnd(2) == 0) ? (", elementAttributeName: " + m("s")) : "") +
+        ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "")
         ) : ""
       ) +
     " })");
