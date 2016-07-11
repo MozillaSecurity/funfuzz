@@ -273,7 +273,7 @@ var statementMakers = Random.weighted([
 
 if (typeof oomTest == "function" && engine != ENGINE_SPIDERMONKEY_MOZILLA45) {
   statementMakers = statementMakers.concat([
-    function(d, b) { return "oomTest(" + makeFunction(d, b-1) + ")"; },
+    function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
   ]);
 }
 
