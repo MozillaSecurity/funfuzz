@@ -6,8 +6,8 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 {
   var prefix = browser ? "fuzzPriv." : "";
 
-  function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
-  function gcSliceSize() { return Math.floor(Math.pow(2, Random.float() * 32)); }
+  function numberOfAllocs() { return Math.floor(Random.ludOneTo(500)); }
+  function gcSliceSize() { return Math.floor(Random.ludOneTo(0x100000000)); }
   function maybeCommaShrinking() { return rnd(5) ? "" : ", 'shrinking'"; }
 
   function enableGCZeal()
