@@ -161,6 +161,11 @@ class AmissLogHandler:
             self.fuzzerComplained = True
             self.printAndLog(DOMI_MARKER + msg)
         if msg.startswith("Leaked until "):
+            # Message from quitWithLeakCheck in dom/extension/components/domfuzzhelperobserver.js
+            self.sawOMGLEAK = True
+            self.printAndLog(DOMI_MARKER + msg)
+        if msg.startswith("ERROR: GC found live Cell") and not self.sawOMGLEAK:
+            # Message from js/src/jsgc.cpp that is intentionally not a fatal assertion (see bug 1268992)
             self.sawOMGLEAK = True
             self.printAndLog(DOMI_MARKER + msg)
         if msg.startswith("FAILURE:"):
