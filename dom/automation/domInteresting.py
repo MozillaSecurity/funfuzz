@@ -379,6 +379,7 @@ class FigureOutDirs:
         self.symbolsDir = None
         self.utilityDir = None
         self.stackwalk = None
+        self.symbolizer = None
         if not os.path.exists(browserDir):
             usage("browserDir does not exist: %s" % browserDir)
 
@@ -396,6 +397,8 @@ class FigureOutDirs:
                     os.path.exists(possible_stackwalk)):
                 self.stackwalk = possible_stackwalk
             self.hgRev = downloadedBuildRev(browserDir)
+            if os.path.exists(os.path.join(browserDir, "dist", "bin", "llvm-symbolizer")):
+                self.symbolizer = os.path.join(browserDir, "dist", "bin", "llvm-symbolizer")
         elif os.path.exists(os.path.join(browserDir, "dist")) and os.path.exists(os.path.join(browserDir, "_tests")):
             # browserDir is an objdir (more convenient for local builds)
             #self.appDir = browserDir
@@ -505,7 +508,10 @@ class BrowserConfig:
         env = os.environ.copy()
         env['MOZ_FUZZING_SAFE'] = '1'
         env['REFTEST_FILES_DIR'] = self.dirs.reftestFilesDir
-        env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build-release/bin/llvm-symbolizer")
+        if self.dirs.symbolizer is not None:
+            env['ASAN_SYMBOLIZER_PATH'] = self.dirs.symbolizer
+        else:
+            env['ASAN_SYMBOLIZER_PATH'] = os.path.expanduser("~/llvm/build-release/bin/llvm-symbolizer")
         if self.dirs.stackwalk:
             env['MINIDUMP_STACKWALK'] = self.dirs.stackwalk
         return env
