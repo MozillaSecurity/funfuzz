@@ -114,19 +114,19 @@ Replace anything between "<" and ">" with your desired parameters.
 
 **A:** compileShell has been tested on:
 
-* Windows 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild) (Untested on Windows 8/8.1)
-  * Windows 10 [requires a patch](https://bugzilla.mozilla.org/show_bug.cgi?id=1173060#c9) on top of MozillaBuild 2.0.0 (Untested on MozillaBuild 2.2.0)
+* Windows 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild)
+  * Windows 10 seems to work fine with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild) and some funfuzz fixes that have landed, but needs more testing
 * Mac OS X 10.11
-* Ubuntu 14.04 LTS and later (best supported on 15.10)
+* Ubuntu 15.10 and later (best supported on 16.04 LTS)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
 
-The following operating systems are old and while they may still work, be prepared to **expect issues** along the way:
+The following operating systems are old/less common and while they may still work, be prepared to **expect issues** along the way:
 
-* Windows Vista
+* Windows Vista / Windows 8 / Windows 8.1
 * Mac OS X 10.10
-* Ubuntu Linux 12.04 LTS
+* Ubuntu Linux 14.04 LTS, 15.04 and prior
 
 Support for the following operating systems **have been removed**:
 
