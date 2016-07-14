@@ -124,6 +124,7 @@ function whatToTestSpidermonkeyMozilla45(code)
         && code.indexOf("Math.round") == -1              // see bug 1236114 - ESR45 only
         && code.indexOf("with") == -1                    // see bug 1245187 - ESR45 only
         && code.indexOf("Number.MAX_VALUE") == -1        // see bug 1246200 - ESR45 only
+        && code.indexOf("bailAfter") == -1               // see bug 1256324 - ESR45 only, bailAfter does not exist in ESR45
         && code.indexOf("arguments") == -1               // see bug 1263811 - ESR45 only
         && code.indexOf("sourceIsLazy") == -1            // see bug 1286407
         && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
