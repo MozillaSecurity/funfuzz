@@ -75,8 +75,9 @@ def runBrowser():
 
     # browser environment
     browserEnv = automation.environment(xrePath=xrePath)
-    gatherAssertionStacks = not automation.IS_WIN32  # bug 573306
-    browserEnv["XPCOM_DEBUG_BREAK"] = "stack" if gatherAssertionStacks else "warn"
+    gatherAssertionStacks = False  # windows output entangling (bug 573306); mac symbolizing slowness and output bloat
+    if gatherAssertionStacks:
+        browserEnv["XPCOM_DEBUG_BREAK"] = "stack"
     browserEnv["MOZ_GDB_SLEEP"] = "2"  # seconds
     if not options.valgrind and "-asan" not in theapp:
         browserEnv["MallocScribble"] = "1"
