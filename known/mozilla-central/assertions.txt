@@ -46,6 +46,7 @@ ASSERTION: this shouldn't happen anymore: 'NS_UNCONSTRAINEDSIZE != aComputedWidt
 ASSERTION: shouldn't have unconstrained widths anymore: 'psd->mRightEdge != NS_UNCONSTRAINEDSIZE', file layout/generic/nsLineLayout.cpp
 
 ASSERTION: shouldn't use unconstrained widths anymore
+ASSERTION: shouldn't use unconstrained isize anymore
 ASSERTION: unconstrained widths no longer supported: 'aContainingBlockWidth != NS_UNCONSTRAINEDSIZE', file layout/base/nsLayoutUtils.cpp
 ASSERTION: unconstrained available width in reflow: 'NS_UNCONSTRAINEDSIZE != aAvailSpace.width', file layout/tables/nsTableRowFrame.cpp
 ASSERTION: bad width: 'Not Reached', file layout/generic/nsLineLayout.cpp
@@ -234,6 +235,10 @@ ASSERTION: Overwriting an existing document channel!: '(loadFlags & nsIChannel::
 ASSERTION: nsHTMLDocument::Reset() - Wyciwyg Channel  still exists!: '!mWyciwygChannel', file dom/html/nsHTMLDocument.cpp
 ASSERTION: nsHTMLDocument::StopDocumentLoad(): Trying to remove nonexistent wyciwyg channel!: 'mWyciwygChannel', file dom/html/nsHTMLDocument.cpp
 ASSERTION: nsHTMLDocument::Close(): Trying to remove nonexistent wyciwyg channel!: 'mWyciwygChannel', file dom/html/nsHTMLDocument.cpp
+# Bug 1282964
+ASSERTION: Request list is not empty.: 'mRequests.EntryCount() == 0', file netwerk/base/nsLoadGroup.cpp
+ASSERTION: Foreground URLs are active.: 'mForegroundCount == 0', file netwerk/base/nsLoadGroup.cpp
+ASSERTION: Shouldn't be busy here: '!IsBusy()', file uriloader/base/nsDocLoader.cpp
 
 # Bug 441680
 ASSERTION: Shouldn't have unconstrained stuff here thanks to ComputeAutoSize: '
@@ -271,8 +276,10 @@ ASSERTION: failed to redistribute: 'unassignedSpace == 0', file layout/tables/Fi
 ASSERTION: failed to redistribute: 'unassignedSpace == 0', file layout/tables/FixedTableLayoutStrategy.cpp
 ASSERTION: math should be exact: 'specUndist == 0', file layout/tables/FixedTableLayoutStrategy.cpp
 ASSERTION: widths don't add up: 'colFrame->GetFinalWidth() <= specUndist', file layout/tables/FixedTableLayoutStrategy.cpp
+ASSERTION: inline sizes don't add up: 'colFrame->GetFinalISize() <= specUndist', file layout/tables/FixedTableLayoutStrategy.cpp
 # Bug 508911
 ASSERTION: widths don't add up: 'colFrame->GetPrefPercent() - pctUndist < 0.0001', file layout/tables/FixedTableLayoutStrategy.cpp
+ASSERTION: inline sizes don't add up: 'colFrame->GetFinalISize() <= specUndist', file layout/tables/FixedTableLayoutStrategy.cpp
 
 # Bug 468715
 ASSERTION: yikes: 'colFrame->GetFinalWidth() == 0', file layout/tables/FixedTableLayoutStrategy.cpp
@@ -1015,6 +1022,8 @@ ASSERTION: Must have the same owner document: '(NODE_FROM(aParent, aDocument)->O
 # Bug 768756 and bug 671152 'mx'
 ASSERTION: Unexpected aDocument: 'aDocument == mDocument', file layout/base/nsPresShell.cpp
 Assertion failure: aPresContext == aFrame->PresContext() (wrong pres context),
+# Bug 768756 but with WebComponents. Hard to find simple testcases while having to ignore the above assertions which precede this.
+ASSERTION: Unexpected document; this will lead to incorrect behavior!: 'aElement->GetComposedDoc() == Document()', file layout/base/RestyleTracker.cpp
 
 # Bug 768756
 ASSERTION: IsCSSEquivalentToHTMLInlineStyleSet failed: 'NS_SUCCEEDED(res)', file editor/libeditor/html/nsHTMLCSSUtils.cpp
@@ -1955,6 +1964,8 @@ Assertion failure: mIdleTimer,
 
 # Bug 1230115
 Mozilla has caught an Obj-C exception [NSMallocException: NSImage: Insufficient memory to allocate pixel data buffer
+# Bug 1281419
+Mozilla has caught an Obj-C exception [NSBadBitmapParametersException: Overflow allocating bitmap backing store
 
 # Bug 1230319
 ASSERTION: don't call InitScriptRun with aborted shaping state: 'aTextRun->GetShapingState() != gfxTextRun::eShapingState_Aborted', file gfx/thebes/gfxTextRun.cpp
@@ -2119,6 +2130,54 @@ ASSERTION: the given url scheme contains invalid characters: 'Error', file netwe
 
 # Bug 1274144
 ASSERTION: element already removed from map: 'mElements.Contains(aElement)', file dom/base/DirectionalityUtils.cpp
+
+# Bug 1278447
+ASSERTION: bad aListVisibleBounds: 'r.GetBounds().IsEqualInterior(aListVisibleBounds)', file layout/base/nsDisplayList.cpp
+
+# Bug 1278455
+ASSERTION: Reference frame mismatch: 'aBuilder->FindReferenceFrameFor(aFrame) == aBuilder->FindReferenceFrameFor(mFrame)', file layout/base/nsDisplayList.cpp
+
+# Bug 1278463
+ASSERTION: reading uninitialized value: 'mUnit != eStyleUnit_Null', file nsStyleCoord.h
+
+# Bug 1281695
+ASSERTION: Mainthread not available; running on current thread: 'false', file MediaManager.h
+
+# Bug 1282985
+ASSERTION: No Document Request!: 'mDocumentRequest', file uriloader/base/nsDocLoader.cpp
+ASSERTION: Firing OnStateChange(...) notification with a NULL request!: 'aRequest', file uriloader/base/nsDocLoader.cpp
+
+# Bug 1283330
+ASSERTION: xmid should be within [x,XMost()] and the wrapped rect should have the same width
+ASSERTION: ymid should be within [y,YMost()] and the wrapped rect should have the same height
+
+# Bug 1283489
+ASSERTION: Clock should go forwards.: 'GetMediaTime() <= clockTime', file dom/media/MediaDecoderStateMachine.cpp
+
+# Bug 1283497
+ASSERTION: These should always be in sync!: 'slowNode == node', file dom/base/nsINode.cpp
+
+# Bug 1283528
+ASSERTION: nsITimer->SetDelay() called when the one-shot timer is not set up.: 'Error', file xpcom/threads/nsTimerImpl.cpp
+
+# Bug 1283543
+ASSERTION: Bogus row index?: 'Not Reached', file layout/tables/nsCellMap.cpp
+
+# Bug 1284972
+ASSERTION: Layer already in list???: 'FindIndexOfLayerIn(mNewChildLayers, ownLayer) < 0', file layout/base/FrameLayerBuilder.cpp
+ASSERTION: aChild cannot be the same as aAfter: 'Error', file gfx/layers/Layers.cpp
+
+# Bug 1286406
+ASSERTION: wrong InlinePrefISizeData container for first continuation: 'f != this', file layout/generic/nsTextFrame.cpp
+
+# Bug 1286419
+ASSERTION: Reparenting something that has no usable parent? Shouldn't happen!: 'newParentContext', file layout/base/RestyleManager.cpp
+
+# Bug 1286424
+ASSERTION: dirty rect not set: 'aBuilder->GetDirtyRect().width >= 0 || !aBuilder->IsForPainting()', file layout/base/nsDisplayList.cpp
+
+# Bug 1288608
+ASSERTION: unexpected kid position: 'origKidNormalPosition.B(wm) == 0 || wm.IsVerticalRL()', file layout/tables/nsTableRowFrame.cpp
 
 
 ################################
