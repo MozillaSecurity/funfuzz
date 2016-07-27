@@ -66,6 +66,11 @@ def knownBrokenRanges(options):
                 hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit Mac ARM-simulator builds
             ])
 
+    if sps.isWin10:
+        skips.extend([
+            hgrange('be8b0845f283', 'db3ed1fdbbea'),  # Fx50, see bug 1289679
+        ])
+
     if not options.enableDbg:
         skips.extend([
             hgrange('a048c55e1906', 'ddaa87cfd7fa'),  # Fx46, broken opt builds w/ --enable-gczeal
