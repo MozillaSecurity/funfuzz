@@ -263,7 +263,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
             close_fds=(os.name == "posix"),
-            preexec_fn=(disableCorefile if os.name == 'posix' else None)  # Do not generate a corefile if gdb crashes
+            preexec_fn=(disableCorefile if isLinux else None)  # Do not generate a corefile if gdb crashes in Linux
         )
         if debuggerExitCode != 0:
             print 'Debugger exited with code %d : %s' % (debuggerExitCode, shellify(debuggerCmd))
