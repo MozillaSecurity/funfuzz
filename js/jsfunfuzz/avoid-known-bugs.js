@@ -39,6 +39,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("oomAfterAllocations") == -1
        && code.indexOf("oomAtAllocation") == -1
        && code.indexOf("printProfilerEvents") == -1       // causes diffs in --ion-eager vs --baseline-eager
+       && code.indexOf("promiseID") == -1                 // Promise IDs are for debugger-use only
        && code.indexOf("validategc") == -1
        && code.indexOf("inIon") == -1                     // may become true after several iterations, or return a string with --no-ion
        && code.indexOf("inJit") == -1                     // may become true after several iterations, or return a string with --no-baseline
