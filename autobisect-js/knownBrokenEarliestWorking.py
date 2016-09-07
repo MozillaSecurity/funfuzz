@@ -142,10 +142,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
     if sps.isWin:
         required.append('8937836d3c93')  # m-c 226774 Fx38, 1st w/ successful MSVC 2015 builds, see bug 1119072
-    if sps.isLinux and float(platform.linux_distribution()[1]) > 15.04:
-        required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
     if sps.isLinux:
-        required.append('6ec9033a4535')  # m-c 217796 Fx36, previous builds fail on some Linux variants with different compiler versions
+        required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:
