@@ -64,6 +64,7 @@ def knownBrokenRanges(options):
         if options.enableSimulatorArm32:
             skips.extend([
                 hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit Mac ARM-simulator builds
+                hgrange('f6fddb22a8b5', '120d57d59f38'),  # Fx51, broken 32-bit Mac ARM-simulator builds
             ])
 
     if sps.isWin10:
