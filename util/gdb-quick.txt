@@ -1,9 +1,11 @@
 set pagination 0
 set backtrace limit 250
 
+# SpiderMonkey unwinder is disabled until issues with gdb are fixed
+# https://hg.mozilla.org/integration/mozilla-inbound/rev/9861363aaea9
 # https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Hacking_Tips#Printing_the_JS_stack_%28from_gdb%29
-echo \n\nenable unwinder .* SpiderMonkey\n\n
-enable unwinder .* SpiderMonkey
+# echo \n\nenable unwinder .* SpiderMonkey\n\n
+# enable unwinder .* SpiderMonkey
 
 # nbp mentioned over IRC to first run `backtrace 0` in order to work around a "gdb issue"
 echo \n\nbacktrace 0\n\n
