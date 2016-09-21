@@ -17,8 +17,8 @@ db @@c++(@rip) L8
 !analyze -v
 .echo Running !exploitable
 !exploitable -v
-.echo Backtrace of faulting thread, limited to 250 frames
-~#kn 250
-.echo Backtrace, limited to 250 frames (should execute after .ecxr)
-kb 250
+.echo Backtrace of faulting thread, limited to 50 frames
+~#kn 50
+.echo Backtrace, limited to 50 frames (should execute after .ecxr)
+kb 50
 q

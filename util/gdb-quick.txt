@@ -1,5 +1,5 @@
 set pagination 0
-set backtrace limit 250
+set backtrace limit 50
 
 # SpiderMonkey unwinder is disabled until issues with gdb are fixed
 # https://hg.mozilla.org/integration/mozilla-inbound/rev/9861363aaea9
