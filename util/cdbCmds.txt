@@ -15,8 +15,6 @@ db @@c++(@rip) L8
 .echo Then inspect locals using: dv <locals in this frame>
 .echo Running !analyze
 !analyze -v
-.echo Running !exploitable
-!exploitable -v
 .echo Backtrace of faulting thread, limited to 50 frames
 ~#kn 50
 .echo Backtrace, limited to 50 frames (should execute after .ecxr)

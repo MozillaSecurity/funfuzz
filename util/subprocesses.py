@@ -325,9 +325,6 @@ def constructCdbCommand(progfullname, crashedPID):
                 assert os.path.exists(debuggerCmdPath)
 
                 cdbCmdList = []
-                bExploitableDLL = os.path.join(win64bitDebuggerFolder, 'winext', 'msec.dll')
-                if os.path.exists(bExploitableDLL):
-                    cdbCmdList.append('.load ' + bExploitableDLL)
                 cdbCmdList.append('$<' + debuggerCmdPath)
 
                 # See bug 902706 about -g.
