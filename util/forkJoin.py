@@ -43,8 +43,8 @@ def logFileName(logDir, i, t):
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):
-    sys.stdout = open(logFileName(logDir, i, "out"), 'w')
-    sys.stderr = open(logFileName(logDir, i, "err"), 'w')
+    sys.stdout = open(logFileName(logDir, i, "out"), 'wb', buffering=0)
+    sys.stderr = open(logFileName(logDir, i, "err"), 'wb', buffering=0)
     fun(*(someArgs + (i,)))
 
 
