@@ -41,6 +41,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("printProfilerEvents") == -1       // causes diffs in --ion-eager vs --baseline-eager
        && code.indexOf("promiseID") == -1                 // Promise IDs are for debugger-use only
        && code.indexOf("runOffThreadScript") == -1
+       && code.indexOf("shortestPaths") == -1             // See bug 1308743
        && code.indexOf("validategc") == -1
        && code.indexOf("inIon") == -1                     // may become true after several iterations, or return a string with --no-ion
        && code.indexOf("inJit") == -1                     // may become true after several iterations, or return a string with --no-baseline
