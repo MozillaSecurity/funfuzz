@@ -8,7 +8,7 @@ function start(glob)
   // generated function manages to output the entire jsfunfuzz source,
   // that output won't match the grep command.
   var cookie = "/*F";
-  cookie += "RC*/";
+  cookie += "RC-fuzzSeed-" + fuzzSeed + "*/";
 
   // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
   var dumpEachSeed = false;
