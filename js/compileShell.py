@@ -33,7 +33,7 @@ if sps.isWin:
     MAKE_BINARY = 'mozmake'
     CLANG_PARAMS = ' -fallback'
     # CLANG_ASAN_PARAMS = ' -fsanitize=address -Dxmalloc=myxmalloc'
-    # Note that we still have not yet managed to make ASan for Windows builds work.
+    # Note that Windows ASan builds are still a work-in-progress
     CLANG_ASAN_PARAMS = ''
 else:
     MAKE_BINARY = 'make'
@@ -335,10 +335,14 @@ def cfgBin(shell):
         if shell.buildOptions.buildWithClang:
             cfgEnvDt['CC'] = 'clang-cl.exe' + CLANG_PARAMS
             cfgEnvDt['CXX'] = 'clang-cl.exe' + CLANG_PARAMS
-        # Note: Doesn't seem to work yet.
-        # if shell.buildOptions.buildWithAsan:
-        #     cfgEnvDt['CC'] += CLANG_ASAN_PARAMS
-        #     cfgEnvDt['CXX'] += CLANG_ASAN_PARAMS
+        if shell.buildOptions.buildWithAsan:
+            cfgEnvDt['CFLAGS'] = CLANG_ASAN_PARAMS
+            cfgEnvDt['CXXFLAGS'] = CLANG_ASAN_PARAMS
+            cfgEnvDt['LDFLAGS'] = "clang_rt.asan_dynamic-x86_64.lib clang_rt.asan_dynamic_runtime_thunk-x86_64.lib clang_rt.asan_dynamic-x86_64.dll"
+            cfgEnvDt['HOST_CFLAGS'] = ' '
+            cfgEnvDt['HOST_CXXFLAGS'] = ' '
+            cfgEnvDt['HOST_LDFLAGS'] = ' '
+            cfgEnvDt['LIB'] += "C:\\Program Files\\LLVM\\lib\\clang\\4.0.0\\lib\\windows"
         cfgCmdList.append('sh')
         cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.buildOptions.enable32:
@@ -355,9 +359,8 @@ def cfgBin(shell):
             cfgCmdList.append('--target=x86_64-pc-mingw32')
             if shell.buildOptions.enableSimulatorArm64:
                 cfgCmdList.append('--enable-simulator=arm64')
-        # Note: Doesn't seem to work yet.
-        # if shell.buildOptions.buildWithAsan:
-        #     cfgCmdList.append('--enable-address-sanitizer')
+        if shell.buildOptions.buildWithAsan:
+            cfgCmdList.append('--enable-address-sanitizer')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if shell.buildOptions.buildWithClang:
