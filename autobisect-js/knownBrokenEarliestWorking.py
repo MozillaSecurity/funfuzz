@@ -114,6 +114,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if options.buildWithClang and sps.isWin:
+        required.append('3b26d191d84e')  # m-c 316445 Fx52, 1st w/ reliable Clang 3.9.0 builds on Windows
     if "--ion-pgo=on" in flags:
         required.append('b0a0ff5fa705')  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:
