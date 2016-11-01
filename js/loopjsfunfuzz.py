@@ -160,12 +160,12 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             showtail(logPrefix + "-out.txt")
             showtail(logPrefix + "-err.txt")
 
-            # splice jsfunfuzz.js with `grep FRC wN-out`
+            # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
             [before, after] = fileManipulation.fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + [l.replace('/*FRC*/', '') for l in fileManipulation.linesStartingWith(f, "/*FRC*/")] + after
+                newfileLines = before + [l.replace('/*FRC-', '') for l in fileManipulation.linesStartingWith(f, "/*FRC-")] + after
             fileManipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             fileManipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
