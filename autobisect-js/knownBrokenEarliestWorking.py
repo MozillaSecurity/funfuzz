@@ -61,6 +61,7 @@ def knownBrokenRanges(options):
     if sps.isMac:
         skips.extend([
             hgrange('5e45fba743aa', '8e5d8f34c53e'),  # Fx39, broken Mac builds due to jemalloc
+            hgrange('9b7c2bcabd4e', '43b1143f2930'),  # Fx49-50, broken Mac 10.12 builds
         ])
         if options.enableSimulatorArm32:
             skips.extend([
