@@ -331,6 +331,14 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
             raise Exception('Earliest build is not found in list of IDs.')
     else:
         earliestBuild = dirNames[0]
+
+    # Earlier downloaded builds fail to start properly on macOS Sierra 10.12
+    # First known working build is in:
+    # https://archive.mozilla.org/pub/firefox/tinderbox-builds/mozilla-inbound-macosx64-debug/1468314445/
+    # Note: if this gets more populated, we should move it to knownBrokenEarliestWorking
+    if sps.isMac and int(earliestBuild[:-1]) < 1468314445:
+        earliestBuild = '1468314445/'
+
     earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
 
     if latestBuild != 'default':
