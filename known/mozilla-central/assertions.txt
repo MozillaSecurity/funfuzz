@@ -1197,10 +1197,6 @@ ASSERTION: Channels should match!: 'aChannel == mChannel', file dom/html/HTMLMed
 # Bug 815241
 Assertion failure: cx->iterValue.isMagic(JS_NO_ITER_VALUE),
 
-# Bug 822081
-Assertion failure: !comp->rt->isHeapBusy(),
-Assertion failure: !zone->rt->isHeapBusy(),
-
 # Bug 822085
 Assertion failure: failedURI (We don't have a URI for history APIs.),
 
