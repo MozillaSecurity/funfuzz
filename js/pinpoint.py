@@ -9,6 +9,7 @@ import sys
 from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from inspectShell import testJsShellOrXpcshell
 
+# Note that the python executable invoking lithiumpy and autobisectpy have to have pip requirements installed
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'lithium', 'lithium.py'))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))
