@@ -25,6 +25,7 @@ isWin10 = isWin and (platform.uname()[2] == '10')
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
 isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
+isMozBuild64 = False
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
 if os.environ.get('MOZ_MSVCBITS'):
