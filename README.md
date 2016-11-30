@@ -28,6 +28,7 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
 4. Make sure you install at least Microsoft Visual Studio 2015 (Community Edition is recommended) as per the build instructions above in the Setup section.
 5. Run `start-shell-msvc2015.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files\ \(x86\)/Git/bin/git.exe`.
+    1. Run the batch file with administrator privileges to get gflags analysis working correctly.
 
 
 ### Mac
