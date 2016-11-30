@@ -21,7 +21,7 @@ After the addition of FuzzManager support, you will need to first install the pi
 
 Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
 
-### Windows
+### Windows (only 64-bit supported)
 
 1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.2.0) to get an msys shell.
 2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories. (32-bit works best for now)
