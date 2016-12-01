@@ -83,6 +83,7 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     if not onDefault:
         updateDefault = raw_input('Not on default tip! ' +
                                   'Would you like to (a)bort, update to (d)efault, or (u)se this rev: ')
+        updateDefault = updateDefault.strip()
         if updateDefault == 'a':
             print 'Aborting...'
             sys.exit(0)
