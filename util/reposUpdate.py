@@ -84,7 +84,11 @@ def updateRepos():
 
 def main():
     logger.info(sps.dateStr())
-    updateRepos()
+    try:
+        updateRepos()
+    except OSError as e:
+        print 'WARNING: OSError hit:'
+        print e
     logger.info(sps.dateStr())
 
 
