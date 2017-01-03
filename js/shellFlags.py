@@ -43,6 +43,13 @@ def randomFlagSet(shellPath):
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    # Landed in m-c changeset c0c1d923c292, see bug 1255008
+    if shellSupportsFlag(shellPath, '--ion-aa=flow-sensitive'):
+        if chance(.4):
+            args.append('--ion-aa=flow-sensitive')
+        elif shellSupportsFlag(shellPath, '--ion-aa=flow-insensitive') and chance(.4):
+            args.append('--ion-aa=flow-insensitive')
+
     # See bug 932517, which had landed to fix this issue. Keeping this around for archives:
     #   Original breakage in m-c rev 269359 : https://hg.mozilla.org/mozilla-central/rev/a0ccab2a6e28
     #   Fix in m-c rev 269896: https://hg.mozilla.org/mozilla-central/rev/3bb8446a6d8d
