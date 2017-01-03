@@ -214,7 +214,7 @@ def basicFlagSets(shellPath):
     if shellSupportsFlag(shellPath, "--no-threads"):
         basicFlagList = [
             # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/mozilla-central/file/4feb4dd910a5/js/src/tests/lib/tests.py#l13
+            # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
             ['--fuzzing-safe', '--no-threads', '--ion-eager'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off'],
@@ -226,6 +226,9 @@ def basicFlagSets(shellPath):
             basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
                                   '--non-writable-jitcode', '--ion-check-range-analysis',
                                   '--ion-extra-checks', '--no-sse3'])
+        if shellSupportsFlag(shellPath, "--no-wasm"):
+            basicFlagList.append(['--fuzzing-safe', '--no-baseline', '--no-asmjs',
+                                  '--no-wasm', '--no-native-regexp'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
         basicFlagList = [
