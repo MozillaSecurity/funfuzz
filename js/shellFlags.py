@@ -191,12 +191,10 @@ def randomFlagSet(shellPath):
             # args.append('--ion-regalloc=stupid')
         if shellSupportsFlag(shellPath, '--ion-regalloc=testbed') and chance(.2):
             args.append('--ion-regalloc=testbed')
-        if shellSupportsFlag(shellPath, '--ion-check-range-analysis'):
-            if chance(.3):
-                args.append('--ion-check-range-analysis')
-        if shellSupportsFlag(shellPath, '--ion-extra-checks'):
-            if chance(.3):
-                args.append('--ion-extra-checks')
+        if shellSupportsFlag(shellPath, '--ion-check-range-analysis') and chance(.3):
+            args.append('--ion-check-range-analysis')
+        if shellSupportsFlag(shellPath, '--ion-extra-checks') and chance(.3):
+            args.append('--ion-extra-checks')
     else:
         args.append("--no-ion")
 
