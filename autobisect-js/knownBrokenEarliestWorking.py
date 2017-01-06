@@ -116,6 +116,9 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     if options.buildWithClang and sps.isWin:
         required.append('3b26d191d84e')  # m-c 316445 Fx52, 1st w/ reliable Clang 3.9.0 builds on Windows
+    if '--ion-aa=flow-sensitive' in flags or '--ion-aa=flow-insensitive' in flags:
+        # m-c 295435 Fx49, 1st w/--ion-aa=[flow-sensitive|flow-insensitive], see bug 1255008
+        required.append('c0c1d923c292')
     if "--ion-pgo=on" in flags:
         required.append('b0a0ff5fa705')  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:
