@@ -226,6 +226,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         "evalInWorker = function() { };\n",
         "getBacktrace = function() { };\n",
         "getLcovInfo = function() { };\n",
+        "isAsmJSCompilationAvailable = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
