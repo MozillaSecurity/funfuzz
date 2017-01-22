@@ -7,7 +7,7 @@ var numericVals = [
    "0x07fffffff",  "0x080000000",  "0x080000001",
   "-0x07fffffff", "-0x080000000", "-0x080000001",
    "0x0ffffffff",  "0x100000000",  "0x100000001",
-  "-0x0ffffffff", "-0x100000000",  "0x100000001",
+  "-0x0ffffffff", "-0x100000000",  "-0x100000001",
   // Boundaries of double
   "Number.MIN_VALUE", "-Number.MIN_VALUE",
   "Number.MAX_VALUE", "-Number.MAX_VALUE",
