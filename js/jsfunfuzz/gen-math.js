@@ -16,6 +16,9 @@ var leftUnaryMathOps = [
   " ! ", " + ", " - ", " ~ ",
 ];
 
+// unaryMathFunctions and binaryMathFunctions updated on 2017-01-21 and added from:
+// https://dxr.mozilla.org/mozilla-central/rev/3cedab21a7e65e6a1c4c2294ecfb5502575a46e3/js/src/jsmath.cpp#1330
+// Update to the latest revision as needed.
 var unaryMathFunctions = [
   "abs",
   "acos",
@@ -26,6 +29,7 @@ var unaryMathFunctions = [
   "atanh",
   "cbrt",
   "ceil",
+  "clz32",
   "cos",
   "cosh",
   "exp",
