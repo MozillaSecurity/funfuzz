@@ -55,12 +55,13 @@ function whatToTestSpidermonkeyTrunk(code)
 
     expectConsistentOutputAcrossJITs: true
     // across-process (e.g. running js shell with different run-time options) e.g. compareJIT
-       && code.indexOf("'strict") == -1                 // see bug 743425
-       && code.indexOf("disassemble") == -1             // see bug 1237403 (related to asm.js)
-       && code.indexOf("sourceIsLazy") == -1            // see bug 1286407
-       && code.indexOf("getAllocationMetadata") == -1   // see bug 1296243
-       && code.indexOf(".length") == -1                 // bug 1027846
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't stay valid utf-8 after going through python (?)
+       && code.indexOf("isAsmJSCompilationAvailable") == -1  // Causes false positives with --no-asmjs
+       && code.indexOf("'strict") == -1                      // see bug 743425
+       && code.indexOf("disassemble") == -1                  // see bug 1237403 (related to asm.js)
+       && code.indexOf("sourceIsLazy") == -1                 // see bug 1286407
+       && code.indexOf("getAllocationMetadata") == -1        // see bug 1296243
+       && code.indexOf(".length") == -1                      // bug 1027846
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
 
   };
 }
