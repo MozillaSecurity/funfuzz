@@ -178,7 +178,7 @@ function tryItOut(code)
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
         code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
         code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
-      // FCM cookie
+      // FCM cookie, lines with this cookie are used for compareJIT
       var cookie1 = "/*F";
       var cookie2 = "CM*/";
       var nCode = code;

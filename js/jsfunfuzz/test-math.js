@@ -74,7 +74,7 @@ function testMathyFunction(f, inputs)
 
 function mathInitFCM()
 {
-  // FCM cookie
+  // FCM cookie, lines with this cookie are used for compareJIT
   var cookie = "/*F" + "CM*/";
 
   print(cookie + hashStr.toString().replace(/\n/g, " "));
