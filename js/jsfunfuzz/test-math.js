@@ -11,6 +11,11 @@ var numericVals = [
   // Boundaries of double
   "Number.MIN_VALUE", "-Number.MIN_VALUE",
   "Number.MAX_VALUE", "-Number.MAX_VALUE",
+  // Boundaries of maximum safe integer
+  "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+  "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+  "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+  "2**53-2", "2**53", "2**53+2",
 ];
 
 var confusableVals = [

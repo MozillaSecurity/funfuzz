@@ -1382,7 +1382,21 @@ function makeNumber(d, b)
     case 5:  return Random.index(["0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000",
       "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033",
       "3.141592653589793", "3/0", "-3/0", "0/0", "0x2D413CCC", "0x5a827999", "0xB504F332",
-      "(0x50505050 >> 1)", "0x80000000"]);
+      "(0x50505050 >> 1)",
+      // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
+      "0x07fffffff",  "0x080000000",  "0x080000001",
+      "-0x07fffffff", "-0x080000000", "-0x080000001",
+      "0x0ffffffff",  "0x100000000",  "0x100000001",
+      "-0x0ffffffff", "-0x100000000",  "-0x100000001",
+      // Boundaries of double
+      "Number.MIN_VALUE", "-Number.MIN_VALUE",
+      "Number.MAX_VALUE", "-Number.MAX_VALUE",
+      // Boundaries of maximum safe integer
+      "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+      "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+      "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+      "2**53-2", "2**53", "2**53+2",
+    ]);
     case 6:  return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
     default: return signStr + rnd(30);
   }
@@ -1812,8 +1826,25 @@ function makeShapeyValue(d, b)
     "-1", "(-1)", "0x99", "033", "3/0", "-3/0", "0/0",
     "Math.PI",
     "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
+
     // various powers of two, with values near JSVAL_INT_MAX especially tested
-    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001", "0x80000000", "-0x80000000",
+    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001",
+
+    // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
+    "0x07fffffff",  "0x080000000",  "0x080000001",
+    "-0x07fffffff", "-0x080000000", "-0x080000001",
+    "0x0ffffffff",  "0x100000000",  "0x100000001",
+    "-0x0ffffffff", "-0x100000000",  "-0x100000001",
+
+    // Boundaries of double
+    "Number.MIN_VALUE", "-Number.MIN_VALUE",
+    "Number.MAX_VALUE", "-Number.MAX_VALUE",
+
+    // Boundaries of maximum safe integer
+    "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+    "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+    "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+    "2**53-2", "2**53", "2**53+2",
     ],
 
     // Special numbers
