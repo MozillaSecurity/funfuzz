@@ -19,7 +19,7 @@ function optionalTests(f, code, wtt)
   }
 
   if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    simpleDVGTest(code);
+    testExpressionDecompiler(code);
     tryEnsureSanity();
   }
 
@@ -30,7 +30,7 @@ function optionalTests(f, code, wtt)
 }
 
 
-function simpleDVGTest(code)
+function testExpressionDecompiler(code)
 {
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
 
