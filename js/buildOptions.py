@@ -245,6 +245,7 @@ def areArgsValid(args):
 
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
+        # Also ensure we are running autoBisect w/Valgrind having the --error-exitcode=?? flag
         # Uncomment the following when we unbreak Valgrind fuzzing.
         # if not sps.isProgramInstalled('valgrind'):
         #     return False, 'Valgrind is not installed.'
