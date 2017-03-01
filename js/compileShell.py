@@ -185,7 +185,7 @@ def autoconfRun(cwDir):
         autoconf213MacBin = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213' \
                             if sps.isProgramInstalled('brew') else 'autoconf213'
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
-        if not sps.normExpUserPath(os.path.isfile(autoconf213MacBin)):
+        if not os.path.isfile(sps.normExpUserPath(autoconf213MacBin)):
             autoconf213MacBin = 'autoconf213'
         subprocess.check_call([autoconf213MacBin], cwd=cwDir)
     elif sps.isLinux:
@@ -275,7 +275,7 @@ def cfgBin(shell):
             if sps.isProgramInstalled('brew'):
                 cfgEnvDt['AUTOCONF'] = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213'
                 # Hacked up for new and old Homebrew configs, we can probably just call autoconf213
-                if not sps.normExpUserPath(os.path.isfile(cfgEnvDt['AUTOCONF'])):
+                if not os.path.isfile(sps.normExpUserPath(cfgEnvDt['AUTOCONF'])):
                     cfgEnvDt['AUTOCONF'] = 'autoconf213'
             cfgCmdList.append('sh')
             cfgCmdList.append(os.path.normpath(shell.getJsCfgPath()))
