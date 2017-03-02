@@ -1,6 +1,6 @@
 ### Examples:
 
-* To compile a debug 64-bit deterministic shell used for profiling, do:
+* To compile a debug 64-bit deterministic shell, do:
 
 `funfuzz/js/compileShell.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central"`
 
