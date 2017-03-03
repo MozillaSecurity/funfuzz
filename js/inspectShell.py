@@ -178,3 +178,6 @@ def verifyBinary(sh):
     assert queryBuildConfiguration(binary, 'asan') == sh.buildOptions.buildWithAsan
     assert (queryBuildConfiguration(binary, 'arm-simulator') and sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
     assert (queryBuildConfiguration(binary, 'arm-simulator') and not sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
+    # Note that we should test whether a shell has profiling turned on or not.
+    # m-c rev 324836:800a887c705e turned profiling on by default, so once this is beyond the
+    # earliest known working revision, we can probably test it here.
