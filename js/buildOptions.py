@@ -80,9 +80,13 @@ def addParserOptions():
     randomizeBool(['--disable-optimize'], 0.1, 0.01,
                   dest='disableOpt',
                   help='Build shells with --disable-optimize. Defaults to "%(default)s".')
-    randomizeBool(['--enable-profiling'], 0.5, 0,
+    randomizeBool(['--enable-profiling'], 0, 0,
                   dest='enableProfiling',
-                  help='Build shells with --enable-profiling. Defaults to "%(default)s".')
+                  help='Build shells with --enable-profiling. Defaults to "%(default)s". ' + \
+                       'Currently defaults to True in configure.in on mozilla-central.')
+    randomizeBool(['--disable-profiling'], 0.5, 0,
+                  dest='disableProfiling',
+                  help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
     # Alternative compiler for Linux and Windows. Clang is always turned on, on Macs.
     randomizeBool(['--build-with-clang'], 0.5, 0.5,
@@ -155,6 +159,11 @@ def parseShellOptions(inputArgs):
     if sps.isMac:
         buildOptions.buildWithClang = True  # Clang seems to be the only supported compiler
 
+    # vTune and profiling is broken for Ubuntu due to Ubuntu's specific glibc/PLT
+    # We can remove this once we have a way of disabling vTune on Ubuntu
+    if sps.isLinux:
+        buildOptions.disableProfiling = True
+
     if buildOptions.enableArmSimulatorObsolete:
         buildOptions.enableSimulatorArm32 = True
 
@@ -197,6 +206,8 @@ def computeShellType(buildOptions):
     fileName.append('32' if buildOptions.enable32 else '64')
     if buildOptions.enableProfiling:
         fileName.append('prof')
+    if buildOptions.disableProfiling:
+        fileName.append('profDisabled')
     if buildOptions.enableMoreDeterministic:
         fileName.append('dm')
     if buildOptions.buildWithClang:

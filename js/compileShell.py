@@ -398,8 +398,10 @@ def cfgBin(shell):
         cfgCmdList.append('--enable-optimize' + ('=-O1' if shell.buildOptions.buildWithVg else ''))
     elif shell.buildOptions.disableOpt:
         cfgCmdList.append('--disable-optimize')
-    if shell.buildOptions.enableProfiling:
+    if shell.buildOptions.enableProfiling:  # Now obsolete, retained for backward compatibility
         cfgCmdList.append('--enable-profiling')
+    if shell.buildOptions.disableProfiling:
+        cfgCmdList.append('--disable-profiling')
 
     if shell.buildOptions.enableMoreDeterministic:
         # Fuzzing tweaks for more useful output, implemented in bug 706433

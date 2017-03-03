@@ -35,7 +35,10 @@ The options accepted by -b are also available via funfuzz/js/buildOptions.py:
   --disable-optimize    Build shells with --disable-optimize. Defaults to
                         "False".
   --enable-profiling    Build shells with --enable-profiling. Defaults to
-                        "False".
+                        "False". Currently defaults to True in configure.in on
+                        mozilla-central.
+  --disable-profiling   Build with profiling off. Defaults to "True" on Linux,
+                        else "False".
   --build-with-clang    Build with clang. Defaults to "True" on Macs, "False"
                         otherwise.
   --build-with-asan     Build with clang AddressSanitizer support. Defaults to

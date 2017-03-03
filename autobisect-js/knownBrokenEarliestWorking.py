@@ -114,6 +114,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if options.disableProfiling:
+        required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if options.buildWithClang and sps.isWin:
         required.append('3b26d191d84e')  # m-c 316445 Fx52, 1st w/ reliable Clang 3.9.0 builds on Windows
     if '--ion-aa=flow-sensitive' in flags or '--ion-aa=flow-insensitive' in flags:
