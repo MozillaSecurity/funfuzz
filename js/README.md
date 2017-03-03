@@ -25,14 +25,19 @@ The options accepted by -b are also available via funfuzz/js/buildOptions.py:
   --32                  Build 32-bit shells, but if not enabled, 64-bit shells
                         are built.
   --enable-debug        Build shells with --enable-debug. Defaults to "False".
+                        Currently defaults to True in configure.in on mozilla-
+                        central.
   --disable-debug       Build shells with --disable-debug. Defaults to
-                        "False".
+                        "False". Currently defaults to True in configure.in on
+                        mozilla-central.
   --enable-optimize     Build shells with --enable-optimize. Defaults to
                         "False".
   --disable-optimize    Build shells with --disable-optimize. Defaults to
                         "False".
   --enable-profiling    Build shells with --enable-profiling. Defaults to
                         "False".
+  --build-with-clang    Build with clang. Defaults to "True" on Macs, "False"
+                        otherwise.
   --build-with-asan     Build with clang AddressSanitizer support. Defaults to
                         "False".
   --build-with-valgrind
@@ -43,12 +48,22 @@ The options accepted by -b are also available via funfuzz/js/buildOptions.py:
   --enable-more-deterministic
                         Build shells with --enable-more-deterministic.
                         Defaults to "False".
+  --enable-oom-breakpoint
+                        Build shells with --enable-oom-breakpoint. Defaults to
+                        "False".
+  --without-intl-api    Build shells using --without-intl-api. Defaults to
+                        "False".
   --enable-simulator=arm
                         Build shells with --enable-simulator=arm, only
                         applicable to 32-bit shells. Defaults to "False".
   --enable-simulator=arm64
                         Build shells with --enable-simulator=arm64, only
                         applicable to 64-bit shells. Defaults to "False".
+  --enable-arm-simulator
+                        Build the shell using --enable-arm-simulator for
+                        legacy purposes. This flag is obsolete and is the
+                        equivalent of --enable-simulator=arm, use --enable-
+                        simulator=[arm|arm64] instead. Defaults to "False".
 ```
 
 ## Additional information
