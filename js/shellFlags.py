@@ -57,6 +57,11 @@ def randomFlagSet(shellPath):
     # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
     #     args.append("--execute='version(185);'")
 
+    # Note for future: --wasm-check-bce is only useful for x86 and ARM32
+
+    if shellSupportsFlag(shellPath, '--wasm-always-baseline') and chance(.5):
+        args.append("--wasm-always-baseline")  # --wasm-always-baseline landed in bug 1232205
+
     if shellSupportsFlag(shellPath, '--ion-pgo=on') and chance(.2):
         args.append("--ion-pgo=on")  # --ion-pgo=on landed in bug 1209515
 
@@ -234,6 +239,9 @@ def basicFlagSets(shellPath):
         if shellSupportsFlag(shellPath, "--no-wasm"):
             basicFlagList.append(['--fuzzing-safe', '--no-baseline', '--no-asmjs',
                                   '--no-wasm', '--no-native-regexp'])
+        if shellSupportsFlag(shellPath, "--wasm-always-baseline"):
+            basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
+                                  '--wasm-always-baseline'])
         return basicFlagList
     elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
         basicFlagList = [
