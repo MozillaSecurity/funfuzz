@@ -161,7 +161,7 @@ def parseShellOptions(inputArgs):
 
     # vTune and profiling is broken for Ubuntu due to Ubuntu's specific glibc/PLT
     # We can remove this once we have a way of disabling vTune on Ubuntu
-    if sps.isLinux:
+    if sps.isLinux and not buildOptions.enableProfiling:
         buildOptions.disableProfiling = True
 
     if buildOptions.enableArmSimulatorObsolete:
