@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import ConfigParser
 import os
 import platform
 import re
@@ -222,6 +223,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 unzip(dlAction, appDir)
                 print 'completed!'
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
+                writeDownloadedShellFMConf(remotefn, buildDir)
         else:
             if remotefn.endswith('.linux-i686.tar.bz2') or remotefn.endswith('.linux-x86_64.tar.bz2'):
                 print 'Downloading application...',
@@ -404,6 +406,58 @@ def mozPlatform(arch):
 def defaultBuildType(repoName, arch, debug):
     """Return the default build type as per RelEng, e.g. mozilla-central-macosx-debug."""
     return repoName + '-' + mozPlatform(arch) + ('-debug' if debug else '')
+
+
+def writeDownloadedShellFMConf(urlLink, bDir):
+    """Writes an arbitrary .fuzzmanagerconf file for downloaded js shells."""
+    downloadedShellCfg = ConfigParser.SafeConfigParser()
+    downloadedShellCfg.add_section('Main')
+
+    # Note that this does not differentiate between debug/asan/optimized builds
+    if '-linux' in urlLink:
+        osname = 'linux'
+        if '-linux64' in urlLink:
+            osname = 'linux64'
+            archname = 'x86-64'
+        else:
+            archname = 'x86'
+    elif '-win' in urlLink:
+        osname = 'win32'
+        if 'win64' in urlLink:
+            osname = 'win64'
+            archname = 'x86-64'
+        else:
+            archname = 'x86'
+    elif '-macosx64' in urlLink:
+        osname = 'macosx64'
+        archname = 'x86-64'
+
+    downloadedShellCfg.set('Main', 'platform', archname)
+    if 'mozilla-central-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-central')
+    elif 'mozilla-inbound-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-inbound')
+    elif 'mozilla-aurora-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-aurora')
+    elif 'mozilla-beta-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-beta')
+    elif 'mozilla-release-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-release')
+    elif 'mozilla-esr52-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-esr52')
+    downloadedShellCfg.set('Main', 'os', osname)
+
+    downloadedShellFMConfPath = os.path.join(bDir, 'dist', 'js.fuzzmanagerconf')
+    if not os.path.isfile(downloadedShellFMConfPath):
+        with open(downloadedShellFMConfPath, 'wb') as cfgfile:
+            downloadedShellCfg.write(cfgfile)
+
+    # Required pieces of the .fuzzmanagerconf file are platform, product and os
+    cfg = ConfigParser.SafeConfigParser()
+    cfg.read(downloadedShellFMConfPath)
+    assert cfg.get('Main', 'platform')
+    assert cfg.get('Main', 'product')
+    assert cfg.get('Main', 'os')
 
 
 def main():
