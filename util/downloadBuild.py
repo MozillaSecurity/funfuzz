@@ -339,7 +339,13 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     if sps.isMac and int(earliestBuild[:-1]) < 1468314445:
         earliestBuild = '1468314445/'
 
-    earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
+    try:
+        earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
+    except ValueError:
+        # Sometimes 1468314445 is not found
+        if sps.isMac and int(earliestBuild[:-1]) < 1468333601:
+            earliestBuild = '1468333601/'
+        earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
 
     if latestBuild != 'default':
         latestBuild = latestBuild + '/'
