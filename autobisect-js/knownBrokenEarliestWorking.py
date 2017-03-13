@@ -69,6 +69,12 @@ def knownBrokenRanges(options):
                 hgrange('f6fddb22a8b5', '120d57d59f38'),  # Fx51, broken 32-bit Mac ARM-simulator builds
             ])
 
+    if sps.isLinux and not options.disableProfiling:
+        skips.extend([
+            # To bypass the following month-long breakage, use "--disable-profiling"
+            hgrange('aa1da5ed8a07', '5a03382283ae'),  # Fx54-55, see bug 1339190
+        ])
+
     if sps.isWin10:
         skips.extend([
             hgrange('be8b0845f283', 'db3ed1fdbbea'),  # Fx50, see bug 1289679
