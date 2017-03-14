@@ -83,7 +83,7 @@ var Random = {
     }
     var n = this.number(total);
     for (var i = 0; i < list.length; i++) {
-      if (n <= list[i][0]) {
+      if (n < list[i][0]) {
         if (flat == true) {
           return list[i][1];
         } else {
