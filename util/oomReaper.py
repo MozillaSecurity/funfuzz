@@ -7,6 +7,8 @@
 #   * Cause OS X to kernel panic
 # I decided not to use 'psutil' or 'syrupy' and instead just parse |ps| output.
 
+from __future__ import absolute_import
+
 import os
 import signal
 import subprocess

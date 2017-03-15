@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+
 import os
 
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))

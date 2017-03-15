@@ -2,6 +2,8 @@
 
 # Based on js/src/tests/manifest.py
 
+from __future__ import absolute_import
+
 import os, re
 from subprocess import *
 

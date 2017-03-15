@@ -5,6 +5,8 @@
 #   * Obj-C exceptions caught by Mozilla code
 # (FuzzManager's AssertionHelper.py handles fatal assertions of all flavors.)
 
+from __future__ import absolute_import
+
 import findIgnoreLists
 import re
 
