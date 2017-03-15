@@ -17,6 +17,7 @@ bot.py --> loopdomfuzz.py --> domInteresting.py --> runbrowser.py --> automation
 
 """
 
+from __future__ import absolute_import
 
 import sys
 import shutil

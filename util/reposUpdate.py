@@ -9,6 +9,8 @@
 #
 # Assumes that the repositories are located in ../../trees/*.
 
+from __future__ import absolute_import
+
 from copy import deepcopy
 import logging
 import os

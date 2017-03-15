@@ -2,6 +2,7 @@
 
 # bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes
 
+from __future__ import absolute_import
 
 import multiprocessing
 import os

@@ -1,5 +1,7 @@
 # Random prefs (added by loopdomfuzz.py) to be combined with constant-prefs.js (added by domInteresting.py)
 
+from __future__ import absolute_import
+
 import os
 import random
 import re

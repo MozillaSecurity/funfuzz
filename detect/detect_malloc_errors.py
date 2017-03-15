@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+
 # Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
 # which are signs of malloc being unhappy (double free, out-of-memory, etc).
 

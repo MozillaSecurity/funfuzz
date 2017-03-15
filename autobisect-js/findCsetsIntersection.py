@@ -11,6 +11,8 @@
 # (first go to knownBrokenEarliestWorking.py and comment out configuration-specific ignore ranges,
 # this file does not yet support those.)
 
+from __future__ import absolute_import
+
 import os
 import sys
 from optparse import OptionParser

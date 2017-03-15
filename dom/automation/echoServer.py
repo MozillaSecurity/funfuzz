@@ -9,6 +9,7 @@ An HTTP echo server that uses threads to handle multiple clients at a time.
 Entering any line of input at the terminal will exit the server.
 """
 
+from __future__ import absolute_import
 from __future__ import division
 
 import base64

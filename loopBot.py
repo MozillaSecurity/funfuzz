@@ -5,6 +5,8 @@
 
 # Since this script updates the fuzzing repo, it should be very simple, and use subprocess.call() rather than import
 
+from __future__ import absolute_import
+
 import os
 import sys
 import subprocess
