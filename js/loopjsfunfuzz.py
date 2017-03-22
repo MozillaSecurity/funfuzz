@@ -95,7 +95,7 @@ def makeRegressionTestPrologue(repo):
 const regressionTestsRoot = %s;
 const libdir = regressionTestsRoot + %s; // needed by jit-tests
 const regressionTestList = %s;
-    """ % (
+""" % (
         json.dumps(repo),
         json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
         json.dumps(inTreeRegressionTests(repo))
