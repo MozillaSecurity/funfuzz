@@ -92,9 +92,9 @@ def makeRegressionTestPrologue(repo):
     repo = sps.normExpUserPath(repo) + os.sep
 
     return """
-        const regressionTestsRoot = %s;
-        const libdir = regressionTestsRoot + %s; // needed by jit-tests
-        const regressionTestList = %s;
+const regressionTestsRoot = %s;
+const libdir = regressionTestsRoot + %s; // needed by jit-tests
+const regressionTestList = %s;
     """ % (
         json.dumps(repo),
         json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
