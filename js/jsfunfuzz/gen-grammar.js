@@ -307,7 +307,7 @@ function makeUseRegressionTest(d, b)
     switch (rnd(2)) {
       case 0:
         // simply inline the script -- this is the only one that will work in newGlobal()
-        s += "/* regression-test-inline */ " + inlineRegressionTest(file);
+        s += "/* regression-test-inline */ " + inlineTest(file);
         break;
       default:
         // run it using load()
@@ -332,7 +332,7 @@ function regressionTestIsEvil(contents)
   return false;
 }
 
-function inlineRegressionTest(filename)
+function inlineTest(filename)
 {
   // Inline a regression test, adding NODIFF (to disable differential testing) if it calls a testing function that might throw.
 
