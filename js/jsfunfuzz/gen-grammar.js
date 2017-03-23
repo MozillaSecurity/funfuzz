@@ -1828,8 +1828,11 @@ function makeShapeyValue(d, b)
     "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
 
     // various powers of two, with values near JSVAL_INT_MAX especially tested
-    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001",
+    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001"
+    ],
 
+    // Boundaries
+    [
     // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
     "0x07fffffff",  "0x080000000",  "0x080000001",
     "-0x07fffffff", "-0x080000000", "-0x080000001",
