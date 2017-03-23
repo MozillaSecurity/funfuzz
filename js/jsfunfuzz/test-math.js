@@ -16,6 +16,8 @@ var numericVals = [
   "-(2**53-2)", "-(2**53)", "-(2**53+2)",
   "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
   "2**53-2", "2**53", "2**53+2",
+  // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
+  "0.000000000000001", "1.7976931348623157e308",
 ];
 
 var confusableVals = [

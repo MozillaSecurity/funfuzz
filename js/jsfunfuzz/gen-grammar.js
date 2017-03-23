@@ -1396,6 +1396,8 @@ function makeNumber(d, b)
       "-(2**53-2)", "-(2**53)", "-(2**53+2)",
       "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
       "2**53-2", "2**53", "2**53+2",
+      // See bug 1350097
+      "0.000000000000001", "1.7976931348623157e308",
     ]);
     case 6:  return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
     default: return signStr + rnd(30);
@@ -1848,6 +1850,9 @@ function makeShapeyValue(d, b)
     "-(2**53-2)", "-(2**53)", "-(2**53+2)",
     "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
     "2**53-2", "2**53", "2**53+2",
+
+    // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
+    "0.000000000000001", "1.7976931348623157e308",
     ],
 
     // Special numbers
