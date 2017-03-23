@@ -1373,7 +1373,7 @@ function makeNumber(d, b)
 
   var signStr = rnd(2) ? "-" : "";
 
-  switch(rnd(70)) {
+  switch(rnd(60)) {
     case 0:  return makeExpr(d - 2, b);
     case 1:  return signStr + "0";
     case 2:  return signStr + (rnd(1000) / 1000);
