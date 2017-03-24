@@ -124,6 +124,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if options.buildWithClang and sps.isWin:
         required.append('3b26d191d84e')  # m-c 316445 Fx52, 1st w/ reliable Clang 3.9.0 builds on Windows
+    if "--wasm-always-baseline" in flags:
+        required.append('893294e2a387')  # m-c 301769 Fx50, 1st w/--wasm-always-baseline, see bug 1232205
     if '--ion-aa=flow-sensitive' in flags or '--ion-aa=flow-insensitive' in flags:
         # m-c 295435 Fx49, 1st w/--ion-aa=[flow-sensitive|flow-insensitive], see bug 1255008
         required.append('c0c1d923c292')
