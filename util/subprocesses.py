@@ -269,7 +269,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
         if debuggerExitCode != 0:
             print 'Debugger exited with code %d : %s' % (debuggerExitCode, shellify(debuggerCmd))
         if useLogFiles:
-            if coreFile:
+            if os.path.isfile(coreFile):
                 shutil.move(coreFile, logPrefix + "-core")
                 subprocess.call(["gzip", '-f', logPrefix + "-core"])
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
