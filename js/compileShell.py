@@ -487,8 +487,8 @@ def compileJs(shell):
             if os.path.isfile(runLib):
                 shutil.copy2(runLib, shell.getShellCacheDir())
 
-        majorVersion, version = extractVersions(shell.getJsObjdir())
-        shell.setMajorVersion(majorVersion)
+        version = extractVersions(shell.getJsObjdir())
+        shell.setMajorVersion(version.split('.')[0])
         shell.setVersion(version)
 
         if sps.isLinux:
@@ -562,17 +562,25 @@ def envDump(shell, log):
 
 
 def extractVersions(objdir):
-    """Extract the version from <objdir>/js/src/js.pc and put it into *.fuzzmanagerconf."""
-    jspcFilename = sps.normExpUserPath(os.path.join(objdir, 'js', 'src', 'js.pc'))
-    if os.path.isfile(jspcFilename):
-        with open(jspcFilename, 'rb') as f:
+    """Extract the version from js.pc and put it into *.fuzzmanagerconf."""
+    jspcDir = sps.normExpUserPath(os.path.join(objdir, 'js', 'src'))
+    jspcFilename = os.path.join(jspcDir, 'js.pc')
+    # Moved to <objdir>/js/src/build/, see bug 1262241, Fx55 rev 2159959522f4
+    jspcNewDir = os.path.join(jspcDir, 'build')
+    jspcNewFilename = os.path.join(jspcNewDir, 'js.pc')
+
+    def fixateVer(pcfile):
+        """Returns the current version number (47.0a2)."""
+        with open(pcfile, 'rb') as f:
             for line in f:
                 if line.startswith('Version: '):
                     # Sample line: 'Version: 47.0a2'
-                    version = line.split(': ')[1].rstrip()
-                    majorVersion = version.split('.')[0]
-                    return majorVersion, version
-    return '', ''
+                    return line.split(': ')[1].rstrip()
+
+    if os.path.isfile(jspcFilename):
+        return fixateVer(jspcFilename)
+    elif os.path.isfile(jspcNewFilename):
+        return fixateVer(jspcNewFilename)
 
 
 def getLockDirPath(repoDir, tboxIdentifier=''):
