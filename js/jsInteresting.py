@@ -115,7 +115,12 @@ class ShellResult:
         crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
 
         createCollector.printCrashInfo(crashInfo)
-        if not isinstance(crashInfo, CrashInfo.NoCrashInfo):
+        # We only care about crashes and assertion failures on shells with no symbols
+        # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
+        if not isinstance(crashInfo, CrashInfo.NoCrashInfo) or \
+                'Assertion failure: ' in str(crashInfo.rawStderr) or \
+                'Segmentation fault' in str(crashInfo.rawStderr) or \
+                'Bus error' in str(crashInfo.rawStderr):
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
 
         match = options.collector.search(crashInfo)
