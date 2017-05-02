@@ -123,6 +123,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
     if sps.isLinux and StrictVersion(sps.verCheck('sed').split()[3]) >= StrictVersion('4.3'):
         required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04 onwards
     if options.disableProfiling:
