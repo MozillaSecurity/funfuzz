@@ -540,6 +540,11 @@ def vdump(inp):
         print 'DEBUG -', inp
 
 
+def verCheck(prog):
+    """Runs the program with --version and returns the result."""
+    return subprocess.check_output([prog, '--version'])
+
+
 ###########
 #  Tests  #
 ###########
