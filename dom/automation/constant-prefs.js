@@ -121,3 +121,4 @@ user_pref("media.peerconnection.noise_enabled", false);
 user_pref("media.peerconnection.use_document_iceservers", true);
 user_pref("media.peerconnection.turn.disable", false);
 user_pref("browser.ssl_override_behavior", 1);
+user_pref("plugin.disable", true);
