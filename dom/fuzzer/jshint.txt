@@ -1,8 +1,0 @@
-fuzzer-combined.js had:
-
-/* jshint maxerr:10000, evil:true, sub:true, scripturl:true, -W008, -W086, -W058, -W085 */
-
-fuzz.js had:
-
-/* jshint evil:true, sub:true, maxerr:10000 */
-
