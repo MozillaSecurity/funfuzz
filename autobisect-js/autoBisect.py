@@ -27,9 +27,6 @@ path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 import compileShell
 import inspectShell
-path3 = os.path.abspath(os.path.join(path0, os.pardir, 'dom', 'automation'))
-sys.path.append(path3)
-import buildBrowser
 path4 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
 sys.path.append(path4)
 import fileManipulation
@@ -72,7 +69,7 @@ def parseOpts():
                       help='Specify js shell build options, e.g. -b "--enable-debug --32" (python buildOptions.py --help)')
     parser.add_option('-B', '--browser',
                       dest='browserOptions',
-                      help='Specify browser build options, e.g. -b "-c mozconfig"')
+                      help='Specify browser build options, e.g. -b "-c mozconfig". Deprecated.')
 
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
@@ -126,11 +123,7 @@ def parseOpts():
                       help='Name of the branch to download. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
-    if options.browserOptions:
-        assert not options.buildOptions
-        options.browserOptions = buildBrowser.parseOptions(options.browserOptions.split())
-        options.skipRevs = ' + '.join(kbew.knownBrokenRangesBrowser(options.browserOptions))
-    else:
+    if not options.browserOptions:
         options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
         options.skipRevs = ' + '.join(kbew.knownBrokenRanges(options.buildOptions))
 
@@ -160,9 +153,7 @@ def parseOpts():
             parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
-    if options.browserOptions:
-        earliestKnownQuery = kbew.earliestKnownWorkingRevForBrowser(options.browserOptions)
-    else:
+    if not options.browserOptions:
         earliestKnownQuery = kbew.earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     earliestKnown = ''
@@ -419,7 +410,8 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
     outputResult = sps.captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
-    repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
+    if options.buildOptions:
+        repoDir = options.buildOptions.repoDir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
         print '\n' + sanitizeCsetMsg(outputResult, repoDir) + '\n'
@@ -865,10 +857,7 @@ def main():
             bisectUsingTboxBins(options)
         else:
             # Bisect using local builds
-            if options.browserOptions:
-                findBlamedCset(options, repoDir,
-                               buildBrowser.makeTestRev(options))
-            else:
+            if not options.browserOptions:
                 findBlamedCset(options, repoDir,
                                compileShell.makeTestRev(options))
 
