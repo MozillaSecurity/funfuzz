@@ -28,6 +28,26 @@ function errorToString(e)
 }
 
 /*
+ * Call Random.pick on 'things' for 'count' iterations,
+ * joining the result into a string separated by 'sep'.
+ *
+ * If 'sort' is true, the result will be sorted prior to join.
+ *
+ * eg. nsep([1, 2, 3], 2, ',') could return '1,2' or '3,3' or '3,2' etc.
+ * */
+function nsep(things, count, sep, sort)
+{
+  var r = [];
+  for (var i = 0; i < count; i++) {
+    r.push(Random.pick(things));
+  }
+  if (sort) {
+    r.sort();
+  }
+  return r.join(sep);
+}
+
+/*
 
 function insertAsFirstChild(p, n)
 {
