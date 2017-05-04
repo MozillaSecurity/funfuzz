@@ -1,4 +1,4 @@
-This repository contains two JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell. [DOMFuzz](dom) tests layout and other parts of browser engines through DOM API calls.
+This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compareJIT compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
 
 Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](autobisect-js/README.md).
 
@@ -72,10 +72,6 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 
 
 ## Running funfuzz
-
-To run **all of the domfuzz and js fuzzers** which test builds every 8 hours:
-
-`python -u funfuzz/loopBot.py -b "--random" --target-time 28800 | tee ~/log-loopBotPy.txt`
 
 To run **only the js fuzzers** which compiles shells with random configurations every 8 hours and tests them:
 
