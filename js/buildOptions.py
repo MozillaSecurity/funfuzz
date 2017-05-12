@@ -257,11 +257,14 @@ def areArgsValid(args):
 
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
+        # Test with leak-checking disabled, test that reporting works, test only on x64 16.04
+        # Test with bug 1278887
         # Also ensure we are running autoBisect w/Valgrind having the --error-exitcode=?? flag
         # Uncomment the following when we unbreak Valgrind fuzzing.
         # if not sps.isProgramInstalled('valgrind'):
         #     return False, 'Valgrind is not installed.'
         # if not args.enableOpt:
+        #     # FIXME: Isn't this enabled by default??
         #     return False, 'Valgrind needs opt builds.'
         # if args.buildWithAsan:
         #     return False, 'One should not compile with both Valgrind flags and ASan flags.'
