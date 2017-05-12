@@ -150,7 +150,7 @@ def addParserOptions():
                         'Defaults to "%(default)s".')
 
     # If adding a new compile option, be mindful of repository randomization.
-    # e.g. it may be in mozilla-central but not in mozilla-aurora/beta/esr45
+    # e.g. it may be in mozilla-central but not in mozilla-beta
 
     return parser, randomizer
 
