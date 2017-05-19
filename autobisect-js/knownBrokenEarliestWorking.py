@@ -72,6 +72,12 @@ def knownBrokenRanges(options):
                 hgrange('f6fddb22a8b5', '120d57d59f38'),  # Fx51, broken 32-bit Mac ARM-simulator builds
             ])
 
+    if sps.isLinux or sps.isMac:
+        skips.extend([
+            # Clang failure - probably recent versions of GCC as well.
+            hgrange('5232dd059c11', 'ed98e1b9168d'),  # Fx41, see bug 1140482
+        ])
+
     if sps.isLinux and not options.disableProfiling:
         skips.extend([
             # To bypass the following month-long breakage, use "--disable-profiling"
