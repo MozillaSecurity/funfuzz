@@ -21,7 +21,7 @@ if not os.path.exists(lithiumpy):
     sys.exit(2)
 runlithiumpy = [sys.executable, "-u", lithiumpy]
 
-# Status returns for runLithium and many_timed_runs (in loopdomfuzz.py, etc.)
+# Status returns for runLithium and many_timed_runs
 (HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,
  LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
 
@@ -34,11 +34,11 @@ def runLithium(lithArgs, logPrefix, targetTime):
     deletableLithTemp = None
     if targetTime:
         # FIXME: this could be based on whether bot.py has a remoteHost
-        # loopdomfuzz.py or loopjsfuzz.py is being used by bot.py
+        # loopjsfunfuzz.py is being used by bot.py
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
     else:
-        # loopdomfuzz.py or loopjsfuzz.py is being run standalone
+        # loopjsfunfuzz.py is being run standalone
         lithtmp = logPrefix + "-lith-tmp"
         os.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs

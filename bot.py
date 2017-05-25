@@ -22,23 +22,13 @@ import subprocesses as sps
 import forkJoin
 import createCollector
 from LockDir import LockDir
-path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
-sys.path.append(path2)
-import loopdomfuzz
-import buildBrowser
 path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
 import compileShell
 import loopjsfunfuzz
 
-localSep = "/"  # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
-
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loopjsfunfuzz.py for tradeoffs
-
-# Possible ssh options:
-#   -oStrictHostKeyChecking=no
-#   -oUserKnownHostsFile=/dev/null
 
 
 class BuildInfo(object):
@@ -78,8 +68,8 @@ def parseOpts():
     parser.add_option('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
                       help='Download builds from treeherder instead of compiling our own.')
 
-    # Specify how the shell or browser will be built.
-    # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
+    # Specify how the shell will be built.
+    # See js/buildOptions.py for details.
     parser.add_option('-b', '--build-options',
                       dest='buildOptions',
                       help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
@@ -93,8 +83,8 @@ def parseOpts():
     if len(args) > 0:
         print "Warning: bot.py does not use positional arguments"
 
-    if not options.testType:
-        raise Exception('options.testType should first be set to "js" or "dom"')
+    if not options.testType or options.testType == 'dom':
+        raise Exception('options.testType should be set to "js" now that only js engine fuzzing is supported')
 
     if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
@@ -115,7 +105,7 @@ def main():
 
     options = parseOpts()
 
-    collector = createCollector.createCollector("DOMFuzz" if options.testType == 'dom' else "jsfunfuzz")
+    collector = createCollector.createCollector("jsfunfuzz")
     refreshSignatures(collector)
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
@@ -135,11 +125,6 @@ def main():
         numProcesses = 1
 
     forkJoin.forkJoin(options.tempDir, numProcesses, loopFuzzingAndReduction, options, buildInfo, collector)
-
-    # Remove build directory if we created it
-    if options.testType == 'dom' and not \
-            (options.existingBuildDir or options.buildOptions is not None):
-        shutil.rmtree(buildInfo.buildDir)
 
     shutil.rmtree(options.tempDir)
 
@@ -263,7 +248,7 @@ def loopFuzzingAndReduction(options, buildInfo, collector, i):
     if options.testType == 'js':
         loopjsfunfuzz.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
     else:
-        loopdomfuzz.many_timed_runs(options.targetTime, tempDir, [buildInfo.buildDir], collector)
+        raise Exception('Only js engine fuzzing is supported')
 
 
 def machineTimeoutDefaults(options):

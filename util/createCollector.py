@@ -17,7 +17,7 @@ from Collector.Collector import Collector
 
 
 def createCollector(tool):
-    assert tool == "DOMFuzz" or tool == "jsfunfuzz"
+    assert tool == "jsfunfuzz"
     cacheDir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
     try:
         os.mkdir(cacheDir)
