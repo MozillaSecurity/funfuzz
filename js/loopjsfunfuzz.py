@@ -59,12 +59,8 @@ def parseOpts(args):
     # lower = less time wasted in timeouts and in compareJIT testcases that are thrown away due to OOMs.
     options.timeout = int(args[0])
 
-    options.knownPath = os.path.expanduser(args[1])
-    # FIXME: findIgnoreLists.py should probably check this automatically.
-    reposWithKnownLists = ['mozilla-central', 'ionmonkey', 'jscore', 'v8']
-    if options.knownPath not in reposWithKnownLists:
-        sps.vdump('Known bugs for the ' + options.knownPath + ' repository does not exist. Using the list for mozilla-central instead.')
-        options.knownPath = 'mozilla-central'
+    # FIXME: We can probably remove args[1]
+    options.knownPath = 'mozilla-central'
     options.jsEngine = args[2]
     options.engineFlags = args[3:]
 
