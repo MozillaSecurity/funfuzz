@@ -271,7 +271,7 @@ var statementMakers = Random.weighted([
   //{ w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
-if (typeof oomTest == "function") {
+if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
     function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
   ]);
@@ -1316,7 +1316,7 @@ if (typeof XPCNativeWrapper == "function") {
   ]);
 }
 
-if (typeof oomTest == "function") {
+if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   functionMakers = functionMakers.concat([
     function(d, b) { return "oomTest"; }
   ]);
