@@ -24,7 +24,7 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir))
 
 # Add your repository here. Note that Valgrind does not have a hg repository.
-REPOS = ['gecko-dev', 'lithium', 'FuzzManager'] + \
+REPOS = ['gecko-dev', 'FuzzManager', 'lithium'] + \
     ['mozilla-' + x for x in ['inbound', 'central', 'beta', 'release']]
 
 if sps.isWin:
