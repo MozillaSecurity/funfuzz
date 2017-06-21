@@ -75,9 +75,10 @@ def updateRepos():
     ]
     for tree in trees:
         for name in sorted(os.listdir(tree)):
-            if name in REPOS or name.startswith("funfuzz"):
+            namePath = os.path.join(tree, name)
+            if os.path.isdir(namePath) and (name in REPOS or name.startswith("funfuzz")):
                 print 'Updating %s ...' % name
-                updateRepo(os.path.join(tree, name))
+                updateRepo(namePath)
 
 
 def main():
