@@ -22,7 +22,7 @@ import fileManipulation
 from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 import subprocesses as sps
 
-p2 = os.path.abspath(os.path.join(p0, os.pardir, 'interestingness'))
+p2 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'interestingness'))
 sys.path.append(p2)
 from fileIngredients import fileContainsStr
 
