@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 # Loop of { update repos, call bot.py } to allow things to run unattended
 # All command-line options are passed through to bot.py

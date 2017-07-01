@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 # tooltool is a lookaside cache implemented in Python
 # Copyright (C) 2011 John H. Ford <john@johnford.info>
