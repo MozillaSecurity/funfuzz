@@ -1,0 +1,19 @@
+language: python
+python:
+    - "2.7"
+    # - "3.5"
+    # - "3.6"
+before_install:
+    - pip install --upgrade setuptools pip
+    - pip install --upgrade virtualenv
+install:
+    - pip install --upgrade flake8 pylint
+    - pip --version
+    - virtualenv --version
+    - flake8 --version
+    - pylint --version
+# before_script:
+script:
+    - flake8 .
+# script:
+#     - pylint .
