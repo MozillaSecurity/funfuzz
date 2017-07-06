@@ -13,6 +13,7 @@ install:
     - virtualenv --version
     - flake8 --version
     - pylint --version
+    - git --version
 # before_script:
 script:
     - flake8 .
