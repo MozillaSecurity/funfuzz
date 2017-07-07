@@ -17,6 +17,6 @@ install:
     - git --version
 # before_script:
 script:
-    - flake8 .
+    - flake8 --count .
 # script:
 #     - pylint .

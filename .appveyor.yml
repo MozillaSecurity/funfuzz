@@ -19,5 +19,5 @@ install:
     - "git.exe --version"
 build: off
 test_script:
-    - "%PYTHON%\\python.exe -m flake8 $(APPVEYOR_BUILD_FOLDER)"
+    - "%PYTHON%\\python.exe -m flake8 --count $(APPVEYOR_BUILD_FOLDER)"
     # - "%PYTHON%\\python.exe -m pylint ."
