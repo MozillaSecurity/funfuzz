@@ -254,7 +254,8 @@ def init(args):
     gOptions = parseOptions(args)
 
 
-def interesting(args, tempPrefix):
+# FIXME: _args is unused here, we should check if it can be removed?
+def interesting(_args, tempPrefix):
     actualLevel = compareLevel(gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
     return actualLevel >= gOptions.minimumInterestingLevel
 
