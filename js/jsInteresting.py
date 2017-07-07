@@ -228,9 +228,9 @@ def ulimitSet():
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30
     if sps.isARMv7l:
-        resource.setrlimit(resource.RLIMIT_AS, (1*GB, 1*GB))
+        resource.setrlimit(resource.RLIMIT_AS, (1 * GB, 1 * GB))
     else:
-        resource.setrlimit(resource.RLIMIT_AS, (2*GB, 2*GB))
+        resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
     halfGB = int(GB / 2)

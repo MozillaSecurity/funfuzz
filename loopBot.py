@@ -42,5 +42,6 @@ def main():
         [sys.executable, "-u", os.path.join(path0, 'bot.py')] + sys.argv[1:]
     ], 60)
 
+
 if __name__ == "__main__":
     main()

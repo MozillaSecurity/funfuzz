@@ -67,6 +67,7 @@ def getCsetHashFromBisectMsg(msg):
     if m:
         return m.group(3)
 
+
 assert getCsetHashFromBisectMsg("x 12345:abababababab") == "abababababab"
 assert getCsetHashFromBisectMsg("x 12345:123412341234") == "123412341234"
 assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"

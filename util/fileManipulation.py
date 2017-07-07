@@ -6,6 +6,7 @@
 
 from __future__ import absolute_import
 
+
 def firstLine(s):
     """Return the first line of any series of text with / without line breaks."""
     return s.split('\n')[0]
