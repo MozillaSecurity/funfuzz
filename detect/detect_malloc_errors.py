@@ -8,6 +8,7 @@ from __future__ import absolute_import
 pline = ""
 ppline = ""
 
+
 def amiss(logPrefix):
     foundSomething = False
     global pline, ppline
@@ -19,7 +20,7 @@ def amiss(logPrefix):
         for line in f:
             if scanLine(line):
                 foundSomething = True
-                break # Don't flood the log with repeated malloc failures
+                break  # Don't flood the log with repeated malloc failures
 
     return foundSomething
 
@@ -29,10 +30,10 @@ def scanLine(line):
 
     line = line.strip("\x07").rstrip("\n")
 
-    if (-1 != line.find("szone_error")
-     or -1 != line.find("malloc_error_break")
-     or -1 != line.find("MallocHelp")):
-        if (-1 == pline.find("can't allocate region")):
+    if (line.find("szone_error") != -1 or
+            line.find("malloc_error_break") != -1 or
+            line.find("MallocHelp") != -1):
+        if pline.find("can't allocate region") == -1:
             print ""
             print ppline
             print pline

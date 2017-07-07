@@ -72,11 +72,11 @@ def addParserOptions():
                   help='Build 32-bit shells, but if not enabled, 64-bit shells are built.')
     randomizeBool(['--enable-debug'], 0.5, 0.5,
                   dest='enableDbg',
-                  help='Build shells with --enable-debug. Defaults to "%(default)s". ' + \
+                  help='Build shells with --enable-debug. Defaults to "%(default)s". ' +
                        'Currently defaults to True in configure.in on mozilla-central.')
     randomizeBool(['--disable-debug'], 0, 0,
                   dest='disableDbg',
-                  help='Build shells with --disable-debug. Defaults to "%(default)s". ' + \
+                  help='Build shells with --disable-debug. Defaults to "%(default)s". ' +
                        'Currently defaults to True in configure.in on mozilla-central.')
     randomizeBool(['--enable-optimize'], 0, 0,
                   dest='enableOpt',
@@ -86,7 +86,7 @@ def addParserOptions():
                   help='Build shells with --disable-optimize. Defaults to "%(default)s".')
     randomizeBool(['--enable-profiling'], 0, 0,
                   dest='enableProfiling',
-                  help='Build shells with --enable-profiling. Defaults to "%(default)s". ' + \
+                  help='Build shells with --enable-profiling. Defaults to "%(default)s". ' +
                        'Currently defaults to True in configure.in on mozilla-central.')
     randomizeBool(['--disable-profiling'], 0.5, 0,
                   dest='disableProfiling',

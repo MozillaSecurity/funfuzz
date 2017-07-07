@@ -475,5 +475,6 @@ def main():
         downloadLatestBuild(buildType, options.downloadFolder,
                             getJsShell=options.enableJsShell, wantTests=options.wantTests)
 
+
 if __name__ == "__main__":
     main()

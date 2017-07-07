@@ -53,7 +53,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
     lev = cl[0]
 
     if lev != jsInteresting.JS_FINE:
-        itest = [__file__, "--flags="+' '.join(flags), "--minlevel="+str(lev), "--timeout="+str(options.timeout), options.knownPath]
+        itest = [__file__, "--flags=" + ' '.join(flags), "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
         if lithResult == lithOps.LITH_FINISHED:
             print "Retesting " + infilename + " after running Lithium:"
@@ -154,8 +154,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
-                rerunCommand = sps.shellify(['~/funfuzz/js/compareJIT.py', "--flags="+' '.join(flags),
-                                             "--timeout="+str(options.timeout), options.knownPath, jsEngine,
+                rerunCommand = sps.shellify(['~/funfuzz/js/compareJIT.py', "--flags=" + ' '.join(flags),
+                                             "--timeout=" + str(options.timeout), options.knownPath, jsEngine,
                                              os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
@@ -263,6 +263,7 @@ def main():
     import tempfile
     options = parseOptions(sys.argv[1:])
     print compareLevel(options.jsengine, options.flags, options.infilename, tempfile.mkdtemp("compareJITmain"), options, True, False)[0]
+
 
 if __name__ == "__main__":
     main()

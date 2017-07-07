@@ -46,7 +46,7 @@ def parseOpts():
     parser = OptionParser()
     parser.set_defaults(
         repoName='mozilla-central',
-        targetTime=15*60,       # 15 minutes
+        targetTime=15 * 60,       # 15 minutes
         existingBuildDir=None,
         timeout=0,
         buildOptions=None,
@@ -215,16 +215,8 @@ def ensureBuild(options):
                 print 'buildDir is: ' + bDir
                 print 'buildSrc is: ' + bSrc
         else:
-            # Compiled browser
-            options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
-            bDir = options.buildOptions.objDir
-            bType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
-            bSrc = repr(hgCmds.getRepoHashAndId(options.buildOptions.repoDir))
-            bRev = ''
-            manyTimedRunArgs = []
-            success = buildBrowser.tryCompiling(options.buildOptions)
-            if not success:
-                raise Exception('Building a browser failed.')
+            # FIXME: We can probably remove the testType option
+            raise Exception('Only testType "js" is supported.')
     else:
         # Treeherder js shells and browser
         # Download from Treeherder and call it 'build'

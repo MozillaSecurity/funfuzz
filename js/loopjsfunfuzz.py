@@ -145,7 +145,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
         if options.randomFlags:
             engineFlags = shellFlags.randomFlagSet(options.jsEngine)
             jsInterestingArgs.extend(engineFlags)
-        jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout*(1000/2))])
+        jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
         jsInterestingArgs.extend(['-f', fuzzjs])
         jsInterestingOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
@@ -271,6 +271,7 @@ def mightUseDivision(code):
                 return True
         i += 1
     return False
+
 
 assert not mightUseDivision("//")
 assert not mightUseDivision("// a")
