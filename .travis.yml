@@ -17,6 +17,6 @@ install:
     - git --version
 # before_script:
 script:
-    - flake8 --count .
+    - flake8 --count ${TRAVIS_BUILD_DIR}
 # script:
-#     - pylint .
+#     - pylint ${TRAVIS_BUILD_DIR}
