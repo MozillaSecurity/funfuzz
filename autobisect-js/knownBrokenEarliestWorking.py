@@ -24,7 +24,7 @@ def hgrange(firstBad, firstGood):
     return '(descendants(id(' + firstBad + '))-descendants(id(' + firstGood + ')))'
 
 
-def knownBrokenRangesBrowser(options):
+def knownBrokenRangesBrowser():
     skips = [
         hgrange('cc45fdc389df', 'e8938a43c31a'),  # Builds with --disable-crashreporter were broken (see bug 779291)
         hgrange('19f154ee6f54', 'd97ecf9f9b84'),  # Backed out for bustage
@@ -108,7 +108,7 @@ def knownBrokenRanges(options):
     return skips
 
 
-def earliestKnownWorkingRevForBrowser(options):
+def earliestKnownWorkingRevForBrowser():
     if sps.isMac and sps.macVer() >= [10, 9]:
         return '1c4ac1d21d29'  # beacc621ec68 fixed 10.9 builds, but landed in the middle of unrelated bustage
     return '4e852ca66ea0'  # or 'd97862fb8e6d' (same as js below) ... either way, oct 2012 on mac :(
