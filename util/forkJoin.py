@@ -64,7 +64,7 @@ def test_forkJoin_inner(adj, noun, forkjoin_id):
     print forkjoin_id
     if forkjoin_id == 5:
         time.sleep(1)
-        raise NameError
+        raise NameError()
 
 
 if __name__ == "__main__":
