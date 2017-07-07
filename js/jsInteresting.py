@@ -278,7 +278,8 @@ def init(args):
     gOptions = parseOptions(args)
 
 
-def interesting(args, tempPrefix):
+# FIXME: _args is unused here, we should check if it can be removed?
+def interesting(_args, tempPrefix):
     options = gOptions
     # options, runthis, logPrefix, inCompareJIT
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
