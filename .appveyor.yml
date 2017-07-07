@@ -17,7 +17,7 @@ install:
     - "%PYTHON%\\python.exe -m flake8 --version"
     - "%PYTHON%\\python.exe -m pylint --version"
     - "git.exe --version"
-# build: off
+build: off
 test_script:
     - "%PYTHON%\\python.exe -m flake8 ."
     # - "%PYTHON%\\python.exe -m pylint ."
