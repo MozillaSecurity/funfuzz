@@ -20,4 +20,4 @@ install:
 build: off
 test_script:
     - "%PYTHON%\\python.exe -m flake8 --count %APPVEYOR_BUILD_FOLDER%"
-    # - "%PYTHON%\\python.exe -m pylint ."
+    # - "%PYTHON%\\python.exe -m pylint %APPVEYOR_BUILD_FOLDER%"
