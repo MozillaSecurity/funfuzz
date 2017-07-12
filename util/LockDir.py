@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=invalid-name,missing-docstring,old-style-class,too-few-public-methods
 
 from __future__ import absolute_import
 

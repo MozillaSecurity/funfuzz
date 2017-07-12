@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=dangerous-default-value,import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-statements,wrong-import-position
 
 from __future__ import absolute_import
 

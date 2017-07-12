@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=attribute-defined-outside-init,fixme,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-locals,too-many-statements
 
 from __future__ import absolute_import
 

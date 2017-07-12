@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=dangerous-default-value,invalid-name,line-too-long,missing-docstring,no-else-return,old-style-class,too-few-public-methods,too-many-arguments,too-many-branches,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,

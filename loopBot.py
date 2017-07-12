@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=invalid-name,line-too-long,missing-docstring
 
 # Loop of { update repos, call bot.py } to allow things to run unattended
 # All command-line options are passed through to bot.py

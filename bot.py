@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=broad-except,fixme,import-error,invalid-name,line-too-long,missing-docstring,no-else-return,too-few-public-methods,too-many-arguments,wrong-import-position
 
 # bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes
 

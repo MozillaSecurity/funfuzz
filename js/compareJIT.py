@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=cell-var-from-loop,fixme,global-variable-undefined,import-error,invalid-name,line-too-long,missing-docstring,no-member,too-many-arguments,too-many-branches,too-many-locals,wrong-import-position
 
 from __future__ import absolute_import
 
