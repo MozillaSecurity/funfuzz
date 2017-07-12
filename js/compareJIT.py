@@ -93,7 +93,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         # Only used during initial fuzzing. Allowed to have false negatives.
         combos = [combos[0]]
 
-    if len(flags):
+    if flags:
         combos.append(flags)
 
     commands = [[jsEngine] + combo + [infilename] for combo in combos]

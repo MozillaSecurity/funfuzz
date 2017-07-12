@@ -392,7 +392,7 @@ def validate_manifest(manifest_file):
         else:
             if not f.validate():
                 invalid_files.append(f)
-    if len(invalid_files + absent_files) == 0:
+    if not invalid_files + absent_files:
         return True
     else:
         return False
@@ -624,7 +624,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
         # is a non empty list it can be used to filter if filename is in
         # present_files, it means that I have it already because it was already
         # either in the working dir or in the cache
-        if (f.filename in filenames or len(filenames) == 0) and f.filename not in present_files:
+        if (f.filename in filenames or not filenames) and f.filename not in present_files:
             log.debug("fetching %s" % f.filename)
             temp_file_name = fetch_file(base_urls, f, auth_file=auth_file, region=region)
             if temp_file_name:
@@ -687,7 +687,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
             failed_files.append(filename)
 
     # If we failed to fetch or validate a file, we need to fail
-    if len(failed_files) > 0:
+    if failed_files:
         log.error("The following files failed: '%s'" %
                   "', ".join(failed_files))
         return False

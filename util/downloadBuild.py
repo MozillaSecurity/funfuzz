@@ -95,7 +95,7 @@ def parseOptions():
 
     options, args = parser.parse_args()
     assert options.compileType in ['dbg', 'opt']
-    assert len(args) == 0
+    assert not args
     return options
 
 

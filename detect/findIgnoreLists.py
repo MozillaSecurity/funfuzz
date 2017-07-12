@@ -35,5 +35,5 @@ def findIgnoreLists(targetRepo, needle):
                     if os.path.exists(filename):
                         r.append(filename)
                     knownPath = os.path.dirname(knownPath)
-    assert len(r) > 0
+    assert r
     return r

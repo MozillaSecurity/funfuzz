@@ -198,7 +198,7 @@ def oomed(err):
 
 
 def summaryString(issues, level, elapsedtime):
-    amissDetails = ("") if (len(issues) == 0) else (" | " + repr(issues[:5]) + " ")
+    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")
     return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 

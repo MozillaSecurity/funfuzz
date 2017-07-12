@@ -135,7 +135,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
         if targetTime and time.time() > startTime + targetTime:
             print("Out of time!")
             os.remove(fuzzjs)
-            if len(os.listdir(wtmpDir)) == 0:
+            if not os.listdir(wtmpDir):
                 os.rmdir(wtmpDir)
             break
 

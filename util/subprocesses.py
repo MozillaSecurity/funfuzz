@@ -131,14 +131,14 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
                     raise Exception('Windows conftest.exe configuration permission problem')
                 else:
                     raise Exception('Nonzero exit code')
-    if not combineStderr and not ignoreStderr and len(stderr) > 0:
+    if not combineStderr and not ignoreStderr and stderr:
         # Ignore hg color mode throwing an error in console on Windows platforms.
         if not (isWin and 'warning: failed to set color mode to win32' in stderr):
             print("Unexpected output on stderr from: ")
             print("  %s" % shellify(cmd))
             print("%s %s" % (stdout, stderr))
             raise Exception('Unexpected output on stderr')
-    if stderr and ignoreStderr and len(stderr) > 0 and p.returncode != 0:
+    if stderr and ignoreStderr and stderr and p.returncode != 0:
         # During configure, there will always be stderr. Sometimes this stderr causes configure to
         # stop the entire script, especially on Windows.
         print("Return code not zero, and unexpected output on stderr from: ")
