@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=attribute-defined-outside-init,fixme,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-locals,too-many-statements
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import ConfigParser
 import os
@@ -32,14 +32,14 @@ def readFromURL(url):
     p = subprocess.Popen(inpCmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if not useCurl and p.returncode == 5:
-        print 'Unable to read from URL. If you installed wget using MacPorts, you should put ' + \
-              '"CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt" (without the quotes) ' + \
-              'in ~/.wgetrc'
+        print("Unable to read from URL. If you installed wget using MacPorts, you should put "
+              '"CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt" (without the quotes) '
+              "in ~/.wgetrc")
         raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
     elif p.returncode != 0:
-        print 'inpCmdList is: ' + sps.shellify(inpCmdList)
-        print 'stdout: ' + repr(out)
-        print 'stderr: ' + repr(err)
+        print("inpCmdList is: %s" % sps.shellify(inpCmdList))
+        print("stdout: %r" % out)
+        print("stderr: %r" % err)
         raise Exception('The following exit code was returned: ' + str(p.returncode))
     else:
         # Ignore whatever verbose output wget spewed to stderr.
@@ -51,7 +51,7 @@ def downloadURL(url, dest):
     inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', dest, url]
     out, retVal = sps.captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
     if retVal != 0:
-        print out
+        print(out)
         raise Exception('Return code is not 0, but is: ' + str(retVal))
     return dest
 
@@ -133,7 +133,7 @@ def find_nth(haystack, needle, start, n):
 
 def httpDirList(directory):
     """Read an Apache-style directory listing and returns a list of its contents, as relative URLs."""
-    print "Looking in " + directory + " ..."
+    print("Looking in %s ..." % directory)
     page = readFromURL(directory)
     sps.vdump('Finished reading from: ' + directory)
 
@@ -179,7 +179,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     # Create build folder and a download subfolder.
     buildDir = os.path.abspath(sps.normExpUserPath(os.path.join(targetDir, 'build')))
     if os.path.exists(buildDir):
-        print "Deleting old build..."
+        print("Deleting old build...")
         shutil.rmtree(buildDir)
     os.mkdir(buildDir)
     downloadFolder = os.path.join(buildDir, 'download')
@@ -200,41 +200,41 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     for remotefn in fileHttpList:
         localfn = os.path.join(downloadFolder, remotefn.split('/')[-1])
         if remotefn.endswith('.common.tests.zip') and wantTests:
-            print 'Downloading common test files...',
+            print("Downloading common test files...", end="")
             dlAction = downloadURL(remotefn, localfn)
-            print 'extracting...',
+            print("extracting...", end="")
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
             mIfyMozcrash(testsDir)
-            print 'completed!'
+            print("completed!")
             gotTests = True
         if remotefn.endswith('.reftest.tests.zip') and wantTests:
-            print 'Downloading reftest files...',
+            print("Downloading reftest files...", end="")
             dlAction = downloadURL(remotefn, localfn)
-            print 'extracting...',
+            print("extracting...", end="")
             unzip(dlAction, testsDir)
-            print 'completed!'
+            print("completed!")
         if remotefn.split('/')[-1].endswith('.txt'):
-            print 'Downloading text file...',
+            print("Downloading text file...", end="")
             downloadURL(remotefn, localfn)
-            print 'completed!'
+            print("completed!")
             gotTxtFile = True
         if jsShell:
             if remotefn.split('/')[-1].startswith('jsshell-'):
-                print 'Downloading js shell...',
+                print("Downloading js shell...", end="")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end="")
                 unzip(dlAction, appDir)
-                print 'completed!'
+                print("completed!")
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
                 writeDownloadedShellFMConf(remotefn, buildDir)
         else:
             if remotefn.endswith('.linux-i686.tar.bz2') or remotefn.endswith('.linux-x86_64.tar.bz2'):
-                print 'Downloading application...',
+                print("Downloading application...", end="")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end="")
                 untarbz2(dlAction, appDir)
-                print 'completed!'
+                print("completed!")
 
                 # Hack #2 to make os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
                 shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
@@ -248,11 +248,11 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
             if remotefn.endswith('.win32.zip') or remotefn.endswith('.win64.zip'):
-                print 'Downloading application...',
+                print("Downloading application...", end="")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end="")
                 unzip(dlAction, appDir)
-                print 'completed!'
+                print("completed!")
 
                 # Hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
                 shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
@@ -263,19 +263,19 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                     downloadURL(remoteURL, localfile)
                 gotApp = True
             if remotefn.endswith('.mac.dmg') or remotefn.endswith('.mac64.dmg'):
-                print 'Downloading application...',
+                print("Downloading application...", end="")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end="")
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
-                print 'completed!'
+                print("completed!")
                 downloadMDSW(buildDir, "macosx64")
                 gotApp = True
             if remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
-                print 'Downloading crash reporter symbols...',
+                print("Downloading crash reporter symbols...", end="")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end="")
                 unzip(dlAction, symbolsDir)
-                print 'completed!'
+                print("completed!")
                 gotSyms = True
     return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
 
@@ -365,7 +365,7 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
 
     buildDirs = [(buildsHttpDir + d) for d in dirNames if isNumericSubDir(d)]
     if len(buildDirs) < 1:
-        print 'Warning: No builds in ' + buildsHttpDir + '!'
+        print("Warning: No builds in %s!" % buildsHttpDir)
     return buildDirs
 
 
@@ -471,7 +471,7 @@ def main():
     options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"')
     options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"')
     if options.remoteDir is not None:
-        print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
+        print(downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests))
     else:
         buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
         downloadLatestBuild(buildType, options.downloadFolder,

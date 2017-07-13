@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=fixme,import-error,invalid-name,missing-docstring,too-many-branches,too-many-return-statements,wrong-import-position
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import argparse
 import hashlib
@@ -174,7 +174,7 @@ def parseShellOptions(inputArgs):
         buildOptions.buildOptionsStr = inputArgs
         valid = areArgsValid(buildOptions)
         if not valid[0]:
-            print 'WARNING: This set of build options is not tested well because: ' + valid[1]
+            print("WARNING: This set of build options is not tested well because: %s" % valid[1])
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
@@ -345,7 +345,7 @@ def getRandomValidRepo(treeLocation):
 
 
 def main():
-    print 'Here are some sample random build configurations that can be generated:'
+    print("Here are some sample random build configurations that can be generated:")
     parser, randomizer = addParserOptions()
     buildOptions = parser.parse_args()
 
@@ -354,9 +354,11 @@ def main():
 
     for _ in range(30):
         buildOptions = generateRandomConfigurations(parser, randomizer)
-        print buildOptions.buildOptionsStr
+        print(buildOptions.buildOptionsStr)
 
-    print "\nRunning this file directly doesn't do anything, but here's our subparser help:\n"
+    print()
+    print("Running this file directly doesn't do anything, but here's our subparser help:")
+    print()
     parseShellOptions("--help")
 
 

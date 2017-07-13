@@ -11,7 +11,7 @@
 #
 # Assumes that the repositories are located in ../../trees/*.
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from copy import deepcopy
 import logging
@@ -79,7 +79,7 @@ def updateRepos():
         for name in sorted(os.listdir(tree)):
             namePath = os.path.join(tree, name)
             if os.path.isdir(namePath) and (name in REPOS or name.startswith("funfuzz")):
-                print 'Updating %s ...' % name
+                print("Updating %s ..." % name)
                 updateRepo(namePath)
 
 
@@ -88,8 +88,8 @@ def main():
     try:
         updateRepos()
     except OSError as e:
-        print 'WARNING: OSError hit:'
-        print e
+        print("WARNING: OSError hit:")
+        print(e)
     logger.info(sps.dateStr())
 
 

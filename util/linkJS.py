@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=dangerous-default-value,invalid-name,missing-docstring
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 

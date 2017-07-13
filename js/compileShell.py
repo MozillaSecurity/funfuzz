@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import copy
 import ctypes
@@ -208,7 +208,7 @@ def autoconfRun(cwDir):
 
 def cfgJsCompile(shell):
     """Configures, compiles and copies a js shell according to required parameters."""
-    print "Compiling..."  # Print *with* a trailing newline to avoid breaking other stuff
+    print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
     os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
     shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
 
@@ -221,12 +221,12 @@ def cfgJsCompile(shell):
         except Exception as e:
             configureTryCount += 1
             if configureTryCount > 3:
-                print 'Configuration of the js binary failed 3 times.'
+                print("Configuration of the js binary failed 3 times.")
                 raise
             # This exception message is returned from sps.captureStdout via cfgBin.
             # No idea why this is sps.isLinux as well..
             if sps.isLinux or (sps.isWin and 'Windows conftest.exe configuration permission' in repr(e)):
-                print 'Trying once more...'
+                print("Trying once more...")
                 continue
     compileJs(shell)
     inspectShell.verifyBinary(shell)
@@ -475,14 +475,14 @@ def compileJs(shell):
         if (sps.isLinux or sps.isMac) and \
                 ('GCC running out of memory' in repr(e) or 'Clang running out of memory' in repr(e)):
             # FIXME: Absolute hack to retry after hitting OOM.
-            print 'Trying once more due to the compiler running out of memory...'
+            print("Trying once more due to the compiler running out of memory...")
             out = sps.captureStdout(cmdList, combineStderr=True, ignoreExitCode=True,
                                     currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if os.path.exists(shell.getShellCompiledPath()):
-            print 'A shell was compiled even though there was a non-zero exit code. Continuing...'
+            print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
-            print MAKE_BINARY + " did not result in a js shell:"
+            print("%s did not result in a js shell:" % MAKE_BINARY)
             raise
 
     if os.path.exists(shell.getShellCompiledPath()):
@@ -500,7 +500,7 @@ def compileJs(shell):
             # files in the objdir or else the stacks from failing testcases will lack symbols.
             shutil.rmtree(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
     else:
-        print out
+        print(out)
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
 
 
@@ -510,7 +510,7 @@ def createBustedFile(filename, e):
         f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
         f.write("Backtrace:\n")
         f.write(traceback.format_exc() + "\n")
-    print 'Compilation failed (' + str(e) + ') (details in ' + filename + ')'
+    print("Compilation failed (%s) (details in %s)" % (e, filename))
 
 
 def envDump(shell, log):
@@ -520,7 +520,7 @@ def envDump(shell, log):
     if sps.isARMv7l:
         fmconfPlatform = 'ARM'
     elif sps.isARMv7l and not shell.buildOptions.enable32:
-        print 'ARM64 is not supported in .fuzzmanagerconf yet.'
+        print("ARM64 is not supported in .fuzzmanagerconf yet.")
         fmconfPlatform = 'ARM64'
     elif shell.buildOptions.enable32:
         fmconfPlatform = 'x86'
@@ -598,14 +598,14 @@ def getLockDirPath(repoDir, tboxIdentifier=''):
 def makeTestRev(options):
     def testRev(rev):
         shell = CompiledShell(options.buildOptions, rev)
-        print "Rev " + rev + ":",
+        print("Rev %s:" % rev, end="")
 
         try:
             obtainShell(shell, updateToRev=rev)
         except Exception:
             return (options.compilationFailedLabel, 'compilation failed')
 
-        print "Testing...",
+        print("Testing...", end="")
         return options.testAndLabel(shell.getShellCacheFullPath(), rev)
     return testRev
 
@@ -618,14 +618,14 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
     if os.path.isfile(shell.getShellCacheFullPath()):
         # Don't remove the comma at the end of this line, and thus remove the newline printed.
         # We would break JSBugMon.
-        print 'Found cached shell...'
+        print("Found cached shell...")
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
         verifyFullWinPageHeap(shell.getShellCacheFullPath())
         return
     elif os.path.isfile(cachedNoShell):
         raise Exception("Found a cached shell that failed compilation...")
     elif os.path.isdir(shell.getShellCacheDir()):
-        print 'Found a cache dir without a successful/failed shell...'
+        print("Found a cache dir without a successful/failed shell...")
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
     os.mkdir(shell.getShellCacheDir())
@@ -641,7 +641,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
 
         if s3CacheObj.downloadFile(shell.getShellNameWithoutExt() + '.tar.bz2',
                                    shell.getS3TarballWithExtFullPath()):
-            print 'Extracting shell...'
+            print("Extracting shell...")
             with tarfile.open(shell.getS3TarballWithExtFullPath(), 'r') as z:
                 z.extractall(shell.getShellCacheDir())
             # Delete tarball after downloading from S3
@@ -685,7 +685,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
 def updateRepo(repo, rev):
     """Update repository to the specific revision."""
     # Print *with* a trailing newline to avoid breaking other stuff
-    print "Updating to rev %s in the %s repository..." % (rev, repo)
+    print("Updating to rev %s in the %s repository..." % (rev, repo))
     sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
 
 
@@ -696,7 +696,7 @@ def verifyFullWinPageHeap(shellPath):
     if sps.isWin:
         gflagsBin = os.path.join(os.getenv('PROGRAMW6432'), 'Debugging Tools for Windows (x64)', 'gflags.exe')
         if os.path.isfile(gflagsBin) and os.path.isfile(shellPath):
-            print subprocess.check_output([gflagsBin, '-p', '/enable', shellPath, '/full'])
+            print(subprocess.check_output([gflagsBin, '-p', '/enable', shellPath, '/full']))
 
 
 def main():
@@ -731,7 +731,7 @@ def main():
             shell = CompiledShell(options.buildOptions, localOrigHgHash)
 
         obtainShell(shell, updateToRev=options.revision)
-        print shell.getShellCacheFullPath()
+        print(shell.getShellCacheFullPath())
 
 
 if __name__ == '__main__':

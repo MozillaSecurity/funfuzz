@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring,no-member,too-many-branches,too-many-locals,too-many-statements,unused-argument,wrong-import-position
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import json
 import os
@@ -53,7 +53,7 @@ def parseOpts(args):
     options, args = parser.parse_args(args)
 
     if options.valgrind and options.useCompareJIT:
-        print "Note: When running comparejit, the --valgrind option will be ignored"
+        print("Note: When running comparejit, the --valgrind option will be ignored")
 
     # kill js shell if it runs this long.
     # jsfunfuzz will quit after half this time if it's not ilooping.
@@ -74,11 +74,11 @@ def showtail(filename):
     cmd = []
     cmd.extend(['tail', '-n', '20'])
     cmd.append(filename)
-    print ' '.join(cmd)
-    print
+    print(" ".join(cmd))
+    print()
     subprocess.check_call(cmd)
-    print
-    print
+    print()
+    print()
 
 
 def linkFuzzer(target_fn, repo, prologue):
@@ -129,7 +129,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
     iteration = 0
     while True:
         if targetTime and time.time() > startTime + targetTime:
-            print "Out of time!"
+            print("Out of time!")
             os.remove(fuzzjs)
             if len(os.listdir(wtmpDir)) == 0:
                 os.rmdir(wtmpDir)
@@ -190,13 +190,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
                 quality = 10
 
             # ddsize = lithOps.ddsize(filenameToReduce)
-            print "Submitting " + filenameToReduce + " (quality=" + str(quality) + ") at " + sps.dateStr()
+            print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, sps.dateStr()))
 
             metadata = {}
             if autoBisectLog:
                 metadata = {"autoBisectLog": ''.join(autoBisectLog)}
             collector.submit(res.crashInfo, filenameToReduce, quality, metaData=metadata)
-            print "Submitted " + filenameToReduce
+            print("Submitted %s" % filenameToReduce)
 
         else:
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags

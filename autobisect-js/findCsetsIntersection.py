@@ -13,7 +13,7 @@
 # (first go to knownBrokenEarliestWorking.py and comment out configuration-specific ignore ranges,
 # this file does not yet support those.)
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -51,14 +51,14 @@ def main():
 
     cnt = 0
     for i in range(0, len(brokenRanges)):
-        print 'Analyzing revset: ' + brokenRanges[i] + \
-            ' which matches ' + str(countCsets(brokenRanges[i], repoDir)) + ' changesets'
+        print("Analyzing revset: %s which matches %s changesets" % (
+            brokenRanges[i], countCsets(brokenRanges[i], repoDir)))
         for j in range(i + 1, len(brokenRanges)):
             cnt += 1
-            print 'Number ' + str(cnt) + ': Compared against revset: ' + brokenRanges[j]
+            print("Number %s: Compared against revset: %s" % (cnt, brokenRanges[j]))
             overlap = countCsets(brokenRanges[i] + ' and ' + brokenRanges[j], repoDir)
             if overlap > 0:
-                print 'Number of overlapping changesets: ' + str(overlap)
+                print("Number of overlapping changesets: %s" % overlap)
         cnt = 0
 
 

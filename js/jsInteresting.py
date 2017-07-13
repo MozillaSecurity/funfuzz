@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=fixme,global-variable-undefined,import-error,invalid-name,line-too-long,missing-docstring,no-member,old-style-class,too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals,too-many-statements,wrong-import-position
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -132,7 +132,7 @@ class ShellResult:
             createCollector.printMatchingSignature(match)
             lev = JS_FINE
 
-        print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
+        print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
             fileManipulation.writeLinesToFile(
@@ -295,15 +295,15 @@ def main():
     options = parseOptions(sys.argv[1:])
     tempPrefix = "m"
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
-    print res.lev
+    print(res.lev)
     if options.submit:
         if res.lev >= options.minimumInterestingLevel:
             testcaseFilename = options.jsengineWithArgs[-1]
-            print "Submitting " + testcaseFilename
+            print("Submitting %s" % testcaseFilename)
             quality = 0
             options.collector.submit(res.crashInfo, testcaseFilename, quality)
         else:
-            print "Not submitting (not interesting)"
+            print("Not submitting (not interesting)")
 
 
 if __name__ == "__main__":

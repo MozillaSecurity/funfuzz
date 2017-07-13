@@ -7,7 +7,7 @@
 
 # Since this script updates the fuzzing repo, it should be very simple, and use subprocess.call() rather than import
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -24,16 +24,16 @@ def loopSequence(cmdSequence, waitTime):
     i = 0
     while True:
         i += 1
-        print "localLoop #%d!" % i
+        print("localLoop #%d!" % i)
         for cmd in cmdSequence:
             try:
                 subprocess.check_call(cmd)
             except subprocess.CalledProcessError as e:
-                print "Something went wrong when calling: " + repr(cmd)
-                print repr(e)
+                print("Something went wrong when calling: %r" % cmd)
+                print("%r" % e)
                 import traceback
-                print traceback.format_exc()
-                print "Waiting %d seconds..." % waitTime
+                print(traceback.format_exc())
+                print("Waiting %d seconds..." % waitTime)
                 time.sleep(waitTime)
                 break
 

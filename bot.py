@@ -4,7 +4,7 @@
 
 # bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import multiprocessing
 import os
@@ -83,7 +83,7 @@ def parseOpts():
 
     options, args = parser.parse_args()
     if len(args) > 0:
-        print "Warning: bot.py does not use positional arguments"
+        print("Warning: bot.py does not use positional arguments")
 
     if not options.testType or options.testType == 'dom':
         raise Exception('options.testType should be set to "js" now that only js engine fuzzing is supported')
@@ -91,8 +91,8 @@ def parseOpts():
     if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
-        print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
-        print 'Using treeherder builds instead...'
+        print("Trees were absent from default location: %s" % buildOptions.DEFAULT_TREES_LOCATION)
+        print("Using treeherder builds instead...")
 
     if options.buildOptions is None:
         options.buildOptions = ''
@@ -111,7 +111,7 @@ def main():
     refreshSignatures(collector)
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
-    print options.tempDir
+    print(options.tempDir)
 
     buildInfo = ensureBuild(options)
     assert os.path.isdir(buildInfo.buildDir)
@@ -133,35 +133,34 @@ def main():
 
 def printMachineInfo():
     # Log information about the machine.
-    print "Platform details: " + " ".join(platform.uname())
-    print "hg version: " + sps.captureStdout(['hg', '-q', 'version'])[0]
+    print("Platform details: %s" % " ".join(platform.uname()))
+    print("hg version: %s" % sps.captureStdout(['hg', '-q', 'version'])[0])
 
     # In here temporarily to see if mock Linux slaves on TBPL have gdb installed
     try:
-        print "gdb version: " + sps.captureStdout(['gdb', '--version'], combineStderr=True,
-                                                  ignoreStderr=True, ignoreExitCode=True)[0]
+        print("gdb version: %s" % sps.captureStdout(['gdb', '--version'], combineStderr=True,
+                                                    ignoreStderr=True, ignoreExitCode=True)[0])
     except (KeyboardInterrupt, Exception) as e:
-        print 'Error involving gdb is: ' + repr(e)
+        print("Error involving gdb is: %r" % e)
 
     # FIXME: Should have if os.path.exists(path to git) or something
     # print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
-    print "Python version: " + sys.version.split()[0]
-    print "Number of cores visible to OS: " + str(multiprocessing.cpu_count())
-    print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
+    print("Python version: %s" % sys.version.split()[0])
+    print("Number of cores visible to OS: %s" % multiprocessing.cpu_count())
+    print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))
 
     hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
     if os.path.isfile(hgrcLocation):
-        print 'The hgrc of this repository is:'
+        print("The hgrc of this repository is:")
         with open(hgrcLocation, 'rb') as f:
             hgrcContentList = f.readlines()
         for line in hgrcContentList:
-            print line.rstrip()
+            print(line.rstrip())
 
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
         import resource
-        print "Corefile size (soft limit, hard limit) is: " + \
-              repr(resource.getrlimit(resource.RLIMIT_CORE))
+        print("Corefile size (soft limit, hard limit) is: %r" % resource.getrlimit(resource.RLIMIT_CORE))
 
 
 def refreshSignatures(collector):
@@ -214,8 +213,8 @@ def ensureBuild(options):
                     '==============================================\n\n')
 
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)
-                print 'buildDir is: ' + bDir
-                print 'buildSrc is: ' + bSrc
+                print("buildDir is: %s" % bDir)
+                print("buildSrc is: %s" % bSrc)
         else:
             # FIXME: We can probably remove the testType option
             raise Exception('Only testType "js" is supported.')
