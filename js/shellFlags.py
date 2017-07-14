@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=dangerous-default-value,import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-statements,wrong-import-position
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import multiprocessing
 import os
@@ -298,7 +298,7 @@ def basicFlagSets(shellPath):
 
 def testRandomFlags():
     for _ in range(100):
-        print ' '.join(randomFlagSet(sys.argv[1]))
+        print(" ".join(randomFlagSet(sys.argv[1])))
 
 
 if __name__ == "__main__":

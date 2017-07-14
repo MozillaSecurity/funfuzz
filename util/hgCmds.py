@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import ConfigParser
 import os
@@ -86,11 +86,11 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     hgIdFull = sps.captureStdout(hgLogTmplList)[0]
     onDefault = bool(hgIdFull)
     if not onDefault:
-        updateDefault = raw_input('Not on default tip! ' +
-                                  'Would you like to (a)bort, update to (d)efault, or (u)se this rev: ')
+        updateDefault = raw_input("Not on default tip! "
+                                  "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
         updateDefault = updateDefault.strip()
         if updateDefault == 'a':
-            print 'Aborting...'
+            print("Aborting...")
             sys.exit(0)
         elif updateDefault == 'd':
             subprocess.check_call(['hg', '-R', repoDir, 'update', 'default'])
@@ -131,10 +131,10 @@ def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
                                                       ignoreExitCode=True)
     if qimportRetCode != 0:
         if 'already exists' in qimportOutput:
-            print "A patch with the same name has already been qpush'ed. Please qremove it first."
+            print("A patch with the same name has already been qpush'ed. Please qremove it first.")
         raise Exception('Return code from `hg qimport` is: ' + str(qimportRetCode))
 
-    print("Patch qimport'ed..."),
+    print("Patch qimport'ed...", end="")
 
     qpushOutput, qpushRetCode = sps.captureStdout(['hg', '-R', workingDir, 'qpush', pname],
                                                   combineStderr=True, ignoreStderr=True)
@@ -142,13 +142,13 @@ def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
 
     if qpushRetCode != 0:
         hgQpopQrmAppliedPatch(patchFile, workingDir)
-        print 'You may have untracked .rej or .orig files in the repository.'
-        print '`hg status` output of the repository of interesting files in ' + workingDir + ' :'
+        print("You may have untracked .rej or .orig files in the repository.")
+        print("`hg status` output of the repository of interesting files in %s :" % workingDir)
         subprocess.check_call(['hg', '-R', workingDir, 'status', '--modified', '--added',
                                '--removed', '--deleted'])
         raise Exception('Return code from `hg qpush` is: ' + str(qpushRetCode))
 
-    print("Patch qpush'ed. Continuing..."),
+    print("Patch qpush'ed. Continuing...", end="")
     return pname
 
 
@@ -158,9 +158,9 @@ def hgQpopQrmAppliedPatch(patchFile, repoDir):
                                                 combineStderr=True, ignoreStderr=True,
                                                 ignoreExitCode=True)
     if qpopRetCode != 0:
-        print '`hg qpop` output is: ' + qpopOutput
+        print("`hg qpop` output is: " % qpopOutput)
         raise Exception('Return code from `hg qpop` is: ' + str(qpopRetCode))
 
-    print "Patch qpop'ed...",
+    print("Patch qpop'ed...", end="")
     subprocess.check_call(['hg', '-R', repoDir, 'qdelete', os.path.basename(patchFile)])
-    print "Patch qdelete'd."
+    print("Patch qdelete'd.")

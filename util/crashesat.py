@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=import-error,invalid-name,missing-docstring,no-else-return,wrong-import-position
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -52,14 +52,14 @@ def interesting(cliArgs, tempPrefix):
             # When using this script, remember to escape characters, e.g. "\(" instead of "(" !
             found, _foundSig = fileIngredients.fileContains(crashLogName, crashSig, regexEnabled)
             if found:
-                print 'Exit status: ' + runinfo.msg + timeString
+                print("Exit status: %s%s" % (runinfo.msg, timeString))
                 return True
             else:
-                print "[Uninteresting] It crashed somewhere else!" + timeString
+                print("[Uninteresting] It crashed somewhere else!%s" % timeString)
                 return False
         else:
-            print "[Uninteresting] It appeared to crash, but no crash log was found?" + timeString
+            print("[Uninteresting] It appeared to crash, but no crash log was found?%s" % timeString)
             return False
     else:
-        print "[Uninteresting] It didn't crash." + timeString
+        print("[Uninteresting] It didn't crash.%s" % timeString)
         return False

@@ -2,7 +2,7 @@
 # coding=utf-8
 # pylint: disable=global-statement,invalid-name,missing-docstring
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 # Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
 # which are signs of malloc being unhappy (double free, out-of-memory, etc).
@@ -36,10 +36,10 @@ def scanLine(line):
             line.find("malloc_error_break") != -1 or
             line.find("MallocHelp") != -1):
         if pline.find("can't allocate region") == -1:
-            print ""
-            print ppline
-            print pline
-            print line
+            print()
+            print(ppline)
+            print(pline)
+            print(line)
             return True
 
     ppline = pline
