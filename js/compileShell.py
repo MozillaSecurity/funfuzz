@@ -713,8 +713,8 @@ def main():
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify build options, e.g. -b "--disable-debug --enable-optimize" ' +
-                      '(python buildOptions.py --help)')
+                      help="Specify build options, e.g. -b '--disable-debug --enable-optimize' "
+                           "(python buildOptions.py --help)")
 
     parser.add_option('-r', '--rev',
                       dest='revision',

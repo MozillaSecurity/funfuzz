@@ -70,21 +70,20 @@ def parseOptions():
     )
 
     parser.add_option('-c', '--compiletype', dest='compileType',
-                      help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' +
-                      'Defaults to "%default".')
+                      help="Sets the compile type to be downloaded. Must be 'dbg' or 'opt'. Defaults to '%default'.")
     parser.add_option('-a', '--architecture',
                       dest='arch',
                       type='choice',
                       choices=['32', '64'],
                       help='Test architecture. Only accepts "32" or "64"')
     parser.add_option('-w', '--downloadfolder', dest='downloadFolder',
-                      help='Sets the folder to download builds in. Defaults to the current ' +
-                      'working directory, which is "%default".')
+                      help="Sets the folder to download builds in. Defaults to the current "
+                           "working directory, which is '%default'.")
     parser.add_option('-r', '--repoName', dest='repoName',
                       help='Sets the repository to be fuzzed. Defaults to "%default".')
     parser.add_option('-d', '--remotedir', dest='remoteDir',
-                      help='Sets the remote directory from which the files are to be obtained ' +
-                      'from. The default is to grab the latest from mozilla-central.')
+                      help="Sets the remote directory from which the files are to be obtained "
+                           "from. The default is to grab the latest from mozilla-central.")
     parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
                       help='Sets the compile type to be fuzzed. Defaults to "%default".')
     parser.add_option('-t', '--want-tests', dest='wantTests', action='store_true',

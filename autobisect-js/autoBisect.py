@@ -75,31 +75,28 @@ def parseOpts():
 
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
-                      help='First reset to default tip overwriting all local changes. ' +
-                      'Equivalent to first executing `hg update -C default`. ' +
-                      'Defaults to "%default".')
+                      help="First reset to default tip overwriting all local changes. "
+                           "Equivalent to first executing `hg update -C default`. Defaults to '%default'.")
 
     # Specify the revisions between which to bisect.
     parser.add_option('-s', '--startRev', dest='startRepo',
-                      help='Earliest changeset/build numeric ID to consider (usually a "good" cset). ' +
-                      'Defaults to the earliest revision known to work at all/available.')
+                      help="Earliest changeset/build numeric ID to consider (usually a 'good' cset). "
+                           "Defaults to the earliest revision known to work at all/available.")
     parser.add_option('-e', '--endRev', dest='endRepo',
-                      help='Latest changeset/build numeric ID to consider (usually a "bad" cset). ' +
-                      'Defaults to the head of the main branch, "default", or latest available build.')
+                      help="Latest changeset/build numeric ID to consider (usually a 'bad' cset). "
+                           "Defaults to the head of the main branch, 'default', or latest available build.")
     parser.add_option('-k', '--skipInitialRevs', dest='testInitialRevs',
                       action='store_false',
-                      help='Skip testing the -s and -e revisions and automatically trust them ' +
-                      'as -g and -b.')
+                      help="Skip testing the -s and -e revisions and automatically trust them as -g and -b.")
 
     # Specify the type of failure to look for.
     # (Optional -- by default, internalTestAndLabel will look for exit codes that indicate a crash or assert.)
     parser.add_option('-o', '--output', dest='output',
-                      help='Stdout or stderr output to be observed. Defaults to "%default". ' +
-                      'For assertions, set to "ssertion fail"')
+                      help="Stdout or stderr output to be observed. Defaults to '%default'. "
+                           "For assertions, set to 'ssertion fail'")
     parser.add_option('-w', '--watchExitCode', dest='watchExitCode',
                       type='int',
-                      help='Look out for a specific exit code. Only this exit code will be ' +
-                      'considered "bad".')
+                      help="Look out for a specific exit code. Only this exit code will be considered 'bad'.")
     parser.add_option('-i', '--useInterestingnessTests',
                       dest='useInterestingnessTests',
                       action="store_true",
@@ -112,14 +109,14 @@ def parseOpts():
     # Specify how to treat revisions that fail to compile.
     # (You might want to add these to kbew.knownBrokenRanges in knownBrokenEarliestWorking.py.)
     parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
-                      help='Specify how to treat revisions that fail to compile. ' +
-                      '(bad, good, or skip) Defaults to "%default"')
+                      help="Specify how to treat revisions that fail to compile. "
+                           "(bad, good, or skip) Defaults to '%default'")
 
     parser.add_option('-T', '--useTreeherderBinaries',
                       dest='useTreeherderBinaries',
                       action="store_true",
-                      help='Use treeherder binaries for quick bisection, assuming a fast ' +
-                      'internet connection. Defaults to "%default"')
+                      help="Use treeherder binaries for quick bisection, assuming a fast "
+                           "internet connection. Defaults to '%default'")
     parser.add_option('-N', '--nameOfTreeherderBranch',
                       dest='nameOfTreeherderBranch',
                       help='Name of the branch to download. Defaults to "%default"')
@@ -286,8 +283,7 @@ def internalTestAndLabel(options):
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
-                return ('bad', 'Specified-bad exit code ' + str(exitCode) +
-                        ' (after converting to signal)')
+                return ("bad", "Specified-bad exit code %s (after converting to signal)" % exitCode)
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ''):
                 return ('good', 'Bad output, but not the specified one')
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
@@ -301,8 +297,7 @@ def internalTestAndLabel(options):
                  stdoutStderr.find('Error: Short option followed by junk') != -1 or
                  stdoutStderr.find('Error: Invalid long option:') != -1 or
                  stdoutStderr.find('Error: Invalid short option:') != -1):
-            return ('good', 'Exit code 1 or 2 - js shell quits ' +
-                    'because it does not support a given CLI parameter')
+            return ("good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter")
         elif 3 <= exitCode <= 6:
             return ('good', 'Acceptable exit code ' + str(exitCode))
         elif options.watchExitCode is not None:
@@ -349,12 +344,11 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
             print()
-            print ("Oops! We didn't test rev %s, a parent of the blamed revision! " +
-                   "Let's do that now.") % str(p)
+            print("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p)
             if not hgCmds.isAncestor(repoDir, startRepo, p) and \
                     not hgCmds.isAncestor(repoDir, endRepo, p):
-                print ('We did not test rev %s because it is not a descendant of either ' +
-                       '%s or %s.') % (str(p), startRepo, endRepo)
+                print("We did not test rev %s because it is not a descendant of either %s or %s." % (
+                    p, startRepo, endRepo))
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
@@ -473,8 +467,8 @@ def assertSaneJsBinary(cacheF):
         if 'build' in fList:
             if INCOMPLETE_NOTE in fList:
                 print("%s has subdirectories: %s" % (cacheF, fList))
-                raise Exception('Downloaded binaries and incompleteBuild.txt should not both be ' +
-                                'present together in this directory.')
+                raise Exception("Downloaded binaries and incompleteBuild.txt should not both be "
+                                "present together in this directory.")
             assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'download')))
             assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist')))
             assert os.path.isfile(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist',
@@ -499,8 +493,7 @@ def assertSaneJsBinary(cacheF):
                     raise Exception('Non-zero return code: ' + str(retCode))
                 return True  # Binary is working correctly
             except (OSError, IOError):
-                raise Exception('Cache folder ' + cacheF + ' is corrupt, please delete it ' +
-                                'and try again.')
+                raise Exception("Cache folder %s is corrupt, please delete it and try again." % cacheF)
         elif INCOMPLETE_NOTE in fList:
             return True
         else:
@@ -771,8 +764,8 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     elif sResult == 'bad' and eResult == 'good':
         windowType = 'fix'
     else:
-        raise Exception('Unknown windowType because starting result is "' + sResult + '" and ' +
-                        'ending result is "' + eResult + '".')
+        raise Exception('Unknown windowType because starting result is "%s" and ending result is "%s".' % (
+            sResult, eResult))
 
     # Show an hgweb link
     pushlogWindow = getHgwebMozillaOrg(options.nameOfTreeherderBranch) + '/pushloghtml?fromchange=' + sHash + '&tochange=' + eHash

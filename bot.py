@@ -77,9 +77,8 @@ def parseOpts():
                       help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
 
     parser.add_option('--timeout', type='int', dest='timeout',
-                      help='Sets the timeout for loopjsfunfuzz.py. ' +
-                      'Defaults to taking into account the speed of the computer and ' +
-                      'debugger (if any).')
+                      help="Sets the timeout for loopjsfunfuzz.py. "
+                           "Defaults to taking into account the speed of the computer and debugger (if any).")
 
     options, args = parser.parse_args()
     if len(args) > 0:
@@ -202,15 +201,19 @@ def ensureBuild(options):
                 # This is because options.testType gets prepended along with a dash later.
                 bType = buildOptions.computeShellType(options.buildOptions)[3:]
                 bSrc = (
-                    'Create another shell in shell-cache like this one:\n' +
-                    'python -u %s -b "%s -R %s" -r %s\n\n' % (
-                        os.path.join(path3, 'compileShell.py'), options.buildOptions.buildOptionsStr,
-                        options.buildOptions.repoDir, bRev
-                    ) +
-                    '==============================================\n' +
-                    '|  Fuzzing %s js shell builds\n' % cshell.getRepoName() +
-                    '|  DATE: %s\n' % sps.dateStr() +
-                    '==============================================\n\n')
+                    "Create another shell in shell-cache like this one:\n"
+                    'python -u %s -b "%s -R %s" -r %s\n\n'
+                    "==============================================\n"
+                    "|  Fuzzing %s js shell builds\n"
+                    "|  DATE: %s\n"
+                    "==============================================\n\n" % (
+                        os.path.join(path3, "compileShell.py"),
+                        options.buildOptions.buildOptionsStr,
+                        options.buildOptions.repoDir,
+                        bRev,
+                        cshell.getRepoName(),
+                        sps.dateStr()
+                    ))
 
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)
                 print("buildDir is: %s" % bDir)

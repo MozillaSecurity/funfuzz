@@ -74,12 +74,12 @@ def addParserOptions():
                   help='Build 32-bit shells, but if not enabled, 64-bit shells are built.')
     randomizeBool(['--enable-debug'], 0.5, 0.5,
                   dest='enableDbg',
-                  help='Build shells with --enable-debug. Defaults to "%(default)s". ' +
-                  'Currently defaults to True in configure.in on mozilla-central.')
+                  help="Build shells with --enable-debug. Defaults to '%(default)s'. "
+                       "Currently defaults to True in configure.in on mozilla-central.")
     randomizeBool(['--disable-debug'], 0, 0,
                   dest='disableDbg',
-                  help='Build shells with --disable-debug. Defaults to "%(default)s". ' +
-                  'Currently defaults to True in configure.in on mozilla-central.')
+                  help="Build shells with --disable-debug. Defaults to '%(default)s'. "
+                       "Currently defaults to True in configure.in on mozilla-central.")
     randomizeBool(['--enable-optimize'], 0, 0,
                   dest='enableOpt',
                   help='Build shells with --enable-optimize. Defaults to "%(default)s".')
@@ -88,8 +88,8 @@ def addParserOptions():
                   help='Build shells with --disable-optimize. Defaults to "%(default)s".')
     randomizeBool(['--enable-profiling'], 0, 0,
                   dest='enableProfiling',
-                  help='Build shells with --enable-profiling. Defaults to "%(default)s". ' +
-                  'Currently defaults to True in configure.in on mozilla-central.')
+                  help="Build shells with --enable-profiling. Defaults to '%(default)s'. "
+                       "Currently defaults to True in configure.in on mozilla-central.")
     randomizeBool(['--disable-profiling'], 0.5, 0,
                   dest='disableProfiling',
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
@@ -104,8 +104,8 @@ def addParserOptions():
                   help='Build with clang AddressSanitizer support. Defaults to "%(default)s".')
     randomizeBool(['--build-with-valgrind'], 0.2, 0.05,
                   dest='buildWithVg',
-                  help='Build with valgrind.h bits. Defaults to "%(default)s". ' +
-                  'Requires --enable-hardfp for ARM platforms.')
+                  help="Build with valgrind.h bits. Defaults to '%(default)s'. "
+                       "Requires --enable-hardfp for ARM platforms.")
     # We do not use randomizeBool because we add this flag automatically if --build-with-valgrind
     # is selected.
     parser.add_argument('--run-with-valgrind',
@@ -126,30 +126,27 @@ def addParserOptions():
                         dest='enableOomBreakpoint',
                         action='store_true',
                         default=False,
-                        help='Build shells with --enable-oom-breakpoint. ' +
-                        'Defaults to "%(default)s".')
+                        help="Build shells with --enable-oom-breakpoint. Defaults to '%(default)s'.")
     parser.add_argument('--without-intl-api',  # Speeds up compilation but is non-default
                         dest='enableWithoutIntlApi',
                         action='store_true',
                         default=False,
-                        help='Build shells using --without-intl-api. ' +
-                        'Defaults to "%(default)s".')
+                        help="Build shells using --without-intl-api. Defaults to '%(default)s'.")
     randomizeBool(['--enable-simulator=arm'], 0.3, 0,
                   dest='enableSimulatorArm32',
-                  help='Build shells with --enable-simulator=arm, only applicable to 32-bit shells. ' +
-                  'Defaults to "%(default)s".')
+                  help="Build shells with --enable-simulator=arm, only applicable to 32-bit shells. "
+                       "Defaults to '%(default)s'.")
     randomizeBool(['--enable-simulator=arm64'], 0.3, 0,
                   dest='enableSimulatorArm64',
-                  help='Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. ' +
-                  'Defaults to "%(default)s".')
+                  help="Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. "
+                       "Defaults to '%(default)s'.")
     parser.add_argument('--enable-arm-simulator',
                         dest='enableArmSimulatorObsolete',
                         action='store_true',
                         default=False,
-                        help='Build the shell using --enable-arm-simulator for legacy purposes. ' +
-                        'This flag is obsolete and is the equivalent of --enable-simulator=arm, ' +
-                        'use --enable-simulator=[arm|arm64] instead. ' +
-                        'Defaults to "%(default)s".')
+                        help="Build the shell using --enable-arm-simulator for legacy purposes. "
+                             "This flag is obsolete and is the equivalent of --enable-simulator=arm, "
+                             "use --enable-simulator=[arm|arm64] instead. Defaults to '%(default)s'.")
 
     # If adding a new compile option, be mindful of repository randomization.
     # e.g. it may be in mozilla-central but not in mozilla-beta
@@ -254,8 +251,8 @@ def areArgsValid(args):
         return False, '64-bit ARM builds are not yet supported.'
 
     if sps.isWin and (args.enable32 == sps.isMozBuild64):
-        return False, 'Win32 builds need the 32-bit MozillaBuild batch file and likewise the ' + \
-            'corresponding 64-bit ones for Win64 builds.'
+        return False, ("Win32 builds need the 32-bit MozillaBuild batch file and likewise the "
+                       "corresponding 64-bit ones for Win64 builds.")
 
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
@@ -276,8 +273,8 @@ def areArgsValid(args):
         # if sps.isMac:
         #     return False, 'Valgrind does not work well with Mac OS X 10.10 Yosemite.'
         # if sps.isARMv7l and not args.enableHardFp:
-        #     return False, 'libc6-dbg packages needed for Valgrind are only ' + \
-        #         'available via hardfp, tested on Ubuntu on an ARM odroid board.'
+        #     return False, ("libc6-dbg packages needed for Valgrind are only "
+        #                    "available via hardfp, tested on Ubuntu on an ARM odroid board.")
 
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'

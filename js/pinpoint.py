@@ -82,8 +82,8 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
         print(sps.shellify([lithiumpy] + fullLithArgs))
 
         desc = '-chars' if strategy == '--char' else '-lines'
-        (lithResult, lithDetails) = runLithium(fullLithArgs, logPrefix + "-" +
-                                               str(reductionCount[0]) + desc, targetTime)
+        (lithResult, lithDetails) = runLithium(
+            fullLithArgs, "%s-%s%s" % (logPrefix, reductionCount[0], desc), targetTime)
         if lithResult == LITH_FINISHED:
             shutil.copy2(infilename, backupFilename)
 
