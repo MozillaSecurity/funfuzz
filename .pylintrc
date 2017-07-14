@@ -1,0 +1,9 @@
+[MASTER]
+
+# Use multiple processes to speed up Pylint.
+jobs=2
+
+[FORMAT]
+
+# Maximum number of characters on a single line.
+max-line-length=120
