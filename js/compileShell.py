@@ -10,6 +10,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import copy
 import ctypes
+import io
 import multiprocessing
 import os
 import shutil
@@ -576,7 +577,7 @@ def extractVersions(objdir):
 
     def fixateVer(pcfile):
         """Returns the current version number (47.0a2)."""
-        with open(pcfile, 'rb') as f:
+        with io.open(pcfile, mode='rb', encoding="utf-8", errors="replace") as f:
             for line in f:
                 if line.startswith('Version: '):
                     # Sample line: 'Version: 47.0a2'
