@@ -28,7 +28,7 @@ isWin = (platform.system() == 'Windows')
 isWin10 = isWin and (platform.uname()[2] == '10')
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
-isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
+isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=no-member
 isMozBuild64 = False
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
@@ -365,7 +365,7 @@ def isWinDumpingToDefaultLocation():
                 if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == _winreg.REG_DWORD):
                     print(noMinidumpMsg)
                     return False
-            except WindowsError as e:
+            except WindowsError as e:  # pylint: disable=undefined-variable
                 if e.errno == 2:
                     print(noMinidumpMsg)
                     return False
@@ -382,7 +382,7 @@ def isWinDumpingToDefaultLocation():
                           "all crashes will be uninteresting." % dumpFolderRegValue[0])
                     print()
                     return False
-            except WindowsError as e:
+            except WindowsError as e:  # pylint: disable=undefined-variable
                 # If the key value cannot be found, the dumps will be put in the default location
                 if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
                     return True
@@ -390,7 +390,7 @@ def isWinDumpingToDefaultLocation():
                     raise
 
         return True
-    except WindowsError as e:
+    except WindowsError as e:  # pylint: disable=undefined-variable
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
         if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
             print()
