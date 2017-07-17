@@ -101,7 +101,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             cwd=currWorkingDir,
             env=env)
         (stdout, stderr) = p.communicate()
-    except OSError, e:
+    except OSError as e:
         raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
     if p.returncode != 0:
         oomErrorOutput = stdout if combineStderr else stderr
