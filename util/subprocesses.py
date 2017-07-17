@@ -503,7 +503,7 @@ def shellify(cmd):
     okUnquotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
     okQuotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
     ssc = []
-    for i in xrange(len(cmd)):
+    for i in range(len(cmd)):
         item = cmd[i]
         if okUnquotedRE.match(item):
             ssc.append(item)
