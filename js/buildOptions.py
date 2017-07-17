@@ -230,9 +230,10 @@ def computeShellType(buildOptions):
     if buildOptions.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         fileName.append(os.path.basename(buildOptions.patchFile).split('.')[0])
+        with open(os.path.abspath(buildOptions.patchFile), "rb") as f:
+            readResult = f.read()
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
-        fileName.append(hashlib.sha512(file(os.path.abspath(buildOptions.patchFile), 'rb').read())
-                        .hexdigest()[:12])
+        fileName.append(hashlib.sha512(readResult).hexdigest()[:12])
 
     assert '' not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
     return '-'.join(fileName)
