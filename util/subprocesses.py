@@ -350,19 +350,22 @@ def constructCdbCommand(progfullname, crashedPID):
 
 def isWinDumpingToDefaultLocation():
     """Check whether Windows minidumps are enabled and set to go to Windows' default location."""
-    import _winreg
+    if sys.version_info.major == 2:
+        import _winreg as winreg  # pylint: disable=import-error
+    else:
+        import winreg  # pylint: disable=import-error
     # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
     # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
     # If writing a key, we most likely need to flush. For the moment, no keys are written.
     try:
-        with _winreg.OpenKey(_winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE),
-                             r'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps',
-                             # Read key from 64-bit registry, which also works for 32-bit
-                             0, (_winreg.KEY_WOW64_64KEY + _winreg.KEY_READ)) as key:
+        with winreg.OpenKey(winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE),
+                            r"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps",
+                            # Read key from 64-bit registry, which also works for 32-bit
+                            0, (winreg.KEY_WOW64_64KEY + winreg.KEY_READ)) as key:
 
             try:
-                dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
-                if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == _winreg.REG_DWORD):
+                dumpTypeRegValue = winreg.QueryValueEx(key, "DumpType")
+                if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == winreg.REG_DWORD):
                     print(noMinidumpMsg)
                     return False
             except WindowsError as e:  # pylint: disable=undefined-variable
@@ -373,10 +376,10 @@ def isWinDumpingToDefaultLocation():
                     raise
 
             try:
-                dumpFolderRegValue = _winreg.QueryValueEx(key, 'DumpFolder')
+                dumpFolderRegValue = winreg.QueryValueEx(key, "DumpFolder")
                 # %LOCALAPPDATA%\CrashDumps is the default location.
                 if not (dumpFolderRegValue[0] == r'%LOCALAPPDATA%\CrashDumps' and
-                        dumpFolderRegValue[1] == _winreg.REG_EXPAND_SZ):
+                        dumpFolderRegValue[1] == winreg.REG_EXPAND_SZ):
                     print()
                     print("WARNING: Dumps are instead appearing at: %s - "
                           "all crashes will be uninteresting." % dumpFolderRegValue[0])
