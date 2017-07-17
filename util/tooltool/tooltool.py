@@ -27,7 +27,7 @@ import hashlib
 import httplib
 import json
 import logging
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import shutil
 import sys

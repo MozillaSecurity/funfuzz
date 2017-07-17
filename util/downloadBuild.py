@@ -18,7 +18,7 @@ import subprocess
 import sys
 from HTMLParser import HTMLParser
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import subprocesses as sps
 
 # Use curl/wget rather than urllib because urllib can't check certs.

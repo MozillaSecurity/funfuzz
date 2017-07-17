@@ -13,7 +13,7 @@ import os
 import subprocess
 import sys
 import time
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import compareJIT
 import jsInteresting

@@ -18,7 +18,7 @@ import sys
 import tarfile
 import traceback
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import buildOptions
 import inspectShell

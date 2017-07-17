@@ -17,7 +17,7 @@ import shutil
 import sys
 import tempfile
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
