@@ -104,8 +104,7 @@ class FileRecord(object):
            self.algorithm == other.algorithm and \
            self.visibility == other.visibility:
             return True
-        else:
-            return False
+        return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -150,8 +149,7 @@ class FileRecord(object):
             return "'%s' is present and valid" % self.filename
         elif self.present():
             return "'%s' is present and invalid" % self.filename
-        else:
-            return "'%s' is absent" % self.filename
+        return "'%s' is absent" % self.filename
 
 
 def create_file_record(filename, algorithm):
@@ -192,8 +190,7 @@ class FileRecordJSONEncoder(json.JSONEncoder):
             for i in f:
                 record_list.append(self.encode_file_record(i))
             return record_list
-        else:
-            return self.encode_file_record(f)
+        return self.encode_file_record(f)
 
 
 class FileRecordJSONDecoder(json.JSONDecoder):
@@ -394,8 +391,7 @@ def validate_manifest(manifest_file):
                 invalid_files.append(f)
     if not invalid_files + absent_files:
         return True
-    else:
-        return False
+    return False
 
 
 def add_files(manifest_file, algorithm, filenames, visibility):
@@ -498,12 +494,11 @@ def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, regio
     # cleanup temp file in case of issues
     if fetched_path:
         return os.path.split(fetched_path)[1]
-    else:
-        try:
-            os.remove(temp_path)
-        except OSError:  # pragma: no cover
-            pass
-        return None
+    try:
+        os.remove(temp_path)
+    except OSError:  # pragma: no cover
+        pass
+    return None
 
 
 def clean_path(dirname):
@@ -703,9 +698,8 @@ def freespace(p):
         secsPerClus, bytesPerSec, nFreeClus, totClus = win32file.GetDiskFreeSpace(
             p)
         return secsPerClus * bytesPerSec * nFreeClus
-    else:
-        r = os.statvfs(p)
-        return r.f_frsize * r.f_bavail
+    r = os.statvfs(p)
+    return r.f_frsize * r.f_bavail
 
 
 def purge(folder, gigs):
