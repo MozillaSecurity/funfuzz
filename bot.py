@@ -144,7 +144,7 @@ def printMachineInfo():
         print("gdb version: %s" % sps.captureStdout(['gdb', '--version'], combineStderr=True,
                                                     ignoreStderr=True, ignoreExitCode=True)[0])
     except (KeyboardInterrupt, Exception) as e:
-        print("Error involving gdb is: %r" % e)
+        print("Error involving gdb is: %r" % (e,))
 
     # FIXME: Should have if os.path.exists(path to git) or something
     # print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
@@ -163,7 +163,7 @@ def printMachineInfo():
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
         import resource
-        print("Corefile size (soft limit, hard limit) is: %r" % resource.getrlimit(resource.RLIMIT_CORE))
+        print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
 
 
 def refreshSignatures(collector):

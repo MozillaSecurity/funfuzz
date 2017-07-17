@@ -42,8 +42,8 @@ def readFromURL(url):
         raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
     elif p.returncode != 0:
         print("inpCmdList is: %s" % sps.shellify(inpCmdList))
-        print("stdout: %r" % out)
-        print("stderr: %r" % err)
+        print("stdout: %r" % (out,))
+        print("stderr: %r" % (err,))
         raise Exception('The following exit code was returned: ' + str(p.returncode))
     else:
         # Ignore whatever verbose output wget spewed to stderr.

@@ -39,7 +39,7 @@ def printCrashInfo(crashInfo):
         print("crashInfo:")
         print("  Short Signature: %s" % crashInfo.createShortSignature())
         print("  Class name: %s" % crashInfo.__class__.__name__)   # "NoCrashInfo", etc
-        print("  Stack trace: %r" % crashInfo.backtrace)
+        print("  Stack trace: %r" % (crashInfo.backtrace,))
         print()
 
 
