@@ -409,7 +409,6 @@ def add_files(manifest_file, algorithm, filenames, visibility):
     new_manifest = Manifest()  # use a different manifest for the output
     for filename in filenames:
         log.debug("adding %s", filename)
-        path, name = os.path.split(filename)
         new_fr = create_file_record(filename, algorithm)
         new_fr.visibility = visibility
         log.debug("appending a new file record to manifest file")
