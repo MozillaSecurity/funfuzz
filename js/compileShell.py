@@ -6,10 +6,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import copy
 import ctypes
+import io
 import multiprocessing
 import os
 import shutil
@@ -167,7 +168,8 @@ def ensureCacheDir():
     # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
     # This has to occur after the shell-cache directory is created
     if sps.isWin:  # adapted from http://stackoverflow.com/a/3931799
-        winTmpDir = unicode(cacheDir)
+        utext = unicode if sys.version_info.major == 2 else str  # noqa pylint: disable=redefined-builtin,invalid-name
+        winTmpDir = utext(cacheDir)
         GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
         unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))
         GetLongPathName(winTmpDir, unicodeBuffer, len(unicodeBuffer))
@@ -575,7 +577,7 @@ def extractVersions(objdir):
 
     def fixateVer(pcfile):
         """Returns the current version number (47.0a2)."""
-        with open(pcfile, 'rb') as f:
+        with io.open(pcfile, mode='rb', encoding="utf-8", errors="replace") as f:
             for line in f:
                 if line.startswith('Version: '):
                     # Sample line: 'Version: 47.0a2'

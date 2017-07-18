@@ -23,6 +23,9 @@
 # in which the manifest file resides and it should be called
 # 'manifest.tt'
 
+
+from __future__ import print_function
+
 import hashlib
 import httplib
 import json
@@ -305,7 +308,7 @@ class Manifest(object):
         if fmt == 'json':
             rv = json.dump(
                 self.file_records, output_file, indent=0, cls=FileRecordJSONEncoder)
-            print >> output_file, ''
+            print("", file=output_file)
             return rv
 
     def dumps(self, fmt='json'):
@@ -361,9 +364,9 @@ def list_manifest(manifest_file):
         log.error("failed to load manifest file at '%s': %s", manifest_file, e)
         return False
     for f in manifest.file_records:
-        print "%s\t%s\t%s" % ("P" if f.present() else "-",
+        print("%s\t%s\t%s" % ("P" if f.present() else "-",
                               "V" if f.present() and f.validate() else "-",
-                              f.filename)
+                              f.filename))
     return True
 
 
@@ -647,7 +650,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
                 try:
                     if not os.path.exists(cache_folder):
                         log.info("Creating cache in %s...", cache_folder)
-                        os.makedirs(cache_folder, 0700)
+                        os.makedirs(cache_folder, 0o700)
                     shutil.copy(os.path.join(os.getcwd(), localfile.filename),
                                 os.path.join(cache_folder, localfile.digest))
                     log.info("Local cache %s updated with %s", cache_folder, localfile.filename)

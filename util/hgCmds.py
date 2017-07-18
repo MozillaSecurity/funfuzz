@@ -17,6 +17,12 @@ import subprocess
 import subprocesses as sps
 
 
+try:
+    input = raw_input  # pylint: disable=redefined-builtin
+except NameError:
+    pass
+
+
 def destroyPyc(repoDir):
     # This is roughly equivalent to ['hg', 'purge', '--all', '--include=**.pyc'])
     # but doesn't run into purge's issues (incompatbility with -R, requiring an hg extension)
@@ -86,8 +92,8 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     hgIdFull = sps.captureStdout(hgLogTmplList)[0]
     onDefault = bool(hgIdFull)
     if not onDefault:
-        updateDefault = raw_input("Not on default tip! "
-                                  "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
+        updateDefault = input("Not on default tip! "
+                              "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
         updateDefault = updateDefault.strip()
         if updateDefault == 'a':
             print("Aborting...")

@@ -28,13 +28,13 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):
     # Fork a bunch of processes
     print("Forking %d children..." % numProcesses)
     ps = []
-    for i in xrange(numProcesses):
+    for i in range(numProcesses):
         p = multiprocessing.Process(target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
         p.start()
         ps.append(p)
 
     # Wait for them all to finish, and splat their outputs
-    for i in xrange(numProcesses):
+    for i in range(numProcesses):
         p = ps[i]
         print("=== Waiting for child #%d (%d) to finish... ===" % (i, p.pid))
         p.join()

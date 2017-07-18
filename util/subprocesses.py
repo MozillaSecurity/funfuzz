@@ -101,7 +101,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             cwd=currWorkingDir,
             env=env)
         (stdout, stderr) = p.communicate()
-    except OSError, e:
+    except OSError as e:
         raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
     if p.returncode != 0:
         oomErrorOutput = stdout if combineStderr else stderr
@@ -503,7 +503,7 @@ def shellify(cmd):
     okUnquotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
     okQuotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
     ssc = []
-    for i in xrange(len(cmd)):
+    for i in range(len(cmd)):
         item = cmd[i]
         if okUnquotedRE.match(item):
             ssc.append(item)
