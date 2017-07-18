@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=attribute-defined-outside-init,fixme,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-locals,too-many-statements
+# pylint: disable=attribute-defined-outside-init,fixme,import-error,invalid-name,line-too-long,missing-docstring
+# pylint: disable=too-many-branches,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
