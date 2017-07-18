@@ -58,7 +58,7 @@ def main():
             print("Number %s: Compared against revset: %s" % (cnt, brokenRanges[j]))
             overlap = countCsets(brokenRanges[i] + ' and ' + brokenRanges[j], repoDir)
             if overlap > 0:
-                print("Number of overlapping changesets: %s" % overlap)
+                print("Number of overlapping changesets: %s" % (overlap,))
         cnt = 0
 
 

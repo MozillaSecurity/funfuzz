@@ -149,7 +149,7 @@ def printMachineInfo():
     # FIXME: Should have if os.path.exists(path to git) or something
     # print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
     print("Python version: %s" % sys.version.split()[0])
-    print("Number of cores visible to OS: %s" % multiprocessing.cpu_count())
+    print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
     print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))
 
     hgrcLocation = os.path.join(path0, '.hg', 'hgrc')

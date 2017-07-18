@@ -358,7 +358,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            print("Parent rev %s was marked as 'skip', so the regression window includes it." % p)
+            print("Parent rev %s was marked as 'skip', so the regression window includes it." % (p,))
         elif labels[p][0] == blamedGoodOrBad:
             print("Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad))
             bisectLied = True
@@ -539,14 +539,14 @@ def bisectUsingTboxBins(options):
     while count < MAX_ITERATIONS:
         sps.vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
         count += 1
-        print("Test number %s:" % count)
+        print("Test number %d:" % count)
 
         sortedUrlsTbox = sorted(urlsTbox)
         if len(sortedUrlsTbox) >= 3:
             mPosition = len(sortedUrlsTbox) // 2
         else:
             print()
-            print('WARNING: %s has size smaller than 3. Impossible to return "middle" element.' % (sortedUrlsTbox))
+            print('WARNING: %s has size smaller than 3. Impossible to return "middle" element.' % (sortedUrlsTbox,))
             print()
             mPosition = len(sortedUrlsTbox)
 
@@ -570,7 +570,7 @@ def bisectUsingTboxBins(options):
         if (len(urlsTbox) - middleRevSkippedNum) <= 2 and mID in testedIDs:
             break
         elif len(urlsTbox) < 2:
-            print("urlsTbox is: %s" % urlsTbox)
+            print("urlsTbox is: %s" % (urlsTbox,))
             raise Exception('Length of urlsTbox should not be smaller than 2.')
         elif (len(testedIDs) - 2) > 30:
             raise Exception('Number of testedIDs has exceeded 30.')
