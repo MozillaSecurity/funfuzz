@@ -577,7 +577,7 @@ def extractVersions(objdir):
 
     def fixateVer(pcfile):
         """Returns the current version number (47.0a2)."""
-        with io.open(pcfile, mode='rb', encoding="utf-8", errors="replace") as f:
+        with io.open(pcfile, mode='r', encoding="utf-8", errors="replace") as f:
             for line in f:
                 if line.startswith('Version: '):
                     # Sample line: 'Version: 47.0a2'
