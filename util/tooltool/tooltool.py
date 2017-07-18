@@ -169,7 +169,7 @@ def create_file_record(filename, algorithm):
 
 class FileRecordJSONEncoder(json.JSONEncoder):
 
-    def encode_file_record(self, obj):
+    def encode_file_record(self, obj):  # pylint: disable=no-self-use
         if not issubclass(type(obj), FileRecord):
             err = "FileRecordJSONEncoder is only for FileRecord and lists of FileRecords, " \
                   "not %s" % obj.__class__.__name__
@@ -190,7 +190,7 @@ class FileRecordJSONEncoder(json.JSONEncoder):
                 rv['setup'] = obj.setup
             return rv
 
-    def default(self, f):
+    def default(self, f):  # pylint:disable=arguments-differ,method-hidden
         if issubclass(type(f), list):
             record_list = []
             for i in f:
@@ -239,7 +239,7 @@ class FileRecordJSONDecoder(json.JSONDecoder):
                 return rv
         return obj
 
-    def decode(self, s):
+    def decode(self, s):  # pylint:disable=arguments-differ
         decoded = json.JSONDecoder.decode(self, s)
         rv = self.process_file_records(decoded)
         return rv
@@ -682,7 +682,7 @@ def freespace(p):
     "Returns the number of bytes free under directory `p`"
     if sys.platform == 'win32':  # pragma: no cover
         # os.statvfs doesn't work on Windows
-        import win32file
+        import win32file  # pylint: disable=import-error
 
         secsPerClus, bytesPerSec, nFreeClus, totClus = win32file.GetDiskFreeSpace(
             p)
