@@ -510,8 +510,8 @@ def unpack_file(filename, setup=None):
     directory with a name matching the base of the given filename.
     Xz support is handled by shelling out to 'tar'."""
     if tarfile.is_tarfile(filename):
-        tar_file, zip_ext = os.path.splitext(filename)
-        base_file, tar_ext = os.path.splitext(tar_file)
+        tar_file, _ = os.path.splitext(filename)
+        base_file, _ = os.path.splitext(tar_file)
         clean_path(base_file)
         log.info('untarring "%s"', filename)
         tar = tarfile.open(filename)
