@@ -683,7 +683,7 @@ def freespace(p):
         # os.statvfs doesn't work on Windows
         import win32file  # pylint: disable=import-error
 
-        secsPerClus, bytesPerSec, nFreeClus, totClus = win32file.GetDiskFreeSpace(
+        secsPerClus, bytesPerSec, nFreeClus, _ = win32file.GetDiskFreeSpace(
             p)
         return secsPerClus * bytesPerSec * nFreeClus
     r = os.statvfs(p)
