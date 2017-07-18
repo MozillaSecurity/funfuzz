@@ -20,7 +20,7 @@ install:
 script:
     - flake8 --count ${TRAVIS_BUILD_DIR}
     # Do not run pylint on nightly Python versions as they may not be compatible
-    # - |
-    #     if [[ $TRAVIS_PYTHON_VERSION != "nightly" ]]; then
-    #         pylint ${TRAVIS_BUILD_DIR}
-    #     fi
+    - |
+        if [[ ( $TRAVIS_PYTHON_VERSION == '2.7' ) && ( $TRAVIS_PYTHON_VERSION != "nightly" ) ]]; then
+            pylint ${TRAVIS_BUILD_DIR}
+        fi
