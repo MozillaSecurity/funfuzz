@@ -687,7 +687,7 @@ def freespace(p):
         secsPerClus, bytesPerSec, nFreeClus, _ = win32file.GetDiskFreeSpace(
             p)
         return secsPerClus * bytesPerSec * nFreeClus
-    r = os.statvfs(p)
+    r = os.statvfs(p)  # os.statvfs is Unix-only  pylint: disable=no-member
     return r.f_frsize * r.f_bavail
 
 

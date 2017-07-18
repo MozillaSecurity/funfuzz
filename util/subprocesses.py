@@ -67,7 +67,8 @@ def getFreeSpace(folder, mulVar):
         ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
         retVal = float(free_bytes.value)
     else:
-        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)
+        # os.statvfs is Unix-only
+        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)  # pylint: disable=no-member
 
     return retVal // (1024 ** mulVar)
 
