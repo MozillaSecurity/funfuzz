@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=assignment-from-no-return,broad-except,fixme,invalid-name,logging-too-few-args,missing-docstring
+# pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-lines,too-many-return-statements
+# pylint: disable=too-many-statements
 
 # tooltool is a lookaside cache implemented in Python
 # Copyright (C) 2011 John H. Ford <john@johnford.info>
