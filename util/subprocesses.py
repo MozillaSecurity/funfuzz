@@ -180,12 +180,12 @@ def dateStr():
 
 def disableCorefile():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
-    import resource  # module only available on POSIX
+    import resource  # module only available on POSIX  pylint: disable=import-error
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
 def getCoreLimit():
-    import resource  # module only available on POSIX
+    import resource  # module only available on POSIX  pylint: disable=import-error
     return resource.getrlimit(resource.RLIMIT_CORE)
 
 
