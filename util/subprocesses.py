@@ -491,7 +491,7 @@ def handleRemoveReadOnly(func, path, exc):
             os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
         func(path)
     else:
-        raise
+        raise OSError("Unable to handle read-only files.")
 
 
 def normExpUserPath(p):
