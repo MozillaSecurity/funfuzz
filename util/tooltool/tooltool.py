@@ -173,7 +173,7 @@ class FileRecordJSONEncoder(json.JSONEncoder):
         if not issubclass(type(obj), FileRecord):
             err = "FileRecordJSONEncoder is only for FileRecord and lists of FileRecords, " \
                   "not %s" % obj.__class__.__name__
-            log.warn(err)
+            log.warning(err)
             raise FileRecordJSONEncoderException(err)
         else:
             rv = {
@@ -443,7 +443,7 @@ def touch(f):
     try:
         os.utime(f, None)
     except OSError:
-        log.warn("impossible to update utime of file %s", f)
+        log.warning("impossible to update utime of file %s", f)
 
 
 def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, region=None):
@@ -597,8 +597,8 @@ def fetch_files(manifest_file, base_urls, filenames=None, cache_folder=None,
                 else:
                     # the file copied from the cache is invalid, better to
                     # clean up the cache version itself as well
-                    log.warn("File %s retrieved from cache is invalid! I am deleting it from the "
-                             "cache as well", f.filename)
+                    log.warning("File %s retrieved from cache is invalid! I am deleting it from the "
+                                "cache as well", f.filename)
                     os.remove(os.path.join(os.getcwd(), f.filename))
                     os.remove(os.path.join(cache_folder, f.digest))
             except IOError:
