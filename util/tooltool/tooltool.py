@@ -539,8 +539,9 @@ def unpack_file(filename, setup=None):
     return True
 
 
-def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
+def fetch_files(manifest_file, base_urls, filenames=None, cache_folder=None,
                 auth_file=None, region=None):
+    filenames = filenames or []
     # Lets load the manifest file
     try:
         manifest = open_manifest(manifest_file)
