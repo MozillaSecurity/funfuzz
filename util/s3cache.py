@@ -69,8 +69,7 @@ class S3Cache(object):
             key.get_contents_to_filename(dest)
             print("Finished downloading.")
             return True
-        else:
-            return False
+        return False
 
     def compressAndUploadDirTarball(self, directory, tarball_path):
         """Compress a directory into a bz2 tarball and upload it to S3."""

@@ -17,7 +17,7 @@ import stat
 import subprocess
 import sys
 import time
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import knownBrokenEarliestWorking as kbew
 

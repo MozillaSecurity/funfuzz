@@ -27,7 +27,7 @@ import hashlib
 import httplib
 import json
 import logging
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import shutil
 import sys
@@ -104,8 +104,7 @@ class FileRecord(object):
            self.algorithm == other.algorithm and \
            self.visibility == other.visibility:
             return True
-        else:
-            return False
+        return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -150,8 +149,7 @@ class FileRecord(object):
             return "'%s' is present and valid" % self.filename
         elif self.present():
             return "'%s' is present and invalid" % self.filename
-        else:
-            return "'%s' is absent" % self.filename
+        return "'%s' is absent" % self.filename
 
 
 def create_file_record(filename, algorithm):
@@ -192,8 +190,7 @@ class FileRecordJSONEncoder(json.JSONEncoder):
             for i in f:
                 record_list.append(self.encode_file_record(i))
             return record_list
-        else:
-            return self.encode_file_record(f)
+        return self.encode_file_record(f)
 
 
 class FileRecordJSONDecoder(json.JSONDecoder):
@@ -232,7 +229,7 @@ class FileRecordJSONDecoder(json.JSONDecoder):
                 rv = FileRecord(
                     obj['filename'], obj['size'], obj['digest'], obj['algorithm'],
                     unpack, visibility, setup)
-                log.debug("materialized %s" % rv)
+                log.debug("materialized %s", rv)
                 return rv
         return obj
 
@@ -348,10 +345,10 @@ def open_manifest(manifest_file):
         manifest = Manifest()
         with open(manifest_file) as f:
             manifest.load(f)
-            log.debug("loaded manifest from file '%s'" % manifest_file)
+            log.debug("loaded manifest from file '%s'", manifest_file)
         return manifest
     else:
-        log.debug("tried to load absent file '%s' as manifest" % manifest_file)
+        log.debug("tried to load absent file '%s' as manifest", manifest_file)
         raise InvalidManifest(
             "manifest file '%s' does not exist" % manifest_file)
 
@@ -361,10 +358,7 @@ def list_manifest(manifest_file):
     try:
         manifest = open_manifest(manifest_file)
     except InvalidManifest as e:
-        log.error("failed to load manifest file at '%s': %s" % (
-            manifest_file,
-            str(e),
-        ))
+        log.error("failed to load manifest file at '%s': %s", manifest_file, e)
         return False
     for f in manifest.file_records:
         print "%s\t%s\t%s" % ("P" if f.present() else "-",
@@ -379,10 +373,7 @@ def validate_manifest(manifest_file):
     try:
         manifest = open_manifest(manifest_file)
     except InvalidManifest as e:
-        log.error("failed to load manifest file at '%s': %s" % (
-            manifest_file,
-            str(e),
-        ))
+        log.error("failed to load manifest file at '%s': %s", manifest_file, e)
         return False
     invalid_files = []
     absent_files = []
@@ -392,10 +383,9 @@ def validate_manifest(manifest_file):
         else:
             if not f.validate():
                 invalid_files.append(f)
-    if len(invalid_files + absent_files) == 0:
+    if not invalid_files + absent_files:
         return True
-    else:
-        return False
+    return False
 
 
 def add_files(manifest_file, algorithm, filenames, visibility):
@@ -412,24 +402,24 @@ def add_files(manifest_file, algorithm, filenames, visibility):
         log.debug("creating a new manifest file")
     new_manifest = Manifest()  # use a different manifest for the output
     for filename in filenames:
-        log.debug("adding %s" % filename)
+        log.debug("adding %s", filename)
         path, name = os.path.split(filename)
         new_fr = create_file_record(filename, algorithm)
         new_fr.visibility = visibility
         log.debug("appending a new file record to manifest file")
         add = True
         for fr in old_manifest.file_records:
-            log.debug("manifest file has '%s'" % "', ".join(
+            log.debug("manifest file has '%s'", "', ".join(
                 [x.filename for x in old_manifest.file_records]))
             if new_fr == fr:
                 log.info("file already in old_manifest")
                 add = False
             elif filename == fr.filename:
-                log.error("manifest already contains a different file named %s" % filename)
+                log.error("manifest already contains a different file named %s", filename)
                 add = False
         if add:
             new_manifest.file_records.append(new_fr)
-            log.debug("added '%s' to manifest" % filename)
+            log.debug("added '%s' to manifest", filename)
         else:
             all_files_added = False
     # copy any files in the old manifest that aren't in the new one
@@ -448,7 +438,7 @@ def touch(f):
     try:
         os.utime(f, None)
     except OSError:
-        log.warn('impossible to update utime of file %s' % f)
+        log.warn("impossible to update utime of file %s", f)
 
 
 def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, region=None):
@@ -464,14 +454,14 @@ def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, regio
         if region is not None:
             url += '?region=' + region
 
-        log.info("Attempting to fetch from '%s'..." % base_url)
+        log.info("Attempting to fetch from '%s'...", base_url)
 
         # Well, the file doesn't exist locally.  Let's fetch it.
         try:
             req = urllib2.Request(url)
             _authorize(req, auth_file)
             f = urllib2.urlopen(req)
-            log.debug("opened %s for reading" % url)
+            log.debug("opened %s for reading", url)
             with open(temp_path, 'wb') as out:
                 k = True
                 size = 0
@@ -483,33 +473,29 @@ def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, regio
                     size += len(indata)
                     if indata == '':
                         k = False
-                log.info("File %s fetched from %s as %s" %
-                         (file_record.filename, base_url, temp_path))
+                log.info("File %s fetched from %s as %s", file_record.filename, base_url, temp_path)
                 fetched_path = temp_path
                 break
         except (urllib2.URLError, urllib2.HTTPError, ValueError) as e:
-            log.info("...failed to fetch '%s' from %s" %
-                     (file_record.filename, base_url))
-            log.debug("%s" % e)
+            log.info("...failed to fetch '%s' from %s", file_record.filename, base_url)
+            log.debug("%s", e)
         except IOError:  # pragma: no cover
-            log.info("failed to write to temporary file for '%s'" %
-                     file_record.filename, exc_info=True)
+            log.info("failed to write to temporary file for '%s'", file_record.filename, exc_info=True)
 
     # cleanup temp file in case of issues
     if fetched_path:
         return os.path.split(fetched_path)[1]
-    else:
-        try:
-            os.remove(temp_path)
-        except OSError:  # pragma: no cover
-            pass
-        return None
+    try:
+        os.remove(temp_path)
+    except OSError:  # pragma: no cover
+        pass
+    return None
 
 
 def clean_path(dirname):
     """Remove a subtree if is exists. Helper for unpack_file()."""
     if os.path.exists(dirname):
-        log.info('rm tree: %s' % dirname)
+        log.info("rm tree: %s", dirname)
         shutil.rmtree(dirname)
 
 
@@ -522,25 +508,25 @@ def unpack_file(filename, setup=None):
         tar_file, zip_ext = os.path.splitext(filename)
         base_file, tar_ext = os.path.splitext(tar_file)
         clean_path(base_file)
-        log.info('untarring "%s"' % filename)
+        log.info('untarring "%s"', filename)
         tar = tarfile.open(filename)
         tar.extractall()
         tar.close()
     elif filename.endswith('.tar.xz'):
         base_file = filename.replace('.tar.xz', '')
         clean_path(base_file)
-        log.info('untarring "%s"' % filename)
+        log.info('untarring "%s"', filename)
         if not execute('tar -Jxf %s 2>&1' % filename):
             return False
     elif zipfile.is_zipfile(filename):
         base_file = filename.replace('.zip', '')
         clean_path(base_file)
-        log.info('unzipping "%s"' % filename)
+        log.info('unzipping "%s"', filename)
         z = zipfile.ZipFile(filename)
         z.extractall()
         z.close()
     else:
-        log.error("Unknown archive extension for filename '%s'" % filename)
+        log.error("Unknown archive extension for filename '%s'", filename)
         return False
 
     if setup and not execute(os.path.join(base_file, setup)):
@@ -554,10 +540,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
     try:
         manifest = open_manifest(manifest_file)
     except InvalidManifest as e:
-        log.error("failed to load manifest file at '%s': %s" % (
-            manifest_file,
-            str(e),
-        ))
+        log.error("failed to load manifest file at '%s': %s", manifest_file, e)
         return False
 
     # we want to track files already in current working directory AND valid
@@ -588,7 +571,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
                 # this invalid file needs to be replaced with a good one
                 # from the local cash or fetched from a tooltool server
                 log.info("File %s is present locally but it is invalid, so I will remove it "
-                         "and try to fetch it" % f.filename)
+                         "and try to fetch it", f.filename)
                 os.remove(os.path.join(os.getcwd(), f.filename))
 
         # check if file is already in cache
@@ -596,8 +579,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
             try:
                 shutil.copy(os.path.join(cache_folder, f.digest),
                             os.path.join(os.getcwd(), f.filename))
-                log.info("File %s retrieved from local cache %s" %
-                         (f.filename, cache_folder))
+                log.info("File %s retrieved from local cache %s", f.filename, cache_folder)
                 touch(os.path.join(cache_folder, f.digest))
 
                 filerecord_for_validation = FileRecord(
@@ -610,12 +592,11 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
                     # the file copied from the cache is invalid, better to
                     # clean up the cache version itself as well
                     log.warn("File %s retrieved from cache is invalid! I am deleting it from the "
-                             "cache as well" % f.filename)
+                             "cache as well", f.filename)
                     os.remove(os.path.join(os.getcwd(), f.filename))
                     os.remove(os.path.join(cache_folder, f.digest))
             except IOError:
-                log.info("File %s not present in local cache folder %s" %
-                         (f.filename, cache_folder))
+                log.info("File %s not present in local cache folder %s", f.filename, cache_folder)
 
         # now I will try to fetch all files which are not already present and
         # valid, appending a suffix to avoid race conditions
@@ -624,21 +605,21 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
         # is a non empty list it can be used to filter if filename is in
         # present_files, it means that I have it already because it was already
         # either in the working dir or in the cache
-        if (f.filename in filenames or len(filenames) == 0) and f.filename not in present_files:
-            log.debug("fetching %s" % f.filename)
+        if (f.filename in filenames or not filenames) and f.filename not in present_files:
+            log.debug("fetching %s", f.filename)
             temp_file_name = fetch_file(base_urls, f, auth_file=auth_file, region=region)
             if temp_file_name:
                 fetched_files.append((f, temp_file_name))
             else:
                 failed_files.append(f.filename)
         else:
-            log.debug("skipping %s" % f.filename)
+            log.debug("skipping %s", f.filename)
 
         if f.setup:
             if f.unpack:
                 setup_files[f.filename] = f.setup
             else:
-                log.error("'setup' requires 'unpack' being set for %s" % f.filename)
+                log.error("'setup' requires 'unpack' being set for %s", f.filename)
                 failed_files.append(f.filename)
 
     # lets ensure that fetched files match what the manifest specified
@@ -652,8 +633,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
         if filerecord_for_validation.validate():
             # great!
             # I can rename the temp file
-            log.info("File integrity verified, renaming %s to %s" %
-                     (temp_file_name, localfile.filename))
+            log.info("File integrity verified, renaming %s to %s", temp_file_name, localfile.filename)
             os.rename(os.path.join(os.getcwd(), temp_file_name),
                       os.path.join(os.getcwd(), localfile.filename))
 
@@ -663,22 +643,21 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
             # if I am using a cache and a new file has just been retrieved from a
             # remote location, I need to update the cache as well
             if cache_folder:
-                log.info("Updating local cache %s..." % cache_folder)
+                log.info("Updating local cache %s...", cache_folder)
                 try:
                     if not os.path.exists(cache_folder):
-                        log.info("Creating cache in %s..." % cache_folder)
+                        log.info("Creating cache in %s...", cache_folder)
                         os.makedirs(cache_folder, 0700)
                     shutil.copy(os.path.join(os.getcwd(), localfile.filename),
                                 os.path.join(cache_folder, localfile.digest))
-                    log.info("Local cache %s updated with %s" % (cache_folder,
-                                                                 localfile.filename))
+                    log.info("Local cache %s updated with %s", cache_folder, localfile.filename)
                     touch(os.path.join(cache_folder, localfile.digest))
                 except (OSError, IOError):
-                    log.warning('Impossible to add file %s to cache folder %s' %
-                                (localfile.filename, cache_folder), exc_info=True)
+                    log.warning('Impossible to add file %s to cache folder %s', localfile.filename, cache_folder,
+                                exc_info=True)
         else:
             failed_files.append(localfile.filename)
-            log.error("'%s'" % filerecord_for_validation.describe())
+            log.error("'%s'", filerecord_for_validation.describe())
             os.remove(temp_file_name)
 
     # Unpack files that need to be unpacked.
@@ -687,9 +666,8 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
             failed_files.append(filename)
 
     # If we failed to fetch or validate a file, we need to fail
-    if len(failed_files) > 0:
-        log.error("The following files failed: '%s'" %
-                  "', ".join(failed_files))
+    if failed_files:
+        log.error("The following files failed: '%s'", "', ".join(failed_files))
         return False
     return True
 
@@ -703,9 +681,8 @@ def freespace(p):
         secsPerClus, bytesPerSec, nFreeClus, totClus = win32file.GetDiskFreeSpace(
             p)
         return secsPerClus * bytesPerSec * nFreeClus
-    else:
-        r = os.statvfs(p)
-        return r.f_frsize * r.f_bavail
+    r = os.statvfs(p)
+    return r.f_frsize * r.f_bavail
 
 
 def purge(folder, gigs):
@@ -732,11 +709,11 @@ def purge(folder, gigs):
 
     # iterate files sorted by mtime
     for _, f in sorted(files):
-        log.info("removing %s to free up space" % f)
+        log.info("removing %s to free up space", f)
         try:
             os.remove(f)
         except OSError:
-            log.info("Impossible to remove %s" % f, exc_info=True)
+            log.info("Impossible to remove %s", f, exc_info=True)
         if not full_purge and freespace(folder) >= gigs:
             break
 
@@ -744,15 +721,14 @@ def purge(folder, gigs):
 def _log_api_error(e):
     if hasattr(e, 'hdrs') and e.hdrs['content-type'] == 'application/json':
         json_resp = json.load(e.fp)
-        log.error("%s: %s" % (json_resp['error']['name'],
-                              json_resp['error']['description']))
+        log.error("%s: %s", json_resp['error']['name'], json_resp['error']['description'])
     else:
         log.exception("Error making RelengAPI request:")
 
 
 def _authorize(req, auth_file):
     if auth_file:
-        log.debug("using bearer token in %s" % auth_file)
+        log.debug("using bearer token in %s", auth_file)
         req.add_unredirected_header('Authorization',
                                     'Bearer %s' % (open(auth_file).read().strip()))
 
@@ -810,7 +786,7 @@ def _notify_upload_complete(base_url, auth_file, file):
         # 409 indicates that the upload URL hasn't expired yet and we
         # should retry after a delay
         to_wait = int(e.headers.get('X-Retry-After', 60))
-        log.warning("Waiting %d seconds for upload URLs to expire" % to_wait)
+        log.warning("Waiting %d seconds for upload URLs to expire", to_wait)
         time.sleep(to_wait)
         _notify_upload_complete(base_url, auth_file, file)
     except Exception:
@@ -856,14 +832,14 @@ def upload(manifest, message, base_urls, auth_file, region):
     threads = {}
     for filename, file in files.iteritems():
         if 'put_url' in file:
-            log.info("%s: starting upload" % (filename,))
+            log.info("%s: starting upload", filename)
             thd = threading.Thread(target=_s3_upload,
                                    args=(filename, file))
             thd.daemon = 1
             thd.start()
             threads[filename] = thd
         else:
-            log.info("%s: already exists on server" % (filename,))
+            log.info("%s: already exists on server", filename)
 
     # re-join all of those threads as they exit
     success = True
@@ -874,10 +850,9 @@ def upload(manifest, message, base_urls, auth_file, region):
                 file = files[filename]
                 thread.join()
                 if file['upload_ok']:
-                    log.info("%s: uploaded" % filename)
+                    log.info("%s: uploaded", filename)
                 else:
-                    log.error("%s: failed" % filename,
-                              exc_info=file['upload_exception'])
+                    log.error("%s: failed", filename, exc_info=file['upload_exception'])
                     success = False
                 del threads[filename]
 
@@ -886,7 +861,7 @@ def upload(manifest, message, base_urls, auth_file, region):
     # eventually)
     for filename, file in files.iteritems():
         if 'put_url' in file and file['upload_ok']:
-            log.info("notifying server of upload completion for %s" % (filename,))
+            log.info("notifying server of upload completion for %s", filename)
             _notify_upload_complete(base_urls[0], auth_file, file)
 
     return success
@@ -897,9 +872,8 @@ def process_command(options, args):
     start doing the right thing with them"""
     cmd = args[0]
     cmd_args = args[1:]
-    log.debug("processing '%s' command with args '%s'" %
-              (cmd, '", "'.join(cmd_args)))
-    log.debug("using options: %s" % options)
+    log.debug("processing '%s' command with args '%s'", cmd, '", "'.join(cmd_args))
+    log.debug("using options: %s", options)
 
     if cmd == 'list':
         return list_manifest(options['manifest'])
@@ -933,7 +907,7 @@ def process_command(options, args):
             options.get('auth_file'),
             options.get('region'))
     else:
-        log.critical('command "%s" is not implemented' % cmd)
+        log.critical('command "%s" is not implemented', cmd)
         return False
 
 

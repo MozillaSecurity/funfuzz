@@ -17,7 +17,7 @@ import shutil
 import sys
 import tempfile
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
@@ -85,7 +85,7 @@ def parseOpts():
                            "Defaults to taking into account the speed of the computer and debugger (if any).")
 
     options, args = parser.parse_args()
-    if len(args) > 0:
+    if args:
         print("Warning: bot.py does not use positional arguments")
 
     if not options.testType or options.testType == 'dom':

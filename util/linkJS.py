@@ -19,7 +19,7 @@ def linkJS(target_fn, file_list_fn, source_base, prologue="", module_dirs=[]):
         with open(file_list_fn) as file_list:
             for source_fn in file_list:
                 source_fn = source_fn.replace("/", os.path.sep).strip()
-                if len(source_fn) > 0 and source_fn[0] != "#":
+                if source_fn and source_fn[0] != "#":
                     addContents(os.path.join(source_base, source_fn), target)
 
         # Add all *.js files in module_dirs

@@ -18,7 +18,7 @@ import subprocess
 import sys
 from HTMLParser import HTMLParser
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import subprocesses as sps
 
 # Use curl/wget rather than urllib because urllib can't check certs.
@@ -95,7 +95,7 @@ def parseOptions():
 
     options, args = parser.parse_args()
     assert options.compileType in ['dbg', 'opt']
-    assert len(args) == 0
+    assert not args
     return options
 
 

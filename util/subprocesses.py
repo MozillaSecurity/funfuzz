@@ -28,7 +28,7 @@ isWin = (platform.system() == 'Windows')
 isWin10 = isWin and (platform.uname()[2] == '10')
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
-isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)
+isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=no-member
 isMozBuild64 = False
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
@@ -131,14 +131,14 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
                     raise Exception('Windows conftest.exe configuration permission problem')
                 else:
                     raise Exception('Nonzero exit code')
-    if not combineStderr and not ignoreStderr and len(stderr) > 0:
+    if not combineStderr and not ignoreStderr and stderr:
         # Ignore hg color mode throwing an error in console on Windows platforms.
         if not (isWin and 'warning: failed to set color mode to win32' in stderr):
             print("Unexpected output on stderr from: ")
             print("  %s" % shellify(cmd))
             print("%s %s" % (stdout, stderr))
             raise Exception('Unexpected output on stderr')
-    if stderr and ignoreStderr and len(stderr) > 0 and p.returncode != 0:
+    if stderr and ignoreStderr and stderr and p.returncode != 0:
         # During configure, there will always be stderr. Sometimes this stderr causes configure to
         # stop the entire script, especially on Windows.
         print("Return code not zero, and unexpected output on stderr from: ")
@@ -350,22 +350,25 @@ def constructCdbCommand(progfullname, crashedPID):
 
 def isWinDumpingToDefaultLocation():
     """Check whether Windows minidumps are enabled and set to go to Windows' default location."""
-    import _winreg
+    if sys.version_info.major == 2:
+        import _winreg as winreg  # pylint: disable=import-error
+    else:
+        import winreg  # pylint: disable=import-error
     # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
     # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
     # If writing a key, we most likely need to flush. For the moment, no keys are written.
     try:
-        with _winreg.OpenKey(_winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE),
-                             r'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps',
-                             # Read key from 64-bit registry, which also works for 32-bit
-                             0, (_winreg.KEY_WOW64_64KEY + _winreg.KEY_READ)) as key:
+        with winreg.OpenKey(winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE),
+                            r"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps",
+                            # Read key from 64-bit registry, which also works for 32-bit
+                            0, (winreg.KEY_WOW64_64KEY + winreg.KEY_READ)) as key:
 
             try:
-                dumpTypeRegValue = _winreg.QueryValueEx(key, 'DumpType')
-                if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == _winreg.REG_DWORD):
+                dumpTypeRegValue = winreg.QueryValueEx(key, "DumpType")
+                if not (dumpTypeRegValue[0] == 1 and dumpTypeRegValue[1] == winreg.REG_DWORD):
                     print(noMinidumpMsg)
                     return False
-            except WindowsError as e:
+            except WindowsError as e:  # pylint: disable=undefined-variable
                 if e.errno == 2:
                     print(noMinidumpMsg)
                     return False
@@ -373,16 +376,16 @@ def isWinDumpingToDefaultLocation():
                     raise
 
             try:
-                dumpFolderRegValue = _winreg.QueryValueEx(key, 'DumpFolder')
+                dumpFolderRegValue = winreg.QueryValueEx(key, "DumpFolder")
                 # %LOCALAPPDATA%\CrashDumps is the default location.
                 if not (dumpFolderRegValue[0] == r'%LOCALAPPDATA%\CrashDumps' and
-                        dumpFolderRegValue[1] == _winreg.REG_EXPAND_SZ):
+                        dumpFolderRegValue[1] == winreg.REG_EXPAND_SZ):
                     print()
                     print("WARNING: Dumps are instead appearing at: %s - "
                           "all crashes will be uninteresting." % dumpFolderRegValue[0])
                     print()
                     return False
-            except WindowsError as e:
+            except WindowsError as e:  # pylint: disable=undefined-variable
                 # If the key value cannot be found, the dumps will be put in the default location
                 if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
                     return True
@@ -390,7 +393,7 @@ def isWinDumpingToDefaultLocation():
                     raise
 
         return True
-    except WindowsError as e:
+    except WindowsError as e:  # pylint: disable=undefined-variable
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
         if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
             print()

@@ -10,7 +10,7 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import subprocesses as sps
 
