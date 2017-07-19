@@ -10,7 +10,7 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
-from distutils.version import StrictVersion
+from distutils.version import StrictVersion  # pylint issue 73 https://git.io/vQAhf  pylint: disable=no-name-in-module
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))

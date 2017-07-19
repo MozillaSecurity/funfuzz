@@ -168,7 +168,10 @@ def ensureCacheDir():
     # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
     # This has to occur after the shell-cache directory is created
     if sps.isWin:  # adapted from http://stackoverflow.com/a/3931799
-        utext = unicode if sys.version_info.major == 2 else str  # noqa pylint: disable=redefined-builtin,invalid-name
+        if sys.version_info.major == 2:
+            utext = unicode   # noqa pylint: disable=redefined-builtin,undefined-variable
+        else:
+            utext = str
         winTmpDir = utext(cacheDir)
         GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
         unicodeBuffer = ctypes.create_unicode_buffer(GetLongPathName(winTmpDir, 0, 0))

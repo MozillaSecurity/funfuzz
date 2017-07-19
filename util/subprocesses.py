@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=dangerous-default-value,invalid-name,line-too-long,missing-docstring,no-else-return,old-style-class,too-few-public-methods,too-many-arguments,too-many-branches,too-many-statements
+# pylint: disable=consider-using-enumerate,dangerous-default-value,invalid-name,line-too-long,missing-docstring
+# pylint: disable=no-else-return,old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
+# pylint: disable=too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -65,7 +67,8 @@ def getFreeSpace(folder, mulVar):
         ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
         retVal = float(free_bytes.value)
     else:
-        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)
+        # os.statvfs is Unix-only
+        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)  # pylint: disable=no-member
 
     return retVal // (1024 ** mulVar)
 
@@ -177,12 +180,12 @@ def dateStr():
 
 def disableCorefile():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
-    import resource  # module only available on POSIX
+    import resource  # module only available on POSIX  pylint: disable=import-error
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
 def getCoreLimit():
-    import resource  # module only available on POSIX
+    import resource  # module only available on POSIX  pylint: disable=import-error
     return resource.getrlimit(resource.RLIMIT_CORE)
 
 
@@ -491,7 +494,7 @@ def handleRemoveReadOnly(func, path, exc):
             os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
         func(path)
     else:
-        raise
+        raise OSError("Unable to handle read-only files.")
 
 
 def normExpUserPath(p):

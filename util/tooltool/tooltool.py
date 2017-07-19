@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
+# pylint: disable=assignment-from-no-return,broad-except,fixme,invalid-name,logging-too-few-args,missing-docstring
+# pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-lines,too-many-return-statements
+# pylint: disable=too-many-statements
 
 # tooltool is a lookaside cache implemented in Python
 # Copyright (C) 2011 John H. Ford <john@johnford.info>
@@ -166,11 +169,11 @@ def create_file_record(filename, algorithm):
 
 class FileRecordJSONEncoder(json.JSONEncoder):
 
-    def encode_file_record(self, obj):
+    def encode_file_record(self, obj):  # pylint: disable=no-self-use
         if not issubclass(type(obj), FileRecord):
             err = "FileRecordJSONEncoder is only for FileRecord and lists of FileRecords, " \
                   "not %s" % obj.__class__.__name__
-            log.warn(err)
+            log.warning(err)
             raise FileRecordJSONEncoderException(err)
         else:
             rv = {
@@ -187,7 +190,7 @@ class FileRecordJSONEncoder(json.JSONEncoder):
                 rv['setup'] = obj.setup
             return rv
 
-    def default(self, f):
+    def default(self, f):  # pylint:disable=arguments-differ,method-hidden
         if issubclass(type(f), list):
             record_list = []
             for i in f:
@@ -236,7 +239,7 @@ class FileRecordJSONDecoder(json.JSONDecoder):
                 return rv
         return obj
 
-    def decode(self, s):
+    def decode(self, s):  # pylint:disable=arguments-differ
         decoded = json.JSONDecoder.decode(self, s)
         rv = self.process_file_records(decoded)
         return rv
@@ -406,7 +409,6 @@ def add_files(manifest_file, algorithm, filenames, visibility):
     new_manifest = Manifest()  # use a different manifest for the output
     for filename in filenames:
         log.debug("adding %s", filename)
-        path, name = os.path.split(filename)
         new_fr = create_file_record(filename, algorithm)
         new_fr.visibility = visibility
         log.debug("appending a new file record to manifest file")
@@ -441,7 +443,7 @@ def touch(f):
     try:
         os.utime(f, None)
     except OSError:
-        log.warn("impossible to update utime of file %s", f)
+        log.warning("impossible to update utime of file %s", f)
 
 
 def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, region=None):
@@ -508,8 +510,8 @@ def unpack_file(filename, setup=None):
     directory with a name matching the base of the given filename.
     Xz support is handled by shelling out to 'tar'."""
     if tarfile.is_tarfile(filename):
-        tar_file, zip_ext = os.path.splitext(filename)
-        base_file, tar_ext = os.path.splitext(tar_file)
+        tar_file, _ = os.path.splitext(filename)
+        base_file, _ = os.path.splitext(tar_file)
         clean_path(base_file)
         log.info('untarring "%s"', filename)
         tar = tarfile.open(filename)
@@ -537,8 +539,9 @@ def unpack_file(filename, setup=None):
     return True
 
 
-def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
+def fetch_files(manifest_file, base_urls, filenames=None, cache_folder=None,
                 auth_file=None, region=None):
+    filenames = filenames or []
     # Lets load the manifest file
     try:
         manifest = open_manifest(manifest_file)
@@ -594,8 +597,8 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
                 else:
                     # the file copied from the cache is invalid, better to
                     # clean up the cache version itself as well
-                    log.warn("File %s retrieved from cache is invalid! I am deleting it from the "
-                             "cache as well", f.filename)
+                    log.warning("File %s retrieved from cache is invalid! I am deleting it from the "
+                                "cache as well", f.filename)
                     os.remove(os.path.join(os.getcwd(), f.filename))
                     os.remove(os.path.join(cache_folder, f.digest))
             except IOError:
@@ -679,12 +682,12 @@ def freespace(p):
     "Returns the number of bytes free under directory `p`"
     if sys.platform == 'win32':  # pragma: no cover
         # os.statvfs doesn't work on Windows
-        import win32file
+        import win32file  # pylint: disable=import-error
 
-        secsPerClus, bytesPerSec, nFreeClus, totClus = win32file.GetDiskFreeSpace(
+        secsPerClus, bytesPerSec, nFreeClus, _ = win32file.GetDiskFreeSpace(
             p)
         return secsPerClus * bytesPerSec * nFreeClus
-    r = os.statvfs(p)
+    r = os.statvfs(p)  # os.statvfs is Unix-only  pylint: disable=no-member
     return r.f_frsize * r.f_bavail
 
 
@@ -750,9 +753,9 @@ def _send_batch(base_url, auth_file, batch, region):
     return json.load(resp)['result']
 
 
-def _s3_upload(filename, file):
+def _s3_upload(filename, file_):
     # urllib2 does not support streaming, so we fall back to good old httplib
-    url = urlparse.urlparse(file['put_url'])
+    url = urlparse.urlparse(file_['put_url'])
     cls = httplib.HTTPSConnection if url.scheme == 'https' else httplib.HTTPConnection
     host, port = url.netloc.split(':') if ':' in url.netloc else (url.netloc, 443)
     port = int(port)
@@ -768,17 +771,17 @@ def _s3_upload(filename, file):
             raise RuntimeError("Non-200 return from AWS: %s %s\n%s" %
                                (resp.status, resp.reason, resp_body))
     except Exception:
-        file['upload_exception'] = sys.exc_info()
-        file['upload_ok'] = False
+        file_['upload_exception'] = sys.exc_info()
+        file_['upload_ok'] = False
     else:
-        file['upload_ok'] = True
+        file_['upload_ok'] = True
 
 
-def _notify_upload_complete(base_url, auth_file, file):
+def _notify_upload_complete(base_url, auth_file, file_):
     req = urllib2.Request(
         urlparse.urljoin(
             base_url,
-            'upload/complete/%(algorithm)s/%(digest)s' % file))
+            'upload/complete/%(algorithm)s/%(digest)s' % file_))
     _authorize(req, auth_file)
     try:
         urllib2.urlopen(req)
@@ -791,7 +794,7 @@ def _notify_upload_complete(base_url, auth_file, file):
         to_wait = int(e.headers.get('X-Retry-After', 60))
         log.warning("Waiting %d seconds for upload URLs to expire", to_wait)
         time.sleep(to_wait)
-        _notify_upload_complete(base_url, auth_file, file)
+        _notify_upload_complete(base_url, auth_file, file_)
     except Exception:
         log.exception("While notifying server of upload completion:")
 
@@ -833,11 +836,11 @@ def upload(manifest, message, base_urls, auth_file, region):
     # Upload the files, each in a thread.  This allows us to start all of the
     # uploads before any of the URLs expire.
     threads = {}
-    for filename, file in files.iteritems():
-        if 'put_url' in file:
+    for filename, file_ in files.iteritems():
+        if 'put_url' in file_:
             log.info("%s: starting upload", filename)
             thd = threading.Thread(target=_s3_upload,
-                                   args=(filename, file))
+                                   args=(filename, file_))
             thd.daemon = 1
             thd.start()
             threads[filename] = thd
@@ -850,22 +853,22 @@ def upload(manifest, message, base_urls, auth_file, region):
         for filename, thread in threads.items():
             if not thread.is_alive():
                 # _s3_upload has annotated file with result information
-                file = files[filename]
+                file_ = files[filename]
                 thread.join()
-                if file['upload_ok']:
+                if file_['upload_ok']:
                     log.info("%s: uploaded", filename)
                 else:
-                    log.error("%s: failed", filename, exc_info=file['upload_exception'])
+                    log.error("%s: failed", filename, exc_info=file_['upload_exception'])
                     success = False
                 del threads[filename]
 
     # notify the server that the uploads are completed.  If the notification
     # fails, we don't consider that an error (the server will notice
     # eventually)
-    for filename, file in files.iteritems():
-        if 'put_url' in file and file['upload_ok']:
+    for filename, file_ in files.iteritems():
+        if 'put_url' in file_ and file_['upload_ok']:
             log.info("notifying server of upload completion for %s", filename)
-            _notify_upload_complete(base_urls[0], auth_file, file)
+            _notify_upload_complete(base_urls[0], auth_file, file_)
 
     return success
 
