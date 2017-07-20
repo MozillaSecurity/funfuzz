@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=consider-using-enumerate,dangerous-default-value,invalid-name,line-too-long,missing-docstring
+# pylint: disable=consider-using-enumerate,invalid-name,line-too-long,missing-docstring
 # pylint: disable=no-else-return,old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
 # pylint: disable=too-many-statements
 #
@@ -521,12 +521,13 @@ def shellify(cmd):
 
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                   cwd=None, env=os.environ, vb=False):
+                   cwd=None, env=None, vb=False):
     """
     Calculate how long a captureStdout command takes and prints it.
 
     Return the stdout and return value that captureStdout passes on.
     """
+    env = env or os.environ
     cwd = cwd or (
         os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     print("Running `%s` now.." % shellify(command))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=dangerous-default-value,invalid-name,missing-docstring
+# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,8 @@ from __future__ import absolute_import, print_function
 import os
 
 
-def linkJS(target_fn, file_list_fn, source_base, prologue="", module_dirs=[]):
+def linkJS(target_fn, file_list_fn, source_base, prologue="", module_dirs=None):
+    module_dirs = module_dirs or []
     with open(target_fn, "wb") as target:
         target.write(prologue)
 
