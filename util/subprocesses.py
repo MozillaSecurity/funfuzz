@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=consider-using-enumerate,invalid-name,line-too-long,missing-docstring
-# pylint: disable=no-else-return,old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
+# pylint: disable=old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
 # pylint: disable=too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -227,9 +227,8 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                         shutil.copyfile(fullfn, logPrefix + "-crash.txt")
                         captureStdout(["chmod", "og+r", logPrefix + "-crash.txt"])
                         return logPrefix + "-crash.txt"
-                    else:
-                        return fullfn
-                        # return open(fullfn).read()
+                    return fullfn
+                    # return open(fullfn).read()
 
             except (OSError, IOError):
                 # Maybe the log was rotated out between when we got the list
@@ -435,8 +434,7 @@ def constructGdbCommand(progfullname, crashedPID):
         # Run gdb and move the core file. Tip: gdb gives more info for:
         # (debug with intact build dir > debug > opt with frame pointers > opt)
         return ["gdb", "-n", "-batch", "-x", debuggerCmdPath, progfullname, coreFilename]
-    else:
-        return None
+    return None
 
 
 def getAbsPathForAdjacentFile(filename):

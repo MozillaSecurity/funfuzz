@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,import-error,invalid-name,invalid-unary-operand-type,line-too-long,literal-comparison,missing-docstring,no-else-return,too-many-arguments,too-many-boolean-expressions,too-many-branches,too-many-locals,too-many-return-statements,too-many-statements,wrong-import-position
+# pylint: disable=broad-except,import-error,invalid-name,invalid-unary-operand-type,line-too-long,literal-comparison,missing-docstring,too-many-arguments,too-many-boolean-expressions,too-many-branches,too-many-locals,too-many-return-statements,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -288,8 +288,7 @@ def internalTestAndLabel(options):
                 return ('good', 'Bad output, but not the specified one')
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
                 return ('good', 'Negative exit code, but not the specified one')
-            else:
-                return ('bad', 'Negative exit code ' + str(exitCode))
+            return ('bad', 'Negative exit code ' + str(exitCode))
         elif exitCode == 0:
             return ('good', 'Exit code 0')
         elif (exitCode == 1 or exitCode == 2) and (options.output != '') and \
@@ -302,8 +301,7 @@ def internalTestAndLabel(options):
             return ('good', 'Acceptable exit code ' + str(exitCode))
         elif options.watchExitCode is not None:
             return ('good', 'Unknown exit code ' + str(exitCode) + ', but not the specified one')
-        else:
-            return ('bad', 'Unknown exit code ' + str(exitCode))
+        return ('bad', 'Unknown exit code ' + str(exitCode))
     return inner
 
 
@@ -713,9 +711,8 @@ def getOneBuild(isJsShell, url, buildType):
         assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
             'the build subdirectory should be present in ' + tboxCacheFolder
         return True, idNum, tboxCacheFolder  # Downloaded, complete
-    else:
-        writeIncompleteBuildTxtFile(url, tboxCacheFolder, incompleteBuildTxtFile, idNum)
-        return False, None, None  # Downloaded, incomplete
+    writeIncompleteBuildTxtFile(url, tboxCacheFolder, incompleteBuildTxtFile, idNum)
+    return False, None, None  # Downloaded, incomplete
 
 
 def getTboxJsBinPath(baseDir):
