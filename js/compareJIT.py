@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=cell-var-from-loop,fixme,global-variable-undefined,import-error,invalid-name,line-too-long,missing-docstring,no-member,too-many-arguments,too-many-branches,too-many-locals,wrong-import-position
+# pylint: disable=cell-var-from-loop,fixme,global-statement,import-error,invalid-name,line-too-long,missing-docstring
+# pylint: disable=no-member,too-many-arguments,too-many-branches,too-many-locals,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,6 +29,7 @@ import FTB.Signatures.CrashInfo as CrashInfo
 from FTB.ProgramConfiguration import ProgramConfiguration
 
 
+gOptions = ""
 lengthLimit = 1000000
 
 
