@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring,useless-else-on-loop
+# pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -71,8 +71,7 @@ def readLithiumResult(lithlogfn):
             elif line.startswith("Lithium result: please continue using: "):
                 lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
                 return (LITH_PLEASE_CONTINUE, lithiumHint)
-        else:
-            return (LITH_BUSTED, None)
+        return (LITH_BUSTED, None)
 
 
 def ddsize(fn):
