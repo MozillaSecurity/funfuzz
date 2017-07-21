@@ -79,8 +79,10 @@ def getFreeSpace(folder, mulVar):
 
 
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                  currWorkingDir=os.getcwdu(), env='NOTSET', verbosity=False):
+                  currWorkingDir=None, env='NOTSET', verbosity=False):
     """Capture standard output, return the output as a string, along with the return value."""
+    currWorkingDir = currWorkingDir or (
+        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     if env == 'NOTSET':
         vdump(shellify(inputCmd))
         env = os.environ
@@ -519,12 +521,14 @@ def shellify(cmd):
 
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                   cwd=os.getcwdu(), env=os.environ, vb=False):
+                   cwd=None, env=os.environ, vb=False):
     """
     Calculate how long a captureStdout command takes and prints it.
 
     Return the stdout and return value that captureStdout passes on.
     """
+    cwd = cwd or (
+        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     print("Running `%s` now.." % shellify(command))
     startTime = time.time()
     stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,

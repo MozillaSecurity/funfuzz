@@ -68,7 +68,7 @@ def parseOptions():
 
     parser.set_defaults(
         compileType='dbg',
-        downloadFolder=os.getcwdu(),
+        downloadFolder=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         repoName='mozilla-central',
         enableJsShell=False,
         wantTests=False,
