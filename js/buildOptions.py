@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,missing-docstring,too-many-branches,too-many-return-statements,wrong-import-position
+# pylint: disable=fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=too-many-branches,too-many-return-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this

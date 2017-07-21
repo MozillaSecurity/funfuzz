@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,fixme,import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-instance-attributes,too-many-public-methods,too-many-statements,wrong-import-position
+# pylint: disable=broad-except,fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=too-many-branches,too-many-instance-attributes,too-many-public-methods,too-many-statements
+# pylint: disable=wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,7 +47,8 @@ else:
     CLANG_PARAMS = b"-Qunused-arguments"
     # See https://bugzilla.mozilla.org/show_bug.cgi?id=935795#c3 for some of the following flags:
     # CLANG_ASAN_PARAMS = b"-fsanitize=address -Dxmalloc=myxmalloc -mllvm -asan-stack=0"
-    CLANG_ASAN_PARAMS = b"-fsanitize=address -Dxmalloc=myxmalloc"  # The flags above seem to fix a problem not on the js shell.
+    # The flags above seem to fix a problem not on the js shell.
+    CLANG_ASAN_PARAMS = b"-fsanitize=address -Dxmalloc=myxmalloc"
     SSE2_FLAGS = b"-msse2 -mfpmath=sse"  # See bug 948321
     CLANG_X86_FLAG = b"-arch i386"
 

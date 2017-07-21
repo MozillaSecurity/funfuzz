@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,fixme,import-error,invalid-name,line-too-long,missing-docstring,too-few-public-methods,too-many-arguments,wrong-import-position
+# pylint: disable=broad-except,fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=too-few-public-methods,too-many-arguments,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -147,7 +148,8 @@ def printMachineInfo():
         print("Error involving gdb is: %r" % (e,))
 
     # FIXME: Should have if os.path.exists(path to git) or something
-    # print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
+    # print("git version: %s" % sps.captureStdout(['git', '--version'], combineStderr=True,
+    #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
     print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))

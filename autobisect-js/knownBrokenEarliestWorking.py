@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,wrong-import-position
+# pylint: disable=import-error,invalid-name,missing-docstring,too-many-branches,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,8 @@ def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
     # NB: mercurial's descendants(x) includes x
     # So this revset expression includes firstBad, but does not include firstGood.
-    # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set, like we want"
+    # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set,
+    # like we want"
     return '(descendants(id(' + firstBad + '))-descendants(id(' + firstGood + ')))'
 
 
@@ -33,7 +34,8 @@ def knownBrokenRangesBrowser():
         hgrange('eaa88688e9e8', '7a7e1ca619c2'),  # Missing include (affected Jesse's MBP but not Tinderbox)
         hgrange('fbc1e196ca87', '7a9887e1f55e'),  # Quick followup for bustage
         hgrange('bfef9b308f92', '991938589ebe'),  # A landing required a build fix and a startup-assertion fix
-        hgrange('b6dc96f18391', '37e29c27e6e8'),  # Duplicate symbols with 10.9 SDK, between ICU being built by default and a bug being fixed
+        # Duplicate symbols with 10.9 SDK, between ICU being built by default and a bug being fixed
+        hgrange('b6dc96f18391', '37e29c27e6e8'),
         hgrange('ad70d9583d42', 'd0f501b227fc'),  # Short bustage
         hgrange('c5906eed61fc', '1c4ac1d21d29'),  # Builds succeed but die early in startup
     ]
@@ -117,7 +119,8 @@ def earliestKnownWorkingRevForBrowser():
 
 
 def earliestKnownWorkingRev(options, flags, skipRevs):
-    """Return a revset which evaluates to the first revision of the shell that compiles with |options| and runs jsfunfuzz successfully with |flags|."""
+    """Return a revset which evaluates to the first revision of the shell that compiles with |options|
+    and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
 
     # These should be in descending order, or bisection will break at earlier changesets.
@@ -132,7 +135,7 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
     if sps.isLinux and StrictVersion(sps.verCheck('sed').split()[3]) >= StrictVersion('4.3'):
-        required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04 onwards
+        required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
         required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if options.buildWithClang and sps.isWin:
@@ -155,7 +158,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
         # For ARM64: This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
         # To bisect manually slightly further, use "-s dc4b163f7db7 -e f50a771d7d1b" and:
-        # Also comment out from https://github.com/MozillaSecurity/funfuzz/blob/bbc5d5c74dc96823ed3932eed1ab18c299bd806c/autobisect-js/autoBisect.py#L176
+        # Also comment out from:
+        # https://github.com/MozillaSecurity/funfuzz/blob/bbc5d5c74d/autobisect-js/autoBisect.py#L176
         # (line 176) to line 180.
         required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:

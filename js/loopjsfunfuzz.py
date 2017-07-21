@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring,no-member,too-many-branches
+# pylint: disable=fixme,import-error,invalid-name,missing-docstring,no-member,too-many-branches
 # pylint: disable=too-many-locals,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -38,7 +38,8 @@ def parseOpts(args):
     parser.add_option("--comparejit",
                       action="store_true", dest="useCompareJIT",
                       default=False,
-                      help="After running the fuzzer, run the FCM lines against the engine in two configurations and compare the output.")
+                      help="After running the fuzzer, run the FCM lines against the engine "
+                           "in two configurations and compare the output.")
     parser.add_option("--random-flags",
                       action="store_true", dest="randomFlags",
                       default=False,
@@ -50,7 +51,7 @@ def parseOpts(args):
     parser.add_option("--build",
                       action="store", dest="buildOptionsStr",
                       help="The build options, for bisection",
-                      default=None)  # if you run loopjsfunfuzz.py directly without a --build, pinpoint will try to guess
+                      default=None)  # if you run loopjsfunfuzz.py directly without --build, pinpoint will try to guess
     parser.add_option("--valgrind",
                       action="store_true", dest="valgrind",
                       default=False,
@@ -168,7 +169,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             [before, after] = fileManipulation.fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + [l.replace('/*FRC-', '/*') for l in fileManipulation.linesStartingWith(f, "/*FRC-")] + after
+                newfileLines = before + [
+                    l.replace('/*FRC-', '/*') for l in fileManipulation.linesStartingWith(f, "/*FRC-")] + after
             fileManipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             fileManipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
@@ -179,8 +181,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                                          options.repo, options.buildOptionsStr, targetTime, res.lev)
+            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(
+                itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
+                options.buildOptionsStr, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:

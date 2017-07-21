@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-statements,wrong-import-position
+# pylint: disable=import-error,invalid-name,missing-docstring
+# pylint: disable=too-many-branches,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -237,7 +238,8 @@ def basicFlagSets(shellPath):
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
-            ['--fuzzing-safe', '--no-threads', '--ion-eager'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
+            # compareJIT uses the following first flag set as the sole baseline when fuzzing
+            ['--fuzzing-safe', '--no-threads', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off'],
             ['--fuzzing-safe', '--baseline-eager'],
@@ -260,12 +262,14 @@ def basicFlagSets(shellPath):
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/84bd8d9f4256/js/src/tests/lib/tests.py#l12
             # as well as other interesting flag combinations that have found / may find new bugs.
-            ['--fuzzing-safe', '--ion-offthread-compile=off'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
+            # compareJIT uses the following first flag set as the sole baseline when fuzzing
+            ['--fuzzing-safe', '--ion-offthread-compile=off'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--no-ion'],
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'],  # Not in jit_test.py though, see bug 848906 comment 1
+            # This is not in jit_test.py, see bug 848906 comment 1
+            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'],
             # ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],  # --no-fpu seems to be deprecated now
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
@@ -280,14 +284,17 @@ def basicFlagSets(shellPath):
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
             # as well as other interesting flag combinations that have found / may find new bugs.
-            ['--fuzzing-safe', '--ion-parallel-compile=off'],  # compareJIT uses this first flag set as the sole baseline when fuzzing
+            # compareJIT uses the following first flag set as the sole baseline when fuzzing
+            ['--fuzzing-safe', '--ion-parallel-compile=off'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--no-ion'],
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py though...
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'],  # See bug 848906 comment 1
-            # ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],  # --no-fpu seems to be deprecated now
+            # See bug 848906 comment 1
+            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'],
+            # --no-fpu seems to be deprecated now
+            # ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
             basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])

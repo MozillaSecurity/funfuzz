@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring
+# pylint: disable=fixme,import-error,invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,8 @@ import subprocesses as sps
 p0 = os.path.dirname(os.path.abspath(__file__))
 lithiumpy = os.path.join(p0, os.pardir, os.pardir, "lithium", "lithium", "lithium.py")
 if not os.path.exists(lithiumpy):
-    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. Links in https://github.com/MozillaSecurity/funfuzz/#setup")
+    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. "
+          "Links in https://github.com/MozillaSecurity/funfuzz/#setup")
     sys.exit(2)
 runlithiumpy = [sys.executable, "-u", lithiumpy]
 
@@ -66,7 +67,8 @@ def readLithiumResult(lithlogfn):
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
                 return (LITH_FINISHED, reducedTo)
-            elif line.startswith("Lithium result: not interesting") or line.startswith("Lithium result: the original testcase is not"):
+            elif (line.startswith("Lithium result: not interesting") or
+                  line.startswith("Lithium result: the original testcase is not")):
                 return (LITH_NO_REPRO, None)
             elif line.startswith("Lithium result: please continue using: "):
                 lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()

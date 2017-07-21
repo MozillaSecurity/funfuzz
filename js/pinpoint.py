@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,line-too-long,literal-comparison,missing-docstring,too-many-arguments,too-many-branches,too-many-locals,too-many-statements,wrong-import-position
+# pylint: disable=import-error,invalid-name,literal-comparison,missing-docstring
+# pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,7 +34,8 @@ sys.path.append(p2)
 from fileIngredients import fileContainsStr
 
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename, bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
+             bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
     """
     Run Lithium and autobisect.
 

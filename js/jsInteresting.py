@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,global-statement,import-error,invalid-name,line-too-long,missing-docstring,no-member
+# pylint: disable=fixme,global-statement,import-error,invalid-name,missing-docstring,no-member
 # pylint: disable=old-style-class,too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals
 # pylint: disable=too-many-statements,wrong-import-position
 #
@@ -273,7 +273,8 @@ def parseOptions(args):
     options.collector = createCollector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
-    options.shellIsDeterministic = inspectShell.queryBuildConfiguration(options.jsengineWithArgs[0], 'more-deterministic')
+    options.shellIsDeterministic = inspectShell.queryBuildConfiguration(
+        options.jsengineWithArgs[0], 'more-deterministic')
 
     return options
 
