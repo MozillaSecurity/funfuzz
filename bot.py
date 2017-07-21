@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,fixme,import-error,invalid-name,line-too-long,missing-docstring,no-else-return,too-few-public-methods,too-many-arguments,wrong-import-position
+# pylint: disable=broad-except,fixme,import-error,invalid-name,line-too-long,missing-docstring,too-few-public-methods,too-many-arguments,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -257,8 +257,7 @@ def machineTimeoutDefaults(options):
         return 300
     elif sps.isARMv7l:
         return 180
-    else:
-        return JS_SHELL_DEFAULT_TIMEOUT
+    return JS_SHELL_DEFAULT_TIMEOUT
 
 
 def mtrArgsCreation(options, cshell):

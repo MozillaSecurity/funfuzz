@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=consider-using-enumerate,dangerous-default-value,invalid-name,line-too-long,missing-docstring
-# pylint: disable=no-else-return,old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
+# pylint: disable=consider-using-enumerate,invalid-name,line-too-long,missing-docstring
+# pylint: disable=old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
 # pylint: disable=too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -227,9 +227,8 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                         shutil.copyfile(fullfn, logPrefix + "-crash.txt")
                         captureStdout(["chmod", "og+r", logPrefix + "-crash.txt"])
                         return logPrefix + "-crash.txt"
-                    else:
-                        return fullfn
-                        # return open(fullfn).read()
+                    return fullfn
+                    # return open(fullfn).read()
 
             except (OSError, IOError):
                 # Maybe the log was rotated out between when we got the list
@@ -435,8 +434,7 @@ def constructGdbCommand(progfullname, crashedPID):
         # Run gdb and move the core file. Tip: gdb gives more info for:
         # (debug with intact build dir > debug > opt with frame pointers > opt)
         return ["gdb", "-n", "-batch", "-x", debuggerCmdPath, progfullname, coreFilename]
-    else:
-        return None
+    return None
 
 
 def getAbsPathForAdjacentFile(filename):
@@ -521,12 +519,13 @@ def shellify(cmd):
 
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                   cwd=None, env=os.environ, vb=False):
+                   cwd=None, env=None, vb=False):
     """
     Calculate how long a captureStdout command takes and prints it.
 
     Return the stdout and return value that captureStdout passes on.
     """
+    env = env or os.environ
     cwd = cwd or (
         os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     print("Running `%s` now.." % shellify(command))

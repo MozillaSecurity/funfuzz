@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,global-variable-undefined,import-error,invalid-name,line-too-long,missing-docstring,no-member,old-style-class,too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals,too-many-statements,wrong-import-position
+# pylint: disable=fixme,global-statement,import-error,invalid-name,line-too-long,missing-docstring,no-member
+# pylint: disable=old-style-class,too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals
+# pylint: disable=too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -57,6 +59,7 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
 ) = range(JS_LEVELS)
 
 
+gOptions = ""
 VALGRIND_ERROR_EXIT_CODE = 77
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring,no-member,too-many-branches,too-many-locals,too-many-statements,unused-argument,wrong-import-position
+# pylint: disable=fixme,import-error,invalid-name,line-too-long,missing-docstring,no-member,too-many-branches
+# pylint: disable=too-many-locals,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -85,7 +86,7 @@ def showtail(filename):
     print()
 
 
-def linkFuzzer(target_fn, repo, prologue):
+def linkFuzzer(target_fn, prologue):
     source_base = p0
     file_list_fn = sps.normExpUserPath(os.path.join(p0, "files-to-link.txt"))
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
@@ -128,7 +129,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
         regressionTestPrologue = ""
 
     fuzzjs = sps.normExpUserPath(os.path.join(wtmpDir, "jsfunfuzz.js"))
-    linkFuzzer(fuzzjs, options.repo, regressionTestPrologue)
+    linkFuzzer(fuzzjs, regressionTestPrologue)
 
     iteration = 0
     while True:

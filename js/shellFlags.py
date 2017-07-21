@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=dangerous-default-value,import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-statements,wrong-import-position
+# pylint: disable=import-error,invalid-name,line-too-long,missing-docstring,too-many-branches,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,8 +21,10 @@ sys.path.append(path1)
 import subprocesses as sps
 
 
-def memoize(f, cache={}):
+def memoize(f, cache=None):
     """Function decorator that caches function results."""
+    cache = cache or {}
+
     # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
     def g(*args, **kwargs):
         key = (f, tuple(args), frozenset(kwargs.items()))

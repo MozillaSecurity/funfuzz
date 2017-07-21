@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,missing-docstring,no-else-return,wrong-import-position
+# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -58,12 +58,9 @@ def interesting(cliArgs, tempPrefix):
             if found:
                 print("Exit status: %s%s" % (runinfo.msg, timeString))
                 return True
-            else:
-                print("[Uninteresting] It crashed somewhere else!%s" % timeString)
-                return False
-        else:
-            print("[Uninteresting] It appeared to crash, but no crash log was found?%s" % timeString)
+            print("[Uninteresting] It crashed somewhere else!" + timeString)
             return False
-    else:
-        print("[Uninteresting] It didn't crash.%s" % timeString)
+        print("[Uninteresting] It appeared to crash, but no crash log was found?" + timeString)
         return False
+    print("[Uninteresting] It didn't crash." + timeString)
+    return False
