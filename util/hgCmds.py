@@ -127,7 +127,9 @@ def isRepoValid(repo):
     return os.path.isfile(sps.normExpUserPath(os.path.join(repo, '.hg', 'hgrc')))
 
 
-def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
+def patchHgRepoUsingMq(patchFile, workingDir=None):
+    workingDir = workingDir or (
+        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     # We may have passed in the patch with or without the full directory.
     patchAbsPath = os.path.abspath(sps.normExpUserPath(patchFile))
     pname = os.path.basename(patchAbsPath)

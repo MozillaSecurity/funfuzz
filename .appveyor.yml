@@ -20,5 +20,5 @@ install:
 build: off
 test_script:
     - "%PYTHON%\\python.exe -m flake8 --count %APPVEYOR_BUILD_FOLDER%"
-    - If NOT "%PYTHON%"=="%PYTHON:Python27=%" ( %PYTHON%\\python.exe -m pylint %APPVEYOR_BUILD_FOLDER% )
+    - "%PYTHON%\\python.exe -m pylint %APPVEYOR_BUILD_FOLDER%"
 skip_branch_with_pr: true

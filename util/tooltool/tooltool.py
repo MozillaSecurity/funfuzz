@@ -30,7 +30,7 @@
 from __future__ import print_function
 
 import hashlib
-import httplib
+import httplib  # pylint: disable=import-error
 import json
 import logging
 import optparse  # pylint: disable=deprecated-module
@@ -41,8 +41,8 @@ import tarfile
 import tempfile
 import threading
 import time
-import urllib2
-import urlparse
+import urllib2  # pylint: disable=import-error
+import urlparse  # pylint: disable=import-error
 import zipfile
 
 from subprocess import PIPE

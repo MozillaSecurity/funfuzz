@@ -687,8 +687,8 @@ def getHgwebMozillaOrg(branchName):
 
 
 def getIdFromTboxUrl(url):
-    """Return numeric ID from treeherder at https://archive.mozilla.org/pub/mozilla.org/firefox/treeherder-builds/ ."""
-    return filter(None, url.split('/'))[-1]
+    """Return numeric ID from treeherder at https://archive.mozilla.org/pub/firefox/tinderbox-builds/ ."""
+    return [i for i in url.split("/") if i][-1]
 
 
 def getOneBuild(isJsShell, url, buildType):
