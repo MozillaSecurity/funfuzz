@@ -2,6 +2,4 @@
 ignore =
   # module level import not at top of file
   E402,
-  # line too long
-  E501,
 max-line-length = 120

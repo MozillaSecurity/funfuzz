@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,import-error,invalid-name,invalid-unary-operand-type,line-too-long,literal-comparison,missing-docstring,too-many-arguments,too-many-boolean-expressions,too-many-branches,too-many-locals,too-many-return-statements,too-many-statements,wrong-import-position
+# pylint: disable=broad-except,import-error,invalid-name,invalid-unary-operand-type,literal-comparison
+# pylint: disable=missing-docstring,too-many-arguments,too-many-boolean-expressions,too-many-branches
+# pylint: disable=too-many-locals,too-many-return-statements,too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -68,7 +70,8 @@ def parseOpts():
     # See buildOptions.py for details.
     parser.add_option('-b', '--build',
                       dest='buildOptions',
-                      help='Specify js shell build options, e.g. -b "--enable-debug --32" (python buildOptions.py --help)')
+                      help='Specify js shell build options, e.g. -b "--enable-debug --32"'
+                           "(python buildOptions.py --help)")
     parser.add_option('-B', '--browser',
                       dest='browserOptions',
                       help='Specify browser build options, e.g. -b "-c mozconfig". Deprecated.')
@@ -154,7 +157,8 @@ def parseOpts():
         options.testAndLabel = internalTestAndLabel(options)
 
     if not options.browserOptions:
-        earliestKnownQuery = kbew.earliestKnownWorkingRev(options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+        earliestKnownQuery = kbew.earliestKnownWorkingRev(
+            options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
     earliestKnown = ''
 
@@ -166,10 +170,12 @@ def parseOpts():
             options.startRepo = 'default'
         else:
             options.startRepo = earliestKnown
-    # elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.startRepo)):
+    # elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir,
+    #                                                              earliestKnown, options.startRepo)):
     #     raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
     #
-    # if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir, earliestKnown, options.endRepo):
+    # if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir,
+    #                                                                earliestKnown, options.endRepo):
     #     raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
     if options.parameters == '-e 42':
@@ -504,7 +510,8 @@ def bisectUsingTboxBins(options):
     """Download treeherder binaries and bisect them."""
     testedIDs = {}
     desiredArch = '32' if options.buildOptions.enable32 else '64'
-    buildType = downloadBuild.defaultBuildType(options.nameOfTreeherderBranch, desiredArch, options.buildOptions.enableDbg)
+    buildType = downloadBuild.defaultBuildType(
+        options.nameOfTreeherderBranch, desiredArch, options.buildOptions.enableDbg)
 
     # Get list of treeherder IDs
     urlsTbox = downloadBuild.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
@@ -765,7 +772,8 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
             sResult, eResult))
 
     # Show an hgweb link
-    pushlogWindow = getHgwebMozillaOrg(options.nameOfTreeherderBranch) + '/pushloghtml?fromchange=' + sHash + '&tochange=' + eHash
+    pushlogWindow = "%s/pushloghtml?fromchange=%s&tochange=%s" % (
+        getHgwebMozillaOrg(options.nameOfTreeherderBranch), sHash, eHash)
     print()
     print("Likely %s window: %s" % (windowType, pushlogWindow))
     print()

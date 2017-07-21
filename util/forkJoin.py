@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,line-too-long,missing-docstring
+# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,7 +29,8 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):
     print("Forking %d children..." % numProcesses)
     ps = []
     for i in range(numProcesses):
-        p = multiprocessing.Process(target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
+        p = multiprocessing.Process(
+            target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
         p.start()
         ps.append(p)
 

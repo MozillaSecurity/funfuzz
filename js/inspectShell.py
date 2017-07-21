@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,line-too-long,missing-docstring,wrong-import-position
+# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,8 @@ import subprocesses as sps
 path2 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'lithium', 'interestingness'))
 sys.path.append(path2)
 if not os.path.exists(path2):
-    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. Links in https://github.com/MozillaSecurity/funfuzz/#setup")
+    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. "
+          "Links in https://github.com/MozillaSecurity/funfuzz/#setup")
     sys.exit(2)
 import envVars
 
@@ -180,8 +181,10 @@ def verifyBinary(sh):
 
     assert queryBuildConfiguration(binary, 'more-deterministic') == sh.buildOptions.enableMoreDeterministic
     assert queryBuildConfiguration(binary, 'asan') == sh.buildOptions.buildWithAsan
-    assert (queryBuildConfiguration(binary, 'arm-simulator') and sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
-    assert (queryBuildConfiguration(binary, 'arm-simulator') and not sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
+    assert (queryBuildConfiguration(binary, 'arm-simulator') and
+            sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm32
+    assert (queryBuildConfiguration(binary, 'arm-simulator') and not
+            sh.buildOptions.enable32) == sh.buildOptions.enableSimulatorArm64
     # Note that we should test whether a shell has profiling turned on or not.
     # m-c rev 324836:800a887c705e turned profiling on by default, so once this is beyond the
     # earliest known working revision, we can probably test it here.

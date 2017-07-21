@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=attribute-defined-outside-init,fixme,import-error,invalid-name,line-too-long,missing-docstring
+# pylint: disable=attribute-defined-outside-init,fixme,import-error,invalid-name,missing-docstring
 # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,10 +24,6 @@ import subprocesses as sps
 
 # Use curl/wget rather than urllib because urllib can't check certs.
 useCurl = False
-
-# A terrible hack to work around a common configuration problem.
-# (see bug 803764) (see bug 950256) -- (platform.system() == "Linux" and os.getenv("FUZZ_REMOTE_HOST") == "ffxbld@stage.mozilla.org")
-# Another bug for Windows??
 wgetMaybeNCC = ['--no-check-certificate']
 
 
@@ -475,7 +471,8 @@ def main():
     options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"')
     options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"')
     if options.remoteDir is not None:
-        print(downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests))
+        print(downloadBuild(
+            options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests))
     else:
         buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
         downloadLatestBuild(buildType, options.downloadFolder,

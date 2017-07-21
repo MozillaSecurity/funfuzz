@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,line-too-long,missing-docstring
+# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,11 +20,13 @@ import time
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 
-# Config-ish bits should move to bot.py, OR move into a config file, OR this file should subprocess-call ITSELF rather than using a while loop.
+# Config-ish bits should move to bot.py, OR move into a config file,
+# OR this file should subprocess-call ITSELF rather than using a while loop.
 
 
 def loopSequence(cmdSequence, waitTime):
-    """Call a sequence of commands in a loop. If any fails, sleep(waitTime) and go back to the beginning of the sequence."""
+    """Call a sequence of commands in a loop.
+    If any fails, sleep(waitTime) and go back to the beginning of the sequence."""
     i = 0
     while True:
         i += 1

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,line-too-long,missing-docstring,wrong-import-position
+# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,8 @@ THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 fuzzManagerPath = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir, 'FuzzManager'))
 if not os.path.exists(fuzzManagerPath):
-    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. Links in https://github.com/MozillaSecurity/funfuzz/#setup")
+    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. "
+          "Links in https://github.com/MozillaSecurity/funfuzz/#setup")
     sys.exit(2)
 sys.path.append(fuzzManagerPath)
 from Collector.Collector import Collector

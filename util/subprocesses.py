@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=consider-using-enumerate,invalid-name,line-too-long,missing-docstring
+# pylint: disable=consider-using-enumerate,invalid-name,missing-docstring
 # pylint: disable=old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
 # pylint: disable=too-many-statements
 #
