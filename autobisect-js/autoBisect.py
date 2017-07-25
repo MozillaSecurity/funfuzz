@@ -234,12 +234,12 @@ def findBlamedCset(options, repoDir, testRev):
             if skipCount > 20:
                 print("Skipped 20 times, stopping autoBisect.")
                 break
-        print("%s (%s) " % (label[0], label[1]), end="")
+        print("%s (%s) " % (label[0], label[1]), end=" ")
 
         if iterNum <= 0:
-            print("Finished testing the initial boundary revisions...", end="")
+            print("Finished testing the initial boundary revisions...", end=" ")
         else:
-            print("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum), end="")
+            print("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum), end=" ")
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
@@ -561,7 +561,7 @@ def bisectUsingTboxBins(options):
         else:
             urlsTbox = urlsTbox[(mPosition):len(urlsTbox)]
 
-        print("Numeric ID %s was tested." % mID, end="")
+        print("Numeric ID %s was tested." % mID, end=" ")
 
         #  Exit infinite loop once we have tested the starting point, ending point and any points
         #  in the middle with results returning "incomplete".
@@ -823,13 +823,13 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
     if idNum is None:
         result, reason = None, None
     elif idNum in testedIDs.keys():
-        print("Retrieving previous test result: ", end="")
+        print("Retrieving previous test result: ", end=" ")
         result, reason = testedIDs[idNum][2:4]
     else:
         # The build has not been tested before, so test it.
         testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
         print("Found binary in: %s" % tboxCacheFolder)
-        print("Testing binary...", end="")
+        print("Testing binary...", end=" ")
         result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
         print("Result: %s - %s" % (result, reason))
         # Adds the result and reason to testedIDs

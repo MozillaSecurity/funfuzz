@@ -609,14 +609,14 @@ def getLockDirPath(repoDir, tboxIdentifier=''):
 def makeTestRev(options):
     def testRev(rev):
         shell = CompiledShell(options.buildOptions, rev)
-        print("Rev %s:" % rev.decode("utf-8", errors="replace"), end="")
+        print("Rev %s:" % rev.decode("utf-8", errors="replace"), end=" ")
 
         try:
             obtainShell(shell, updateToRev=rev)
         except Exception:
             return (options.compilationFailedLabel, 'compilation failed')
 
-        print("Testing...", end="")
+        print("Testing...", end=" ")
         return options.testAndLabel(shell.getShellCacheFullPath(), rev)
     return testRev
 

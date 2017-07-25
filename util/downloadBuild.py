@@ -204,39 +204,39 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     for remotefn in fileHttpList:
         localfn = os.path.join(downloadFolder, remotefn.split('/')[-1])
         if remotefn.endswith('.common.tests.zip') and wantTests:
-            print("Downloading common test files...", end="")
+            print("Downloading common test files...", end=" ")
             dlAction = downloadURL(remotefn, localfn)
-            print("extracting...", end="")
+            print("extracting...", end=" ")
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
             mIfyMozcrash(testsDir)
             print("completed!")
             gotTests = True
         if remotefn.endswith('.reftest.tests.zip') and wantTests:
-            print("Downloading reftest files...", end="")
+            print("Downloading reftest files...", end=" ")
             dlAction = downloadURL(remotefn, localfn)
-            print("extracting...", end="")
+            print("extracting...", end=" ")
             unzip(dlAction, testsDir)
             print("completed!")
         if remotefn.split('/')[-1].endswith('.txt'):
-            print("Downloading text file...", end="")
+            print("Downloading text file...", end=" ")
             downloadURL(remotefn, localfn)
             print("completed!")
             gotTxtFile = True
         if jsShell:
             if remotefn.split('/')[-1].startswith('jsshell-'):
-                print("Downloading js shell...", end="")
+                print("Downloading js shell...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print("extracting...", end="")
+                print("extracting...", end=" ")
                 unzip(dlAction, appDir)
                 print("completed!")
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
                 writeDownloadedShellFMConf(remotefn, buildDir)
         else:
             if remotefn.endswith('.linux-i686.tar.bz2') or remotefn.endswith('.linux-x86_64.tar.bz2'):
-                print("Downloading application...", end="")
+                print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print("extracting...", end="")
+                print("extracting...", end=" ")
                 untarbz2(dlAction, appDir)
                 print("completed!")
 
@@ -252,9 +252,9 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
             if remotefn.endswith('.win32.zip') or remotefn.endswith('.win64.zip'):
-                print("Downloading application...", end="")
+                print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print("extracting...", end="")
+                print("extracting...", end=" ")
                 unzip(dlAction, appDir)
                 print("completed!")
 
@@ -267,17 +267,17 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                     downloadURL(remoteURL, localfile)
                 gotApp = True
             if remotefn.endswith('.mac.dmg') or remotefn.endswith('.mac64.dmg'):
-                print("Downloading application...", end="")
+                print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print("extracting...", end="")
+                print("extracting...", end=" ")
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
                 print("completed!")
                 downloadMDSW(buildDir, "macosx64")
                 gotApp = True
             if remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
-                print("Downloading crash reporter symbols...", end="")
+                print("Downloading crash reporter symbols...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print("extracting...", end="")
+                print("extracting...", end=" ")
                 unzip(dlAction, symbolsDir)
                 print("completed!")
                 gotSyms = True

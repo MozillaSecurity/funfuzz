@@ -142,7 +142,7 @@ def patchHgRepoUsingMq(patchFile, workingDir=None):
             print("A patch with the same name has already been qpush'ed. Please qremove it first.")
         raise Exception('Return code from `hg qimport` is: ' + str(qimportRetCode))
 
-    print("Patch qimport'ed...", end="")
+    print("Patch qimport'ed...", end=" ")
 
     qpushOutput, qpushRetCode = sps.captureStdout(['hg', '-R', workingDir, 'qpush', pname],
                                                   combineStderr=True, ignoreStderr=True)
@@ -156,7 +156,7 @@ def patchHgRepoUsingMq(patchFile, workingDir=None):
                                '--removed', '--deleted'])
         raise Exception('Return code from `hg qpush` is: ' + str(qpushRetCode))
 
-    print("Patch qpush'ed. Continuing...", end="")
+    print("Patch qpush'ed. Continuing...", end=" ")
     return pname
 
 
@@ -169,6 +169,6 @@ def hgQpopQrmAppliedPatch(patchFile, repoDir):
         print("`hg qpop` output is: " % qpopOutput)
         raise Exception('Return code from `hg qpop` is: ' + str(qpopRetCode))
 
-    print("Patch qpop'ed...", end="")
+    print("Patch qpop'ed...", end=" ")
     subprocess.check_call(['hg', '-R', repoDir, 'qdelete', os.path.basename(patchFile)])
     print("Patch qdelete'd.")
