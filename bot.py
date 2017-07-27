@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,fixme,import-error,invalid-name,missing-docstring
-# pylint: disable=too-few-public-methods,too-many-arguments,wrong-import-position
+# pylint: disable=broad-except,fixme,invalid-name,missing-docstring
+# pylint: disable=too-few-public-methods,too-many-arguments
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,21 +21,18 @@ import time
 
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, 'util'))
-sys.path.insert(0, path1)
-import downloadBuild
-import hgCmds
-import subprocesses as sps
-import forkJoin
-import createCollector
-from LockDir import LockDir
-path3 = os.path.abspath(os.path.join(path0, 'js'))
-sys.path.append(path3)
-import buildOptions
-import compileShell
-import loopjsfunfuzz
+from .js import buildOptions
+from .js import compileShell
+from .js import loopjsfunfuzz
+from .util import downloadBuild
+from .util import hgCmds
+from .util import subprocesses as sps
+from .util import forkJoin
+from .util import createCollector
+from .util.LockDir import LockDir
 
+path0 = os.path.dirname(os.path.abspath(__file__))
+path3 = os.path.abspath(os.path.join(path0, 'js'))
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loopjsfunfuzz.py for tradeoffs
 
 
@@ -165,7 +162,7 @@ def printMachineInfo():
 
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
-        import resource
+        import resource  # pylint: disable=import-error
         print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
 
 

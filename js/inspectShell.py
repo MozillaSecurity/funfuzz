@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
+# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,13 +10,10 @@ from __future__ import absolute_import, print_function
 
 import os
 import platform
-import sys
 
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path1)
-import subprocesses as sps
 from lithium.interestingness.utils import env_with_path
+
+from ..util import subprocesses as sps
 
 RUN_NSPR_LIB = ''
 RUN_PLDS_LIB = ''

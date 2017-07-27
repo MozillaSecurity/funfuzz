@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,global-statement,import-error,invalid-name,missing-docstring,no-member
-# pylint: disable=too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals
-# pylint: disable=too-many-statements,wrong-import-position
+# pylint: disable=fixme,global-statement,invalid-name,missing-docstring,no-member,too-few-public-methods
+# pylint: disable=too-many-branches,too-many-instance-attributes,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,22 +13,18 @@ import os
 import sys
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-import inspectShell
-p0 = os.path.dirname(os.path.abspath(__file__))
-p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
-sys.path.append(p2)
-import detect_malloc_errors
-import findIgnoreLists
-p3 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
-sys.path.append(p3)
-import subprocesses as sps
-import createCollector
-import fileManipulation
 import lithium.interestingness.timed_run as timed_run
 
-# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
-import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
-from FTB.ProgramConfiguration import ProgramConfiguration
+# These pylint errors exist because FuzzManager is not Python 3-compatible yet
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
+from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
+
+from . import inspectShell
+from ..detect import detect_malloc_errors
+from ..detect import findIgnoreLists
+from ..util import createCollector
+from ..util import fileManipulation
+from ..util import subprocesses as sps
 
 
 # Levels of unhappiness.
@@ -229,7 +224,8 @@ def deleteLogs(logPrefix):
 
 def ulimitSet():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
-    import resource  # module only available on POSIX
+    # module only available on POSIX
+    import resource  # pylint: disable=import-error
 
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30

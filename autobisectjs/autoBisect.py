@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,import-error,invalid-name,invalid-unary-operand-type,literal-comparison
+# pylint: disable=broad-except,invalid-name,invalid-unary-operand-type,literal-comparison
 # pylint: disable=missing-docstring,too-many-arguments,too-many-boolean-expressions,too-many-branches
-# pylint: disable=too-many-locals,too-many-return-statements,too-many-statements,wrong-import-position
+# pylint: disable=too-many-locals,too-many-return-statements,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,22 +23,16 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from lithium.interestingness.utils import rel_or_abs_import
 
-import knownBrokenEarliestWorking as kbew
-
-path0 = os.path.dirname(os.path.abspath(__file__))
-path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
-sys.path.append(path2)
-import compileShell
-import inspectShell
-path4 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path4)
-import fileManipulation
-import buildOptions
-import downloadBuild
-import hgCmds
-import s3cache
-import subprocesses as sps
-import LockDir
+from . import knownBrokenEarliestWorking as kbew
+from ..js import buildOptions
+from ..js import compileShell
+from ..js import inspectShell
+from ..util import fileManipulation
+from ..util import downloadBuild
+from ..util import hgCmds
+from ..util import s3cache
+from ..util import subprocesses as sps
+from ..util import LockDir
 
 INCOMPLETE_NOTE = 'incompleteBuild.txt'
 MAX_ITERATIONS = 100

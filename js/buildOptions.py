@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,missing-docstring
-# pylint: disable=too-many-branches,too-many-return-statements,wrong-import-position
+# pylint: disable=fixme,invalid-name,missing-docstring
+# pylint: disable=too-many-branches,too-many-return-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,13 +14,9 @@ import hashlib
 import os
 import platform
 import random
-import sys
 
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path1)
-import hgCmds
-import subprocesses as sps
+from ..util import hgCmds
+from ..util import subprocesses as sps
 
 DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
 deviceIsFast = not sps.isARMv7l

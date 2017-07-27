@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=fixme,invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@ import shutil
 import subprocess
 import tempfile
 
-import subprocesses as sps
+from . import subprocesses as sps
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]
 

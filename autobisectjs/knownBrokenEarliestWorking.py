@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,missing-docstring,too-many-branches,wrong-import-position
+# pylint: disable=invalid-name,missing-docstring,too-many-branches
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,14 +8,10 @@
 
 from __future__ import absolute_import, print_function
 
-import os
-import sys
-from distutils.version import StrictVersion  # pylint issue 73 https://git.io/vQAhf  pylint: disable=no-name-in-module
+# pylint issue 73 https://git.io/vQAhf
+from distutils.version import StrictVersion  # pylint: disable=import-error,no-name-in-module
 
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path1)
-import subprocesses as sps
+from ..util import subprocesses as sps
 
 
 def hgrange(firstBad, firstGood):

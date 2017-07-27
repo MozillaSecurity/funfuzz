@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
+# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,9 +11,10 @@ from __future__ import absolute_import, print_function
 import os
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-import subprocesses as sps
 import lithium.interestingness.timed_run as timed_run
 from lithium.interestingness.utils import file_contains
+
+from . import subprocesses as sps
 
 
 def parseOptions(arguments):

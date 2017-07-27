@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=attribute-defined-outside-init,fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=attribute-defined-outside-init,fixme,invalid-name,missing-docstring
 # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +21,7 @@ import sys
 import urllib
 from HTMLParser import HTMLParser  # pylint: disable=import-error
 
-import subprocesses as sps
+from . import subprocesses as sps
 
 
 def readFromURL(url):

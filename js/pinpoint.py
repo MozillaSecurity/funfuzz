@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,literal-comparison,missing-docstring
-# pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements,wrong-import-position
+# pylint: disable=invalid-name,literal-comparison,missing-docstring,too-many-arguments,too-many-branches,too-many-locals
+# pylint: disable=too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,19 +15,17 @@ import re
 import shutil
 import subprocess
 import sys
-from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
-from inspectShell import testJsShellOrXpcshell
 
 from lithium.interestingness.utils import file_contains_str
 
+from .jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
+from .inspectShell import testJsShellOrXpcshell
+from ..util import fileManipulation
+from ..util.lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
+from ..util import subprocesses as sps
+
 p0 = os.path.dirname(os.path.abspath(__file__))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisectjs', 'autoBisect.py'))
-
-p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
-sys.path.append(p1)
-import fileManipulation
-from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
-import subprocesses as sps
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,

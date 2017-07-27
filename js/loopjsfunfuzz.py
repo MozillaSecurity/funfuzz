@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,import-error,invalid-name,missing-docstring,no-member,too-many-branches
-# pylint: disable=too-many-locals,too-many-statements,wrong-import-position
+# pylint: disable=fixme,invalid-name,missing-docstring,no-member,too-many-branches
+# pylint: disable=too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,20 +16,18 @@ import sys
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-import compareJIT
-import jsInteresting
-import pinpoint
-import shellFlags
+from . import compareJIT
+from . import jsInteresting
+from . import pinpoint
+from . import shellFlags
+from ..util import createCollector
+from ..util import fileManipulation
+from ..util import lithOps
+from ..util import linkJS
+from ..util import subprocesses as sps
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
-p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
-sys.path.append(p1)
-import createCollector
-import fileManipulation
-import lithOps
-import linkJS
-import subprocesses as sps
 
 
 def parseOpts(args):

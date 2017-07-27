@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=import-error,invalid-name,missing-docstring
-# pylint: disable=too-many-branches,too-many-statements,wrong-import-position
+# pylint: disable=invalid-name,missing-docstring
+# pylint: disable=too-many-branches,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,16 +10,11 @@
 from __future__ import absolute_import, print_function
 
 import multiprocessing
-import os
 import random
 import sys
 
-import inspectShell
-
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path1)
-import subprocesses as sps
+from . import inspectShell
+from ..util import subprocesses as sps
 
 
 def memoize(f, cache=None):
