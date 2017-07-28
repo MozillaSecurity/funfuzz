@@ -21,7 +21,7 @@ from inspectShell import testJsShellOrXpcshell
 from lithium.interestingness.utils import file_contains_str
 
 p0 = os.path.dirname(os.path.abspath(__file__))
-autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))
+autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisectjs', 'autoBisect.py'))
 
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
 sys.path.append(p1)
