@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=cell-var-from-loop,fixme,global-statement,invalid-name,missing-docstring,no-member,too-many-arguments
+# pylint: disable=cell-var-from-loop,fixme,global-statement,invalid-name,missing-docstring
+# pylint: disable=missing-return-doc,missing-return-type-doc,no-member,too-many-arguments
 # pylint: disable=too-many-branches,too-many-locals
 #
 # This Source Code Form is subject to the terms of the Mozilla Public

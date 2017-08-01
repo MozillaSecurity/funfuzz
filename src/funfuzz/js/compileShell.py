@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=broad-except,fixme,invalid-name,missing-docstring
+# pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
 # pylint: disable=too-many-branches,too-many-instance-attributes,too-many-public-methods,too-many-statements
 # pylint: disable=wrong-import-position
 #

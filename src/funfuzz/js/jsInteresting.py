@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,global-statement,invalid-name,missing-docstring,no-member,too-few-public-methods
+# pylint: disable=fixme,global-statement,invalid-name,missing-docstring
+# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+# pylint: disable=no-member,old-division,too-few-public-methods
 # pylint: disable=too-many-branches,too-many-instance-attributes,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public

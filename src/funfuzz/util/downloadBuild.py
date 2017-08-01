@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=attribute-defined-outside-init,fixme,invalid-name,missing-docstring
+# pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
 # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public

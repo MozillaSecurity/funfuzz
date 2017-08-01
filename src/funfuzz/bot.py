@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=broad-except,fixme,invalid-name,missing-docstring
+# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
 # pylint: disable=too-few-public-methods,too-many-arguments
 #
 # This Source Code Form is subject to the terms of the Mozilla Public

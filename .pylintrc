@@ -3,6 +3,36 @@
 # Use multiple processes to speed up Pylint.
 jobs=2
 
+# List of plugins (as comma separated values of python modules names) to load,
+# usually to register additional checkers.
+#
+# Whole list retrieved on 2017-07-28 from: https://pylint.readthedocs.io/en/latest/technical_reference/extensions.html
+# Remaining disabled: pylint.extensions.comparetozero,pylint.extensions.emptystring
+load-plugins=pylint.extensions.bad_builtin,pylint.extensions.check_elif,pylint.extensions.docparams,pylint.extensions.docstyle,pylint.extensions.mccabe,pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type
+accept-no-param-doc=no
+accept-no-raise-doc=no
+accept-no-return-doc=no
+accept-no-yields-doc=no
+
+[MESSAGES CONTROL]
+
+# Disable the message, report, category or checker with the given id(s). You
+# can either give multiple identifiers separated by comma (,) or put this
+# option multiple times (only on the command line, not in the configuration
+# file where it should appear only once).You can also use "--disable=all" to
+# disable everything first and then reenable specific checks. For example, if
+# you want to run only the similarities checker, you can use "--disable=all
+# --enable=similarities". If you want to run only the classes checker, but have
+# no Warning level messages displayed, use"--disable=all --enable=classes
+# --disable=W"
+disable=locally-disabled,no-absolute-import,suppressed-message,useless-suppression
+
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time (only on the command line, not in the configuration file where
+# it should appear only once). See also the "--disable" option for examples.
+enable=apply-builtin,backtick,bad-inline-option,bad-python3-import,basestring-builtin,buffer-builtin,cmp-builtin,cmp-method,coerce-builtin,coerce-method,delslice-method,deprecated-pragma,deprecated-str-translate-call,deprecated-string-function,dict-iter-method,dict-view-method,div-method,eq-without-hash,exception-message-attribute,execfile-builtin,file-builtin,file-ignored,filter-builtin-not-iterating,getslice-method,hex-method,idiv-method,import-star-module-level,indexing-exception,input-builtin,intern-builtin,invalid-str-codec,locally-enabled,long-builtin,long-suffix,map-builtin-not-iterating,metaclass-assignment,next-method-called,nonzero-method,oct-method,old-division,old-ne-operator,old-octal-literal,old-raise-syntax,parameter-unpacking,print-statement,raising-string,range-builtin-not-iterating,raw-checker-failed,raw_input-builtin,rdiv-method,reduce-builtin,reload-builtin,round-builtin,setslice-method,standarderror-builtin,sys-max-int,unichr-builtin,unicode-builtin,unpacking-in-except,using-cmp-argument,xrange-builtin,zip-builtin-not-iterating
+
 [BASIC]
 
 # Good variable names which should always be accepted, separated by a comma

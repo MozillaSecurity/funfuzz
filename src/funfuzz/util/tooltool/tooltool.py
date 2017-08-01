@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=assignment-from-no-return,broad-except,fixme,invalid-name,logging-too-few-args,missing-docstring
+# pylint: disable=assignment-from-no-return,bad-python3-import,broad-except,fixme,invalid-name,logging-too-few-args
+# pylint: disable=missing-docstring,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
+# pylint: disable=missing-type-doc,overlapping-except,too-complex
 # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-lines,too-many-return-statements
 # pylint: disable=too-many-statements
 

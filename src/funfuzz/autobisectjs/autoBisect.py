@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,invalid-name,invalid-unary-operand-type,literal-comparison
-# pylint: disable=missing-docstring,too-many-arguments,too-many-boolean-expressions,too-many-branches
+# pylint: disable=broad-except,invalid-name,invalid-unary-operand-type,literal-comparison,missing-docstring
+# pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+# pylint: disable=too-many-arguments,too-many-boolean-expressions,too-many-branches,too-complex
 # pylint: disable=too-many-locals,too-many-return-statements,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
