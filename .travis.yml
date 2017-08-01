@@ -5,7 +5,6 @@ python:
     - "2.7"
     - "3.5"
     - "3.6"
-    - "nightly"
 before_install:
     - pip install --upgrade setuptools pip
     - pip install --upgrade virtualenv
@@ -19,8 +18,4 @@ install:
 # before_script:
 script:
     - flake8 --count ${TRAVIS_BUILD_DIR}
-    # Do not run pylint on nightly Python versions as they may not be compatible
-    - |
-        if [[ $TRAVIS_PYTHON_VERSION != "nightly" ]]; then
-            pylint ${TRAVIS_BUILD_DIR}
-        fi
+    - pylint ${TRAVIS_BUILD_DIR}
