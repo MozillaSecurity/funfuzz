@@ -11,16 +11,16 @@
 from __future__ import absolute_import, print_function
 
 import argparse
-import ConfigParser  # pylint: disable=import-error
+import ConfigParser  # pylint: disable=bad-python3-import,import-error
 import os
 import platform
 import re
 import shutil
-import stat
+import stat  # Fixed after pylint 1.7.2 was released pylint: disable=bad-python3-import
 import subprocess
 import sys
 import urllib
-from HTMLParser import HTMLParser  # pylint: disable=import-error
+from HTMLParser import HTMLParser  # pylint: disable=bad-python3-import,import-error
 
 from . import subprocesses as sps
 
@@ -157,7 +157,7 @@ def undmg(fn, dest, mountpoint):
         subprocess.check_output(['hdiutil', 'detach', mountpoint])
 
 
-def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
+def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):  # pylint: disable=too-complex
     """Download the build specified, along with symbols and tests. Returns True when all are obtained."""
     wantSymbols = wantSymbols and not jsShell  # Bug 715365, js shell currently lacks native symbols
     wantSymbols = wantSymbols and '-asan' not in httpDir  # Doesn't make sense for asan
@@ -222,7 +222,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print("completed!")
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
                 writeDownloadedShellFMConf(remotefn, buildDir)
-        else:
+        else:  # pylint: disable=else-if-used
             if re.search(r'(\.linux-(x86_64|i686)(-asan)?|^target)\.tar\.bz2$', fn):
                 print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
@@ -410,7 +410,7 @@ def defaultBuildType(repoName, arch, debug, asan=False):
     return repoName + '-' + mozPlatform(arch) + ('-asan' if asan else '') + ('-debug' if debug else '')
 
 
-def writeDownloadedShellFMConf(urlLink, bDir):
+def writeDownloadedShellFMConf(urlLink, bDir):  # pylint: disable=too-complex
     """Writes an arbitrary .fuzzmanagerconf file for downloaded js shells."""
     downloadedShellCfg = ConfigParser.SafeConfigParser()
     downloadedShellCfg.add_section('Main')

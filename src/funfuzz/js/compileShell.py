@@ -168,7 +168,7 @@ def ensureCacheDir():
     # This has to occur after the shell-cache directory is created
     if sps.isWin:  # adapted from http://stackoverflow.com/a/3931799
         if sys.version_info.major == 2:
-            utext = unicode   # noqa pylint: disable=redefined-builtin,undefined-variable
+            utext = unicode   # noqa pylint: disable=redefined-builtin,undefined-variable,unicode-builtin
         else:
             utext = str
         winTmpDir = utext(cacheDir)
@@ -241,7 +241,7 @@ def cfgJsCompile(shell):
         envDump(shell, compileLog)
 
 
-def cfgBin(shell):
+def cfgBin(shell):  # pylint: disable=too-complex
     """Configure a binary according to required parameters."""
     cfgCmdList = []
     cfgEnvDt = copy.deepcopy(os.environ)
@@ -620,7 +620,7 @@ def makeTestRev(options):
     return testRev
 
 
-def obtainShell(shell, updateToRev=None, updateLatestTxt=False):
+def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disable=too-complex
     """Obtain a js shell. Keep the objdir for now, especially .a files, for symbols."""
     assert os.path.isdir(getLockDirPath(shell.buildOptions.repoDir))
     cachedNoShell = shell.getShellCacheFullPath() + ".busted"

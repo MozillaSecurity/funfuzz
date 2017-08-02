@@ -40,7 +40,7 @@ def chance(p):
     return random.random() < p
 
 
-def randomFlagSet(shellPath):
+def randomFlagSet(shellPath):  # pylint: disable=too-complex
     """Return a random list of CLI flags appropriate for the given shell.
 
     Only works for spidermonkey js shell. Does not work for xpcshell.

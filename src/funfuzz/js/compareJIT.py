@@ -83,7 +83,8 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
     return False
 
 
-def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
+def compareLevel(jsEngine,  # pylint: disable=too-complex
+                 flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
     # options dict must be one we can pass to jsInteresting.ShellResult
     # we also use it directly for knownPath, timeout, and collector
     # Return: (lev, crashInfo) or (jsInteresting.JS_FINE, None)
@@ -211,7 +212,7 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
     return (summary, issues)
 
 
-def diffFiles(f1, f2):
+def diffFiles(f1, f2):  # pylint: disable=missing-param-doc,missing-type-doc
     """Return a command to diff two files, along with the diff output (if it's short)."""
     diffcmd = ["diff", "-u", f1, f2]
     s = ' '.join(diffcmd) + "\n\n"

@@ -11,9 +11,8 @@ from __future__ import absolute_import, print_function
 import os
 
 
-class LockDir(object):
-    """
-    Create a filesystem-based lock while in scope.
+class LockDir(object):  # pylint: disable=missing-param-doc,missing-type-doc
+    """Create a filesystem-based lock while in scope.
 
     Use:
         with LockDir(path):

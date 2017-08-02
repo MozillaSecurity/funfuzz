@@ -196,7 +196,7 @@ def parseShellOptions(inputArgs):
     return buildOptions
 
 
-def computeShellType(buildOptions):
+def computeShellType(buildOptions):  # pylint: disable=too-complex
     """Return configuration information of the shell."""
     fileName = ['js']
     if buildOptions.enableDbg:
@@ -242,7 +242,7 @@ def computeShellName(buildOptions, buildRev):
     return computeShellType(buildOptions) + '-' + buildRev
 
 
-def areArgsValid(args):
+def areArgsValid(args):  # pylint: disable=too-complex
     """Check to see if chosen arguments are valid."""
     if args.enableDbg and args.disableDbg:
         return False, 'Making a debug, non-debug build would be contradictory.'

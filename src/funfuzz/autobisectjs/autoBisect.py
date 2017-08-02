@@ -16,7 +16,7 @@ import tempfile
 import os
 import re
 import shutil
-import stat
+import stat  # Fixed after pylint 1.7.2 was released pylint: disable=bad-python3-import
 import subprocess
 import sys
 import time
@@ -490,7 +490,7 @@ def assertSaneJsBinary(cacheF):
                 elif retCode != 0:
                     raise Exception('Non-zero return code: ' + str(retCode))
                 return True  # Binary is working correctly
-            except (OSError, IOError):
+            except (OSError, IOError):  # pylint: disable=overlapping-except
                 raise Exception("Cache folder %s is corrupt, please delete it and try again." % cacheF)
         elif INCOMPLETE_NOTE in fList:
             return True

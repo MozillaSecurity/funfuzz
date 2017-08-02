@@ -33,7 +33,7 @@ def parseOptions():
     return options
 
 
-def countCsets(revset, rdir):
+def countCsets(revset, rdir):  # pylint: disable=missing-param-doc,missing-type-doc
     """Count the number of changesets in the revsets by outputting ones and counting them."""
     listCmd = ['hg', 'log', '-r', revset, '--template=1']
     rangeIntersectionOnes = sps.captureStdout(listCmd, currWorkingDir=rdir)

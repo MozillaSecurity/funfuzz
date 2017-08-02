@@ -86,7 +86,7 @@ class MissingFileException(ExceptionWithFilename):
     pass
 
 
-class FileRecord(object):
+class FileRecord(object):  # pylint: disable=eq-without-hash
 
     def __init__(self, filename, size, digest, algorithm, unpack=False,
                  visibility=None, setup=None):
@@ -247,7 +247,7 @@ class FileRecordJSONDecoder(json.JSONDecoder):
         return rv
 
 
-class Manifest(object):
+class Manifest(object):  # pylint: disable=eq-without-hash
 
     valid_formats = ('json',)
 

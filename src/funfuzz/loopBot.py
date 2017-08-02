@@ -24,7 +24,7 @@ path0 = os.path.dirname(os.path.abspath(__file__))
 # OR this file should subprocess-call ITSELF rather than using a while loop.
 
 
-def loopSequence(cmdSequence, waitTime):
+def loopSequence(cmdSequence, waitTime):  # pylint: disable=missing-param-doc,missing-type-doc
     """Call a sequence of commands in a loop.
     If any fails, sleep(waitTime) and go back to the beginning of the sequence."""
     i = 0

@@ -70,7 +70,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
     return (lithResult, lithDetails, autoBisectLog)
 
 
-def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
+def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=too-complex
     """Reduce jsfunfuzz output files using Lithium by using various strategies."""
     reductionCount = [0]  # This is an array because Python does not like assigning to upvars.
     backupFilename = infilename + '-backup'

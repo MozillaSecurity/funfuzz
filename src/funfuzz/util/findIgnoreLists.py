@@ -23,7 +23,7 @@ REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir
 #   ???/funfuzz*/known/mozilla-central/crashes.txt
 
 
-def findIgnoreLists(targetRepo, needle):
+def findIgnoreLists(targetRepo, needle):  # pylint: disable=missing-return-doc,missing-return-type-doc
     r = []
     assert not targetRepo.startswith("/")
     for name in sorted(os.listdir(REPO_PARENT_PATH)):

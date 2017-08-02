@@ -93,7 +93,7 @@ def knownBrokenRanges(options):
     return skips
 
 
-def earliestKnownWorkingRev(options, flags, skipRevs):
+def earliestKnownWorkingRev(options, flags, skipRevs):  # pylint: disable=too-complex
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10

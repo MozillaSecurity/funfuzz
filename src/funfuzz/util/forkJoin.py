@@ -16,7 +16,7 @@ import sys
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
-def forkJoin(logDir, numProcesses, fun, *someArgs):
+def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=missing-return-doc,missing-return-type-doc
     def showFile(fn):
         print("==== %s ====" % fn)
         print()
@@ -47,7 +47,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):
 
 
 # Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)
-def logFileName(logDir, i, t):
+def logFileName(logDir, i, t):  # pylint: disable=missing-return-doc,missing-return-type-doc
     return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
 
 

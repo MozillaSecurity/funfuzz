@@ -118,7 +118,7 @@ def jsFilesIn(repoPathLength, root):
             if filename.endswith('.js')]
 
 
-def many_timed_runs(targetTime, wtmpDir, args, collector):
+def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=too-complex
     options = parseOpts(args)
     engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
     startTime = time.time()

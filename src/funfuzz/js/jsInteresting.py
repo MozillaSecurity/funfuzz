@@ -60,7 +60,7 @@ VALGRIND_ERROR_EXIT_CODE = 77
 class ShellResult(object):
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
-    def __init__(self, options, runthis, logPrefix, inCompareJIT):
+    def __init__(self, options, runthis, logPrefix, inCompareJIT):  # pylint: disable=too-complex
         pathToBinary = runthis[0]
         # This relies on the shell being a local one from compileShell.py:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'

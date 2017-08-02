@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import, print_function
 
-import ConfigParser  # pylint: disable=import-error
+import ConfigParser  # pylint: disable=bad-python3-import,import-error
 import os
 import re
 import sys
@@ -19,7 +19,7 @@ from . import subprocesses as sps
 
 
 try:
-    input = raw_input  # pylint: disable=redefined-builtin
+    input = raw_input  # pylint: disable=raw_input-builtin,redefined-builtin
 except NameError:
     pass
 

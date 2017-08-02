@@ -17,7 +17,7 @@ import os
 import platform
 import re
 import shutil
-import stat
+import stat  # Fixed after pylint 1.7.2 was released pylint: disable=bad-python3-import
 import subprocess
 import sys
 import time
@@ -79,7 +79,8 @@ def getFreeSpace(folder, mulVar):
 #####################
 
 
-def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
+def captureStdout(inputCmd,  # pylint: disable=too-complex
+                  ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                   currWorkingDir=None, env='NOTSET', verbosity=False):
     """Capture standard output, return the output as a string, along with the return value."""
     currWorkingDir = currWorkingDir or (
@@ -223,7 +224,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
                     return fullfn
                     # return open(fullfn).read()
 
-            except (OSError, IOError):
+            except (OSError, IOError):  # pylint: disable=overlapping-except
                 # Maybe the log was rotated out between when we got the list
                 # of files and when we tried to open this file.  If so, it's
                 # clearly not The One.
@@ -231,7 +232,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     return None
 
 
-def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
+def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: disable=too-complex
     """Return the crash log if found."""
     progname = os.path.basename(progfullname)
 
@@ -345,7 +346,7 @@ def constructCdbCommand(progfullname, crashedPID):
         return None
 
 
-def isWinDumpingToDefaultLocation():
+def isWinDumpingToDefaultLocation():  # pylint: disable=too-complex
     """Check whether Windows minidumps are enabled and set to go to Windows' default location."""
     if sys.version_info.major == 2:
         import _winreg as winreg  # pylint: disable=import-error

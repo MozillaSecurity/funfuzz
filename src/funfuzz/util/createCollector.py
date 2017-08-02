@@ -13,7 +13,7 @@ import os
 from Collector.Collector import Collector
 
 
-def createCollector(tool):
+def createCollector(tool):  # pylint: disable=missing-return-doc,missing-return-type-doc
     assert tool == "jsfunfuzz"
     cacheDir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
     try:
