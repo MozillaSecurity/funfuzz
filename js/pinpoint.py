@@ -36,8 +36,7 @@ from fileIngredients import fileContainsStr
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
              bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
-    """
-    Run Lithium and autobisect.
+    """Run Lithium and autobisect.
 
     itest must be an array of the form [module, ...] where module is an interestingness module.
     The module's "interesting" function must accept [...] + [jsEngine] + engineFlags + infilename

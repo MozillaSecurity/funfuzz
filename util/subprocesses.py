@@ -520,8 +520,7 @@ def shellify(cmd):
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                    cwd=None, env=None, vb=False):
-    """
-    Calculate how long a captureStdout command takes and prints it.
+    """Calculate how long a captureStdout command takes and prints it.
 
     Return the stdout and return value that captureStdout passes on.
     """
