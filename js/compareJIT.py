@@ -115,7 +115,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 anyLineContains(r.err, '[scriptfile] [scriptarg...]'))):
             print("Got usage error from:")
             print("  %s" % sps.shellify(command))
-            assert i > 0
+            assert i
             jsInteresting.deleteLogs(prefix)
         elif r.lev > jsInteresting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
@@ -133,7 +133,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 r.lev, r.runinfo.elapsedtime)))
             print("  %s" % sps.shellify(command))
             jsInteresting.deleteLogs(prefix)
-            if i == 0:
+            if not i:
                 return (jsInteresting.JS_FINE, None)
         elif oom:
             # If the shell or python hit a memory limit, we consider the rest of the computation
@@ -142,9 +142,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             print("%s | %s" % (infilename, jsInteresting.summaryString(
                 r.issues + [message], r.lev, r.runinfo.elapsedtime)))
             jsInteresting.deleteLogs(prefix)
-            if i == 0:
+            if not i:
                 return (jsInteresting.JS_FINE, None)
-        elif i == 0:
+        elif not i:
             # Stash output from this run (the first one), so for subsequent runs, we can compare against it.
             (r0, prefix0) = (r, prefix)
         else:
