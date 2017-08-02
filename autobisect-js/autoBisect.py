@@ -870,11 +870,8 @@ def main():
                          if options.useTreeherderBinaries else compileShell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
-        else:
-            # Bisect using local builds
-            if not options.browserOptions:
-                findBlamedCset(options, repoDir,
-                               compileShell.makeTestRev(options))
+        elif not options.browserOptions:  # Bisect using local builds
+            findBlamedCset(options, repoDir, compileShell.makeTestRev(options))
 
         # Last thing we do while we have a lock.
         # Note that this only clears old *local* cached directories, not remote ones.

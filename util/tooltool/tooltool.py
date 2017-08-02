@@ -386,9 +386,8 @@ def validate_manifest(manifest_file):
     for f in manifest.file_records:
         if not f.present():
             absent_files.append(f)
-        else:
-            if not f.validate():
-                invalid_files.append(f)
+        elif not f.validate():
+            invalid_files.append(f)
     if not invalid_files + absent_files:
         return True
     return False
