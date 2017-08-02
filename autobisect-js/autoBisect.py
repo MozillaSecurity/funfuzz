@@ -753,7 +753,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     print("Parameters for compilation bisection:")
     pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
     oOutput = '-o "' + options.output + '"' if options.output is not '' else ''
-    params = filter(None, ['-s ' + sHash, '-e ' + eHash, pOutput, oOutput, '-b <build parameters>'])
+    params = [i for i in ["-s " + sHash, "-e " + eHash, pOutput, oOutput, "-b <build parameters>"] if i]
     print(" ".join(params))
 
     print()
