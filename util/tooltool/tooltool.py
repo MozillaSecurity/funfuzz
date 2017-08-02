@@ -679,7 +679,7 @@ def fetch_files(manifest_file, base_urls, filenames=None, cache_folder=None,
 
 
 def freespace(p):
-    "Returns the number of bytes free under directory `p`"
+    """Returns the number of bytes free under directory `p`"""
     if sys.platform == 'win32':  # pragma: no cover
         # os.statvfs doesn't work on Windows
         import win32file  # pylint: disable=import-error
