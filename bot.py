@@ -60,8 +60,8 @@ def parseOpts():
         useTreeherderBuilds=False,
     )
 
-    parser.add_option('-t', '--test-type', dest='testType', choices=['js', 'dom'],
-                      help='Test type: "js" or "dom"')
+    parser.add_option('-t', '--test-type', dest='testType', choices=['js'],
+                      help='Test type: "js"', default='js')
 
     parser.add_option("--build", dest="existingBuildDir",
                       help="Use an existing build directory.")
