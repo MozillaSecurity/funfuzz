@@ -386,9 +386,8 @@ def validate_manifest(manifest_file):
     for f in manifest.file_records:
         if not f.present():
             absent_files.append(f)
-        else:
-            if not f.validate():
-                invalid_files.append(f)
+        elif not f.validate():
+            invalid_files.append(f)
     if not invalid_files + absent_files:
         return True
     return False
@@ -679,7 +678,7 @@ def fetch_files(manifest_file, base_urls, filenames=None, cache_folder=None,
 
 
 def freespace(p):
-    "Returns the number of bytes free under directory `p`"
+    """Returns the number of bytes free under directory `p`"""
     if sys.platform == 'win32':  # pragma: no cover
         # os.statvfs doesn't work on Windows
         import win32file  # pylint: disable=import-error

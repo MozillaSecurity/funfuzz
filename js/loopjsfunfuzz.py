@@ -271,7 +271,7 @@ def mightUseDivision(code):
             if i + 1 < len(code) and (code[i + 1] == '/' or code[i + 1] == '*'):
                 # An open-comment like "//" or "/*" is okay. Skip the next character.
                 i += 1
-            elif i > 0 and code[i - 1] == '*':
+            elif i and code[i - 1] == '*':
                 # A close-comment like "*/" is okay too.
                 pass
             else:
