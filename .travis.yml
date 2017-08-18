@@ -16,4 +16,4 @@ before_script:
     - pip install --upgrade flake8 pylint
     - pip install --upgrade pytest-flake8 pytest-pylint
 script:
-    - py.test
+    - python -m pytest
