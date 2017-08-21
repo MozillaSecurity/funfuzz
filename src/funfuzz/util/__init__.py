@@ -11,6 +11,7 @@ from __future__ import absolute_import
 
 from . import crashesat
 from . import createCollector
+from . import detect_malloc_errors
 from . import downloadBuild
 from . import fileManipulation
 from . import findIgnoreLists

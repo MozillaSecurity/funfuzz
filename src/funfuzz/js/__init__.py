@@ -12,7 +12,6 @@ from __future__ import absolute_import
 from . import buildOptions
 from . import compareJIT
 from . import compileShell
-from . import detect_malloc_errors
 from . import inspectShell
 from . import jsInteresting
 from . import loopjsfunfuzz
