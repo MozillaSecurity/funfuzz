@@ -172,14 +172,6 @@ def createWtmpDir(tmpDirBase):
     return tmpDirWithNum
 
 
-def dateStr():
-    """Equivalent of running `date` in bash, excluding the timezone."""
-    # Try not to add the timezone. Python does not seem to be accurate about DST switchovers.
-    # assert captureStdout(['date'])[0] == currDateTime # This fails on Windows
-    # On Windows, there is a leading zero in the day of the date in time.asctime()
-    return time.asctime()
-
-
 def disableCorefile():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
     import resource  # module only available on POSIX  pylint: disable=import-error

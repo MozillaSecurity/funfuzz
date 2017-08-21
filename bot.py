@@ -17,6 +17,7 @@ import platform
 import shutil
 import sys
 import tempfile
+import time
 
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
@@ -218,7 +219,7 @@ def ensureBuild(options):
                         options.buildOptions.repoDir,
                         bRev,
                         cshell.getRepoName(),
-                        sps.dateStr()
+                        time.asctime()
                     ))
 
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)

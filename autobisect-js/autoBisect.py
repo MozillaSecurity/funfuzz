@@ -189,7 +189,7 @@ def parseOpts():
 
 
 def findBlamedCset(options, repoDir, testRev):
-    print("%s | Bisecting on: %s" % (sps.dateStr(), repoDir))
+    print("%s | Bisecting on: %s" % (time.asctime(), repoDir))
 
     hgPrefix = ['hg', '-R', repoDir]
 
@@ -270,7 +270,7 @@ def findBlamedCset(options, repoDir, testRev):
     sps.captureStdout(hgPrefix + ['update', '-C', '-r', 'default'], ignoreStderr=True)
     hgCmds.destroyPyc(repoDir)
 
-    print(sps.dateStr())
+    print(time.asctime())
 
 
 def internalTestAndLabel(options):

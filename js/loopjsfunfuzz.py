@@ -198,7 +198,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
                 quality = 10
 
             # ddsize = lithOps.ddsize(filenameToReduce)
-            print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, sps.dateStr()))
+            print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, time.asctime()))
 
             metadata = {}
             if autoBisectLog:

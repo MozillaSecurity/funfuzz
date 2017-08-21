@@ -16,6 +16,8 @@ from __future__ import absolute_import, print_function
 from copy import deepcopy
 import logging
 import os
+import time
+
 import subprocesses as sps
 
 
@@ -84,13 +86,13 @@ def updateRepos():
 
 
 def main():
-    logger.info(sps.dateStr())
+    logger.info(time.asctime())
     try:
         updateRepos()
     except OSError as e:
         print("WARNING: OSError hit:")
         print(e)
-    logger.info(sps.dateStr())
+    logger.info(time.asctime())
 
 
 if __name__ == '__main__':
