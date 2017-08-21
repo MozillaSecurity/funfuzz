@@ -113,11 +113,9 @@ Replace anything between "<" and ">" with your desired parameters.
 
 **A:** compileShell has been tested on:
 
-* Windows 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild)
-  * Windows 10 seems to work fine with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild) and some funfuzz fixes that have landed, but needs more testing
+* Windows 10, 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild). It should also work with MozillaBuild 3.0.
 * Mac OS X 10.12
-* Ubuntu 15.10 and later (best supported on 16.04 LTS)
-* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
+* Ubuntu 16.04 LTS and later
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
 
@@ -125,7 +123,8 @@ The following operating systems are old/less common and while they may still wor
 
 * Windows Vista / Windows 8 / Windows 8.1
 * Mac OS X 10.10 / 10.11
-* Ubuntu Linux 14.04 LTS, 15.04 and prior
+* Ubuntu Linux 14.04 LTS, 15.10 and prior
+* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:
 
@@ -134,4 +133,4 @@ Support for the following operating systems **have been removed**:
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** We recommend the Python 2.7.x series. There is no support for Python3 yet.
+**A:** We recommend the Python 2.7.x series. There is no support for Python 3 yet, although there is work happening for the move to Python 3.
