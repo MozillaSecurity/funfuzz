@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=fixme,global-statement,import-error,invalid-name,missing-docstring,no-member
-# pylint: disable=old-style-class,too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals
+# pylint: disable=too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals
 # pylint: disable=too-many-statements,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -63,7 +63,7 @@ gOptions = ""
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-class ShellResult:
+class ShellResult(object):
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, inCompareJIT):

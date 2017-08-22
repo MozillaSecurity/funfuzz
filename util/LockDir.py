@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring,old-style-class,too-few-public-methods
+# pylint: disable=invalid-name,missing-docstring,too-few-public-methods
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,7 @@ from __future__ import absolute_import, print_function
 import os
 
 
-class LockDir():
+class LockDir(object):
     """
     Create a filesystem-based lock while in scope.
 

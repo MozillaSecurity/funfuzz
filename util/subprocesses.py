@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=consider-using-enumerate,invalid-name,missing-docstring
-# pylint: disable=old-style-class,too-few-public-methods,too-many-arguments,too-many-branches
+# pylint: disable=too-few-public-methods,too-many-arguments,too-many-branches
 # pylint: disable=too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -530,7 +530,7 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     return stdOutput, retVal
 
 
-class Unbuffered:
+class Unbuffered(object):
     """From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u."""
 
     def __init__(self, stream):
