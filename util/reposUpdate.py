@@ -32,8 +32,14 @@ REPOS = ['gecko-dev', 'FuzzManager', 'lithium', 'octo'] + \
     ['mozilla-' + x for x in ['inbound', 'central', 'beta', 'release']]
 
 if sps.isWin:
-    # Assumes Git was installed from https://msysgit.github.io/
-    GITBINARY = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+    git_64bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES'), 'Git', 'bin', 'git.exe'))
+    git_32bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+    if os.path.isfile(git_64bit_path):
+        GITBINARY = git_64bit_path
+    elif os.path.isfile(git_32bit_path):
+        GITBINARY = git_32bit_path
+    else:
+        raise OSError("Git binary not found")
 else:
     GITBINARY = 'git'
 
