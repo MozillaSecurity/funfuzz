@@ -18,6 +18,11 @@ jobs=2
 # Ignore here until autobisect-js is no longer around
 disable=invalid-name
 
+[BASIC]
+
+# Good variable names which should always be accepted, separated by a comma
+good-names=i,j,k,ex,Run,_,f,g
+
 [FORMAT]
 
 # Maximum number of characters on a single line.
