@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
+# pylint: disable=missing-docstring
 # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc,too-many-branches
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,23 +15,23 @@ from distutils.version import StrictVersion  # pylint: disable=import-error,no-n
 from ..util import subprocesses as sps
 
 
-def hgrange(firstBad, firstGood):
-    """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
+def hgrange(first_bad, first_good):
+    """Like "first_bad::first_good", but includes branches/csets that never got the first_good fix."""
     # NB: mercurial's descendants(x) includes x
-    # So this revset expression includes firstBad, but does not include firstGood.
+    # So this revset expression includes first_bad, but does not include first_good.
     # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set,
     # like we want"
-    return '(descendants(id(' + firstBad + '))-descendants(id(' + firstGood + ')))'
+    return '(descendants(id(' + first_bad + '))-descendants(id(' + first_good + ')))'
 
 
-def knownBrokenRanges(options):
+def known_broken_ranges(options):
     """Return a list of revsets corresponding to known-busted revisions."""
     # Paste numbers into: https://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
-    # - (1) autoBisect.py --compilationFailedLabel=bad -e FAILINGREV
+    # - (1) python -m funfuzz.autobisectjs.autobisectjs --compilationFailedLabel=bad -e FAILINGREV
     # - (2) will tell you when the brokenness ended
-    # - (2) autoBisect.py --compilationFailedLabel=bad -s FAILINGREV
+    # - (2) python -m funfuzz.autobisectjs.autobisectjs --compilationFailedLabel=bad -s FAILINGREV
 
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
@@ -93,18 +93,18 @@ def knownBrokenRanges(options):
     return skips
 
 
-def earliestKnownWorkingRev(options, flags, skipRevs):  # pylint: disable=too-complex
+def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=too-complex
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    gczealValueFlag = False
+    gczeal_value_flag = False
     # flags is a list of flags, and the option must exactly match.
     for entry in flags:
         # What comes after these flags needs to be a number, so we look for the string instead.
         if '--gc-zeal=' in entry:
-            gczealValueFlag = True
+            gczeal_value_flag = True
 
     required = []
 
@@ -155,12 +155,12 @@ def earliestKnownWorkingRev(options, flags, skipRevs):  # pylint: disable=too-co
         required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
-    if gczealValueFlag:
+    if gczeal_value_flag:
         required.append('03c6a758c9e8')  # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
     required.append('dc4b163f7db7')  # m-c 213475 Fx36, prior builds have issues with Xcode 7.0 and above
 
-    return "first((" + commonDescendants(required) + ") - (" + skipRevs + "))"
+    return "first((" + common_descendants(required) + ") - (" + skip_revs + "))"
 
 
-def commonDescendants(revs):
+def common_descendants(revs):
     return " and ".join("descendants(" + r + ")" for r in revs)

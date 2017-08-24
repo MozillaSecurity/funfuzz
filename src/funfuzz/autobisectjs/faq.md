@@ -4,7 +4,7 @@
 
 Specify the failing revision hash in the "-e" parameter, along with desired "-b" options to build the desired SpiderMonkey build configuration. This failing revision hash must be from **Mercurial**.
 
-```funfuzz/autobisectjs/autoBisect.py -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic"```
+```python -m funfuzz.autobisectjs.autobisectjs -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic"```
 
 When done, find the first working revision hash after the breakage, as below.
 
@@ -12,13 +12,13 @@ When done, find the first working revision hash after the breakage, as below.
 
 Similar to the above, but use "-s" instead of "-e".
 
-```funfuzz/autobisectjs/autoBisect.py -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic```
+```python -m funfuzz.autobisectjs.autobisectjs -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic```
 
 **Q: What should I do with the known broken changeset ranges to prevent autoBisect from retesting those revisions?**
 
 (This assumes you have the first bad and first good revision hashes as per the 2 questions above.)
 
-You can add them to the known broken range functions in [knownBrokenEarliestWorking.py](knownBrokenEarliestWorking.py). Add the first bad and first good changeset **Mercurial** hashes of the build breakage and its fix, along with a short comment.
+You can add them to the known broken range functions in [known_broken_earliest_working.py](known_broken_earliest_working.py). Add the first bad and first good changeset **Mercurial** hashes of the build breakage and its fix, along with a short comment.
 
 **Q: The testcase is giving out assorted varied exit codes as it gets executed by older binaries. How can I fixate to a particular interesting exit code?**
 
@@ -26,11 +26,11 @@ Pass in the "-w" argument along with the desired exit code to autoBisect. If it 
 
 **Q: The testcase is intermittent and giving weird results! What should I do to try and get more reliable results?**
 
-You can try using interestingness tests to look out for the desired symptom, see [the examples](examples-autoBisect.md).
+You can try using interestingness tests to look out for the desired symptom, see [the examples](examples.md).
 
 **Q: What happens when a new operating system is released, and we now have a new changeset hash that has to be updated as the earliest known working revision?**
 
-You can add the earliest known working **Mercurial** revision to the earliestKnownWorkingRev function in [knownBrokenEarliestWorking.py](knownBrokenEarliestWorking.py).
+You can add the earliest known working **Mercurial** revision to the earliestKnownWorkingRev function in [known_broken_earliest_working.py](known_broken_earliest_working.py).
 
 **Q: Does autoBisect work on nightly SpiderMonkey js shells yet?**
 

@@ -2,7 +2,7 @@
 
 This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compareJIT compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
 
-Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](autobisectjs/README.md).
+Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](src/funfuzz/autobisectjs/README.md).
 
 
 ## Setup
@@ -89,9 +89,9 @@ In js mode, loopBot.py makes use of:
 * [jsfunfuzz](js/jsfunfuzz)
 * [compareJIT](js/compareJIT.py) (if testing deterministic builds)
 * randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository)
-* [autoBisect](autobisectjs/README.md) (if the mozilla repository is present).
+* [autoBisect](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
 
-The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [autoBisect](autobisectjs/README.md).
+The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).
 
 FuzzManager support got landed, so you will also need to create a ~/.fuzzmanagerconf file, similar to:
 

@@ -339,7 +339,7 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
     # Earlier downloaded builds fail to start properly on macOS Sierra 10.12
     # First known working build is in:
     # https://archive.mozilla.org/pub/firefox/tinderbox-builds/mozilla-inbound-macosx64-debug/1468314445/
-    # Note: if this gets more populated, we should move it to knownBrokenEarliestWorking
+    # Note: if this gets more populated, we should move it to known_broken_earliest_working
     if sps.isMac and int(earliestBuild[:-1]) < 1468314445:
         earliestBuild = '1468314445/'
 
