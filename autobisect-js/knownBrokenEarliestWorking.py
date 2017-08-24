@@ -133,6 +133,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if sps.isWin:
+        required.append('530f7bd28399')  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
     if sps.isLinux and StrictVersion(sps.verCheck('sed').split()[3]) >= StrictVersion('4.3'):
         required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
@@ -174,8 +176,6 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    if sps.isWin:
-        required.append('8937836d3c93')  # m-c 226774 Fx38, 1st w/ successful MSVC 2015 builds, see bug 1119072
     if sps.isLinux:
         required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
     if '--ion-sink=on' in flags:
