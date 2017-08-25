@@ -10,7 +10,11 @@ from __future__ import absolute_import, print_function
 
 import os
 import platform
+import sys
 
+path0 = os.path.dirname(os.path.abspath(__file__))
+path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
+sys.path.append(path1)
 import subprocesses as sps
 from lithium.interestingness.utils import env_with_path
 
