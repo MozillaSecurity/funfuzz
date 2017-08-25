@@ -18,9 +18,9 @@ import sys
 from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from inspectShell import testJsShellOrXpcshell
 
-# Note that the python executable invoking lithiumpy and autobisectpy have to have pip requirements installed
+from lithium.interestingness.utils import file_contains_str
+
 p0 = os.path.dirname(os.path.abspath(__file__))
-lithiumpy = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'lithium', 'lithium.py'))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))
 
 p1 = os.path.abspath(os.path.join(p0, os.pardir, 'util'))
@@ -28,10 +28,6 @@ sys.path.append(p1)
 import fileManipulation
 from lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 import subprocesses as sps
-
-p2 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'interestingness'))
-sys.path.append(p2)
-from fileIngredients import fileContainsStr
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
@@ -48,7 +44,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
 
     print()
     print("Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:")
-    print(sps.shellify([lithiumpy, "--strategy=check-only"] + lithArgs))
+    print(sps.shellify([sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
     print()
 
     if bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and buildOptionsStr is not None:
@@ -84,7 +80,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
         """Lithium reduction commands accepting various strategies."""
         reductionCount[0] += 1
         fullLithArgs = [x for x in (strategy + lithArgs) if x]  # Remove empty elements
-        print(sps.shellify([lithiumpy] + fullLithArgs))
+        print(sps.shellify([sys.executable, "-u", "-m", "lithium"] + fullLithArgs))
 
         desc = '-chars' if strategy == '--char' else '-lines'
         (lithResult, lithDetails) = runLithium(
@@ -159,7 +155,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):
         lithResult, lithDetails = lithReduceCmd(['--chunksize=2'])
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH) and \
-        fileContainsStr(infilename, 'isAsmJSCompilationAvailable')
+        file_contains_str(infilename, 'isAsmJSCompilationAvailable')
     # Step 5 (not always run): Run character reduction within interesting lines.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
             lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:

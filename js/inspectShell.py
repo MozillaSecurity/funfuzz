@@ -10,20 +10,9 @@ from __future__ import absolute_import, print_function
 
 import os
 import platform
-import sys
 
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
-sys.path.append(path1)
 import subprocesses as sps
-
-path2 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'lithium', 'interestingness'))
-sys.path.append(path2)
-if not os.path.exists(path2):
-    print("Please check out Lithium and FuzzManager side-by-side with funfuzz. "
-          "Links in https://github.com/MozillaSecurity/funfuzz/#setup")
-    sys.exit(2)
-import envVars
+from lithium.interestingness.utils import env_with_path
 
 RUN_NSPR_LIB = ''
 RUN_PLDS_LIB = ''
@@ -138,7 +127,7 @@ def testBinary(shellPath, args, useValgrind):
     testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
     sps.vdump('The testing command is: ' + sps.shellify(testCmd))
     out, rCode = sps.captureStdout(testCmd, combineStderr=True, ignoreStderr=True,
-                                   ignoreExitCode=True, env=envVars.envWithPath(
+                                   ignoreExitCode=True, env=env_with_path(
                                        os.path.dirname(os.path.abspath(shellPath))))
     sps.vdump('The exit code is: ' + str(rCode))
     return out, rCode
@@ -160,7 +149,7 @@ def testIsHardFpShellARM(s):
     """Test if the ARM shell is compiled with hardfp support."""
     readelfBin = '/usr/bin/readelf'
     if os.path.exists(readelfBin):
-        newEnv = envVars.envWithPath(os.path.dirname(os.path.abspath(s)))
+        newEnv = env_with_path(os.path.dirname(os.path.abspath(s)))
         readelfOutput = sps.captureStdout([readelfBin, '-A', s], env=newEnv)[0]
         return 'Tag_ABI_VFP_args: VFP registers' in readelfOutput
     else:
