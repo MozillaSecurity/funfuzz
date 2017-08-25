@@ -21,12 +21,11 @@ import sys
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
+from lithium.interestingness.utils import rel_or_abs_import
+
 import knownBrokenEarliestWorking as kbew
 
 path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'lithium', 'interestingness'))
-sys.path.append(path1)
-import ximport
 path2 = os.path.abspath(os.path.join(path0, os.pardir, 'js'))
 sys.path.append(path2)
 import compileShell
@@ -313,7 +312,7 @@ def internalTestAndLabel(options):
 
 def externalTestAndLabel(options, interestingness):
     """Make use of interestingness scripts to decide whether the changeset is good or bad."""
-    conditionScript = ximport.importRelativeOrAbsolute(interestingness[0])
+    conditionScript = rel_or_abs_import(interestingness[0])
     conditionArgPrefix = interestingness[1:]
 
     def inner(shellFilename, hgHash):
