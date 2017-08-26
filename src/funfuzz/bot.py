@@ -24,7 +24,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from .js import build_options
 from .js import compile_shell
-from .js import loopjsfunfuzz
+from .js import loop
 from .util import downloadBuild
 from .util import hgCmds
 from .util import subprocesses as sps
@@ -34,7 +34,7 @@ from .util.LockDir import LockDir
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path3 = os.path.abspath(os.path.join(path0, 'js'))
-JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loopjsfunfuzz.py for tradeoffs
+JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop.py for tradeoffs
 
 
 class BuildInfo(object):
@@ -81,7 +81,7 @@ def parseOpts():
                            '(python -m funfuzz.js.build_options --help)')
 
     parser.add_option('--timeout', type='int', dest='timeout',
-                      help="Sets the timeout for loopjsfunfuzz.py. "
+                      help="Sets the timeout for loop.py. "
                            "Defaults to taking into account the speed of the computer and debugger (if any).")
 
     options, args = parser.parse_args()
@@ -247,7 +247,7 @@ def ensureBuild(options):
 def loopFuzzingAndReduction(options, buildInfo, collector, i):
     tempDir = tempfile.mkdtemp("loop" + str(i))
     if options.testType == 'js':
-        loopjsfunfuzz.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
+        loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
     else:
         raise Exception('Only js engine fuzzing is supported')
 

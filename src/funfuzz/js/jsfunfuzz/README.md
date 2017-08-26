@@ -13,16 +13,16 @@ Once it creates a function body, it does the following things with it:
 
 To test an existing SpiderMonkey shell called `./js`, run:
 
-`funfuzz/js/loopjsfunfuzz.py --random-flags --compare-jit 20 mozilla-central ./js`
+`python -m funfuzz.js.loop --random-flags --compare-jit 20 mozilla-central ./js`
 
 * `--random-flags` tells it to use [shellFlags.py](../shellFlags.py) to
 * `--compare-jit` tells it to run [compare_jit.py](../compare_jit.py) on most of the generated code, detecting bugs where adding optimization flags like --ion-eager changes the output.
 * `20` tells it to kill any instance that runs for more than 20 seconds
 * `mozilla-central` or any other string is no longer used, and this argument will be removed in the future.
 
-If loopjsfunfuzz detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [js_interesting.py](../js_interesting.py) or [compare_jit.py](../compare_jit.py) as the "interestingness test".
+If loop detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [js_interesting.py](../js_interesting.py) or [compare_jit.py](../compare_jit.py) as the "interestingness test".
 
-Using [bot.py](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loopjsfunfuzz.py for parallelism.
+Using [bot.py](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loop.py for parallelism.
 
 Through randorderfuzz, if the harness detects tests in the mozilla-central tree, it may load or incorporate tests into its fuzzing input in a random order.
 

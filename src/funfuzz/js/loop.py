@@ -50,7 +50,7 @@ def parseOpts(args):
     parser.add_option("--build",
                       action="store", dest="build_options_str",
                       help="The build options, for bisection",
-                      default=None)  # if you run loopjsfunfuzz.py directly without --build, pinpoint will try to guess
+                      default=None)  # if you run loop.py directly without --build, pinpoint will try to guess
     parser.add_option("--valgrind",
                       action="store_true", dest="valgrind",
                       default=False,

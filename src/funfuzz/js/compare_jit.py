@@ -51,7 +51,7 @@ def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,mis
     return lines
 
 
-# For use by loopjsfunfuzz.py
+# For use by loop.py
 # Returns True if any kind of bug is found
 def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
