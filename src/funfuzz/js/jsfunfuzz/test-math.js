@@ -79,13 +79,13 @@ function testMathyFunction(f, inputs)
     }
   }
   /* Use uneval to distinguish -0, 0, "0", etc. */
-  /* Use hashStr to shorten the output and keep compareJIT files small. */
+  /* Use hashStr to shorten the output and keep compare_jit files small. */
   print(hashStr(uneval(results)));
 }
 
 function mathInitFCM()
 {
-  // FCM cookie, lines with this cookie are used for compareJIT
+  // FCM cookie, lines with this cookie are used for compare_jit
   var cookie = "/*F" + "CM*/";
 
   print(cookie + hashStr.toString().replace(/\n/g, " "));

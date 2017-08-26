@@ -47,7 +47,7 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
     JS_FINE,
     JS_DID_NOT_FINISH,                  # correctness (only jsfunfuzzLevel)
     JS_DECIDED_TO_EXIT,                 # correctness (only jsfunfuzzLevel)
-    JS_OVERALL_MISMATCH,                # correctness (only compareJIT)
+    JS_OVERALL_MISMATCH,                # correctness (only compare_jit)
     JS_VG_AMISS,                        # memory safety
     JS_NEW_ASSERT_OR_CRASH              # memory safety or other issue that is definitely a bug
 ) = range(JS_LEVELS)
@@ -60,7 +60,7 @@ VALGRIND_ERROR_EXIT_CODE = 77
 class ShellResult(object):
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
-    def __init__(self, options, runthis, logPrefix, inCompareJIT):  # pylint: disable=too-complex
+    def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex
         pathToBinary = runthis[0]
         # This relies on the shell being a local one from compileShell.py:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'
@@ -101,7 +101,7 @@ class ShellResult(object):
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-        elif runinfo.return_code == 0 and not inCompareJIT:
+        elif runinfo.return_code == 0 and not in_compare_jit:
             # We might have(??) run jsfunfuzz directly, so check for special kinds of bugs
             for line in out:
                 if line.startswith("Found a bug: ") and not ("NestTest" in line and oomed(err)):
@@ -274,8 +274,8 @@ def parseOptions(args):
     return options
 
 
-# loopjsfunfuzz.py uses parseOptions and ShellResult [with inCompareJIT = False]
-# compareJIT.py uses ShellResult [with inCompareJIT = True]
+# loopjsfunfuzz.py uses parseOptions and ShellResult [with in_compare_jit = False]
+# compare_jit.py uses ShellResult [with in_compare_jit = True]
 
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
 def init(args):
@@ -286,7 +286,7 @@ def init(args):
 # FIXME: _args is unused here, we should check if it can be removed?
 def interesting(_args, tempPrefix):
     options = gOptions
-    # options, runthis, logPrefix, inCompareJIT
+    # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
     truncateFile(tempPrefix + "-out.txt", 1000000)
     truncateFile(tempPrefix + "-err.txt", 1000000)

@@ -930,7 +930,7 @@ var fuzzTestingFunctions = fuzzTestingFunctionsCtor(!jsshell, fuzzTestingFunctio
 
 // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
 // (null || (" + makeExpr(d - 2, b) + "))
-// Darn, only |this| and local variables are safe: an expression with side effects breaks the statement-level compareJIT hack
+// Darn, only |this| and local variables are safe: an expression with side effects breaks the statement-level compare_jit hack
 function fuzzTestingFunctionArg(d, b) { return "this"; }
 
 function makeTestingFunctionCall(d, b)
@@ -945,12 +945,12 @@ function makeTestingFunctionCall(d, b)
 
   if (jsshell && rnd(5) === 0) {
     // Differential testing hack!
-    // The idea here: make compareJIT tell us when functions like gc() surprise
+    // The idea here: make compare_jit tell us when functions like gc() surprise
     // us with visible side effects.
     // * Functions in testing-functions.js are chosen to be ones with no visible
     //   side effects except for return values (voided) or throwing (caught).
-    // * This condition is controlled by --no-asmjs, which compareJIT.py flips.
-    //     (A more principled approach would be to have compareJIT set an environment
+    // * This condition is controlled by --no-asmjs, which compare_jit.py flips.
+    //     (A more principled approach would be to have compare_jit set an environment
     //     variable and read it here using os.getenv(), but os is not available
     //     when running with --fuzzing-safe...)
     // * The extra braces prevent a stray "else" from being associated with this "if".

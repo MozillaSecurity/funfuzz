@@ -20,7 +20,7 @@ function whatToTestSpidermonkeyTrunk(code)
     allowIter: true,
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
-    // Ignore both within-process & across-process, e.g. nestTest mismatch & compareJIT
+    // Ignore both within-process & across-process, e.g. nestTest mismatch & compare_jit
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") == -1)
        && code.indexOf("/*NODIFF*/") == -1                // Ignore diff testing on these labels
@@ -59,7 +59,7 @@ function whatToTestSpidermonkeyTrunk(code)
     ,
 
     expectConsistentOutputAcrossJITs: true
-    // across-process (e.g. running js shell with different run-time options) e.g. compareJIT
+    // across-process (e.g. running js shell with different run-time options) e.g. compare_jit
        && code.indexOf("isAsmJSCompilationAvailable") == -1  // Causes false positives with --no-asmjs
        && code.indexOf("'strict") == -1                      // see bug 743425
        && code.indexOf("disassemble") == -1                  // see bug 1237403 (related to asm.js)

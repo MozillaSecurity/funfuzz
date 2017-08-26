@@ -5,7 +5,7 @@
 
 // Generate calls to SpiderMonkey "testing functions" for:
 // * testing that they do not cause assertions/crashes
-// * testing that they do not alter visible results (compareJIT with and without the call)
+// * testing that they do not alter visible results (compare_jit with and without the call)
 
 function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 {

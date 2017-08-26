@@ -103,7 +103,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
 
     with open(infilename, 'rb') as f:
         for line in fileManipulation.linesWith(f, '; tryItOut("'):
-            # Checks if testcase came from jsfunfuzz or compareJIT.
+            # Checks if testcase came from jsfunfuzz or compare_jit.
             # Do not use .match here, it only matches from the start of the line:
             # https://docs.python.org/2/library/re.html#search-vs-match
             hasTryItOut = hasTryItOutRegex.search(line)

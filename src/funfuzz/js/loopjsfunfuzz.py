@@ -17,7 +17,7 @@ import sys
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-from . import compareJIT
+from . import compare_jit
 from . import jsInteresting
 from . import pinpoint
 from . import shellFlags
@@ -34,8 +34,8 @@ interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
 def parseOpts(args):
     parser = OptionParser()
     parser.disable_interspersed_args()
-    parser.add_option("--comparejit",
-                      action="store_true", dest="useCompareJIT",
+    parser.add_option("--compare-jit",
+                      action="store_true", dest="use_compare_jit",
                       default=False,
                       help="After running the fuzzer, run the FCM lines against the engine "
                            "in two configurations and compare the output.")
@@ -57,13 +57,13 @@ def parseOpts(args):
                       help="use valgrind with a reasonable set of options")
     options, args = parser.parse_args(args)
 
-    if options.valgrind and options.useCompareJIT:
-        print("Note: When running comparejit, the --valgrind option will be ignored")
+    if options.valgrind and options.use_compare_jit:
+        print("Note: When running compare_jit, the --valgrind option will be ignored")
 
     # kill js shell if it runs this long.
     # jsfunfuzz will quit after half this time if it's not ilooping.
     # higher = more complex mixing, especially with regression tests.
-    # lower = less time wasted in timeouts and in compareJIT testcases that are thrown away due to OOMs.
+    # lower = less time wasted in timeouts and in compare_jit testcases that are thrown away due to OOMs.
     options.timeout = int(args[0])
 
     # FIXME: We can probably remove args[1]
@@ -207,14 +207,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
 
         else:
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
-            if options.useCompareJIT and res.lev == jsInteresting.JS_FINE and \
+            if options.use_compare_jit and res.lev == jsInteresting.JS_FINE and \
                     jsInterestingOptions.shellIsDeterministic and flagsAreDeterministic:
                 linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
-                anyBug = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
-                                               logPrefix + "-cj", options.repo,
-                                               options.build_options_str, targetTime, jsInterestingOptions)
+                anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
+                                                 logPrefix + "-cj", options.repo,
+                                                 options.build_options_str, targetTime, jsInterestingOptions)
                 if not anyBug:
                     os.remove(jitcomparefilename)
 
@@ -222,7 +222,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
 
 
 def jitCompareLines(jsfunfuzzOutputFilename, marker):
-    """Create a compareJIT file, using the lines marked by jsfunfuzz as valid for comparison."""
+    """Create a compare_jit file, using the lines marked by jsfunfuzz as valid for comparison."""
     lines = [
         "backtrace = function() { };\n",
         "dumpHeap = function() { };\n",

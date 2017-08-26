@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/MozillaSecurity/funfuzz.svg?branch=master)](https://travis-ci.org/MozillaSecurity/funfuzz) [![Build status](https://ci.appveyor.com/api/projects/status/m8gw5echa7f2f26r/branch/master?svg=true)](https://ci.appveyor.com/project/MozillaSecurity/funfuzz/branch/master)
 
-This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compareJIT compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
+This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compare_jit compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
 
 Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](src/funfuzz/autobisectjs/README.md).
 
@@ -86,9 +86,9 @@ To test **a patch** (assuming patch is in ~/patch.diff) against a specific branc
 In js mode, loopBot.py makes use of:
 
 * [compileShell](js/compileShell.py)
-* [jsfunfuzz](js/jsfunfuzz)
-* [compareJIT](js/compareJIT.py) (if testing deterministic builds)
-* randorderfuzz (included in jsfunfuzz, if tests are present in the mozilla repository)
+* [jsfunfuzz](src/funfuzz/js/jsfunfuzz)
+* [compare_jit](src/funfuzz/js/compare_jit.py) (if testing deterministic builds)
+* randorderfuzz (included in funfuzz, if tests are present in the mozilla repository)
 * [autoBisect](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
 
 The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).

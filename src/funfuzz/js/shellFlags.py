@@ -234,7 +234,7 @@ def basicFlagSets(shellPath):
         basicFlagList = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
-            # compareJIT uses the following first flag set as the sole baseline when fuzzing
+            # compare_jit uses the following first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--no-threads', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
             ['--fuzzing-safe', '--ion-offthread-compile=off'],
@@ -258,7 +258,7 @@ def basicFlagSets(shellPath):
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/84bd8d9f4256/js/src/tests/lib/tests.py#l12
             # as well as other interesting flag combinations that have found / may find new bugs.
-            # compareJIT uses the following first flag set as the sole baseline when fuzzing
+            # compare_jit uses the following first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--ion-offthread-compile=off'],
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--no-ion'],
@@ -280,7 +280,7 @@ def basicFlagSets(shellPath):
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
             # as well as other interesting flag combinations that have found / may find new bugs.
-            # compareJIT uses the following first flag set as the sole baseline when fuzzing
+            # compare_jit uses the following first flag set as the sole baseline when fuzzing
             ['--fuzzing-safe', '--ion-parallel-compile=off'],
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline'],  # Not in jit_test.py though...
             ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--no-ion'],
@@ -301,7 +301,7 @@ def basicFlagSets(shellPath):
         return basicFlagList
 
 
-# Consider adding a function (for compareJIT reduction) that takes a flag set
+# Consider adding a function (for compare_jit reduction) that takes a flag set
 # and returns all its (meaningful) subsets.
 
 
