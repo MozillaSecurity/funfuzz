@@ -88,7 +88,7 @@ def showtail(filename):
 
 def linkFuzzer(target_fn, prologue):
     source_base = p0
-    file_list_fn = sps.normExpUserPath(os.path.join(p0, "files-to-link.txt"))
+    file_list_fn = sps.normExpUserPath(os.path.join(p0, "files_to_link.txt"))
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
 
 

@@ -327,7 +327,7 @@ def constructCdbCommand(progfullname, crashedPID):
         maxLoops = 300
         while True:
             if os.path.exists(dumpFilename):
-                debuggerCmdPath = getAbsPathForAdjacentFile('cdbCmds.txt')
+                debuggerCmdPath = getAbsPathForAdjacentFile('cdb_cmds.txt')
                 assert os.path.exists(debuggerCmdPath)
 
                 cdbCmdList = []
@@ -422,7 +422,7 @@ def constructGdbCommand(progfullname, crashedPID):
             coreFilename = normExpUserPath(os.path.join('~', coreFilename))  # try the home dir
 
     if coreFilename and os.path.exists(coreFilename):
-        debuggerCmdPath = getAbsPathForAdjacentFile('gdb-quick.txt')
+        debuggerCmdPath = getAbsPathForAdjacentFile('gdb_cmds.txt')
         assert os.path.exists(debuggerCmdPath)
 
         # Run gdb and move the core file. Tip: gdb gives more info for:

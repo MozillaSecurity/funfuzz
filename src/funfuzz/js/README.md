@@ -71,5 +71,5 @@ The options accepted by -b are also available via funfuzz/js/buildOptions.py:
 
 ## Additional information
 * compileShell
-  * [More examples](examples-compileShell.md)
-  * [FAQ](faq-compileShell.md)
+  * [More examples](examples.md)
+  * [FAQ](faq.md)
