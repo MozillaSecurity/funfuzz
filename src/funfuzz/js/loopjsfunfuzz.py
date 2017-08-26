@@ -48,7 +48,7 @@ def parseOpts(args):
                       default=os.path.expanduser("~/trees/mozilla-central/"),
                       help="The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
     parser.add_option("--build",
-                      action="store", dest="buildOptionsStr",
+                      action="store", dest="build_options_str",
                       help="The build options, for bisection",
                       default=None)  # if you run loopjsfunfuzz.py directly without --build, pinpoint will try to guess
     parser.add_option("--valgrind",
@@ -182,7 +182,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
             itest.append(options.knownPath)
             (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(
                 itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
-                options.buildOptionsStr, targetTime, res.lev)
+                options.build_options_str, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:
@@ -214,7 +214,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
                 fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
                 anyBug = compareJIT.compareJIT(options.jsEngine, engineFlags, jitcomparefilename,
                                                logPrefix + "-cj", options.repo,
-                                               options.buildOptionsStr, targetTime, jsInterestingOptions)
+                                               options.build_options_str, targetTime, jsInterestingOptions)
                 if not anyBug:
                     os.remove(jitcomparefilename)
 

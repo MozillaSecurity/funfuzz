@@ -30,7 +30,7 @@ autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisectjs', 'auto
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
-             bisectRepo, buildOptionsStr, targetTime, suspiciousLevel):
+             bisectRepo, build_options_str, targetTime, suspiciousLevel):
     """Run Lithium and autobisect.
 
     itest must be an array of the form [module, ...] where module is an interestingness module.
@@ -46,13 +46,13 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
     print(sps.shellify([sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
     print()
 
-    if bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and buildOptionsStr is not None:
+    if bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and build_options_str is not None:
         if platform.uname()[2] == 'XP':
             print("Not pinpointing to exact changeset since autoBisect does not work well in WinXP.")
         elif testJsShellOrXpcshell(jsEngine) != "xpcshell":
             autobisectCmd = (
                 [sys.executable, autobisectpy] +
-                ["-b", buildOptionsStr] +
+                ["-b", build_options_str] +
                 ["-p", ' '.join(engineFlags + [infilename])] +
                 ["-i"] + itest
             )

@@ -39,9 +39,9 @@ Usage: autobisectjs.py [options]
 
 Options:
   -h, --help            show this help message and exit
-  -b BUILDOPTIONS, --build=BUILDOPTIONS
+  -b build_options, --build=build_options
                         Specify js shell build options, e.g. -b "--enable-
-                        debug --32" (python buildOptions.py --help)
+                        debug --32" (python -m funfuzz.js.build_options --help)
   --resetToTipFirst     First reset to default tip overwriting all local
                         changes. Equivalent to first executing `hg update -C
                         default`. Defaults to "False".

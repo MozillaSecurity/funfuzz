@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import
 
-from . import buildOptions
+from . import build_options
 from . import compareJIT
 from . import compileShell
 from . import inspectShell

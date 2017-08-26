@@ -22,7 +22,7 @@ import time
 
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-from .js import buildOptions
+from .js import build_options
 from .js import compileShell
 from .js import loopjsfunfuzz
 from .util import downloadBuild
@@ -55,7 +55,7 @@ def parseOpts():
         targetTime=15 * 60,       # 15 minutes
         existingBuildDir=None,
         timeout=0,
-        buildOptions=None,
+        build_options=None,
         useTreeherderBuilds=False,
     )
 
@@ -75,10 +75,10 @@ def parseOpts():
                       help='Download builds from treeherder instead of compiling our own.')
 
     # Specify how the shell will be built.
-    # See js/buildOptions.py for details.
     parser.add_option('-b', '--build-options',
-                      dest='buildOptions',
-                      help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
+                      dest='build_options',
+                      help='Specify build options, e.g. -b "-c opt --arch=32" for js '
+                           '(python -m funfuzz.js.build_options --help)')
 
     parser.add_option('--timeout', type='int', dest='timeout',
                       help="Sets the timeout for loopjsfunfuzz.py. "
@@ -91,15 +91,15 @@ def parseOpts():
     if not options.testType or options.testType == 'dom':
         raise Exception('options.testType should be set to "js" now that only js engine fuzzing is supported')
 
-    if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
+    if not options.useTreeherderBuilds and not os.path.isdir(build_options.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
-        print("Trees were absent from default location: %s" % buildOptions.DEFAULT_TREES_LOCATION)
+        print("Trees were absent from default location: %s" % build_options.DEFAULT_TREES_LOCATION)
         print("Using treeherder builds instead...")
 
-    if options.buildOptions is None:
-        options.buildOptions = ''
-    if options.useTreeherderBuilds and options.buildOptions != '':
+    if options.build_options is None:
+        options.build_options = ''
+    if options.useTreeherderBuilds and options.build_options != '':
         raise Exception('Do not use treeherder builds if one specifies build parameters')
 
     return options
@@ -191,20 +191,20 @@ def ensureBuild(options):
     elif not options.useTreeherderBuilds:
         if options.testType == "js":
             # Compiled js shells
-            options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
+            options.build_options = build_options.parseShellOptions(options.build_options)
             options.timeout = options.timeout or machineTimeoutDefaults(options)
 
-            with LockDir(compileShell.getLockDirPath(options.buildOptions.repoDir)):
-                bRev = hgCmds.getRepoHashAndId(options.buildOptions.repoDir)[0]
-                cshell = compileShell.CompiledShell(options.buildOptions, bRev)
-                updateLatestTxt = (options.buildOptions.repoDir == 'mozilla-central')
+            with LockDir(compileShell.getLockDirPath(options.build_options.repoDir)):
+                bRev = hgCmds.getRepoHashAndId(options.build_options.repoDir)[0]
+                cshell = compileShell.CompiledShell(options.build_options, bRev)
+                updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')
                 compileShell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
                 bDir = cshell.getShellCacheDir()
                 # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
                 #   js-js-dbg-opt-64-dm-linux
                 # This is because options.testType gets prepended along with a dash later.
-                bType = buildOptions.computeShellType(options.buildOptions)[3:]
+                bType = build_options.computeShellType(options.build_options)[3:]
                 bSrc = (
                     "Create another shell in shell-cache like this one:\n"
                     'python -u %s -b "%s -R %s" -r %s\n\n'
@@ -213,8 +213,8 @@ def ensureBuild(options):
                     "|  DATE: %s\n"
                     "==============================================\n\n" % (
                         os.path.join(path3, "compileShell.py"),
-                        options.buildOptions.buildOptionsStr,
-                        options.buildOptions.repoDir,
+                        options.build_options.build_options_str,
+                        options.build_options.repoDir,
                         bRev,
                         cshell.getRepoName(),
                         time.asctime()
@@ -254,7 +254,7 @@ def loopFuzzingAndReduction(options, buildInfo, collector, i):
 
 def machineTimeoutDefaults(options):
     """Set different defaults depending on the machine type or debugger used."""
-    if options.buildOptions.runWithVg:
+    if options.build_options.runWithVg:
         return 300
     elif sps.isARMv7l:
         return 180
@@ -264,11 +264,11 @@ def machineTimeoutDefaults(options):
 def mtrArgsCreation(options, cshell):
     """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []
-    manyTimedRunArgs.append('--repo=' + sps.normExpUserPath(options.buildOptions.repoDir))
-    manyTimedRunArgs.append("--build=" + options.buildOptions.buildOptionsStr)
-    if options.buildOptions.runWithVg:
+    manyTimedRunArgs.append('--repo=' + sps.normExpUserPath(options.build_options.repoDir))
+    manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
+    if options.build_options.runWithVg:
         manyTimedRunArgs.append('--valgrind')
-    if options.buildOptions.enableMoreDeterministic:
+    if options.build_options.enableMoreDeterministic:
         # Treeherder shells not using compareJIT:
         #   They are not built with --enable-more-deterministic - bug 751700
         manyTimedRunArgs.append('--comparejit')

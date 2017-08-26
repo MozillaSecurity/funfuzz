@@ -53,7 +53,7 @@ def ignoreSomeOfStderr(e):
 
 # For use by loopjsfunfuzz.py
 # Returns True if any kind of bug is found
-def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, targetTime, options):
+def compareJIT(jsEngine, flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
     cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)
     lev = cl[0]
 
@@ -61,7 +61,7 @@ def compareJIT(jsEngine, flags, infilename, logPrefix, repo, buildOptionsStr, ta
         itest = [__file__, "--flags=" + ' '.join(flags),
                  "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(
-            itest, logPrefix, jsEngine, [], infilename, repo, buildOptionsStr, targetTime, lev)
+            itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithOps.LITH_FINISHED:
             print("Retesting %s after running Lithium:" % infilename)
             retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)

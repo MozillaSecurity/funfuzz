@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,invalid-name,missing-docstring
+# pylint: disable=fixme,missing-docstring
 # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
 # pylint: disable=too-many-branches,too-many-return-statements
 #
@@ -20,10 +20,10 @@ from ..util import hgCmds
 from ..util import subprocesses as sps
 
 DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
-deviceIsFast = not sps.isARMv7l
+deviceIsFast = not sps.isARMv7l  # pylint: disable=invalid-name
 
 
-def chance(p):
+def chance(p):  # pylint: disable=invalid-name
     return random.random() < p
 
 
@@ -31,26 +31,26 @@ class Randomizer(object):
     def __init__(self):
         self.options = []
 
-    def add(self, name, fastDeviceWeight, slowDeviceWeight):
+    def add(self, name, fastDeviceWeight, slowDeviceWeight):  # pylint: disable=invalid-name
         self.options.append({
             'name': name,
             'fastDeviceWeight': fastDeviceWeight,
             'slowDeviceWeight': slowDeviceWeight
         })
 
-    def getRandomSubset(self):
-        def getWeight(o):
+    def getRandomSubset(self):  # pylint: disable=invalid-name
+        def getWeight(o):  # pylint: disable=invalid-name
             return o['fastDeviceWeight'] if deviceIsFast else o['slowDeviceWeight']
         return [o['name'] for o in self.options if chance(getWeight(o))]
 
 
-def addParserOptions():
+def addParserOptions():  # pylint: disable=invalid-name
     """Add parser options."""
     # Where to find the source dir and compiler, patching if necessary.
     parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
     randomizer = Randomizer()
 
-    def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):
+    def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):  # pylint: disable=invalid-name
         """Add a randomized boolean option that defaults to False.
 
         Option also has a [weight] chance of being changed to True when using --random.
@@ -156,80 +156,80 @@ def addParserOptions():
     return parser, randomizer
 
 
-def parseShellOptions(inputArgs):
-    """Return a 'buildOptions' object, which is intended to be immutable."""
+def parseShellOptions(inputArgs):  # pylint: disable=invalid-name
+    """Return a 'build_options' object, which is intended to be immutable."""
     parser, randomizer = addParserOptions()
-    buildOptions = parser.parse_args(inputArgs.split())
+    build_options = parser.parse_args(inputArgs.split())
 
     if sps.isMac:
-        buildOptions.buildWithClang = True  # Clang seems to be the only supported compiler
+        build_options.buildWithClang = True  # Clang seems to be the only supported compiler
 
-    if buildOptions.enableArmSimulatorObsolete:
-        buildOptions.enableSimulatorArm32 = True
+    if build_options.enableArmSimulatorObsolete:
+        build_options.enableSimulatorArm32 = True
 
-    if buildOptions.enableRandom:
-        buildOptions = generateRandomConfigurations(parser, randomizer)
+    if build_options.enableRandom:
+        build_options = generateRandomConfigurations(parser, randomizer)
     else:
-        buildOptions.buildOptionsStr = inputArgs
-        valid = areArgsValid(buildOptions)
+        build_options.build_options_str = inputArgs
+        valid = areArgsValid(build_options)
         if not valid[0]:
             print("WARNING: This set of build options is not tested well because: %s" % valid[1])
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if os.path.isdir(DEFAULT_TREES_LOCATION):
         # Repositories do not get randomized if a repository is specified.
-        if buildOptions.repoDir is None:
+        if build_options.repoDir is None:
             # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
-            if buildOptions.enableRandom and not buildOptions.patchFile:
-                buildOptions.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
+            if build_options.enableRandom and not build_options.patchFile:
+                build_options.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
             else:
-                buildOptions.repoDir = os.path.realpath(sps.normExpUserPath(
+                build_options.repoDir = os.path.realpath(sps.normExpUserPath(
                     os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
 
-        assert hgCmds.isRepoValid(buildOptions.repoDir)
+        assert hgCmds.isRepoValid(build_options.repoDir)
 
-        if buildOptions.patchFile:
+        if build_options.patchFile:
             hgCmds.ensureMqEnabled()
-            buildOptions.patchFile = sps.normExpUserPath(buildOptions.patchFile)
-            assert os.path.isfile(buildOptions.patchFile)
+            build_options.patchFile = sps.normExpUserPath(build_options.patchFile)
+            assert os.path.isfile(build_options.patchFile)
 
-    return buildOptions
+    return build_options
 
 
-def computeShellType(buildOptions):  # pylint: disable=too-complex
+def computeShellType(build_options):  # pylint: disable=invalid-name,too-complex
     """Return configuration information of the shell."""
-    fileName = ['js']
-    if buildOptions.enableDbg:
+    fileName = ['js']  # pylint: disable=invalid-name
+    if build_options.enableDbg:
         fileName.append('dbg')
-    if buildOptions.disableOpt:
+    if build_options.disableOpt:
         fileName.append('optDisabled')
-    fileName.append('32' if buildOptions.enable32 else '64')
-    if buildOptions.enableProfiling:
+    fileName.append('32' if build_options.enable32 else '64')
+    if build_options.enableProfiling:
         fileName.append('prof')
-    if buildOptions.disableProfiling:
+    if build_options.disableProfiling:
         fileName.append('profDisabled')
-    if buildOptions.enableMoreDeterministic:
+    if build_options.enableMoreDeterministic:
         fileName.append('dm')
-    if buildOptions.buildWithClang:
+    if build_options.buildWithClang:
         fileName.append('clang')
-    if buildOptions.buildWithAsan:
+    if build_options.buildWithAsan:
         fileName.append('asan')
-    if buildOptions.buildWithVg:
+    if build_options.buildWithVg:
         fileName.append('vg')
-    if buildOptions.enableOomBreakpoint:
+    if build_options.enableOomBreakpoint:
         fileName.append('oombp')
-    if buildOptions.enableWithoutIntlApi:
+    if build_options.enableWithoutIntlApi:
         fileName.append('intlDisabled')
-    if buildOptions.enableSimulatorArm32 or buildOptions.enableSimulatorArm64:
+    if build_options.enableSimulatorArm32 or build_options.enableSimulatorArm64:
         fileName.append('armSim')
     if sps.isARMv7l:
-        fileName.append('armhfp' if buildOptions.enableHardFp else 'armsfp')
+        fileName.append('armhfp' if build_options.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
-    if buildOptions.patchFile:
+    if build_options.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
-        fileName.append(os.path.basename(buildOptions.patchFile).split('.')[0])
-        with open(os.path.abspath(buildOptions.patchFile), "rb") as f:
-            readResult = f.read()
+        fileName.append(os.path.basename(build_options.patchFile).split('.')[0])
+        with open(os.path.abspath(build_options.patchFile), "rb") as f:
+            readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult).hexdigest()[:12])
 
@@ -237,12 +237,12 @@ def computeShellType(buildOptions):  # pylint: disable=too-complex
     return '-'.join(fileName)
 
 
-def computeShellName(buildOptions, buildRev):
+def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name
     """Return the shell type together with the build revision."""
-    return computeShellType(buildOptions) + '-' + buildRev
+    return computeShellType(build_options) + '-' + buildRev
 
 
-def areArgsValid(args):  # pylint: disable=too-complex
+def areArgsValid(args):  # pylint: disable=invalid-name,too-complex
     """Check to see if chosen arguments are valid."""
     if args.enableDbg and args.disableDbg:
         return False, 'Making a debug, non-debug build would be contradictory.'
@@ -317,20 +317,20 @@ def areArgsValid(args):  # pylint: disable=too-complex
     return True, ''
 
 
-def generateRandomConfigurations(parser, randomizer):
+def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid-name
     while True:
-        randomArgs = randomizer.getRandomSubset()
+        randomArgs = randomizer.getRandomSubset()  # pylint: disable=invalid-name
         if '--build-with-valgrind' in randomArgs and chance(0.95):
             randomArgs.append('--run-with-valgrind')
-        buildOptions = parser.parse_args(randomArgs)
-        if areArgsValid(buildOptions)[0]:
-            buildOptions.buildOptionsStr = ' '.join(randomArgs)  # Used for autoBisect
-            buildOptions.enableRandom = True  # This has to be true since we are randomizing...
-            return buildOptions
+        build_options = parser.parse_args(randomArgs)
+        if areArgsValid(build_options)[0]:
+            build_options.build_options_str = ' '.join(randomArgs)  # Used for autoBisect
+            build_options.enableRandom = True  # This has to be true since we are randomizing...
+            return build_options
 
 
-def getRandomValidRepo(treeLocation):
-    validRepos = []
+def getRandomValidRepo(treeLocation):  # pylint: disable=invalid-name
+    validRepos = []  # pylint: disable=invalid-name
     for repo in ['mozilla-central', 'mozilla-beta']:
         if os.path.isfile(sps.normExpUserPath(os.path.join(
                 treeLocation, repo, '.hg', 'hgrc'))):
@@ -347,14 +347,14 @@ def getRandomValidRepo(treeLocation):
 def main():
     print("Here are some sample random build configurations that can be generated:")
     parser, randomizer = addParserOptions()
-    buildOptions = parser.parse_args()
+    build_options = parser.parse_args()
 
-    if buildOptions.enableArmSimulatorObsolete:
-        buildOptions.enableSimulatorArm32 = True
+    if build_options.enableArmSimulatorObsolete:
+        build_options.enableSimulatorArm32 = True
 
     for _ in range(30):
-        buildOptions = generateRandomConfigurations(parser, randomizer)
-        print(buildOptions.buildOptionsStr)
+        build_options = generateRandomConfigurations(parser, randomizer)
+        print(build_options.build_options_str)
 
     print()
     print("Running this file directly doesn't do anything, but here's our subparser help:")

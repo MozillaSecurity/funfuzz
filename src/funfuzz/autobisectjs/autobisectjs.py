@@ -26,7 +26,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 from lithium.interestingness.utils import rel_or_abs_import
 
 from . import known_broken_earliest_working as kbew
-from ..js import buildOptions
+from ..js import build_options
 from ..js import compileShell
 from ..js import inspectShell
 from ..util import fileManipulation
@@ -57,17 +57,16 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         useInterestingnessTests=False,
         parameters='-e 42',  # http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy
         compilationFailedLabel='skip',
-        buildOptions="",
+        build_options="",
         useTreeherderBinaries=False,
         nameOfTreeherderBranch='mozilla-inbound',
     )
 
     # Specify how the shell will be built.
-    # See buildOptions.py for details.
     parser.add_option('-b', '--build',
-                      dest='buildOptions',
+                      dest='build_options',
                       help='Specify js shell build options, e.g. -b "--enable-debug --32"'
-                           "(python buildOptions.py --help)")
+                           "(python -m funfuzz.js.build_options --help)")
     parser.add_option('-B', '--browser',
                       dest='browserOptions',
                       help='Specify browser build options, e.g. -b "-c mozconfig". Deprecated.')
@@ -122,8 +121,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     (options, args) = parser.parse_args()
     if not options.browserOptions:
-        options.buildOptions = buildOptions.parseShellOptions(options.buildOptions)
-        options.skipRevs = ' + '.join(kbew.known_broken_ranges(options.buildOptions))
+        options.build_options = build_options.parseShellOptions(options.build_options)
+        options.skipRevs = ' + '.join(kbew.known_broken_ranges(options.build_options))
 
     options.paramList = [sps.normExpUserPath(x) for x in options.parameters.split(' ') if x]
     # First check that the testcase is present.
@@ -154,24 +153,24 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     if not options.browserOptions:
         earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
-            options.buildOptions, options.paramList + extraFlags, options.skipRevs)
+            options.build_options, options.paramList + extraFlags, options.skipRevs)
 
     earliestKnown = ''  # pylint: disable=invalid-name
 
     if not options.useTreeherderBinaries:
         # pylint: disable=invalid-name
-        earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
+        earliestKnown = hgCmds.getRepoHashAndId(options.build_options.repoDir, repoRev=earliestKnownQuery)[0]
 
     if options.startRepo is None:
         if options.useTreeherderBinaries:
             options.startRepo = 'default'
         else:
             options.startRepo = earliestKnown
-    # elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.buildOptions.repoDir,
+    # elif not (options.useTreeherderBinaries or hgCmds.isAncestor(options.build_options.repoDir,
     #                                                              earliestKnown, options.startRepo)):
     #     raise Exception('startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
     #
-    # if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.buildOptions.repoDir,
+    # if not options.useTreeherderBinaries and not hgCmds.isAncestor(options.build_options.repoDir,
     #                                                                earliestKnown, options.endRepo):
     #     raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
@@ -279,7 +278,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
         # pylint: disable=missing-return-type-doc,too-many-return-statements
         # pylint: disable=invalid-name
         (stdoutStderr, exitCode) = inspectShell.testBinary(shellFilename, options.paramList,
-                                                           options.buildOptions.runWithVg)
+                                                           options.build_options.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
@@ -419,8 +418,8 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     outputResult = sps.captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
     outputLines = outputResult.split("\n")
 
-    if options.buildOptions:
-        repoDir = options.buildOptions.repoDir
+    if options.build_options:
+        repoDir = options.build_options.repoDir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
         print()
@@ -519,9 +518,9 @@ def bisectUsingTboxBins(options):  # pylint: disable=invalid-name,missing-param-
     # pylint: disable=too-complex,too-many-locals,too-many-statements
     """Download treeherder binaries and bisect them."""
     testedIDs = {}
-    desiredArch = '32' if options.buildOptions.enable32 else '64'
+    desiredArch = '32' if options.build_options.enable32 else '64'
     buildType = downloadBuild.defaultBuildType(
-        options.nameOfTreeherderBranch, desiredArch, options.buildOptions.enableDbg)
+        options.nameOfTreeherderBranch, desiredArch, options.build_options.enableDbg)
 
     # Get list of treeherder IDs
     urlsTbox = downloadBuild.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
@@ -885,7 +884,7 @@ def main():
     """Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
-    repoDir = options.buildOptions.repoDir if options.buildOptions else options.browserOptions.repoDir
+    repoDir = options.build_options.repoDir if options.build_options else options.browserOptions.repoDir
 
     with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
                          if options.useTreeherderBinaries else compileShell.getLockDirPath(repoDir)):

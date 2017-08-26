@@ -12,7 +12,7 @@ Clone the repository to that location using:
 
 assuming the ~/trees folder is created and present.
 
-The options accepted by -b are also available via funfuzz/js/buildOptions.py:
+The options accepted by -b are also available via js.build_options:
 
 ```
   --random              Chooses sensible random build options. Defaults to
