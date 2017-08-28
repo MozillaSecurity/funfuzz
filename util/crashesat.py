@@ -9,16 +9,11 @@
 from __future__ import absolute_import, print_function
 
 import os
-import sys
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import subprocesses as sps
-
-path0 = os.path.dirname(os.path.abspath(__file__))
-path1 = os.path.abspath(os.path.join(path0, os.pardir, os.pardir, 'lithium', 'interestingness'))
-sys.path.append(path1)
-import timedRun
-import fileIngredients
+import lithium.interestingness.timed_run as timed_run
+from lithium.interestingness.utils import file_contains
 
 
 def parseOptions(arguments):
@@ -43,18 +38,18 @@ def interesting(cliArgs, tempPrefix):
     (regexEnabled, crashSig, timeout, args) = parseOptions(cliArgs)
 
     # Examine stack for crash signature, this is needed if crashSig is specified.
-    runinfo = timedRun.timed_run(args, timeout, tempPrefix)
-    if runinfo.sta == timedRun.CRASHED:
+    runinfo = timed_run.timed_run(args, timeout, tempPrefix)
+    if runinfo.sta == timed_run.CRASHED:
         sps.grabCrashLog(args[0], runinfo.pid, tempPrefix, True)
 
     timeString = " (%.3f seconds)" % runinfo.elapsedtime
 
     crashLogName = tempPrefix + "-crash.txt"
 
-    if runinfo.sta == timedRun.CRASHED:
+    if runinfo.sta == timed_run.CRASHED:
         if os.path.exists(crashLogName):
             # When using this script, remember to escape characters, e.g. "\(" instead of "(" !
-            found, _foundSig = fileIngredients.fileContains(crashLogName, crashSig, regexEnabled)
+            found, _foundSig = file_contains(crashLogName, crashSig, regexEnabled)
             if found:
                 print("Exit status: %s%s" % (runinfo.msg, timeString))
                 return True

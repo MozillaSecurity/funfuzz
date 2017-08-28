@@ -24,8 +24,8 @@ import subprocesses as sps
 import lithOps
 import createCollector
 
-# From FuzzManager (in sys.path thanks to import createCollector above)
-import FTB.Signatures.CrashInfo as CrashInfo
+# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration
 
 
@@ -111,7 +111,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         oom = jsInteresting.oomed(r.err)
         r.err = ignoreSomeOfStderr(r.err)
 
-        if (r.rc == 1 or r.rc == 2) and (anyLineContains(r.out, '[[script] scriptArgs*]') or (
+        if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, '[[script] scriptArgs*]') or (
                 anyLineContains(r.err, '[scriptfile] [scriptarg...]'))):
             print("Got usage error from:")
             print("  %s" % sps.shellify(command))
@@ -127,7 +127,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 f.write('\n'.join(r.issues + [sps.shellify(command), "compareJIT found a more serious bug"]) + '\n')
             print("  %s" % sps.shellify(command))
             return (r.lev, r.crashInfo)
-        elif r.lev != jsInteresting.JS_FINE or r.rc != 0:
+        elif r.lev != jsInteresting.JS_FINE or r.return_code != 0:
             print("%s | %s" % (infilename, jsInteresting.summaryString(
                 r.issues + ["compareJIT is not comparing output, because the shell exited strangely"],
                 r.lev, r.runinfo.elapsedtime)))

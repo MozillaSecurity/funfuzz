@@ -12,14 +12,10 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
-
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import inspectShell
 p0 = os.path.dirname(os.path.abspath(__file__))
-p1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'interestingness'))
-sys.path.append(p1)
-import timedRun
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
 sys.path.append(p2)
 import detect_malloc_errors
@@ -29,9 +25,10 @@ sys.path.append(p3)
 import subprocesses as sps
 import createCollector
 import fileManipulation
+import lithium.interestingness.timed_run as timed_run
 
-# From FuzzManager (in sys.path thanks to import createCollector above)
-import FTB.Signatures.CrashInfo as CrashInfo
+# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration
 
 
@@ -80,7 +77,7 @@ class ShellResult(object):
                 runthis)
 
         preexec_fn = ulimitSet if os.name == 'posix' else None
-        runinfo = timedRun.timed_run(runthis, options.timeout, logPrefix, preexec_fn=preexec_fn)
+        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix, preexec_fn=preexec_fn)
 
         lev = JS_FINE
         issues = []
@@ -93,21 +90,21 @@ class ShellResult(object):
         with open(logPrefix + "-err.txt") as f:
             err = f.readlines()
 
-        if options.valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
+        if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)
             valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
             for line in err:
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
-        elif runinfo.sta == timedRun.CRASHED:
+        elif runinfo.sta == timed_run.CRASHED:
             if sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True):
                 with open(logPrefix + "-crash.txt") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-        elif runinfo.rc == 0 and not inCompareJIT:
+        elif runinfo.return_code == 0 and not inCompareJIT:
             # We might have(??) run jsfunfuzz directly, so check for special kinds of bugs
             for line in out:
                 if line.startswith("Found a bug: ") and not ("NestTest" in line and oomed(err)):
@@ -155,7 +152,7 @@ class ShellResult(object):
         self.crashInfo = crashInfo
         self.match = match
         self.runinfo = runinfo
-        self.rc = runinfo.rc
+        self.return_code = runinfo.return_code
 
 
 def understoodJsfunfuzzExit(out, err):

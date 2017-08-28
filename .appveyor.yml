@@ -16,6 +16,7 @@ install:
     - "git.exe --version"
     - "%PYTHON%\\python.exe -m pip install --upgrade flake8 pylint"
     - "%PYTHON%\\python.exe -m pip install --upgrade pytest-flake8 pytest-pylint"
+    - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
 build: off
 test_script:
     - "%PYTHON%\\python.exe -m pytest"
