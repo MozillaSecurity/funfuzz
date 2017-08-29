@@ -26,7 +26,7 @@ import subprocesses as sps
 
 def readFromURL(url):
     """Read in a URL and returns its contents as a list."""
-    return urllib.urlopen(url).read()
+    return urllib.urlopen(url).read()  # pylint: disable=no-member
 
 
 def dlReport(count, bs, size):
@@ -42,7 +42,7 @@ def downloadURL(url, dest, quiet=False):
     if not quiet:
         sys.stdout.write('   ')
         sys.stdout.flush()
-    urllib.urlretrieve(url, dest, dlReport if not quiet else None)
+    urllib.urlretrieve(url, dest, dlReport if not quiet else None)  # pylint: disable=no-member
     if not quiet:
         sys.stdout.write('\x08\x08\x08')
     return dest
