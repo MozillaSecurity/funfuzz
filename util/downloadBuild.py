@@ -160,7 +160,7 @@ def undmg(fn, dest, mountpoint):
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
     """Download the build specified, along with symbols and tests. Returns True when all are obtained."""
     wantSymbols = wantSymbols and not jsShell  # Bug 715365, js shell currently lacks native symbols
-    wantSymbols = wantSymbols and '-asan' not in httpDir # doesn't make sense for asan
+    wantSymbols = wantSymbols and '-asan' not in httpDir  # Doesn't make sense for asan
     wantTests = wantTests and not jsShell
     gotApp = False
     gotTests = False
