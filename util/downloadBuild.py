@@ -257,7 +257,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                     localfile = os.path.join(buildDir, filename)
                     downloadURL(remoteURL, localfile, quiet=True)
                 gotApp = True
-            elif re.search(r'(\.mac(64)?\.|^target)\.dmg$', fn):
+            elif re.search(r'(\.mac(64)?|^target)\.dmg$', fn):
                 print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
                 print("extracting...", end=" ")
