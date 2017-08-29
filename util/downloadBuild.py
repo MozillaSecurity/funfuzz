@@ -51,7 +51,6 @@ def downloadURL(url, dest, quiet=False):
 def parseOptions():
     usage = 'Usage: %(prog)s [options]'
     parser = argparse.ArgumentParser(usage)
-    #parser.disable_interspersed_args() # not sure how to support this with argparse, doesn't seem used here anyways?
 
     parser.set_defaults(
         compileType='dbg',
