@@ -10,7 +10,7 @@
 from __future__ import absolute_import, print_function
 
 import argparse
-import ConfigParser
+import ConfigParser  # pylint: disable=import-error
 import os
 import platform
 import re
@@ -19,7 +19,7 @@ import stat
 import subprocess
 import sys
 import urllib
-from HTMLParser import HTMLParser
+from HTMLParser import HTMLParser  # pylint: disable=import-error
 
 import subprocesses as sps
 
