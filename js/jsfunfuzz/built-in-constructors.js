@@ -1,3 +1,8 @@
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 /*
         It might be more interesting to use Object.getOwnPropertyDescriptor to find out if
         a thing is exposed as a getter (like Debugger.prototype.enabled).  But there are exceptions:

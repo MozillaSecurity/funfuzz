@@ -1,6 +1,16 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=attribute-defined-outside-init,fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=too-many-branches,too-many-locals,too-many-statements
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from __future__ import absolute_import, print_function
 
 import argparse
+import ConfigParser
 import os
 import platform
 import re
@@ -8,11 +18,10 @@ import shutil
 import stat
 import subprocess
 import sys
+import urllib
 from HTMLParser import HTMLParser
 
 import subprocesses as sps
-
-import urllib
 
 
 def readFromURL(url):
@@ -46,7 +55,7 @@ def parseOptions():
 
     parser.set_defaults(
         compileType='dbg',
-        downloadFolder=os.getcwdu(),
+        downloadFolder=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         repoName='mozilla-central',
         useAsan=False,
         enableJsShell=False,
@@ -113,7 +122,7 @@ def find_nth(haystack, needle, start, n):
 
 def httpDirList(directory):
     """Read an Apache-style directory listing and returns a list of its contents, as relative URLs."""
-    print "Looking in " + directory + " ..."
+    print("Looking in %s ..." % directory)
     page = readFromURL(directory)
     sps.vdump('Finished reading from: ' + directory)
 
@@ -160,7 +169,7 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     # Create build folder and a download subfolder.
     buildDir = os.path.abspath(sps.normExpUserPath(os.path.join(targetDir, 'build')))
     if os.path.exists(buildDir):
-        print "Deleting old build..."
+        print("Deleting old build...")
         shutil.rmtree(buildDir)
     os.mkdir(buildDir)
     downloadFolder = os.path.join(buildDir, 'download')
@@ -182,44 +191,45 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
         fn = remotefn.split('/')[-1]
         localfn = os.path.join(downloadFolder, fn)
         if fn.endswith('.common.tests.zip') and wantTests:
-            print 'Downloading common test files...',
+            print("Downloading common test files...", end=" ")
             dlAction = downloadURL(remotefn, localfn)
-            print 'extracting...',
+            print("extracting...", end=" ")
             sys.stdout.flush()
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
             mIfyMozcrash(testsDir)
-            print 'completed!'
+            print("completed!")
             gotTests = True
         elif fn.endswith('.reftest.tests.zip') and wantTests:
-            print 'Downloading reftest files...',
+            print("Downloading reftest files...", end=" ")
             dlAction = downloadURL(remotefn, localfn)
-            print 'extracting...',
+            print("extracting...", end=" ")
             sys.stdout.flush()
             unzip(dlAction, testsDir)
-            print 'completed!'
+            print("completed!")
         elif fn.endswith('.txt'):
-            print 'Downloading text file...',
+            print("Downloading text file...", end=" ")
             downloadURL(remotefn, localfn)
-            print 'completed!'
+            print("completed!")
             gotTxtFile = True
         if jsShell:
             if re.search(r'^(jsshell-|target\.jsshell\.zip$)', fn):
-                print 'Downloading js shell...',
+                print("Downloading js shell...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end=" ")
                 sys.stdout.flush()
                 unzip(dlAction, appDir)
-                print 'completed!'
+                print("completed!")
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
+                writeDownloadedShellFMConf(remotefn, buildDir)
         else:
             if re.search(r'(\.linux-(x86_64|i686)(-asan)?|^target)\.tar\.bz2$', fn):
-                print 'Downloading application...',
+                print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end=" ")
                 sys.stdout.flush()
                 untarbz2(dlAction, appDir)
-                print 'completed!'
+                print("completed!")
 
                 # Hack #2 to make os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
                 shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
@@ -233,12 +243,12 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
             elif re.search(r'\.win(32|64)\.zip$', fn):
-                print 'Downloading application...',
+                print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end=" ")
                 sys.stdout.flush()
                 unzip(dlAction, appDir)
-                print 'completed!'
+                print("completed!")
 
                 # Hack #2 for making os.path.join(reftestScriptDir, automation.DEFAULT_APP) work.
                 shutil.move(os.path.join(appDir, 'firefox'), os.path.join(appDir, 'bin'))
@@ -249,21 +259,21 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                     downloadURL(remoteURL, localfile, quiet=True)
                 gotApp = True
             elif re.search(r'(\.mac(64)?\.|^target)\.dmg$', fn):
-                print 'Downloading application...',
+                print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end=" ")
                 sys.stdout.flush()
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
-                print 'completed!'
+                print("completed!")
                 downloadMDSW(buildDir, "macosx64")
                 gotApp = True
             elif remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
-                print 'Downloading crash reporter symbols...',
+                print("Downloading crash reporter symbols...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
-                print 'extracting...',
+                print("extracting...", end=" ")
                 sys.stdout.flush()
                 unzip(dlAction, symbolsDir)
-                print 'completed!'
+                print("completed!")
                 gotSyms = True
     return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
 
@@ -325,7 +335,21 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
             raise Exception('Earliest build is not found in list of IDs.')
     else:
         earliestBuild = dirNames[0]
-    earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
+
+    # Earlier downloaded builds fail to start properly on macOS Sierra 10.12
+    # First known working build is in:
+    # https://archive.mozilla.org/pub/firefox/tinderbox-builds/mozilla-inbound-macosx64-debug/1468314445/
+    # Note: if this gets more populated, we should move it to knownBrokenEarliestWorking
+    if sps.isMac and int(earliestBuild[:-1]) < 1468314445:
+        earliestBuild = '1468314445/'
+
+    try:
+        earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
+    except ValueError:
+        # Sometimes 1468314445 is not found
+        if sps.isMac and int(earliestBuild[:-1]) < 1468333601:
+            earliestBuild = '1468333601/'
+        earliestBuildIndex = dirNames.index(earliestBuild)  # Set the start boundary
 
     if latestBuild != 'default':
         latestBuild = latestBuild + '/'
@@ -339,7 +363,7 @@ def getBuildList(buildType, earliestBuild='default', latestBuild='default'):
 
     buildDirs = [(buildsHttpDir + d) for d in dirNames if isNumericSubDir(d)]
     if len(buildDirs) < 1:
-        print 'Warning: No builds in ' + buildsHttpDir + '!'
+        print("Warning: No builds in %s!" % buildsHttpDir)
     return buildDirs
 
 
@@ -386,6 +410,58 @@ def defaultBuildType(repoName, arch, asan, debug):
     return repoName + '-' + mozPlatform(arch) + ('-asan' if asan else '') + ('-debug' if debug else '')
 
 
+def writeDownloadedShellFMConf(urlLink, bDir):
+    """Writes an arbitrary .fuzzmanagerconf file for downloaded js shells."""
+    downloadedShellCfg = ConfigParser.SafeConfigParser()
+    downloadedShellCfg.add_section('Main')
+
+    # Note that this does not differentiate between debug/asan/optimized builds
+    if '-linux' in urlLink:
+        osname = 'linux'
+        if '-linux64' in urlLink:
+            osname = 'linux64'
+            archname = 'x86-64'
+        else:
+            archname = 'x86'
+    elif '-win' in urlLink:
+        osname = 'win32'
+        if 'win64' in urlLink:
+            osname = 'win64'
+            archname = 'x86-64'
+        else:
+            archname = 'x86'
+    elif '-macosx64' in urlLink:
+        osname = 'macosx64'
+        archname = 'x86-64'
+
+    downloadedShellCfg.set('Main', 'platform', archname)
+    if 'mozilla-central-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-central')
+    elif 'mozilla-inbound-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-inbound')
+    elif 'mozilla-aurora-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-aurora')
+    elif 'mozilla-beta-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-beta')
+    elif 'mozilla-release-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-release')
+    elif 'mozilla-esr52-' in urlLink:
+        downloadedShellCfg.set('Main', 'product', 'mozilla-esr52')
+    downloadedShellCfg.set('Main', 'os', osname)
+
+    downloadedShellFMConfPath = os.path.join(bDir, 'dist', 'js.fuzzmanagerconf')
+    if not os.path.isfile(downloadedShellFMConfPath):
+        with open(downloadedShellFMConfPath, 'wb') as cfgfile:
+            downloadedShellCfg.write(cfgfile)
+
+    # Required pieces of the .fuzzmanagerconf file are platform, product and os
+    cfg = ConfigParser.SafeConfigParser()
+    cfg.read(downloadedShellFMConfPath)
+    assert cfg.get('Main', 'platform')
+    assert cfg.get('Main', 'product')
+    assert cfg.get('Main', 'os')
+
+
 def main():
     options = parseOptions()
     # On Windows, if a path surrounded by quotes ends with '\', the last quote is considered escaped and will be
@@ -393,11 +469,13 @@ def main():
     options.remoteDir = options.remoteDir and options.remoteDir.rstrip('"')
     options.downloadFolder = options.downloadFolder and options.downloadFolder.rstrip('"')
     if options.remoteDir is not None:
-        print downloadBuild(options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests)
+        print(downloadBuild(
+            options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests))
     else:
         buildType = defaultBuildType(options.repoName, options.arch, options.useAsan, (options.compileType == 'dbg'))
         downloadLatestBuild(buildType, options.downloadFolder,
                             getJsShell=options.enableJsShell, wantTests=options.wantTests)
+
 
 if __name__ == "__main__":
     main()

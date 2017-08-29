@@ -1,8 +1,12 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=import-error,invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from __future__ import absolute_import, print_function
 
 import ConfigParser
 import os
@@ -11,6 +15,12 @@ import sys
 import subprocess
 
 import subprocesses as sps
+
+
+try:
+    input = raw_input  # pylint: disable=redefined-builtin
+except NameError:
+    pass
 
 
 def destroyPyc(repoDir):
@@ -65,6 +75,7 @@ def getCsetHashFromBisectMsg(msg):
     if m:
         return m.group(3)
 
+
 assert getCsetHashFromBisectMsg("x 12345:abababababab") == "abababababab"
 assert getCsetHashFromBisectMsg("x 12345:123412341234") == "123412341234"
 assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"
@@ -81,10 +92,11 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):
     hgIdFull = sps.captureStdout(hgLogTmplList)[0]
     onDefault = bool(hgIdFull)
     if not onDefault:
-        updateDefault = raw_input('Not on default tip! ' +
-                                  'Would you like to (a)bort, update to (d)efault, or (u)se this rev: ')
+        updateDefault = input("Not on default tip! "
+                              "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
+        updateDefault = updateDefault.strip()
         if updateDefault == 'a':
-            print 'Aborting...'
+            print("Aborting...")
             sys.exit(0)
         elif updateDefault == 'd':
             subprocess.check_call(['hg', '-R', repoDir, 'update', 'default'])
@@ -115,7 +127,9 @@ def isRepoValid(repo):
     return os.path.isfile(sps.normExpUserPath(os.path.join(repo, '.hg', 'hgrc')))
 
 
-def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
+def patchHgRepoUsingMq(patchFile, workingDir=None):
+    workingDir = workingDir or (
+        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     # We may have passed in the patch with or without the full directory.
     patchAbsPath = os.path.abspath(sps.normExpUserPath(patchFile))
     pname = os.path.basename(patchAbsPath)
@@ -125,10 +139,10 @@ def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
                                                       ignoreExitCode=True)
     if qimportRetCode != 0:
         if 'already exists' in qimportOutput:
-            print "A patch with the same name has already been qpush'ed. Please qremove it first."
+            print("A patch with the same name has already been qpush'ed. Please qremove it first.")
         raise Exception('Return code from `hg qimport` is: ' + str(qimportRetCode))
 
-    print("Patch qimport'ed..."),
+    print("Patch qimport'ed...", end=" ")
 
     qpushOutput, qpushRetCode = sps.captureStdout(['hg', '-R', workingDir, 'qpush', pname],
                                                   combineStderr=True, ignoreStderr=True)
@@ -136,13 +150,13 @@ def patchHgRepoUsingMq(patchFile, workingDir=os.getcwdu()):
 
     if qpushRetCode != 0:
         hgQpopQrmAppliedPatch(patchFile, workingDir)
-        print 'You may have untracked .rej or .orig files in the repository.'
-        print '`hg status` output of the repository of interesting files in ' + workingDir + ' :'
+        print("You may have untracked .rej or .orig files in the repository.")
+        print("`hg status` output of the repository of interesting files in %s :" % workingDir)
         subprocess.check_call(['hg', '-R', workingDir, 'status', '--modified', '--added',
                                '--removed', '--deleted'])
         raise Exception('Return code from `hg qpush` is: ' + str(qpushRetCode))
 
-    print("Patch qpush'ed. Continuing..."),
+    print("Patch qpush'ed. Continuing...", end=" ")
     return pname
 
 
@@ -152,9 +166,9 @@ def hgQpopQrmAppliedPatch(patchFile, repoDir):
                                                 combineStderr=True, ignoreStderr=True,
                                                 ignoreExitCode=True)
     if qpopRetCode != 0:
-        print '`hg qpop` output is: ' + qpopOutput
+        print("`hg qpop` output is: " % qpopOutput)
         raise Exception('Return code from `hg qpop` is: ' + str(qpopRetCode))
 
-    print "Patch qpop'ed...",
+    print("Patch qpop'ed...", end=" ")
     subprocess.check_call(['hg', '-R', repoDir, 'qdelete', os.path.basename(patchFile)])
-    print "Patch qdelete'd."
+    print("Patch qdelete'd.")

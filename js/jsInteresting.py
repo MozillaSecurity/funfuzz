@@ -1,15 +1,21 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=fixme,global-statement,import-error,invalid-name,missing-docstring,no-member
+# pylint: disable=too-few-public-methods,too-many-branches,too-many-instance-attributes,too-many-locals
+# pylint: disable=too-many-statements,wrong-import-position
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from __future__ import absolute_import, print_function
 
 import os
 import sys
-
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import inspectShell
 p0 = os.path.dirname(os.path.abspath(__file__))
-p1 = os.path.abspath(os.path.join(p0, os.pardir, os.pardir, 'lithium', 'interestingness'))
-sys.path.append(p1)
-import timedRun
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
 sys.path.append(p2)
 import detect_malloc_errors
@@ -19,9 +25,10 @@ sys.path.append(p3)
 import subprocesses as sps
 import createCollector
 import fileManipulation
+import lithium.interestingness.timed_run as timed_run
 
-# From FuzzManager (in sys.path thanks to import createCollector above)
-import FTB.Signatures.CrashInfo as CrashInfo
+# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration
 
 
@@ -49,16 +56,18 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
 ) = range(JS_LEVELS)
 
 
+gOptions = ""
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-class ShellResult:
+class ShellResult(object):
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, inCompareJIT):
         pathToBinary = runthis[0]
         # This relies on the shell being a local one from compileShell.py:
-        pc = ProgramConfiguration.fromBinary(pathToBinary.split('.')[0])  # Ignore trailing ".exe" in Win
+        # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'
+        pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split('.')[0])
         pc.addProgramArguments(runthis[1:-1])
 
         if options.valgrind:
@@ -68,7 +77,7 @@ class ShellResult:
                 runthis)
 
         preexec_fn = ulimitSet if os.name == 'posix' else None
-        runinfo = timedRun.timed_run(runthis, options.timeout, logPrefix, preexec_fn=preexec_fn)
+        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix, preexec_fn=preexec_fn)
 
         lev = JS_FINE
         issues = []
@@ -81,21 +90,21 @@ class ShellResult:
         with open(logPrefix + "-err.txt") as f:
             err = f.readlines()
 
-        if options.valgrind and runinfo.rc == VALGRIND_ERROR_EXIT_CODE:
+        if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)
             valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
             for line in err:
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
-        elif runinfo.sta == timedRun.CRASHED:
+        elif runinfo.sta == timed_run.CRASHED:
             if sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True):
                 with open(logPrefix + "-crash.txt") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
-        elif runinfo.rc == 0 and not inCompareJIT:
+        elif runinfo.return_code == 0 and not inCompareJIT:
             # We might have(??) run jsfunfuzz directly, so check for special kinds of bugs
             for line in out:
                 if line.startswith("Found a bug: ") and not ("NestTest" in line and oomed(err)):
@@ -114,7 +123,12 @@ class ShellResult:
         crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
 
         createCollector.printCrashInfo(crashInfo)
-        if not isinstance(crashInfo, CrashInfo.NoCrashInfo):
+        # We only care about crashes and assertion failures on shells with no symbols
+        # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
+        if not isinstance(crashInfo, CrashInfo.NoCrashInfo) or \
+                'Assertion failure: ' in str(crashInfo.rawStderr) or \
+                'Segmentation fault' in str(crashInfo.rawStderr) or \
+                'Bus error' in str(crashInfo.rawStderr):
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
 
         match = options.collector.search(crashInfo)
@@ -122,7 +136,7 @@ class ShellResult:
             createCollector.printMatchingSignature(match)
             lev = JS_FINE
 
-        print logPrefix + " | " + summaryString(issues, lev, runinfo.elapsedtime)
+        print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
             fileManipulation.writeLinesToFile(
@@ -138,7 +152,7 @@ class ShellResult:
         self.crashInfo = crashInfo
         self.match = match
         self.runinfo = runinfo
-        self.rc = runinfo.rc
+        self.return_code = runinfo.return_code
 
 
 def understoodJsfunfuzzExit(out, err):
@@ -184,7 +198,7 @@ def oomed(err):
 
 
 def summaryString(issues, level, elapsedtime):
-    amissDetails = ("") if (len(issues) == 0) else (" | " + repr(issues[:5]) + " ")
+    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")
     return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 
@@ -220,9 +234,9 @@ def ulimitSet():
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30
     if sps.isARMv7l:
-        resource.setrlimit(resource.RLIMIT_AS, (1*GB, 1*GB))
+        resource.setrlimit(resource.RLIMIT_AS, (1 * GB, 1 * GB))
     else:
-        resource.setrlimit(resource.RLIMIT_AS, (2*GB, 2*GB))
+        resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
     halfGB = int(GB / 2)
@@ -256,7 +270,8 @@ def parseOptions(args):
     options.collector = createCollector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
-    options.shellIsDeterministic = inspectShell.queryBuildConfiguration(options.jsengineWithArgs[0], 'more-deterministic')
+    options.shellIsDeterministic = inspectShell.queryBuildConfiguration(
+        options.jsengineWithArgs[0], 'more-deterministic')
 
     return options
 
@@ -270,7 +285,8 @@ def init(args):
     gOptions = parseOptions(args)
 
 
-def interesting(args, tempPrefix):
+# FIXME: _args is unused here, we should check if it can be removed?
+def interesting(_args, tempPrefix):
     options = gOptions
     # options, runthis, logPrefix, inCompareJIT
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
@@ -284,15 +300,15 @@ def main():
     options = parseOptions(sys.argv[1:])
     tempPrefix = "m"
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
-    print res.lev
+    print(res.lev)
     if options.submit:
         if res.lev >= options.minimumInterestingLevel:
             testcaseFilename = options.jsengineWithArgs[-1]
-            print "Submitting " + testcaseFilename
+            print("Submitting %s" % testcaseFilename)
             quality = 0
             options.collector.submit(res.crashInfo, testcaseFilename, quality)
         else:
-            print "Not submitting (not interesting)"
+            print("Not submitting (not interesting)")
 
 
 if __name__ == "__main__":

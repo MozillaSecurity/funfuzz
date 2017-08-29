@@ -1,11 +1,13 @@
-This repository contains two JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell. [DOMFuzz](dom) tests layout and other parts of browser engines through DOM API calls.
+[![Build Status](https://travis-ci.org/MozillaSecurity/funfuzz.svg?branch=master)](https://travis-ci.org/MozillaSecurity/funfuzz) [![Build status](https://ci.appveyor.com/api/projects/status/m8gw5echa7f2f26r/branch/master?svg=true)](https://ci.appveyor.com/project/MozillaSecurity/funfuzz/branch/master)
+
+This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compareJIT compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
 
 Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](autobisect-js/README.md).
 
 
 ## Setup
 
-Check out the **[lithium](https://github.com/MozillaSecurity/lithium/)** and **[FuzzManager](https://github.com/MozillaSecurity/FuzzManager)** repositories side-by-side by this one.
+Install the required pip packages using `pip install -r requirements.txt`.
 
 Some parts of the fuzzer will only activate if the Python scripts can find your mozilla-central tree:
 ```
@@ -21,13 +23,14 @@ After the addition of FuzzManager support, you will need to first install the pi
 
 Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
 
-### Windows
+### Windows (only 64-bit supported)
 
 1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.2.0) to get an msys shell.
 2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories. (32-bit works best for now)
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
-4. Make sure you install at least Microsoft Visual Studio 2013 (Community Edition is recommended) as per the build instructions above in the Setup section. 2015 might work as well.
-5. Run `start-shell-msvc2013.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files\ \(x86\)/Git/bin/git.exe`.
+4. Make sure you install at least Microsoft Visual Studio 2015 (Community Edition is recommended) as per the build instructions above in the Setup section.
+5. Run `start-shell-msvc2015.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files\ \(x86\)/Git/bin/git.exe`.
+    1. Run the batch file with administrator privileges to get gflags analysis working correctly.
 
 
 ### Mac
@@ -72,10 +75,6 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 
 ## Running funfuzz
 
-To run **all of the domfuzz and js fuzzers** which test builds every 8 hours:
-
-`python -u funfuzz/loopBot.py -b "--random" --target-time 28800 | tee ~/log-loopBotPy.txt`
-
 To run **only the js fuzzers** which compiles shells with random configurations every 8 hours and tests them:
 
 `python -u funfuzz/loopBot.py -b "--random" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
@@ -114,19 +113,18 @@ Replace anything between "<" and ">" with your desired parameters.
 
 **A:** compileShell has been tested on:
 
-* Windows 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild) (Untested on Windows 8/8.1)
-  * Windows 10 [requires a patch](https://bugzilla.mozilla.org/show_bug.cgi?id=1173060#c9) on top of MozillaBuild 2.0.0 (Untested on MozillaBuild 2.2.0)
-* Mac OS X 10.11
-* Ubuntu 14.04 LTS and later (best supported on 15.10)
-* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php) are also known to work.
+* Windows 10, 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild). It should also work with MozillaBuild 3.0.
+* Mac OS X 10.12
+* Ubuntu 16.04 LTS and later
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
 
-The following operating systems are old and while they may still work, be prepared to **expect issues** along the way:
+The following operating systems are old/less common and while they may still work, be prepared to **expect issues** along the way:
 
-* Windows Vista
-* Mac OS X 10.10
-* Ubuntu Linux 12.04 LTS
+* Windows Vista / Windows 8 / Windows 8.1
+* Mac OS X 10.10 / 10.11
+* Ubuntu Linux 14.04 LTS, 15.10 and prior
+* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:
 
@@ -135,4 +133,4 @@ Support for the following operating systems **have been removed**:
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** We recommend the Python 2.7.x series. There is no support for Python3 yet.
+**A:** We recommend the Python 2.7.x series. There is no support for Python 3 yet, although there is work happening for the move to Python 3.

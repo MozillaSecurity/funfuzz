@@ -1,4 +1,8 @@
 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 /***********************
  * TEST BUILT-IN TYPES *
  ***********************/
@@ -164,16 +168,15 @@ var makeEvilCallback;
     // Options are in js.cpp: Evaluate() and ParseCompileOptions()
     return ("({ global: " + m("g") +
       ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
-      ", lineNumber: 42, newContext: " + makeBoolean(d, b) +
+      ", lineNumber: 42" +
       ", isRunOnce: " + makeBoolean(d, b) +
       ", noScriptRval: " + makeBoolean(d, b) +
+      ", sourceIsLazy: " + makeBoolean(d, b) +
       ", catchTermination: " + makeBoolean(d, b) +
-      ", saveFrameChain: " + ("bug 881999" && rnd(10000) ? "false" : makeBoolean(d, b)) +
       ((rnd(5) == 0) ? (
         ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
-        ((rnd(2) == 0) ? (", elementProperty: " + m("s")) : "") +
-        ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "") +
-        ((rnd(2) == 0) ? (", sourcePolicy: " + Random.index(["'NO_SOURCE'", "'LAZY_SOURCE'", "'SAVE_SOURCE'"])) : "")
+        ((rnd(2) == 0) ? (", elementAttributeName: " + m("s")) : "") +
+        ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "")
         ) : ""
       ) +
     " })");
@@ -256,17 +259,16 @@ var makeEvilCallback;
     { w: 1,  v: function(d, b) { return "/*ADP-3*/Object.defineProperty(" + m("a") + ", " + arrayIndex(d, b) + ", { " + propertyDescriptorPrefix(d, b) + "writable: " + makeBoolean(d,b) + ", value: " + val(d, b) + " });"; } },
 
     // Array mutators
-    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "push", severalargs(() => val(d, b))) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "push", severalargs(function() { return val(d, b); })) + ";"; } },
     { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "pop", []) + ";"; } },
-    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "unshift", severalargs(() => val(d, b))) + ";"; } },
+    { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "unshift", severalargs(function() { return val(d, b); })) + ";"; } },
     { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "shift", []) + ";"; } },
     { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "reverse", []) + ";"; } },
     { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "sort", [makeEvilCallback(d, b)]) + ";"; } },
     { w: 5,  v: function(d, b) { return method(d, b, "Array", m("a"), "splice", [arrayIndex(d, b) - arrayIndex(d, b), arrayIndex(d, b)]) + ";"; } },
-
     // Array accessors
     { w: 1,  v: function(d, b) { return assign(d, b, "s", method(d, b, "Array", m("a"), "join", [m("s")])); } },
-    { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "concat", severalargs(() => m("at")))); } },
+    { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "concat", severalargs(function() { return m("at"); }))); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "a", method(d, b, "Array", m("a"), "slice", [arrayIndex(d, b) - arrayIndex(d, b), arrayIndex(d, b) - arrayIndex(d, b)])); } },
 
     // Array iterators
@@ -358,6 +360,9 @@ var makeEvilCallback;
     { w: 5,  v: function(d, b) { return assign(d, b, "v", m("g") + ".eval(" + strToEval(d, b) + ")"); } },
     { w: 5,  v: function(d, b) { return assign(d, b, "v", "evalcx(" + strToEval(d, b) + ", " + m("g") + ")"); } },
     { w: 5,  v: function(d, b) { return assign(d, b, "v", "evaluate(" + strToEval(d, b) + ", " + evaluateFlags(d, b) + ")"); } },
+    { w: 2,  v: function(d, b) { return m("g") + ".offThreadCompileScript(" + strToEval(d, b) + ");"; } },
+    { w: 3,  v: function(d, b) { return m("g") + ".offThreadCompileScript(" + strToEval(d, b) + ", " + evaluateFlags(d, b) + ");"; } },
+    { w: 5,  v: function(d, b) { return assign(d, b, "v", m("g") + ".runOffThreadScript()"); } },
     { w: 3,  v: function(d, b) { return "(void schedulegc(" + m("g") + "));"; } },
 
     // Mix builtins between globals

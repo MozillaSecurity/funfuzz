@@ -42,8 +42,6 @@ Options:
   -b BUILDOPTIONS, --build=BUILDOPTIONS
                         Specify js shell build options, e.g. -b "--enable-
                         debug --32" (python buildOptions.py --help)
-  -B BROWSEROPTIONS, --browser=BROWSEROPTIONS
-                        Specify browser build options, e.g. -b "-c mozconfig"
   --resetToTipFirst     First reset to default tip overwriting all local
                         changes. Equivalent to first executing `hg update -C
                         default`. Defaults to "False".

@@ -1,7 +1,15 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=broad-except,fixme,import-error,invalid-name,missing-docstring
+# pylint: disable=too-few-public-methods,too-many-arguments,wrong-import-position
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 # bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes
 
+from __future__ import absolute_import, print_function
 
 import multiprocessing
 import os
@@ -9,8 +17,9 @@ import platform
 import shutil
 import sys
 import tempfile
+import time
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
@@ -21,23 +30,13 @@ import subprocesses as sps
 import forkJoin
 import createCollector
 from LockDir import LockDir
-path2 = os.path.abspath(os.path.join(path0, 'dom', 'automation'))
-sys.path.append(path2)
-import loopdomfuzz
-import buildBrowser
 path3 = os.path.abspath(os.path.join(path0, 'js'))
 sys.path.append(path3)
 import buildOptions
 import compileShell
 import loopjsfunfuzz
 
-localSep = "/"  # even on windows, i have to use / (avoid using os.path.join) in bot.py! is it because i'm using bash?
-
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loopjsfunfuzz.py for tradeoffs
-
-# Possible ssh options:
-#   -oStrictHostKeyChecking=no
-#   -oUserKnownHostsFile=/dev/null
 
 
 class BuildInfo(object):
@@ -55,15 +54,15 @@ def parseOpts():
     parser = OptionParser()
     parser.set_defaults(
         repoName='mozilla-central',
-        targetTime=15*60,       # 15 minutes
+        targetTime=15 * 60,       # 15 minutes
         existingBuildDir=None,
         timeout=0,
         buildOptions=None,
         useTreeherderBuilds=False,
     )
 
-    parser.add_option('-t', '--test-type', dest='testType', choices=['js', 'dom'],
-                      help='Test type: "js" or "dom"')
+    parser.add_option('-t', '--test-type', dest='testType', choices=['js'],
+                      help='Test type: "js"', default='js')
 
     parser.add_option("--build", dest="existingBuildDir",
                       help="Use an existing build directory.")
@@ -77,29 +76,28 @@ def parseOpts():
     parser.add_option('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
                       help='Download builds from treeherder instead of compiling our own.')
 
-    # Specify how the shell or browser will be built.
-    # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
+    # Specify how the shell will be built.
+    # See js/buildOptions.py for details.
     parser.add_option('-b', '--build-options',
                       dest='buildOptions',
                       help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
 
     parser.add_option('--timeout', type='int', dest='timeout',
-                      help='Sets the timeout for loopjsfunfuzz.py. ' +
-                      'Defaults to taking into account the speed of the computer and ' +
-                      'debugger (if any).')
+                      help="Sets the timeout for loopjsfunfuzz.py. "
+                           "Defaults to taking into account the speed of the computer and debugger (if any).")
 
     options, args = parser.parse_args()
-    if len(args) > 0:
-        print "Warning: bot.py does not use positional arguments"
+    if args:
+        print("Warning: bot.py does not use positional arguments")
 
-    if not options.testType:
-        raise Exception('options.testType should first be set to "js" or "dom"')
+    if not options.testType or options.testType == 'dom':
+        raise Exception('options.testType should be set to "js" now that only js engine fuzzing is supported')
 
     if not options.useTreeherderBuilds and not os.path.isdir(buildOptions.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
-        print 'Trees were absent from default location: ' + buildOptions.DEFAULT_TREES_LOCATION
-        print 'Using treeherder builds instead...'
+        print("Trees were absent from default location: %s" % buildOptions.DEFAULT_TREES_LOCATION)
+        print("Using treeherder builds instead...")
 
     if options.buildOptions is None:
         options.buildOptions = ''
@@ -114,11 +112,11 @@ def main():
 
     options = parseOpts()
 
-    collector = createCollector.createCollector("DOMFuzz" if options.testType == 'dom' else "jsfunfuzz")
+    collector = createCollector.createCollector("jsfunfuzz")
     refreshSignatures(collector)
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
-    print options.tempDir
+    print(options.tempDir)
 
     buildInfo = ensureBuild(options)
     assert os.path.isdir(buildInfo.buildDir)
@@ -135,45 +133,40 @@ def main():
 
     forkJoin.forkJoin(options.tempDir, numProcesses, loopFuzzingAndReduction, options, buildInfo, collector)
 
-    # Remove build directory if we created it
-    if options.testType == 'dom' and not \
-            (options.existingBuildDir or options.buildOptions is not None):
-        shutil.rmtree(buildInfo.buildDir)
-
     shutil.rmtree(options.tempDir)
 
 
 def printMachineInfo():
     # Log information about the machine.
-    print "Platform details: " + " ".join(platform.uname())
-    print "hg version: " + sps.captureStdout(['hg', '-q', 'version'])[0]
+    print("Platform details: %s" % " ".join(platform.uname()))
+    print("hg version: %s" % sps.captureStdout(['hg', '-q', 'version'])[0])
 
     # In here temporarily to see if mock Linux slaves on TBPL have gdb installed
     try:
-        print "gdb version: " + sps.captureStdout(['gdb', '--version'], combineStderr=True,
-                                                  ignoreStderr=True, ignoreExitCode=True)[0]
+        print("gdb version: %s" % sps.captureStdout(['gdb', '--version'], combineStderr=True,
+                                                    ignoreStderr=True, ignoreExitCode=True)[0])
     except (KeyboardInterrupt, Exception) as e:
-        print 'Error involving gdb is: ' + repr(e)
+        print("Error involving gdb is: %r" % (e,))
 
     # FIXME: Should have if os.path.exists(path to git) or something
-    # print "git version: " + sps.captureStdout(['git', 'version'], combineStderr=True, ignoreStderr=True, ignoreExitCode=True)[0]
-    print "Python version: " + sys.version.split()[0]
-    print "Number of cores visible to OS: " + str(multiprocessing.cpu_count())
-    print 'Free space (GB): ' + str('%.2f') % sps.getFreeSpace('/', 3)
+    # print("git version: %s" % sps.captureStdout(['git', '--version'], combineStderr=True,
+    #                                             ignoreStderr=True, ignoreExitCode=True)[0])
+    print("Python version: %s" % sys.version.split()[0])
+    print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
+    print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))
 
     hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
     if os.path.isfile(hgrcLocation):
-        print 'The hgrc of this repository is:'
+        print("The hgrc of this repository is:")
         with open(hgrcLocation, 'rb') as f:
             hgrcContentList = f.readlines()
         for line in hgrcContentList:
-            print line.rstrip()
+            print(line.rstrip())
 
     if os.name == 'posix':
         # resource library is only applicable to Linux or Mac platforms.
         import resource
-        print "Corefile size (soft limit, hard limit) is: " + \
-              repr(resource.getrlimit(resource.RLIMIT_CORE))
+        print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
 
 
 def refreshSignatures(collector):
@@ -215,30 +208,26 @@ def ensureBuild(options):
                 # This is because options.testType gets prepended along with a dash later.
                 bType = buildOptions.computeShellType(options.buildOptions)[3:]
                 bSrc = (
-                    'Create another shell in shell-cache like this one:\n' +
-                    'python -u %s -b "%s -R %s" -r %s\n\n' % (
-                        os.path.join(path3, 'compileShell.py'), options.buildOptions.buildOptionsStr,
-                        options.buildOptions.repoDir, bRev
-                    ) +
-                    '==============================================\n' +
-                    '|  Fuzzing %s js shell builds\n' % cshell.getRepoName() +
-                    '|  DATE: %s\n' % sps.dateStr() +
-                    '==============================================\n\n')
+                    "Create another shell in shell-cache like this one:\n"
+                    'python -u %s -b "%s -R %s" -r %s\n\n'
+                    "==============================================\n"
+                    "|  Fuzzing %s js shell builds\n"
+                    "|  DATE: %s\n"
+                    "==============================================\n\n" % (
+                        os.path.join(path3, "compileShell.py"),
+                        options.buildOptions.buildOptionsStr,
+                        options.buildOptions.repoDir,
+                        bRev,
+                        cshell.getRepoName(),
+                        time.asctime()
+                    ))
 
                 manyTimedRunArgs = mtrArgsCreation(options, cshell)
-                print 'buildDir is: ' + bDir
-                print 'buildSrc is: ' + bSrc
+                print("buildDir is: %s" % bDir)
+                print("buildSrc is: %s" % bSrc)
         else:
-            # Compiled browser
-            options.buildOptions = buildBrowser.parseOptions(options.buildOptions.split())
-            bDir = options.buildOptions.objDir
-            bType = platform.system() + "-" + os.path.basename(options.buildOptions.mozconfig)
-            bSrc = repr(hgCmds.getRepoHashAndId(options.buildOptions.repoDir))
-            bRev = ''
-            manyTimedRunArgs = []
-            success = buildBrowser.tryCompiling(options.buildOptions)
-            if not success:
-                raise Exception('Building a browser failed.')
+            # FIXME: We can probably remove the testType option
+            raise Exception('Only testType "js" is supported.')
     else:
         # Treeherder js shells and browser
         # Download from Treeherder and call it 'build'
@@ -262,7 +251,7 @@ def loopFuzzingAndReduction(options, buildInfo, collector, i):
     if options.testType == 'js':
         loopjsfunfuzz.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
     else:
-        loopdomfuzz.many_timed_runs(options.targetTime, tempDir, [buildInfo.buildDir], collector)
+        raise Exception('Only js engine fuzzing is supported')
 
 
 def machineTimeoutDefaults(options):
@@ -271,8 +260,7 @@ def machineTimeoutDefaults(options):
         return 300
     elif sps.isARMv7l:
         return 180
-    else:
-        return JS_SHELL_DEFAULT_TIMEOUT
+    return JS_SHELL_DEFAULT_TIMEOUT
 
 
 def mtrArgsCreation(options, cshell):

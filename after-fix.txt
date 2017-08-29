@@ -3,14 +3,6 @@
 contents bot.py
 contents util/*.py
 contents detect/*.py
-contents known/mozilla-central/*.txt
 contents js/*.py
 contents js/shared/*.js
 contents js/jsfunfuzz/*.js
-contents dom/automation/*.py
-contents dom/automation/*.txt
-contents dom/extension/components/*.js
-contents dom/extension/content/*.js
-contents dom/fuzzer/*.js
-contents dom/fuzzer/modules/*.js
-contents dom/fuzzer/values/*.js

@@ -1,3 +1,8 @@
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 var Random = {
   twister: null,
 
@@ -9,6 +14,7 @@ var Random = {
     this.twister.seed(seed);
   },
   number: function (limit) {
+    // Returns an integer in [0, limit). Uniform distribution.
     if (limit == 0) {
       return limit;
     }
@@ -18,14 +24,20 @@ var Random = {
     return (Random.twister.int32() >>> 0) % limit;
   },
   float: function () {
+    // Returns a float in [0, 1]. Uniform distribution.
     return (Random.twister.int32() >>> 0) * (1.0/4294967295.0);
   },
   range: function (start, limit) {
+    // Returns an integer in [start, limit]. Uniform distribution.
     if (isNaN(start) || isNaN(limit)) {
       Utils.traceback();
       throw new TypeError("Random.range() received a non number type: '" + start + "', '" + limit + "')");
     }
     return Random.number(limit - start + 1) + start;
+  },
+  ludOneTo: function(limit) {
+    // Returns a float in [1, limit]. The logarithm has uniform distribution.
+    return Math.exp(Random.float() * Math.log(limit));
   },
   index: function (list, emptyr) {
     if (!(list instanceof Array || (typeof list != "string" && "length" in list))) {
@@ -76,7 +88,7 @@ var Random = {
     }
     var n = this.number(total);
     for (var i = 0; i < list.length; i++) {
-      if (n <= list[i][0]) {
+      if (n < list[i][0]) {
         if (flat == true) {
           return list[i][1];
         } else {

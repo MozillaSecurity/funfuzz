@@ -1,4 +1,8 @@
 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 function optionalTests(f, code, wtt)
 {
   if (count % 100 == 1) {
@@ -19,7 +23,7 @@ function optionalTests(f, code, wtt)
   }
 
   if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
-    simpleDVGTest(code);
+    testExpressionDecompiler(code);
     tryEnsureSanity();
   }
 
@@ -30,7 +34,7 @@ function optionalTests(f, code, wtt)
 }
 
 
-function simpleDVGTest(code)
+function testExpressionDecompiler(code)
 {
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
 
