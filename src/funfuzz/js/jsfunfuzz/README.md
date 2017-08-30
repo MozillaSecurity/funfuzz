@@ -15,7 +15,7 @@ To test an existing SpiderMonkey shell called `./js`, run:
 
 `python -m funfuzz.js.loop --random-flags --compare-jit 20 mozilla-central ./js`
 
-* `--random-flags` tells it to use [shellFlags.py](../shellFlags.py) to
+* `--random-flags` tells it to use [shell_flags.py](../shell_flags.py) to
 * `--compare-jit` tells it to run [compare_jit.py](../compare_jit.py) on most of the generated code, detecting bugs where adding optimization flags like --ion-eager changes the output.
 * `20` tells it to kill any instance that runs for more than 20 seconds
 * `mozilla-central` or any other string is no longer used, and this argument will be removed in the future.

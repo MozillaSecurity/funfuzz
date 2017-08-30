@@ -20,7 +20,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 from . import compare_jit
 from . import js_interesting
 from . import pinpoint
-from . import shellFlags
+from . import shell_flags
 from ..util import createCollector
 from ..util import fileManipulation
 from ..util import lithOps
@@ -154,7 +154,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
         js_interesting_args.append(options.knownPath)
         js_interesting_args.append(options.jsEngine)
         if options.randomFlags:
-            engineFlags = shellFlags.randomFlagSet(options.jsEngine)  # pylint: disable=invalid-name
+            engineFlags = shell_flags.randomFlagSet(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
         # pylint: disable=old-division
         js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
