@@ -20,7 +20,7 @@ import sys
 from lithium.interestingness.utils import file_contains_str
 
 from .jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
-from .inspectShell import testJsShellOrXpcshell
+from .inspect_shell import testJsShellOrXpcshell
 from ..util import fileManipulation
 from ..util.lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 from ..util import subprocesses as sps

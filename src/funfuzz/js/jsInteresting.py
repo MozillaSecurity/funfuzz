@@ -21,7 +21,7 @@ import lithium.interestingness.timed_run as timed_run
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
 
-from . import inspectShell
+from . import inspect_shell
 from ..util import createCollector
 from ..util import detect_malloc_errors
 from ..util import fileManipulation
@@ -69,7 +69,7 @@ class ShellResult(object):
 
         if options.valgrind:
             runthis = (
-                inspectShell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
+                inspect_shell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
                 valgrindSuppressions(options.knownPath) +
                 runthis)
 
@@ -268,7 +268,7 @@ def parseOptions(args):
     options.collector = createCollector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
-    options.shellIsDeterministic = inspectShell.queryBuildConfiguration(
+    options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
         options.jsengineWithArgs[0], 'more-deterministic')
 
     return options

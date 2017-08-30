@@ -28,7 +28,7 @@ from lithium.interestingness.utils import rel_or_abs_import
 from . import known_broken_earliest_working as kbew
 from ..js import build_options
 from ..js import compile_shell
-from ..js import inspectShell
+from ..js import inspect_shell
 from ..util import fileManipulation
 from ..util import downloadBuild
 from ..util import hgCmds
@@ -277,8 +277,8 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
     def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc,too-many-return-statements
         # pylint: disable=invalid-name
-        (stdoutStderr, exitCode) = inspectShell.testBinary(shellFilename, options.paramList,
-                                                           options.build_options.runWithVg)
+        (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.paramList,
+                                                            options.build_options.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ''):
             return ('bad', 'Specified-bad output')
@@ -493,7 +493,7 @@ def assertSaneJsBinary(cacheF):  # pylint: disable=missing-param-doc,missing-rai
 
                 # tbpl binaries are always:
                 # * run without Valgrind (they are not compiled with --enable-valgrind)
-                retCode = inspectShell.testBinary(shellPath, ['-e', '42'], False)[1]
+                retCode = inspect_shell.testBinary(shellPath, ['-e', '42'], False)[1]
                 # Exit code -1073741515 on Windows shows up when a required DLL is not present.
                 # This was testable at the time of writing, see bug 953314.
                 isDllNotPresentWinStartupError = (sps.isWin and retCode == -1073741515)

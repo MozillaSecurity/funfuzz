@@ -14,7 +14,7 @@ import multiprocessing
 import random
 import sys
 
-from . import inspectShell
+from . import inspect_shell
 from ..util import subprocesses as sps
 
 
@@ -33,7 +33,7 @@ def memoize(f, cache=None):
 
 @memoize
 def shellSupportsFlag(shellPath, flag):
-    return inspectShell.shellSupports(shellPath, [flag, '-e', '42'])
+    return inspect_shell.shellSupports(shellPath, [flag, '-e', '42'])
 
 
 def chance(p):
@@ -140,7 +140,7 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
     if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
 
-    if inspectShell.queryBuildConfiguration(shellPath, 'arm-simulator') and chance(.4):
+    if inspect_shell.queryBuildConfiguration(shellPath, 'arm-simulator') and chance(.4):
         args.append('--arm-sim-icache-checks')
 
     if (shellSupportsFlag(shellPath, '--no-sse3') and shellSupportsFlag(shellPath, '--no-sse4')) and chance(.2):

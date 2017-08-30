@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from . import build_options
 from . import compare_jit
 from . import compile_shell
-from . import inspectShell
+from . import inspect_shell
 from . import jsInteresting
 from . import loopjsfunfuzz
 from . import pinpoint

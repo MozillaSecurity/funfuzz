@@ -23,7 +23,7 @@ import traceback
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from . import build_options
-from . import inspectShell
+from . import inspect_shell
 from ..util import hgCmds
 from ..util import s3cache
 from ..util import subprocesses as sps
@@ -142,7 +142,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         # pylint: disable=missing-return-type-doc
         libs_list = [
             sps.normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', runLib))
-            for runLib in inspectShell.ALL_RUN_LIBS
+            for runLib in inspect_shell.ALL_RUN_LIBS
         ]
         return libs_list
 
@@ -243,7 +243,7 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
                 print("Trying once more...")
                 continue
     compileJs(shell)
-    inspectShell.verifyBinary(shell)
+    inspect_shell.verifyBinary(shell)
 
     compile_log = sps.normExpUserPath(os.path.join(shell.getShellCacheDir(),
                                                    shell.getShellNameWithoutExt() + '.fuzzmanagerconf'))
