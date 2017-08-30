@@ -1,8 +1,12 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from __future__ import absolute_import, print_function
 
 import os
 import shutil
@@ -52,10 +56,10 @@ class S3Cache(object):
             self.bucket = conn.get_bucket(self.bucket_name)
             return True
         except boto.provider.ProfileNotFoundError:
-            print 'Unable to connect via boto using profile name "%s" in ~/.boto' % EC2_PROFILE
+            print('Unable to connect via boto using profile name "%s" in ~/.boto' % EC2_PROFILE)
             return False
         except boto.exception.S3ResponseError:
-            print 'Unable to connect to the following bucket "%s", please check your credentials.' % self.bucket_name
+            print('Unable to connect to the following bucket "%s", please check your credentials.' % self.bucket_name)
             return False
 
     def downloadFile(self, origin, dest):
@@ -63,14 +67,13 @@ class S3Cache(object):
         key = self.bucket.get_key(origin)
         if key is not None:
             key.get_contents_to_filename(dest)
-            print 'Finished downloading.'
+            print("Finished downloading.")
             return True
-        else:
-            return False
+        return False
 
     def compressAndUploadDirTarball(self, directory, tarball_path):
         """Compress a directory into a bz2 tarball and upload it to S3."""
-        print 'Creating archive...'
+        print("Creating archive...")
         shutil.make_archive(directory, 'bztar', directory)
         self.uploadFileToS3(tarball_path)
 
@@ -78,7 +81,7 @@ class S3Cache(object):
         """Upload file to S3."""
         destDir = ''  # Root folder of the S3 bucket
         destpath = os.path.join(destDir, os.path.basename(filename))
-        print 'Uploading %s to Amazon S3 bucket %s' % (filename, self.bucket_name)
+        print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
 
         k = Key(self.bucket)
         k.key = destpath
@@ -86,9 +89,9 @@ class S3Cache(object):
 
     def uploadStrToS3(self, destDir, filename, contents):
         """Upload a string to an S3 file."""
-        print 'Uploading %s to Amazon S3 bucket %s' % (filename, self.bucket_name)
+        print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
 
         k2 = Key(self.bucket)
         k2.key = os.path.join(destDir, filename)
         k2.set_contents_from_string(contents, reduced_redundancy=True)
-        print  # This newline is needed to get the path of the compiled binary printed on a newline.
+        print()  # This newline is needed to get the path of the compiled binary printed on a newline.

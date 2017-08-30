@@ -1,3 +1,8 @@
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 function start(glob)
 {
   var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
@@ -8,7 +13,7 @@ function start(glob)
   // generated function manages to output the entire jsfunfuzz source,
   // that output won't match the grep command.
   var cookie = "/*F";
-  cookie += "RC*/";
+  cookie += "RC-fuzzSeed-" + fuzzSeed + "*/";
 
   // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
   var dumpEachSeed = false;

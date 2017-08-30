@@ -1,4 +1,8 @@
 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 var numericVals = [
   "1", "Math.PI", "42",
   // Special float values
@@ -7,10 +11,17 @@ var numericVals = [
    "0x07fffffff",  "0x080000000",  "0x080000001",
   "-0x07fffffff", "-0x080000000", "-0x080000001",
    "0x0ffffffff",  "0x100000000",  "0x100000001",
-  "-0x0ffffffff", "-0x100000000",  "0x100000001",
+  "-0x0ffffffff", "-0x100000000",  "-0x100000001",
   // Boundaries of double
   "Number.MIN_VALUE", "-Number.MIN_VALUE",
   "Number.MAX_VALUE", "-Number.MAX_VALUE",
+  // Boundaries of maximum safe integer
+  "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+  "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+  "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+  "(2**53)-2", "(2**53)", "(2**53)+2",
+  // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
+  "0.000000000000001", "1.7976931348623157e308",
 ];
 
 var confusableVals = [
@@ -74,7 +85,7 @@ function testMathyFunction(f, inputs)
 
 function mathInitFCM()
 {
-  // FCM cookie
+  // FCM cookie, lines with this cookie are used for compareJIT
   var cookie = "/*F" + "CM*/";
 
   print(cookie + hashStr.toString().replace(/\n/g, " "));

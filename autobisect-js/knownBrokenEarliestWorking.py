@@ -1,12 +1,16 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=import-error,invalid-name,missing-docstring,too-many-branches,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from __future__ import absolute_import, print_function
 
 import os
-import platform
 import sys
+from distutils.version import StrictVersion  # pylint issue 73 https://git.io/vQAhf  pylint: disable=no-name-in-module
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, os.pardir, 'util'))
@@ -18,23 +22,9 @@ def hgrange(firstBad, firstGood):
     """Like "firstBad::firstGood", but includes branches/csets that never got the firstGood fix."""
     # NB: mercurial's descendants(x) includes x
     # So this revset expression includes firstBad, but does not include firstGood.
-    # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set, like we want"
+    # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set,
+    # like we want"
     return '(descendants(id(' + firstBad + '))-descendants(id(' + firstGood + ')))'
-
-
-def knownBrokenRangesBrowser(options):
-    skips = [
-        hgrange('cc45fdc389df', 'e8938a43c31a'),  # Builds with --disable-crashreporter were broken (see bug 779291)
-        hgrange('19f154ee6f54', 'd97ecf9f9b84'),  # Backed out for bustage
-        hgrange('eaa88688e9e8', '7a7e1ca619c2'),  # Missing include (affected Jesse's MBP but not Tinderbox)
-        hgrange('fbc1e196ca87', '7a9887e1f55e'),  # Quick followup for bustage
-        hgrange('bfef9b308f92', '991938589ebe'),  # A landing required a build fix and a startup-assertion fix
-        hgrange('b6dc96f18391', '37e29c27e6e8'),  # Duplicate symbols with 10.9 SDK, between ICU being built by default and a bug being fixed
-        hgrange('ad70d9583d42', 'd0f501b227fc'),  # Short bustage
-        hgrange('c5906eed61fc', '1c4ac1d21d29'),  # Builds succeed but die early in startup
-    ]
-
-    return skips
 
 
 def knownBrokenRanges(options):
@@ -55,16 +45,36 @@ def knownBrokenRanges(options):
         hgrange('da286f0f7a49', '62fecc6ab96e'),  # Fx39, broken spidermonkey
         hgrange('8a416fedec44', '7f9252925e26'),  # Fx41, broken spidermonkey
         hgrange('3bcc3881b95d', 'c609df6d3895'),  # Fx44, broken spidermonkey
+        hgrange('d3a026933bce', '5fa834fe9b96'),  # Fx52, broken spidermonkey
     ]
 
     if sps.isMac:
         skips.extend([
             hgrange('5e45fba743aa', '8e5d8f34c53e'),  # Fx39, broken Mac builds due to jemalloc
+            hgrange('9b7c2bcabd4e', '43b1143f2930'),  # Fx49-50, broken Mac 10.12 builds
         ])
         if options.enableSimulatorArm32:
             skips.extend([
                 hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit Mac ARM-simulator builds
+                hgrange('f6fddb22a8b5', '120d57d59f38'),  # Fx51, broken 32-bit Mac ARM-simulator builds
             ])
+
+    if sps.isLinux or sps.isMac:
+        skips.extend([
+            # Clang failure - probably recent versions of GCC as well.
+            hgrange('5232dd059c11', 'ed98e1b9168d'),  # Fx41, see bug 1140482
+        ])
+
+    if sps.isLinux and not options.disableProfiling:
+        skips.extend([
+            # To bypass the following month-long breakage, use "--disable-profiling"
+            hgrange('aa1da5ed8a07', '5a03382283ae'),  # Fx54-55, see bug 1339190
+        ])
+
+    if sps.isWin10:
+        skips.extend([
+            hgrange('be8b0845f283', 'db3ed1fdbbea'),  # Fx50, see bug 1289679
+        ])
 
     if not options.enableDbg:
         skips.extend([
@@ -80,19 +90,15 @@ def knownBrokenRanges(options):
         skips.extend([
             hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit ARM-simulator builds
             hgrange('f35d1107fe2e', 'bdf975ad2fcd'),  # Fx45, broken 32-bit ARM-simulator builds
+            hgrange('6c37be9cee51', '4548ba932bde'),  # Fx50, broken 32-bit ARM-simulator builds
         ])
 
     return skips
 
 
-def earliestKnownWorkingRevForBrowser(options):
-    if sps.isMac and sps.macVer() >= [10, 9]:
-        return '1c4ac1d21d29'  # beacc621ec68 fixed 10.9 builds, but landed in the middle of unrelated bustage
-    return '4e852ca66ea0'  # or 'd97862fb8e6d' (same as js below) ... either way, oct 2012 on mac :(
-
-
 def earliestKnownWorkingRev(options, flags, skipRevs):
-    """Return a revset which evaluates to the first revision of the shell that compiles with |options| and runs jsfunfuzz successfully with |flags|."""
+    """Return a revset which evaluates to the first revision of the shell that compiles with |options|
+    and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
 
     # These should be in descending order, or bisection will break at earlier changesets.
@@ -105,6 +111,20 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
 
     required = []
 
+    if sps.isWin:
+        required.append('530f7bd28399')  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
+    # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
+    if sps.isLinux and StrictVersion(sps.verCheck('sed').split()[3]) >= StrictVersion('4.3'):
+        required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
+    if options.disableProfiling:
+        required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
+    if options.buildWithClang and sps.isWin:
+        required.append('3b26d191d84e')  # m-c 316445 Fx52, 1st w/ reliable Clang 3.9.0 builds on Windows
+    if "--wasm-always-baseline" in flags:
+        required.append('893294e2a387')  # m-c 301769 Fx50, 1st w/--wasm-always-baseline, see bug 1232205
+    if '--ion-aa=flow-sensitive' in flags or '--ion-aa=flow-insensitive' in flags:
+        # m-c 295435 Fx49, 1st w/--ion-aa=[flow-sensitive|flow-insensitive], see bug 1255008
+        required.append('c0c1d923c292')
     if "--ion-pgo=on" in flags:
         required.append('b0a0ff5fa705')  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:
@@ -118,7 +138,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
         # For ARM64: This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
         # To bisect manually slightly further, use "-s dc4b163f7db7 -e f50a771d7d1b" and:
-        # Also comment out from https://github.com/MozillaSecurity/funfuzz/blob/bbc5d5c74dc96823ed3932eed1ab18c299bd806c/autobisect-js/autoBisect.py#L176
+        # Also comment out from:
+        # https://github.com/MozillaSecurity/funfuzz/blob/bbc5d5c74d/autobisect-js/autoBisect.py#L176
         # (line 176) to line 180.
         required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:
@@ -133,12 +154,8 @@ def earliestKnownWorkingRev(options, flags, skipRevs):
         required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    if sps.isWin:
-        required.append('8937836d3c93')  # m-c 226774 Fx38, 1st w/ successful MSVC 2013 and 2015 builds, see bug 1119072
-    if sps.isLinux and float(platform.linux_distribution()[1]) > 15.04:
-        required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
     if sps.isLinux:
-        required.append('6ec9033a4535')  # m-c 217796 Fx36, previous builds fail on some Linux variants with different compiler versions
+        required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
     if '--ion-sink=on' in flags:
         required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
     if gczealValueFlag:

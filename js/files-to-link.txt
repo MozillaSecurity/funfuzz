@@ -24,9 +24,9 @@ jsfunfuzz/gen-type-aware-code.js
 
 jsfunfuzz/test-asm.js
 jsfunfuzz/test-math.js
+jsfunfuzz/test-regex.js
 jsfunfuzz/test-consistency.js
 jsfunfuzz/test-misc.js
-jsfunfuzz/test-regex.js
 
 jsfunfuzz/driver.js
 

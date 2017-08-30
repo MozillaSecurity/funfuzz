@@ -1,37 +1,45 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=import-error,invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
-#
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 # To update specified repositories to default tip and provide a short list of latest checkins.
 # Only supports hg (Mercurial) for now.
 #
 # Assumes that the repositories are located in ../../trees/*.
 
+from __future__ import absolute_import, print_function
+
 from copy import deepcopy
 import logging
 import os
+import time
+
 import subprocesses as sps
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ESR_NOW = 45
-ESR_NEXT = ESR_NOW + 7
-
 THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir))
 
 # Add your repository here. Note that Valgrind does not have a hg repository.
-REPOS = ['gecko-dev', 'lithium', 'FuzzManager'] + \
-    ['mozilla-' + x for x in ['inbound', 'central', 'aurora', 'beta', 'release',
-                              'esr' + str(ESR_NOW), 'esr' + str(ESR_NEXT)]]
+REPOS = ['gecko-dev', 'octo'] + \
+    ['mozilla-' + x for x in ['inbound', 'central', 'beta', 'release']]
 
 if sps.isWin:
-    # Assumes Git was installed from https://msysgit.github.io/
-    GITBINARY = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+    git_64bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES'), 'Git', 'bin', 'git.exe'))
+    git_32bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+    if os.path.isfile(git_64bit_path):
+        GITBINARY = git_64bit_path
+    elif os.path.isfile(git_32bit_path):
+        GITBINARY = git_32bit_path
+    else:
+        raise OSError("Git binary not found")
 else:
     GITBINARY = 'git'
 
@@ -77,15 +85,20 @@ def updateRepos():
     ]
     for tree in trees:
         for name in sorted(os.listdir(tree)):
-            if name in REPOS or name.startswith("funfuzz"):
-                print 'Updating %s ...' % name
-                updateRepo(os.path.join(tree, name))
+            namePath = os.path.join(tree, name)
+            if os.path.isdir(namePath) and (name in REPOS or name.startswith("funfuzz")):
+                print("Updating %s ..." % name)
+                updateRepo(namePath)
 
 
 def main():
-    logger.info(sps.dateStr())
-    updateRepos()
-    logger.info(sps.dateStr())
+    logger.info(time.asctime())
+    try:
+        updateRepos()
+    except OSError as e:
+        print("WARNING: OSError hit:")
+        print(e)
+    logger.info(time.asctime())
 
 
 if __name__ == '__main__':

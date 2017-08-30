@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=import-error,invalid-name,missing-docstring,wrong-import-position
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
-#
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 # This file scans the revsets in ignoreAndEarliestWorkingLists and looks for overlaps.
 #
 # Usage: python findCsetsIntersection.py -R ~/trees/mozilla-central/
@@ -11,9 +13,11 @@
 # (first go to knownBrokenEarliestWorking.py and comment out configuration-specific ignore ranges,
 # this file does not yet support those.)
 
+from __future__ import absolute_import, print_function
+
 import os
 import sys
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import knownBrokenEarliestWorking as kbew
 path0 = os.path.dirname(os.path.abspath(__file__))
@@ -47,14 +51,14 @@ def main():
 
     cnt = 0
     for i in range(0, len(brokenRanges)):
-        print 'Analyzing revset: ' + brokenRanges[i] + \
-            ' which matches ' + str(countCsets(brokenRanges[i], repoDir)) + ' changesets'
+        print("Analyzing revset: %s which matches %s changesets" % (
+            brokenRanges[i], countCsets(brokenRanges[i], repoDir)))
         for j in range(i + 1, len(brokenRanges)):
             cnt += 1
-            print 'Number ' + str(cnt) + ': Compared against revset: ' + brokenRanges[j]
+            print("Number %s: Compared against revset: %s" % (cnt, brokenRanges[j]))
             overlap = countCsets(brokenRanges[i] + ' and ' + brokenRanges[j], repoDir)
-            if overlap > 0:
-                print 'Number of overlapping changesets: ' + str(overlap)
+            if overlap:
+                print("Number of overlapping changesets: %s" % (overlap,))
         cnt = 0
 
 

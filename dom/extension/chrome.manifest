@@ -1,5 +1,0 @@
-component {73DD0F4A-B201-44A1-8C56-D1D72432B02A} components/domfuzzhelperobserver.js
-contract @squarefree.com/dom-fuzz-helper-observer;1 {73DD0F4A-B201-44A1-8C56-D1D72432B02A}
-category profile-after-change @squarefree.com/dom-fuzz-helper-observer;1 @squarefree.com/dom-fuzz-helper-observer;1
-category command-line-handler m-fuzzinject @squarefree.com/dom-fuzz-helper-observer;1
-content domfuzzhelper content/

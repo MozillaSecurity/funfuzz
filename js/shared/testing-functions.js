@@ -1,3 +1,8 @@
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 // Generate calls to SpiderMonkey "testing functions" for:
 // * testing that they do not cause assertions/crashes
 // * testing that they do not alter visible results (compareJIT with and without the call)
@@ -6,13 +11,14 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 {
   var prefix = browser ? "fuzzPriv." : "";
 
-  function numberOfAllocs() { return Math.floor(Math.exp(rnd(rnd(6000)) / 1000)); }
-  function gcSliceSize() { return Math.floor(Math.pow(2, Random.float() * 32)); }
+  function numberOfInstructions() { return Math.floor(Random.ludOneTo(10000)); }
+  function numberOfAllocs() { return Math.floor(Random.ludOneTo(500)); }
+  function gcSliceSize() { return Math.floor(Random.ludOneTo(0x100000000)); }
   function maybeCommaShrinking() { return rnd(5) ? "" : ", 'shrinking'"; }
 
   function enableGCZeal()
   {
-    var level = rnd(15);
+    var level = rnd(17);
     if (browser && level == 9) level = 0; // bug 815241
     var period = numberOfAllocs();
     return prefix + "gczeal" + "(" + level + ", " + period + ");";
@@ -122,14 +128,15 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // Generate an LCOV trace (but throw away the returned string)
     { w: 1,  v: function(d, b) { return "void " + prefix + "getLcovInfo" + "();"; } },
     { w: 1,  v: function(d, b) { return "void " + prefix + "getLcovInfo" + "(" + fGlobal(d, b) + ");"; } },
+
+    // JIT bailout
+    { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
+    { w: 10, v: function(d, b) { return prefix + "bailAfter" + "(" + numberOfInstructions() + ");"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
   // https://mxr.mozilla.org/mozilla-central/source/js/src/shell/js.cpp
   var shellOnlyTestingFunctions = [
-    // JIT bailout
-    { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
-
     // ARM simulator settings
     // These throw when not in the ARM simulator.
     { w: 1,  v: function(d, b) { return tryCatch("(void" + prefix + "disableSingleStepProfiling" + "()" + ")"); } },

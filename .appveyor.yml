@@ -1,0 +1,23 @@
+image:
+    - Visual Studio 2015
+environment:
+    matrix:
+        - PYTHON: "C:\\Python27"
+        - PYTHON: "C:\\Python35"
+        - PYTHON: "C:\\Python36"
+        - PYTHON: "C:\\Python27-x64"
+        - PYTHON: "C:\\Python35-x64"
+        - PYTHON: "C:\\Python36-x64"
+install:
+    - "%PYTHON%\\python.exe -m pip install --upgrade setuptools pip"
+    - "%PYTHON%\\python.exe -m pip install --upgrade virtualenv"
+    - "%PYTHON%\\python.exe -m pip --version"
+    - "%PYTHON%\\python.exe -m virtualenv --version"
+    - "git.exe --version"
+    - "%PYTHON%\\python.exe -m pip install --upgrade flake8 pylint"
+    - "%PYTHON%\\python.exe -m pip install --upgrade pytest-flake8 pytest-pylint"
+    - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+build: off
+test_script:
+    - "%PYTHON%\\python.exe -m pytest"
+skip_branch_with_pr: true

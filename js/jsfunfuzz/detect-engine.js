@@ -1,9 +1,13 @@
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 // jsfunfuzz is best run in a command-line shell.  It can also run in
 // a web browser, but you might have trouble reproducing bugs that way.
 
 var ENGINE_UNKNOWN = 0;
 var ENGINE_SPIDERMONKEY_TRUNK = 1;
-var ENGINE_SPIDERMONKEY_MOZILLA45 = 3;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
@@ -21,8 +25,6 @@ if (jsshell) {
     // particular #ifdef, e.g. JS_GC_ZEAL, or controlled by --fuzzing-safe.
     if (typeof wasmIsSupported == "function") {
       engine = ENGINE_SPIDERMONKEY_TRUNK;
-    } else {
-      engine = ENGINE_SPIDERMONKEY_MOZILLA45;
     }
 
     // Avoid accidentally waiting for user input that will never come.
@@ -100,7 +102,5 @@ if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY_TRUNK)
   printImportant("Targeting SpiderMonkey / Gecko (trunk).");
-else if (engine == ENGINE_SPIDERMONKEY_MOZILLA45)
-  printImportant("Targeting SpiderMonkey / Gecko (ESR45 branch).");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");

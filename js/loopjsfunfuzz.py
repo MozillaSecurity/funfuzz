@@ -1,11 +1,20 @@
 #!/usr/bin/env python
+# coding=utf-8
+# pylint: disable=fixme,import-error,invalid-name,missing-docstring,no-member,too-many-branches
+# pylint: disable=too-many-locals,too-many-statements,wrong-import-position
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from __future__ import absolute_import, print_function
 
 import json
 import os
 import subprocess
 import sys
 import time
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 import compareJIT
 import jsInteresting
@@ -29,7 +38,8 @@ def parseOpts(args):
     parser.add_option("--comparejit",
                       action="store_true", dest="useCompareJIT",
                       default=False,
-                      help="After running the fuzzer, run the FCM lines against the engine in two configurations and compare the output.")
+                      help="After running the fuzzer, run the FCM lines against the engine "
+                           "in two configurations and compare the output.")
     parser.add_option("--random-flags",
                       action="store_true", dest="randomFlags",
                       default=False,
@@ -41,7 +51,7 @@ def parseOpts(args):
     parser.add_option("--build",
                       action="store", dest="buildOptionsStr",
                       help="The build options, for bisection",
-                      default=None)  # if you run loopjsfunfuzz.py directly without a --build, pinpoint will try to guess
+                      default=None)  # if you run loopjsfunfuzz.py directly without --build, pinpoint will try to guess
     parser.add_option("--valgrind",
                       action="store_true", dest="valgrind",
                       default=False,
@@ -49,7 +59,7 @@ def parseOpts(args):
     options, args = parser.parse_args(args)
 
     if options.valgrind and options.useCompareJIT:
-        print "Note: When running comparejit, the --valgrind option will be ignored"
+        print("Note: When running comparejit, the --valgrind option will be ignored")
 
     # kill js shell if it runs this long.
     # jsfunfuzz will quit after half this time if it's not ilooping.
@@ -57,12 +67,8 @@ def parseOpts(args):
     # lower = less time wasted in timeouts and in compareJIT testcases that are thrown away due to OOMs.
     options.timeout = int(args[0])
 
-    options.knownPath = os.path.expanduser(args[1])
-    # FIXME: findIgnoreLists.py should probably check this automatically.
-    reposWithKnownLists = ['mozilla-central', 'mozilla-esr45', 'ionmonkey', 'jscore', 'v8']
-    if options.knownPath not in reposWithKnownLists:
-        sps.vdump('Known bugs for the ' + options.knownPath + ' repository does not exist. Using the list for mozilla-central instead.')
-        options.knownPath = 'mozilla-central'
+    # FIXME: We can probably remove args[1]
+    options.knownPath = 'mozilla-central'
     options.jsEngine = args[2]
     options.engineFlags = args[3:]
 
@@ -74,14 +80,14 @@ def showtail(filename):
     cmd = []
     cmd.extend(['tail', '-n', '20'])
     cmd.append(filename)
-    print ' '.join(cmd)
-    print
+    print(" ".join(cmd))
+    print()
     subprocess.check_call(cmd)
-    print
-    print
+    print()
+    print()
 
 
-def linkFuzzer(target_fn, repo, prologue):
+def linkFuzzer(target_fn, prologue):
     source_base = p0
     file_list_fn = sps.normExpUserPath(os.path.join(p0, "files-to-link.txt"))
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
@@ -92,14 +98,12 @@ def makeRegressionTestPrologue(repo):
     repo = sps.normExpUserPath(repo) + os.sep
 
     return """
-        const regressionTestsRoot = %s;
-        const libdir = regressionTestsRoot + %s; // needed by jit-tests
-        const regressionTestList = %s;
-    """ % (
-        json.dumps(repo),
-        json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
-        json.dumps(inTreeRegressionTests(repo))
-    )
+const regressionTestsRoot = %s;
+const libdir = regressionTestsRoot + %s; // needed by jit-tests
+const regressionTestList = %s;
+""" % (json.dumps(repo),
+       json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
+       json.dumps(inTreeRegressionTests(repo)))
 
 
 def inTreeRegressionTests(repo):
@@ -126,14 +130,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
         regressionTestPrologue = ""
 
     fuzzjs = sps.normExpUserPath(os.path.join(wtmpDir, "jsfunfuzz.js"))
-    linkFuzzer(fuzzjs, options.repo, regressionTestPrologue)
+    linkFuzzer(fuzzjs, regressionTestPrologue)
 
     iteration = 0
     while True:
         if targetTime and time.time() > startTime + targetTime:
-            print "Out of time!"
+            print("Out of time!")
             os.remove(fuzzjs)
-            if len(os.listdir(wtmpDir)) == 0:
+            if not os.listdir(wtmpDir):
                 os.rmdir(wtmpDir)
             break
 
@@ -147,7 +151,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
         if options.randomFlags:
             engineFlags = shellFlags.randomFlagSet(options.jsEngine)
             jsInterestingArgs.extend(engineFlags)
-        jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout*(1000/2))])
+        jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
         jsInterestingArgs.extend(['-f', fuzzjs])
         jsInterestingOptions = jsInteresting.parseOptions(jsInterestingArgs)
 
@@ -160,12 +164,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             showtail(logPrefix + "-out.txt")
             showtail(logPrefix + "-err.txt")
 
-            # splice jsfunfuzz.js with `grep FRC wN-out`
+            # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
             filenameToReduce = logPrefix + "-reduced.js"
             [before, after] = fileManipulation.fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + [l.replace('/*FRC*/', '') for l in fileManipulation.linesStartingWith(f, "/*FRC*/")] + after
+                newfileLines = before + [
+                    l.replace('/*FRC-', '/*') for l in fileManipulation.linesStartingWith(f, "/*FRC-")] + after
             fileManipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             fileManipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
@@ -176,8 +181,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce,
-                                                                          options.repo, options.buildOptionsStr, targetTime, res.lev)
+            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(
+                itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
+                options.buildOptionsStr, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:
@@ -192,13 +198,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):
                 quality = 10
 
             # ddsize = lithOps.ddsize(filenameToReduce)
-            print "Submitting " + filenameToReduce + " (quality=" + str(quality) + ") at " + sps.dateStr()
+            print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, time.asctime()))
 
             metadata = {}
             if autoBisectLog:
                 metadata = {"autoBisectLog": ''.join(autoBisectLog)}
             collector.submit(res.crashInfo, filenameToReduce, quality, metaData=metadata)
-            print "Submitted " + filenameToReduce
+            print("Submitted %s" % filenameToReduce)
 
         else:
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
@@ -226,10 +232,10 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         "evalInWorker = function() { };\n",
         "getBacktrace = function() { };\n",
         "getLcovInfo = function() { };\n",
+        "isAsmJSCompilationAvailable = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
-        "validategc = function() { };\n",
         "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
@@ -265,7 +271,7 @@ def mightUseDivision(code):
             if i + 1 < len(code) and (code[i + 1] == '/' or code[i + 1] == '*'):
                 # An open-comment like "//" or "/*" is okay. Skip the next character.
                 i += 1
-            elif i > 0 and code[i - 1] == '*':
+            elif i and code[i - 1] == '*':
                 # A close-comment like "*/" is okay too.
                 pass
             else:
@@ -273,6 +279,7 @@ def mightUseDivision(code):
                 return True
         i += 1
     return False
+
 
 assert not mightUseDivision("//")
 assert not mightUseDivision("// a")

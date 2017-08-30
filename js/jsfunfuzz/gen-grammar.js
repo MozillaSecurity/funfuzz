@@ -1,4 +1,8 @@
 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 /****************************
  * GRAMMAR-BASED GENERATION *
  ****************************/
@@ -271,9 +275,9 @@ var statementMakers = Random.weighted([
   //{ w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
-if (typeof oomTest == "function" && engine != ENGINE_SPIDERMONKEY_MOZILLA45) {
+if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
-    function(d, b) { return "oomTest(" + makeFunction(d, b-1) + ")"; },
+    function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
   ]);
 }
 
@@ -307,7 +311,7 @@ function makeUseRegressionTest(d, b)
     switch (rnd(2)) {
       case 0:
         // simply inline the script -- this is the only one that will work in newGlobal()
-        s += "/* regression-test-inline */ " + inlineRegressionTest(file);
+        s += "/* regression-test-inline */ " + inlineTest(file);
         break;
       default:
         // run it using load()
@@ -332,7 +336,7 @@ function regressionTestIsEvil(contents)
   return false;
 }
 
-function inlineRegressionTest(filename)
+function inlineTest(filename)
 {
   // Inline a regression test, adding NODIFF (to disable differential testing) if it calls a testing function that might throw.
 
@@ -1301,6 +1305,8 @@ var functionMakers = [
   function(d, b) { return "encodeURIComponent"; },
   function(d, b) { return "neuter"; },
   function(d, b) { return "objectEmulatingUndefined"; }, // spidermonkey shell object like the browser's document.all
+  function(d, b) { return "offThreadCompileScript"; },
+  function(d, b) { return "runOffThreadScript"; },
   function(d, b) { return makeProxyHandlerFactory(d, b); },
   function(d, b) { return makeShapeyConstructor(d, b); },
   function(d, b) { return Random.index(typedArrayConstructors); },
@@ -1314,7 +1320,7 @@ if (typeof XPCNativeWrapper == "function") {
   ]);
 }
 
-if (typeof oomTest == "function" && engine != ENGINE_SPIDERMONKEY_MOZILLA45) {
+if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   functionMakers = functionMakers.concat([
     function(d, b) { return "oomTest"; }
   ]);
@@ -1371,13 +1377,32 @@ function makeNumber(d, b)
 
   var signStr = rnd(2) ? "-" : "";
 
-  switch(rnd(70)) {
+  switch(rnd(60)) {
     case 0:  return makeExpr(d - 2, b);
     case 1:  return signStr + "0";
     case 2:  return signStr + (rnd(1000) / 1000);
     case 3:  return signStr + (rnd(0xffffffff) / 2);
     case 4:  return signStr + rnd(0xffffffff);
-    case 5:  return Random.index(["0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000", "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033", "3.141592653589793", "3/0", "-3/0", "0/0", "0x2D413CCC", "0x5a827999", "0xB504F332", "(0x50505050 >> 1)", "0x80000000"]);
+    case 5:  return Random.index(["0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000",
+      "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033",
+      "3.141592653589793", "3/0", "-3/0", "0/0", "0x2D413CCC", "0x5a827999", "0xB504F332",
+      "(0x50505050 >> 1)",
+      // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
+      "0x07fffffff",  "0x080000000",  "0x080000001",
+      "-0x07fffffff", "-0x080000000", "-0x080000001",
+      "0x0ffffffff",  "0x100000000",  "0x100000001",
+      "-0x0ffffffff", "-0x100000000",  "-0x100000001",
+      // Boundaries of double
+      "Number.MIN_VALUE", "-Number.MIN_VALUE",
+      "Number.MAX_VALUE", "-Number.MAX_VALUE",
+      // Boundaries of maximum safe integer
+      "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+      "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+      "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+      "(2**53)-2", "(2**53)", "(2**53)+2",
+      // See bug 1350097
+      "0.000000000000001", "1.7976931348623157e308",
+    ]);
     case 6:  return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
     default: return signStr + rnd(30);
   }
@@ -1807,8 +1832,31 @@ function makeShapeyValue(d, b)
     "-1", "(-1)", "0x99", "033", "3/0", "-3/0", "0/0",
     "Math.PI",
     "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
+
     // various powers of two, with values near JSVAL_INT_MAX especially tested
-    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001", "0x80000000", "-0x80000000",
+    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001"
+    ],
+
+    // Boundaries
+    [
+    // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
+    "0x07fffffff",  "0x080000000",  "0x080000001",
+    "-0x07fffffff", "-0x080000000", "-0x080000001",
+    "0x0ffffffff",  "0x100000000",  "0x100000001",
+    "-0x0ffffffff", "-0x100000000",  "-0x100000001",
+
+    // Boundaries of double
+    "Number.MIN_VALUE", "-Number.MIN_VALUE",
+    "Number.MAX_VALUE", "-Number.MAX_VALUE",
+
+    // Boundaries of maximum safe integer
+    "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+    "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+    "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+    "(2**53)-2", "(2**53)", "(2**53)+2",
+
+    // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
+    "0.000000000000001", "1.7976931348623157e308",
     ],
 
     // Special numbers
