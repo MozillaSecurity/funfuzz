@@ -9,7 +9,8 @@
 
 from __future__ import absolute_import, print_function
 
-import ConfigParser
+import argparse
+import ConfigParser  # pylint: disable=import-error
 import os
 import platform
 import re
@@ -17,83 +18,70 @@ import shutil
 import stat
 import subprocess
 import sys
-from HTMLParser import HTMLParser
+import urllib
+from HTMLParser import HTMLParser  # pylint: disable=import-error
 
-from optparse import OptionParser  # pylint: disable=deprecated-module
 import subprocesses as sps
-
-# Use curl/wget rather than urllib because urllib can't check certs.
-useCurl = False
-wgetMaybeNCC = ['--no-check-certificate']
 
 
 def readFromURL(url):
     """Read in a URL and returns its contents as a list."""
-    inpCmdList = ['curl', '--silent', url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', '-', url]
-    p = subprocess.Popen(inpCmdList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    if not useCurl and p.returncode == 5:
-        print("Unable to read from URL. If you installed wget using MacPorts, you should put "
-              '"CA_CERTIFICATE=/opt/local/share/curl/curl-ca-bundle.crt" (without the quotes) '
-              "in ~/.wgetrc")
-        raise Exception('Unable to read from URL. Please check your ~/.wgetrc file.')
-    elif p.returncode != 0:
-        print("inpCmdList is: %s" % sps.shellify(inpCmdList))
-        print("stdout: %r" % (out,))
-        print("stderr: %r" % (err,))
-        raise Exception('The following exit code was returned: ' + str(p.returncode))
-    else:
-        # Ignore whatever verbose output wget spewed to stderr.
-        return out
+    return urllib.urlopen(url).read()  # pylint: disable=no-member
 
 
-def downloadURL(url, dest):
+def dlReport(count, bs, size):
+    transferred = (100 * count * bs) // size
+    if transferred < 100:
+        sys.stdout.write('\x08\x08\x08%2d%%' % transferred)
+        sys.stdout.flush()
+
+
+def downloadURL(url, dest, quiet=False):
     """Read in a URL and downloads it to a destination."""
-    inpCmdList = ['curl', '--output', dest, url] if useCurl else ['wget'] + wgetMaybeNCC + ['-O', dest, url]
-    out, retVal = sps.captureStdout(inpCmdList, combineStderr=True, ignoreExitCode=True)
-    if retVal != 0:
-        print(out)
-        raise Exception('Return code is not 0, but is: ' + str(retVal))
+    quiet = quiet or not sys.stdout.isatty()
+    if not quiet:
+        sys.stdout.write('   ')
+        sys.stdout.flush()
+    urllib.urlretrieve(url, dest, dlReport if not quiet else None)  # pylint: disable=no-member
+    if not quiet:
+        sys.stdout.write('\x08\x08\x08')
     return dest
 
 
 def parseOptions():
-    usage = 'Usage: %prog [options]'
-    parser = OptionParser(usage)
-    parser.disable_interspersed_args()
+    usage = 'Usage: %(prog)s [options]'
+    parser = argparse.ArgumentParser(usage)
 
     parser.set_defaults(
         compileType='dbg',
         downloadFolder=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         repoName='mozilla-central',
+        useAsan=False,
         enableJsShell=False,
         wantTests=False,
     )
 
-    parser.add_option('-c', '--compiletype', dest='compileType',
-                      help="Sets the compile type to be downloaded. Must be 'dbg' or 'opt'. Defaults to '%default'.")
-    parser.add_option('-a', '--architecture',
-                      dest='arch',
-                      type='choice',
-                      choices=['32', '64'],
-                      help='Test architecture. Only accepts "32" or "64"')
-    parser.add_option('-w', '--downloadfolder', dest='downloadFolder',
-                      help="Sets the folder to download builds in. Defaults to the current "
-                           "working directory, which is '%default'.")
-    parser.add_option('-r', '--repoName', dest='repoName',
-                      help='Sets the repository to be fuzzed. Defaults to "%default".')
-    parser.add_option('-d', '--remotedir', dest='remoteDir',
-                      help="Sets the remote directory from which the files are to be obtained "
-                           "from. The default is to grab the latest from mozilla-central.")
-    parser.add_option('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
-                      help='Sets the compile type to be fuzzed. Defaults to "%default".')
-    parser.add_option('-t', '--want-tests', dest='wantTests', action='store_true',
-                      help='Download tests. Defaults to "%default".')
+    parser.add_argument('-c', '--compiletype', dest='compileType', choices=['dbg', 'opt'],
+                        help='Sets the compile type to be downloaded. Must be "dbg" or "opt".' +
+                        'Defaults to "%(default)s".')
+    parser.add_argument('-a', '--architecture', dest='arch', choices=['32', '64'],
+                        help='Test architecture. Only accepts "32" or "64"')
+    parser.add_argument('-n', '--asan', dest='useAsan', action='store_true',
+                        help='Download Address Sanitizer build. Defaults to "%(default)s".')
+    parser.add_argument('-w', '--downloadfolder', dest='downloadFolder',
+                        help='Sets the folder to download builds in. Defaults to the current ' +
+                        'working directory, which is "%(default)s".')
+    parser.add_argument('-r', '--repoName', dest='repoName',
+                        help='Sets the repository to be fuzzed. Defaults to "%(default)s".')
+    parser.add_argument('-d', '--remotedir', dest='remoteDir',
+                        help='Sets the remote directory from which the files are to be obtained ' +
+                        'from. The default is to grab the latest.')
+    parser.add_argument('-s', '--enable-jsshell', dest='enableJsShell', action='store_true',
+                        help='Sets the compile type to be fuzzed. Defaults to "%(default)s".')
+    parser.add_argument('-t', '--want-tests', dest='wantTests', action='store_true',
+                        help='Download tests. Defaults to "%(default)s".')
 
-    options, args = parser.parse_args()
-    assert options.compileType in ['dbg', 'opt']
-    assert not args
-    return options
+    return parser.parse_args()
 
 
 class MyHTMLParser(HTMLParser):
@@ -144,33 +132,34 @@ def httpDirList(directory):
 
 def unzip(fn, dest):
     """Extract .zip files to their destination."""
-    sps.captureStdout(['unzip', fn, '-d', dest])
+    subprocess.check_output(['unzip', fn, '-d', dest])
 
 
 def untarbz2(fn, dest):
     """Extract .tar.bz2 files to their destination."""
     if not os.path.exists(dest):
         os.mkdir(dest)
-    sps.captureStdout(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
+    subprocess.check_output(['tar', '-C', dest, '-xjf', os.path.abspath(fn)])
 
 
 def undmg(fn, dest, mountpoint):
     """Extract .dmg files to their destination via a mount point."""
     if os.path.exists(mountpoint):
         # If the mount point already exists, detach it first.
-        sps.captureStdout(['hdiutil', 'detach', mountpoint, '-force'])
-    sps.captureStdout(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
+        subprocess.check_output(['hdiutil', 'detach', mountpoint, '-force'])
+    subprocess.check_output(['hdiutil', 'attach', '-quiet', '-mountpoint', mountpoint, fn])
     try:
         apps = [x for x in os.listdir(mountpoint) if x.endswith('app')]
         assert len(apps) == 1
         shutil.copytree(mountpoint + '/' + apps[0], dest + '/' + apps[0])
     finally:
-        sps.captureStdout(['hdiutil', 'detach', mountpoint])
+        subprocess.check_output(['hdiutil', 'detach', mountpoint])
 
 
 def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests=True):
     """Download the build specified, along with symbols and tests. Returns True when all are obtained."""
     wantSymbols = wantSymbols and not jsShell  # Bug 715365, js shell currently lacks native symbols
+    wantSymbols = wantSymbols and '-asan' not in httpDir  # Doesn't make sense for asan
     wantTests = wantTests and not jsShell
     gotApp = False
     gotTests = False
@@ -198,41 +187,46 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
     fileHttpList = [httpDir + x for x in fileHttpRawList if '.' in x and 'mozilla.org' not in x]
 
     for remotefn in fileHttpList:
-        localfn = os.path.join(downloadFolder, remotefn.split('/')[-1])
-        if remotefn.endswith('.common.tests.zip') and wantTests:
+        fn = remotefn.split('/')[-1]
+        localfn = os.path.join(downloadFolder, fn)
+        if fn.endswith('.common.tests.zip') and wantTests:
             print("Downloading common test files...", end=" ")
             dlAction = downloadURL(remotefn, localfn)
             print("extracting...", end=" ")
+            sys.stdout.flush()
             unzip(dlAction, testsDir)
             moveCrashInjector(testsDir)
             mIfyMozcrash(testsDir)
             print("completed!")
             gotTests = True
-        if remotefn.endswith('.reftest.tests.zip') and wantTests:
+        elif fn.endswith('.reftest.tests.zip') and wantTests:
             print("Downloading reftest files...", end=" ")
             dlAction = downloadURL(remotefn, localfn)
             print("extracting...", end=" ")
+            sys.stdout.flush()
             unzip(dlAction, testsDir)
             print("completed!")
-        if remotefn.split('/')[-1].endswith('.txt'):
+        elif fn.endswith('.txt'):
             print("Downloading text file...", end=" ")
             downloadURL(remotefn, localfn)
             print("completed!")
             gotTxtFile = True
         if jsShell:
-            if remotefn.split('/')[-1].startswith('jsshell-'):
+            if re.search(r'^(jsshell-|target\.jsshell\.zip$)', fn):
                 print("Downloading js shell...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
                 print("extracting...", end=" ")
+                sys.stdout.flush()
                 unzip(dlAction, appDir)
                 print("completed!")
                 gotApp = True  # Bug 715365 - note that js shell currently lacks native symbols
                 writeDownloadedShellFMConf(remotefn, buildDir)
         else:
-            if remotefn.endswith('.linux-i686.tar.bz2') or remotefn.endswith('.linux-x86_64.tar.bz2'):
+            if re.search(r'(\.linux-(x86_64|i686)(-asan)?|^target)\.tar\.bz2$', fn):
                 print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
                 print("extracting...", end=" ")
+                sys.stdout.flush()
                 untarbz2(dlAction, appDir)
                 print("completed!")
 
@@ -241,16 +235,17 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 stackwalk = os.path.join(buildDir, 'minidump_stackwalk')
                 stackwalkUrl = (
                     'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux/minidump_stackwalk'
-                    if remotefn.endswith('.linux-i686.tar.bz2') else
+                    if '.linux-i686' in remotefn else
                     'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/linux64/minidump_stackwalk'
                 )
-                downloadURL(stackwalkUrl, stackwalk)
+                downloadURL(stackwalkUrl, stackwalk, quiet=True)
                 os.chmod(stackwalk, stat.S_IRWXU)
                 gotApp = True
-            if remotefn.endswith('.win32.zip') or remotefn.endswith('.win64.zip'):
+            elif re.search(r'\.win(32|64)\.zip$', fn):
                 print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
                 print("extracting...", end=" ")
+                sys.stdout.flush()
                 unzip(dlAction, appDir)
                 print("completed!")
 
@@ -260,20 +255,22 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                                  'cygstdc++-6.dll', 'cygwin1.dll']:
                     remoteURL = 'https://hg.mozilla.org/build/tools/raw-file/default/breakpad/win32/%s' % filename
                     localfile = os.path.join(buildDir, filename)
-                    downloadURL(remoteURL, localfile)
+                    downloadURL(remoteURL, localfile, quiet=True)
                 gotApp = True
-            if remotefn.endswith('.mac.dmg') or remotefn.endswith('.mac64.dmg'):
+            elif re.search(r'(\.mac(64)?|^target)\.dmg$', fn):
                 print("Downloading application...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
                 print("extracting...", end=" ")
+                sys.stdout.flush()
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
                 print("completed!")
                 downloadMDSW(buildDir, "macosx64")
                 gotApp = True
-            if remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
+            elif remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
                 print("Downloading crash reporter symbols...", end=" ")
                 dlAction = downloadURL(remotefn, localfn)
                 print("extracting...", end=" ")
+                sys.stdout.flush()
                 unzip(dlAction, symbolsDir)
                 print("completed!")
                 gotSyms = True
@@ -407,9 +404,11 @@ def mozPlatform(arch):
         raise Exception("The arch passed to mozPlatform must be '64', '32', or None")
 
 
-def defaultBuildType(repoName, arch, debug):
+def defaultBuildType(repoName, arch, debug, asan=None):
     """Return the default build type as per RelEng, e.g. mozilla-central-macosx-debug."""
-    return repoName + '-' + mozPlatform(arch) + ('-debug' if debug else '')
+    if asan is None:
+        asan = False
+    return repoName + '-' + mozPlatform(arch) + ('-asan' if asan else '') + ('-debug' if debug else '')
 
 
 def writeDownloadedShellFMConf(urlLink, bDir):
@@ -474,7 +473,8 @@ def main():
         print(downloadBuild(
             options.remoteDir, options.downloadFolder, jsShell=options.enableJsShell, wantTests=options.wantTests))
     else:
-        buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'))
+        buildType = defaultBuildType(options.repoName, options.arch, (options.compileType == 'dbg'),
+                                     asan=options.useAsan)
         downloadLatestBuild(buildType, options.downloadFolder,
                             getJsShell=options.enableJsShell, wantTests=options.wantTests)
 
