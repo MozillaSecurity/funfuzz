@@ -404,10 +404,8 @@ def mozPlatform(arch):
         raise Exception("The arch passed to mozPlatform must be '64', '32', or None")
 
 
-def defaultBuildType(repoName, arch, debug, asan=None):
+def defaultBuildType(repoName, arch, debug, asan=False):
     """Return the default build type as per RelEng, e.g. mozilla-central-macosx-debug."""
-    if asan is None:
-        asan = False
     return repoName + '-' + mozPlatform(arch) + ('-asan' if asan else '') + ('-debug' if debug else '')
 
 
