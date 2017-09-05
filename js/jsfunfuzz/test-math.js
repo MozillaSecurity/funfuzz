@@ -68,19 +68,25 @@ function testMathyFunction(f, inputs)
 {
   var results = [];
   if (f) {
-    for (var j = 0; j < inputs.length; ++j) {
-      for (var k = 0; k < inputs.length; ++k) {
-        try {
-          results.push(f(inputs[j], inputs[k]));
-        } catch(e) {
-          results.push(errorToString(e));
-        }
-      }
-    }
+      testMathyFunctionRecursive(f, inputs, results, 0, 0);
   }
   /* Use uneval to distinguish -0, 0, "0", etc. */
   /* Use hashStr to shorten the output and keep compareJIT files small. */
   print(hashStr(uneval(results)));
+}
+
+function testMathyFunctionRecursive(f, inputs, results, j, k) {
+    try {
+        results.push(f(inputs[j], inputs[k]));
+    } catch(e) {
+        results.push(errorToString(e));
+    }
+
+    if (k < inputs.length() - 1) {
+        testMathyFunctionRecursive(f, inputs, results, j, k + 1);
+    } else if (j < inputs.length() -1) {
+        testMathyFunctionRecursive(f, inputs, results, j + 1, k);
+    }
 }
 
 function mathInitFCM()
