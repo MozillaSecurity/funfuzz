@@ -21,7 +21,7 @@ from lithium.interestingness.utils import file_contains_str
 
 from .js_interesting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from .inspect_shell import testJsShellOrXpcshell
-from ..util import fileManipulation
+from ..util import file_manipulation
 from ..util.lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 from ..util import subprocesses as sps
 
@@ -66,7 +66,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
 
             with open(autoBisectLogFilename, 'rb') as f:
                 lines = f.readlines()
-                autoBisectLog = fileManipulation.truncateMid(lines, 50, ["..."])
+                autoBisectLog = file_manipulation.truncateMid(lines, 50, ["..."])
     else:
         autoBisectLog = []
 
@@ -108,7 +108,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
     hasTryItOutRegex = re.compile(r'count=[0-9]+; tryItOut\("')
 
     with open(infilename, 'rb') as f:
-        for line in fileManipulation.linesWith(f, '; tryItOut("'):
+        for line in file_manipulation.linesWith(f, '; tryItOut("'):
             # Checks if testcase came from jsfunfuzz or compare_jit.
             # Do not use .match here, it only matches from the start of the line:
             # https://docs.python.org/2/library/re.html#search-vs-match
@@ -146,7 +146,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
                                          # The 1-line offset is added here.
                                          .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
 
-        fileManipulation.writeLinesToFile(intendedLines, infilename)
+        file_manipulation.writeLinesToFile(intendedLines, infilename)
         print()
         print("Running 1 instance of 2-line reduction after moving count=X to its own line...")
         print()

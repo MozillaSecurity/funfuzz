@@ -23,7 +23,7 @@ from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=imp
 from . import inspect_shell
 from ..util import create_collector
 from ..util import detect_malloc_errors
-from ..util import fileManipulation
+from ..util import file_manipulation
 from ..util import subprocesses as sps
 from ..util.findIgnoreLists import findIgnoreLists
 
@@ -137,7 +137,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
-            fileManipulation.writeLinesToFile(
+            file_manipulation.writeLinesToFile(
                 ['Number: ' + logPrefix + '\n',
                  'Command: ' + sps.shellify(runthis) + '\n'] +
                 ['Status: ' + i + "\n" for i in issues],

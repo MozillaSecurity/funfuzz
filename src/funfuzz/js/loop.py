@@ -22,7 +22,7 @@ from . import js_interesting
 from . import pinpoint
 from . import shell_flags
 from ..util import create_collector
-from ..util import fileManipulation
+from ..util import file_manipulation
 from ..util import lithOps
 from ..util import linkJS
 from ..util import subprocesses as sps
@@ -174,13 +174,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
 
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
             filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
-            [before, after] = fileManipulation.fuzzSplice(fuzzjs)
+            [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
-                    l.replace('/*FRC-', '/*') for l in fileManipulation.linesStartingWith(f, "/*FRC-")] + after
-            fileManipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
-            fileManipulation.writeLinesToFile(newfileLines, filenameToReduce)
+                    l.replace('/*FRC-', '/*') for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
+            file_manipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
+            file_manipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
             itest = [interestingpy]
@@ -223,7 +223,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                     js_interesting_options.shellIsDeterministic and are_flags_deterministic:
                 linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")  # pylint: disable=invalid-name
                 jitcomparefilename = logPrefix + "-cj-in.js"
-                fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
+                file_manipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
                 # pylint: disable=invalid-name
                 anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
                                                  logPrefix + "-cj", options.repo,
