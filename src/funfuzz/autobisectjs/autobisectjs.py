@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,invalid-name,invalid-unary-operand-type,literal-comparison,missing-docstring
-# pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=too-many-arguments,too-many-boolean-expressions,too-many-branches,too-complex
-# pylint: disable=too-many-locals,too-many-return-statements,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
+
+May be replaced in the future, with a better version that supports both Firefox and SpiderMonkey.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -39,7 +40,8 @@ INCOMPLETE_NOTE = 'incompleteBuild.txt'
 MAX_ITERATIONS = 100
 
 
-def parseOpts():
+def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    # pylint: disable=too-many-branches,too-complex,too-many-statements
     usage = 'Usage: %prog [options]'
     parser = OptionParser(usage)
     # http://docs.python.org/library/optparse.html#optparse.OptionParser.disable_interspersed_args
@@ -133,16 +135,16 @@ def parseOpts():
 
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
 
-    extraFlags = []
+    extraFlags = []  # pylint: disable=invalid-name
 
     if options.useInterestingnessTests:
         if len(args) < 1:
             print("args are: %s" % args)
             parser.error('Not enough arguments.')
         if not options.browserOptions:
-            for a in args:
+            for a in args:  # pylint: disable=invalid-name
                 if a.startswith("--flags="):
-                    extraFlags = a[8:].split(' ')
+                    extraFlags = a[8:].split(' ')  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
     else:
         assert not options.browserOptions  # autoBisect doesn't have a built-in way to run the browser
@@ -151,12 +153,13 @@ def parseOpts():
         options.testAndLabel = internalTestAndLabel(options)
 
     if not options.browserOptions:
-        earliestKnownQuery = kbew.earliest_known_working_rev(
+        earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
             options.buildOptions, options.paramList + extraFlags, options.skipRevs)
 
-    earliestKnown = ''
+    earliestKnown = ''  # pylint: disable=invalid-name
 
     if not options.useTreeherderBinaries:
+        # pylint: disable=invalid-name
         earliestKnown = hgCmds.getRepoHashAndId(options.buildOptions.repoDir, repoRev=earliestKnownQuery)[0]
 
     if options.startRepo is None:
@@ -182,14 +185,16 @@ def parseOpts():
     return options
 
 
-def findBlamedCset(options, repoDir, testRev):
+def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
+    # pylint: disable=too-many-locals,too-many-statements
     print("%s | Bisecting on: %s" % (time.asctime(), repoDir))
 
-    hgPrefix = ['hg', '-R', repoDir]
+    hgPrefix = ['hg', '-R', repoDir]  # pylint: disable=invalid-name
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
+    # pylint: disable=invalid-name
     realStartRepo = sRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.startRepo)[0]
-    realEndRepo = eRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]
+    realEndRepo = eRepo = hgCmds.getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]  # pylint: disable=invalid-name
     sps.vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
@@ -267,9 +272,12 @@ def findBlamedCset(options, repoDir, testRev):
     print(time.asctime())
 
 
-def internalTestAndLabel(options):
+def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
     """Use autoBisectJs without interestingness tests to examine the revision of the js shell."""
-    def inner(shellFilename, _hgHash):
+    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+        # pylint: disable=missing-return-type-doc,too-many-return-statements
+        # pylint: disable=invalid-name
         (stdoutStderr, exitCode) = inspectShell.testBinary(shellFilename, options.paramList,
                                                            options.buildOptions.runWithVg)
 
@@ -291,11 +299,11 @@ def internalTestAndLabel(options):
             return ('bad', 'Negative exit code ' + str(exitCode))
         elif exitCode == 0:
             return ('good', 'Exit code 0')
-        elif (exitCode == 1 or exitCode == 2) and (options.output != '') and \
-                (stdoutStderr.find('usage: js [') != -1 or
-                 stdoutStderr.find('Error: Short option followed by junk') != -1 or
-                 stdoutStderr.find('Error: Invalid long option:') != -1 or
-                 stdoutStderr.find('Error: Invalid short option:') != -1):
+        elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
+                options.output != '') and (stdoutStderr.find('usage: js [') != -1 or
+                                           stdoutStderr.find('Error: Short option followed by junk') != -1 or
+                                           stdoutStderr.find('Error: Invalid long option:') != -1 or
+                                           stdoutStderr.find('Error: Invalid short option:') != -1):
             return ("good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter")
         elif 3 <= exitCode <= 6:
             return ('good', 'Acceptable exit code ' + str(exitCode))
@@ -305,28 +313,31 @@ def internalTestAndLabel(options):
     return inner
 
 
-def externalTestAndLabel(options, interestingness):
+def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Make use of interestingness scripts to decide whether the changeset is good or bad."""
-    conditionScript = rel_or_abs_import(interestingness[0])
-    conditionArgPrefix = interestingness[1:]
+    conditionScript = rel_or_abs_import(interestingness[0])  # pylint: disable=invalid-name
+    conditionArgPrefix = interestingness[1:]  # pylint: disable=invalid-name
 
-    def inner(shellFilename, hgHash):
-        conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList
-        tempDir = tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash)
-        tempPrefix = os.path.join(tempDir, 't')
+    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+        # pylint: disable=missing-return-type-doc
+        conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList  # pylint: disable=invalid-name
+        tempDir = tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash)  # pylint: disable=invalid-name
+        tempPrefix = os.path.join(tempDir, 't')  # pylint: disable=invalid-name
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
         if conditionScript.interesting(conditionArgs, tempPrefix):
-            innerResult = ('bad', 'interesting')
+            innerResult = ('bad', 'interesting')  # pylint: disable=invalid-name
         else:
-            innerResult = ('good', 'not interesting')
+            innerResult = ('good', 'not interesting')  # pylint: disable=invalid-name
         if os.path.isdir(tempDir):
             sps.rmTreeIncludingReadOnly(tempDir)
         return innerResult
     return inner
 
 
+# pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-many-arguments
 def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """If bisect blamed a merge, try to figure out why."""
     bisectLied = False
@@ -386,7 +397,8 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
         print("I don't know which patches from each side of the merge contributed to the bug. Sorry.")
 
 
-def sanitizeCsetMsg(msg, repo):
+def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Sanitize changeset messages, removing email addresses."""
     msgList = msg.split('\n')
     sanitizedMsgList = []
@@ -399,7 +411,9 @@ def sanitizeCsetMsg(msg, repo):
     return '\n'.join(sanitizedMsgList)
 
 
-def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
+def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pylint: disable=invalid-name
+    # pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+    # pylint: disable=too-many-arguments
     """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
     outputResult = sps.captureStdout(hgPrefix + ['bisect', '-U', '--' + hgLabel, currRev])[0]
@@ -458,7 +472,8 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):
 #############################################
 
 
-def assertSaneJsBinary(cacheF):
+def assertSaneJsBinary(cacheF):  # pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """If the cache folder is present, check that the js binary is working properly."""
     if os.path.isdir(cacheF):
         fList = os.listdir(cacheF)
@@ -500,7 +515,8 @@ def assertSaneJsBinary(cacheF):
         raise Exception('Cache folder ' + cacheF + ' is not found.')
 
 
-def bisectUsingTboxBins(options):
+def bisectUsingTboxBins(options):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
+    # pylint: disable=too-complex,too-many-locals,too-many-statements
     """Download treeherder binaries and bisect them."""
     testedIDs = {}
     desiredArch = '32' if options.buildOptions.enable32 else '64'
@@ -583,7 +599,7 @@ def bisectUsingTboxBins(options):
     outputTboxBisectionResults(options, urlsTbox, testedIDs)
 
 
-def createTboxCacheFolder(cacheFolder):
+def createTboxCacheFolder(cacheFolder):  # pylint: disable=missing-param-doc,missing-type-doc
     """Attempt to create the treeherder js shell's cache folder if it does not exist.
 
     If it does, check that its binaries are working properly.
@@ -595,12 +611,12 @@ def createTboxCacheFolder(cacheFolder):
 
     try:
         ensureCacheDirHasCorrectIdNum(cacheFolder)
-    except (KeyboardInterrupt, Exception) as e:
+    except (KeyboardInterrupt, Exception) as e:  # pylint: disable=broad-except
         if 'Folder name numeric ID not equal to source URL numeric ID.' in repr(e):
             sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
 
 
-def ensureCacheDirHasCorrectIdNum(cacheFolder):
+def ensureCacheDirHasCorrectIdNum(cacheFolder):  # pylint: disable=missing-param-doc,missing-raises-doc,missing-type-doc
     """Ensure that the cache folder is named with the correct numeric ID."""
     srcUrlPath = sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
     if os.path.isfile(srcUrlPath):
@@ -618,7 +634,8 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):
             raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
-def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
+def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):  # pylint: disable=invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-many-branches,too-complex
     """Download a build. If the build is incomplete, find a working neighbour, then return results."""
     offset = None
     skippedChangesetNum = 0
@@ -634,7 +651,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
             if (preferredIndex + offset >= len(urls)) and (preferredIndex - offset < 0):
                 print("Stop looping because everything within the range was tested.")
                 return None, None, None, None
-            offset = -offset
+            offset = -offset  # pylint: disable=invalid-unary-operand-type
         else:
             offset = -offset + 1  # Alternate between positive and negative offsets
 
@@ -650,7 +667,7 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
         if isWorking:
             try:
                 assertSaneJsBinary(tboxCacheFolder)
-            except (KeyboardInterrupt, Exception) as e:
+            except (KeyboardInterrupt, Exception) as e:  # pylint: disable=broad-except
                 if 'Shell startup error' in repr(e):
                     writeIncompleteBuildTxtFile(urls[newIndex], tboxCacheFolder,
                                                 sps.normExpUserPath(os.path.join(tboxCacheFolder,
@@ -670,7 +687,8 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):
                 preferredIndex = 0
 
 
-def getHgwebMozillaOrg(branchName):
+def getHgwebMozillaOrg(branchName):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the hgweb link of the repository, given a treeherder branch name."""
     hgWebAddrList = ['hg.mozilla.org']
     if branchName == 'mozilla-central':
@@ -685,12 +703,14 @@ def getHgwebMozillaOrg(branchName):
     return 'https://' + '/'.join(hgWebAddrList)
 
 
-def getIdFromTboxUrl(url):
+def getIdFromTboxUrl(url):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return numeric ID from treeherder at https://archive.mozilla.org/pub/firefox/tinderbox-builds/ ."""
     return [i for i in url.split("/") if i][-1]
 
 
-def getOneBuild(isJsShell, url, buildType):
+def getOneBuild(isJsShell, url, buildType):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Try to get a complete working build."""
     idNum = getIdFromTboxUrl(url)
     tboxCacheFolder = sps.normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
@@ -716,12 +736,14 @@ def getOneBuild(isJsShell, url, buildType):
     return False, None, None  # Downloaded, incomplete
 
 
-def getTboxJsBinPath(baseDir):
+def getTboxJsBinPath(baseDir):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the path to the treeherder js binary from a download folder."""
     return sps.normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if sps.isWin else 'js'))
 
 
-def getTimestampAndHashFromTboxFiles(folder):
+def getTimestampAndHashFromTboxFiles(folder):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return timestamp and changeset information from the .txt file downloaded from treeherder."""
     downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
     for fn in os.listdir(downloadDir):
@@ -733,12 +755,14 @@ def getTimestampAndHashFromTboxFiles(folder):
     return fContents[0], fContents[1].split('/')[-1]
 
 
-def isTboxBinInteresting(options, downloadDir, csetHash):
+def isTboxBinInteresting(options, downloadDir, csetHash):  # pylint: disable=invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the required treeherder binary."""
     return options.testAndLabel(getTboxJsBinPath(downloadDir), csetHash)
 
 
-def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
+def outputTboxBisectionResults(options, interestingList, testedBuildsDict):  # pylint: disable=missing-param-doc
+    # pylint: disable=missing-raises-doc,missing-type-doc,too-many-locals
     """Return formatted bisection results from using treeherder builds."""
     sTimestamp, sHash, sResult, _sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
     eTimestamp, eHash, eResult, _eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
@@ -746,7 +770,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     print()
     print("Parameters for compilation bisection:")
     pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
-    oOutput = '-o "' + options.output + '"' if options.output is not '' else ''
+    oOutput = '-o "' + options.output + '"' if options.output is not '' else ''  # pylint: disable=literal-comparison
     params = [i for i in ["-s " + sHash, "-e " + eHash, pOutput, oOutput, "-b <build parameters>"] if i]
     print(" ".join(params))
 
@@ -773,7 +797,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):
     print()
 
 
-def readIncompleteBuildTxtFile(txtFile, idNum):
+def readIncompleteBuildTxtFile(txtFile, idNum):  # pylint: disable=missing-raises-doc,missing-param-doc,missing-type-doc
     """Read the INCOMPLETE_NOTE text file indicating that this particular build is incomplete."""
     with open(txtFile, 'rb') as f:
         contentsF = f.read()
@@ -784,7 +808,7 @@ def readIncompleteBuildTxtFile(txtFile, idNum):
             print("Examined build with numeric ID %s to be incomplete. Trying another build..." % idNum)
 
 
-def rmOldLocalCachedDirs(cacheDir):
+def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing-type-doc
     """Remove old local cached directories, which were created four weeks ago."""
     # This is in autoBisect because it has a lock so we do not race while removing directories
     # Adapted from http://stackoverflow.com/a/11337407
@@ -807,7 +831,8 @@ def rmOldLocalCachedDirs(cacheDir):
                 shutil.rmtree(name)
 
 
-def showRemainingNumOfTests(reqList):
+def showRemainingNumOfTests(reqList):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Display the approximate number of tests remaining."""
     remainingTests = int(math.ceil(math.log(len(reqList), 2))) - 1
     wordTest = 'tests'
@@ -816,7 +841,8 @@ def showRemainingNumOfTests(reqList):
     return '~' + str(remainingTests) + ' ' + wordTest + ' remaining...\n'
 
 
-def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
+def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):  # pylint: disable=invalid-name
+    # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the build. If the build is incomplete, find a working neighbour, then return results."""
     finalIndex, idNum, tboxCacheFolder, skippedNum = getBuildOrNeighbour(
         (not options.browserOptions), preferredIndex, urls, buildType
@@ -840,7 +866,8 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):
     return idNum, result, reason, finalIndex, urls, testedIDs, skippedNum
 
 
-def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):
+def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):  # pylint: disable=invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Write a text file indicating that this particular build is incomplete."""
     if os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
             os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):

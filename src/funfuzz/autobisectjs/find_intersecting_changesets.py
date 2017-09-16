@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=missing-return-doc,missing-return-type-doc
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +21,7 @@ from . import known_broken_earliest_working as kbew
 from ..util import subprocesses as sps
 
 
-def parse_options():  # pylint: disable=missing-docstring
+def parse_options():  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
     parser.add_option('-R', '--repo', dest='rDir',
                       help='Sets the repository to analyze..')
@@ -32,7 +31,8 @@ def parse_options():  # pylint: disable=missing-docstring
     return options
 
 
-def count_csets(revset, rdir):  # pylint: disable=missing-param-doc,missing-type-doc
+def count_csets(revset, rdir):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc
     """Count the number of changesets in the revsets by outputting ones and counting them."""
     cmd = ['hg', 'log', '-r', revset, '--template=1']
     range_intersection_ones = sps.captureStdout(cmd, currWorkingDir=rdir)

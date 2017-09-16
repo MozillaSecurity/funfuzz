@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc,too-many-branches
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Known broken changeset ranges of SpiderMonkey are specified in this file.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -15,7 +16,8 @@ from distutils.version import StrictVersion  # pylint: disable=import-error,no-n
 from ..util import subprocesses as sps
 
 
-def hgrange(first_bad, first_good):
+def hgrange(first_bad, first_good):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc
     """Like "first_bad::first_good", but includes branches/csets that never got the first_good fix."""
     # NB: mercurial's descendants(x) includes x
     # So this revset expression includes first_bad, but does not include first_good.
@@ -24,7 +26,8 @@ def hgrange(first_bad, first_good):
     return '(descendants(id(' + first_bad + '))-descendants(id(' + first_good + ')))'
 
 
-def known_broken_ranges(options):
+def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc
     """Return a list of revsets corresponding to known-busted revisions."""
     # Paste numbers into: https://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
@@ -93,7 +96,8 @@ def known_broken_ranges(options):
     return skips
 
 
-def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=too-complex
+def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
@@ -162,5 +166,5 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=to
     return "first((" + common_descendants(required) + ") - (" + skip_revs + "))"
 
 
-def common_descendants(revs):
+def common_descendants(revs):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     return " and ".join("descendants(" + r + ")" for r in revs)
