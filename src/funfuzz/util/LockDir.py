@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring,too-few-public-methods
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""A class to create a filesystem-based lock while in scope. The lock directory will be deleted after the lock is
+released.
+"""
 
 from __future__ import absolute_import, print_function
 
 import os
 
 
-class LockDir(object):  # pylint: disable=missing-param-doc,missing-type-doc
+class LockDir(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
     """Create a filesystem-based lock while in scope.
 
     Use:
@@ -19,15 +22,15 @@ class LockDir(object):  # pylint: disable=missing-param-doc,missing-type-doc
             # No other code is concurrently using LockDir(path)
     """
 
-    def __init__(self, d):
-        self.d = d
+    def __init__(self, directory):
+        self.directory = directory
 
     def __enter__(self):
         try:
-            os.mkdir(self.d)
+            os.mkdir(self.directory)
         except OSError:
-            print("Lock file exists: %s" % self.d)
+            print("Lock file exists: %s" % self.directory)
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        os.rmdir(self.d)
+        os.rmdir(self.directory)
