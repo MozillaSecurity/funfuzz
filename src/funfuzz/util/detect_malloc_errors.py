@@ -1,51 +1,50 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=global-statement,invalid-name,missing-docstring
-# pylint: disable=missing-return-doc,missing-return-type-doc
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+"""Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
+which are signs of malloc being unhappy (double free, out-of-memory, etc).
+"""
+
 from __future__ import absolute_import, print_function
 
-# Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
-# which are signs of malloc being unhappy (double free, out-of-memory, etc).
-
-pline = ""
-ppline = ""
+PLINE = ""
+PPLINE = ""
 
 
-def amiss(logPrefix):
-    foundSomething = False
-    global pline, ppline
+def amiss(log_prefix):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
+    found_something = False
+    global PLINE, PPLINE  # pylint: disable=global-statement
 
-    pline = ""
-    ppline = ""
+    PLINE = ""
+    PPLINE = ""
 
-    with open(logPrefix + "-err.txt") as f:
+    with open(log_prefix + "-err.txt") as f:
         for line in f:
             if scanLine(line):
-                foundSomething = True
+                found_something = True
                 break  # Don't flood the log with repeated malloc failures
 
-    return foundSomething
+    return found_something
 
 
-def scanLine(line):
-    global ppline, pline
+def scanLine(line):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    global PPLINE, PLINE  # pylint: disable=global-statement
 
     line = line.strip("\x07").rstrip("\n")
 
     if (line.find("szone_error") != -1 or
             line.find("malloc_error_break") != -1 or
             line.find("MallocHelp") != -1):
-        if pline.find("can't allocate region") == -1:
+        if PLINE.find("can't allocate region") == -1:
             print()
-            print(ppline)
-            print(pline)
+            print(PPLINE)
+            print(PLINE)
             print(line)
             return True
 
-    ppline = pline
-    pline = line
+    PPLINE = PLINE
+    PLINE = line
