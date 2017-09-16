@@ -10,7 +10,7 @@
 from __future__ import absolute_import
 
 from . import crashesat
-from . import createCollector
+from . import create_collector
 from . import detect_malloc_errors
 from . import downloadBuild
 from . import fileManipulation

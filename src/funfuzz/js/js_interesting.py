@@ -21,7 +21,7 @@ import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
 
 from . import inspect_shell
-from ..util import createCollector
+from ..util import create_collector
 from ..util import detect_malloc_errors
 from ..util import fileManipulation
 from ..util import subprocesses as sps
@@ -120,7 +120,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Finally, make a CrashInfo object and parse stack traces for asan/crash/assertion bugs
         crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
 
-        createCollector.printCrashInfo(crashInfo)
+        create_collector.printCrashInfo(crashInfo)
         # We only care about crashes and assertion failures on shells with no symbols
         # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
         if not isinstance(crashInfo, CrashInfo.NoCrashInfo) or \
@@ -131,7 +131,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         match = options.collector.search(crashInfo)
         if match[0] is not None:
-            createCollector.printMatchingSignature(match)
+            create_collector.printMatchingSignature(match)
             lev = JS_FINE
 
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
@@ -271,7 +271,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
     options.jsengineWithArgs = args[1:]
-    options.collector = createCollector.createCollector("jsfunfuzz")
+    options.collector = create_collector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(

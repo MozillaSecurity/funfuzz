@@ -21,7 +21,7 @@ from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=imp
 from . import js_interesting
 from . import pinpoint
 from . import shell_flags
-from ..util import createCollector
+from ..util import create_collector
 from ..util import lithOps
 from ..util import subprocesses as sps
 
@@ -277,7 +277,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     # For js_interesting:
     options.valgrind = False
     options.shellIsDeterministic = True  # We shouldn't be in compare_jit with a non-deterministic build
-    options.collector = createCollector.createCollector("jsfunfuzz")
+    options.collector = create_collector.createCollector("jsfunfuzz")
 
     return options
 

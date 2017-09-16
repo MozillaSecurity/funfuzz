@@ -29,7 +29,7 @@ from .util import downloadBuild
 from .util import hgCmds
 from .util import subprocesses as sps
 from .util import forkJoin
-from .util import createCollector
+from .util import create_collector
 from .util.LockDir import LockDir
 
 path0 = os.path.dirname(os.path.abspath(__file__))
@@ -110,7 +110,7 @@ def main():
 
     options = parseOpts()
 
-    collector = createCollector.createCollector("jsfunfuzz")
+    collector = create_collector.createCollector("jsfunfuzz")
     refreshSignatures(collector)
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")

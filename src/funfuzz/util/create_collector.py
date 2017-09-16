@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Functions here make use of a Collector created from FuzzManager.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -13,18 +15,18 @@ import os
 from Collector.Collector import Collector
 
 
-def createCollector(tool):  # pylint: disable=missing-return-doc,missing-return-type-doc
+def createCollector(tool):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     assert tool == "jsfunfuzz"
-    cacheDir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
+    cache_dir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
     try:
-        os.mkdir(cacheDir)
+        os.mkdir(cache_dir)
     except OSError:
-        pass  # cacheDir already exists
-    collector = Collector(sigCacheDir=cacheDir, tool=tool)
+        pass  # cache_dir already exists
+    collector = Collector(sigCacheDir=cache_dir, tool=tool)
     return collector
 
 
-def printCrashInfo(crashInfo):
+def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
     if crashInfo.createShortSignature() != "No crash detected":
         print()
         print("crashInfo:")
@@ -34,7 +36,7 @@ def printCrashInfo(crashInfo):
         print()
 
 
-def printMatchingSignature(match):
+def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docstring
     print("Matches signature in FuzzManager:")
     print("  Signature description: %s" % match[1].get('shortDescription'))
     print("  Signature file: %s" % match[0])
