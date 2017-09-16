@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=too-many-branches,too-many-return-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Allows specification of build configuration parameters.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -23,34 +23,36 @@ DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
 deviceIsFast = not sps.isARMv7l  # pylint: disable=invalid-name
 
 
-def chance(p):  # pylint: disable=invalid-name
+def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     return random.random() < p
 
 
-class Randomizer(object):
+class Randomizer(object):  # pylint: disable=missing-docstring
     def __init__(self):
         self.options = []
 
-    def add(self, name, fastDeviceWeight, slowDeviceWeight):  # pylint: disable=invalid-name
+    def add(self, name, fastDeviceWeight, slowDeviceWeight):  # pylint: disable=invalid-name,missing-docstring
         self.options.append({
             'name': name,
             'fastDeviceWeight': fastDeviceWeight,
             'slowDeviceWeight': slowDeviceWeight
         })
 
-    def getRandomSubset(self):  # pylint: disable=invalid-name
-        def getWeight(o):  # pylint: disable=invalid-name
+    def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+        # pylint: disable=missing-return-type-doc
+        def getWeight(o):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
             return o['fastDeviceWeight'] if deviceIsFast else o['slowDeviceWeight']
         return [o['name'] for o in self.options if chance(getWeight(o))]
 
 
-def addParserOptions():  # pylint: disable=invalid-name
+def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
     """Add parser options."""
     # Where to find the source dir and compiler, patching if necessary.
     parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
     randomizer = Randomizer()
 
     def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):  # pylint: disable=invalid-name
+        # pylint: disable=missing-param-doc,missing-type-doc
         """Add a randomized boolean option that defaults to False.
 
         Option also has a [weight] chance of being changed to True when using --random.
@@ -156,7 +158,8 @@ def addParserOptions():  # pylint: disable=invalid-name
     return parser, randomizer
 
 
-def parseShellOptions(inputArgs):  # pylint: disable=invalid-name
+def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return a 'build_options' object, which is intended to be immutable."""
     parser, randomizer = addParserOptions()
     build_options = parser.parse_args(inputArgs.split())
@@ -196,7 +199,8 @@ def parseShellOptions(inputArgs):  # pylint: disable=invalid-name
     return build_options
 
 
-def computeShellType(build_options):  # pylint: disable=invalid-name,too-complex
+def computeShellType(build_options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex,too-many-branches
     """Return configuration information of the shell."""
     fileName = ['js']  # pylint: disable=invalid-name
     if build_options.enableDbg:
@@ -237,12 +241,14 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,too-complex
     return '-'.join(fileName)
 
 
-def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name
+def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the shell type together with the build revision."""
     return computeShellType(build_options) + '-' + buildRev
 
 
-def areArgsValid(args):  # pylint: disable=invalid-name,too-complex
+def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc,too-many-branches,too-complex,too-many-return-statements
     """Check to see if chosen arguments are valid."""
     if args.enableDbg and args.disableDbg:
         return False, 'Making a debug, non-debug build would be contradictory.'
@@ -266,7 +272,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,too-complex
         # if not sps.isProgramInstalled('valgrind'):
         #     return False, 'Valgrind is not installed.'
         # if not args.enableOpt:
-        #     # FIXME: Isn't this enabled by default??
+        #     # FIXME: Isn't this enabled by default??  # pylint: disable=fixme
         #     return False, 'Valgrind needs opt builds.'
         # if args.buildWithAsan:
         #     return False, 'One should not compile with both Valgrind flags and ASan flags.'
@@ -317,7 +323,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,too-complex
     return True, ''
 
 
-def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid-name
+def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid-name,missing-docstring
+    # pylint: disable=missing-return-doc,missing-return-type-doc
     while True:
         randomArgs = randomizer.getRandomSubset()  # pylint: disable=invalid-name
         if '--build-with-valgrind' in randomArgs and chance(0.95):
@@ -329,7 +336,8 @@ def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid
             return build_options
 
 
-def getRandomValidRepo(treeLocation):  # pylint: disable=invalid-name
+def getRandomValidRepo(treeLocation):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     validRepos = []  # pylint: disable=invalid-name
     for repo in ['mozilla-central', 'mozilla-beta']:
         if os.path.isfile(sps.normExpUserPath(os.path.join(
@@ -344,7 +352,7 @@ def getRandomValidRepo(treeLocation):  # pylint: disable=invalid-name
         os.path.join(treeLocation, random.choice(validRepos))))
 
 
-def main():
+def main():  # pylint: disable=missing-docstring
     print("Here are some sample random build configurations that can be generated:")
     parser, randomizer = addParserOptions()
     build_options = parser.parse_args()
