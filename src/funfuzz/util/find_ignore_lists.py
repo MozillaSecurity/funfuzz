@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Functions here attempt to find lists of bugs to ignore, e.g. via suppression files.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -18,22 +20,23 @@ REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir
 #   from private&public fuzzing repos
 #   for project branches and for their base branches (e.g. mozilla-central)
 #
-# Given a targetRepo "mozilla-central/ionmonkey" and a name "crashes.txt", returns a list of 2N absolute paths like:
+# Given a target_repo "mozilla-central/ionmonkey" and a name "crashes.txt", returns a list of 2N absolute paths like:
 #   ???/funfuzz*/known/mozilla-central/ionmonkey/crashes.txt
 #   ???/funfuzz*/known/mozilla-central/crashes.txt
 
 
-def findIgnoreLists(targetRepo, needle):  # pylint: disable=missing-return-doc,missing-return-type-doc
-    r = []
-    assert not targetRepo.startswith("/")
+def find_ignore_lists(target_repo, needle):  # pylint: disable=missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
+    suppressions = []
+    assert not target_repo.startswith("/")
     for name in sorted(os.listdir(REPO_PARENT_PATH)):
         if name.startswith("funfuzz"):
-            knownPath = os.path.join(REPO_PARENT_PATH, name, "known", targetRepo)
-            if os.path.isdir(knownPath):
-                while os.path.basename(knownPath) != "known":
-                    filename = os.path.join(knownPath, needle)
+            known_path = os.path.join(REPO_PARENT_PATH, name, "known", target_repo)
+            if os.path.isdir(known_path):
+                while os.path.basename(known_path) != "known":
+                    filename = os.path.join(known_path, needle)
                     if os.path.exists(filename):
-                        r.append(filename)
-                    knownPath = os.path.dirname(knownPath)
-    assert r
-    return r
+                        suppressions.append(filename)
+                    known_path = os.path.dirname(known_path)
+    assert suppressions
+    return suppressions

@@ -14,7 +14,7 @@ from . import create_collector
 from . import detect_malloc_errors
 from . import download_build
 from . import file_manipulation
-from . import findIgnoreLists
+from . import find_ignore_lists
 from . import forkJoin
 from . import hgCmds
 from . import linkJS
