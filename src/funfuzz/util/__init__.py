@@ -17,7 +17,7 @@ from . import file_manipulation
 from . import find_ignore_lists
 from . import fork_join
 from . import hg_helpers
-from . import linkJS
+from . import link_js
 from . import lithOps
 from . import LockDir
 from . import reposUpdate

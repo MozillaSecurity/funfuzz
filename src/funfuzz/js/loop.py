@@ -24,7 +24,7 @@ from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithOps
-from ..util import linkJS
+from ..util import link_js
 from ..util import subprocesses as sps
 
 p0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
@@ -90,7 +90,7 @@ def showtail(filename):  # pylint: disable=missing-docstring
 def linkFuzzer(target_fn, prologue):  # pylint: disable=invalid-name,missing-docstring
     source_base = p0
     file_list_fn = sps.normExpUserPath(os.path.join(p0, "files_to_link.txt"))
-    linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
+    link_js.link_js(target_fn, file_list_fn, source_base, prologue)
 
 
 def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-docstring,missing-param-doc
