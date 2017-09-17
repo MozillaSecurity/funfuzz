@@ -62,7 +62,7 @@ class ShellResult(object):
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex
         pathToBinary = runthis[0]
-        # This relies on the shell being a local one from compileShell.py:
+        # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'
         pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split('.')[0])
         pc.addProgramArguments(runthis[1:-1])

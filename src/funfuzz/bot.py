@@ -23,7 +23,7 @@ import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from .js import build_options
-from .js import compileShell
+from .js import compile_shell
 from .js import loopjsfunfuzz
 from .util import downloadBuild
 from .util import hgCmds
@@ -194,11 +194,11 @@ def ensureBuild(options):
             options.build_options = build_options.parseShellOptions(options.build_options)
             options.timeout = options.timeout or machineTimeoutDefaults(options)
 
-            with LockDir(compileShell.getLockDirPath(options.build_options.repoDir)):
+            with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
                 bRev = hgCmds.getRepoHashAndId(options.build_options.repoDir)[0]
-                cshell = compileShell.CompiledShell(options.build_options, bRev)
+                cshell = compile_shell.CompiledShell(options.build_options, bRev)
                 updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')
-                compileShell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
+                compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
                 bDir = cshell.getShellCacheDir()
                 # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
@@ -212,7 +212,7 @@ def ensureBuild(options):
                     "|  Fuzzing %s js shell builds\n"
                     "|  DATE: %s\n"
                     "==============================================\n\n" % (
-                        os.path.join(path3, "compileShell.py"),
+                        os.path.join(path3, "compile_shell.py"),
                         options.build_options.build_options_str,
                         options.build_options.repoDir,
                         bRev,

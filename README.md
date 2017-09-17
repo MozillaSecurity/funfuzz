@@ -25,7 +25,7 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 
 ### Windows (only 64-bit supported)
 
-1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compileShell for SpiderMonkey requires at least version 2.2.0) to get an msys shell.
+1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 2.2.0) to get an msys shell.
 2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories. (32-bit works best for now)
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
 4. Make sure you install at least Microsoft Visual Studio 2015 (Community Edition is recommended) as per the build instructions above in the Setup section.
@@ -85,13 +85,13 @@ To test **a patch** (assuming patch is in ~/patch.diff) against a specific branc
 
 In js mode, loopBot.py makes use of:
 
-* [compileShell](js/compileShell.py)
+* [compile_shell](js/compile_shell.py)
 * [jsfunfuzz](src/funfuzz/js/jsfunfuzz)
 * [compare_jit](src/funfuzz/js/compare_jit.py) (if testing deterministic builds)
 * randorderfuzz (included in funfuzz, if tests are present in the mozilla repository)
 * [autoBisect](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
 
-The parameters in `-b` get passed into [compileShell](js/compileShell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).
+The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).
 
 FuzzManager support got landed, so you will also need to create a ~/.fuzzmanagerconf file, similar to:
 
@@ -111,7 +111,7 @@ Replace anything between "<" and ">" with your desired parameters.
 
 **Q: What platforms does funfuzz run on?**
 
-**A:** compileShell has been tested on:
+**A:** compile_shell has been tested on:
 
 * Windows 10, 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild). It should also work with MozillaBuild 3.0.
 * Mac OS X 10.12

@@ -27,7 +27,7 @@ from lithium.interestingness.utils import rel_or_abs_import
 
 from . import known_broken_earliest_working as kbew
 from ..js import build_options
-from ..js import compileShell
+from ..js import compile_shell
 from ..js import inspectShell
 from ..util import fileManipulation
 from ..util import downloadBuild
@@ -712,7 +712,7 @@ def getOneBuild(isJsShell, url, buildType):  # pylint: disable=missing-param-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Try to get a complete working build."""
     idNum = getIdFromTboxUrl(url)
-    tboxCacheFolder = sps.normExpUserPath(os.path.join(compileShell.ensureCacheDir(),
+    tboxCacheFolder = sps.normExpUserPath(os.path.join(compile_shell.ensureCacheDir(),
                                                        'tboxjs-' + buildType + '-' + idNum))
     createTboxCacheFolder(tboxCacheFolder)
 
@@ -812,7 +812,7 @@ def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing
     # This is in autoBisect because it has a lock so we do not race while removing directories
     # Adapted from http://stackoverflow.com/a/11337407
     SECONDS_IN_A_DAY = 24 * 60 * 60
-    s3CacheObj = s3cache.S3Cache(compileShell.S3_SHELL_CACHE_DIRNAME)
+    s3CacheObj = s3cache.S3Cache(compile_shell.S3_SHELL_CACHE_DIRNAME)
     if s3CacheObj.connect():
         NUMBER_OF_DAYS = 1  # EC2 VMs generally have less disk space for local shell caches
     elif sps.isARMv7l:
@@ -886,16 +886,16 @@ def main():
 
     repoDir = options.build_options.repoDir if options.build_options else options.browserOptions.repoDir
 
-    with LockDir.LockDir(compileShell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
-                         if options.useTreeherderBinaries else compileShell.getLockDirPath(repoDir)):
+    with LockDir.LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
+                         if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
         elif not options.browserOptions:  # Bisect using local builds
-            findBlamedCset(options, repoDir, compileShell.makeTestRev(options))
+            findBlamedCset(options, repoDir, compile_shell.makeTestRev(options))
 
         # Last thing we do while we have a lock.
         # Note that this only clears old *local* cached directories, not remote ones.
-        rmOldLocalCachedDirs(compileShell.ensureCacheDir())
+        rmOldLocalCachedDirs(compile_shell.ensureCacheDir())
 
 
 if __name__ == '__main__':

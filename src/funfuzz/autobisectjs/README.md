@@ -32,7 +32,7 @@ you can try bisecting using downloaded builds:
 
 This should take < 5 minutes total assuming a fast internet connection, since it does not need to compile shells.
 
-Refer to [compileShell.py documentation](../js/README.md) for parameters to be passed into "-b".
+Refer to [compile_shell documentation](../js/README.md) for parameters to be passed into "-b".
 
 ```
 Usage: autobisectjs.py [options]

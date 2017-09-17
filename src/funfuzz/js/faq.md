@@ -12,7 +12,7 @@ On a decent Linux machine or a powerful Mac, both with 4 or more cores, 3-4 minu
 
 Use the -P notation, e.g.:
 
-`funfuzz/js/compileShell.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff"`
+`funfuzz/js/compile_shell.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff"`
 
 assuming:
 * mq is activated in ~/.hgrc
@@ -29,17 +29,17 @@ No, they are independent. We only implemented the flags that are most useful for
 
 The "-R" flag assumes a Mercurial clone of mozilla-central is passed in as an argument. Git repositories are not yet supported fully, and especially not for autoBisect. See issue #2.
 
-**Q: Can I run multiple instances of compileShell?**
+**Q: Can I run multiple instances of compile_shell?**
 
-This is not recommended as it will slow down your computer. Running one instance of compileShell will use the maximum number of cores as found by cpu_count() from the Python multiprocessing module, with the exception of ARM boards that tend to have slower cores.
+This is not recommended as it will slow down your computer. Running one instance of compile_shell will use the maximum number of cores as found by cpu_count() from the Python multiprocessing module, with the exception of ARM boards that tend to have slower cores.
 
-**Q: What kind of build does compileShell do, and what files do it store on my machine?**
+**Q: What kind of build does compile_shell do, and what files do it store on my machine?**
 
 It creates a clobber build, compiling in the ~/shell-cache directory by default. There may also be a bunch of tempfiles created in the system temporary directory.
 
 **Q: How do I check if the SpiderMonkey build created is the one I specified?**
 
-Post-compilation, the harness does a bunch of verification tests to ensure that the desired build is created. To double check, run `getBuildConfiguration();` within the SpiderMonkey shell. If compileShell isn't compiling as desired, file an issue!
+Post-compilation, the harness does a bunch of verification tests to ensure that the desired build is created. To double check, run `getBuildConfiguration();` within the SpiderMonkey shell. If compile_shell isn't compiling as desired, file an issue!
 
 **Q: What happens if the build I want to compile causes a compilation error?**
 
