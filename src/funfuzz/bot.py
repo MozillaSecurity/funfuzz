@@ -25,7 +25,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 from .js import build_options
 from .js import compile_shell
 from .js import loop
-from .util import downloadBuild
+from .util import download_build
 from .util import hgCmds
 from .util import subprocesses as sps
 from .util import forkJoin
@@ -232,9 +232,9 @@ def ensureBuild(options):
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
         bDir = 'build'
-        bType = downloadBuild.defaultBuildType(options.repoName, None, True)
+        bType = download_build.defaultBuildType(options.repoName, None, True)
         isJS = options.testType == 'js'
-        bSrc = downloadBuild.downloadLatestBuild(bType, './', getJsShell=isJS, wantTests=not isJS)
+        bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=isJS, wantTests=not isJS)
         bRev = ''
 
         # These two lines are only used for treeherder js shells:

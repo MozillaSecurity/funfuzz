@@ -35,7 +35,7 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 
 ### Mac
 
-1. On Mac OS X 10.9, you must first install a newer version of unzip than the one that comes with the OS. (Old versions [hit an error](https://bugzilla.mozilla.org/show_bug.cgi?id=1032391) on large zip files, such as the "mac64.tests.zip" file that [downloadBuild.py](util/downloadBuild.py) grabs.)
+1. On Mac OS X 10.9, you must first install a newer version of unzip than the one that comes with the OS. (Old versions [hit an error](https://bugzilla.mozilla.org/show_bug.cgi?id=1032391) on large zip files, such as the "mac64.tests.zip" file that [download_build.py](util/download_build.py) grabs.)
 
   ```
   brew install homebrew/dupes/unzip

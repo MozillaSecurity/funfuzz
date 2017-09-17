@@ -1,4 +1,4 @@
-This stuff helps downloadBuild.py find minidump_stackwalk binaries. It's similar to what Mozilla's regression test automation uses, but with slightly less automatic updating.
+This stuff helps download_build.py find minidump_stackwalk binaries. It's similar to what Mozilla's regression test automation uses, but with slightly less automatic updating.
 
 
 tooltool.py is from:

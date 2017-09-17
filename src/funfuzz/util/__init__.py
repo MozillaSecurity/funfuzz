@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from . import crashesat
 from . import create_collector
 from . import detect_malloc_errors
-from . import downloadBuild
+from . import download_build
 from . import fileManipulation
 from . import findIgnoreLists
 from . import forkJoin

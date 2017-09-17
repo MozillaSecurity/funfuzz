@@ -30,7 +30,7 @@ from ..js import build_options
 from ..js import compile_shell
 from ..js import inspect_shell
 from ..util import fileManipulation
-from ..util import downloadBuild
+from ..util import download_build
 from ..util import hgCmds
 from ..util import s3cache
 from ..util import subprocesses as sps
@@ -519,11 +519,11 @@ def bisectUsingTboxBins(options):  # pylint: disable=invalid-name,missing-param-
     """Download treeherder binaries and bisect them."""
     testedIDs = {}
     desiredArch = '32' if options.build_options.enable32 else '64'
-    buildType = downloadBuild.defaultBuildType(
+    buildType = download_build.defaultBuildType(
         options.nameOfTreeherderBranch, desiredArch, options.build_options.enableDbg)
 
     # Get list of treeherder IDs
-    urlsTbox = downloadBuild.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
+    urlsTbox = download_build.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
 
     # Download and test starting point.
     print()
@@ -727,7 +727,7 @@ def getOneBuild(isJsShell, url, buildType):  # pylint: disable=missing-param-doc
         readIncompleteBuildTxtFile(incompleteBuildTxtFile, idNum)
         return False, None, None  # Cached, incomplete
 
-    if downloadBuild.downloadBuild(url, tboxCacheFolder, jsShell=isJsShell):
+    if download_build.downloadBuild(url, tboxCacheFolder, jsShell=isJsShell):
         assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
             'the build subdirectory should be present in ' + tboxCacheFolder
         return True, idNum, tboxCacheFolder  # Downloaded, complete
