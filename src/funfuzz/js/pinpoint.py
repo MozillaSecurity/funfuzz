@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,literal-comparison,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Enables the funfuzz harness to use autobisectjs to discover the regressing changeset.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -25,12 +25,14 @@ from ..util import fileManipulation
 from ..util.lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 from ..util import subprocesses as sps
 
-p0 = os.path.dirname(os.path.abspath(__file__))
+p0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisectjs', 'autoBisect.py'))
 
 
-def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
+def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: disable=missing-param-doc
              bisectRepo, build_options_str, targetTime, suspiciousLevel):
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-many-arguments,too-many-locals
     """Run Lithium and autobisect.
 
     itest must be an array of the form [module, ...] where module is an interestingness module.
@@ -46,6 +48,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
     print(sps.shellify([sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
     print()
 
+    # pylint: disable=literal-comparison
     if bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and build_options_str is not None:
         if platform.uname()[2] == 'XP':
             print("Not pinpointing to exact changeset since autoBisect does not work well in WinXP.")
@@ -70,12 +73,15 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,
     return (lithResult, lithDetails, autoBisectLog)
 
 
-def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=too-complex
+def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-complex,too-many-branches
+    # pylint: disable=too-many-locals,too-many-statements
     """Reduce jsfunfuzz output files using Lithium by using various strategies."""
     reductionCount = [0]  # This is an array because Python does not like assigning to upvars.
     backupFilename = infilename + '-backup'
 
-    def lithReduceCmd(strategy):
+    def lithReduceCmd(strategy):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
+        # pylint: disable=missing-type-doc
         """Lithium reduction commands accepting various strategies."""
         reductionCount[0] += 1
         fullLithArgs = [x for x in (strategy + lithArgs) if x]  # Remove empty elements
