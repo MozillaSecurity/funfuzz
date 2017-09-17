@@ -15,7 +15,7 @@ from . import detect_malloc_errors
 from . import download_build
 from . import file_manipulation
 from . import find_ignore_lists
-from . import forkJoin
+from . import fork_join
 from . import hgCmds
 from . import linkJS
 from . import lithOps

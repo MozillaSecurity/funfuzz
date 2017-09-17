@@ -28,7 +28,7 @@ from .js import loop
 from .util import download_build
 from .util import hgCmds
 from .util import subprocesses as sps
-from .util import forkJoin
+from .util import fork_join
 from .util import create_collector
 from .util.LockDir import LockDir
 
@@ -129,7 +129,7 @@ def main():
         # as x86/64 ones, so restrict fuzzing to only 1 core for now.
         numProcesses = 1
 
-    forkJoin.forkJoin(options.tempDir, numProcesses, loopFuzzingAndReduction, options, buildInfo, collector)
+    fork_join.forkJoin(options.tempDir, numProcesses, loopFuzzingAndReduction, options, buildInfo, collector)
 
     shutil.rmtree(options.tempDir)
 
