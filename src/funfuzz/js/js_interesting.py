@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,global-statement,invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=no-member,old-division,too-few-public-methods
-# pylint: disable=too-many-branches,too-many-instance-attributes,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Check whether a testcase causes an interesting result in a shell.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -53,17 +52,19 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
 ) = range(JS_LEVELS)
 
 
-gOptions = ""
+gOptions = ""  # pylint: disable=invalid-name
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-class ShellResult(object):
+class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
-    def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex
-        pathToBinary = runthis[0]
+    def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
+        # pylint: disable=too-many-locals,too-many-statements
+        pathToBinary = runthis[0]  # pylint: disable=invalid-name
         # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'
+        # pylint: disable=invalid-name
         pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split('.')[0])
         pc.addProgramArguments(runthis[1:-1])
 
@@ -78,7 +79,7 @@ class ShellResult(object):
 
         lev = JS_FINE
         issues = []
-        auxCrashData = []
+        auxCrashData = []  # pylint: disable=invalid-name
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and 'readlines' everything into memory.
@@ -146,13 +147,14 @@ class ShellResult(object):
         self.out = out
         self.err = err
         self.issues = issues
-        self.crashInfo = crashInfo
+        self.crashInfo = crashInfo  # pylint: disable=invalid-name
         self.match = match
         self.runinfo = runinfo
         self.return_code = runinfo.return_code
 
 
-def understoodJsfunfuzzExit(out, err):
+def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     for line in err:
         if "terminate called" in line or "quit called" in line:
             return True
@@ -168,7 +170,8 @@ def understoodJsfunfuzzExit(out, err):
     return False
 
 
-def hitMemoryLimit(err):
+def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc
     """Return True iff stderr text indicates that the shell hit a memory limit."""
     if "ReportOverRecursed called" in err:
         # --enable-more-deterministic
@@ -186,7 +189,7 @@ def hitMemoryLimit(err):
     return None
 
 
-def oomed(err):
+def oomed(err):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they run out of memory
     for line in err:
         if hitMemoryLimit(line):
@@ -194,22 +197,24 @@ def oomed(err):
     return False
 
 
-def summaryString(issues, level, elapsedtime):
-    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")
+def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
+    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
     return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 
-def truncateFile(fn, maxSize):
+def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
     if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
         with open(fn, "r+") as f:
             f.truncate(maxSize)
 
 
-def valgrindSuppressions(knownPath):
+def valgrindSuppressions(knownPath):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     return ["--suppressions=" + filename for filename in findIgnoreLists(knownPath, "valgrind.txt")]
 
 
-def deleteLogs(logPrefix):
+def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
@@ -219,29 +224,30 @@ def deleteLogs(logPrefix):
         os.remove(logPrefix + "-crash.txt")
     if os.path.exists(logPrefix + "-vg.xml"):
         os.remove(logPrefix + "-vg.xml")
+    # pylint: disable=fixme
     # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
     if os.path.exists(logPrefix + "-core.gz"):
         os.remove(logPrefix + "-core.gz")
 
 
-def ulimitSet():
+def ulimitSet():  # pylint: disable=invalid-name
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
     # module only available on POSIX
     import resource  # pylint: disable=import-error
 
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
-    GB = 2**30
+    GB = 2**30  # pylint: disable=invalid-name
     if sps.isARMv7l:
         resource.setrlimit(resource.RLIMIT_AS, (1 * GB, 1 * GB))
     else:
         resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
-    halfGB = int(GB / 2)
+    halfGB = int(GB / 2)  # pylint: disable=invalid-name,old-division
     resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
 
 
-def parseOptions(args):
+def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
     parser.disable_interspersed_args()
     parser.add_option("--valgrind",
@@ -278,13 +284,14 @@ def parseOptions(args):
 # compare_jit.py uses ShellResult [with in_compare_jit = True]
 
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
-def init(args):
-    global gOptions
+def init(args):  # pylint: disable=missing-docstring
+    global gOptions  # pylint: disable=global-statement,invalid-name
     gOptions = parseOptions(args)
 
 
-# FIXME: _args is unused here, we should check if it can be removed?
-def interesting(_args, tempPrefix):
+# FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
+def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
@@ -294,17 +301,17 @@ def interesting(_args, tempPrefix):
 
 
 # For direct, manual use
-def main():
+def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
-    tempPrefix = "m"
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
+    tempPrefix = "m"  # pylint: disable=invalid-name
+    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)  # pylint: disable=no-member
     print(res.lev)
-    if options.submit:
-        if res.lev >= options.minimumInterestingLevel:
-            testcaseFilename = options.jsengineWithArgs[-1]
+    if options.submit:  # pylint: disable=no-member
+        if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
+            testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
             print("Submitting %s" % testcaseFilename)
             quality = 0
-            options.collector.submit(res.crashInfo, testcaseFilename, quality)
+            options.collector.submit(res.crashInfo, testcaseFilename, quality)  # pylint: disable=no-member
         else:
             print("Not submitting (not interesting)")
 
