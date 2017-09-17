@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=too-many-branches,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Allows detection of support for various command-line flags.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -18,12 +18,13 @@ from . import inspect_shell
 from ..util import subprocesses as sps
 
 
-def memoize(f, cache=None):
+def memoize(f, cache=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc
     """Function decorator that caches function results."""
     cache = cache or {}
 
     # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
-    def g(*args, **kwargs):
+    def g(*args, **kwargs):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
         key = (f, tuple(args), frozenset(kwargs.items()))
         if key not in cache:
             cache[key] = f(*args, **kwargs)
@@ -32,15 +33,17 @@ def memoize(f, cache=None):
 
 
 @memoize
-def shellSupportsFlag(shellPath, flag):
+def shellSupportsFlag(shellPath, flag):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     return inspect_shell.shellSupports(shellPath, [flag, '-e', '42'])
 
 
-def chance(p):
+def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     return random.random() < p
 
 
-def randomFlagSet(shellPath):  # pylint: disable=too-complex
+def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex,too-many-branches,too-many-statements
     """Return a random list of CLI flags appropriate for the given shell.
 
     Only works for spidermonkey js shell. Does not work for xpcshell.
@@ -75,8 +78,8 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
         args.append("--ion-pgo=on")  # --ion-pgo=on landed in bug 1209515
 
     if shellSupportsFlag(shellPath, '--ion-sincos=on') and chance(.5):
-        sincosValue = "on" if chance(0.5) else "off"
-        args.append("--ion-sincos=" + sincosValue)  # --ion-sincos=[on|off] landed in bug 984018
+        sincos_switch = "on" if chance(0.5) else "off"
+        args.append("--ion-sincos=" + sincos_switch)  # --ion-sincos=[on|off] landed in bug 984018
 
     if shellSupportsFlag(shellPath, '--ion-instruction-reordering=on') and chance(.2):
         args.append("--ion-instruction-reordering=on")  # --ion-instruction-reordering=on landed in bug 1195545
@@ -108,8 +111,8 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
     if shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
         # Focus testing on CheckNursery (16), see:
         #     https://hg.mozilla.org/mozilla-central/rev/bdbb5822afe1
-        gczealValue = 16 if chance(0.5) else random.randint(0, 16)
-        args.append("--gc-zeal=" + str(gczealValue))  # --gc-zeal= landed in bug 1101602
+        gczeal_value = 16 if chance(0.5) else random.randint(0, 16)
+        args.append("--gc-zeal=" + str(gczeal_value))  # --gc-zeal= landed in bug 1101602
 
     if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):
         args.append("--enable-small-chunk-size")  # --enable-small-chunk-size landed in bug 941804
@@ -128,14 +131,14 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
             shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
         # It was suggested to focus more on the range between 0 and 1.
         # Reduced the upper limit to 8, see bug 1053996 comment 8.
-        asmNopFill = random.randint(1, 8) if chance(0.3) else random.randint(0, 1)
-        args.append("--arm-asm-nop-fill=" + str(asmNopFill))  # Landed in bug 1020834
+        asm_nop_fill = random.randint(1, 8) if chance(0.3) else random.randint(0, 1)
+        args.append("--arm-asm-nop-fill=" + str(asm_nop_fill))  # Landed in bug 1020834
 
     # See bug 1026919 comment 60:
     if sps.isARMv7l and \
             shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
-        asmPoolMaxOffset = random.randint(5, 1024)
-        args.append("--asm-pool-max-offset=" + str(asmPoolMaxOffset))  # Landed in bug 1026919
+        asm_pool_max_offset = random.randint(5, 1024)
+        args.append("--asm-pool-max-offset=" + str(asm_pool_max_offset))  # Landed in bug 1026919
 
     if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
@@ -172,8 +175,8 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
         elif chance(.5) and multiprocessing.cpu_count() > 1 and \
                 shellSupportsFlag(shellPath, '--thread-count=1'):
             # Adjusts default number of threads for parallel compilation (turned on by default)
-            totalThreads = random.randint(2, (multiprocessing.cpu_count() * 2))
-            args.append('--thread-count=' + str(totalThreads))
+            total_threads = random.randint(2, (multiprocessing.cpu_count() * 2))
+            args.append('--thread-count=' + str(total_threads))
         # else:
         #   Default is to have --ion-offthread-compile=on and --thread-count=<some default value>
     elif shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
@@ -184,8 +187,8 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
         elif chance(.5) and multiprocessing.cpu_count() > 1 and \
                 shellSupportsFlag(shellPath, '--thread-count=1'):
             # Adjusts default number of threads for parallel compilation (turned on by default)
-            totalThreads = random.randint(2, (multiprocessing.cpu_count() * 2))
-            args.append('--thread-count=' + str(totalThreads))
+            total_threads = random.randint(2, (multiprocessing.cpu_count() * 2))
+            args.append('--thread-count=' + str(total_threads))
         # else:
         #   The default is to have --ion-parallel-compile=on and --thread-count=<some default value>
 
@@ -228,10 +231,11 @@ def randomFlagSet(shellPath):  # pylint: disable=too-complex
     return args
 
 
-def basicFlagSets(shellPath):
+def basicFlagSets(shellPath):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """These flag combos are used w/the original flag sets when run through Lithium & autoBisect."""
     if shellSupportsFlag(shellPath, "--no-threads"):
-        basicFlagList = [
+        basic_flags = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
             # compare_jit uses the following first flag set as the sole baseline when fuzzing
@@ -243,18 +247,18 @@ def basicFlagSets(shellPath):
             ['--fuzzing-safe', '--no-baseline', '--no-ion'],
         ]
         if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
-            basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
-                                  '--non-writable-jitcode', '--ion-check-range-analysis',
-                                  '--ion-extra-checks', '--no-sse3'])
+            basic_flags.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
+                                '--non-writable-jitcode', '--ion-check-range-analysis',
+                                '--ion-extra-checks', '--no-sse3'])
         if shellSupportsFlag(shellPath, "--no-wasm"):
-            basicFlagList.append(['--fuzzing-safe', '--no-baseline', '--no-asmjs',
-                                  '--no-wasm', '--no-native-regexp'])
+            basic_flags.append(['--fuzzing-safe', '--no-baseline', '--no-asmjs',
+                                '--no-wasm', '--no-native-regexp'])
         if shellSupportsFlag(shellPath, "--wasm-always-baseline"):
-            basicFlagList.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
-                                  '--wasm-always-baseline'])
-        return basicFlagList
+            basic_flags.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
+                                '--wasm-always-baseline'])
+        return basic_flags
     elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
-        basicFlagList = [
+        basic_flags = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/84bd8d9f4256/js/src/tests/lib/tests.py#l12
             # as well as other interesting flag combinations that have found / may find new bugs.
@@ -269,14 +273,14 @@ def basicFlagSets(shellPath):
             # ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],  # --no-fpu seems to be deprecated now
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
-            basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'])
+            basic_flags.append(['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
             if shellSupportsFlag(shellPath, '--no-sse3'):
-                basicFlagList.append(['--fuzzing-safe', '--ion-offthread-compile=off',
-                                      '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-        return basicFlagList
+                basic_flags.append(['--fuzzing-safe', '--ion-offthread-compile=off',
+                                    '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        return basic_flags
     else:
-        basicFlagList = [
+        basic_flags = [
             # Parts of this flag permutation come from:
             # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
             # as well as other interesting flag combinations that have found / may find new bugs.
@@ -293,19 +297,19 @@ def basicFlagSets(shellPath):
             # ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
         ]
         if shellSupportsFlag(shellPath, "--thread-count=1"):
-            basicFlagList.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
+            basic_flags.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
             # Range analysis had only started to stabilize around the time when --no-sse3 landed.
             if shellSupportsFlag(shellPath, '--no-sse3'):
-                basicFlagList.append(['--fuzzing-safe', '--ion-parallel-compile=off',
-                                      '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-        return basicFlagList
+                basic_flags.append(['--fuzzing-safe', '--ion-parallel-compile=off',
+                                    '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
+        return basic_flags
 
 
 # Consider adding a function (for compare_jit reduction) that takes a flag set
 # and returns all its (meaningful) subsets.
 
 
-def testRandomFlags():
+def testRandomFlags():  # pylint: disable=invalid-name,missing-docstring
     for _ in range(100):
         print(" ".join(randomFlagSet(sys.argv[1])))
 
