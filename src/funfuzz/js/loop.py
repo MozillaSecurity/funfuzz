@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=no-member,old-division,too-many-branches,too-many-locals,too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Allows the funfuzz harness to run continuously.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -27,11 +27,11 @@ from ..util import lithOps
 from ..util import linkJS
 from ..util import subprocesses as sps
 
-p0 = os.path.dirname(os.path.abspath(__file__))
-interestingpy = os.path.abspath(os.path.join(p0, 'js_interesting.py'))
+p0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
+interestingpy = os.path.abspath(os.path.join(p0, 'js_interesting.py'))  # pylint: disable=invalid-name
 
 
-def parseOpts(args):
+def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
     parser.disable_interspersed_args()
     parser.add_option("--compare-jit",
@@ -66,7 +66,7 @@ def parseOpts(args):
     # lower = less time wasted in timeouts and in compare_jit testcases that are thrown away due to OOMs.
     options.timeout = int(args[0])
 
-    # FIXME: We can probably remove args[1]
+    # FIXME: We can probably remove args[1]  # pylint: disable=fixme
     options.knownPath = 'mozilla-central'
     options.jsEngine = args[2]
     options.engineFlags = args[3:]
@@ -74,7 +74,8 @@ def parseOpts(args):
     return options
 
 
-def showtail(filename):
+def showtail(filename):  # pylint: disable=missing-docstring
+    # pylint: disable=fixme
     # FIXME: Get jsfunfuzz to output start & end of interesting result boundaries instead of this.
     cmd = []
     cmd.extend(['tail', '-n', '20'])
@@ -86,13 +87,14 @@ def showtail(filename):
     print()
 
 
-def linkFuzzer(target_fn, prologue):
+def linkFuzzer(target_fn, prologue):  # pylint: disable=invalid-name,missing-docstring
     source_base = p0
     file_list_fn = sps.normExpUserPath(os.path.join(p0, "files_to_link.txt"))
     linkJS.linkJS(target_fn, file_list_fn, source_base, prologue)
 
 
-def makeRegressionTestPrologue(repo):
+def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-docstring,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
     repo = sps.normExpUserPath(repo) + os.sep
 
@@ -105,28 +107,32 @@ const regressionTestList = %s;
        json.dumps(inTreeRegressionTests(repo)))
 
 
-def inTreeRegressionTests(repo):
-    jitTests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
-    jsTests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'tests'))
-    return jitTests + jsTests
+def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
+    jit_tests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
+    js_tests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'tests'))
+    return jit_tests + js_tests
 
 
-def jsFilesIn(repoPathLength, root):
+def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     return [os.path.join(path, filename)[repoPathLength:]
             for path, _dirs, files in os.walk(sps.normExpUserPath(root))
             for filename in files
             if filename.endswith('.js')]
 
 
-def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=too-complex
+def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=invalid-name,missing-docstring,too-complex
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     options = parseOpts(args)
-    engineFlags = options.engineFlags  # engineFlags is overwritten later if --random-flags is set.
-    startTime = time.time()
+    # engineFlags is overwritten later if --random-flags is set.
+    engineFlags = options.engineFlags  # pylint: disable=invalid-name
+    startTime = time.time()  # pylint: disable=invalid-name
 
     if os.path.isdir(sps.normExpUserPath(options.repo)):
-        regressionTestPrologue = makeRegressionTestPrologue(options.repo)
+        regressionTestPrologue = makeRegressionTestPrologue(options.repo)  # pylint: disable=invalid-name
     else:
-        regressionTestPrologue = ""
+        regressionTestPrologue = ""  # pylint: disable=invalid-name
 
     fuzzjs = sps.normExpUserPath(os.path.join(wtmpDir, "jsfunfuzz.js"))
     linkFuzzer(fuzzjs, regressionTestPrologue)
@@ -148,16 +154,18 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
         js_interesting_args.append(options.knownPath)
         js_interesting_args.append(options.jsEngine)
         if options.randomFlags:
-            engineFlags = shellFlags.randomFlagSet(options.jsEngine)
+            engineFlags = shellFlags.randomFlagSet(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
+        # pylint: disable=old-division
         js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
         js_interesting_args.extend(['-f', fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
-        logPrefix = sps.normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))
+        logPrefix = sps.normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))  # pylint: disable=invalid-name
 
         res = js_interesting.ShellResult(js_interesting_options,
+                                         # pylint: disable=no-member
                                          js_interesting_options.jsengineWithArgs, logPrefix, False)
 
         if res.lev != js_interesting.JS_FINE:
@@ -165,11 +173,11 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
             showtail(logPrefix + "-err.txt")
 
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
-            filenameToReduce = logPrefix + "-reduced.js"
+            filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
             [before, after] = fileManipulation.fuzzSplice(fuzzjs)
 
             with open(logPrefix + '-out.txt', 'rb') as f:
-                newfileLines = before + [
+                newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace('/*FRC-', '/*') for l in fileManipulation.linesStartingWith(f, "/*FRC-")] + after
             fileManipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
             fileManipulation.writeLinesToFile(newfileLines, filenameToReduce)
@@ -181,13 +189,15 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(
+            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(  # pylint: disable=invalid-name
                 itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
                 options.build_options_str, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:
+                # pylint: disable=no-member
                 fargs = js_interesting_options.jsengineWithArgs[:-1] + [filenameToReduce]
+                # pylint: disable=invalid-name
                 retestResult = js_interesting.ShellResult(js_interesting_options, fargs, logPrefix + "-final", False)
                 if retestResult.lev > js_interesting.JS_FINE:
                     res = retestResult
@@ -207,12 +217,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
             print("Submitted %s" % filenameToReduce)
 
         else:
-            flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
+            are_flags_deterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
+            # pylint: disable=no-member
             if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
-                    js_interesting_options.shellIsDeterministic and flagsAreDeterministic:
-                linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")
+                    js_interesting_options.shellIsDeterministic and are_flags_deterministic:
+                linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")  # pylint: disable=invalid-name
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
+                # pylint: disable=invalid-name
                 anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
                                                  logPrefix + "-cj", options.repo,
                                                  options.build_options_str, targetTime, js_interesting_options)
@@ -222,7 +234,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
             js_interesting.deleteLogs(logPrefix)
 
 
-def jitCompareLines(jsfunfuzzOutputFilename, marker):
+def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Create a compare_jit file, using the lines marked by jsfunfuzz as valid for comparison."""
     lines = [
         "backtrace = function() { };\n",
@@ -243,8 +256,8 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]
-                divisionIsInconsistent = sps.isWin  # Really 'if MSVC' -- revisit if we add clang builds on Windows
-                if divisionIsInconsistent and mightUseDivision(sline):
+                is_division_consistent = sps.isWin  # Really 'if MSVC' -- revisit if we add clang builds on Windows
+                if is_division_consistent and mightUseDivision(sline):
                     pass
                 elif "newGlobal" in sline and "wasmIsSupported" in sline:
                     # We only override wasmIsSupported above for the main global.
@@ -260,7 +273,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):
     return lines
 
 
-def mightUseDivision(code):
+def mightUseDivision(code):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     # Work around MSVC division inconsistencies (bug 948321)
     # by leaving division out of *-cj-in.js files on Windows.
     # (Unfortunately, this will also match regexps and a bunch
@@ -290,4 +303,6 @@ assert mightUseDivision("eval('//x'); a / b;")
 
 
 if __name__ == "__main__":
+    # FIXME: Replace os.getcwdu() prior to moving to Python 3  # pylint: disable=fixme
+    # pylint: disable=no-member
     many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], createCollector.createCollector("jsfunfuzz"))
