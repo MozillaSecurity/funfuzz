@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=cell-var-from-loop,fixme,global-statement,missing-docstring
-# pylint: disable=missing-return-doc,missing-return-type-doc,no-member,too-many-arguments
-# pylint: disable=too-many-branches,too-many-locals
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Test comparing the output of SpiderMonkey using various flags (usually JIT-related).
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -29,14 +29,14 @@ gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
 
-def lastLine(err):  # pylint: disable=invalid-name
+def lastLine(err):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     lines = err.split("\n")
     if len(lines) >= 2:
         return lines[-2]
     return ""
 
 
-def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name
+def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     lines = []
     for line in e:
         if line.endswith("malloc: enabling scribbling to detect mods to free blocks"):
@@ -53,8 +53,10 @@ def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name
 
 # For use by loopjsfunfuzz.py
 # Returns True if any kind of bug is found
-def compare_jit(jsEngine,  # pylint: disable=invalid-name
-                flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
+def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
+    # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    # pylint: disable=too-many-arguments,too-many-locals
+
     # pylint: disable=invalid-name
     cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)
     lev = cl[0]
@@ -85,8 +87,10 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name
     return False
 
 
-def compareLevel(jsEngine,  # pylint: disable=invalid-name,too-complex
-                 flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
+def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
+    # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc,too-complex
+    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
+
     # options dict must be one we can pass to jsInteresting.ShellResult
     # we also use it directly for knownPath, timeout, and collector
     # Return: (lev, crashInfo) or (jsInteresting.JS_FINE, None)
@@ -149,15 +153,20 @@ def compareLevel(jsEngine,  # pylint: disable=invalid-name,too-complex
         else:
             # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
-            def fpuOptionDisabledAsmOnOneSide(fpuAsmMsg):  # pylint: disable=invalid-name
-                fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err  # pylint: disable=invalid-name
+            def fpuOptionDisabledAsmOnOneSide(fpuAsmMsg):  # pylint: disable=invalid-name,missing-docstring
+                # pylint: disable=missing-return-doc,missing-return-type-doc
                 # pylint: disable=invalid-name
+                fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err  # pylint: disable=cell-var-from-loop
+                # pylint: disable=invalid-name
+                # pylint: disable=cell-var-from-loop
                 fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
                 return fpuOptionDisabledAsm and fpuOptionDiffers
 
-            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name
+            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+                # pylint: disable=missing-return-type-doc
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"  # pylint: disable=invalid-name
                 # pylint: disable=invalid-name
+                # pylint: disable=cell-var-from-loop
                 optionDisabledAsm = anyLineContains(r0.err, asmMsg) or anyLineContains(r.err, asmMsg)
                 # pylint: disable=invalid-name
                 optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
@@ -204,7 +213,8 @@ def compareLevel(jsEngine,  # pylint: disable=invalid-name,too-complex
     return (jsInteresting.JS_FINE, None)
 
 
-def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):  # pylint: disable=invalid-name
+# pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
     issues = []
     summary = ""
     if mismatchErr:
@@ -230,7 +240,8 @@ def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing
     return s
 
 
-def anyLineContains(lines, needle):  # pylint: disable=invalid-name
+# pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+def anyLineContains(lines, needle):
     for line in lines:
         if needle in line:
             return True
@@ -273,11 +284,11 @@ def parseOptions(args):  # pylint: disable=invalid-name
 
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
 def init(args):
-    global gOptions  # pylint: disable=invalid-name
+    global gOptions  # pylint: disable=invalid-name,global-statement
     gOptions = parseOptions(args)
 
 
-# FIXME: _args is unused here, we should check if it can be removed?
+# FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
 def interesting(_args, tempPrefix):  # pylint: disable=invalid-name
     actualLevel = compareLevel(  # pylint: disable=invalid-name
         gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
@@ -288,7 +299,7 @@ def main():
     import tempfile
     options = parseOptions(sys.argv[1:])
     print(compareLevel(
-        options.jsengine, options.flags, options.infilename,
+        options.jsengine, options.flags, options.infilename,  # pylint: disable=no-member
         tempfile.mkdtemp("compare_jitmain"), options, True, False)[0])
 
 
