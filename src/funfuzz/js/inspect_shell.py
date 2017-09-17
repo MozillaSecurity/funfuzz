@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -68,10 +69,11 @@ if sps.isWin:
         ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
 
 
-def archOfBinary(binary):
+def archOfBinary(binary):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
-    unsplitFiletype = sps.captureStdout(['file', binary])[0]
-    filetype = unsplitFiletype.split(':', 1)[1]
+    unsplit_file_type = sps.captureStdout(['file', binary])[0]
+    filetype = unsplit_file_type.split(':', 1)[1]
     if sps.isWin:
         assert 'MS Windows' in filetype
         return '32' if 'Intel 80386 32-bit' in filetype else '64'
@@ -86,79 +88,85 @@ def archOfBinary(binary):
             return '64'
 
 
-def constructVgCmdList(errorCode=77):
+def constructVgCmdList(errorCode=77):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Construct default parameters needed to run valgrind with."""
-    vgCmdList = []
-    vgCmdList.append('valgrind')
+    valgrind_cmds = []
+    valgrind_cmds.append('valgrind')
     if sps.isMac:
-        vgCmdList.append('--dsymutil=yes')
-    vgCmdList.append('--error-exitcode=' + str(errorCode))
+        valgrind_cmds.append('--dsymutil=yes')
+    valgrind_cmds.append('--error-exitcode=' + str(errorCode))
     if not sps.isARMv7l:  # jseward mentioned that ARM does not need --smc-check=<something>
-        vgCmdList.append('--smc-check=all-non-file')
+        valgrind_cmds.append('--smc-check=all-non-file')
     # See bug 913876 comment 18:
-    vgCmdList.append('--vex-iropt-register-updates=allregs-at-mem-access')
-    vgCmdList.append('--gen-suppressions=all')
-    vgCmdList.append('--leak-check=full')
-    vgCmdList.append('--errors-for-leak-kinds=definite')
-    vgCmdList.append('--show-leak-kinds=definite')
-    vgCmdList.append('--show-possibly-lost=no')
-    vgCmdList.append('--num-callers=50')
-    return vgCmdList
+    valgrind_cmds.append('--vex-iropt-register-updates=allregs-at-mem-access')
+    valgrind_cmds.append('--gen-suppressions=all')
+    valgrind_cmds.append('--leak-check=full')
+    valgrind_cmds.append('--errors-for-leak-kinds=definite')
+    valgrind_cmds.append('--show-leak-kinds=definite')
+    valgrind_cmds.append('--show-possibly-lost=no')
+    valgrind_cmds.append('--num-callers=50')
+    return valgrind_cmds
 
 
-def shellSupports(shellPath, args):
+def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Return True if the shell likes the args.
 
     You can add support for a function, e.g. ['-e', 'foo()'], or a flag, e.g. ['-j', '-e', '42'].
     """
-    retCode = testBinary(shellPath, args, False)[1]
-    if retCode == 0:
+    return_code = testBinary(shellPath, args, False)[1]
+    if return_code == 0:
         return True
-    elif 1 <= retCode <= 3:
+    elif 1 <= return_code <= 3:
         # Exit codes 1 through 3 are all plausible "non-support":
         #   * "Usage error" is 1 in new js shell, 2 in old js shell, 2 in xpcshell.
         #   * "Script threw an error" is 3 in most shells, but 1 in some versions (see bug 751425).
         # Since we want autoBisect to support all shell versions, allow all these exit codes.
         return False
     else:
-        raise Exception('Unexpected exit code in shellSupports ' + str(retCode))
+        raise Exception('Unexpected exit code in shellSupports ' + str(return_code))
 
 
-def testBinary(shellPath, args, useValgrind):
+def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
-    testCmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
-    sps.vdump('The testing command is: ' + sps.shellify(testCmd))
-    out, rCode = sps.captureStdout(testCmd, combineStderr=True, ignoreStderr=True,
-                                   ignoreExitCode=True, env=env_with_path(
-                                       os.path.dirname(os.path.abspath(shellPath))))
-    sps.vdump('The exit code is: ' + str(rCode))
-    return out, rCode
+    test_cmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
+    sps.vdump('The testing command is: ' + sps.shellify(test_cmd))
+    out, return_code = sps.captureStdout(test_cmd, combineStderr=True, ignoreStderr=True,
+                                         ignoreExitCode=True, env=env_with_path(
+                                             os.path.dirname(os.path.abspath(shellPath))))
+    sps.vdump('The exit code is: ' + str(return_code))
+    return out, return_code
 
 
-def testJsShellOrXpcshell(s):
+def testJsShellOrXpcshell(s):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is a js shell or xpcshell."""
     return 'xpcshell' if shellSupports(s, ['-e', 'Components']) else 'jsShell'
 
 
-def queryBuildConfiguration(s, parameter):
+def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'],
                      False)[0]
     return ans.find('true') != -1
 
 
-def testIsHardFpShellARM(s):
+def testIsHardFpShellARM(s):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if the ARM shell is compiled with hardfp support."""
-    readelfBin = '/usr/bin/readelf'
-    if os.path.exists(readelfBin):
-        newEnv = env_with_path(os.path.dirname(os.path.abspath(s)))
-        readelfOutput = sps.captureStdout([readelfBin, '-A', s], env=newEnv)[0]
-        return 'Tag_ABI_VFP_args: VFP registers' in readelfOutput
+    readelf_bin_path = '/usr/bin/readelf'
+    if os.path.exists(readelf_bin_path):
+        new_env = env_with_path(os.path.dirname(os.path.abspath(s)))
+        readelf_output = sps.captureStdout([readelf_bin_path, '-A', s], env=new_env)[0]
+        return 'Tag_ABI_VFP_args: VFP registers' in readelf_output
     else:
         raise Exception('readelf is not found.')
 
 
-def verifyBinary(sh):
+def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Verify that the binary is compiled as intended."""
     binary = sh.getShellCacheFullPath()
 
