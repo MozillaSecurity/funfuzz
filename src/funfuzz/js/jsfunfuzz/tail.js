@@ -19,7 +19,7 @@ start(this);
 // SPLICE DDEND
 
 if (jsshell)
-  print("It's looking good!"); // Magic string that jsInteresting.py looks for
+  print("It's looking good!"); // Magic string that js_interesting.py looks for
 
 
 // 3. Run it.

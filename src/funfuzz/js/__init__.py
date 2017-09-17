@@ -13,7 +13,7 @@ from . import build_options
 from . import compare_jit
 from . import compile_shell
 from . import inspect_shell
-from . import jsInteresting
+from . import js_interesting
 from . import loopjsfunfuzz
 from . import pinpoint
 from . import shellFlags

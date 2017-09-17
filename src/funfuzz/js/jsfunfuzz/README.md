@@ -20,7 +20,7 @@ To test an existing SpiderMonkey shell called `./js`, run:
 * `20` tells it to kill any instance that runs for more than 20 seconds
 * `mozilla-central` or any other string is no longer used, and this argument will be removed in the future.
 
-If loopjsfunfuzz detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [jsInteresting.py](../jsInteresting.py) or [compare_jit.py](../compare_jit.py) as the "interestingness test".
+If loopjsfunfuzz detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [js_interesting.py](../js_interesting.py) or [compare_jit.py](../compare_jit.py) as the "interestingness test".
 
 Using [bot.py](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loopjsfunfuzz.py for parallelism.
 

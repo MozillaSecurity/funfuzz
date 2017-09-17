@@ -330,7 +330,7 @@ function regressionTestIsEvil(contents)
     return true;
   }
   if (contents.indexOf("print = ") != -1) {
-    // A testcase that clobbers the |print| function would confuse jsInteresting.py
+    // A testcase that clobbers the |print| function would confuse js_interesting.py
     return true;
   }
   return false;

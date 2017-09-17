@@ -6,7 +6,7 @@
 function confused(s)
 {
   if (jsshell) {
-    // Magic string that jsInteresting.py looks for
+    // Magic string that js_interesting.py looks for
     print("jsfunfuzz broke its own scripting environment: " + s);
     quit();
   }
@@ -14,7 +14,7 @@ function confused(s)
 
 function foundABug(summary, details)
 {
-  // Magic pair of strings that jsInteresting.py looks for
+  // Magic pair of strings that js_interesting.py looks for
   // Break up the following string so internal js functions do not print it deliberately
   printImportant("Found" + " a bug: " + summary);
   if (details) {

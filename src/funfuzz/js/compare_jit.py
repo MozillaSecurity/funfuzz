@@ -18,7 +18,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
 
-from . import jsInteresting
+from . import js_interesting
 from . import pinpoint
 from . import shellFlags
 from ..util import createCollector
@@ -61,7 +61,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
     cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)
     lev = cl[0]
 
-    if lev != jsInteresting.JS_FINE:
+    if lev != js_interesting.JS_FINE:
         itest = [__file__, "--flags=" + ' '.join(flags),
                  "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(  # pylint: disable=invalid-name
@@ -69,7 +69,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
         if lithResult == lithOps.LITH_FINISHED:
             print("Retesting %s after running Lithium:" % infilename)
             retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
-            if retest_cl[0] != jsInteresting.JS_FINE:
+            if retest_cl[0] != js_interesting.JS_FINE:
                 cl = retest_cl
                 quality = 0
             else:
@@ -91,9 +91,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc,too-complex
     # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
 
-    # options dict must be one we can pass to jsInteresting.ShellResult
+    # options dict must be one we can pass to js_interesting.ShellResult
     # we also use it directly for knownPath, timeout, and collector
-    # Return: (lev, crashInfo) or (jsInteresting.JS_FINE, None)
+    # Return: (lev, crashInfo) or (js_interesting.JS_FINE, None)
 
     combos = shellFlags.basicFlagSets(jsEngine)
 
@@ -109,9 +109,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     for i in range(0, len(commands)):
         prefix = logPrefix + "-r" + str(i)
         command = commands[i]
-        r = jsInteresting.ShellResult(options, command, prefix, True)  # pylint: disable=invalid-name
+        r = js_interesting.ShellResult(options, command, prefix, True)  # pylint: disable=invalid-name
 
-        oom = jsInteresting.oomed(r.err)
+        oom = js_interesting.oomed(r.err)
         r.err = ignoreSomeOfStderr(r.err)
 
         if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, '[[script] scriptArgs*]') or (
@@ -119,34 +119,34 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             print("Got usage error from:")
             print("  %s" % sps.shellify(command))
             assert i
-            jsInteresting.deleteLogs(prefix)
-        elif r.lev > jsInteresting.JS_OVERALL_MISMATCH:
+            js_interesting.deleteLogs(prefix)
+        elif r.lev > js_interesting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
             print("%s | %s" % (infilename,
-                               jsInteresting.summaryString(r.issues + ["compare_jit found a more serious bug"],
-                                                           r.lev,
-                                                           r.runinfo.elapsedtime)))
+                               js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
+                                                            r.lev,
+                                                            r.runinfo.elapsedtime)))
             with open(logPrefix + "-summary.txt", 'wb') as f:
                 f.write('\n'.join(r.issues + [sps.shellify(command), "compare_jit found a more serious bug"]) + '\n')
             print("  %s" % sps.shellify(command))
             return (r.lev, r.crashInfo)
-        elif r.lev != jsInteresting.JS_FINE or r.return_code != 0:
-            print("%s | %s" % (infilename, jsInteresting.summaryString(
+        elif r.lev != js_interesting.JS_FINE or r.return_code != 0:
+            print("%s | %s" % (infilename, js_interesting.summaryString(
                 r.issues + ["compare_jit is not comparing output, because the shell exited strangely"],
                 r.lev, r.runinfo.elapsedtime)))
             print("  %s" % sps.shellify(command))
-            jsInteresting.deleteLogs(prefix)
+            js_interesting.deleteLogs(prefix)
             if not i:
-                return (jsInteresting.JS_FINE, None)
+                return (js_interesting.JS_FINE, None)
         elif oom:
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
             message = "compare_jit is not comparing output: OOM"
-            print("%s | %s" % (infilename, jsInteresting.summaryString(
+            print("%s | %s" % (infilename, js_interesting.summaryString(
                 r.issues + [message], r.lev, r.runinfo.elapsedtime)))
-            jsInteresting.deleteLogs(prefix)
+            js_interesting.deleteLogs(prefix)
             if not i:
-                return (jsInteresting.JS_FINE, None)
+                return (js_interesting.JS_FINE, None)
         elif not i:
             # Stash output from this run (the first one), so for subsequent runs, we can compare against it.
             (r0, prefix0) = (r, prefix)  # pylint: disable=invalid-name
@@ -192,8 +192,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
                 with open(logPrefix + "-summary.txt", 'wb') as f:
                     f.write(rerunCommand + "\n\n" + summary)
-                print("%s | %s" % (infilename, jsInteresting.summaryString(
-                    issues, jsInteresting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))
+                print("%s | %s" % (infilename, js_interesting.summaryString(
+                    issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))
                 if quickMode:
                     print(rerunCommand)
                 if showDetailedDiffs:
@@ -203,14 +203,14 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 pc = ProgramConfiguration.fromBinary(jsEngine)  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)  # pylint: disable=invalid-name
                 crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
-                return (jsInteresting.JS_OVERALL_MISMATCH, crashInfo)
+                return (js_interesting.JS_OVERALL_MISMATCH, crashInfo)
             else:
                 # print "compare_jit: match"
-                jsInteresting.deleteLogs(prefix)
+                js_interesting.deleteLogs(prefix)
 
     # All matched :)
-    jsInteresting.deleteLogs(prefix0)
-    return (jsInteresting.JS_FINE, None)
+    js_interesting.deleteLogs(prefix0)
+    return (js_interesting.JS_FINE, None)
 
 
 # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -254,8 +254,8 @@ def parseOptions(args):  # pylint: disable=invalid-name
     parser.disable_interspersed_args()
     parser.add_option("--minlevel",
                       type="int", dest="minimumInterestingLevel",
-                      default=jsInteresting.JS_OVERALL_MISMATCH,
-                      help="minimum js/jsInteresting.py level for lithium to consider the testcase interesting")
+                      default=js_interesting.JS_OVERALL_MISMATCH,
+                      help="minimum js/js_interesting.py level for lithium to consider the testcase interesting")
     parser.add_option("--timeout",
                       type="int", dest="timeout",
                       default=10,
@@ -274,7 +274,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     if not os.path.exists(options.jsengine):
         raise Exception("js shell does not exist: " + options.jsengine)
 
-    # For jsInteresting:
+    # For js_interesting:
     options.valgrind = False
     options.shellIsDeterministic = True  # We shouldn't be in compare_jit with a non-deterministic build
     options.collector = createCollector.createCollector("jsfunfuzz")

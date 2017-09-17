@@ -18,7 +18,7 @@ import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from . import compare_jit
-from . import jsInteresting
+from . import js_interesting
 from . import pinpoint
 from . import shellFlags
 from ..util import createCollector
@@ -28,7 +28,7 @@ from ..util import linkJS
 from ..util import subprocesses as sps
 
 p0 = os.path.dirname(os.path.abspath(__file__))
-interestingpy = os.path.abspath(os.path.join(p0, 'jsInteresting.py'))
+interestingpy = os.path.abspath(os.path.join(p0, 'js_interesting.py'))
 
 
 def parseOpts(args):
@@ -141,25 +141,26 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
             break
 
         # Construct command needed to loop jsfunfuzz fuzzing.
-        jsInterestingArgs = []
-        jsInterestingArgs.append('--timeout=' + str(options.timeout))
+        js_interesting_args = []
+        js_interesting_args.append('--timeout=' + str(options.timeout))
         if options.valgrind:
-            jsInterestingArgs.append('--valgrind')
-        jsInterestingArgs.append(options.knownPath)
-        jsInterestingArgs.append(options.jsEngine)
+            js_interesting_args.append('--valgrind')
+        js_interesting_args.append(options.knownPath)
+        js_interesting_args.append(options.jsEngine)
         if options.randomFlags:
             engineFlags = shellFlags.randomFlagSet(options.jsEngine)
-            jsInterestingArgs.extend(engineFlags)
-        jsInterestingArgs.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
-        jsInterestingArgs.extend(['-f', fuzzjs])
-        jsInterestingOptions = jsInteresting.parseOptions(jsInterestingArgs)
+            js_interesting_args.extend(engineFlags)
+        js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
+        js_interesting_args.extend(['-f', fuzzjs])
+        js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
         logPrefix = sps.normExpUserPath(os.path.join(wtmpDir, "w" + str(iteration)))
 
-        res = jsInteresting.ShellResult(jsInterestingOptions, jsInterestingOptions.jsengineWithArgs, logPrefix, False)
+        res = js_interesting.ShellResult(js_interesting_options,
+                                         js_interesting_options.jsengineWithArgs, logPrefix, False)
 
-        if res.lev != jsInteresting.JS_FINE:
+        if res.lev != js_interesting.JS_FINE:
             showtail(logPrefix + "-out.txt")
             showtail(logPrefix + "-err.txt")
 
@@ -186,9 +187,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
 
             # Upload with final output
             if lithResult == lithOps.LITH_FINISHED:
-                fargs = jsInterestingOptions.jsengineWithArgs[:-1] + [filenameToReduce]
-                retestResult = jsInteresting.ShellResult(jsInterestingOptions, fargs, logPrefix + "-final", False)
-                if retestResult.lev > jsInteresting.JS_FINE:
+                fargs = js_interesting_options.jsengineWithArgs[:-1] + [filenameToReduce]
+                retestResult = js_interesting.ShellResult(js_interesting_options, fargs, logPrefix + "-final", False)
+                if retestResult.lev > js_interesting.JS_FINE:
                     res = retestResult
                     quality = 0
                 else:
@@ -207,18 +208,18 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=to
 
         else:
             flagsAreDeterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
-            if options.use_compare_jit and res.lev == jsInteresting.JS_FINE and \
-                    jsInterestingOptions.shellIsDeterministic and flagsAreDeterministic:
+            if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
+                    js_interesting_options.shellIsDeterministic and flagsAreDeterministic:
                 linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 fileManipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
                 anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
                                                  logPrefix + "-cj", options.repo,
-                                                 options.build_options_str, targetTime, jsInterestingOptions)
+                                                 options.build_options_str, targetTime, js_interesting_options)
                 if not anyBug:
                     os.remove(jitcomparefilename)
 
-            jsInteresting.deleteLogs(logPrefix)
+            js_interesting.deleteLogs(logPrefix)
 
 
 def jitCompareLines(jsfunfuzzOutputFilename, marker):

@@ -255,7 +255,7 @@ def parseOptions(args):
     parser.add_option("--minlevel",
                       type="int", dest="minimumInterestingLevel",
                       default=JS_FINE + 1,
-                      help="minimum js/jsInteresting.py level for lithium to consider the testcase interesting")
+                      help="minimum js/js_interesting.py level for lithium to consider the testcase interesting")
     parser.add_option("--timeout",
                       type="int", dest="timeout",
                       default=120,
