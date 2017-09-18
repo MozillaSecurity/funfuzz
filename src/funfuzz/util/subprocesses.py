@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=consider-using-enumerate,invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=too-few-public-methods,too-many-arguments,too-many-branches
-# pylint: disable=too-many-statements
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Miscellaneous helper functions.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -22,25 +21,29 @@ import subprocess
 import sys
 import time
 
-verbose = False
+verbose = False  # pylint: disable=invalid-name
 
-isARMv7l = (platform.uname()[4] == 'armv7l')
-isLinux = (platform.system() == 'Linux')
-isMac = (platform.system() == 'Darwin')
-isWin = (platform.system() == 'Windows')
-isWin10 = isWin and (platform.uname()[2] == '10')
-isWin64 = ('PROGRAMFILES(X86)' in os.environ)
+isARMv7l = (platform.uname()[4] == 'armv7l')  # pylint: disable=invalid-name
+isLinux = (platform.system() == 'Linux')  # pylint: disable=invalid-name
+isMac = (platform.system() == 'Darwin')  # pylint: disable=invalid-name
+isWin = (platform.system() == 'Windows')  # pylint: disable=invalid-name
+isWin10 = isWin and (platform.uname()[2] == '10')  # pylint: disable=invalid-name
+isWin64 = ('PROGRAMFILES(X86)' in os.environ)  # pylint: disable=invalid-name
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
-isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=no-member
-isMozBuild64 = False
+isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=invalid-name,no-member
+isMozBuild64 = False  # pylint: disable=invalid-name
 # This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
 # spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
 if os.environ.get('MOZ_MSVCBITS'):
-    isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # For MozillaBuild 2.0.0 onwards
+    # For MozillaBuild 2.0.0 onwards
+    isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # pylint: disable=invalid-name
 elif os.environ.get('MOZ_TOOLS'):
-    isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])  # For MozillaBuild 1.x
+    # For MozillaBuild 1.x
+    # pylint: disable=invalid-name
+    isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
 # else do not set; the script is running stand-alone and the isMozBuild64 variable should not be needed.
 
+# pylint: disable=invalid-name
 noMinidumpMsg = r"""
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
 WARNING: Make sure the following key value exists in this key:
@@ -54,34 +57,35 @@ WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs
 ########################
 
 
-def macVer():
+def macVer():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
     """If system is a Mac, return the mac type."""
     assert platform.system() == 'Darwin'
     return [int(x) for x in platform.mac_ver()[0].split('.')]
 
 
-def getFreeSpace(folder, mulVar):
+def getFreeSpace(folder, mulVar):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return folder/drive free space in bytes if mulVar is 0. Adapted from http://stackoverflow.com/a/2372171 ."""
     assert mulVar >= 0
     if platform.system() == 'Windows':
         free_bytes = ctypes.c_ulonglong(0)
         ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
-        retVal = float(free_bytes.value)
+        return_value = float(free_bytes.value)
     else:
         # os.statvfs is Unix-only
-        retVal = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)  # pylint: disable=no-member
+        return_value = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)  # pylint: disable=no-member
 
-    return retVal // (1024 ** mulVar)
+    return return_value // (1024 ** mulVar)
 
 
 #####################
 #  Shell Functions  #
 #####################
 
-
-def captureStdout(inputCmd,  # pylint: disable=too-complex
-                  ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                  currWorkingDir=None, env='NOTSET', verbosity=False):
+# pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
+# pylint: disable=missing-type-doc,too-complex,too-many-arguments,too-many-branches,too-many-statements
+def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=None,
+                  env='NOTSET', verbosity=False):
     """Capture standard output, return the output as a string, along with the return value."""
     currWorkingDir = currWorkingDir or (
         os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
@@ -159,7 +163,8 @@ def captureStdout(inputCmd,  # pylint: disable=too-complex
     return stdout.rstrip(), p.returncode
 
 
-def createWtmpDir(tmpDirBase):
+def createWtmpDir(tmpDirBase):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Create wtmp<number> directory, incrementing the number if one is already found."""
     i = 1
     while True:
@@ -180,12 +185,13 @@ def disableCorefile():
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
-def getCoreLimit():
+def getCoreLimit():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     import resource  # module only available on POSIX  pylint: disable=import-error
     return resource.getrlimit(resource.RLIMIT_CORE)
 
 
-def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
+def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: disable=invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Find the required crash log in the given crash reporter directory."""
     assert platform.system() == 'Darwin' and macVer() >= [10, 6]
     reportDirList = [os.path.expanduser('~'), '/']
@@ -232,7 +238,8 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     return None
 
 
-def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: disable=too-complex
+def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: disable=invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-complex,too-many-branches
     """Return the crash log if found."""
     progname = os.path.basename(progfullname)
 
@@ -305,7 +312,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
               "You can increase it with 'ulimit -c' in bash." % getCoreLimit()[0])
 
 
-def constructCdbCommand(progfullname, crashedPID):
+def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
     # On Windows Vista and above, look for a minidump.
     dumpFilename = normExpUserPath(os.path.join(
@@ -346,7 +354,8 @@ def constructCdbCommand(progfullname, crashedPID):
         return None
 
 
-def isWinDumpingToDefaultLocation():  # pylint: disable=too-complex
+def isWinDumpingToDefaultLocation():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
+    # pylint: disable=too-complex,too-many-branches
     """Check whether Windows minidumps are enabled and set to go to Windows' default location."""
     if sys.version_info.major == 2:
         import _winreg as winreg  # pylint: disable=import-error
@@ -403,80 +412,84 @@ def isWinDumpingToDefaultLocation():  # pylint: disable=too-complex
             raise
 
 
-def constructGdbCommand(progfullname, crashedPID):
+def constructGdbCommand(progfullname, crashedPID):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Construct a command that uses the POSIX debugger (gdb) to turn a minidump file into a stack trace."""
     # On Mac and Linux, look for a core file.
-    coreFilename = None
+    core_name = None
     if isMac:
         # Core files will be generated if you do:
         #   mkdir -p /cores/
         #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
-        coreFilename = "/cores/core." + str(crashedPID)
+        core_name = "/cores/core." + str(crashedPID)
     elif isLinux:
-        isPidUsed = False
+        is_pid_used = False
         if os.path.exists('/proc/sys/kernel/core_uses_pid'):
             with open('/proc/sys/kernel/core_uses_pid') as f:
-                isPidUsed = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
-        coreFilename = 'core.' + str(crashedPID) if isPidUsed else 'core'  # relative path
-        if not os.path.isfile(coreFilename):
-            coreFilename = normExpUserPath(os.path.join('~', coreFilename))  # try the home dir
+                is_pid_used = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
+        core_name = 'core.' + str(crashedPID) if is_pid_used else 'core'  # relative path
+        if not os.path.isfile(core_name):
+            core_name = normExpUserPath(os.path.join('~', core_name))  # try the home dir
 
-    if coreFilename and os.path.exists(coreFilename):
-        debuggerCmdPath = getAbsPathForAdjacentFile('gdb_cmds.txt')
+    if core_name and os.path.exists(core_name):
+        debuggerCmdPath = getAbsPathForAdjacentFile('gdb_cmds.txt')  # pylint: disable=invalid-name
         assert os.path.exists(debuggerCmdPath)
 
         # Run gdb and move the core file. Tip: gdb gives more info for:
         # (debug with intact build dir > debug > opt with frame pointers > opt)
-        return ["gdb", "-n", "-batch", "-x", debuggerCmdPath, progfullname, coreFilename]
+        return ["gdb", "-n", "-batch", "-x", debuggerCmdPath, progfullname, core_name]
     return None
 
 
-def getAbsPathForAdjacentFile(filename):
+def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Get the absolute path of a particular file, given its base directory and filename."""
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def isProgramInstalled(program):
+def isProgramInstalled(program):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Check if the specified program is installed."""
-    whichExit = captureStdout(['which', program], ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1]
-    return whichExit == 0
+    which_exit = captureStdout(['which', program], ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1]
+    return which_exit == 0
 
 
-def rmDirIfEmpty(eDir):
+def rmDirIfEmpty(eDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Remove directory if empty."""
     assert os.path.isdir(eDir)
     if not os.listdir(eDir):
         os.rmdir(eDir)
 
 
-def rmTreeIfExists(dirTree):
+def rmTreeIfExists(dirTree):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Remove a directory with all sub-directories and files if the directory exists."""
     if os.path.isdir(dirTree):
         rmTreeIncludingReadOnly(dirTree)
     assert not os.path.isdir(dirTree)
 
 
-def rmTreeIncludingReadOnly(dirTree):
+def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-docstring
     shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
 
-def test_rmTreeIncludingReadOnly():
+def test_rmTreeIncludingReadOnly():  # pylint: disable=invalid-name
     """Run this function in the same directory as subprocesses.py to test."""
-    testDir = 'test_rmTreeIncludingReadOnly'
-    os.mkdir(testDir)
-    readOnlyDir = os.path.join(testDir, 'nestedReadOnlyDir')
-    os.mkdir(readOnlyDir)
-    filename = os.path.join(readOnlyDir, 'test.txt')
+    test_dir = 'test_rmTreeIncludingReadOnly'
+    os.mkdir(test_dir)
+    read_only_dir = os.path.join(test_dir, 'nestedReadOnlyDir')
+    os.mkdir(read_only_dir)
+    filename = os.path.join(read_only_dir, 'test.txt')
     with open(filename, 'wb') as f:
         f.write('testing\n')
 
     os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-    os.chmod(readOnlyDir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    os.chmod(read_only_dir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
-    rmTreeIncludingReadOnly(testDir)  # Should pass here
+    rmTreeIncludingReadOnly(test_dir)  # Should pass here
 
 
-def handleRemoveReadOnly(func, path, exc):
+def handleRemoveReadOnly(func, path, exc):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc
+    # pylint: disable=missing-type-doc
     """Handle read-only files. Adapted from http://stackoverflow.com/q/1213706 ."""
     if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
         if os.name == 'posix':
@@ -491,16 +504,16 @@ def handleRemoveReadOnly(func, path, exc):
         raise OSError("Unable to handle read-only files.")
 
 
-def normExpUserPath(p):
+def normExpUserPath(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     return os.path.normpath(os.path.expanduser(p))
 
 
-def shellify(cmd):
+def shellify(cmd):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Try to convert an arguments array to an equivalent string that can be pasted into a shell."""
-    okUnquotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")
-    okQuotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")
+    okUnquotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\+]*$""")  # pylint: disable=invalid-name
+    okQuotedRE = re.compile(r"""^[a-zA-Z0-9\-\_\.\,\/\=\~@\{\}\|\(\)\+ ]*$""")  # pylint: disable=invalid-name
     ssc = []
-    for i in range(len(cmd)):
+    for i in range(len(cmd)):  # pylint: disable=consider-using-enumerate
         item = cmd[i]
         if okUnquotedRE.match(item):
             ssc.append(item)
@@ -514,6 +527,8 @@ def shellify(cmd):
 
 def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
                    cwd=None, env=None, vb=False):
+    # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc,too-many-arguments
     """Calculate how long a captureStdout command takes and prints it.
 
     Return the stdout and return value that captureStdout passes on.
@@ -532,27 +547,28 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     return stdOutput, retVal
 
 
-class Unbuffered(object):
+class Unbuffered(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
     """From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u."""
 
     def __init__(self, stream):
         self.stream = stream
 
-    def write(self, data):
+    def write(self, data):  # pylint: disable=missing-docstring
         self.stream.write(data)
         self.stream.flush()
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr):  # pylint: disable=missing-return-doc,missing-return-type-doc
         return getattr(self.stream, attr)
 
 
-def vdump(inp):
+def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word 'DEBUG' to any verbose output."""
     if verbose:
         print("DEBUG - %s" % inp)
 
 
-def verCheck(prog):
+def verCheck(prog):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
+    # pylint: disable=missing-type-doc
     """Runs the program with --version and returns the result."""
     return subprocess.check_output([prog, '--version'])
 
