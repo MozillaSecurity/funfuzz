@@ -23,7 +23,7 @@ from . import pinpoint
 from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
-from ..util import lithOps
+from ..util import lithium_helpers
 from ..util import link_js
 from ..util import subprocesses as sps
 
@@ -194,7 +194,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                 options.build_options_str, targetTime, res.lev)
 
             # Upload with final output
-            if lithResult == lithOps.LITH_FINISHED:
+            if lithResult == lithium_helpers.LITH_FINISHED:
                 # pylint: disable=no-member
                 fargs = js_interesting_options.jsengineWithArgs[:-1] + [filenameToReduce]
                 # pylint: disable=invalid-name
@@ -207,7 +207,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             else:
                 quality = 10
 
-            # ddsize = lithOps.ddsize(filenameToReduce)
+            # ddsize = lithium_helpers.ddsize(filenameToReduce)
             print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, time.asctime()))
 
             metadata = {}

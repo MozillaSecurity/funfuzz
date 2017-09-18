@@ -22,7 +22,7 @@ from . import js_interesting
 from . import pinpoint
 from . import shell_flags
 from ..util import create_collector
-from ..util import lithOps
+from ..util import lithium_helpers
 from ..util import subprocesses as sps
 
 gOptions = ""  # pylint: disable=invalid-name
@@ -66,7 +66,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
                  "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
-        if lithResult == lithOps.LITH_FINISHED:
+        if lithResult == lithium_helpers.LITH_FINISHED:
             print("Retesting %s after running Lithium:" % infilename)
             retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
             if retest_cl[0] != js_interesting.JS_FINE:

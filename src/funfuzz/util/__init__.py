@@ -18,7 +18,7 @@ from . import find_ignore_lists
 from . import fork_join
 from . import hg_helpers
 from . import link_js
-from . import lithOps
+from . import lithium_helpers
 from . import LockDir
 from . import reposUpdate
 from . import s3cache

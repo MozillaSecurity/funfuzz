@@ -22,7 +22,7 @@ from lithium.interestingness.utils import file_contains_str
 from .js_interesting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from .inspect_shell import testJsShellOrXpcshell
 from ..util import file_manipulation
-from ..util.lithOps import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
+from ..util.lithium_helpers import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 from ..util import subprocesses as sps
 
 p0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
