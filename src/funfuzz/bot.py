@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=broad-except,fixme,invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-# pylint: disable=too-few-public-methods,too-many-arguments
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes
+"""bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes.
+
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -32,23 +31,23 @@ from .util import fork_join
 from .util import create_collector
 from .util.LockDir import LockDir
 
-path0 = os.path.dirname(os.path.abspath(__file__))
-path3 = os.path.abspath(os.path.join(path0, 'js'))
+path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
+path3 = os.path.abspath(os.path.join(path0, 'js'))  # pylint: disable=invalid-name
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop.py for tradeoffs
 
 
-class BuildInfo(object):
+class BuildInfo(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
     """Store information related to the build, such as its directory, source and type."""
 
-    def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):
-        self.buildDir = bDir
-        self.buildType = bType
-        self.buildSrc = bSrc
-        self.buildRev = bRev
-        self.mtrArgs = manyTimedRunArgs
+    def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):  # pylint: disable=too-many-arguments
+        self.buildDir = bDir  # pylint: disable=invalid-name
+        self.buildType = bType  # pylint: disable=invalid-name
+        self.buildSrc = bSrc  # pylint: disable=invalid-name
+        self.buildRev = bRev  # pylint: disable=invalid-name
+        self.mtrArgs = manyTimedRunArgs  # pylint: disable=invalid-name
 
 
-def parseOpts():
+def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
     parser.set_defaults(
         repoName='mozilla-central',
@@ -105,7 +104,7 @@ def parseOpts():
     return options
 
 
-def main():
+def main():  # pylint: disable=missing-docstring
     printMachineInfo()
 
     options = parseOpts()
@@ -116,26 +115,26 @@ def main():
     options.tempDir = tempfile.mkdtemp("fuzzbot")
     print(options.tempDir)
 
-    buildInfo = ensureBuild(options)
-    assert os.path.isdir(buildInfo.buildDir)
+    build_info = ensureBuild(options)
+    assert os.path.isdir(build_info.buildDir)
 
-    numProcesses = multiprocessing.cpu_count()
-    if "-asan" in buildInfo.buildDir:
+    number_of_processes = multiprocessing.cpu_count()
+    if "-asan" in build_info.buildDir:
         # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
         # I could guess 1 GB RAM per core, but that wanders into sketchyville.
-        numProcesses = max(numProcesses // 2, 1)
+        number_of_processes = max(number_of_processes // 2, 1)
     if sps.isARMv7l:
         # Even though ARM boards generally now have many cores, each core is not as powerful
         # as x86/64 ones, so restrict fuzzing to only 1 core for now.
-        numProcesses = 1
+        number_of_processes = 1
 
-    fork_join.forkJoin(options.tempDir, numProcesses, loopFuzzingAndReduction, options, buildInfo, collector)
+    fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info, collector)
 
     shutil.rmtree(options.tempDir)
 
 
-def printMachineInfo():
-    # Log information about the machine.
+def printMachineInfo():  # pylint: disable=invalid-name
+    """Log information about the machine."""
     print("Platform details: %s" % " ".join(platform.uname()))
     print("hg version: %s" % sps.captureStdout(['hg', '-q', 'version'])[0])
 
@@ -143,22 +142,22 @@ def printMachineInfo():
     try:
         print("gdb version: %s" % sps.captureStdout(['gdb', '--version'], combineStderr=True,
                                                     ignoreStderr=True, ignoreExitCode=True)[0])
-    except (KeyboardInterrupt, Exception) as e:
-        print("Error involving gdb is: %r" % (e,))
+    except (KeyboardInterrupt, Exception) as ex:  # pylint: disable=broad-except
+        print("Error involving gdb is: %r" % (ex,))
 
-    # FIXME: Should have if os.path.exists(path to git) or something
+    # FIXME: Should have if os.path.exists(path to git) or something  # pylint: disable=fixme
     # print("git version: %s" % sps.captureStdout(['git', '--version'], combineStderr=True,
     #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
     print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))
 
-    hgrcLocation = os.path.join(path0, '.hg', 'hgrc')
-    if os.path.isfile(hgrcLocation):
+    hgrc_path = os.path.join(path0, '.hg', 'hgrc')
+    if os.path.isfile(hgrc_path):
         print("The hgrc of this repository is:")
-        with open(hgrcLocation, 'rb') as f:
-            hgrcContentList = f.readlines()
-        for line in hgrcContentList:
+        with open(hgrc_path, 'rb') as f:
+            hgrc_contents = f.readlines()
+        for line in hgrc_contents:
             print(line.rstrip())
 
     if os.name == 'posix':
@@ -167,7 +166,7 @@ def printMachineInfo():
         print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
 
 
-def refreshSignatures(collector):
+def refreshSignatures(collector):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Refresh signatures, copying from FuzzManager server to local sigcache."""
     # Btw, you should make sure the server generates the file using
     #     python manage.py export_signatures files/signatures.zip
@@ -180,14 +179,14 @@ def refreshSignatures(collector):
         collector.refresh()
 
 
-def ensureBuild(options):
+def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     if options.existingBuildDir:
         # Pre-downloaded treeherder builds (browser only for now)
-        bDir = options.existingBuildDir
-        bType = 'local-build'
-        bSrc = bDir
-        bRev = ''
-        manyTimedRunArgs = []
+        bDir = options.existingBuildDir  # pylint: disable=invalid-name
+        bType = 'local-build'  # pylint: disable=invalid-name
+        bSrc = bDir  # pylint: disable=invalid-name
+        bRev = ''  # pylint: disable=invalid-name
+        manyTimedRunArgs = []  # pylint: disable=invalid-name
     elif not options.useTreeherderBuilds:
         if options.testType == "js":
             # Compiled js shells
@@ -195,17 +194,17 @@ def ensureBuild(options):
             options.timeout = options.timeout or machineTimeoutDefaults(options)
 
             with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
-                bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]
+                bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
                 cshell = compile_shell.CompiledShell(options.build_options, bRev)
-                updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')
+                updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')  # pylint: disable=invalid-name
                 compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
-                bDir = cshell.getShellCacheDir()
+                bDir = cshell.getShellCacheDir()  # pylint: disable=invalid-name
                 # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
                 #   js-js-dbg-opt-64-dm-linux
                 # This is because options.testType gets prepended along with a dash later.
-                bType = build_options.computeShellType(options.build_options)[3:]
-                bSrc = (
+                bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
+                bSrc = (  # pylint: disable=invalid-name
                     "Create another shell in shell-cache like this one:\n"
                     'python -u %s -b "%s -R %s" -r %s\n\n'
                     "==============================================\n"
@@ -220,39 +219,43 @@ def ensureBuild(options):
                         time.asctime()
                     ))
 
-                manyTimedRunArgs = mtrArgsCreation(options, cshell)
+                manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name
                 print("buildDir is: %s" % bDir)
                 print("buildSrc is: %s" % bSrc)
         else:
-            # FIXME: We can probably remove the testType option
+            # FIXME: We can probably remove the testType option  # pylint: disable=fixme
             raise Exception('Only testType "js" is supported.')
     else:
         # Treeherder js shells and browser
         # Download from Treeherder and call it 'build'
+        # pylint: disable=fixme
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
         # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
-        bDir = 'build'
-        bType = download_build.defaultBuildType(options.repoName, None, True)
-        isJS = options.testType == 'js'
+        bDir = 'build'  # pylint: disable=invalid-name
+        bType = download_build.defaultBuildType(options.repoName, None, True)  # pylint: disable=invalid-name
+        isJS = options.testType == 'js'  # pylint: disable=invalid-name
+        # pylint: disable=invalid-name
         bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=isJS, wantTests=not isJS)
-        bRev = ''
+        bRev = ''  # pylint: disable=invalid-name
 
         # These two lines are only used for treeherder js shells:
         shell = os.path.join(bDir, "dist", "js.exe" if sps.isWin else "js")
+        # pylint: disable=invalid-name
         manyTimedRunArgs = ["--random-flags", str(JS_SHELL_DEFAULT_TIMEOUT), "mozilla-central", shell]
 
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)
 
 
-def loopFuzzingAndReduction(options, buildInfo, collector, i):
-    tempDir = tempfile.mkdtemp("loop" + str(i))
+def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
+    tempDir = tempfile.mkdtemp("loop" + str(i))  # pylint: disable=invalid-name
     if options.testType == 'js':
         loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
     else:
         raise Exception('Only js engine fuzzing is supported')
 
 
-def machineTimeoutDefaults(options):
+def machineTimeoutDefaults(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Set different defaults depending on the machine type or debugger used."""
     if options.build_options.runWithVg:
         return 300
@@ -261,9 +264,10 @@ def machineTimeoutDefaults(options):
     return JS_SHELL_DEFAULT_TIMEOUT
 
 
-def mtrArgsCreation(options, cshell):
+def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Create many_timed_run arguments for compiled builds."""
-    manyTimedRunArgs = []
+    manyTimedRunArgs = []  # pylint: disable=invalid-name
     manyTimedRunArgs.append('--repo=' + sps.normExpUserPath(options.build_options.repoDir))
     manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
     if options.build_options.runWithVg:
