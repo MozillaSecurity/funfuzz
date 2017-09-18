@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Functions dealing with multiple processes.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -16,8 +18,9 @@ import sys
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
-def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=missing-return-doc,missing-return-type-doc
-    def showFile(fn):
+def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
+    def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
         print("==== %s ====" % fn)
         print()
         with open(fn) as f:
@@ -27,16 +30,16 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=missing-r
 
     # Fork a bunch of processes
     print("Forking %d children..." % numProcesses)
-    ps = []
+    ps = []  # pylint: disable=invalid-name
     for i in range(numProcesses):
-        p = multiprocessing.Process(
+        p = multiprocessing.Process(  # pylint: disable=invalid-name
             target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
         p.start()
         ps.append(p)
 
     # Wait for them all to finish, and splat their outputs
     for i in range(numProcesses):
-        p = ps[i]
+        p = ps[i]  # pylint: disable=invalid-name
         print("=== Waiting for child #%d (%d) to finish... ===" % (i, p.pid))
         p.join()
         print("=== Child process #%d exited with code %d ===" % (i, p.exitcode))
@@ -47,11 +50,12 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=missing-r
 
 
 # Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)
-def logFileName(logDir, i, t):  # pylint: disable=missing-return-doc,missing-return-type-doc
+def logFileName(logDir, i, t):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
 
 
-def redirectOutputAndCallFun(logDir, i, fun, someArgs):
+def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
     sys.stdout = open(logFileName(logDir, i, "out"), 'wb', buffering=0)
     sys.stderr = open(logFileName(logDir, i, "err"), 'wb', buffering=0)
     fun(*(someArgs + (i,)))
@@ -61,11 +65,11 @@ def redirectOutputAndCallFun(logDir, i, fun, someArgs):
 # * "Green Chairs" from the first few processes
 # * A pause and error (with stack trace) from process 5
 # * "Green Chairs" again from the rest.
-def test_forkJoin():
+def test_forkJoin():  # pylint: disable=invalid-name,missing-docstring
     forkJoin(".", 8, test_forkJoin_inner, "Green", "Chairs")
 
 
-def test_forkJoin_inner(adj, noun, forkjoin_id):
+def test_forkJoin_inner(adj, noun, forkjoin_id):  # pylint: disable=invalid-name,missing-docstring
     import time
     print("%s %s" % (adj, noun))
     print(forkjoin_id)
