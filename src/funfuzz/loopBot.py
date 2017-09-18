@@ -46,7 +46,7 @@ def loopSequence(cmdSequence, waitTime):  # pylint: disable=missing-param-doc,mi
 
 def main():
     loopSequence([
-        [sys.executable, "-u", os.path.join(path0, 'util', 'reposUpdate.py')],
+        [sys.executable, "-u", os.path.join(path0, 'util', 'repos_update.py')],
         [sys.executable, "-u", os.path.join(path0, 'bot.py')] + sys.argv[1:]
     ], 60)
 
