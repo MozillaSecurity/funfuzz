@@ -9,4 +9,4 @@
 from __future__ import absolute_import
 
 from . import bot
-from . import loopBot
+from . import loop_bot

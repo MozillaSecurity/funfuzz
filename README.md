@@ -77,13 +77,13 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 
 To run **only the js fuzzers** which compiles shells with random configurations every 8 hours and tests them:
 
-`python -u funfuzz/loopBot.py -b "--random" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
+`python -u funfuzz.loop_bot -b "--random" -t "js" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
 To test **a patch** (assuming patch is in ~/patch.diff) against a specific branch (assuming **Mercurial** mozilla-inbound is in ~/trees/mozilla-inbound), using a debug 64-bit deterministic shell configuration, every 8 hours:
 
-`python -u funfuzz/loopBot.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loopBotPy.txt`
+`python -u funfuzz.loop_bot -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
-In js mode, loopBot.py makes use of:
+In js mode, loop_bot.py makes use of:
 
 * [compile_shell](js/compile_shell.py)
 * [jsfunfuzz](src/funfuzz/js/jsfunfuzz)
