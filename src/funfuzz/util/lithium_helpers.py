@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=fixme,invalid-name,missing-docstring
-# pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Helper functions to use the Lithium reducer.
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -17,23 +18,24 @@ import tempfile
 
 from . import subprocesses as sps
 
-runlithiumpy = [sys.executable, "-u", "-m", "lithium"]
+runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
 # Status returns for runLithium and many_timed_runs
 (HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,
  LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
 
 
-def runLithium(lithArgs, logPrefix, targetTime):
+def runLithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
 
     Returns a tuple of (lithlogfn, LITH_*, details).
     """
-    deletableLithTemp = None
+    deletableLithTemp = None  # pylint: disable=invalid-name
     if targetTime:
-        # FIXME: this could be based on whether bot.py has a remoteHost
+        # FIXME: this could be based on whether bot.py has a remoteHost  # pylint: disable=fixme
         # loop.py is being used by bot.py
-        deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")
+        deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
     else:
         # loop.py is being run standalone
@@ -47,12 +49,13 @@ def runLithium(lithArgs, logPrefix, targetTime):
     print("Done running Lithium")
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)
-    r = readLithiumResult(lithlogfn)
+    r = readLithiumResult(lithlogfn)  # pylint: disable=invalid-name
     subprocess.call(["gzip", "-f", lithlogfn])
     return r
 
 
-def readLithiumResult(lithlogfn):
+def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     with open(lithlogfn) as f:
         for line in f:
             if line.startswith("Lithium result"):
@@ -60,18 +63,21 @@ def readLithiumResult(lithlogfn):
             if line.startswith("Lithium result: interesting"):
                 return (LITH_RETESTED_STILL_INTERESTING, None)
             elif line.startswith("Lithium result: succeeded, reduced to: "):
+                # pylint: disable=invalid-name
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
                 return (LITH_FINISHED, reducedTo)
             elif (line.startswith("Lithium result: not interesting") or
                   line.startswith("Lithium result: the original testcase is not")):
                 return (LITH_NO_REPRO, None)
             elif line.startswith("Lithium result: please continue using: "):
+                # pylint: disable=invalid-name
                 lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
                 return (LITH_PLEASE_CONTINUE, lithiumHint)
         return (LITH_BUSTED, None)
 
 
-def ddsize(fn):
+def ddsize(fn):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    # pylint: disable=missing-return-type-doc,missing-type-doc
     """Count the number of chars between DDBEGIN and DDEND in a file."""
     count = 0
     with open(fn) as f:
