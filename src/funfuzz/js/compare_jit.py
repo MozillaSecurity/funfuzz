@@ -21,9 +21,9 @@ from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=imp
 from . import jsInteresting
 from . import pinpoint
 from . import shellFlags
-from ..util import subprocesses as sps
-from ..util import lithOps
 from ..util import createCollector
+from ..util import lithOps
+from ..util import subprocesses as sps
 
 gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
