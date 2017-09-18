@@ -24,7 +24,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from . import build_options
 from . import inspect_shell
-from ..util import hgCmds
+from ..util import hg_helpers
 from ..util import s3cache
 from ..util import subprocesses as sps
 from ..util.LockDir import LockDir
@@ -115,7 +115,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
 
     def getRepoName(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        return hgCmds.getRepoNameFromHgrc(self.build_options.repoDir)
+        return hg_helpers.getRepoNameFromHgrc(self.build_options.repoDir)
 
     def getS3TarballWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -654,7 +654,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
     os.mkdir(shell.getShellCacheDir())
-    hgCmds.destroyPyc(shell.build_options.repoDir)
+    hg_helpers.destroyPyc(shell.build_options.repoDir)
 
     s3cache_obj = s3cache.S3Cache(S3_SHELL_CACHE_DIRNAME)
     use_s3cache = s3cache_obj.connect()
@@ -678,7 +678,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if updateToRev:
             updateRepo(shell.build_options.repoDir, updateToRev)
         if shell.build_options.patchFile:
-            hgCmds.patchHgRepoUsingMq(shell.build_options.patchFile, shell.getRepoDir())
+            hg_helpers.patchHgRepoUsingMq(shell.build_options.patchFile, shell.getRepoDir())
 
         cfgJsCompile(shell)
         verifyFullWinPageHeap(shell.getShellCacheFullPath())
@@ -695,7 +695,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         raise
     finally:
         if shell.build_options.patchFile:
-            hgCmds.hgQpopQrmAppliedPatch(shell.build_options.patchFile, shell.getRepoDir())
+            hg_helpers.hgQpopQrmAppliedPatch(shell.build_options.patchFile, shell.getRepoDir())
 
     if use_s3cache:
         s3cache_obj.compressAndUploadDirTarball(shell.getShellCacheDir(), shell.getS3TarballWithExtFullPath())
@@ -753,7 +753,7 @@ def main():
         if options.revision:
             shell = CompiledShell(options.build_options, options.revision)
         else:
-            local_orig_hg_hash = hgCmds.getRepoHashAndId(options.build_options.repoDir)[0]
+            local_orig_hg_hash = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]
             shell = CompiledShell(options.build_options, local_orig_hg_hash)
 
         obtainShell(shell, updateToRev=options.revision)

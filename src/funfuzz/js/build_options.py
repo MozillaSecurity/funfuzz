@@ -16,7 +16,7 @@ import os
 import platform
 import random
 
-from ..util import hgCmds
+from ..util import hg_helpers
 from ..util import subprocesses as sps
 
 DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
@@ -189,10 +189,10 @@ def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-
                 build_options.repoDir = os.path.realpath(sps.normExpUserPath(
                     os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
 
-        assert hgCmds.isRepoValid(build_options.repoDir)
+        assert hg_helpers.isRepoValid(build_options.repoDir)
 
         if build_options.patchFile:
-            hgCmds.ensureMqEnabled()
+            hg_helpers.ensureMqEnabled()
             build_options.patchFile = sps.normExpUserPath(build_options.patchFile)
             assert os.path.isfile(build_options.patchFile)
 

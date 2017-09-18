@@ -26,7 +26,7 @@ from .js import build_options
 from .js import compile_shell
 from .js import loop
 from .util import download_build
-from .util import hgCmds
+from .util import hg_helpers
 from .util import subprocesses as sps
 from .util import fork_join
 from .util import create_collector
@@ -195,7 +195,7 @@ def ensureBuild(options):
             options.timeout = options.timeout or machineTimeoutDefaults(options)
 
             with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
-                bRev = hgCmds.getRepoHashAndId(options.build_options.repoDir)[0]
+                bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]
                 cshell = compile_shell.CompiledShell(options.build_options, bRev)
                 updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')
                 compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
