@@ -1,2 +1,2 @@
 git+https://github.com/MozillaSecurity/FuzzManager.git
-git+https://github.com/MozillaSecurity/lithium.git
+lithium-reducer>=0.2.0

@@ -30,4 +30,7 @@ if __name__ == "__main__":
               "util/tooltool/*",
           ]},
           package_dir={"": "src"},
+          install_requires=[
+              "lithium-reducer>=0.2.0",
+          ],
           zip_safe=False)
