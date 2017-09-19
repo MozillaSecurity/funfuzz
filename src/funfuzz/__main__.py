@@ -7,6 +7,6 @@
 
 from __future__ import absolute_import
 
-from funfuzz.bot import main
+from .bot import main
 
 main()
