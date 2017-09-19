@@ -18,7 +18,6 @@ import re
 import shutil
 import stat  # Fixed after pylint 1.7.2 was released pylint: disable=bad-python3-import
 import subprocess
-import sys
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
@@ -896,9 +895,3 @@ def main():
         # Last thing we do while we have a lock.
         # Note that this only clears old *local* cached directories, not remote ones.
         rmOldLocalCachedDirs(compile_shell.ensureCacheDir())
-
-
-if __name__ == '__main__':
-    # Reopen stdout, unbuffered. This is similar to -u. From http://stackoverflow.com/a/107717
-    sys.stdout = sps.Unbuffered(sys.stdout)
-    main()
