@@ -92,8 +92,11 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     if not options.useTreeherderBuilds and not os.path.isdir(build_options.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
+        print()
         print("Trees were absent from default location: %s" % build_options.DEFAULT_TREES_LOCATION)
         print("Using treeherder builds instead...")
+        print()
+        sys.exit("Fuzzing downloaded builds is disabled for now, until tooltool is removed. Exiting...")
 
     if options.build_options is None:
         options.build_options = ''
