@@ -170,12 +170,16 @@ def refreshSignatures(collector):  # pylint: disable=invalid-name,missing-param-
     # Btw, you should make sure the server generates the file using
     #     python manage.py export_signatures files/signatures.zip
     # occasionally, e.g. as a cron job.
-    if collector.serverHost == "127.0.0.1":
-        # The test server does not serve files
-        collector.refreshFromZip(os.path.join(path0, "..", "FuzzManager", "server", "files", "signatures.zip"))
-    else:
-        # A production server will serve files
-        collector.refresh()
+    try:
+        if collector.serverHost == "127.0.0.1":
+            # The test server does not serve files
+            collector.refreshFromZip(os.path.join(path0, "..", "FuzzManager", "server", "files", "signatures.zip"))
+        else:
+            # A production server will serve files
+            collector.refresh()
+    except Exception:  # We should look out for Bad Zipfile  # pylint: disable=broad-except
+        print("Cannot connect to Collector, or crash signature zip file. Exiting for now.")
+        sys.exit(1)
 
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
