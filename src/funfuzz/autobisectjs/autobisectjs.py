@@ -103,7 +103,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
                       help='Specify parameters for the js shell, e.g. -p "-a --ion-eager testcase.js".')
 
     # Specify how to treat revisions that fail to compile.
-    # (You might want to add these to kbew.knownBrokenRanges in known_broken_earliest_working.py.)
+    # (You might want to add these to kbew.knownBrokenRanges in known_broken_earliest_working.)
     parser.add_option('-l', '--compilationFailedLabel', dest='compilationFailedLabel',
                       help="Specify how to treat revisions that fail to compile. "
                            "(bad, good, or skip) Defaults to '%default'")

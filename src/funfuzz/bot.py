@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-"""bot.py ensures a build is available, then forks a bunch of fuzz-reduce processes.
+"""Ensures a build is available, then forks a bunch of fuzz-reduce processes.
 
 """
 
@@ -32,7 +32,7 @@ from .util.LockDir import LockDir
 
 path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
 path3 = os.path.abspath(os.path.join(path0, 'js'))  # pylint: disable=invalid-name
-JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop.py for tradeoffs
+JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
 class BuildInfo(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
@@ -79,12 +79,12 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
                            '(python -m funfuzz.js.build_options --help)')
 
     parser.add_option('--timeout', type='int', dest='timeout',
-                      help="Sets the timeout for loop.py. "
+                      help="Sets the timeout for loop. "
                            "Defaults to taking into account the speed of the computer and debugger (if any).")
 
     options, args = parser.parse_args()
     if args:
-        print("Warning: bot.py does not use positional arguments")
+        print("Warning: bot does not use positional arguments")
 
     if not options.testType or options.testType == 'dom':
         raise Exception('options.testType should be set to "js" now that only js engine fuzzing is supported')

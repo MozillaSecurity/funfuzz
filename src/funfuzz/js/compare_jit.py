@@ -50,7 +50,7 @@ def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,mis
     return lines
 
 
-# For use by loop.py
+# For use by loop
 # Returns True if any kind of bug is found
 def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -254,7 +254,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     parser.add_option("--minlevel",
                       type="int", dest="minimumInterestingLevel",
                       default=js_interesting.JS_OVERALL_MISMATCH,
-                      help="minimum js/js_interesting.py level for lithium to consider the testcase interesting")
+                      help="minimum js_interesting level for lithium to consider the testcase interesting")
     parser.add_option("--timeout",
                       type="int", dest="timeout",
                       default=10,

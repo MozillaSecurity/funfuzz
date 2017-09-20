@@ -18,7 +18,7 @@ Similar to the above, but use "-s" instead of "-e".
 
 (This assumes you have the first bad and first good revision hashes as per the 2 questions above.)
 
-You can add them to the known broken range functions in [known_broken_earliest_working.py](known_broken_earliest_working.py). Add the first bad and first good changeset **Mercurial** hashes of the build breakage and its fix, along with a short comment.
+You can add them to the known broken range functions in [known_broken_earliest_working](known_broken_earliest_working.py). Add the first bad and first good changeset **Mercurial** hashes of the build breakage and its fix, along with a short comment.
 
 **Q: The testcase is giving out assorted varied exit codes as it gets executed by older binaries. How can I fixate to a particular interesting exit code?**
 
@@ -30,7 +30,7 @@ You can try using interestingness tests to look out for the desired symptom, see
 
 **Q: What happens when a new operating system is released, and we now have a new changeset hash that has to be updated as the earliest known working revision?**
 
-You can add the earliest known working **Mercurial** revision to the earliestKnownWorkingRev function in [known_broken_earliest_working.py](known_broken_earliest_working.py).
+You can add the earliest known working **Mercurial** revision to the earliestKnownWorkingRev function in [known_broken_earliest_working](known_broken_earliest_working.py).
 
 **Q: Does autoBisect work on nightly SpiderMonkey js shells yet?**
 

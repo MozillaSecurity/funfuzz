@@ -83,7 +83,7 @@ To test **a patch** (assuming patch is in ~/patch.diff) against a specific branc
 
 `python -u funfuzz.loop_bot -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
-In js mode, loop_bot.py makes use of:
+In js mode, loop_bot makes use of:
 
 * [compile_shell](js/compile_shell.py)
 * [jsfunfuzz](src/funfuzz/js/jsfunfuzz)

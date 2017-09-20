@@ -4,12 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-"""Loop of { update repos, call bot.py } to allow things to run unattended
-All command-line options are passed through to bot.py
+"""Loop of { update repos, call bot } to allow things to run unattended
+All command-line options are passed through to bot
 
 Since this script updates the fuzzing repo, it should be very simple, and use subprocess.call() rather than import
 
-Config-ish bits should move to bot.py, OR move into a config file,
+Config-ish bits should move to bot, OR move into a config file,
 OR this file should subprocess-call ITSELF rather than using a while loop.
 """
 
