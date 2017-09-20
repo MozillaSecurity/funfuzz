@@ -1,6 +1,6 @@
 # https://github.com/jruderman/after-fix
 
-contents src/funfuzz/bot.py
+contents src/funfuzz/*.py
 contents src/funfuzz/util/*.py
 contents src/funfuzz/js/*.py
 contents src/funfuzz/js/shared/*.js
