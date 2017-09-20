@@ -109,7 +109,12 @@ def main():  # pylint: disable=missing-docstring
     options = parseOpts()
 
     collector = create_collector.createCollector("jsfunfuzz")
-    refreshSignatures(collector)
+    try:
+        collector.refresh()
+    except RuntimeError as ex:
+        print()
+        print("Unable to find required entries in .fuzzmanagerconf, exiting...")
+        sys.exit(ex)
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
     print(options.tempDir)
@@ -163,23 +168,6 @@ def printMachineInfo():  # pylint: disable=invalid-name
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
         print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
-
-
-def refreshSignatures(collector):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Refresh signatures, copying from FuzzManager server to local sigcache."""
-    # Btw, you should make sure the server generates the file using
-    #     python manage.py export_signatures files/signatures.zip
-    # occasionally, e.g. as a cron job.
-    try:
-        if collector.serverHost == "127.0.0.1":
-            # The test server does not serve files
-            collector.refreshFromZip(os.path.join(path0, "..", "FuzzManager", "server", "files", "signatures.zip"))
-        else:
-            # A production server will serve files
-            collector.refresh()
-    except Exception:  # We should look out for Bad Zipfile  # pylint: disable=broad-except
-        print("Cannot connect to Collector, or crash signature zip file. Exiting for now.")
-        sys.exit(1)
 
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
