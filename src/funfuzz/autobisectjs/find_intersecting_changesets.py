@@ -8,7 +8,7 @@
 
 Usage: python -m funfuzz.autobisectjs.find_intersecting_changesets -R ~/trees/mozilla-central/
 
-(first go to known_broken_earliest_working.py and comment out configuration-specific ignore ranges,
+(first go to known_broken_earliest_working and comment out configuration-specific ignore ranges,
 this file does not yet support those.)"""
 
 from __future__ import absolute_import, print_function

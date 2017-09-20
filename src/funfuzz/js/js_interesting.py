@@ -111,7 +111,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 issues.append("jsfunfuzz didn't finish")
                 lev = JS_DID_NOT_FINISH
 
-        # Copy non-crash issues to where FuzzManager's "AssertionHelper.py" can see it.
+        # Copy non-crash issues to where FuzzManager's "AssertionHelper" can see it.
         if lev != JS_FINE:
             for issue in issues:
                 err.append("[Non-crash bug] " + issue)
@@ -224,7 +224,7 @@ def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,mis
     if os.path.exists(logPrefix + "-vg.xml"):
         os.remove(logPrefix + "-vg.xml")
     # pylint: disable=fixme
-    # FIXME: in some cases, subprocesses.py gzips a core file only for us to delete it immediately.
+    # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
     if os.path.exists(logPrefix + "-core.gz"):
         os.remove(logPrefix + "-core.gz")
 
@@ -260,7 +260,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     parser.add_option("--minlevel",
                       type="int", dest="minimumInterestingLevel",
                       default=JS_FINE + 1,
-                      help="minimum js/js_interesting.py level for lithium to consider the testcase interesting")
+                      help="minimum js/js_interesting level for lithium to consider the testcase interesting")
     parser.add_option("--timeout",
                       type="int", dest="timeout",
                       default=120,
@@ -279,8 +279,8 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     return options
 
 
-# loop.py uses parseOptions and ShellResult [with in_compare_jit = False]
-# compare_jit.py uses ShellResult [with in_compare_jit = True]
+# loop uses parseOptions and ShellResult [with in_compare_jit = False]
+# compare_jit uses ShellResult [with in_compare_jit = True]
 
 # For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
 def init(args):  # pylint: disable=missing-docstring

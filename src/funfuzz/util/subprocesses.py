@@ -472,7 +472,7 @@ def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-do
 
 
 def test_rmTreeIncludingReadOnly():  # pylint: disable=invalid-name
-    """Run this function in the same directory as subprocesses.py to test."""
+    """Run this function in the same directory as subprocesses to test."""
     test_dir = 'test_rmTreeIncludingReadOnly'
     os.mkdir(test_dir)
     read_only_dir = os.path.join(test_dir, 'nestedReadOnlyDir')

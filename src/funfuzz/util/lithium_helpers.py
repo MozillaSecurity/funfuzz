@@ -32,12 +32,12 @@ def runLithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name
     """
     deletableLithTemp = None  # pylint: disable=invalid-name
     if targetTime:
-        # FIXME: this could be based on whether bot.py has a remoteHost  # pylint: disable=fixme
-        # loop.py is being used by bot.py
+        # FIXME: this could be based on whether bot has a remoteHost  # pylint: disable=fixme
+        # loop is being used by bot
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
     else:
-        # loop.py is being run standalone
+        # loop is being run standalone
         lithtmp = logPrefix + "-lith-tmp"
         os.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs

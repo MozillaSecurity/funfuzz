@@ -330,7 +330,7 @@ function regressionTestIsEvil(contents)
     return true;
   }
   if (contents.indexOf("print = ") != -1) {
-    // A testcase that clobbers the |print| function would confuse js_interesting.py
+    // A testcase that clobbers the |print| function would confuse js_interesting
     return true;
   }
   return false;
@@ -949,7 +949,7 @@ function makeTestingFunctionCall(d, b)
     // us with visible side effects.
     // * Functions in testing-functions.js are chosen to be ones with no visible
     //   side effects except for return values (voided) or throwing (caught).
-    // * This condition is controlled by --no-asmjs, which compare_jit.py flips.
+    // * This condition is controlled by --no-asmjs, which compare_jit flips.
     //     (A more principled approach would be to have compare_jit set an environment
     //     variable and read it here using os.getenv(), but os is not available
     //     when running with --fuzzing-safe...)
