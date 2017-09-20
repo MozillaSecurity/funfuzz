@@ -2,7 +2,7 @@
 
 To compile a SpiderMonkey shell, run:
 
-`funfuzz/js/compile_shell.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central"`
+`python -m funfuzz.js.compile_shell -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central"`
 
 in order to get a debug 64-bit deterministic shell, off the **Mercurial** repository located at ~/trees/mozilla-central.
 

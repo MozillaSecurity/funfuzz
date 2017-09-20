@@ -12,7 +12,7 @@ On a decent Linux machine or a powerful Mac, both with 4 or more cores, 3-4 minu
 
 Use the -P notation, e.g.:
 
-`funfuzz/js/compile_shell.py -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff"`
+`python -m funfuzz.js.compile_shell -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff"`
 
 assuming:
 * mq is activated in ~/.hgrc

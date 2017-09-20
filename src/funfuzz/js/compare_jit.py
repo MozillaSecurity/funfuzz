@@ -184,7 +184,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
-                rerunCommand = sps.shellify(['~/funfuzz/js/compare_jit.py', "--flags=" + ' '.join(flags),
+                rerunCommand = sps.shellify(["python -m funfuzz.js.compare_jit", "--flags=" + " ".join(flags),
                                              "--timeout=" + str(options.timeout), options.knownPath, jsEngine,
                                              os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)

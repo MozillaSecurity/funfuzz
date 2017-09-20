@@ -558,8 +558,8 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write('# Information about shell:\n# \n')
 
         f.write('# Create another shell in shell-cache like this one:\n')
-        f.write('# python -u %s -b "%s" -r %s\n# \n' % ('~/funfuzz/js/compileShell.py',
-                                                        shell.build_options.build_options_str, shell.getHgHash()))
+        f.write('# python -u -m %s -b "%s" -r %s\n# \n' % ('funfuzz.js.compile_shell',
+                                                           shell.build_options.build_options_str, shell.getHgHash()))
 
         f.write('# Full environment is:\n')
         f.write('# %s\n# \n' % str(shell.getEnvFull()))
