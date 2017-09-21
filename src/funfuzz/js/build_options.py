@@ -14,6 +14,7 @@ import hashlib
 import os
 import platform
 import random
+import sys
 
 from ..util import hg_helpers
 from ..util import subprocesses as sps
@@ -188,12 +189,17 @@ def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-
                 build_options.repoDir = os.path.realpath(sps.normExpUserPath(
                     os.path.join(DEFAULT_TREES_LOCATION, 'mozilla-central')))
 
+            if not os.path.isdir(build_options.repoDir):
+                sys.exit("repoDir is not specified, and a default repository location cannot be confirmed. Exiting...")
+
         assert hg_helpers.isRepoValid(build_options.repoDir)
 
         if build_options.patchFile:
             hg_helpers.ensureMqEnabled()
             build_options.patchFile = sps.normExpUserPath(build_options.patchFile)
             assert os.path.isfile(build_options.patchFile)
+    else:
+        sys.exit("DEFAULT_TREES_LOCATION not found at: %s. Exiting..." % DEFAULT_TREES_LOCATION)
 
     return build_options
 
