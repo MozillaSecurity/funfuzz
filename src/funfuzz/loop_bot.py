@@ -15,7 +15,6 @@ OR this file should subprocess-call ITSELF rather than using a while loop.
 
 from __future__ import absolute_import, print_function
 
-import os
 import sys
 import subprocess
 import time
