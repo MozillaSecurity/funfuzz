@@ -24,9 +24,7 @@ from ..util import file_manipulation
 from ..util.lithium_helpers import LITH_FINISHED, LITH_PLEASE_CONTINUE, runLithium
 from ..util import subprocesses as sps
 
-p0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
 # pylint: disable=invalid-name
-autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisectjs', 'autoBisect.py'))
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: disable=missing-param-doc
@@ -53,7 +51,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             print("Not pinpointing to exact changeset since autoBisect does not work well in WinXP.")
         elif testJsShellOrXpcshell(jsEngine) != "xpcshell":
             autobisectCmd = (
-                [sys.executable, autobisectpy] +
+                [sys.executable, "-u", "-m", "funfuzz.autobisectjs"] +
                 ["-b", build_options_str] +
                 ["-p", ' '.join(engineFlags + [infilename])] +
                 ["-i"] + itest
