@@ -26,9 +26,6 @@ from ..util import lithium_helpers
 from ..util import link_js
 from ..util import subprocesses as sps
 
-p0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
-interestingpy = os.path.abspath(os.path.join(p0, 'js_interesting.py'))  # pylint: disable=invalid-name
-
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
@@ -182,6 +179,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             file_manipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
+            interestingpy = [sys.executable, "-u", "-m", "funfuzz.js.js_interesting"]  # pylint: disable=invalid-name
             itest = [interestingpy]
             if options.valgrind:
                 itest.append("--valgrind")
