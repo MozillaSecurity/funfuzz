@@ -87,8 +87,8 @@ def showtail(filename):  # pylint: disable=missing-docstring
 
 
 def linkFuzzer(target_fn, prologue):  # pylint: disable=invalid-name,missing-docstring
-    source_base = p0
-    file_list_fn = sps.normExpUserPath(os.path.join(p0, "files_to_link.txt"))
+    source_base = os.path.dirname(os.path.abspath(__file__))
+    file_list_fn = sps.normExpUserPath(os.path.join(source_base, "files_to_link.txt"))
     link_js.link_js(target_fn, file_list_fn, source_base, prologue)
 
 
