@@ -43,8 +43,8 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
 
 def main():  # pylint: disable=missing-docstring
     loop_seq([
-        [sys.executable, "-u", os.path.join(os.path.dirname(os.path.abspath(__file__)), 'util', 'repos_update.py')],
-        [sys.executable, "-u", os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bot.py')] + sys.argv[1:]
+        [sys.executable, "-u", "-m", "funfuzz.util.repos_update"],
+        [sys.executable, "-u", "-m", "funfuzz.bot"] + sys.argv[1:]
     ], 60)
 
 

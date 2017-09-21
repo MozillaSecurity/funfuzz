@@ -15,16 +15,15 @@ from __future__ import absolute_import, print_function
 from copy import deepcopy
 import logging
 import os
+import platform
 import time
 
+import pip
 from . import subprocesses as sps
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
-
-THIS_SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-REPO_PARENT_PATH = os.path.abspath(os.path.join(THIS_SCRIPT_DIRECTORY, os.pardir, os.pardir))
 
 # Add your repository here. Note that Valgrind does not have a hg repository.
 REPOS = ['gecko-dev', 'octo'] + \
@@ -56,6 +55,17 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     raise Exception('Type of repository located at ' + r + ' cannot be determined.')
 
 
+def update_funfuzz():
+    """Updates the funfuzz repository."""
+    # funfuzz repository assumed to be located at ~/funfuzz
+    funfuzz_dir = sps.normExpUserPath(os.path.join("~", "funfuzz"))
+    assert os.path.isdir(funfuzz_dir)
+    assert typeOfRepo(funfuzz_dir) == "git"
+    if pip.main(["install", "--upgrade", funfuzz_dir]) and platform.system() == "Linux":
+        logger.info('\npip errored out, retrying with "--user"\n')
+        pip.main(["install", "--user", "--upgrade", funfuzz_dir])
+
+
 def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Update a repository. Return False if missing; return True if successful; raise an exception if updating fails."""
@@ -81,14 +91,15 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
 def updateRepos():  # pylint: disable=invalid-name
     """Update Mercurial and Git repositories located in ~ and ~/trees ."""
+    home_dir = sps.normExpUserPath("~")
     trees = [
-        os.path.normpath(os.path.join(REPO_PARENT_PATH)),
-        os.path.normpath(os.path.join(REPO_PARENT_PATH, 'trees'))
+        os.path.normpath(os.path.join(home_dir)),
+        os.path.normpath(os.path.join(home_dir, 'trees'))
     ]
     for tree in trees:
         for name in sorted(os.listdir(tree)):
             name_path = os.path.join(tree, name)
-            if os.path.isdir(name_path) and (name in REPOS or name.startswith("funfuzz")):
+            if os.path.isdir(name_path) and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
                 print("Updating %s ..." % name)
                 updateRepo(name_path)
 
@@ -96,6 +107,7 @@ def updateRepos():  # pylint: disable=invalid-name
 def main():  # pylint: disable=missing-docstring
     logger.info(time.asctime())
     try:
+        update_funfuzz()
         updateRepos()
     except OSError as ex:
         print("WARNING: OSError hit:")
