@@ -6,7 +6,6 @@ python:
     - "3.5"
     - "3.6"
     - "pypy"
-    - "pypy3"
 before_install:
     - pip install --upgrade setuptools pip
     - pip install --upgrade virtualenv
