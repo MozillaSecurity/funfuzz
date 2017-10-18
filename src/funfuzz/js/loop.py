@@ -179,7 +179,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             file_manipulation.writeLinesToFile(newfileLines, filenameToReduce)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
-            interestingpy = [sys.executable, "-u", "-m", "funfuzz.js.js_interesting"]  # pylint: disable=invalid-name
+            interestingpy = "funfuzz.js.js_interesting"  # pylint: disable=invalid-name
             itest = [interestingpy]
             if options.valgrind:
                 itest.append("--valgrind")
