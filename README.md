@@ -25,30 +25,23 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 
 ### Windows (only 64-bit supported)
 
-1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 2.2.0) to get an msys shell.
+1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 3.0).
 2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories. (32-bit works best for now)
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
-4. Make sure you install at least Microsoft Visual Studio 2015 (Community Edition is recommended) as per the build instructions above in the Setup section.
-5. Run `start-shell-msvc2015.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files\ \(x86\)/Git/bin/git.exe`.
+4. Make sure you install at least Microsoft Visual Studio 2015 (Community Edition is recommended) as per the build instructions above in the Setup section. Visual Studio 2017 is preferred.
+5. Run `start-shell.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files/Git/bin/git.exe`.
     1. Run the batch file with administrator privileges to get gflags analysis working correctly.
 
 
 ### Mac
 
-1. On Mac OS X 10.9, you must first install a newer version of unzip than the one that comes with the OS. (Old versions [hit an error](https://bugzilla.mozilla.org/show_bug.cgi?id=1032391) on large zip files, such as the "mac64.tests.zip" file that [download_build.py](util/download_build.py) grabs.)
-
-  ```
-  brew install homebrew/dupes/unzip
-  brew link --force unzip
-  ```
-
-2. If you encounter problems accessing the compiler, try re-running this command:
+1. If you encounter problems accessing the compiler, try re-running this command:
 
   ```xcode-select --install```
 
 especially after updating major/minor OS versions. This sometimes manifests on Mac OS X Combo updates.
 
-3. Install LLVM via Homebrew, to get llvm-symbolizer needed for symbolizing ASan crash stacks.
+2. Install LLVM via Homebrew, to get llvm-symbolizer needed for symbolizing ASan crash stacks.
 
   ```
   brew install llvm
@@ -79,7 +72,7 @@ To run **only the js fuzzers** which compiles shells with random configurations 
 
 `python -u funfuzz.loop_bot -b "--random" -t "js" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
-To test **a patch** (assuming patch is in ~/patch.diff) against a specific branch (assuming **Mercurial** mozilla-inbound is in ~/trees/mozilla-inbound), using a debug 64-bit deterministic shell configuration, every 8 hours:
+To test **a patch** (assuming patch is in `~/patch.diff`) against a specific branch (assuming **Mercurial** mozilla-inbound is in `~/trees/mozilla-inbound`), using a debug 64-bit deterministic shell configuration, every 8 hours:
 
 `python -u funfuzz.loop_bot -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" -t "js" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
@@ -93,7 +86,7 @@ In js mode, loop_bot makes use of:
 
 The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).
 
-FuzzManager support got landed, so you will also need to create a ~/.fuzzmanagerconf file, similar to:
+You will also need to need a `~/.fuzzmanagerconf` file, similar to:
 
 ```
 [Main]
@@ -105,7 +98,7 @@ sigdir = /Users/<your username>/sigcache/
 tool = jsfunfuzz
 ```
 
-Replace anything between "<" and ">" with your desired parameters.
+Replace anything between `<` and `>` with your desired parameters.
 
 ## FAQ:
 
@@ -113,17 +106,18 @@ Replace anything between "<" and ">" with your desired parameters.
 
 **A:** compile_shell has been tested on:
 
-* Windows 10, 7 and Windows Server 2012 R2, with [MozillaBuild 2.2.0](https://wiki.mozilla.org/MozillaBuild). It should also work with MozillaBuild 3.0.
-* Mac OS X 10.12
+* Windows 10 and 7, with [MozillaBuild 3.0](https://wiki.mozilla.org/MozillaBuild). It should also work with Windows Server 2012 R2.
+* Mac OS X 10.13
 * Ubuntu 16.04 LTS and later
+  * Note: We may try to make this work on Ubuntu 14.04 LTS (via Travis)
 
 Fedora Linux has not been tested extensively and there may be a few bugs along the way.
 
-The following operating systems are old/less common and while they may still work, be prepared to **expect issues** along the way:
+The following operating systems are old or less common and while they may still work, be prepared to **expect issues** along the way:
 
 * Windows Vista / Windows 8 / Windows 8.1
-* Mac OS X 10.10 / 10.11
-* Ubuntu Linux 14.04 LTS, 15.10 and prior
+* Mac OS X 10.10 through 10.12
+* Ubuntu Linux 15.10 and prior (see note above about 14.04 LTS)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:

@@ -15,9 +15,9 @@ Use the -P notation, e.g.:
 `python -m funfuzz.js.compile_shell -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff"`
 
 assuming:
-* mq is activated in ~/.hgrc
+* mq is activated in `~/.hgrc`
 * There are no other patches in the mq stack
-* Patch is in ~/patch.diff and can be applied cleanly
+* Patch is in `~/patch.diff` and can be applied cleanly
   * Test by first doing `patch -p1 --dry-run < ~/patch.diff` in the base directory of the repository listed by -R, or the default.
 * There is only one patch needed. If more than one patch is needed, first do a roll-up patch.
 
@@ -27,7 +27,7 @@ No, they are independent. We only implemented the flags that are most useful for
 
 **Q: Will the gecko-dev Git mirror of mozilla-central be supported?**
 
-The "-R" flag assumes a Mercurial clone of mozilla-central is passed in as an argument. Git repositories are not yet supported fully, and especially not for autoBisect. See issue #2.
+The "-R" flag assumes a Mercurial clone of mozilla-central is passed in as an argument. Git repositories are not yet supported fully, and especially not for autoBisect. See [issue #2](https://github.com/MozillaSecurity/funfuzz/issues/2).
 
 **Q: Can I run multiple instances of compile_shell?**
 
@@ -35,7 +35,7 @@ This is not recommended as it will slow down your computer. Running one instance
 
 **Q: What kind of build does compile_shell do, and what files do it store on my machine?**
 
-It creates a clobber build, compiling in the ~/shell-cache directory by default. There may also be a bunch of tempfiles created in the system temporary directory.
+It creates a clobber build, compiling in the `~/shell-cache` directory by default. There may also be a bunch of tempfiles created in the system temporary directory.
 
 **Q: How do I check if the SpiderMonkey build created is the one I specified?**
 
@@ -43,8 +43,8 @@ Post-compilation, the harness does a bunch of verification tests to ensure that 
 
 **Q: What happens if the build I want to compile causes a compilation error?**
 
-A .busted file is created in the shell-cache directory. This will notify the harness not to retry in the future since it is busted. However, if there is an error in the harness, file an issue detailing the build configurations and steps to reproduce, and once it is fixed, remove the corresponding file/directory in ~/shell-cache and retry again.
+A `.busted` file is created in the `~/shell-cache` directory. This will notify the harness not to retry in the future since it is busted. However, if there is an error in the harness, file an issue detailing the build configurations and steps to reproduce, and once it is fixed, remove the corresponding file/directory in `~/shell-cache` and retry again.
 
 **Q: After compiling many shells, I'm now running out of disk space! What should I do?**
 
-Oops! You can remove the ~/shell-cache directory to reclaim space, and reboot to clear system temporary directories.
+Oops! You can remove the `~/shell-cache` directory to reclaim space, and reboot to clear system temporary directories.

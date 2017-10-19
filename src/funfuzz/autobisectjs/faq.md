@@ -44,4 +44,4 @@ autoBisect was [first written](https://bugzilla.mozilla.org/show_bug.cgi?id=4825
 
 mozregression had its [first landing](https://github.com/mozilla/mozregression/commit/d50509b36cb6ba45d7c54917f528bdf482d2c5e6) in February 2010.
 
-autoBisect supports bisections using compiled and downloaded (tinderbox-builds) SpiderMonkey js shells (with rudimentary support for Firefox), while mozregression supports nightly and inbound builds [for various Mozilla products](http://mozilla.github.io/mozregression/).
+autoBisect supports bisections using compiled and downloaded (tinderbox-builds) SpiderMonkey js shells, while mozregression supports nightly and inbound builds [for various Mozilla products](http://mozilla.github.io/mozregression/).

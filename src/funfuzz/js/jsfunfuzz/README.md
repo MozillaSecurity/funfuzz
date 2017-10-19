@@ -22,7 +22,7 @@ To test an existing SpiderMonkey shell called `./js`, run:
 
 If loop detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [js_interesting](../js_interesting.py) or [compare_jit](../compare_jit.py) as the "interestingness test".
 
-Using [bot](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loop for parallelism.
+Using [funfuzz.bot](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loop for parallelism.
 
 Through randorderfuzz, if the harness detects tests in the mozilla-central tree, it may load or incorporate tests into its fuzzing input in a random order.
 
@@ -34,4 +34,5 @@ Through randorderfuzz, if the harness detects tests in the mozilla-central tree,
 * [Christian Holler](https://twitter.com/mozdeco) improved the compilation scripts
 * [Jan de Mooij](https://twitter.com/jandemooij) prototyped [stress-testing objects and PICs](https://bugzilla.mozilla.org/show_bug.cgi?id=6309960)
 * [David Keeler](https://twitter.com/mozkeeler) modified the regular expression generator to also generate (almost-)matching strings, based on an idea from [Oliver Hunt](https://twitter.com/ohunt).
+* [Jesse Schwartzentruber](https://github.com/jschwartzentruber/) reviewed a lot of the Python harness improvements
 * [The SpiderMonkey team](https://twitter.com/SpiderMonkeyJS) fixed over 2000 of our bugs, so we could keep fuzzing!
