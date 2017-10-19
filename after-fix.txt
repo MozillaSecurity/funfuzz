@@ -1,8 +1,7 @@
 # https://github.com/jruderman/after-fix
 
-contents bot.py
-contents util/*.py
-contents detect/*.py
-contents js/*.py
-contents js/shared/*.js
-contents js/jsfunfuzz/*.js
+contents src/funfuzz/*.py
+contents src/funfuzz/util/*.py
+contents src/funfuzz/js/*.py
+contents src/funfuzz/js/shared/*.js
+contents src/funfuzz/js/jsfunfuzz/*.js
