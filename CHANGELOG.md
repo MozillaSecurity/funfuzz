@@ -1,3 +1,9 @@
+## 0.2.1 (2017-10-20)
+
+Bugfixes:
+
+* Fix Xcode 9 builds on macOS
+
 ## 0.2.0 (2017-10-18)
 
 Features:
