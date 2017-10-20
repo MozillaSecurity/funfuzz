@@ -298,6 +298,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
             cfg_cmds.append('--target=i386-apple-darwin14.5.0')  # Yosemite 10.10.5
+            cfg_cmds.append('--disable-xcode-checks')
             if shell.build_options.buildWithAsan:
                 cfg_cmds.append('--enable-address-sanitizer')
             if shell.build_options.enableSimulatorArm32:
@@ -351,6 +352,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         cfg_cmds.append('--target=x86_64-apple-darwin14.5.0')  # Yosemite 10.10.5
+        cfg_cmds.append('--disable-xcode-checks')
         if shell.build_options.buildWithAsan:
             cfg_cmds.append('--enable-address-sanitizer')
         if shell.build_options.enableSimulatorArm64:
