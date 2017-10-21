@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/MozillaSecurity/funfuzz.svg?branch=master)](https://travis-ci.org/MozillaSecurity/funfuzz) [![Build status](https://ci.appveyor.com/api/projects/status/m8gw5echa7f2f26r/branch/master?svg=true)](https://ci.appveyor.com/project/MozillaSecurity/funfuzz/branch/master)
+[![Build Status](https://travis-ci.org/MozillaSecurity/funfuzz.svg?branch=master)](https://travis-ci.org/MozillaSecurity/funfuzz) [![Build status](https://ci.appveyor.com/api/projects/status/m8gw5echa7f2f26r/branch/master?svg=true)](https://ci.appveyor.com/project/MozillaSecurity/funfuzz/branch/master) [![codecov](https://codecov.io/gh/MozillaSecurity/funfuzz/branch/master/graph/badge.svg)](https://codecov.io/gh/MozillaSecurity/funfuzz)
 
 This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compare_jit compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
 
