@@ -1,5 +1,5 @@
 image:
-    - Visual Studio 2015
+    - Visual Studio 2017
 environment:
     matrix:
         - PYTHON: "C:\\Python27"
@@ -17,9 +17,10 @@ install:
     - "%PYTHON%\\python.exe -m pip install --upgrade flake8 pylint codecov"
     - "%PYTHON%\\python.exe -m pip install --upgrade pytest-flake8 pytest-pylint pytest-cov"
     - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+    - "choco install codecov"
 build: off
 test_script:
-    - "%PYTHON%\\python.exe -m pytest"
+    - "%PYTHON%\\python.exe -m pytest --cov-report xml"
 on_success:
-    - "%PYTHON%\\python.exe -m codecov -X gcov"
+    - "codecov -f coverage.xml"
 skip_branch_with_pr: true
