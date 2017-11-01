@@ -32,5 +32,6 @@ if __name__ == "__main__":
           install_requires=[
               "FuzzManager>=0.1.1",
               "lithium-reducer>=0.2.0",
+              "mercurial>=4.3.3",
           ],
           zip_safe=False)
