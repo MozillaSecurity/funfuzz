@@ -531,8 +531,15 @@ def createBustedFile(filename, e):  # pylint: disable=invalid-name,missing-param
         f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
         f.write("Backtrace:\n")
         f.write(traceback.format_exc() + "\n")
-    print("Compilation failed (%s) (details in %s)" % (e.decode("utf-8", errors="replace"),
-                                                       filename.decode("utf-8", errors="replace")))
+    try:
+        print("Compilation failed (%s) (details in %s)" % (e.decode("utf-8", errors="replace"),
+                                                           filename.decode("utf-8", errors="replace")))
+    except AttributeError:
+        # e may not have .decode especially when trying to run 32-bit binaries on WSL (which it cannot)
+        # The output seems to show 'Exec format error'
+        # FIXME: When we test this function, we should test whether e does have .decode or not.  # pylint: disable=fixme
+        # See https://github.com/MozillaSecurity/funfuzz/issues/143
+        print("Compilation failed (%s) (details in %s)" % (e, filename.decode("utf-8", errors="replace")))
 
 
 def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
