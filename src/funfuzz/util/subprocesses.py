@@ -15,7 +15,7 @@ import os
 import platform
 import re
 import shutil
-import stat  # Fixed after pylint 1.7.2 was released pylint: disable=bad-python3-import
+import stat
 import subprocess
 import sys
 import time
