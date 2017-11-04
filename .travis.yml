@@ -6,16 +6,15 @@ python:
     - "3.5"
     - "3.6"
 before_install:
-    - pip install --upgrade setuptools pip
-    - pip install --upgrade virtualenv
+    - pip install --upgrade pip setuptools virtualenv
 install:
     - pip --version
     - virtualenv --version
     - git --version
 before_script:
-    - pip install --upgrade flake8 pylint codecov
-    - pip install --upgrade pytest-flake8 pytest-pylint pytest-cov
-    - pip install -r requirements.txt
+    - pip install --upgrade codecov pytest-cov pytest-flake8 pytest-pylint
+    - pip install --upgrade .
+    - hg --version
 script:
     - python -m pytest
 after_success:
