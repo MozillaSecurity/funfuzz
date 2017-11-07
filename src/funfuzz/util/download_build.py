@@ -19,7 +19,8 @@ import stat  # Likely fixed in pylint 1.8.x series #  pylint: disable=bad-python
 import subprocess
 import sys
 import urllib
-from HTMLParser import HTMLParser  # pylint: disable=bad-python3-import,import-error
+
+from future.moves.html.parser import HTMLParser
 
 from . import subprocesses as sps
 
@@ -86,7 +87,7 @@ def parseOptions():  # pylint: disable=invalid-name,missing-docstring,missing-re
     return parser.parse_args()
 
 
-class MyHTMLParser(HTMLParser):  # pylint: disable=missing-docstring
+class MyHTMLParser(HTMLParser):  # pylint: disable=abstract-method,missing-docstring
 
     def getHrefLinks(self, html, baseURI):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
