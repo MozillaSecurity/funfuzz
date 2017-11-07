@@ -10,7 +10,7 @@
 from __future__ import absolute_import, print_function
 
 import argparse
-import ConfigParser  # pylint: disable=bad-python3-import,import-error
+import configparser
 import os
 import platform
 import re
@@ -426,7 +426,7 @@ def defaultBuildType(repoName, arch, debug, asan=False):  # pylint: disable=inva
 def writeDownloadedShellFMConf(urlLink, bDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     # pylint: disable=too-complex,too-many-branches
     """Writes an arbitrary .fuzzmanagerconf file for downloaded js shells."""
-    downloadedShellCfg = ConfigParser.SafeConfigParser()  # pylint: disable=invalid-name
+    downloadedShellCfg = configparser.SafeConfigParser()  # pylint: disable=invalid-name
     downloadedShellCfg.add_section('Main')
 
     # Note that this does not differentiate between debug/asan/optimized builds
@@ -469,7 +469,7 @@ def writeDownloadedShellFMConf(urlLink, bDir):  # pylint: disable=invalid-name,m
             downloadedShellCfg.write(cfgfile)
 
     # Required pieces of the .fuzzmanagerconf file are platform, product and os
-    cfg = ConfigParser.SafeConfigParser()
+    cfg = configparser.SafeConfigParser()
     cfg.read(downloadedShellFMConfPath)
     assert cfg.get('Main', 'platform')
     assert cfg.get('Main', 'product')

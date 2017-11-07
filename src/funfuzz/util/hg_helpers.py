@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import, print_function
 
-import ConfigParser  # pylint: disable=bad-python3-import,import-error
+import configparser
 import os
 import re
 import sys
@@ -41,12 +41,12 @@ def ensureMqEnabled():  # pylint: disable=invalid-name,missing-raises-doc
     user_hgrc = os.path.join(os.path.expanduser('~'), '.hgrc')
     assert os.path.isfile(user_hgrc)
 
-    user_hgrc_cfg = ConfigParser.SafeConfigParser()
+    user_hgrc_cfg = configparser.SafeConfigParser()
     user_hgrc_cfg.read(user_hgrc)
 
     try:
         user_hgrc_cfg.get('extensions', 'mq')
-    except ConfigParser.NoOptionError:
+    except configparser.NoOptionError:
         raise Exception('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
 
 
@@ -123,7 +123,7 @@ def getRepoNameFromHgrc(repoDir):  # pylint: disable=invalid-name,missing-param-
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Look in the hgrc file in the .hg directory of the repository and return the name."""
     assert isRepoValid(repoDir)
-    hgrc_cfg = ConfigParser.SafeConfigParser()
+    hgrc_cfg = configparser.SafeConfigParser()
     hgrc_cfg.read(sps.normExpUserPath(os.path.join(repoDir, '.hg', 'hgrc')))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgrc_cfg.get('paths', 'default').split('/') if i][-1]
