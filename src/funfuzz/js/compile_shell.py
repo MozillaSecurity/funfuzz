@@ -47,7 +47,7 @@ else:
     CLANG_X86_FLAG = b"-arch i386"
 
 if multiprocessing.cpu_count() > 2:
-    COMPILATION_JOBS = ((multiprocessing.cpu_count() * 5) // 4)
+    COMPILATION_JOBS = multiprocessing.cpu_count() + 1
 elif sps.isARMv7l:
     COMPILATION_JOBS = 3  # An ARM board
 else:
