@@ -341,7 +341,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.11 El Capitan and greater
-    elif sps.isMac and sps.macVer() >= [10, 10] and not shell.build_options.enable32:
+    elif sps.isMac and sps.macVer() >= [10, 11] and not shell.build_options.enable32:
         cfg_env[b"CC"] = b"clang " + CLANG_PARAMS
         cfg_env[b"CXX"] = b"clang++ " + CLANG_PARAMS
         if shell.build_options.buildWithAsan:
