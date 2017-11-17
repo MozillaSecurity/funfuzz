@@ -111,7 +111,7 @@ Replace anything between `<` and `>` with your desired parameters.
 * Ubuntu 16.04 LTS and later
   * Note: We may try to make this work on Ubuntu 14.04 LTS (via Travis)
 
-Fedora Linux has not been tested extensively and there may be a few bugs along the way.
+Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively and there may be a few bugs along the way.
 
 The following operating systems are old or less common and while they may still work, be prepared to **expect issues** along the way:
 
