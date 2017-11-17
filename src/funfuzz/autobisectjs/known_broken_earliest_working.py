@@ -101,7 +101,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
-    assert (not sps.isMac) or (sps.macVer() >= [10, 10])  # Only support at least Mac OS X 10.10
+    assert (not sps.isMac) or (sps.macVer() >= [10, 11])  # Only support at least Mac OS X 10.11
 
     # These should be in descending order, or bisection will break at earlier changesets.
     gczeal_value_flag = False

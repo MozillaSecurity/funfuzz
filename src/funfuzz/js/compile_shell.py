@@ -274,9 +274,9 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         if not shell.build_options.enableHardFp:
             cfg_cmds.append('--target=arm-linux-gnueabi')
     elif shell.build_options.enable32 and os.name == 'posix':
-        # 32-bit shell on Mac OS X 10.10 Yosemite and greater
+        # 32-bit shell on Mac OS X 10.11 El Capitan and greater
         if sps.isMac:
-            assert sps.macVer() >= [10, 10]  # We no longer support 10.9 Mavericks and prior.
+            assert sps.macVer() >= [10, 11]  # We no longer support 10.10 Yosemite and prior.
             # Uses system clang
             cfg_env[b"CC"] = cfg_env[b"HOST_CC"] = b"clang %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
             cfg_env[b"CXX"] = cfg_env[b"HOST_CXX"] = b"clang++ %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
@@ -297,7 +297,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                     cfg_env[b"AUTOCONF"] = b"autoconf213"
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-            cfg_cmds.append('--target=i386-apple-darwin14.5.0')  # Yosemite 10.10.5
+            cfg_cmds.append('--target=i386-apple-darwin15.6.0')  # El Capitan 10.11.6
             cfg_cmds.append('--disable-xcode-checks')
             if shell.build_options.buildWithAsan:
                 cfg_cmds.append('--enable-address-sanitizer')
@@ -340,7 +340,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         else:
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-    # 64-bit shell on Mac OS X 10.10 Yosemite and greater
+    # 64-bit shell on Mac OS X 10.11 El Capitan and greater
     elif sps.isMac and sps.macVer() >= [10, 10] and not shell.build_options.enable32:
         cfg_env[b"CC"] = b"clang " + CLANG_PARAMS
         cfg_env[b"CXX"] = b"clang++ " + CLANG_PARAMS
@@ -351,7 +351,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_env[b"AUTOCONF"] = b"/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-        cfg_cmds.append('--target=x86_64-apple-darwin14.5.0')  # Yosemite 10.10.5
+        cfg_cmds.append('--target=x86_64-apple-darwin15.6.0')  # El Capitan 10.11.6
         cfg_cmds.append('--disable-xcode-checks')
         if shell.build_options.buildWithAsan:
             cfg_cmds.append('--enable-address-sanitizer')
