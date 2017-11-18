@@ -21,6 +21,7 @@ addons:
         packages:
             - autoconf2.13
             - cargo
+            - expect-dev  # unbuffer requires this
             - g++-5
             - g++-5-multilib
             - gcc-5
@@ -41,7 +42,12 @@ install:
     - gcc --version
     - g++ --version
     - hg --version
+before_script:
+    # To run everything locally in local funfuzz github repository directory:
+    #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
+    - python -m pytest --flake8 --pylint -p no:cov setup.py src/  # linting-only
 script:
-    - python -m pytest
+    # Run only tests and coverage, exclude linters
+    - travis_wait 50 unbuffer python -m pytest -p no:flake8 -p no:pylint --cov=`pwd` --cov-report term-missing
 after_success:
     - codecov
