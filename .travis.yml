@@ -1,5 +1,5 @@
 dist: trusty
-sudo: false
+sudo: required  # has ~2x RAM: https://docs.travis-ci.com/user/reference/overview/#Virtualization-environments
 language: python
 python:
     - "2.7"
