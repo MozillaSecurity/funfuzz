@@ -1,10 +1,19 @@
 dist: trusty
 sudo: required  # has ~2x RAM: https://docs.travis-ci.com/user/reference/overview/#Virtualization-environments
 language: python
-python:
-    - "2.7"
-    - "3.5"
-    - "3.6"
+matrix:
+    fast_finish: true
+    include:
+        - python: "2.7"
+        - python: "3.5"
+        - python: "3.6"
+        - python: "3.7-dev"
+        - python: "nightly"
+    allow_failures:
+        - python: "3.5"
+        - python: "3.6"
+        - python: "3.7-dev"
+        - python: "nightly"
 before_install:
     - pip install --upgrade pip setuptools virtualenv
 install:
