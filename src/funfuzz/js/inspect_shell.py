@@ -169,20 +169,20 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     """Verify that the binary is compiled as intended."""
     binary = sh.getShellCacheFullPath()
 
-    assert archOfBinary(binary) == ('32' if sh.build_options.enable32 else '64')
+    assert archOfBinary(binary) == ('32' if sh.build_opts.enable32 else '64')
 
     # Testing for debug or opt builds are different because there can be hybrid debug-opt builds.
-    assert queryBuildConfiguration(binary, 'debug') == sh.build_options.enableDbg
+    assert queryBuildConfiguration(binary, 'debug') == sh.build_opts.enableDbg
 
     if sps.isARMv7l:
-        assert testIsHardFpShellARM(binary) == sh.build_options.enableHardFp
+        assert testIsHardFpShellARM(binary) == sh.build_opts.enableHardFp
 
-    assert queryBuildConfiguration(binary, 'more-deterministic') == sh.build_options.enableMoreDeterministic
-    assert queryBuildConfiguration(binary, 'asan') == sh.build_options.buildWithAsan
+    assert queryBuildConfiguration(binary, 'more-deterministic') == sh.build_opts.enableMoreDeterministic
+    assert queryBuildConfiguration(binary, 'asan') == sh.build_opts.buildWithAsan
     assert (queryBuildConfiguration(binary, 'arm-simulator') and
-            sh.build_options.enable32) == sh.build_options.enableSimulatorArm32
+            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
     assert (queryBuildConfiguration(binary, 'arm-simulator') and not
-            sh.build_options.enable32) == sh.build_options.enableSimulatorArm64
+            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
     # Note that we should test whether a shell has profiling turned on or not.
     # m-c rev 324836:800a887c705e turned profiling on by default, so once this is beyond the
     # earliest known working revision, we can probably test it here.
