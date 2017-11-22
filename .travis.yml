@@ -46,6 +46,8 @@ before_script:
     # To run everything locally in local funfuzz github repository directory:
     #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
     - python -m pytest --flake8 --pylint -p no:cov setup.py src/  # linting-only
+    - mkdir -p ~/trees/
+    - time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
     # Run only tests and coverage, exclude linters
     - travis_wait 50 unbuffer python -m pytest -p no:flake8 -p no:pylint --cov=`pwd` --cov-report term-missing
