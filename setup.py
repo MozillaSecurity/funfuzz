@@ -32,6 +32,10 @@ if __name__ == "__main__":
           install_requires=[
               "FuzzManager>=0.1.1",
               "lithium-reducer>=0.2.0",
-              "mercurial>=4.2.2",
           ],
+          extras_require={
+              ':python_version=="2.7"': [
+                  'mercurial>=4.4.1'
+              ]
+          },
           zip_safe=False)
