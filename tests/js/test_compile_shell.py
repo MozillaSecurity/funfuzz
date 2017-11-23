@@ -127,10 +127,12 @@ class TestCase(unittest.TestCase):
 
 
 class CompileTests(TestCase):
-    def test_compile_shell(self):  # pylint: disable=no-self-use
-        """Tests for compiling the shell"""
+    def test_compile_shell_A_dbg(self):  # pylint: disable=no-self-use
+        """Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support."""
         self.assertEqual(os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central")), True)
-        build_opts = "--enable-debug --enable-more-deterministic"  # Remember to update the expected binary filename
+        # Remember to update the expected binary filename
+        build_opts = ("--enable-debug --disable-optimize --enable-more-deterministic "
+                      "--build-with-valgrind --enable-oom-breakpoint")
         # Change the repository location by uncommenting this line and specifying the right one
         # "-R ~/trees/mozilla-central/")
         build_opts_processed = funfuzz.js.build_options.parseShellOptions(build_opts)
@@ -142,8 +144,30 @@ class CompileTests(TestCase):
         fz.setHgHash(hg_hash_of_default)
         fz.set_build_opts(build_opts_processed)
 
-        # Test that compiling a 64-bit debug shell works
         result = fz.run(["-b", build_opts])
         self.assertEqual(result, 0)
         self.assertEqual(os.path.isfile(os.path.join(
-            os.path.expanduser("~"), "shell-cache", "js-dbg-64-dm-linux-" + hg_hash_of_default)), 0)
+            os.path.expanduser("~"), "shell-cache",
+            "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)), 0)
+
+    def test_compile_shell_B_opt(self):  # pylint: disable=no-self-use
+        """Test compilation of an opt shell with both profiling and Intl support disabled."""
+        # Remember to update the expected binary filename
+        build_opts = ("--disable-debug --disable-profiling --without-intl-api")
+        # Change the repository location by uncommenting this line and specifying the right one
+        # "-R ~/trees/mozilla-central/")
+        build_opts_processed = funfuzz.js.build_options.parseShellOptions(build_opts)
+
+        hg_hash_of_default = funfuzz.util.hg_helpers.getRepoHashAndId(build_opts_processed.repoDir)[0]
+
+        fz = funfuzz.js.compile_shell.CompiledShell()
+        fz.setShellNameWithoutExt(build_opts_processed, hg_hash_of_default)
+        fz.setHgHash(hg_hash_of_default)
+        fz.set_build_opts(build_opts_processed)
+
+        # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
+        result = fz.run(["-b", build_opts])
+        self.assertEqual(result, 0)
+        self.assertEqual(os.path.isfile(os.path.join(
+            os.path.expanduser("~"), "shell-cache",
+            "js-profDisabled-64-intlDisabled-linux-" + hg_hash_of_default)), 0)
