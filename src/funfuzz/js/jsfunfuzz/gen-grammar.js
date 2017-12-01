@@ -907,7 +907,8 @@ var exprMakers =
   function(d, b) { return "(void options('strict'))"; },
 
   // Spidermonkey: versions
-  function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; },
+  // Commenting out because this version function has been removed as of m-c rev 392455 (Fx59) - 589914e65db7
+  //function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; },
 
   // More special Spidermonkey shell functions
   // (Note: functions without returned objects or visible side effects go in testing-functions.js, in order to allow presence/absence differential testing.)
@@ -1572,12 +1573,6 @@ function makeComprehension(d, b)
 function makeForInLHS(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-
-// JS 1.7 only (removed in JS 1.8)
-//
-//  if (version() == 170 && rnd(4) === 0)
-//    return cat(["[", makeLValue(d, b), ", ", makeLValue(d, b), "]"]);
-
   return makeLValue(d, b);
 }
 
