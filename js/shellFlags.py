@@ -69,6 +69,7 @@ def randomFlagSet(shellPath):
     # Anything in-between involving let probably needs "-e 'version(185);'" to see if we can bypass breakage
     # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
     #     args.append("--execute='version(185);'")
+    # Note that the version function was removed in m-c rev 392455 (Fx59) - 589914e65db7
 
     # Note for future: --wasm-check-bce is only useful for x86 and ARM32
 
