@@ -123,8 +123,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
         required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
-    if options.buildWithClang and sps.isWin:
-        required.append('3b26d191d84e')  # m-c 316445 Fx52, 1st w/ reliable Clang 3.9.0 builds on Windows
     if "--wasm-always-baseline" in flags:
         required.append('893294e2a387')  # m-c 301769 Fx50, 1st w/--wasm-always-baseline, see bug 1232205
     if '--ion-aa=flow-sensitive' in flags or '--ion-aa=flow-insensitive' in flags:
