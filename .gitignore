@@ -11,6 +11,9 @@
 .gdb_history
 .vscode/
 
+# Code coverage
+.coverage
+
 # Linting via pytest
 /.cache/
 
