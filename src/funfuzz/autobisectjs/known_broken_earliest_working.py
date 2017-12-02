@@ -38,8 +38,6 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange('b160657339f8', '06d07689a043'),  # Fx36, unstable spidermonkey
-        hgrange('1c9c64027cac', 'ef7a85ec6595'),  # Fx37, unstable spidermonkey
         hgrange('7c25be97325d', 'd426154dd31d'),  # Fx38, broken spidermonkey
         hgrange('da286f0f7a49', '62fecc6ab96e'),  # Fx39, broken spidermonkey
         hgrange('8a416fedec44', '7f9252925e26'),  # Fx41, broken spidermonkey
@@ -103,13 +101,14 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 11])  # Only support at least Mac OS X 10.11
 
+    # This code is kept in case in the future we have an earliest known working rev that requires a flag
     # These should be in descending order, or bisection will break at earlier changesets.
-    gczeal_value_flag = False
-    # flags is a list of flags, and the option must exactly match.
-    for entry in flags:
-        # What comes after these flags needs to be a number, so we look for the string instead.
-        if '--gc-zeal=' in entry:
-            gczeal_value_flag = True
+    # gczeal_value_flag = False
+    # # flags is a list of flags, and the option must exactly match.
+    # for entry in flags:
+    #     # What comes after these flags needs to be a number, so we look for the string instead.
+    #     if '--gc-zeal=' in entry:
+    #         gczeal_value_flag = True
 
     required = []
 
@@ -157,13 +156,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
     if '--no-cgc' in flags:
         required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    if sps.isLinux:
-        required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
-    if '--ion-sink=on' in flags:
-        required.append('9188c8b7962b')  # m-c 217242 Fx36, 1st w/--ion-sink=on, see bug 1093674
-    if gczeal_value_flag:
-        required.append('03c6a758c9e8')  # m-c 216625 Fx36, 1st w/--gc-zeal=14, see bug 1101602
-    required.append('dc4b163f7db7')  # m-c 213475 Fx36, prior builds have issues with Xcode 7.0 and above
+    required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
 
     return "first((" + common_descendants(required) + ") - (" + skip_revs + "))"
 
