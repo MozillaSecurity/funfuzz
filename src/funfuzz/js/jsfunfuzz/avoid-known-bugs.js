@@ -36,6 +36,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("dumpObject") == -1                // shows heap addresses
        && code.indexOf("dumpHeap") == -1                  // shows heap addresses
        && code.indexOf("dumpStringRepresentation") == -1  // shows memory addresses
+       && code.indexOf("evalInCooperativeThread") == -1   // causes diffs especially in --no-threads
        && code.indexOf("evalInWorker") == -1              // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("getBacktrace") == -1              // getBacktrace returns memory addresses which differs depending on flags
        && code.indexOf("getLcovInfo") == -1
