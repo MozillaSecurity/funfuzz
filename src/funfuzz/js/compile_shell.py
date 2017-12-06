@@ -113,16 +113,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
         with LockDir(getLockDirPath(options.build_opts.repoDir)):
             shell = CompiledShell()
-            if options.revision:
-                shell.setShellNameWithoutExt(options.build_opts, options.revision)
-                shell.setHgHash(options.revision)
-            else:
-                local_orig_hg_hash = hg_helpers.getRepoHashAndId(options.build_opts.repoDir)[0]
-                shell.setShellNameWithoutExt(options.build_opts, local_orig_hg_hash)
-                shell.setHgHash(local_orig_hg_hash)
-
-            shell.set_build_opts(options.build_opts)
-
+            set_build_options(shell, options.build_opts, options.revision)
             obtainShell(shell, updateToRev=options.revision)
             print(shell.getShellCacheFullPath())
 
@@ -697,6 +688,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
     def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         shell = CompiledShell()
         print("Rev %s:" % rev.decode("utf-8", errors="replace"), end=" ")
+        set_build_options(shell, options.build_options, rev)
 
         try:
             obtainShell(shell, updateToRev=rev)
@@ -779,6 +771,25 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             txt_info = '-'.join(shell.getS3TarballWithExt().split('-')[:-1] + ['latest']) + '.txt'
             s3cache_obj.uploadStrToS3('', txt_info, shell.getS3TarballWithExt())
         os.remove(shell.getS3TarballWithExtFullPath())
+
+
+def set_build_options(shell, opts, revision):
+    """Sets shell parameters according to desired options.
+
+    Args:
+        shell (object): "shell" object.
+        opts (object): "build_options" object.
+        revision (str): Mercurial revision hash.
+    """
+    if revision:
+        shell.setShellNameWithoutExt(opts, revision)
+        shell.setHgHash(revision)
+    else:
+        local_orig_hg_hash = hg_helpers.getRepoHashAndId(opts.repoDir)[0]
+        shell.setShellNameWithoutExt(opts, local_orig_hg_hash)
+        shell.setHgHash(local_orig_hg_hash)
+
+    shell.set_build_opts(opts)
 
 
 def updateRepo(repo, rev):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
