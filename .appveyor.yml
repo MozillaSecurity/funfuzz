@@ -22,6 +22,6 @@ test_script:
     # Uncomment and replace the line above to test everything once compilation tests work on AppVeyor
     # - "%PYTHON%\\python.exe -m pytest --flake8 --pylint -p no:cov setup.py src/"
     # - "%PYTHON%\\python.exe -m pytest -p no:flake8 -p no:pylint --cov-report xml"
-on_success:
-    - "codecov -f coverage.xml"
+# on_success:
+#     - "codecov -f coverage.xml"
 skip_branch_with_pr: true
