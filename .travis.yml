@@ -45,7 +45,14 @@ install:
 before_script:
     # To run everything locally in local funfuzz github repository directory:
     #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
-    - python -m pytest --flake8 --pylint -p no:cov setup.py src/  # linting-only
+    # Linting-only: (skip pylint with development Python versions)
+    - |
+      NIGHTLY_VERSION="3.7"
+      if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "$NIGHTLY_VERSION" ] ; then
+          python -m pytest --flake8 -p no:pylint -p no:cov setup.py src/
+      else
+          python -m pytest --flake8 --pylint -p no:cov setup.py src/
+      fi
     - mkdir -p ~/trees/
     - time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
