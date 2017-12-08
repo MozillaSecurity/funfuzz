@@ -7,7 +7,7 @@
 """Test comparing the output of SpiderMonkey using various flags (usually JIT-related).
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import sys

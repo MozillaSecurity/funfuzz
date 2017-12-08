@@ -9,7 +9,7 @@
 May be replaced in the future, with a better version that supports both Firefox and SpiderMonkey.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import math
 import tempfile

@@ -9,7 +9,7 @@
 Not merged into Lithium, unsure if this still works for now. Still relies on grabCrashLog.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 from optparse import OptionParser  # pylint: disable=deprecated-module
