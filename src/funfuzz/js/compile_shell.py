@@ -31,20 +31,20 @@ from ..util.lock_dir import LockDir
 S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autoBisect
 
 if sps.isWin:
-    MAKE_BINARY = b"mozmake"
-    CLANG_PARAMS = b"-fallback"
-    # CLANG_ASAN_PARAMS = b"-fsanitize=address -Dxmalloc=myxmalloc"
+    MAKE_BINARY = "mozmake"
+    CLANG_PARAMS = "-fallback"
+    # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
     # Note that Windows ASan builds are still a work-in-progress
-    CLANG_ASAN_PARAMS = b""
+    CLANG_ASAN_PARAMS = ""
 else:
-    MAKE_BINARY = b"make"
-    CLANG_PARAMS = b"-Qunused-arguments"
+    MAKE_BINARY = "make"
+    CLANG_PARAMS = "-Qunused-arguments"
     # See https://bugzilla.mozilla.org/show_bug.cgi?id=935795#c3 for some of the following flags:
-    # CLANG_ASAN_PARAMS = b"-fsanitize=address -Dxmalloc=myxmalloc -mllvm -asan-stack=0"
+    # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc -mllvm -asan-stack=0"
     # The flags above seem to fix a problem not on the js shell.
-    CLANG_ASAN_PARAMS = b"-fsanitize=address -Dxmalloc=myxmalloc"
-    SSE2_FLAGS = b"-msse2 -mfpmath=sse"  # See bug 948321
-    CLANG_X86_FLAG = b"-arch i386"
+    CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
+    SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
+    CLANG_X86_FLAG = "-arch i386"
 
 if multiprocessing.cpu_count() > 2:
     COMPILATION_JOBS = multiprocessing.cpu_count() + 1
@@ -69,8 +69,8 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
         self.cfg = ''
         self.destDir = ''  # pylint: disable=invalid-name
-        self.addedEnv = b""  # pylint: disable=invalid-name
-        self.fullEnv = b""  # pylint: disable=invalid-name
+        self.addedEnv = ""  # pylint: disable=invalid-name
+        self.fullEnv = ""  # pylint: disable=invalid-name
         self.jsCfgFile = ''  # pylint: disable=invalid-name
 
         self.jsMajorVersion = ''  # pylint: disable=invalid-name
@@ -198,7 +198,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
     def getShellNameWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        return self.shellNameWithoutExt + (b".exe" if sps.isWin else b"")
+        return self.shellNameWithoutExt + (".exe" if sps.isWin else "")
 
     def getShellNameWithoutExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -307,14 +307,14 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     cfg_cmds = []
     cfg_env = copy.deepcopy(os.environ)
     orig_cfg_env = copy.deepcopy(os.environ)
-    cfg_env[b"AR"] = b"ar"
+    cfg_env["AR"] = "ar"
     if sps.isARMv7l:
         # 32-bit shell on ARM boards, e.g. odroid boards.
         # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
         assert shell.build_opts.enable32, 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
         if not shell.build_opts.enableHardFp:
-            cfg_env[b"CC"] = b"gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
-            cfg_env[b"CXX"] = b"g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
+            cfg_env["CC"] = "gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
+            cfg_env["CXX"] = "g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         # From mjrosenb: things might go wrong if these three lines are not present for
@@ -329,23 +329,23 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         if sps.isMac:
             assert sps.macVer() >= [10, 11]  # We no longer support 10.10 Yosemite and prior.
             # Uses system clang
-            cfg_env[b"CC"] = cfg_env[b"HOST_CC"] = b"clang %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
-            cfg_env[b"CXX"] = cfg_env[b"HOST_CXX"] = b"clang++ %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
+            cfg_env["CC"] = cfg_env["HOST_CC"] = "clang %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
+            cfg_env["CXX"] = cfg_env["HOST_CXX"] = "clang++ %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
             if shell.build_opts.buildWithAsan:
-                cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
-                cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
-            cfg_env[b"CC"] += b" " + CLANG_X86_FLAG  # only needed for CC, not HOST_CC
-            cfg_env[b"CXX"] += b" " + CLANG_X86_FLAG  # only needed for CXX, not HOST_CXX
-            cfg_env[b"RANLIB"] = b"ranlib"
-            cfg_env[b"AS"] = b"$CC"
-            cfg_env[b"LD"] = b"ld"
-            cfg_env[b"STRIP"] = b"strip -x -S"
-            cfg_env[b"CROSS_COMPILE"] = b"1"
+                cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
+                cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
+            cfg_env["CC"] += " " + CLANG_X86_FLAG  # only needed for CC, not HOST_CC
+            cfg_env["CXX"] += " " + CLANG_X86_FLAG  # only needed for CXX, not HOST_CXX
+            cfg_env["RANLIB"] = "ranlib"
+            cfg_env["AS"] = "$CC"
+            cfg_env["LD"] = "ld"
+            cfg_env["STRIP"] = "strip -x -S"
+            cfg_env["CROSS_COMPILE"] = "1"
             if sps.isProgramInstalled('brew'):
-                cfg_env[b"AUTOCONF"] = b"/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
+                cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
                 # Hacked up for new and old Homebrew configs, we can probably just call autoconf213
-                if not os.path.isfile(sps.normExpUserPath(cfg_env[b"AUTOCONF"])):
-                    cfg_env[b"AUTOCONF"] = b"autoconf213"
+                if not os.path.isfile(sps.normExpUserPath(cfg_env["AUTOCONF"])):
+                    cfg_env["AUTOCONF"] = "autoconf213"
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
             cfg_cmds.append('--target=i386-apple-darwin15.6.0')  # El Capitan 10.11.6
@@ -362,19 +362,19 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                 cfg_cmds.append('--enable-simulator=arm')
         # 32-bit shell on 32/64-bit x86 Linux
         elif sps.isLinux and not sps.isARMv7l:
-            cfg_env[b"PKG_CONFIG_LIBDIR"] = b"/usr/lib/pkgconfig"
+            cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
             if shell.build_opts.buildWithClang:
-                cfg_env[b"CC"] = cfg_env[b"HOST_CC"] = str(
+                cfg_env["CC"] = cfg_env["HOST_CC"] = str(
                     "clang %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
-                cfg_env[b"CXX"] = cfg_env[b"HOST_CXX"] = str(
+                cfg_env["CXX"] = cfg_env["HOST_CXX"] = str(
                     "clang++ %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
             else:
                 # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
-                cfg_env[b"CC"] = b"gcc -m32 %s" % SSE2_FLAGS
-                cfg_env[b"CXX"] = b"g++ -m32 %s" % SSE2_FLAGS
+                cfg_env["CC"] = "gcc -m32 %s" % SSE2_FLAGS
+                cfg_env["CXX"] = "g++ -m32 %s" % SSE2_FLAGS
             if shell.build_opts.buildWithAsan:
-                cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
-                cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
+                cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
+                cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
             cfg_cmds.append('--target=i686-pc-linux')
@@ -393,13 +393,13 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.11 El Capitan and greater
     elif sps.isMac and sps.macVer() >= [10, 11] and not shell.build_opts.enable32:
-        cfg_env[b"CC"] = b"clang " + CLANG_PARAMS
-        cfg_env[b"CXX"] = b"clang++ " + CLANG_PARAMS
+        cfg_env["CC"] = "clang " + CLANG_PARAMS
+        cfg_env["CXX"] = "clang++ " + CLANG_PARAMS
         if shell.build_opts.buildWithAsan:
-            cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
-            cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
+            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
+            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
         if sps.isProgramInstalled('brew'):
-            cfg_env[b"AUTOCONF"] = b"/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
+            cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         cfg_cmds.append('--target=x86_64-apple-darwin15.6.0')  # El Capitan 10.11.6
@@ -410,20 +410,20 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append('--enable-simulator=arm64')
 
     elif sps.isWin:
-        cfg_env[b"MAKE"] = b"mozmake"  # Workaround for bug 948534
+        cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
-            cfg_env[b"CC"] = b"clang-cl.exe " + CLANG_PARAMS
-            cfg_env[b"CXX"] = b"clang-cl.exe " + CLANG_PARAMS
+            cfg_env["CC"] = "clang-cl.exe " + CLANG_PARAMS
+            cfg_env["CXX"] = "clang-cl.exe " + CLANG_PARAMS
         if shell.build_opts.buildWithAsan:
-            cfg_env[b"CFLAGS"] = CLANG_ASAN_PARAMS
-            cfg_env[b"CXXFLAGS"] = CLANG_ASAN_PARAMS
-            cfg_env[b"LDFLAGS"] = (b"clang_rt.asan_dynamic-x86_64.lib "
-                                   b"clang_rt.asan_dynamic_runtime_thunk-x86_64.lib "
-                                   b"clang_rt.asan_dynamic-x86_64.dll")
-            cfg_env[b"HOST_CFLAGS"] = b" "
-            cfg_env[b"HOST_CXXFLAGS"] = b" "
-            cfg_env[b"HOST_LDFLAGS"] = b" "
-            cfg_env[b"LIB"] += br"C:\Program Files\LLVM\lib\clang\4.0.0\lib\windows"
+            cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
+            cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
+            cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
+                                  "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib "
+                                  "clang_rt.asan_dynamic-x86_64.dll")
+            cfg_env["HOST_CFLAGS"] = " "
+            cfg_env["HOST_CXXFLAGS"] = " "
+            cfg_env["HOST_LDFLAGS"] = " "
+            cfg_env["LIB"] += r"C:\Program Files\LLVM\lib\clang\4.0.0\lib\windows"
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.build_opts.enable32:
@@ -445,11 +445,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if shell.build_opts.buildWithClang:
-            cfg_env[b"CC"] = b"clang " + CLANG_PARAMS
-            cfg_env[b"CXX"] = b"clang++ " + CLANG_PARAMS
+            cfg_env["CC"] = "clang " + CLANG_PARAMS
+            cfg_env["CXX"] = "clang++ " + CLANG_PARAMS
         if shell.build_opts.buildWithAsan:
-            cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
-            cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
+            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
+            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.build_opts.buildWithAsan:
@@ -457,11 +457,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
 
     if shell.build_opts.buildWithClang:
         if sps.isWin:
-            assert b"clang-cl" in cfg_env[b"CC"]
-            assert b"clang-cl" in cfg_env[b"CXX"]
+            assert "clang-cl" in cfg_env["CC"]
+            assert "clang-cl" in cfg_env["CXX"]
         else:
-            assert b"clang" in cfg_env[b"CC"]
-            assert b"clang++" in cfg_env[b"CXX"]
+            assert "clang" in cfg_env["CC"]
+            assert "clang++" in cfg_env["CXX"]
         cfg_cmds.append('--disable-jemalloc')  # See bug 1146895
 
     if shell.build_opts.enableDbg:
