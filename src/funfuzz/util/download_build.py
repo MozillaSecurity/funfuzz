@@ -466,7 +466,7 @@ def writeDownloadedShellFMConf(urlLink, bDir):  # pylint: disable=invalid-name,m
 
     downloadedShellFMConfPath = os.path.join(bDir, 'dist', 'js.fuzzmanagerconf')  # pylint: disable=invalid-name
     if not os.path.isfile(downloadedShellFMConfPath):
-        with open(downloadedShellFMConfPath, 'wb') as cfgfile:
+        with open(downloadedShellFMConfPath, 'w') as cfgfile:
             downloadedShellCfg.write(cfgfile)
 
     # Required pieces of the .fuzzmanagerconf file are platform, product and os

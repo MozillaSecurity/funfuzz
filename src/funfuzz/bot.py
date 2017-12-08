@@ -162,7 +162,7 @@ def printMachineInfo():  # pylint: disable=invalid-name
     hgrc_path = os.path.join(path0, '.hg', 'hgrc')
     if os.path.isfile(hgrc_path):
         print("The hgrc of this repository is:")
-        with open(hgrc_path, 'rb') as f:
+        with open(hgrc_path, 'r') as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
             print(line.rstrip())

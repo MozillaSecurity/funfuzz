@@ -55,8 +55,8 @@ def logFileName(logDir, i, t):  # pylint: disable=invalid-name,missing-docstring
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    sys.stdout = open(logFileName(logDir, i, "out"), 'wb', buffering=0)
-    sys.stderr = open(logFileName(logDir, i, "err"), 'wb', buffering=0)
+    sys.stdout = open(logFileName(logDir, i, "out"), 'w', buffering=0)
+    sys.stderr = open(logFileName(logDir, i, "err"), 'w', buffering=0)
     fun(*(someArgs + (i,)))
 
 

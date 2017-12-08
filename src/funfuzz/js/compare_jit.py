@@ -125,7 +125,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
-            with open(logPrefix + "-summary.txt", 'wb') as f:
+            with open(logPrefix + "-summary.txt", 'w') as f:
                 f.write('\n'.join(r.issues + [sps.shellify(command), "compare_jit found a more serious bug"]) + '\n')
             print("  %s" % sps.shellify(command))
             return (r.lev, r.crashInfo)
@@ -189,7 +189,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                              os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
-                with open(logPrefix + "-summary.txt", 'wb') as f:
+                with open(logPrefix + "-summary.txt", 'w') as f:
                     f.write(rerunCommand + "\n\n" + summary)
                 print("%s | %s" % (infilename, js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))

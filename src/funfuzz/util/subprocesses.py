@@ -479,7 +479,7 @@ def test_rmTreeIncludingReadOnly():  # pylint: disable=invalid-name
     read_only_dir = os.path.join(test_dir, 'nestedReadOnlyDir')
     os.mkdir(read_only_dir)
     filename = os.path.join(read_only_dir, 'test.txt')
-    with open(filename, 'wb') as f:
+    with open(filename, 'w') as f:
         f.write('testing\n')
 
     os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)

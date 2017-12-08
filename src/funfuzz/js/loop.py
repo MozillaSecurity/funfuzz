@@ -172,7 +172,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with open(logPrefix + '-out.txt', 'rb') as f:
+            with open(logPrefix + '-out.txt', 'r') as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace('/*FRC-', '/*') for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
             file_manipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
@@ -251,7 +251,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
-    with open(jsfunfuzzOutputFilename, 'rb') as f:
+    with open(jsfunfuzzOutputFilename, 'r') as f:
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]

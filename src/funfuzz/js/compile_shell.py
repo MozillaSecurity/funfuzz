@@ -578,7 +578,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
 def createBustedFile(filename, e):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Create a .busted file with the exception message and backtrace included."""
-    with open(filename, 'wb') as f:
+    with open(filename, 'w') as f:
         f.write("Caught exception %s (%s)\n" % (repr(e), str(e)))
         f.write("Backtrace:\n")
         f.write(traceback.format_exc() + "\n")
@@ -614,7 +614,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     elif sps.isWin:
         fmconf_os = 'windows'
 
-    with open(log, 'ab') as f:
+    with open(log, "a") as f:
         f.write('# Information about shell:\n# \n')
 
         f.write('# Create another shell in shell-cache like this one:\n')

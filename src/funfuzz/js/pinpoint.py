@@ -60,7 +60,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
             print("Done running autobisect. Log: %s" % autoBisectLogFilename)
 
-            with open(autoBisectLogFilename, 'rb') as f:
+            with open(autoBisectLogFilename, 'r') as f:
                 lines = f.readlines()
                 autoBisectLog = file_manipulation.truncateMid(lines, 50, ["..."])  # pylint: disable=invalid-name
     else:
@@ -105,7 +105,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
     hasTryItOut = False  # pylint: disable=invalid-name
     hasTryItOutRegex = re.compile(r'count=[0-9]+; tryItOut\("')  # pylint: disable=invalid-name
 
-    with open(infilename, 'rb') as f:
+    with open(infilename, 'r') as f:
         for line in file_manipulation.linesWith(f, '; tryItOut("'):
             # Checks if testcase came from jsfunfuzz or compare_jit.
             # Do not use .match here, it only matches from the start of the line:
@@ -119,12 +119,12 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
 
         tryItOutAndCountRegex = re.compile(r'"\);\ncount=([0-9]+); tryItOut\("',  # pylint: disable=invalid-name
                                            re.MULTILINE)
-        with open(infilename, 'rb') as f:
+        with open(infilename, 'r') as f:
             infileContents = f.read()  # pylint: disable=invalid-name
             infileContents = re.sub(tryItOutAndCountRegex,  # pylint: disable=invalid-name
                                     ';\\\n"); count=\\1; tryItOut("\\\n',
                                     infileContents)
-        with open(infilename, 'wb') as f:
+        with open(infilename, 'w') as f:
             f.write(infileContents)
 
         print()
@@ -137,7 +137,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
     # 1-line offset.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         intendedLines = []  # pylint: disable=invalid-name
-        with open(infilename, 'rb') as f:
+        with open(infilename, 'r') as f:
             for line in f:  # The testcase is likely to already be partially reduced.
                 if 'dumpln(cookie' not in line:  # jsfunfuzz-specific line ignore
                     # This should be simpler than re.compile.
@@ -172,14 +172,14 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
     if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         infileContents = []  # pylint: disable=invalid-name
-        with open(infilename, 'rb') as f:
+        with open(infilename, 'r') as f:
             for line in f:
                 if 'NIGEBDD' in line:
                     infileContents.append(line.replace('NIGEBDD', 'DDBEGIN'))
                     infileContents.append('\n')  # The 1-line offset is added here.
                     continue
                 infileContents.append(line)
-        with open(infilename, 'wb') as f:
+        with open(infilename, 'w') as f:
             f.writelines(infileContents)
 
         print()

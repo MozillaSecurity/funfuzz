@@ -618,7 +618,7 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):  # pylint: disable=missing-param
     """Ensure that the cache folder is named with the correct numeric ID."""
     srcUrlPath = sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
     if os.path.isfile(srcUrlPath):
-        with open(srcUrlPath, 'rb') as f:
+        with open(srcUrlPath, 'r') as f:
             fContents = f.read().splitlines()
 
         idNumFolderName = cacheFolder.split('-')[-1]
@@ -747,7 +747,7 @@ def getTimestampAndHashFromTboxFiles(folder):  # pylint: disable=missing-param-d
     downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
     for fn in os.listdir(downloadDir):
         if fn.startswith('firefox-') and fn.endswith('.txt') and '_info' not in fn:
-            with open(os.path.join(downloadDir, fn), 'rb') as f:
+            with open(os.path.join(downloadDir, fn), 'r') as f:
                 fContents = f.read().splitlines()
             break
     assert len(fContents) == 2, 'Contents of the .txt file should only have 2 lines'
@@ -798,7 +798,7 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):  # p
 
 def readIncompleteBuildTxtFile(txtFile, idNum):  # pylint: disable=missing-raises-doc,missing-param-doc,missing-type-doc
     """Read the INCOMPLETE_NOTE text file indicating that this particular build is incomplete."""
-    with open(txtFile, 'rb') as f:
+    with open(txtFile, 'r') as f:
         contentsF = f.read()
         if 'is incomplete.' not in contentsF:
             print("Contents of %s is: %r" % (txtFile, contentsF))
@@ -872,7 +872,7 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):  # pylint: disa
             os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
         sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
     assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
-    with open(txtFile, 'wb') as f:
+    with open(txtFile, 'w') as f:
         f.write('This build with numeric ID ' + num + ' is incomplete.')
     assert num == getIdFromTboxUrl(url), 'The numeric ID ' + num + \
         ' has to be the one we downloaded from ' + url
