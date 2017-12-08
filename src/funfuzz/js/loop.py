@@ -302,6 +302,6 @@ assert mightUseDivision("eval('//x'); a / b;")
 
 
 if __name__ == "__main__":
-    # FIXME: Replace os.getcwdu() prior to moving to Python 3  # pylint: disable=fixme
     # pylint: disable=no-member
-    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], create_collector.createCollector("jsfunfuzz"))
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu() if sys.version_info.major == 2 else os.getcwd()),
+                    sys.argv[1:], create_collector.createCollector("jsfunfuzz"))

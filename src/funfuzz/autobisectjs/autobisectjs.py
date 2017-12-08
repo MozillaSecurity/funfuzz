@@ -849,7 +849,7 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):  
 
     if idNum is None:
         result, reason = None, None
-    elif idNum in testedIDs.keys():
+    elif idNum in list(testedIDs):
         print("Retrieving previous test result: ", end=" ")
         result, reason = testedIDs[idNum][2:4]
     else:
