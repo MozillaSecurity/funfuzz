@@ -20,6 +20,8 @@ import subprocess
 import sys
 import time
 
+from past.builtins import range  # pylint: disable=redefined-builtin
+
 verbose = False  # pylint: disable=invalid-name
 
 isARMv7l = (platform.uname()[4] == 'armv7l')  # pylint: disable=invalid-name

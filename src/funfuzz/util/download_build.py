@@ -21,6 +21,7 @@ import sys
 import urllib
 
 from future.moves.html.parser import HTMLParser
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import subprocesses as sps
 

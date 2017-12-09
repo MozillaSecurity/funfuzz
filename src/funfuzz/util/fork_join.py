@@ -13,6 +13,8 @@ import multiprocessing
 import os
 import sys
 
+from past.builtins import range  # pylint: disable=redefined-builtin
+
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.

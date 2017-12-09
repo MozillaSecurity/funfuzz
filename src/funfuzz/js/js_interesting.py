@@ -18,6 +18,7 @@ import lithium.interestingness.timed_run as timed_run
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
 from ..util import create_collector

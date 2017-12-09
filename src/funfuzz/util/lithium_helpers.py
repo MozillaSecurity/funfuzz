@@ -15,6 +15,8 @@ import shutil
 import subprocess
 import tempfile
 
+from past.builtins import range  # pylint: disable=redefined-builtin
+
 from . import subprocesses as sps
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name

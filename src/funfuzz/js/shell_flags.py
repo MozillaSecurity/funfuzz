@@ -13,6 +13,8 @@ import multiprocessing
 import random
 import sys
 
+from past.builtins import range  # pylint: disable=redefined-builtin
+
 from . import inspect_shell
 from ..util import subprocesses as sps
 

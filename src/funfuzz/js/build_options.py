@@ -16,6 +16,8 @@ import platform
 import random
 import sys
 
+from past.builtins import range  # pylint: disable=redefined-builtin
+
 from ..util import hg_helpers
 from ..util import subprocesses as sps
 
