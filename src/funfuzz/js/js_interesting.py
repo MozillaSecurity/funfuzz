@@ -242,7 +242,7 @@ def ulimitSet():  # pylint: disable=invalid-name
         resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
-    halfGB = int(GB / 2)  # pylint: disable=invalid-name,old-division
+    halfGB = int(GB // 2)  # pylint: disable=invalid-name
     resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
 
 
