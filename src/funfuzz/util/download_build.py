@@ -15,7 +15,7 @@ import os
 import platform
 import re
 import shutil
-import stat  # Likely fixed in pylint 1.8.x series #  pylint: disable=bad-python3-import
+import stat
 import subprocess
 import sys
 import urllib
