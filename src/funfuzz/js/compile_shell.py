@@ -60,10 +60,10 @@ class CompiledShellError(Exception):
 
 
 class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-many-public-methods
-    def __init__(self):
-        self.shellNameWithoutExt = b""  # pylint: disable=invalid-name
-        self.hgHash = b""  # pylint: disable=invalid-name
-        self.build_opts = b""
+    def __init__(self, buildOpts, hgHash):
+        self.shellNameWithoutExt = build_options.computeShellName(buildOpts, hgHash)  # pylint: disable=invalid-name
+        self.hgHash = hgHash  # pylint: disable=invalid-name
+        self.build_opts = buildOpts
 
         self.jsObjdir = ''  # pylint: disable=invalid-name
 
@@ -76,11 +76,12 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         self.jsMajorVersion = ''  # pylint: disable=invalid-name
         self.jsVersion = ''  # pylint: disable=invalid-name
 
-    def main(self, args=None):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
+    @classmethod
+    def main(cls, args=None):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
         # logging.basicConfig(format="%(message)s", level=logging.INFO)
 
         try:
-            return self.run(args)
+            return cls.run(args)
 
         except CompiledShellError as ex:
             print(repr(ex))
@@ -112,8 +113,12 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         options.build_opts = build_options.parseShellOptions(options.build_opts)
 
         with LockDir(getLockDirPath(options.build_opts.repoDir)):
-            shell = CompiledShell()
-            set_build_options(shell, options.build_opts, options.revision)
+            if options.revision:
+                shell = CompiledShell(options.build_opts, options.revision)
+            else:
+                local_orig_hg_hash = hg_helpers.getRepoHashAndId(options.build_opts.repoDir)[0]
+                shell = CompiledShell(options.build_opts, local_orig_hg_hash)
+
             obtainShell(shell, updateToRev=options.revision)
             print(shell.getShellCacheFullPath())
 
@@ -205,10 +210,6 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
     def getShellNameWithoutExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         return self.shellNameWithoutExt
-
-    def setShellNameWithoutExt(self, build_opts, hg_hash):  # pylint: disable=invalid-name,missing-docstring
-        # pylint: disable=missing-return-doc,missing-return-type-doc
-        self.shellNameWithoutExt = build_options.computeShellName(build_opts, hg_hash)
 
     # Version numbers
     def getMajorVersion(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
@@ -686,9 +687,8 @@ def getLockDirPath(repoDir, tboxIdentifier=''):  # pylint: disable=invalid-name,
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        shell = CompiledShell()
+        shell = CompiledShell(options.build_options, rev)
         print("Rev %s:" % rev.decode("utf-8", errors="replace"), end=" ")
-        set_build_options(shell, options.build_options, rev)
 
         try:
             obtainShell(shell, updateToRev=rev)
@@ -773,25 +773,6 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         os.remove(shell.getS3TarballWithExtFullPath())
 
 
-def set_build_options(shell, opts, revision):
-    """Sets shell parameters according to desired options.
-
-    Args:
-        shell (object): "shell" object.
-        opts (object): "build_options" object.
-        revision (str): Mercurial revision hash.
-    """
-    if revision:
-        shell.setShellNameWithoutExt(opts, revision)
-        shell.setHgHash(revision)
-    else:
-        local_orig_hg_hash = hg_helpers.getRepoHashAndId(opts.repoDir)[0]
-        shell.setShellNameWithoutExt(opts, local_orig_hg_hash)
-        shell.setHgHash(local_orig_hg_hash)
-
-    shell.set_build_opts(opts)
-
-
 def updateRepo(repo, rev):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Update repository to the specific revision."""
     # Print *with* a trailing newline to avoid breaking other stuff
@@ -809,12 +790,3 @@ def verifyFullWinPageHeap(shellPath):  # pylint: disable=invalid-name,missing-pa
         if os.path.isfile(gflags_bin_path) and os.path.isfile(shellPath):
             print(subprocess.check_output([gflags_bin_path.decode("utf-8", errors="replace"),
                                            "-p", "/enable", shellPath.decode("utf-8", errors="replace"), "/full"]))
-
-
-def main():
-    """Execute main() function in CompiledShell class."""
-    exit(CompiledShell().main())
-
-
-if __name__ == '__main__':
-    main()

@@ -189,10 +189,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
             with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
                 bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
-                cshell = compile_shell.CompiledShell()
-                cshell.setShellNameWithoutExt(options.build_options, bRev)
-                cshell.setHgHash(bRev)
-                cshell.set_build_opts(options.build_options)
+                cshell = compile_shell.CompiledShell(options.build_options, bRev)
                 updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')  # pylint: disable=invalid-name
                 compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
