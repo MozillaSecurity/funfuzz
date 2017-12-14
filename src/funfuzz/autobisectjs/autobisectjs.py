@@ -16,7 +16,7 @@ import tempfile
 import os
 import re
 import shutil
-import stat  # Likely fixed in pylint 1.8.x series #  pylint: disable=bad-python3-import
+import stat
 import subprocess
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
