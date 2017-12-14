@@ -124,9 +124,6 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
         return 0
 
-    def set_build_opts(self, build_opts):  # pylint: disable=missing-docstring
-        self.build_opts = build_opts
-
     def getCfgCmdExclEnv(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         return self.cfg
@@ -148,10 +145,6 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
     def getHgHash(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         return self.hgHash
-
-    def setHgHash(self, hg_hash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
-        self.hgHash = hg_hash
 
     def getJsCfgPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
