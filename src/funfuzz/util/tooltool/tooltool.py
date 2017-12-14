@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# pylint: disable=assignment-from-no-return,broad-except,fixme,invalid-name,logging-too-few-args
+# pylint: disable=assignment-from-no-return,bad-python3-import,broad-except,fixme,invalid-name,logging-too-few-args
 # pylint: disable=missing-docstring,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
 # pylint: disable=missing-type-doc,overlapping-except,too-complex
 # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-lines,too-many-return-statements
@@ -32,6 +32,7 @@
 from __future__ import print_function
 
 import hashlib
+import httplib  # pylint: disable=import-error
 import json
 import logging
 import optparse  # pylint: disable=deprecated-module
@@ -42,20 +43,12 @@ import tarfile
 import tempfile
 import threading
 import time
+import urllib2  # pylint: disable=import-error
+import urlparse  # pylint: disable=import-error
 import zipfile
 
 from subprocess import PIPE
 from subprocess import Popen
-
-from future.standard_library import install_aliases
-install_aliases()
-import urllib2  # pylint: disable=bad-python3-import,import-error,wrong-import-order,wrong-import-position
-import urlparse  # pylint: disable=bad-python3-import,import-error,wrong-import-order,wrong-import-position
-
-if sys.version_info.major == 2:
-    import httplib  # pylint: disable=import-error
-else:
-    import http.client as httplib  # pylint: disable=import-error
 
 __version__ = '1'
 
