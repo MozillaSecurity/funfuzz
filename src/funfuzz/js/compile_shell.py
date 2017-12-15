@@ -54,13 +54,16 @@ else:
     COMPILATION_JOBS = 3  # Other single/dual core computers
 
 
+class CompiledShellError(Exception):
+    """Error class unique to CompiledShell objects."""
+    pass
+
+
 class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-many-public-methods
     def __init__(self, buildOpts, hgHash):
         self.shellNameWithoutExt = build_options.computeShellName(buildOpts, hgHash)  # pylint: disable=invalid-name
-        # pylint: disable=invalid-name
-        self.shellNameWithExt = self.shellNameWithoutExt + (b".exe" if sps.isWin else b"")
         self.hgHash = hgHash  # pylint: disable=invalid-name
-        self.build_options = buildOpts
+        self.build_opts = buildOpts
 
         self.jsObjdir = ''  # pylint: disable=invalid-name
 
@@ -72,6 +75,54 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
         self.jsMajorVersion = ''  # pylint: disable=invalid-name
         self.jsVersion = ''  # pylint: disable=invalid-name
+
+    @classmethod
+    def main(cls, args=None):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
+        # logging.basicConfig(format="%(message)s", level=logging.INFO)
+
+        try:
+            return cls.run(args)
+
+        except CompiledShellError as ex:
+            print(repr(ex))
+            # log.error(ex)
+            return 1
+
+    @staticmethod
+    def run(argv=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+        """Build a shell and place it in the autoBisect cache."""
+        usage = 'Usage: %prog [options]'
+        parser = OptionParser(usage)
+        parser.disable_interspersed_args()
+
+        parser.set_defaults(
+            build_opts="",
+        )
+
+        # Specify how the shell will be built.
+        parser.add_option('-b', '--build',
+                          dest='build_opts',
+                          help="Specify build options, e.g. -b '--disable-debug --enable-optimize' "
+                               "(python -m funfuzz.js.build_options --help)")
+
+        parser.add_option('-r', '--rev',
+                          dest='revision',
+                          help='Specify revision to build')
+
+        options = parser.parse_args(argv)[0]
+        options.build_opts = build_options.parseShellOptions(options.build_opts)
+
+        with LockDir(getLockDirPath(options.build_opts.repoDir)):
+            if options.revision:
+                shell = CompiledShell(options.build_opts, options.revision)
+            else:
+                local_orig_hg_hash = hg_helpers.getRepoHashAndId(options.build_opts.repoDir)[0]
+                shell = CompiledShell(options.build_opts, local_orig_hg_hash)
+
+            obtainShell(shell, updateToRev=options.revision)
+            print(shell.getShellCacheFullPath())
+
+        return 0
 
     def getCfgCmdExclEnv(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -107,14 +158,14 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         self.jsObjdir = oDir
 
     def getRepoDir(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        return self.build_options.repoDir
+        return self.build_opts.repoDir
 
     def getRepoDirJsSrc(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
 
     def getRepoName(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        return hg_helpers.getRepoNameFromHgrc(self.build_options.repoDir)
+        return hg_helpers.getRepoNameFromHgrc(self.build_opts.repoDir)
 
     def getS3TarballWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -147,7 +198,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
     def getShellNameWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        return self.shellNameWithExt
+        return self.shellNameWithoutExt + (b".exe" if sps.isWin else b"")
 
     def getShellNameWithoutExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -260,8 +311,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     if sps.isARMv7l:
         # 32-bit shell on ARM boards, e.g. odroid boards.
         # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
-        assert shell.build_options.enable32, 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
-        if not shell.build_options.enableHardFp:
+        assert shell.build_opts.enable32, 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
+        if not shell.build_opts.enableHardFp:
             cfg_env[b"CC"] = b"gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
             cfg_env[b"CXX"] = b"g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
         cfg_cmds.append('sh')
@@ -271,16 +322,16 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         # cfg_cmds.append('--target=arm-linux-gnueabi')
         # cfg_cmds.append('--with-arch=armv7-a')
         # cfg_cmds.append('--with-thumb')
-        if not shell.build_options.enableHardFp:
+        if not shell.build_opts.enableHardFp:
             cfg_cmds.append('--target=arm-linux-gnueabi')
-    elif shell.build_options.enable32 and os.name == 'posix':
+    elif shell.build_opts.enable32 and os.name == 'posix':
         # 32-bit shell on Mac OS X 10.11 El Capitan and greater
         if sps.isMac:
             assert sps.macVer() >= [10, 11]  # We no longer support 10.10 Yosemite and prior.
             # Uses system clang
             cfg_env[b"CC"] = cfg_env[b"HOST_CC"] = b"clang %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
             cfg_env[b"CXX"] = cfg_env[b"HOST_CXX"] = b"clang++ %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
-            if shell.build_options.buildWithAsan:
+            if shell.build_opts.buildWithAsan:
                 cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
                 cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
             cfg_env[b"CC"] += b" " + CLANG_X86_FLAG  # only needed for CC, not HOST_CC
@@ -299,20 +350,20 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
             cfg_cmds.append('--target=i386-apple-darwin15.6.0')  # El Capitan 10.11.6
             cfg_cmds.append('--disable-xcode-checks')
-            if shell.build_options.buildWithAsan:
+            if shell.build_opts.buildWithAsan:
                 cfg_cmds.append('--enable-address-sanitizer')
-            if shell.build_options.enableSimulatorArm32:
+            if shell.build_opts.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
                 # Newer configure.in changes mean that things blow up if unknown/removed configure
                 # options are entered, so specify it only if it's requested.
-                if shell.build_options.enableArmSimulatorObsolete:
+                if shell.build_opts.enableArmSimulatorObsolete:
                     cfg_cmds.append('--enable-arm-simulator')
                 cfg_cmds.append('--enable-simulator=arm')
         # 32-bit shell on 32/64-bit x86 Linux
         elif sps.isLinux and not sps.isARMv7l:
             cfg_env[b"PKG_CONFIG_LIBDIR"] = b"/usr/lib/pkgconfig"
-            if shell.build_options.buildWithClang:
+            if shell.build_opts.buildWithClang:
                 cfg_env[b"CC"] = cfg_env[b"HOST_CC"] = str(
                     "clang %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
                 cfg_env[b"CXX"] = cfg_env[b"HOST_CXX"] = str(
@@ -321,30 +372,30 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                 # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
                 cfg_env[b"CC"] = b"gcc -m32 %s" % SSE2_FLAGS
                 cfg_env[b"CXX"] = b"g++ -m32 %s" % SSE2_FLAGS
-            if shell.build_options.buildWithAsan:
+            if shell.build_opts.buildWithAsan:
                 cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
                 cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
             cfg_cmds.append('--target=i686-pc-linux')
-            if shell.build_options.buildWithAsan:
+            if shell.build_opts.buildWithAsan:
                 cfg_cmds.append('--enable-address-sanitizer')
-            if shell.build_options.enableSimulatorArm32:
+            if shell.build_opts.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
                 # Newer configure.in changes mean that things blow up if unknown/removed configure
                 # options are entered, so specify it only if it's requested.
-                if shell.build_options.enableArmSimulatorObsolete:
+                if shell.build_opts.enableArmSimulatorObsolete:
                     cfg_cmds.append('--enable-arm-simulator')
                 cfg_cmds.append('--enable-simulator=arm')
         else:
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.11 El Capitan and greater
-    elif sps.isMac and sps.macVer() >= [10, 11] and not shell.build_options.enable32:
+    elif sps.isMac and sps.macVer() >= [10, 11] and not shell.build_opts.enable32:
         cfg_env[b"CC"] = b"clang " + CLANG_PARAMS
         cfg_env[b"CXX"] = b"clang++ " + CLANG_PARAMS
-        if shell.build_options.buildWithAsan:
+        if shell.build_opts.buildWithAsan:
             cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
             cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
         if sps.isProgramInstalled('brew'):
@@ -353,17 +404,17 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         cfg_cmds.append('--target=x86_64-apple-darwin15.6.0')  # El Capitan 10.11.6
         cfg_cmds.append('--disable-xcode-checks')
-        if shell.build_options.buildWithAsan:
+        if shell.build_opts.buildWithAsan:
             cfg_cmds.append('--enable-address-sanitizer')
-        if shell.build_options.enableSimulatorArm64:
+        if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append('--enable-simulator=arm64')
 
     elif sps.isWin:
         cfg_env[b"MAKE"] = b"mozmake"  # Workaround for bug 948534
-        if shell.build_options.buildWithClang:
+        if shell.build_opts.buildWithClang:
             cfg_env[b"CC"] = b"clang-cl.exe " + CLANG_PARAMS
             cfg_env[b"CXX"] = b"clang-cl.exe " + CLANG_PARAMS
-        if shell.build_options.buildWithAsan:
+        if shell.build_opts.buildWithAsan:
             cfg_env[b"CFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env[b"CXXFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env[b"LDFLAGS"] = (b"clang_rt.asan_dynamic-x86_64.lib "
@@ -375,36 +426,36 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_env[b"LIB"] += br"C:\Program Files\LLVM\lib\clang\4.0.0\lib\windows"
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-        if shell.build_options.enable32:
-            if shell.build_options.enableSimulatorArm32:
+        if shell.build_opts.enable32:
+            if shell.build_opts.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
                 # Newer configure.in changes mean that things blow up if unknown/removed configure
                 # options are entered, so specify it only if it's requested.
-                if shell.build_options.enableArmSimulatorObsolete:
+                if shell.build_opts.enableArmSimulatorObsolete:
                     cfg_cmds.append('--enable-arm-simulator')
                 cfg_cmds.append('--enable-simulator=arm')
         else:
             cfg_cmds.append('--host=x86_64-pc-mingw32')
             cfg_cmds.append('--target=x86_64-pc-mingw32')
-            if shell.build_options.enableSimulatorArm64:
+            if shell.build_opts.enableSimulatorArm64:
                 cfg_cmds.append('--enable-simulator=arm64')
-        if shell.build_options.buildWithAsan:
+        if shell.build_opts.buildWithAsan:
             cfg_cmds.append('--enable-address-sanitizer')
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
-        if shell.build_options.buildWithClang:
+        if shell.build_opts.buildWithClang:
             cfg_env[b"CC"] = b"clang " + CLANG_PARAMS
             cfg_env[b"CXX"] = b"clang++ " + CLANG_PARAMS
-        if shell.build_options.buildWithAsan:
+        if shell.build_opts.buildWithAsan:
             cfg_env[b"CC"] += b" " + CLANG_ASAN_PARAMS
             cfg_env[b"CXX"] += b" " + CLANG_ASAN_PARAMS
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-        if shell.build_options.buildWithAsan:
+        if shell.build_opts.buildWithAsan:
             cfg_cmds.append('--enable-address-sanitizer')
 
-    if shell.build_options.buildWithClang:
+    if shell.build_opts.buildWithClang:
         if sps.isWin:
             assert b"clang-cl" in cfg_env[b"CC"]
             assert b"clang-cl" in cfg_env[b"CXX"]
@@ -413,29 +464,29 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             assert b"clang++" in cfg_env[b"CXX"]
         cfg_cmds.append('--disable-jemalloc')  # See bug 1146895
 
-    if shell.build_options.enableDbg:
+    if shell.build_opts.enableDbg:
         cfg_cmds.append('--enable-debug')
-    elif shell.build_options.disableDbg:
+    elif shell.build_opts.disableDbg:
         cfg_cmds.append('--disable-debug')
 
-    if shell.build_options.enableOpt:
-        cfg_cmds.append('--enable-optimize' + ('=-O1' if shell.build_options.buildWithVg else ''))
-    elif shell.build_options.disableOpt:
+    if shell.build_opts.enableOpt:
+        cfg_cmds.append('--enable-optimize' + ('=-O1' if shell.build_opts.buildWithVg else ''))
+    elif shell.build_opts.disableOpt:
         cfg_cmds.append('--disable-optimize')
-    if shell.build_options.enableProfiling:  # Now obsolete, retained for backward compatibility
+    if shell.build_opts.enableProfiling:  # Now obsolete, retained for backward compatibility
         cfg_cmds.append('--enable-profiling')
-    if shell.build_options.disableProfiling:
+    if shell.build_opts.disableProfiling:
         cfg_cmds.append('--disable-profiling')
 
-    if shell.build_options.enableMoreDeterministic:
+    if shell.build_opts.enableMoreDeterministic:
         # Fuzzing tweaks for more useful output, implemented in bug 706433
         cfg_cmds.append('--enable-more-deterministic')
-    if shell.build_options.enableOomBreakpoint:  # Extra debugging help for OOM assertions
+    if shell.build_opts.enableOomBreakpoint:  # Extra debugging help for OOM assertions
         cfg_cmds.append('--enable-oom-breakpoint')
-    if shell.build_options.enableWithoutIntlApi:  # Speeds up compilation but is non-default
+    if shell.build_opts.enableWithoutIntlApi:  # Speeds up compilation but is non-default
         cfg_cmds.append('--without-intl-api')
 
-    if shell.build_options.buildWithVg:
+    if shell.build_opts.buildWithVg:
         cfg_cmds.append('--enable-valgrind')
         cfg_cmds.append('--disable-jemalloc')
 
@@ -548,10 +599,10 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     #   https://wiki.mozilla.org/Security/CrashSignatures
     if sps.isARMv7l:
         fmconf_platform = 'ARM'
-    elif sps.isARMv7l and not shell.build_options.enable32:
+    elif sps.isARMv7l and not shell.build_opts.enable32:
         print("ARM64 is not supported in .fuzzmanagerconf yet.")
         fmconf_platform = 'ARM64'
-    elif shell.build_options.enable32:
+    elif shell.build_opts.enable32:
         fmconf_platform = 'x86'
     else:
         fmconf_platform = 'x86-64'
@@ -568,7 +619,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
 
         f.write('# Create another shell in shell-cache like this one:\n')
         f.write('# python -u -m %s -b "%s" -r %s\n# \n' % ('funfuzz.js.compile_shell',
-                                                           shell.build_options.build_options_str, shell.getHgHash()))
+                                                           shell.build_opts.build_options_str, shell.getHgHash()))
 
         f.write('# Full environment is:\n')
         f.write('# %s\n# \n' % str(shell.getEnvFull()))
@@ -587,7 +638,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
 
         f.write('\n')
         f.write('[Metadata]\n')
-        f.write('buildFlags = %s\n' % shell.build_options.build_options_str)
+        f.write('buildFlags = %s\n' % shell.build_opts.build_options_str)
         f.write('majorVersion = %s\n' % shell.getMajorVersion())
         f.write('pathPrefix = %s%s\n' % (shell.getRepoDir(),
                                          '/' if not shell.getRepoDir().endswith('/') else ''))
@@ -645,7 +696,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
 def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-raises-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Obtain a js shell. Keep the objdir for now, especially .a files, for symbols."""
-    assert os.path.isdir(getLockDirPath(shell.build_options.repoDir))
+    assert os.path.isdir(getLockDirPath(shell.build_opts.repoDir))
     cached_no_shell = shell.getShellCacheFullPath() + ".busted"
 
     if os.path.isfile(shell.getShellCacheFullPath()):
@@ -662,7 +713,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         sps.rmTreeIncludingReadOnly(shell.getShellCacheDir())
 
     os.mkdir(shell.getShellCacheDir())
-    hg_helpers.destroyPyc(shell.build_options.repoDir)
+    hg_helpers.destroyPyc(shell.build_opts.repoDir)
 
     s3cache_obj = s3cache.S3Cache(S3_SHELL_CACHE_DIRNAME)
     use_s3cache = s3cache_obj.connect()
@@ -684,9 +735,9 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
     try:
         if updateToRev:
-            updateRepo(shell.build_options.repoDir, updateToRev)
-        if shell.build_options.patchFile:
-            hg_helpers.patchHgRepoUsingMq(shell.build_options.patchFile, shell.getRepoDir())
+            updateRepo(shell.build_opts.repoDir, updateToRev)
+        if shell.build_opts.patchFile:
+            hg_helpers.patchHgRepoUsingMq(shell.build_opts.patchFile, shell.getRepoDir())
 
         cfgJsCompile(shell)
         verifyFullWinPageHeap(shell.getShellCacheFullPath())
@@ -702,8 +753,8 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             s3cache_obj.uploadFileToS3(shell.getShellCacheFullPath() + '.busted')
         raise
     finally:
-        if shell.build_options.patchFile:
-            hg_helpers.hgQpopQrmAppliedPatch(shell.build_options.patchFile, shell.getRepoDir())
+        if shell.build_opts.patchFile:
+            hg_helpers.hgQpopQrmAppliedPatch(shell.build_opts.patchFile, shell.getRepoDir())
 
     if use_s3cache:
         s3cache_obj.compressAndUploadDirTarball(shell.getShellCacheDir(), shell.getS3TarballWithExtFullPath())
@@ -732,41 +783,3 @@ def verifyFullWinPageHeap(shellPath):  # pylint: disable=invalid-name,missing-pa
         if os.path.isfile(gflags_bin_path) and os.path.isfile(shellPath):
             print(subprocess.check_output([gflags_bin_path.decode("utf-8", errors="replace"),
                                            "-p", "/enable", shellPath.decode("utf-8", errors="replace"), "/full"]))
-
-
-def main():
-    """Build a shell and place it in the autoBisect cache."""
-    usage = 'Usage: %prog [options]'
-    parser = OptionParser(usage)
-    parser.disable_interspersed_args()
-
-    parser.set_defaults(
-        build_options="",
-    )
-
-    # Specify how the shell will be built.
-    parser.add_option('-b', '--build',
-                      dest='build_options',
-                      help="Specify build options, e.g. -b '--disable-debug --enable-optimize' "
-                           "(python -m funfuzz.js.build_options --help)")
-
-    parser.add_option('-r', '--rev',
-                      dest='revision',
-                      help='Specify revision to build')
-
-    options = parser.parse_args()[0]
-    options.build_options = build_options.parseShellOptions(options.build_options)
-
-    with LockDir(getLockDirPath(options.build_options.repoDir)):
-        if options.revision:
-            shell = CompiledShell(options.build_options, options.revision)
-        else:
-            local_orig_hg_hash = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]
-            shell = CompiledShell(options.build_options, local_orig_hg_hash)
-
-        obtainShell(shell, updateToRev=options.revision)
-        print(shell.getShellCacheFullPath())
-
-
-if __name__ == '__main__':
-    main()

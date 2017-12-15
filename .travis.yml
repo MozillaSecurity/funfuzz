@@ -1,21 +1,62 @@
 dist: trusty
-sudo: false
+sudo: required  # has ~2x RAM: https://docs.travis-ci.com/user/reference/overview/#Virtualization-environments
 language: python
-python:
-    - "2.7"
-    - "3.5"
-    - "3.6"
+matrix:
+    fast_finish: true
+    include:
+        - python: "2.7"
+        - python: "3.5"
+        - python: "3.6"
+        - python: "3.7-dev"
+        - python: "nightly"
+    allow_failures:
+        - python: "3.5"
+        - python: "3.6"
+        - python: "3.7-dev"
+        - python: "nightly"
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-5
+            - g++-5-multilib
+            - gcc-5
+            - gcc-5-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
 before_install:
-    - pip install --upgrade pip setuptools virtualenv
+    # Use GCC 5
+    - mkdir -p latest-gcc-symlinks  # See https://github.com/travis-ci/travis-ci/issues/3668#issuecomment-279276549
+    - ln -s /usr/bin/g++-5 latest-gcc-symlinks/g++
+    - ln -s /usr/bin/gcc-5 latest-gcc-symlinks/gcc
+    - export PATH=$PWD/latest-gcc-symlinks:$PATH
 install:
-    - pip --version
-    - virtualenv --version
-    - git --version
-before_script:
-    - pip install --upgrade codecov pytest-cov pytest-flake8 pytest-pylint
-    - pip install --upgrade .
+    - pip install --upgrade codecov pytest-cov pytest-flake8 pytest-pylint  # Already in venv, no need for --user
+    - pip install --upgrade -e .
+    - gcc --version
+    - g++ --version
     - hg --version
+before_script:
+    # To run everything locally in local funfuzz github repository directory:
+    #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
+    # Linting-only: (skip pylint with development Python versions)
+    - |
+      NIGHTLY_VERSION="3.7"
+      if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "$NIGHTLY_VERSION" ] ; then
+          python -m pytest --flake8 -p no:pylint -p no:cov setup.py src/
+      else
+          python -m pytest --flake8 --pylint -p no:cov setup.py src/
+      fi
+    - mkdir -p ~/trees/
+    - time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
-    - python -m pytest
+    # Run only tests and coverage, exclude linters
+    - travis_wait 50 unbuffer python -m pytest -p no:flake8 -p no:pylint --cov=`pwd` --cov-report term-missing
 after_success:
     - codecov

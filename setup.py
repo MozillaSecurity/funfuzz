@@ -30,6 +30,8 @@ if __name__ == "__main__":
           ]},
           package_dir={"": "src"},
           install_requires=[
+              "configparser>=3.5.0",
+              "future>=0.16.0",
               "FuzzManager>=0.1.1",
               "lithium-reducer>=0.2.0",
           ],
