@@ -44,6 +44,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("offThreadCompileScript") == -1    // causes diffs in --no-threads vs --ion-offthread-compile=off
        && code.indexOf("oomAfterAllocations") == -1
        && code.indexOf("oomAtAllocation") == -1
+       && code.indexOf("oomTest") == -1                   // causes diffs in --ion-eager vs --baseline-eager
        && code.indexOf("printProfilerEvents") == -1       // causes diffs in --ion-eager vs --baseline-eager
        && code.indexOf("promiseID") == -1                 // Promise IDs are for debugger-use only
        && code.indexOf("runOffThreadScript") == -1

@@ -245,6 +245,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "getLcovInfo = function() { };\n",
         "isAsmJSCompilationAvailable = function() { };\n",
         "offThreadCompileScript = function() { };\n",
+        "oomTest = function() { };\n",
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
         "wasmIsSupported = function() { return true; };\n",
