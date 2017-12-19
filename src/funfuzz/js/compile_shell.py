@@ -783,3 +783,12 @@ def verifyFullWinPageHeap(shellPath):  # pylint: disable=invalid-name,missing-pa
         if os.path.isfile(gflags_bin_path) and os.path.isfile(shellPath):
             print(subprocess.check_output([gflags_bin_path.decode("utf-8", errors="replace"),
                                            "-p", "/enable", shellPath.decode("utf-8", errors="replace"), "/full"]))
+
+
+def main():
+    """Execute main() function in CompiledShell class."""
+    exit(CompiledShell.main())
+
+
+if __name__ == '__main__':
+    main()
