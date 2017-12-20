@@ -26,7 +26,7 @@ from . import inspect_shell
 from ..util import hg_helpers
 from ..util import s3cache
 from ..util import subprocesses as sps
-from ..util.LockDir import LockDir
+from ..util.lock_dir import LockDir
 
 S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autoBisect
 

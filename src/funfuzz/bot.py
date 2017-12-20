@@ -28,7 +28,7 @@ from .util import hg_helpers
 from .util import subprocesses as sps
 from .util import fork_join
 from .util import create_collector
-from .util.LockDir import LockDir
+from .util.lock_dir import LockDir
 
 path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
 path3 = os.path.abspath(os.path.join(path0, 'js'))  # pylint: disable=invalid-name

@@ -30,9 +30,9 @@ from ..js import inspect_shell
 from ..util import file_manipulation
 from ..util import download_build
 from ..util import hg_helpers
+from ..util.lock_dir import LockDir
 from ..util import s3cache
 from ..util import subprocesses as sps
-from ..util import LockDir
 
 INCOMPLETE_NOTE = 'incompleteBuild.txt'
 MAX_ITERATIONS = 100
@@ -886,8 +886,8 @@ def main():
 
     repoDir = options.build_options.repoDir if options.build_options else options.browserOptions.repoDir
 
-    with LockDir.LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
-                         if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
+    with LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
+                     if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
         elif not options.browserOptions:  # Bisect using local builds

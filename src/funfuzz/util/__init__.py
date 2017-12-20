@@ -18,7 +18,7 @@ from . import fork_join
 from . import hg_helpers
 from . import link_js
 from . import lithium_helpers
-from . import LockDir
+from . import lock_dir
 from . import repos_update
 from . import s3cache
 from . import subprocesses
