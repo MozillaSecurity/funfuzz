@@ -887,7 +887,7 @@ def main():
     repoDir = options.build_options.repoDir if options.build_options else options.browserOptions.repoDir
 
     with LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
-                     if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
+                 if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
         elif not options.browserOptions:  # Bisect using local builds
