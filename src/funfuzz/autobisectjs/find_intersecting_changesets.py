@@ -45,7 +45,7 @@ def main():  # pylint: disable=missing-docstring
     broken_ranges = kbew.known_broken_ranges(options)
 
     cnt = 0
-    for i in range(0, len(broken_ranges)):
+    for i in range(0, len(broken_ranges)):  # pylint: disable=consider-using-enumerate
         print("Analyzing revset: %s which matches %s changesets" % (
             broken_ranges[i], count_csets(broken_ranges[i], repo_dir)))
         for j in range(i + 1, len(broken_ranges)):
