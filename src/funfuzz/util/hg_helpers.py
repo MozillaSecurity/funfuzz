@@ -72,8 +72,8 @@ def existsAndIsAncestor(repoDir, a, b):  # pylint: disable=invalid-name,missing-
     return out != "" and out.find("abort: unknown revision") < 0
 
 
-def getCsetHashFromBisectMsg(msg):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
+def getCsetHashFromBisectMsg(msg):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-docstring
+    # pylint: disable=missing-return-doc,missing-return-type-doc
     # Example bisect msg: "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
     rgx = re.compile(r"(^|.* )(\d+):(\w{12}).*")
     matched = rgx.match(msg)

@@ -328,8 +328,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     return True, ''
 
 
-def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid-name,missing-docstring
-    # pylint: disable=missing-return-doc,missing-return-type-doc
+def generateRandomConfigurations(parser, randomizer):  # pylint: disable=inconsistent-return-statements,invalid-name
+    # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     while True:
         randomArgs = randomizer.getRandomSubset()  # pylint: disable=invalid-name
         if '--build-with-valgrind' in randomArgs and chance(0.95):

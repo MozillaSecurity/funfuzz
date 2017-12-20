@@ -645,8 +645,8 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write('version = %s\n' % shell.getVersion())
 
 
-def extractVersions(objdir):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
+def extractVersions(objdir):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Extract the version from js.pc and put it into *.fuzzmanagerconf."""
     jspc_dir = sps.normExpUserPath(os.path.join(objdir, 'js', 'src'))
     jspc_name = os.path.join(jspc_dir, 'js.pc')
@@ -654,8 +654,8 @@ def extractVersions(objdir):  # pylint: disable=invalid-name,missing-param-doc,m
     jspc_new_dir = os.path.join(jspc_dir, 'build')
     jspc_new_name = os.path.join(jspc_new_dir, 'js.pc')
 
-    def fixateVer(pcfile):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-        # pylint: disable=missing-type-doc
+    def fixateVer(pcfile):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
+        # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
         """Returns the current version number (47.0a2)."""
         with io.open(pcfile, mode='r', encoding="utf-8", errors="replace") as f:
             for line in f:

@@ -30,7 +30,8 @@ def amiss(log_prefix):  # pylint: disable=missing-docstring,missing-return-doc,m
     return found_something
 
 
-def scanLine(line):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+def scanLine(line):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-docstring,missing-return-doc
+    # pylint: disable=missing-return-type-doc
     global PPLINE, PLINE  # pylint: disable=global-statement
 
     line = line.strip("\x07").rstrip("\n")

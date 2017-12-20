@@ -237,8 +237,9 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: di
     return None
 
 
-def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: disable=invalid-name,missing-param-doc
-    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-complex,too-many-branches
+def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: disable=inconsistent-return-statements
+    # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+    # pylint: disable=too-complex,too-many-branches
     """Return the crash log if found."""
     progname = os.path.basename(progfullname)
 
@@ -311,8 +312,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
               "You can increase it with 'ulimit -c' in bash." % getCoreLimit()[0])
 
 
-def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
+def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsistent-return-statements,invalid-name
+    # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
     # On Windows Vista and above, look for a minidump.
     dumpFilename = normExpUserPath(os.path.join(

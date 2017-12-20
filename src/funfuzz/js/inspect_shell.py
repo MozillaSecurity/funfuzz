@@ -68,8 +68,8 @@ if sps.isWin:
         ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
 
 
-def archOfBinary(binary):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
+def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
+    # pylint: disable=missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
     unsplit_file_type = sps.captureStdout(['file', binary])[0]
     filetype = unsplit_file_type.split(':', 1)[1]

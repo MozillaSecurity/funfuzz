@@ -632,8 +632,9 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):  # pylint: disable=missing-param
             raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
-def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):  # pylint: disable=invalid-name,missing-param-doc
-    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-many-branches,too-complex
+def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):  # pylint: disable=inconsistent-return-statements
+    # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+    # pylint: disable=too-many-branches,too-complex
     """Download a build. If the build is incomplete, find a working neighbour, then return results."""
     offset = None
     skippedChangesetNum = 0
