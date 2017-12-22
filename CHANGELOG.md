@@ -1,12 +1,19 @@
-## 0.3.0 (201X-XX-XX)
+## 0.3.0 (2017-12-21)
 
 Features:
-
-* TBD
+* Basic pytest infrastructure added! - largely tests `compile_shell` for now
+* Add `codecov.io` support - Now with code coverage!
+* `evalInCooperativeThread` and `oomTest` are now ignored when running differential testing.
 
 Bugfixes:
+* Ripped out the `version` function from being used in jsfunfuzz
+* Obsolete code removal, e.g. some flag combinations in shell_flags
+* Tweaked the algorithm for the number of CPU cores used for compilation
+* Miscellaneous fixes for Python stuff, linters, CI etc.
 
-* TBD
+Notes:
+* Minimum Mac support is now 10.11.x (El Capitan)
+* Windows is still on the 0.1.x legacy branch
 
 ## 0.2.1 (2017-10-20)
 
