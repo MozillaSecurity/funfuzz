@@ -119,13 +119,14 @@ var makeEvilCallback;
     return (Random.index(builderFunctionMakers))(d - 1, b);
   };
 
-  var handlerTraps = ["getOwnPropertyDescriptor", "getPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
+  var handlerTraps = ["getOwnPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
+  // handlerTraps.push("getPropertyDescriptor");
 
   function forwardingHandler(d, b) {
     return (
       "({"+
         "getOwnPropertyDescriptor: function(name) { Z; var desc = Object.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
-        "getPropertyDescriptor: function(name) { Z; var desc = Object.getPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
+        // "getPropertyDescriptor: function(name) { Z; var desc = Object.getPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
         "defineProperty: function(name, desc) { Z; Object.defineProperty(X, name, desc); }, " +
         "getOwnPropertyNames: function() { Z; return Object.getOwnPropertyNames(X); }, " +
         "delete: function(name) { Z; return delete X[name]; }, " +
