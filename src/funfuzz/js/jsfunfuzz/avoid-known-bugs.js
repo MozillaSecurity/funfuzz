@@ -17,7 +17,7 @@ function whatToTestSpidermonkeyTrunk(code)
       && (jsshell || code.indexOf("nogeckoex") == -1)
     ,
 
-    allowIter: true,
+    // allowIter: true,
 
     // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
     // Ignore both within-process & across-process, e.g. nestTest mismatch & compare_jit
@@ -79,7 +79,7 @@ function whatToTestJavaScriptCore(code)
 
     allowParse: true,
     allowExec: unlikelyToHang(code),
-    allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
+    // allowIter: false, // JavaScriptCore does not support |yield| and |Iterator|
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
@@ -92,7 +92,7 @@ function whatToTestGeneric(code)
   return {
     allowParse: true,
     allowExec: unlikelyToHang(code),
-    allowIter: (typeof Iterator == "function"),
+    // allowIter: (typeof Iterator == "function"),
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
     expectConsistentOutputAcrossJITs: false
