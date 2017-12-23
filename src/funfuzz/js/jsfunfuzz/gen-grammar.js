@@ -586,14 +586,12 @@ var exceptionyStatementMakers = [
   function(d, b) { return cat(["return ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["yield ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["throw ", makeId(d, b), ";"]); },
-  function(d, b) { return "throw StopIteration;"; },
   function(d, b) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
   function(d, b) { return b[b.length - 1] + "." + Random.index(exceptionProperties) + ";"; },
   function(d, b) { return makeId(d, b) + "." + Random.index(exceptionProperties) + ";"; },
   function(d, b) { return cat([makeId(d, b), " = ", makeId(d, b), ";"]); },
   function(d, b) { return cat([makeLValue(d, b), " = ", makeId(d, b), ";"]); },
 
-  // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },

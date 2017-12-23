@@ -61,7 +61,6 @@ var proxyHandlerProperties = {
     forward:  "function(receiver, name, val) { x[name] = val; return true; }"
   },
   iterate: {
-    empty:    "function() { return (function() { throw StopIteration; }); }",
     forward:  "function() { return (function() { for (var name in x) { yield name; } })(); }"
   },
   enumerate: {
