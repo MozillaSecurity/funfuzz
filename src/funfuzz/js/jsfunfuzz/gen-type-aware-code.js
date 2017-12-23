@@ -405,7 +405,6 @@ var makeEvilCallback;
     { w: 5,  v: function(d, b) { return "print(" + m() + ");"; } },
     { w: 5,  v: function(d, b) { return "print(uneval(" + m() + "));"; } },
     { w: 5,  v: function(d, b) { return m() + ".toString = " + makeEvilCallback(d, b) + ";"; } },
-    { w: 5,  v: function(d, b) { return m() + ".toSource = " + makeEvilCallback(d, b) + ";"; } },
     { w: 5,  v: function(d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
     { w: 2,  v: function(d, b) { return m() + ".__iterator__ = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1,  v: function(d, b) { return m() + " = " + m() + ";"; } },

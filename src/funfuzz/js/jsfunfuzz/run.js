@@ -52,7 +52,6 @@ var realFunction = Function;
 var realGC = gc;
 var realUneval = uneval;
 var realToString = toString;
-var realToSource = this.toSource; // "this." because it only exists in spidermonkey
 
 
 function tryEnsureSanity()
@@ -89,7 +88,6 @@ function tryEnsureSanity()
       this.unwatch("Function");
       this.unwatch("gc");
       this.unwatch("uneval");
-      this.unwatch("toSource");
       this.unwatch("toString");
     }
 
@@ -101,7 +99,6 @@ function tryEnsureSanity()
       delete this.Function;
       delete this.gc;
       delete this.uneval;
-      delete this.toSource;
       delete this.toString;
     }
 
@@ -110,7 +107,6 @@ function tryEnsureSanity()
     this.Function = realFunction;
     this.gc = realGC;
     this.uneval = realUneval;
-    this.toSource = realToSource;
     this.toString = realToString;
   } catch(e) {
     confused("tryEnsureSanity failed: " + errorToString(e));

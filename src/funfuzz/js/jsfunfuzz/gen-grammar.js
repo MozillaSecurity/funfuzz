@@ -714,7 +714,7 @@ var specialProperties = [
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
-  "toString", "toSource", "valueOf",
+  "toString", "valueOf",
   "call", "apply", // ({apply:...}).apply() hits a special case (speculation failure with funapply / funcall bytecode)
   "length",
   "0", "1",
@@ -1159,7 +1159,7 @@ function makeObjLiteralPart(d, b)
     case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
     case 3: return cat([" set ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
 
-    case 4: return "/*toXFun*/" + cat([Random.index(["toString", "toSource", "valueOf"]), ": ", makeToXFunction(d - 1, b)]);
+    case 4: return "/*toXFun*/" + cat([Random.index(["toString", "valueOf"]), ": ", makeToXFunction(d - 1, b)]);
 
     default: return cat([makeObjLiteralName(d, b), ": ", makeExpr(d, b)]);
   }
