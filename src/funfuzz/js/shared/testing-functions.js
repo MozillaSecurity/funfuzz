@@ -89,8 +89,6 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 1,  v: function(d, b) { return "void " + prefix + "hasChild(" + fObject(d, b) + ", " + fObject(d, b) + ");"; } },
 
     // Various validation functions (toggles)
-    { w: 5,  v: function(d, b) { return prefix + "validategc" + "(false);"; } },
-    { w: 1,  v: function(d, b) { return prefix + "validategc" + "(true);"; } },
     { w: 5,  v: function(d, b) { return prefix + "fullcompartmentchecks" + "(false);"; } },
     { w: 1,  v: function(d, b) { return prefix + "fullcompartmentchecks" + "(true);"; } },
     { w: 5,  v: function(d, b) { return prefix + "setIonCheckGraphCoherency" + "(false);"; } },
