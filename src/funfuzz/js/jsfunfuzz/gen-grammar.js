@@ -842,10 +842,6 @@ var exprMakers =
   // Modifying assignment, with operators that do various coercions
   function(d, b) { return cat([makeLValue(d, b), Random.index(["|=", "%=", "+=", "-="]), makeExpr(d, b)]); },
 
-  // Watchpoints (similar to setters)
-  function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", makePropertyName(d, b), ", ", makeFunction(d, b), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", makePropertyName(d, b), ")"]); },
-
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
   function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", makePropertyName(d, b), ", ", makePropertyDescriptor(d, b), ")"]); },
 

@@ -79,18 +79,6 @@ function tryEnsureSanity()
   }
 
   try {
-    // Try to get rid of any fake 'unwatch' functions.
-    delete this.unwatch;
-
-    // Restore important stuff that might have been broken as soon as possible :)
-    if ('unwatch' in this) {
-      this.unwatch("eval");
-      this.unwatch("Function");
-      this.unwatch("gc");
-      this.unwatch("uneval");
-      this.unwatch("toString");
-    }
-
     if ('__defineSetter__' in this) {
       // The only way to get rid of getters/setters is to delete the property.
       if (!jsStrictMode)
