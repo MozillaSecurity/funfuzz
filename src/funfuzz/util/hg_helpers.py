@@ -15,13 +15,9 @@ import re
 import sys
 import subprocess
 
+from builtins import input  # pylint: disable=redefined-builtin
+
 from . import subprocesses as sps
-
-
-try:
-    input = raw_input  # pylint: disable=invalid-name,raw_input-builtin,redefined-builtin
-except NameError:
-    pass
 
 
 def destroyPyc(repoDir):  # pylint: disable=invalid-name,missing-docstring
