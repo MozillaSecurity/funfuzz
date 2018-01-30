@@ -255,50 +255,16 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]
-                is_division_consistent = sps.isWin  # Really 'if MSVC' -- revisit if we add clang builds on Windows
-                if is_division_consistent and mightUseDivision(sline):
-                    pass
-                elif "newGlobal" in sline and "wasmIsSupported" in sline:
-                    # We only override wasmIsSupported above for the main global.
-                    # Hopefully, any imported tests that try to use wasmIsSupported within a newGlobal
-                    # will do so in a straightforward way where everything is on one line.
-                    pass
-                else:
+                # We only override wasmIsSupported above for the main global.
+                # Hopefully, any imported tests that try to use wasmIsSupported within a newGlobal
+                # will do so in a straightforward way where everything is on one line.
+                if not ("newGlobal" in sline and "wasmIsSupported" in sline):
                     lines.append(sline)
     lines += [
         "\ntry{print(uneval(this));}catch(e){}\n",
         "// DDEND\n"
     ]
     return lines
-
-
-def mightUseDivision(code):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    # Work around MSVC division inconsistencies (bug 948321)
-    # by leaving division out of *-cj-in.js files on Windows.
-    # (Unfortunately, this will also match regexps and a bunch
-    # of other things.)
-    i = 0
-    while i < len(code):
-        if code[i] == '/':
-            if i + 1 < len(code) and (code[i + 1] == '/' or code[i + 1] == '*'):
-                # An open-comment like "//" or "/*" is okay. Skip the next character.
-                i += 1
-            elif i and code[i - 1] == '*':
-                # A close-comment like "*/" is okay too.
-                pass
-            else:
-                # Plain "/" could be division (or regexp or something else)
-                return True
-        i += 1
-    return False
-
-
-assert not mightUseDivision("//")
-assert not mightUseDivision("// a")
-assert not mightUseDivision("/*FOO*/")
-assert mightUseDivision("a / b")
-assert mightUseDivision("eval('/**/'); a / b;")
-assert mightUseDivision("eval('//x'); a / b;")
 
 
 if __name__ == "__main__":
