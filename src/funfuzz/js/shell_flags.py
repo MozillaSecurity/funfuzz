@@ -231,76 +231,37 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
     return args
 
 
-def basicFlagSets(shellPath):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """These flag combos are used w/the original flag sets when run through Lithium & autoBisect."""
-    if shellSupportsFlag(shellPath, "--no-threads"):
-        basic_flags = [
-            # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
-            # compare_jit uses the following first flag set as the sole baseline when fuzzing
-            ['--fuzzing-safe', '--no-threads', '--ion-eager'],
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],
-            ['--fuzzing-safe', '--ion-offthread-compile=off'],
-            ['--fuzzing-safe', '--baseline-eager'],
-            # ['--fuzzing-safe', '--baseline-eager', '--no-fpu'],  # --no-fpu seems to be deprecated now
-            ['--fuzzing-safe', '--no-baseline', '--no-ion'],
-        ]
-        if shellSupportsFlag(shellPath, "--non-writable-jitcode"):
-            basic_flags.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
-                                '--non-writable-jitcode', '--ion-check-range-analysis',
-                                '--ion-extra-checks', '--no-sse3'])
-        if shellSupportsFlag(shellPath, "--no-wasm"):
-            basic_flags.append(['--fuzzing-safe', '--no-baseline', '--no-asmjs',
-                                '--no-wasm', '--no-native-regexp'])
-        if shellSupportsFlag(shellPath, "--wasm-always-baseline"):
-            basic_flags.append(['--fuzzing-safe', '--no-threads', '--ion-eager',
-                                '--wasm-always-baseline'])
-        return basic_flags
-    elif shellSupportsFlag(shellPath, "--ion-offthread-compile=off"):
-        basic_flags = [
-            # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/mozilla-central/file/84bd8d9f4256/js/src/tests/lib/tests.py#l12
-            # as well as other interesting flag combinations that have found / may find new bugs.
-            # compare_jit uses the following first flag set as the sole baseline when fuzzing
-            ['--fuzzing-safe', '--ion-offthread-compile=off'],
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--no-ion'],
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py...
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'],  # Not in jit_test.py though...
-            # This is not in jit_test.py, see bug 848906 comment 1
-            ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-ion'],
-            # ['--fuzzing-safe', '--ion-offthread-compile=off', '--no-fpu'],  # --no-fpu seems to be deprecated now
-        ]
-        if shellSupportsFlag(shellPath, "--thread-count=1"):
-            basic_flags.append(['--fuzzing-safe', '--ion-offthread-compile=off', '--ion-eager'])
-            # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-            if shellSupportsFlag(shellPath, '--no-sse3'):
-                basic_flags.append(['--fuzzing-safe', '--ion-offthread-compile=off',
-                                    '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-        return basic_flags
-    else:
-        basic_flags = [
-            # Parts of this flag permutation come from:
-            # https://hg.mozilla.org/mozilla-central/file/10932f3a0ba0/js/src/tests/lib/tests.py#l12
-            # as well as other interesting flag combinations that have found / may find new bugs.
-            # compare_jit uses the following first flag set as the sole baseline when fuzzing
-            ['--fuzzing-safe', '--ion-parallel-compile=off'],
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--no-ion'],
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--no-baseline', '--ion-eager'],  # Not in jit_test.py...
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--ion-eager'],  # Not in jit_test.py though...
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager'],
-            # See bug 848906 comment 1
-            ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-ion'],
-            # --no-fpu seems to be deprecated now
-            # ['--fuzzing-safe', '--ion-parallel-compile=off', '--baseline-eager', '--no-fpu'],
-        ]
-        if shellSupportsFlag(shellPath, "--thread-count=1"):
-            basic_flags.append(['--fuzzing-safe', '--ion-eager', '--ion-parallel-compile=off'])
-            # Range analysis had only started to stabilize around the time when --no-sse3 landed.
-            if shellSupportsFlag(shellPath, '--no-sse3'):
-                basic_flags.append(['--fuzzing-safe', '--ion-parallel-compile=off',
-                                    '--ion-eager', '--ion-check-range-analysis', '--no-sse3'])
-        return basic_flags
+def basic_flag_sets(shell_path):
+    """These flag combos are used w/the original flag sets when run through Lithium & autoBisect.
+
+    Args:
+        shell_path (str): Path to shell.
+
+    Returns:
+        list: Possible shell runtime flag combinations for fuzzing.
+    """
+    basic_flags = [
+        # Parts of this flag permutation come from:
+        # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
+        # compare_jit uses the following first flag set as the sole baseline when fuzzing
+        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
+        ["--fuzzing-safe"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off"],
+        ["--fuzzing-safe", "--baseline-eager"],
+        ["--fuzzing-safe", "--no-baseline", "--no-ion"],
+    ]
+    if shellSupportsFlag(shell_path, "--non-writable-jitcode"):
+        basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager",
+                            "--non-writable-jitcode", "--ion-check-range-analysis",
+                            "--ion-extra-checks", "--no-sse3"])
+    if shellSupportsFlag(shell_path, "--no-wasm"):
+        basic_flags.append(["--fuzzing-safe", "--no-baseline", "--no-asmjs",
+                            "--no-wasm", "--no-native-regexp"])
+    if shellSupportsFlag(shell_path, "--wasm-always-baseline"):
+        basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager",
+                            "--wasm-always-baseline"])
+    return basic_flags
 
 
 # Consider adding a function (for compare_jit reduction) that takes a flag set
