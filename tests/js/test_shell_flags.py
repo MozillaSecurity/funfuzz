@@ -10,19 +10,24 @@
 from __future__ import absolute_import, unicode_literals
 
 import logging
-import os
+import platform
 import sys
 
 import funfuzz
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error
+    from pathlib2 import Path
 else:
     from functools import lru_cache  # pylint: disable=no-name-in-module
+    from pathlib import Path  # pylint: disable=import-error
 
 funfuzz_log = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
+
+MC_HG_REPO = Path.home() / "trees" / "mozilla-central"
+SHELL_CACHE = Path.home() / "shell-cache"
 
 
 @lru_cache(maxsize=None)
@@ -32,7 +37,7 @@ def get_current_shell_path():
     Returns:
         str: Path to the compiled shell.
     """
-    assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
+    assert MC_HG_REPO.is_dir()  # pylint: disable=no-member
     # Remember to update the expected binary filename
     build_opts = ("--enable-debug --disable-optimize --enable-more-deterministic "
                   "--build-with-valgrind --enable-oom-breakpoint")
@@ -41,9 +46,9 @@ def get_current_shell_path():
     build_opts_processed = funfuzz.js.build_options.parseShellOptions(build_opts)
     hg_hash_of_default = funfuzz.util.hg_helpers.getRepoHashAndId(build_opts_processed.repoDir)[0]
 
-    return os.path.join(os.path.expanduser("~"), "shell-cache",
-                        "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default,
-                        "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)
+    file_name = "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default
+    js_bin_path = SHELL_CACHE / file_name / file_name
+    return js_bin_path.with_suffix(".exe") if platform.system() == "Windows" else js_bin_path
 
 
 def mock_chance(i):
@@ -123,6 +128,11 @@ def test_add_random_wasm_flags(monkeypatch):
 
 def test_basic_flag_sets():
     """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
+    # shell_cache = Path.home() / "shell-cache"  # pylint: disable=old-division
+    # # pylint: disable=old-division
+    # shell_location = (shell_cache / ("js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default) /
+    #                   "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)
+
     important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
     assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(get_current_shell_path())
 
