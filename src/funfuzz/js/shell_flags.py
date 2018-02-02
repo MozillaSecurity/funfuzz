@@ -7,11 +7,13 @@
 """Allows detection of support for various command-line flags.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import multiprocessing
 import random
 import sys
+
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
 from ..util import subprocesses as sps

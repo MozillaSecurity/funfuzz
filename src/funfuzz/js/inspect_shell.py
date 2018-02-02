@@ -7,7 +7,7 @@
 """Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import platform
@@ -72,7 +72,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # pylint: disable=missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
     unsplit_file_type = sps.captureStdout(['file', binary])[0]
-    filetype = unsplit_file_type.split(':', 1)[1]
+    filetype = unsplit_file_type.decode("utf-8", errors="replace").split(':', 1)[1]
     if sps.isWin:
         assert 'MS Windows' in filetype
         return '32' if 'Intel 80386 32-bit' in filetype else '64'
@@ -150,7 +150,7 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     ans = testBinary(s, ['-e', 'print(getBuildConfiguration()["' + parameter + '"])'],
                      False)[0]
-    return ans.find('true') != -1
+    return ans.decode("utf-8", errors="replace").find('true') != -1
 
 
 def testIsHardFpShellARM(s):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc

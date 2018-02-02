@@ -7,13 +7,15 @@
 """Helper functions to use the Lithium reducer.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import sys
 import shutil
 import subprocess
 import tempfile
+
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import subprocesses as sps
 

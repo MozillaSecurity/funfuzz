@@ -13,7 +13,7 @@ Config-ish bits should move to bot, OR move into a config file,
 OR this file should subprocess-call ITSELF rather than using a while loop.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import sys
 import subprocess

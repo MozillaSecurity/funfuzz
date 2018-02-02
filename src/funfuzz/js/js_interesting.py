@@ -7,7 +7,7 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import sys
@@ -18,6 +18,7 @@ import lithium.interestingness.timed_run as timed_run
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
 from ..util import create_collector
@@ -242,7 +243,7 @@ def ulimitSet():  # pylint: disable=invalid-name
         resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
-    halfGB = int(GB / 2)  # pylint: disable=invalid-name,old-division
+    halfGB = int(GB // 2)  # pylint: disable=invalid-name
     resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
 
 

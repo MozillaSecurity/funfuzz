@@ -7,7 +7,7 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import json
 import os
@@ -153,7 +153,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             engineFlags = shell_flags.randomFlagSet(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
         # pylint: disable=old-division
-        js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
+        js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 // 2))])
         js_interesting_args.extend(['-f', fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
@@ -172,7 +172,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with open(logPrefix + '-out.txt', 'rb') as f:
+            with open(logPrefix + '-out.txt', 'r') as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace('/*FRC-', '/*') for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
             file_manipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
@@ -251,7 +251,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
-    with open(jsfunfuzzOutputFilename, 'rb') as f:
+    with open(jsfunfuzzOutputFilename, 'r') as f:
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]
@@ -302,6 +302,6 @@ assert mightUseDivision("eval('//x'); a / b;")
 
 
 if __name__ == "__main__":
-    # FIXME: Replace os.getcwdu() prior to moving to Python 3  # pylint: disable=fixme
     # pylint: disable=no-member
-    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], create_collector.createCollector("jsfunfuzz"))
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu() if sys.version_info.major == 2 else os.getcwd()),
+                    sys.argv[1:], create_collector.createCollector("jsfunfuzz"))

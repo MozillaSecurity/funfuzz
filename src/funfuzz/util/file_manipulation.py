@@ -7,7 +7,7 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 
 def firstLine(s):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -21,7 +21,7 @@ def fuzzDice(filename):  # pylint: disable=invalid-name,missing-param-doc,missin
     """Return the lines of the file, except for the one line containing DICE."""
     before = []
     after = []
-    with open(filename, 'rb') as f:
+    with open(filename, 'r') as f:
         for line in f:
             if line.find("DICE") != -1:
                 break
@@ -36,7 +36,7 @@ def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,miss
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
     before = []
     after = []
-    with open(filename, 'rb') as f:
+    with open(filename, 'r') as f:
         for line in f:
             before.append(line)
             if line.find("SPLICE") != -1:
@@ -80,5 +80,5 @@ def truncateMid(a, limit_each_side, insert_if_truncated):  # pylint: disable=inv
 
 def writeLinesToFile(lines, filename):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Write lines to a given filename."""
-    with open(filename, 'wb') as f:
+    with open(filename, 'w') as f:
         f.writelines(lines)

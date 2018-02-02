@@ -7,7 +7,7 @@
 """Allow downloading of builds.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import argparse
 import configparser
@@ -21,6 +21,7 @@ import sys
 import urllib
 
 from future.moves.html.parser import HTMLParser
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import subprocesses as sps
 
@@ -466,7 +467,7 @@ def writeDownloadedShellFMConf(urlLink, bDir):  # pylint: disable=invalid-name,m
 
     downloadedShellFMConfPath = os.path.join(bDir, 'dist', 'js.fuzzmanagerconf')  # pylint: disable=invalid-name
     if not os.path.isfile(downloadedShellFMConfPath):
-        with open(downloadedShellFMConfPath, 'wb') as cfgfile:
+        with open(downloadedShellFMConfPath, 'w') as cfgfile:
             downloadedShellCfg.write(cfgfile)
 
     # Required pieces of the .fuzzmanagerconf file are platform, product and os

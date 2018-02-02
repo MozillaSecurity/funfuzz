@@ -7,7 +7,7 @@
 """Functions to concatenate files, with one specially for js files.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 
@@ -15,7 +15,7 @@ import os
 def link_js(target_fn, file_list_fn, source_base, prologue="", module_dirs=None):
     # pylint: disable=missing-docstring
     module_dirs = module_dirs or []
-    with open(target_fn, "wb") as target:
+    with open(target_fn, "w") as target:
         target.write(prologue)
 
         # Add files listed in file_list_fn
