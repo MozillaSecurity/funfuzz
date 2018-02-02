@@ -95,7 +95,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # we also use it directly for knownPath, timeout, and collector
     # Return: (lev, crashInfo) or (js_interesting.JS_FINE, None)
 
-    combos = shell_flags.basicFlagSets(jsEngine)
+    combos = shell_flags.basic_flag_sets(jsEngine)
 
     if quickMode:
         # Only used during initial fuzzing. Allowed to have false negatives.
