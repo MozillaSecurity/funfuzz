@@ -7,7 +7,7 @@
 """Allows specification of build configuration parameters.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import argparse
 import hashlib
@@ -15,6 +15,8 @@ import os
 import platform
 import random
 import sys
+
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from ..util import hg_helpers
 from ..util import subprocesses as sps
@@ -237,7 +239,7 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     if build_options.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         fileName.append(os.path.basename(build_options.patchFile).split('.')[0])
-        with open(os.path.abspath(build_options.patchFile), "rb") as f:
+        with open(os.path.abspath(build_options.patchFile), "r") as f:
             readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult).hexdigest()[:12])

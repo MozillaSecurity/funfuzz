@@ -11,10 +11,12 @@ Usage: python -m funfuzz.autobisectjs.find_intersecting_changesets -R ~/trees/mo
 (first go to known_broken_earliest_working and comment out configuration-specific ignore ranges,
 this file does not yet support those.)"""
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 from optparse import OptionParser  # pylint: disable=deprecated-module
+
+from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import known_broken_earliest_working as kbew
 from ..util import subprocesses as sps

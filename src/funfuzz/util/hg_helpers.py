@@ -7,7 +7,7 @@
 """Helper functions involving Mercurial (hg).
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import configparser
 import os
@@ -15,13 +15,9 @@ import re
 import sys
 import subprocess
 
+from builtins import input  # pylint: disable=redefined-builtin
+
 from . import subprocesses as sps
-
-
-try:
-    input = raw_input  # pylint: disable=invalid-name,raw_input-builtin,redefined-builtin
-except NameError:
-    pass
 
 
 def destroyPyc(repoDir):  # pylint: disable=invalid-name,missing-docstring
@@ -69,7 +65,7 @@ def existsAndIsAncestor(repoDir, a, b):  # pylint: disable=invalid-name,missing-
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
     out = sps.captureStdout(['hg', '-R', repoDir, 'log', '-r', a + ' and ancestor(' + a + ',' + b + ')',
                              '--template={node|short}'], combineStderr=True, ignoreExitCode=True)[0]
-    return out != "" and out.find("abort: unknown revision") < 0
+    return out != "" and out.decode("utf-8", errors="replace").find("abort: unknown revision") < 0
 
 
 def getCsetHashFromBisectMsg(msg):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-docstring
@@ -114,7 +110,7 @@ def getRepoHashAndId(repoDir, repoRev='parents() and default'):  # pylint: disab
             raise Exception('Invalid choice.')
         hg_id_full = sps.captureStdout(hg_log_template_cmds)[0]
     assert hg_id_full != ''
-    (hg_id_hash, hg_id_local_num) = hg_id_full.split(' ')
+    (hg_id_hash, hg_id_local_num) = hg_id_full.decode("utf-8", errors="replace").split(' ')
     sps.vdump('Finished getting the hash and local id number of the repository.')
     return hg_id_hash, hg_id_local_num, is_on_default
 

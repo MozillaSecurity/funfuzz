@@ -7,7 +7,7 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import json
 import os
@@ -153,7 +153,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             engineFlags = shell_flags.randomFlagSet(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
         # pylint: disable=old-division
-        js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 / 2))])
+        js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 // 2))])
         js_interesting_args.extend(['-f', fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
@@ -172,7 +172,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with open(logPrefix + '-out.txt', 'rb') as f:
+            with open(logPrefix + '-out.txt', 'r') as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace('/*FRC-', '/*') for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
             file_manipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
@@ -251,19 +251,14 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
-    with open(jsfunfuzzOutputFilename, 'rb') as f:
+    with open(jsfunfuzzOutputFilename, 'r') as f:
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]
-                is_division_consistent = sps.isWin  # Really 'if MSVC' -- revisit if we add clang builds on Windows
-                if is_division_consistent and mightUseDivision(sline):
-                    pass
-                elif "newGlobal" in sline and "wasmIsSupported" in sline:
-                    # We only override wasmIsSupported above for the main global.
-                    # Hopefully, any imported tests that try to use wasmIsSupported within a newGlobal
-                    # will do so in a straightforward way where everything is on one line.
-                    pass
-                else:
+                # We only override wasmIsSupported above for the main global.
+                # Hopefully, any imported tests that try to use wasmIsSupported within a newGlobal
+                # will do so in a straightforward way where everything is on one line.
+                if not ("newGlobal" in sline and "wasmIsSupported" in sline):
                     lines.append(sline)
     lines += [
         "\ntry{print(uneval(this));}catch(e){}\n",
@@ -272,36 +267,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
     return lines
 
 
-def mightUseDivision(code):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    # Work around MSVC division inconsistencies (bug 948321)
-    # by leaving division out of *-cj-in.js files on Windows.
-    # (Unfortunately, this will also match regexps and a bunch
-    # of other things.)
-    i = 0
-    while i < len(code):
-        if code[i] == '/':
-            if i + 1 < len(code) and (code[i + 1] == '/' or code[i + 1] == '*'):
-                # An open-comment like "//" or "/*" is okay. Skip the next character.
-                i += 1
-            elif i and code[i - 1] == '*':
-                # A close-comment like "*/" is okay too.
-                pass
-            else:
-                # Plain "/" could be division (or regexp or something else)
-                return True
-        i += 1
-    return False
-
-
-assert not mightUseDivision("//")
-assert not mightUseDivision("// a")
-assert not mightUseDivision("/*FOO*/")
-assert mightUseDivision("a / b")
-assert mightUseDivision("eval('/**/'); a / b;")
-assert mightUseDivision("eval('//x'); a / b;")
-
-
 if __name__ == "__main__":
-    # FIXME: Replace os.getcwdu() prior to moving to Python 3  # pylint: disable=fixme
     # pylint: disable=no-member
-    many_timed_runs(None, sps.createWtmpDir(os.getcwdu()), sys.argv[1:], create_collector.createCollector("jsfunfuzz"))
+    many_timed_runs(None, sps.createWtmpDir(os.getcwdu() if sys.version_info.major == 2 else os.getcwd()),
+                    sys.argv[1:], create_collector.createCollector("jsfunfuzz"))
