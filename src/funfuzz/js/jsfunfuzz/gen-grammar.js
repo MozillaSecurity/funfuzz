@@ -178,10 +178,6 @@ var statementMakers = Random.weighted([
   // -- for (key in generator())
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
-  // -- for each (value in obj)
-  // to be removed: https://bugzilla.mozilla.org/show_bug.cgi?id=1083470
-  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), makeLValue(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", " each", "(", Random.index(varBinderFor), v,                " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for (element of arraylike)
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
@@ -586,14 +582,12 @@ var exceptionyStatementMakers = [
   function(d, b) { return cat(["return ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["yield ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["throw ", makeId(d, b), ";"]); },
-  function(d, b) { return "throw StopIteration;"; },
   function(d, b) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
   function(d, b) { return b[b.length - 1] + "." + Random.index(exceptionProperties) + ";"; },
   function(d, b) { return makeId(d, b) + "." + Random.index(exceptionProperties) + ";"; },
   function(d, b) { return cat([makeId(d, b), " = ", makeId(d, b), ";"]); },
   function(d, b) { return cat([makeLValue(d, b), " = ", makeId(d, b), ";"]); },
 
-  // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
@@ -710,11 +704,11 @@ var incDecOps = [
 
 
 var specialProperties = [
-  "__iterator__", "__count__",
+  "__count__",
   "__parent__", "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
-  "toString", "toSource", "valueOf",
+  "toString", "valueOf",
   "call", "apply", // ({apply:...}).apply() hits a special case (speculation failure with funapply / funcall bytecode)
   "length",
   "0", "1",
@@ -843,10 +837,6 @@ var exprMakers =
 
   // Modifying assignment, with operators that do various coercions
   function(d, b) { return cat([makeLValue(d, b), Random.index(["|=", "%=", "+=", "-="]), makeExpr(d, b)]); },
-
-  // Watchpoints (similar to setters)
-  function(d, b) { return cat([makeExpr(d, b), ".", "watch", "(", makePropertyName(d, b), ", ", makeFunction(d, b), ")"]); },
-  function(d, b) { return cat([makeExpr(d, b), ".", "unwatch", "(", makePropertyName(d, b), ")"]); },
 
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
   function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", makePropertyName(d, b), ", ", makePropertyDescriptor(d, b), ")"]); },
@@ -1159,7 +1149,7 @@ function makeObjLiteralPart(d, b)
     case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
     case 3: return cat([" set ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
 
-    case 4: return "/*toXFun*/" + cat([Random.index(["toString", "toSource", "valueOf"]), ": ", makeToXFunction(d - 1, b)]);
+    case 4: return "/*toXFun*/" + cat([Random.index(["toString", "valueOf"]), ": ", makeToXFunction(d - 1, b)]);
 
     default: return cat([makeObjLiteralName(d, b), ": ", makeExpr(d, b)]);
   }
@@ -1552,21 +1542,14 @@ function makeComprehension(d, b)
     return "";
   case 1:
     return cat([" for ",          "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
-  // |for each| to be removed: https://bugzilla.mozilla.org/show_bug.cgi?id=1083470
   case 2:
-    return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
-  case 3:
-    return cat([" for ", "each ", "(", makeId(d, b),       " in ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-  case 4:
     return cat([" for ",          "(", makeId(d, b),       " of ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
-  case 5:
+  case 3:
     return cat([" for ",          "(", makeId(d, b),       " of ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
   default:
     return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
   }
 }
-
-
 
 
 // for..in LHS can be a single variable OR it can be a destructuring array of exactly two elements.

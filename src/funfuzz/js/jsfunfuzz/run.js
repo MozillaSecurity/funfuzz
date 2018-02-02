@@ -31,9 +31,6 @@ function tryRunningDirectly(f, code, wtt)
     var rv = f();
     if (verbose)
       dumpln("It ran!");
-    if (wtt.allowIter && rv && typeof rv == "object") {
-      tryIteration(rv);
-    }
   } catch(runError) {
     if(verbose)
       dumpln("Running threw!  About to toString to error.");
@@ -52,7 +49,6 @@ var realFunction = Function;
 var realGC = gc;
 var realUneval = uneval;
 var realToString = toString;
-var realToSource = this.toSource; // "this." because it only exists in spidermonkey
 
 
 function tryEnsureSanity()
@@ -80,19 +76,6 @@ function tryEnsureSanity()
   }
 
   try {
-    // Try to get rid of any fake 'unwatch' functions.
-    delete this.unwatch;
-
-    // Restore important stuff that might have been broken as soon as possible :)
-    if ('unwatch' in this) {
-      this.unwatch("eval");
-      this.unwatch("Function");
-      this.unwatch("gc");
-      this.unwatch("uneval");
-      this.unwatch("toSource");
-      this.unwatch("toString");
-    }
-
     if ('__defineSetter__' in this) {
       // The only way to get rid of getters/setters is to delete the property.
       if (!jsStrictMode)
@@ -101,7 +84,6 @@ function tryEnsureSanity()
       delete this.Function;
       delete this.gc;
       delete this.uneval;
-      delete this.toSource;
       delete this.toString;
     }
 
@@ -110,7 +92,6 @@ function tryEnsureSanity()
     this.Function = realFunction;
     this.gc = realGC;
     this.uneval = realUneval;
-    this.toSource = realToSource;
     this.toString = realToString;
   } catch(e) {
     confused("tryEnsureSanity failed: " + errorToString(e));
@@ -123,30 +104,6 @@ function tryEnsureSanity()
     confused("Fuzz script replaced |Function|");
 }
 
-function tryIteration(rv)
-{
-  try {
-    if (Iterator(rv) !== rv)
-      return; // not an iterator
-  }
-  catch(e) {
-    // Is it a bug that it's possible to end up here?  Probably not!
-    dumpln("Error while trying to determine whether it's an iterator!");
-    dumpln("The error was: " + e);
-    return;
-  }
-
-  dumpln("It's an iterator!");
-  try {
-    var iterCount = 0;
-    for (var iterValue of rv)
-      ++iterCount;
-    dumpln("Iterating succeeded, iterCount == " + iterCount);
-  } catch (iterError) {
-    dumpln("Iterating threw!");
-    dumpln("Iterating threw: " + errorToString(iterError));
-  }
-}
 
 function tryItOut(code)
 {
