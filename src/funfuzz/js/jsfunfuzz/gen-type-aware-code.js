@@ -120,13 +120,11 @@ var makeEvilCallback;
   };
 
   var handlerTraps = ["getOwnPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
-  // handlerTraps.push("getPropertyDescriptor");
 
   function forwardingHandler(d, b) {
     return (
       "({"+
         "getOwnPropertyDescriptor: function(name) { Z; var desc = Object.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
-        // "getPropertyDescriptor: function(name) { Z; var desc = Object.getPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
         "defineProperty: function(name, desc) { Z; Object.defineProperty(X, name, desc); }, " +
         "getOwnPropertyNames: function() { Z; return Object.getOwnPropertyNames(X); }, " +
         "delete: function(name) { Z; return delete X[name]; }, " +
@@ -377,14 +375,6 @@ var makeEvilCallback;
     { w: 1,  v: fdecl },
     { w: 2,  v: function(d, b) { return m("f") + "(" + m() + ");"; } },
 
-    // i: Iterator
-    // { w: 1,  v: function(d, b) { return assign(d, b, "i", "new Iterator(" + m() + ")"); } },
-    // { w: 1,  v: function(d, b) { return assign(d, b, "i", "new Iterator(" + m() + ", true)"); } },
-    // { w: 1,  v: function(d, b) { return assign(d, b, "i", m("ema") + "." + Random.index(["entries", "keys", "values", "iterator"])); } },
-    // { w: 3,  v: function(d, b) { return m("i") + ".next();"; } },
-    // { w: 3,  v: function(d, b) { return m("i") + ".send(" + m() + ");"; } },
-    // Other ways to build iterators: https://developer.mozilla.org/en/JavaScript/Guide/Iterators_and_Generators
-
     // v: Primitive
     { w: 2,  v: function(d, b) { return assign(d, b, "v", Random.index(["4", "4.2", "NaN", "0", "-0", "Infinity", "-Infinity"])); } },
     { w: 1,  v: function(d, b) { return assign(d, b, "v", "new Number(" + Random.index(["4", "4.2", "NaN", "0", "-0", "Infinity", "-Infinity"]) + ")"); } },
@@ -405,7 +395,6 @@ var makeEvilCallback;
     { w: 5,  v: function(d, b) { return "print(uneval(" + m() + "));"; } },
     { w: 5,  v: function(d, b) { return m() + ".toString = " + makeEvilCallback(d, b) + ";"; } },
     { w: 5,  v: function(d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
-    // { w: 2,  v: function(d, b) { return m() + ".__iterator__ = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1,  v: function(d, b) { return m() + " = " + m() + ";"; } },
     { w: 1,  v: function(d, b) { return m() + " = " + m("g") + ".objectEmulatingUndefined();"; } },
     { w: 1,  v: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },

@@ -12,11 +12,6 @@ var proxyHandlerProperties = {
     forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
     throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }",
   },
-  // getPropertyDescriptor: {
-  //   empty:    "function(){}",
-  //   forward:  "function(name) { var desc = Object.getPropertyDescriptor(x); desc.configurable = true; return desc; }",
-  //   throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }",
-  // },
   defineProperty: {
     empty:    "function(){}",
     forward:  "function(name, desc) { Object.defineProperty(x, name, desc); }"
