@@ -32,17 +32,6 @@ isWin10 = isWin and (platform.uname()[2] == '10')  # pylint: disable=invalid-nam
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)  # pylint: disable=invalid-name
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
 isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=invalid-name,no-member
-isMozBuild64 = False  # pylint: disable=invalid-name
-# This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
-# spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
-if os.environ.get('MOZ_MSVCBITS'):
-    # For MozillaBuild 2.0.0 onwards
-    isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # pylint: disable=invalid-name
-elif os.environ.get('MOZ_TOOLS'):
-    # For MozillaBuild 1.x
-    # pylint: disable=invalid-name
-    isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
-# else do not set; the script is running stand-alone and the isMozBuild64 variable should not be needed.
 
 # pylint: disable=invalid-name
 noMinidumpMsg = r"""

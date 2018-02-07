@@ -266,10 +266,6 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if sps.isARMv7l and not args.enable32:
         return False, '64-bit ARM builds are not yet supported.'
 
-    if sps.isWin and (args.enable32 == sps.isMozBuild64):
-        return False, ("Win32 builds need the 32-bit MozillaBuild batch file and likewise the "
-                       "corresponding 64-bit ones for Win64 builds.")
-
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
         # Test with leak-checking disabled, test that reporting works, test only on x64 16.04
