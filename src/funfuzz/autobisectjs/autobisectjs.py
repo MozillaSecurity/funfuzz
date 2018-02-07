@@ -815,8 +815,6 @@ def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing
     s3CacheObj = s3cache.S3Cache(compile_shell.S3_SHELL_CACHE_DIRNAME)
     if s3CacheObj.connect():
         NUMBER_OF_DAYS = 1  # EC2 VMs generally have less disk space for local shell caches
-    elif sps.isARMv7l:
-        NUMBER_OF_DAYS = 3  # native ARM boards usually have less disk space
     else:
         NUMBER_OF_DAYS = 28
 

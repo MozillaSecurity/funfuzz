@@ -48,8 +48,6 @@ else:
 
 if multiprocessing.cpu_count() > 2:
     COMPILATION_JOBS = multiprocessing.cpu_count() + 1
-elif sps.isARMv7l:
-    COMPILATION_JOBS = 3  # An ARM board
 else:
     COMPILATION_JOBS = 3  # Other single/dual core computers
 
@@ -310,23 +308,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     cfg_env = copy.deepcopy(os.environ)
     orig_cfg_env = copy.deepcopy(os.environ)
     cfg_env["AR"] = "ar"
-    if sps.isARMv7l:
-        # 32-bit shell on ARM boards, e.g. odroid boards.
-        # This is tested on Ubuntu 14.04 with necessary armel libraries (force)-installed.
-        assert shell.build_opts.enable32, 'arm7vl boards are only 32-bit, armv8 boards will be 64-bit.'
-        if not shell.build_opts.enableHardFp:
-            cfg_env["CC"] = "gcc-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
-            cfg_env["CXX"] = "g++-4.7 -mfloat-abi=softfp -B/usr/lib/gcc/arm-linux-gnueabi/4.7"
-        cfg_cmds.append('sh')
-        cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-        # From mjrosenb: things might go wrong if these three lines are not present for
-        # compiling ARM on a 64-bit host machine. Not needed if compiling on the board itself.
-        # cfg_cmds.append('--target=arm-linux-gnueabi')
-        # cfg_cmds.append('--with-arch=armv7-a')
-        # cfg_cmds.append('--with-thumb')
-        if not shell.build_opts.enableHardFp:
-            cfg_cmds.append('--target=arm-linux-gnueabi')
-    elif shell.build_opts.enable32 and os.name == 'posix':
+    if shell.build_opts.enable32 and os.name == "posix":
         # 32-bit shell on Mac OS X 10.11 El Capitan and greater
         if sps.isMac:
             assert sps.macVer() >= [10, 11]  # We no longer support 10.10 Yosemite and prior.
@@ -363,7 +345,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                     cfg_cmds.append('--enable-arm-simulator')
                 cfg_cmds.append('--enable-simulator=arm')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif sps.isLinux and not sps.isARMv7l:
+        elif sps.isLinux:
             cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
             if shell.build_opts.buildWithClang:
                 cfg_env["CC"] = cfg_env["HOST_CC"] = str(
@@ -592,15 +574,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     """Dump environment to a .fuzzmanagerconf file."""
     # Platform and OS detection for the spec, part of which is in:
     #   https://wiki.mozilla.org/Security/CrashSignatures
-    if sps.isARMv7l:
-        fmconf_platform = 'ARM'
-    elif sps.isARMv7l and not shell.build_opts.enable32:
-        print("ARM64 is not supported in .fuzzmanagerconf yet.")
-        fmconf_platform = 'ARM64'
-    elif shell.build_opts.enable32:
-        fmconf_platform = 'x86'
-    else:
-        fmconf_platform = 'x86-64'
+    fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
 
     if sps.isLinux:
         fmconf_os = 'linux'

@@ -128,20 +128,6 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
     if shellSupportsFlag(shellPath, '--disable-ion') and chance(.05):
         args.append("--disable-ion")  # --disable-ion landed in bug 789319
 
-    # See bug 1026919 comment 60:
-    if sps.isARMv7l and \
-            shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
-        # It was suggested to focus more on the range between 0 and 1.
-        # Reduced the upper limit to 8, see bug 1053996 comment 8.
-        asm_nop_fill = random.randint(1, 8) if chance(0.3) else random.randint(0, 1)
-        args.append("--arm-asm-nop-fill=" + str(asm_nop_fill))  # Landed in bug 1020834
-
-    # See bug 1026919 comment 60:
-    if sps.isARMv7l and \
-            shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
-        asm_pool_max_offset = random.randint(5, 1024)
-        args.append("--asm-pool-max-offset=" + str(asm_pool_max_offset))  # Landed in bug 1026919
-
     if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
 

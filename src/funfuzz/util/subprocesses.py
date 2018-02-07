@@ -24,7 +24,6 @@ from past.builtins import range  # pylint: disable=redefined-builtin
 
 verbose = False  # pylint: disable=invalid-name
 
-isARMv7l = (platform.uname()[4] == 'armv7l')  # pylint: disable=invalid-name
 isLinux = (platform.system() == 'Linux')  # pylint: disable=invalid-name
 isMac = (platform.system() == 'Darwin')  # pylint: disable=invalid-name
 isWin = (platform.system() == 'Windows')  # pylint: disable=invalid-name

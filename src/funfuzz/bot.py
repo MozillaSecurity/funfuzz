@@ -130,10 +130,6 @@ def main():  # pylint: disable=missing-docstring
         # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
         # I could guess 1 GB RAM per core, but that wanders into sketchyville.
         number_of_processes = max(number_of_processes // 2, 1)
-    if sps.isARMv7l:
-        # Even though ARM boards generally now have many cores, each core is not as powerful
-        # as x86/64 ones, so restrict fuzzing to only 1 core for now.
-        number_of_processes = 1
 
     fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info, collector)
 
@@ -253,8 +249,6 @@ def machineTimeoutDefaults(options):  # pylint: disable=invalid-name,missing-par
     """Set different defaults depending on the machine type or debugger used."""
     if options.build_options.runWithVg:
         return 300
-    elif sps.isARMv7l:
-        return 180
     return JS_SHELL_DEFAULT_TIMEOUT
 
 
