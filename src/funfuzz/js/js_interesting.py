@@ -25,7 +25,6 @@ from ..util import create_collector
 from ..util import detect_malloc_errors
 from ..util import file_manipulation
 from ..util import subprocesses as sps
-from ..util.find_ignore_lists import find_ignore_lists
 
 
 # Levels of unhappiness.
@@ -211,7 +210,7 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
 
 def valgrindSuppressions(knownPath):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    return ["--suppressions=" + filename for filename in find_ignore_lists(knownPath, "valgrind.txt")]
+    return ["--suppressions=" + filename for filename in "valgrind_suppressions.txt"]
 
 
 def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc

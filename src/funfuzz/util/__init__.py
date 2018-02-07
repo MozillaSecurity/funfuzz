@@ -13,7 +13,6 @@ from . import create_collector
 from . import detect_malloc_errors
 from . import download_build
 from . import file_manipulation
-from . import find_ignore_lists
 from . import fork_join
 from . import hg_helpers
 from . import link_js
