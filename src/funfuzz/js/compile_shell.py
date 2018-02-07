@@ -250,8 +250,10 @@ def ensureDir(directory):  # pylint: disable=invalid-name,missing-param-doc,miss
 def autoconfRun(cwDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Run autoconf binaries corresponding to the platform."""
     if sps.isMac:
-        autoconf213_mac_bin = '/usr/local/Cellar/autoconf213/2.13/bin/autoconf213' \
-                              if sps.isProgramInstalled('brew') else 'autoconf213'
+        if subprocess.check_call(["which", "brew"], stdout=subprocess.PIPE):
+            autoconf213_mac_bin = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
+        else:
+            autoconf213_mac_bin = "autoconf213"
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
         if not os.path.isfile(sps.normExpUserPath(autoconf213_mac_bin)):
             autoconf213_mac_bin = 'autoconf213'
@@ -341,7 +343,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_env["LD"] = "ld"
             cfg_env["STRIP"] = "strip -x -S"
             cfg_env["CROSS_COMPILE"] = "1"
-            if sps.isProgramInstalled('brew'):
+            if subprocess.check_call(["which", "brew"], stdout=subprocess.PIPE):
                 cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
                 # Hacked up for new and old Homebrew configs, we can probably just call autoconf213
                 if not os.path.isfile(sps.normExpUserPath(cfg_env["AUTOCONF"])):
@@ -398,7 +400,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
             cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
-        if sps.isProgramInstalled('brew'):
+        if subprocess.check_call(["which", "brew"], stdout=subprocess.PIPE):
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append('sh')
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))

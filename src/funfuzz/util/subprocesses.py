@@ -438,13 +438,6 @@ def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def isProgramInstalled(program):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Check if the specified program is installed."""
-    which_exit = captureStdout(['which', program], ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1]
-    return which_exit == 0
-
-
 def rmDirIfEmpty(eDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Remove directory if empty."""
     assert os.path.isdir(eDir)
@@ -556,14 +549,3 @@ def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word 'DEBUG' to any verbose output."""
     if verbose:
         print("DEBUG - %s" % inp)
-
-
-###########
-#  Tests  #
-###########
-
-if __name__ == '__main__':
-    vdump('Running tests...')
-    assert isProgramInstalled('date')
-    assert not isProgramInstalled('FOOBARFOOBAR')
-    vdump('Done')
