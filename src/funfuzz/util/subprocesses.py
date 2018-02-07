@@ -558,12 +558,6 @@ def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
         print("DEBUG - %s" % inp)
 
 
-def verCheck(prog):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Runs the program with --version and returns the result."""
-    return subprocess.check_output([prog, '--version'])
-
-
 ###########
 #  Tests  #
 ###########

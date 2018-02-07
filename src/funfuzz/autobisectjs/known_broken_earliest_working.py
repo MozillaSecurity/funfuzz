@@ -9,6 +9,8 @@
 
 from __future__ import absolute_import, print_function
 
+import subprocess
+
 # pylint issue 73 https://git.io/vQAhf
 from distutils.version import StrictVersion  # pylint: disable=import-error,no-name-in-module
 
@@ -118,7 +120,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     if sps.isWin:
         required.append('530f7bd28399')  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
-    if sps.isLinux and StrictVersion(sps.verCheck('sed').split()[3]) >= StrictVersion('4.3'):
+    if sps.isLinux and StrictVersion(subprocess.check_output(["sed", "--version"]).split()[3]) >= StrictVersion("4.3"):
         required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
         required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
