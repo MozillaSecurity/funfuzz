@@ -309,43 +309,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     orig_cfg_env = copy.deepcopy(os.environ)
     cfg_env["AR"] = "ar"
     if shell.build_opts.enable32 and os.name == "posix":
-        # 32-bit shell on Mac OS X 10.11 El Capitan and greater
-        if sps.isMac:
-            assert sps.macVer() >= [10, 11]  # We no longer support 10.10 Yosemite and prior.
-            # Uses system clang
-            cfg_env["CC"] = cfg_env["HOST_CC"] = "clang %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
-            cfg_env["CXX"] = cfg_env["HOST_CXX"] = "clang++ %s %s" % (CLANG_PARAMS, SSE2_FLAGS)
-            if shell.build_opts.buildWithAsan:
-                cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
-                cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
-            cfg_env["CC"] += " " + CLANG_X86_FLAG  # only needed for CC, not HOST_CC
-            cfg_env["CXX"] += " " + CLANG_X86_FLAG  # only needed for CXX, not HOST_CXX
-            cfg_env["RANLIB"] = "ranlib"
-            cfg_env["AS"] = "$CC"
-            cfg_env["LD"] = "ld"
-            cfg_env["STRIP"] = "strip -x -S"
-            cfg_env["CROSS_COMPILE"] = "1"
-            if subprocess.check_call(["which", "brew"], stdout=subprocess.PIPE):
-                cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
-                # Hacked up for new and old Homebrew configs, we can probably just call autoconf213
-                if not os.path.isfile(sps.normExpUserPath(cfg_env["AUTOCONF"])):
-                    cfg_env["AUTOCONF"] = "autoconf213"
-            cfg_cmds.append('sh')
-            cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-            cfg_cmds.append('--target=i386-apple-darwin15.6.0')  # El Capitan 10.11.6
-            cfg_cmds.append('--disable-xcode-checks')
-            if shell.build_opts.buildWithAsan:
-                cfg_cmds.append('--enable-address-sanitizer')
-            if shell.build_opts.enableSimulatorArm32:
-                # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
-                # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
-                # Newer configure.in changes mean that things blow up if unknown/removed configure
-                # options are entered, so specify it only if it's requested.
-                if shell.build_opts.enableArmSimulatorObsolete:
-                    cfg_cmds.append('--enable-arm-simulator')
-                cfg_cmds.append('--enable-simulator=arm')
         # 32-bit shell on 32/64-bit x86 Linux
-        elif sps.isLinux:
+        if sps.isLinux:
             cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
             if shell.build_opts.buildWithClang:
                 cfg_env["CC"] = cfg_env["HOST_CC"] = str(

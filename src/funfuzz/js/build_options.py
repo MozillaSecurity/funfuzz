@@ -257,6 +257,9 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if not args.enableDbg and args.disableOpt:
         return False, 'Making a non-debug, non-optimized build would be kind of silly.'
 
+    if sps.isMac and args.enable32:
+        return False, "We are no longer going to ship 32-bit Mac binaries."
+
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
         # Test with leak-checking disabled, test that reporting works, test only on x64 16.04
