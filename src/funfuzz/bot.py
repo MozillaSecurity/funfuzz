@@ -57,9 +57,6 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         useTreeherderBuilds=False,
     )
 
-    parser.add_option('-t', '--test-type', dest='testType', choices=['js'],
-                      help='Test type: "js"', default='js')
-
     parser.add_option("--build", dest="existingBuildDir",
                       help="Use an existing build directory.")
 
@@ -85,9 +82,6 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     options, args = parser.parse_args()
     if args:
         print("Warning: bot does not use positional arguments")
-
-    if not options.testType or options.testType == 'dom':
-        raise Exception('options.testType should be set to "js" now that only js engine fuzzing is supported')
 
     if not options.useTreeherderBuilds and not os.path.isdir(build_options.DEFAULT_TREES_LOCATION):
         # We don't have trees, so we must use treeherder builds.
@@ -178,43 +172,37 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         bRev = ''  # pylint: disable=invalid-name
         manyTimedRunArgs = []  # pylint: disable=invalid-name
     elif not options.useTreeherderBuilds:
-        if options.testType == "js":
-            # Compiled js shells
-            options.build_options = build_options.parseShellOptions(options.build_options)
-            options.timeout = options.timeout or machineTimeoutDefaults(options)
+        options.build_options = build_options.parseShellOptions(options.build_options)
+        options.timeout = options.timeout or machineTimeoutDefaults(options)
 
-            with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
-                bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
-                cshell = compile_shell.CompiledShell(options.build_options, bRev)
-                updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')  # pylint: disable=invalid-name
-                compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
+        with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
+            bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
+            cshell = compile_shell.CompiledShell(options.build_options, bRev)
+            updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')  # pylint: disable=invalid-name
+            compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
-                bDir = cshell.getShellCacheDir()  # pylint: disable=invalid-name
-                # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
-                #   js-js-dbg-opt-64-dm-linux
-                # This is because options.testType gets prepended along with a dash later.
-                bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
-                bSrc = (  # pylint: disable=invalid-name
-                    "Create another shell in shell-cache like this one:\n"
-                    'python -u -m %s -b "%s -R %s" -r %s\n\n'
-                    "==============================================\n"
-                    "|  Fuzzing %s js shell builds\n"
-                    "|  DATE: %s\n"
-                    "==============================================\n\n" % (
-                        "funfuzz.js.compile_shell",
-                        options.build_options.build_options_str,
-                        options.build_options.repoDir,
-                        bRev,
-                        cshell.getRepoName(),
-                        time.asctime()
-                    ))
+            bDir = cshell.getShellCacheDir()  # pylint: disable=invalid-name
+            # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
+            #   js-js-dbg-opt-64-dm-linux
+            bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
+            bSrc = (  # pylint: disable=invalid-name
+                "Create another shell in shell-cache like this one:\n"
+                'python -u -m %s -b "%s -R %s" -r %s\n\n'
+                "==============================================\n"
+                "|  Fuzzing %s js shell builds\n"
+                "|  DATE: %s\n"
+                "==============================================\n\n" % (
+                    "funfuzz.js.compile_shell",
+                    options.build_options.build_options_str,
+                    options.build_options.repoDir,
+                    bRev,
+                    cshell.getRepoName(),
+                    time.asctime()
+                ))
 
-                manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name
-                print("buildDir is: %s" % bDir)
-                print("buildSrc is: %s" % bSrc)
-        else:
-            # FIXME: We can probably remove the testType option  # pylint: disable=fixme
-            raise Exception('Only testType "js" is supported.')
+            manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name
+            print("buildDir is: %s" % bDir)
+            print("buildSrc is: %s" % bSrc)
     else:
         # Treeherder js shells and browser
         # Download from Treeherder and call it 'build'
@@ -223,7 +211,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
         bDir = 'build'  # pylint: disable=invalid-name
         bType = download_build.defaultBuildType(options.repoName, None, True)  # pylint: disable=invalid-name
-        isJS = options.testType == 'js'  # pylint: disable=invalid-name
+        isJS = True  # pylint: disable=invalid-name
         # pylint: disable=invalid-name
         bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=isJS, wantTests=not isJS)
         bRev = ''  # pylint: disable=invalid-name
@@ -238,10 +226,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
 def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
     tempDir = tempfile.mkdtemp("loop" + str(i))  # pylint: disable=invalid-name
-    if options.testType == 'js':
-        loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
-    else:
-        raise Exception('Only js engine fuzzing is supported')
+    loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
 
 
 def machineTimeoutDefaults(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
