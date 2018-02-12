@@ -7,7 +7,7 @@
 """Functions here attempt to find lists of bugs to ignore, e.g. via suppression files.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import os
 

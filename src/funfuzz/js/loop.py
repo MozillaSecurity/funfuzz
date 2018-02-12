@@ -7,7 +7,7 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import json
 import os

@@ -7,7 +7,7 @@
 """Allows detection of support for various command-line flags.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import multiprocessing
 import random

@@ -7,7 +7,7 @@
 """Functions here interact with Amazon EC2 using boto.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import os
 import shutil

@@ -7,7 +7,7 @@
 """Known broken changeset ranges of SpiderMonkey are specified in this file.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 # pylint issue 73 https://git.io/vQAhf
 from distutils.version import StrictVersion  # pylint: disable=import-error,no-name-in-module

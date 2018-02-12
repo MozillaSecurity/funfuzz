@@ -7,7 +7,7 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 
 def firstLine(s):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
