@@ -211,9 +211,8 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
         bDir = 'build'  # pylint: disable=invalid-name
         bType = download_build.defaultBuildType(options.repoName, None, True)  # pylint: disable=invalid-name
-        isJS = True  # pylint: disable=invalid-name
         # pylint: disable=invalid-name
-        bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=isJS, wantTests=not isJS)
+        bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=True, wantTests=False)
         bRev = ''  # pylint: disable=invalid-name
 
         # These two lines are only used for treeherder js shells:
