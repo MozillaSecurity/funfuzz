@@ -16,7 +16,6 @@ import sys
 from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
-from ..util import subprocesses as sps
 
 
 def memoize(f, cache=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
