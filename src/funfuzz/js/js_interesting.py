@@ -70,7 +70,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if options.valgrind:
             runthis = (
                 inspect_shell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
-                valgrindSuppressions(options.knownPath) +
+                valgrindSuppressions() +
                 runthis)
 
         preexec_fn = ulimitSet if os.name == 'posix' else None
@@ -208,7 +208,7 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
             f.truncate(maxSize)
 
 
-def valgrindSuppressions(knownPath):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def valgrindSuppressions():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     return ["--suppressions=" + filename for filename in "valgrind_suppressions.txt"]
 
