@@ -9,5 +9,4 @@
 from __future__ import absolute_import
 
 from . import autobisectjs
-from . import find_intersecting_changesets
 from . import known_broken_earliest_working
