@@ -68,18 +68,23 @@ def existsAndIsAncestor(repoDir, a, b):  # pylint: disable=invalid-name,missing-
     return out != "" and out.decode("utf-8", errors="replace").find("abort: unknown revision") < 0
 
 
-def getCsetHashFromBisectMsg(msg):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-docstring
-    # pylint: disable=missing-return-doc,missing-return-type-doc
-    # Example bisect msg: "Testing changeset 41831:4f4c01fb42c3 (2 changesets remaining, ~1 tests)"
+def get_cset_hash_from_bisect_msg(msg):
+    """Extract the changeset hash from bisection output.
+
+    Args:
+        msg (str): Bisection output message.
+
+    Returns:
+        str: Changeset hash.
+
+    Raises:
+        ValueError: If required bisection output format does not allow changeset hash to be extracted properly.
+    """
     rgx = re.compile(r"(^|.* )(\d+):(\w{12}).*")
     matched = rgx.match(msg)
     if matched:
         return matched.group(3)
-
-
-assert getCsetHashFromBisectMsg("x 12345:abababababab") == "abababababab"
-assert getCsetHashFromBisectMsg("x 12345:123412341234") == "123412341234"
-assert getCsetHashFromBisectMsg("12345:abababababab y") == "abababababab"
+    raise ValueError("Bisection output format required for hash extraction unavailable. The variable msg is: %s" % msg)
 
 
 def getRepoHashAndId(repoDir, repoRev='parents() and default'):  # pylint: disable=invalid-name,missing-param-doc

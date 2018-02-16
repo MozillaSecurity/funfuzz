@@ -214,7 +214,7 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
         labels[sRepo] = ('good', 'assumed start rev is good')
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
-        currRev = hg_helpers.getCsetHashFromBisectMsg(file_manipulation.firstLine(
+        currRev = hg_helpers.get_cset_hash_from_bisect_msg(file_manipulation.firstLine(
             sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
 
     iterNum = 1
@@ -436,7 +436,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         print(sanitizeCsetMsg(outputResult, repoDir))
         print()
         blamedGoodOrBad = m.group(1)
-        blamedRev = hg_helpers.getCsetHashFromBisectMsg(outputLines[1])
+        blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
 
     if options.testInitialRevs:
@@ -445,7 +445,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
     sps.vdump(outputLines[0])
 
-    currRev = hg_helpers.getCsetHashFromBisectMsg(outputLines[0])
+    currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
         print("Resetting to default revision...")
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
