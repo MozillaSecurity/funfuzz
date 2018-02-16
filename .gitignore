@@ -16,6 +16,7 @@
 
 # Linting via pytest
 /.cache/
+/.pytest_cache/
 
 # Installing via `pip install --user --upgrade -e` - develop mode
 src/funfuzz.egg-info/
