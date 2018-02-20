@@ -140,10 +140,6 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
         else:
             args.append("--no-sse4")
 
-    # We should stop fuzzing --no-fpu according to the js devs...
-    # if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
-    #     args.append("--no-fpu")  # --no-fpu landed in bug 858022
-
     if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
         args.append("--no-asmjs")
 

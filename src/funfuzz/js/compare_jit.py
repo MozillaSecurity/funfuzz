@@ -153,15 +153,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         else:
             # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
-            def fpuOptionDisabledAsmOnOneSide(fpuAsmMsg):  # pylint: disable=invalid-name,missing-docstring
-                # pylint: disable=missing-return-doc,missing-return-type-doc
-                # pylint: disable=invalid-name
-                fpuOptionDisabledAsm = fpuAsmMsg in r0.err or fpuAsmMsg in r.err  # pylint: disable=cell-var-from-loop
-                # pylint: disable=invalid-name
-                # pylint: disable=cell-var-from-loop
-                fpuOptionDiffers = (("--no-fpu" in commands[0]) != ("--no-fpu" in command))
-                return fpuOptionDisabledAsm and fpuOptionDiffers
-
             def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
                 # pylint: disable=missing-return-type-doc
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"  # pylint: disable=invalid-name
@@ -172,14 +163,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 optionDiffers = (("--no-asmjs" in commands[0]) != ("--no-asmjs" in command))
                 return optionDisabledAsm and optionDiffers
 
-            mismatchErr = (r.err != r0.err and  # pylint: disable=invalid-name
-                           # --no-fpu (on debug x86_32 only) turns off asm.js compilation, among other things.
-                           # This should only affect asm.js diagnostics on stderr.
-                           not fpuOptionDisabledAsmOnOneSide("asm.js type error: "
-                                                             "Disabled by lack of floating point support") and
-                           # And also wasm stuff. See bug 1243031.
-                           not fpuOptionDisabledAsmOnOneSide("WebAssembly is not supported on the current device") and
-                           not optionDisabledAsmOnOneSide())
+            mismatchErr = (r.err != r0.err and not optionDisabledAsmOnOneSide())  # pylint: disable=invalid-name
             mismatchOut = (r.out != r0.out)  # pylint: disable=invalid-name
 
             if mismatchErr or mismatchOut:
