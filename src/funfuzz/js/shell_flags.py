@@ -62,14 +62,6 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
         elif shellSupportsFlag(shellPath, '--ion-aa=flow-insensitive') and chance(.4):
             args.append('--ion-aa=flow-insensitive')
 
-    # See bug 932517, which had landed to fix this issue. Keeping this around for archives:
-    #   Original breakage in m-c rev 269359 : https://hg.mozilla.org/mozilla-central/rev/a0ccab2a6e28
-    #   Fix in m-c rev 269896: https://hg.mozilla.org/mozilla-central/rev/3bb8446a6d8d
-    # Anything in-between involving let probably needs "-e 'version(185);'" to see if we can bypass breakage
-    # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
-    #     args.append("--execute='version(185);'")
-    # Note that the version function was removed in m-c rev 392455 (Fx59) - 589914e65db7
-
     # Note for future: --wasm-check-bce is only useful for x86 and ARM32
 
     if shellSupportsFlag(shellPath, '--wasm-always-baseline') and chance(.5):
