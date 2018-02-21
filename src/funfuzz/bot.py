@@ -173,7 +173,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         manyTimedRunArgs = []  # pylint: disable=invalid-name
     elif not options.useTreeherderBuilds:
         options.build_options = build_options.parseShellOptions(options.build_options)
-        options.timeout = options.timeout or machineTimeoutDefaults(options)
+        options.timeout = options.timeout or (300 if options.build_options.runWithVg else JS_SHELL_DEFAULT_TIMEOUT)
 
         with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
             bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
@@ -226,14 +226,6 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
 def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
     tempDir = tempfile.mkdtemp("loop" + str(i))  # pylint: disable=invalid-name
     loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
-
-
-def machineTimeoutDefaults(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Set different defaults depending on the machine type or debugger used."""
-    if options.build_options.runWithVg:
-        return 300
-    return JS_SHELL_DEFAULT_TIMEOUT
 
 
 def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
