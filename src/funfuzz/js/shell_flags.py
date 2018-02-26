@@ -39,8 +39,17 @@ def shellSupportsFlag(shellPath, flag):  # pylint: disable=invalid-name,missing-
     return inspect_shell.shellSupports(shellPath, [flag, '-e', '42'])
 
 
-def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    return random.random() < p
+def chance(i, always=False):
+    """Returns a random boolean result based on an input probability.
+
+    Args:
+        i (float): Intended probability.
+        always (bool): Causes the function to always return True. For testing purposes.
+
+    Returns:
+        bool: Result based on the input probability, unless the "always" parameter is set.
+    """
+    return (random.random() < i) if not always else True
 
 
 def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc

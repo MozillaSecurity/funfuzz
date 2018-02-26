@@ -34,3 +34,9 @@ def test_basic_flag_sets():
 
     important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
     assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(shell_location)
+
+
+def test_chance():
+    """Test that the chance function works as intended."""
+    assert chance(0.6, always=True)
+    assert chance(0.1, always=True)
