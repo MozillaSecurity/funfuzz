@@ -143,29 +143,15 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
         elif chance(.6):
             args.append("--baseline-eager")
 
-    if shellSupportsFlag(shellPath, '--ion-offthread-compile=off'):
+    # Landed in m-c changeset 380023:1b55231e6628, see bug 1206770
+    if shellSupportsFlag(shellPath, "--cpu_count=1"):
         if chance(.7):
             # Focus on the reproducible cases
             args.append("--ion-offthread-compile=off")
-        elif chance(.5) and multiprocessing.cpu_count() > 1 and \
-                shellSupportsFlag(shellPath, '--thread-count=1'):
+        elif chance(.5) and multiprocessing.cpu_count() > 1 and shellSupportsFlag(shellPath, "--cpu-count=1"):
             # Adjusts default number of threads for parallel compilation (turned on by default)
             total_threads = random.randint(2, (multiprocessing.cpu_count() * 2))
-            args.append('--thread-count=' + str(total_threads))
-        # else:
-        #   Default is to have --ion-offthread-compile=on and --thread-count=<some default value>
-    elif shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
-        # --ion-parallel-compile=off has gone away as of m-c rev 9ab3b097f304 and f0d67b1ccff9.
-        if chance(.7):
-            # Focus on the reproducible cases
-            args.append("--ion-parallel-compile=off")
-        elif chance(.5) and multiprocessing.cpu_count() > 1 and \
-                shellSupportsFlag(shellPath, '--thread-count=1'):
-            # Adjusts default number of threads for parallel compilation (turned on by default)
-            total_threads = random.randint(2, (multiprocessing.cpu_count() * 2))
-            args.append('--thread-count=' + str(total_threads))
-        # else:
-        #   The default is to have --ion-parallel-compile=on and --thread-count=<some default value>
+            args.append("--cpu-count=" + str(total_threads))
 
     if ion:
         if chance(.6):
