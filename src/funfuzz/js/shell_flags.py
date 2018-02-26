@@ -17,22 +17,13 @@ from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
 
-
-def memoize(f, cache=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Function decorator that caches function results."""
-    cache = cache or {}
-
-    # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
-    def g(*args, **kwargs):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
-        key = (f, tuple(args), frozenset(kwargs.items()))
-        if key not in cache:
-            cache[key] = f(*args, **kwargs)
-        return cache[key]
-    return g
+if sys.version_info.major == 2:
+    from functools32 import lru_cache  # pylint: disable=import-error
+else:
+    from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
-@memoize
+@lru_cache(maxsize=None)
 def shellSupportsFlag(shellPath, flag):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     return inspect_shell.shellSupports(shellPath, [flag, '-e', '42'])

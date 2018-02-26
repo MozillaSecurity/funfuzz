@@ -35,7 +35,8 @@ if __name__ == "__main__":
           ],
           extras_require={
               ':python_version=="2.7"': [
-                  'mercurial>=4.4.1'
+                  "functools32>=3.2.3",
+                  "mercurial>=4.4.1",
               ]
           },
           zip_safe=False)
