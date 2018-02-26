@@ -111,9 +111,14 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
     #    args.append("--ion-sink=on")  # --ion-sink=on landed in bug 1093674
 
     if shellSupportsFlag(shellPath, '--gc-zeal=0') and chance(.9):
-        # Focus testing on CheckNursery (16), see:
+        # Focus testing on CheckGrayMarking (18), see:
         #     https://hg.mozilla.org/mozilla-central/rev/bdbb5822afe1
-        gczeal_value = 16 if chance(0.5) else random.randint(0, 16)
+        gczeal_value = 18 if chance(0.5) else random.randint(0, 18)
+        # Repurpose gczeal modes 3, 5 and 6 since they do not exist.
+        if gczeal_value == 3:
+            gczeal_value = 0
+        if gczeal_value == 5 or gczeal_value == 6:
+            gczeal_value = 2
         args.append("--gc-zeal=" + str(gczeal_value))  # --gc-zeal= landed in bug 1101602
 
     if shellSupportsFlag(shellPath, '--enable-small-chunk-size') and chance(.1):

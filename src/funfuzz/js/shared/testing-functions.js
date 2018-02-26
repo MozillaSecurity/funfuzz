@@ -18,8 +18,20 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
   function enableGCZeal()
   {
-    var level = rnd(17);
-    if (browser && level == 9) level = 0; // bug 815241
+    // As of m-c 405243:02aa9c921aed 2018-02-26
+    // https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1000
+    var level = rnd(19);
+
+    // Generate the second level.
+    // ref https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1001
+    var level_two = rnd(19);
+    if (level_two == 3) level_two = 0; // level_two 3 does not exist, so repurpose it
+    if (level_two == 5) level_two = 0; // level_two 5 does not exist, so repurpose it
+    if (level_two == 6) level_two = 0; // level_two 6 does not exist, so repurpose it
+
+    if (level == 3) level = 0; // level 3 does not exist, so repurpose it
+    if (level == 5) level = '"2;' + level_two + '"'; // level 5 does not exist, so repurpose it
+    if (level == 6) level = '"2;' + level_two + '"'; // level 6 does not exist, so repurpose it
     var period = numberOfAllocs();
     return prefix + "gczeal" + "(" + level + ", " + period + ");";
   }
