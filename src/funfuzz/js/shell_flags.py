@@ -48,7 +48,7 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
 
     # Landed in m-c changeset 399868:a98f615965d7, see bug 1430053
     if shellSupportsFlag(shellPath, "--spectre-mitigations=on") and chance(.3):
-        args.append("--spectre-mitigations=on") if chance(.9) else args.append("--spectre-mitigations=off")
+        args.append("--spectre-mitigations=on" if chance(.9) else "--spectre-mitigations=off")
 
     # Landed in m-c changeset c0c1d923c292, see bug 1255008
     if shellSupportsFlag(shellPath, '--ion-aa=flow-sensitive'):
