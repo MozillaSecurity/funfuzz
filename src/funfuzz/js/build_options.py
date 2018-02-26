@@ -250,6 +250,7 @@ def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name,m
 def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc,too-many-branches,too-complex,too-many-return-statements
     """Check to see if chosen arguments are valid."""
+    # Consider refactoring this to raise exceptions instead.
     if args.enableDbg and args.disableDbg:
         return False, 'Making a debug, non-debug build would be contradictory.'
     if args.enableOpt and args.disableOpt:
