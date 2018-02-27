@@ -16,24 +16,14 @@ import sys
 from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
-from ..util import subprocesses as sps
+
+if sys.version_info.major == 2:
+    from functools32 import lru_cache  # pylint: disable=import-error
+else:
+    from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
-def memoize(f, cache=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Function decorator that caches function results."""
-    cache = cache or {}
-
-    # From http://code.activestate.com/recipes/325205-cache-decorator-in-python-24/#c9
-    def g(*args, **kwargs):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
-        key = (f, tuple(args), frozenset(kwargs.items()))
-        if key not in cache:
-            cache[key] = f(*args, **kwargs)
-        return cache[key]
-    return g
-
-
-@memoize
+@lru_cache(maxsize=None)
 def shellSupportsFlag(shellPath, flag):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     return inspect_shell.shellSupports(shellPath, [flag, '-e', '42'])
@@ -56,20 +46,16 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
     if shellSupportsFlag(shellPath, '--fuzzing-safe'):
         args.append("--fuzzing-safe")  # --fuzzing-safe landed in bug 885361
 
+    # Landed in m-c changeset 399868:a98f615965d7, see bug 1430053
+    if shellSupportsFlag(shellPath, "--spectre-mitigations=on") and chance(.3):
+        args.append("--spectre-mitigations=on" if chance(.9) else "--spectre-mitigations=off")
+
     # Landed in m-c changeset c0c1d923c292, see bug 1255008
     if shellSupportsFlag(shellPath, '--ion-aa=flow-sensitive'):
         if chance(.4):
             args.append('--ion-aa=flow-sensitive')
         elif shellSupportsFlag(shellPath, '--ion-aa=flow-insensitive') and chance(.4):
             args.append('--ion-aa=flow-insensitive')
-
-    # See bug 932517, which had landed to fix this issue. Keeping this around for archives:
-    #   Original breakage in m-c rev 269359 : https://hg.mozilla.org/mozilla-central/rev/a0ccab2a6e28
-    #   Fix in m-c rev 269896: https://hg.mozilla.org/mozilla-central/rev/3bb8446a6d8d
-    # Anything in-between involving let probably needs "-e 'version(185);'" to see if we can bypass breakage
-    # if shellSupportsFlag(shellPath, "--execute='version(185);'"):
-    #     args.append("--execute='version(185);'")
-    # Note that the version function was removed in m-c rev 392455 (Fx59) - 589914e65db7
 
     # Note for future: --wasm-check-bce is only useful for x86 and ARM32
 
@@ -128,20 +114,6 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
     if shellSupportsFlag(shellPath, '--disable-ion') and chance(.05):
         args.append("--disable-ion")  # --disable-ion landed in bug 789319
 
-    # See bug 1026919 comment 60:
-    if sps.isARMv7l and \
-            shellSupportsFlag(shellPath, '--arm-asm-nop-fill=0') and chance(0.3):
-        # It was suggested to focus more on the range between 0 and 1.
-        # Reduced the upper limit to 8, see bug 1053996 comment 8.
-        asm_nop_fill = random.randint(1, 8) if chance(0.3) else random.randint(0, 1)
-        args.append("--arm-asm-nop-fill=" + str(asm_nop_fill))  # Landed in bug 1020834
-
-    # See bug 1026919 comment 60:
-    if sps.isARMv7l and \
-            shellSupportsFlag(shellPath, '--asm-pool-max-offset=1024') and chance(0.3):
-        asm_pool_max_offset = random.randint(5, 1024)
-        args.append("--asm-pool-max-offset=" + str(asm_pool_max_offset))  # Landed in bug 1026919
-
     if shellSupportsFlag(shellPath, '--no-native-regexp') and chance(.1):
         args.append("--no-native-regexp")  # See bug 976446
 
@@ -155,10 +127,6 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
         else:
             args.append("--no-sse4")
 
-    # We should stop fuzzing --no-fpu according to the js devs...
-    # if shellSupportsFlag(shellPath, '--no-fpu') and chance(.2):
-    #     args.append("--no-fpu")  # --no-fpu landed in bug 858022
-
     if shellSupportsFlag(shellPath, '--no-asmjs') and chance(.5):
         args.append("--no-asmjs")
 
@@ -170,29 +138,15 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
         elif chance(.6):
             args.append("--baseline-eager")
 
-    if shellSupportsFlag(shellPath, '--ion-offthread-compile=off'):
+    # Landed in m-c changeset 380023:1b55231e6628, see bug 1206770
+    if shellSupportsFlag(shellPath, "--cpu_count=1"):
         if chance(.7):
             # Focus on the reproducible cases
             args.append("--ion-offthread-compile=off")
-        elif chance(.5) and multiprocessing.cpu_count() > 1 and \
-                shellSupportsFlag(shellPath, '--thread-count=1'):
+        elif chance(.5) and multiprocessing.cpu_count() > 1 and shellSupportsFlag(shellPath, "--cpu-count=1"):
             # Adjusts default number of threads for parallel compilation (turned on by default)
             total_threads = random.randint(2, (multiprocessing.cpu_count() * 2))
-            args.append('--thread-count=' + str(total_threads))
-        # else:
-        #   Default is to have --ion-offthread-compile=on and --thread-count=<some default value>
-    elif shellSupportsFlag(shellPath, '--ion-parallel-compile=off'):
-        # --ion-parallel-compile=off has gone away as of m-c rev 9ab3b097f304 and f0d67b1ccff9.
-        if chance(.7):
-            # Focus on the reproducible cases
-            args.append("--ion-parallel-compile=off")
-        elif chance(.5) and multiprocessing.cpu_count() > 1 and \
-                shellSupportsFlag(shellPath, '--thread-count=1'):
-            # Adjusts default number of threads for parallel compilation (turned on by default)
-            total_threads = random.randint(2, (multiprocessing.cpu_count() * 2))
-            args.append('--thread-count=' + str(total_threads))
-        # else:
-        #   The default is to have --ion-parallel-compile=on and --thread-count=<some default value>
+            args.append("--cpu-count=" + str(total_threads))
 
     if ion:
         if chance(.6):

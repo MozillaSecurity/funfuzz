@@ -22,7 +22,6 @@ from ..util import hg_helpers
 from ..util import subprocesses as sps
 
 DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join('~', 'trees'))
-deviceIsFast = not sps.isARMv7l  # pylint: disable=invalid-name
 
 
 def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -43,7 +42,7 @@ class Randomizer(object):  # pylint: disable=missing-docstring
     def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         def getWeight(o):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-            return o['fastDeviceWeight'] if deviceIsFast else o['slowDeviceWeight']
+            return o["slowDeviceWeight"]
         return [o['name'] for o in self.options if chance(getWeight(o))]
 
 
@@ -121,10 +120,6 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                         help='Run the shell under Valgrind. Requires --build-with-valgrind.')
 
     # Misc spidermonkey options
-    if sps.isARMv7l:
-        randomizeBool(['--enable-hardfp'], 0.1, 0.1,
-                      dest='enableHardFp',
-                      help='Build hardfp shells (ARM-specific setting). Defaults to "%(default)s".')
     randomizeBool(['--enable-more-deterministic'], 0.75, 0.5,
                   dest='enableMoreDeterministic',
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
@@ -233,8 +228,6 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         fileName.append('intlDisabled')
     if build_options.enableSimulatorArm32 or build_options.enableSimulatorArm64:
         fileName.append('armSim')
-    if sps.isARMv7l:
-        fileName.append('armhfp' if build_options.enableHardFp else 'armsfp')
     fileName.append('windows' if sps.isWin else platform.system().lower())
     if build_options.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
@@ -257,18 +250,16 @@ def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name,m
 def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc,too-many-branches,too-complex,too-many-return-statements
     """Check to see if chosen arguments are valid."""
+    # Consider refactoring this to raise exceptions instead.
     if args.enableDbg and args.disableDbg:
         return False, 'Making a debug, non-debug build would be contradictory.'
     if args.enableOpt and args.disableOpt:
         return False, 'Making an optimized, non-optimized build would be contradictory.'
     if not args.enableDbg and args.disableOpt:
         return False, 'Making a non-debug, non-optimized build would be kind of silly.'
-    if sps.isARMv7l and not args.enable32:
-        return False, '64-bit ARM builds are not yet supported.'
 
-    if sps.isWin and (args.enable32 == sps.isMozBuild64):
-        return False, ("Win32 builds need the 32-bit MozillaBuild batch file and likewise the "
-                       "corresponding 64-bit ones for Win64 builds.")
+    if sps.isMac and args.enable32:
+        return False, "We are no longer going to ship 32-bit Mac binaries."
 
     if args.buildWithVg:
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
@@ -288,9 +279,6 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         #     return False, 'Valgrind does not work on Windows.'
         # if sps.isMac:
         #     return False, 'Valgrind does not work well with Mac OS X 10.10 Yosemite.'
-        # if sps.isARMv7l and not args.enableHardFp:
-        #     return False, ("libc6-dbg packages needed for Valgrind are only "
-        #                    "available via hardfp, tested on Ubuntu on an ARM odroid board.")
 
     if args.runWithVg and not args.buildWithVg:
         return False, '--run-with-valgrind needs --build-with-valgrind.'
@@ -316,8 +304,6 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
             return False, 'Asan is not yet supported on Windows.'
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
-        if sps.isARMv7l:
-            return False, 'Does not make sense to run the ARM simulator on ARM hardware.'
         if sps.isWin:
             return False, 'Nobody runs the ARM simulator on Windows.'
         if args.enableSimulatorArm32 and not args.enable32:

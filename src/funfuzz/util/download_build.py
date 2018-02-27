@@ -274,7 +274,8 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 sys.stdout.flush()
                 undmg(dlAction, appDir, os.path.join(buildDir, 'MOUNTEDDMG'))
                 print("completed!")
-                downloadMDSW(buildDir, "macosx64")
+                # We should get minidump_stackwalk for Mac via another way now that tooltool is removed
+                # downloadMDSW(buildDir, "macosx64")
                 gotApp = True
             elif remotefn.endswith('.crashreporter-symbols.zip') and wantSymbols:
                 print("Downloading crash reporter symbols...", end=" ")
@@ -285,22 +286,6 @@ def downloadBuild(httpDir, targetDir, jsShell=False, wantSymbols=True, wantTests
                 print("completed!")
                 gotSyms = True
     return gotApp and gotTxtFile and (gotTests or not wantTests) and (gotSyms or not wantSymbols)
-
-
-def downloadMDSW(buildDir, manifestPlatform):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Download the minidump_stackwalk[.exe] binary for this platform."""
-    # Download the binary (using tooltool)
-    subprocess.check_call([sys.executable,
-                           os.path.join(os.path.dirname(os.path.abspath(__file__)), "tooltool", "tooltool.py"),
-                           "-m",
-                           # Find the tooltool manifest for this platform
-                           os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                        "tooltool", manifestPlatform + ".manifest"),
-                           "fetch"], cwd=buildDir)
-
-    # Mark the binary as executable
-    if platform.system() != 'Windows':
-        os.chmod(os.path.join(buildDir, "minidump_stackwalk"), stat.S_IRWXU)
 
 
 def moveCrashInjector(tests):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc

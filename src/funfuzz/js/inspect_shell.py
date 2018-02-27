@@ -95,8 +95,6 @@ def constructVgCmdList(errorCode=77):  # pylint: disable=invalid-name,missing-pa
     if sps.isMac:
         valgrind_cmds.append('--dsymutil=yes')
     valgrind_cmds.append('--error-exitcode=' + str(errorCode))
-    if not sps.isARMv7l:  # jseward mentioned that ARM does not need --smc-check=<something>
-        valgrind_cmds.append('--smc-check=all-non-file')
     # See bug 913876 comment 18:
     valgrind_cmds.append('--vex-iropt-register-updates=allregs-at-mem-access')
     valgrind_cmds.append('--gen-suppressions=all')
@@ -153,18 +151,6 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
     return ans.decode("utf-8", errors="replace").find('true') != -1
 
 
-def testIsHardFpShellARM(s):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Test if the ARM shell is compiled with hardfp support."""
-    readelf_bin_path = '/usr/bin/readelf'
-    if os.path.exists(readelf_bin_path):
-        new_env = env_with_path(os.path.dirname(os.path.abspath(s)))
-        readelf_output = sps.captureStdout([readelf_bin_path, '-A', s], env=new_env)[0]
-        return 'Tag_ABI_VFP_args: VFP registers' in readelf_output
-    else:
-        raise Exception('readelf is not found.')
-
-
 def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Verify that the binary is compiled as intended."""
     binary = sh.getShellCacheFullPath()
@@ -173,9 +159,6 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
     # Testing for debug or opt builds are different because there can be hybrid debug-opt builds.
     assert queryBuildConfiguration(binary, 'debug') == sh.build_opts.enableDbg
-
-    if sps.isARMv7l:
-        assert testIsHardFpShellARM(binary) == sh.build_opts.enableHardFp
 
     assert queryBuildConfiguration(binary, 'more-deterministic') == sh.build_opts.enableMoreDeterministic
     assert queryBuildConfiguration(binary, 'asan') == sh.build_opts.buildWithAsan

@@ -18,7 +18,6 @@ if __name__ == "__main__":
               "funfuzz.autobisectjs",
               "funfuzz.js",
               "funfuzz.util",
-              "funfuzz.util.tooltool",
           ],
           package_data={"funfuzz": [
               "autobisectjs/*",
@@ -26,7 +25,6 @@ if __name__ == "__main__":
               "js/jsfunfuzz/*",
               "js/shared/*",
               "util/*",
-              "util/tooltool/*",
           ]},
           package_dir={"": "src"},
           install_requires=[
@@ -37,7 +35,8 @@ if __name__ == "__main__":
           ],
           extras_require={
               ':python_version=="2.7"': [
-                  'mercurial>=4.4.1'
+                  "functools32>=3.2.3",
+                  "mercurial>=4.4.1",
               ]
           },
           zip_safe=False)

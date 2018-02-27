@@ -25,7 +25,6 @@ from ..util import create_collector
 from ..util import detect_malloc_errors
 from ..util import file_manipulation
 from ..util import subprocesses as sps
-from ..util.find_ignore_lists import find_ignore_lists
 
 
 # Levels of unhappiness.
@@ -71,7 +70,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if options.valgrind:
             runthis = (
                 inspect_shell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
-                valgrindSuppressions(options.knownPath) +
+                valgrindSuppressions() +
                 runthis)
 
         preexec_fn = ulimitSet if os.name == 'posix' else None
@@ -209,9 +208,9 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
             f.truncate(maxSize)
 
 
-def valgrindSuppressions(knownPath):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def valgrindSuppressions():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    return ["--suppressions=" + filename for filename in find_ignore_lists(knownPath, "valgrind.txt")]
+    return ["--suppressions=" + filename for filename in "valgrind_suppressions.txt"]
 
 
 def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
@@ -237,10 +236,7 @@ def ulimitSet():  # pylint: disable=invalid-name
 
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30  # pylint: disable=invalid-name
-    if sps.isARMv7l:
-        resource.setrlimit(resource.RLIMIT_AS, (1 * GB, 1 * GB))
-    else:
-        resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
+    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
     halfGB = int(GB // 2)  # pylint: disable=invalid-name
