@@ -17,8 +17,8 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
-def test_basic_flag_sets():
-    """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
+def get_current_shell_path():
+    """Returns the path to the currently built shell."""
     assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
     # Remember to update the expected binary filename
     build_opts = ("--enable-debug --disable-optimize --enable-more-deterministic "
@@ -28,12 +28,15 @@ def test_basic_flag_sets():
     build_opts_processed = funfuzz.js.build_options.parseShellOptions(build_opts)
     hg_hash_of_default = funfuzz.util.hg_helpers.getRepoHashAndId(build_opts_processed.repoDir)[0]
 
-    shell_location = os.path.join(os.path.expanduser("~"), "shell-cache",
-                                  "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default,
-                                  "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)
+    return os.path.join(os.path.expanduser("~"), "shell-cache",
+                        "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default,
+                        "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)
 
+
+def test_basic_flag_sets():
+    """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
     important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
-    assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(shell_location)
+    assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(get_current_shell_path())
 
 
 def test_chance():
