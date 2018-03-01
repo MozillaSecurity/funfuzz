@@ -9,6 +9,8 @@
 
 from __future__ import absolute_import, print_function
 
+import subprocess
+
 # pylint issue 73 https://git.io/vQAhf
 from distutils.version import StrictVersion  # pylint: disable=import-error,no-name-in-module
 
@@ -45,29 +47,16 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         hgrange('d3a026933bce', '5fa834fe9b96'),  # Fx52, broken spidermonkey
     ]
 
-    if sps.isMac:
-        skips.extend([
-            hgrange('5e45fba743aa', '8e5d8f34c53e'),  # Fx39, broken Mac builds due to jemalloc
-            # hgrange('9b7c2bcabd4e', '43b1143f2930'),  # Fx49-50, broken Mac 10.12 builds
-            hgrange('e654e71b61b5', 'e2ecf684f49e'),  # Fx47-58, broken Xcode 9 builds due to bug 1253203 / bug 1366564
-        ])
-        if options.enableSimulatorArm32:
-            skips.extend([
-                hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit Mac ARM-simulator builds
-                hgrange('f6fddb22a8b5', '120d57d59f38'),  # Fx51, broken 32-bit Mac ARM-simulator builds
-            ])
-
-    if sps.isLinux or sps.isMac:
+    if sps.isLinux:
         skips.extend([
             # Clang failure - probably recent versions of GCC as well.
             hgrange('5232dd059c11', 'ed98e1b9168d'),  # Fx41, see bug 1140482
         ])
-
-    if sps.isLinux and not options.disableProfiling:
-        skips.extend([
-            # To bypass the following month-long breakage, use "--disable-profiling"
-            hgrange('aa1da5ed8a07', '5a03382283ae'),  # Fx54-55, see bug 1339190
-        ])
+        if not options.disableProfiling:
+            skips.extend([
+                # To bypass the following month-long breakage, use "--disable-profiling"
+                hgrange('aa1da5ed8a07', '5a03382283ae'),  # Fx54-55, see bug 1339190
+            ])
 
     if sps.isWin10:
         skips.extend([
@@ -112,13 +101,12 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
 
     required = []
 
-    # Uncomment only when enough time has passed. Also remove large known broken window for Xcode 9, above
-    # if sps.isMac:
-    #     required.append('e2ecf684f49e')  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
+    if sps.isMac:
+        required.append('e2ecf684f49e')  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
     if sps.isWin:
         required.append('530f7bd28399')  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
-    if sps.isLinux and StrictVersion(sps.verCheck('sed').split()[3]) >= StrictVersion('4.3'):
+    if sps.isLinux and StrictVersion(subprocess.check_output(["sed", "--version"]).split()[3]) >= StrictVersion("4.3"):
         required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
         required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065

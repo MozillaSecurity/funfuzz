@@ -24,7 +24,6 @@ from past.builtins import range  # pylint: disable=redefined-builtin
 
 verbose = False  # pylint: disable=invalid-name
 
-isARMv7l = (platform.uname()[4] == 'armv7l')  # pylint: disable=invalid-name
 isLinux = (platform.system() == 'Linux')  # pylint: disable=invalid-name
 isMac = (platform.system() == 'Darwin')  # pylint: disable=invalid-name
 isWin = (platform.system() == 'Windows')  # pylint: disable=invalid-name
@@ -32,17 +31,6 @@ isWin10 = isWin and (platform.uname()[2] == '10')  # pylint: disable=invalid-nam
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)  # pylint: disable=invalid-name
 # Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
 isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=invalid-name,no-member
-isMozBuild64 = False  # pylint: disable=invalid-name
-# This refers to the Win-specific "MozillaBuild" environment in which Python is running, which is
-# spawned from the MozillaBuild script for 64-bit compilers, e.g. start-msvc10-x64.bat
-if os.environ.get('MOZ_MSVCBITS'):
-    # For MozillaBuild 2.0.0 onwards
-    isMozBuild64 = isWin and '64' in os.environ['MOZ_MSVCBITS']  # pylint: disable=invalid-name
-elif os.environ.get('MOZ_TOOLS'):
-    # For MozillaBuild 1.x
-    # pylint: disable=invalid-name
-    isMozBuild64 = (os.name == 'nt') and ('x64' in os.environ['MOZ_TOOLS'].split(os.sep)[-1])
-# else do not set; the script is running stand-alone and the isMozBuild64 variable should not be needed.
 
 # pylint: disable=invalid-name
 noMinidumpMsg = r"""
@@ -449,13 +437,6 @@ def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def isProgramInstalled(program):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Check if the specified program is installed."""
-    which_exit = captureStdout(['which', program], ignoreStderr=True, combineStderr=True, ignoreExitCode=True)[1]
-    return which_exit == 0
-
-
 def rmDirIfEmpty(eDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Remove directory if empty."""
     assert os.path.isdir(eDir)
@@ -567,20 +548,3 @@ def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word 'DEBUG' to any verbose output."""
     if verbose:
         print("DEBUG - %s" % inp)
-
-
-def verCheck(prog):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Runs the program with --version and returns the result."""
-    return subprocess.check_output([prog, '--version'])
-
-
-###########
-#  Tests  #
-###########
-
-if __name__ == '__main__':
-    vdump('Running tests...')
-    assert isProgramInstalled('date')
-    assert not isProgramInstalled('FOOBARFOOBAR')
-    vdump('Done')

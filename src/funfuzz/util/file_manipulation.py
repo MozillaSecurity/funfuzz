@@ -16,21 +16,6 @@ def firstLine(s):  # pylint: disable=invalid-name,missing-param-doc,missing-retu
     return s.split('\n')[0]
 
 
-def fuzzDice(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Return the lines of the file, except for the one line containing DICE."""
-    before = []
-    after = []
-    with open(filename, 'r') as f:
-        for line in f:
-            if line.find("DICE") != -1:
-                break
-            before.append(line)
-        for line in f:
-            after.append(line)
-    return [before, after]
-
-
 def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
