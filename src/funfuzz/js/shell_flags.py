@@ -100,8 +100,8 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
     if shell_supports_flag(shell_path, "--non-writable-jitcode") and chance(.3):
         args.append("--non-writable-jitcode")  # --non-writable-jitcode landed in bug 977805
 
-    if shell_supports_flag(shell_path, "--execute=setJitCompilerOption("ion.forceinlineCaches",1)") and chance(.1):
-        args.append("--execute=setJitCompilerOption("ion.forceinlineCaches",1)")
+    if shell_supports_flag(shell_path, "--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)") and chance(.1):
+        args.append("--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)")
 
     if shell_supports_flag(shell_path, "--no-cgc") and chance(.1):
         args.append("--no-cgc")  # --no-cgc landed in bug 1126769
