@@ -43,3 +43,8 @@ def test_chance():
     """Test that the chance function works as intended."""
     assert chance(0.6, always=True)
     assert chance(0.1, always=True)
+
+
+def test_shell_supports_flag():
+    """Test that the shell does support flags as intended."""
+    assert shell_supports_flag(get_current_shell_path(), "--fuzzing-safe")
