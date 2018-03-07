@@ -139,7 +139,7 @@ def randomFlagSet(shellPath):  # pylint: disable=invalid-name,missing-param-doc,
             args.append("--baseline-eager")
 
     # Landed in m-c changeset 380023:1b55231e6628, see bug 1206770
-    if shellSupportsFlag(shellPath, "--cpu_count=1"):
+    if shellSupportsFlag(shellPath, "--cpu-count=1"):
         if chance(.7):
             # Focus on the reproducible cases
             args.append("--ion-offthread-compile=off")
