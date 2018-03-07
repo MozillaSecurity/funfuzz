@@ -13,8 +13,6 @@ import multiprocessing
 import random
 import sys
 
-from past.builtins import range  # pylint: disable=redefined-builtin
-
 from . import inspect_shell
 
 if sys.version_info.major == 2:
@@ -318,12 +316,3 @@ def basic_flag_sets(shell_path):
 
 # Consider adding a function (for compare_jit reduction) that takes a flag set
 # and returns all its (meaningful) subsets.
-
-
-def testRandomFlags():  # pylint: disable=invalid-name,missing-docstring
-    for _ in range(100):
-        print(" ".join(random_flag_set(sys.argv[1])))
-
-
-if __name__ == "__main__":
-    testRandomFlags()
