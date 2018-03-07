@@ -9,16 +9,27 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 import os
+import sys
 
 import funfuzz
+
+if sys.version_info.major == 2:
+    from functools32 import lru_cache  # pylint: disable=import-error
+else:
+    from functools import lru_cache  # pylint: disable=no-name-in-module
 
 funfuzz_log = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
+@lru_cache(maxsize=None)
 def get_current_shell_path():
-    """Returns the path to the currently built shell."""
+    """Returns the path to the currently built shell.
+
+    Returns:
+        str: Path to the compiled shell.
+    """
     assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
     # Remember to update the expected binary filename
     build_opts = ("--enable-debug --disable-optimize --enable-more-deterministic "
