@@ -103,6 +103,7 @@ def test_random_flag_set():
     """Test runtime flags related to SpiderMonkey."""
     all_flags = funfuzz.js.shell_flags.random_flag_set(get_current_shell_path(), always=True)
     assert "--fuzzing-safe" in all_flags
+    assert "--no-array-proto-values" in all_flags
     assert "--spectre-mitigations=on" in all_flags
     assert "--ion-offthread-compile=on" in all_flags
     assert "--enable-streams" in all_flags

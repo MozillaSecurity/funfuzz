@@ -201,6 +201,10 @@ def random_flag_set(shell_path, always=False):  # pylint: disable=too-complex,to
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--no-array-proto-values") and chance(.2, always):
+        # m-c rev 403011:e1ca344ca6b5, see bug 1420101
+        args.append("--no-array-proto-values")
+
     if shell_supports_flag(shell_path, "--spectre-mitigations=on") and chance(.2, always):
         # m-c rev 399868:a98f615965d7, see bug 1430053
         args.append("--spectre-mitigations=" + "on" if chance(.9, always) else "off")
