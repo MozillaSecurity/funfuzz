@@ -123,6 +123,8 @@ def add_random_ion_flags(shell_path, input_list, always=False):  # pylint: disab
     #     input_list.append("--ion-sink=" + "on" if chance(.1, always) else "off")
     if chance(.2, always):  # m-c rev 198804:aa33f4725177, see bug 1039458
         input_list.append("--ion-loop-unrolling=" + "on" if chance(.9, always) else "off")
+    if chance(.2, always):  # m-c rev 194672:b2a822934b97, see bug 992845
+        input_list.append("--ion-scalar-replacement=" + "on" if chance(.1, always) else "off")
     if chance(.2, always):  # m-c rev 142933:f08e4a699011, see bug 894813
         input_list.append("--ion-check-range-analysis")
     # The stupid allocator isn't used by default and devs prefer not to have to fix fuzzbugs
