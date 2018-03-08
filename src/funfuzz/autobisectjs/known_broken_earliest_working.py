@@ -91,61 +91,70 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     and runs jsfunfuzz successfully with |flags|."""
     assert (not sps.isMac) or (sps.macVer() >= [10, 11])  # Only support at least Mac OS X 10.11
 
-    # This code is kept in case in the future we have an earliest known working rev that requires a flag
-    # These should be in descending order, or bisection will break at earlier changesets.
-    # gczeal_value_flag = False
-    # # flags is a list of flags, and the option must exactly match.
-    # for entry in flags:
-    #     # What comes after these flags needs to be a number, so we look for the string instead.
-    #     if '--gc-zeal=' in entry:
-    #         gczeal_value_flag = True
+    cpu_count_flag = False
+    for entry in flags:  # flags is a list of flags, and the option must exactly match.
+        if "--cpu-count=" in entry:
+            cpu_count_flag = True
 
     required = []
 
+    # These should be in descending order, or bisection will break at earlier changesets.
+    if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
+        required.append("321c29f48508")  # m-c 406115 Fx60, 1st w/--nursery-strings=on, see bug 903519
+    if "--no-array-proto-values" in flags:
+        required.append("e1ca344ca6b5")  # m-c 403011 Fx60, 1st w/--no-array-proto-values, see bug 1420101
+    if "--spectre-mitigations=on" in flags or "--spectre-mitigations=off" in flags:
+        required.append("a98f615965d7")  # m-c 399868 Fx59, 1st w/--spectre-mitigations=on, see bug 1430053
+    if "--test-wasm-await-tier2" in flags:
+        required.append("b1dc87a94262")  # m-c 387188 Fx58, 1st w/--test-wasm-await-tier2, see bug 1388785
     if sps.isMac:
-        required.append('e2ecf684f49e')  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
+        required.append("e2ecf684f49e")  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
+    if cpu_count_flag:
+        required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
+    if "--enable-streams" in flags:
+        required.append("64bbc26920aa")  # m-c 371894 Fx56, 1st w/--enable-streams, see bug 1272697
     if sps.isWin:
-        required.append('530f7bd28399')  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
+        required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
     if sps.isLinux and StrictVersion(subprocess.check_output(["sed", "--version"]).split()[3]) >= StrictVersion("4.3"):
-        required.append('ebcbf47a83e7')  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
+        required.append("ebcbf47a83e7")  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
-        required.append('800a887c705e')  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
-    if "--wasm-always-baseline" in flags:
-        required.append('893294e2a387')  # m-c 301769 Fx50, 1st w/--wasm-always-baseline, see bug 1232205
-    if '--ion-aa=flow-sensitive' in flags or '--ion-aa=flow-insensitive' in flags:
+        required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
+    if "--no-wasm" in flags:
+        required.append("e9b561d60697")  # m-c 321230 Fx52, 1st w/--no-wasm, see bug 1313180
+    if "--cache-ir-stubs=on" in flags:
+        required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
+    if "--ion-aa=flow-sensitive" in flags or "--ion-aa=flow-insensitive" in flags:
         # m-c 295435 Fx49, 1st w/--ion-aa=[flow-sensitive|flow-insensitive], see bug 1255008
-        required.append('c0c1d923c292')
-    if "--ion-pgo=on" in flags:
-        required.append('b0a0ff5fa705')  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
+        required.append("c0c1d923c292")
+    if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
+        required.append("b0a0ff5fa705")  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:
-        required.append('d4e0e0e5d26d')  # m-c 268534 Fx44, 1st w/ reliable ASan builds w/ ICU, see bug 1214464
-    if "--ion-sincos=on" in flags:
-        required.append('3dec2b935295')  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
-    if "--ion-instruction-reordering=on" in flags:
-        required.append('59d2f2e62420')  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
-    if "--ion-shared-stubs=on" in flags:
-        required.append('3655d19ce241')  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
+        required.append("d4e0e0e5d26d")  # m-c 268534 Fx44, 1st w/ reliable ASan builds w/ ICU, see bug 1214464
+    if "--ion-sincos=on" in flags or "--ion-sincos=off" in flags:
+        required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
+    if "--ion-instruction-reordering=on" in flags or "--ion-instruction-reordering=off" in flags:
+        required.append("59d2f2e62420")  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
+    if "--ion-shared-stubs=on" in flags or "--ion-shared-stubs=off" in flags:
+        required.append("3655d19ce241")  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
-        # For ARM64: This should get updated whenever ARM64 builds are stable, probably ~end-June 2015
-        # To bisect manually slightly further, use "-s dc4b163f7db7 -e f50a771d7d1b" and:
-        # Also comment out from:
-        # https://github.com/MozillaSecurity/funfuzz/blob/bbc5d5c74d/autobisect-js/autoBisect.py#L176
-        # (line 176) to line 180.
-        required.append('25e99bc12482')  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
+        # For ARM64: This should get updated whenever ARM64 builds are stable
+        required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
     if "--ion-regalloc=testbed" in flags:
-        required.append('47e92bae09fd')  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
-    if '--non-writable-jitcode' in flags:
-        required.append('b46d6692fe50')  # m-c 248578 Fx41, 1st w/--non-writable-jitcode, see bug 977805
-    if '--no-unboxed-objects' in flags:
-        required.append('322487136b28')  # m-c 244297 Fx41, 1st w/--no-unboxed-objects, see bug 1162199
-    if '--unboxed-arrays' in flags:
-        required.append('020c6a559e3a')  # m-c 242167 Fx40, 1st w/--unboxed-arrays, see bug 1146597
-    if '--ion-extra-checks' in flags:
-        required.append('cdf93416b39a')  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
-    if '--no-cgc' in flags:
-        required.append('b63d7e80709a')  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    required.append('bcacb5692ad9')  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
+        required.append("47e92bae09fd")  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
+    if "--non-writable-jitcode" in flags:
+        required.append("b46d6692fe50")  # m-c 248578 Fx41, 1st w/--non-writable-jitcode, see bug 977805
+    if "--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)" in flags:
+        required.append("ea9608e33abe")  # m-c 247709 Fx41, 1st w/ion.forceinlineCaches, see bug 923717
+    if "--no-unboxed-objects" in flags:
+        required.append("322487136b28")  # m-c 244297 Fx41, 1st w/--no-unboxed-objects, see bug 1162199
+    if "--ion-extra-checks" in flags:
+        required.append("cdf93416b39a")  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
+    if "--no-cgc" in flags:
+        required.append("b63d7e80709a")  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
+    if "--enable-avx" in flags or "--no-avx" in flags:
+        required.append("5e6e959f0043")  # m-c 223959 Fx38, 1st w/--enable-avx, see bug 1118235
+    required.append("bcacb5692ad9")  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
 
     return "first((" + common_descendants(required) + ") - (" + skip_revs + "))"
 
