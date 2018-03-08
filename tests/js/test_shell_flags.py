@@ -100,8 +100,6 @@ def test_chance():
 
 def test_random_flag_set():
     """Test runtime flags related to SpiderMonkey."""
-    assert "--fuzzing-safe" in funfuzz.js.shell_flags.random_flag_set(get_current_shell_path(), always=False)
-
     all_flags = funfuzz.js.shell_flags.random_flag_set(get_current_shell_path(), always=True)
     assert "--fuzzing-safe" in all_flags
     assert "--spectre-mitigations=on" in all_flags
