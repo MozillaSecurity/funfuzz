@@ -332,9 +332,9 @@ def basic_flag_sets(shell_path):
     if shell_supports_flag(shell_path, "--no-wasm"):
         basic_flags.append(["--fuzzing-safe", "--no-baseline", "--no-asmjs",
                             "--no-wasm", "--no-native-regexp"])
-    if shell_supports_flag(shell_path, "--wasm-always-baseline"):
-        basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager",
-                            "--wasm-always-baseline"])
+    if shell_supports_flag(shell_path, "--nursery-strings=on"):
+        basic_flags.append(["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager",
+                            "--test-wasm-await-tier2", "--spectre-mitigations=on", "--nursery-strings=on"])
     return basic_flags
 
 
