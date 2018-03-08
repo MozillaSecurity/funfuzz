@@ -158,7 +158,7 @@ def add_random_ion_flags(shell_path, input_list, always=False):  # pylint: disab
 
 
 def add_random_wasm_flags(shell_path, input_list, always=False):
-    """Returns a list with probably additional wasm flags added.
+    """Returns a list with probably additional WebAssembly (wasm/asmjs) flags added.
 
     Args:
         shell_path (str): Path to the required shell.
@@ -173,6 +173,9 @@ def add_random_wasm_flags(shell_path, input_list, always=False):
         input_list.append("--test-wasm-await-tier2")
 
     # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
+
+    if chance(.7, always):  # m-c rev 124920:b3d85b68449d, see bug 840282
+        input_list.append("--no-asmjs")
 
     return input_list
 
@@ -293,10 +296,6 @@ def random_flag_set(shell_path, always=False):  # pylint: disable=too-complex,to
         elif chance(.5, always):
             # m-c rev 127353:be125cabea26, see bug 843596
             args.append("--baseline-eager")
-
-    if shell_supports_flag(shell_path, "--no-asmjs") and chance(.7, always):
-        # m-c rev 124920:b3d85b68449d, see bug 840282
-        args.append("--no-asmjs")
 
     if shell_supports_flag(shell_path, "--dump-bytecode") and chance(.05, always):
         # m-c rev 73054:b1923b866d6a, see bug 668095
