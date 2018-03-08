@@ -210,6 +210,10 @@ def random_flag_set(shell_path, always=False):  # pylint: disable=too-complex,to
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.2, always):
+        # m-c rev 406115:321c29f48508, see bug 903519
+        args.append("--nursery-strings=" + "on" if chance(.1, always) else "off")
+
     if shell_supports_flag(shell_path, "--no-array-proto-values") and chance(.2, always):
         # m-c rev 403011:e1ca344ca6b5, see bug 1420101
         args.append("--no-array-proto-values")
