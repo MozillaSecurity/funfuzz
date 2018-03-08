@@ -224,7 +224,7 @@ def random_flag_set(shell_path, always=False):  # pylint: disable=too-complex,to
 
     # m-c rev 380023:1b55231e6628, see bug 1206770
     if shell_supports_flag(shell_path, "--cpu-count=1"):
-        if chance(.7, always):
+        if shell_supports_flag(shell_path, "--ion-offthread-compile=on") and chance(.7, always):
             # Focus on the reproducible cases
             # m-c rev 188900:9ab3b097f304, see bug 1020364
             args.append("--ion-offthread-compile=" + "on" if chance(.1, always) else "off")
