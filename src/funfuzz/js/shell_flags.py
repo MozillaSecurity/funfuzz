@@ -336,7 +336,3 @@ def basic_flag_sets(shell_path):
         basic_flags.append(["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager",
                             "--test-wasm-await-tier2", "--spectre-mitigations=on", "--nursery-strings=on"])
     return basic_flags
-
-
-# Consider adding a function (for compare_jit reduction) that takes a flag set
-# and returns all its (meaningful) subsets.
