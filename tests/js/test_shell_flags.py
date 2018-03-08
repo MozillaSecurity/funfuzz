@@ -95,6 +95,7 @@ def test_chance():
     assert funfuzz.js.shell_flags.chance(0.6, always=True)
     assert funfuzz.js.shell_flags.chance(0.1, always=True)
     assert not funfuzz.js.shell_flags.chance(0, always=False)
+    assert not funfuzz.js.shell_flags.chance(-0.2, always=False)
 
 
 def test_random_flag_set():
