@@ -47,6 +47,7 @@ def get_current_shell_path():
 def test_add_random_arch_flags():
     """Test that we are able to obtain add shell runtime flags related to architecture."""
     all_flags = funfuzz.js.shell_flags.add_random_arch_flags(get_current_shell_path(), [], always=True)
+    assert "--enable-avx" in all_flags
     assert "--no-sse3" in all_flags
     if funfuzz.js.inspect_shell.queryBuildConfiguration(get_current_shell_path(), "arm-simulator"):
         assert "--arm-sim-icache-checks" in all_flags

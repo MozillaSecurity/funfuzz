@@ -63,6 +63,13 @@ def add_random_arch_flags(shell_path, input_list, always=False):
         # m-c rev 165993:c450eb3abde4, see bug 965247
         input_list.append("--arm-sim-icache-checks")
 
+    if shell_supports_flag(shell_path, "--enable-avx") and chance(.2, always):
+        # m-c rev 223959:5e6e959f0043, see bug 1118235
+        input_list.append("--enable-avx")
+    elif shell_supports_flag(shell_path, "--no-avx") and chance(.2, always):
+        # m-c rev 223959:5e6e959f0043, see bug 1118235
+        input_list.append("--no-avx")
+
     # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
 
     if chance(.2, always):  # m-c rev 154600:526ba3ace37a, see bug 935791
