@@ -111,6 +111,10 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("e2ecf684f49e")  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
     if cpu_count_flag:
         required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
+    if "--no-wasm-ion" in flags:
+        required.append("158b333a0a89")  # m-c 375650 Fx57, 1st w/--no-wasm-ion, see bug 1277562
+    if "--no-wasm-baseline" in flags:
+        required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, see bug 1277562
     if "--enable-streams" in flags:
         required.append("64bbc26920aa")  # m-c 371894 Fx56, 1st w/--enable-streams, see bug 1272697
     if sps.isWin:

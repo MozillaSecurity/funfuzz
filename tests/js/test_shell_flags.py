@@ -84,6 +84,8 @@ def test_add_random_ion_flags():
 def test_add_random_wasm_flags():
     """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm)."""
     all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(get_current_shell_path(), [], always=True)
+    assert "--no-wasm-baseline" in all_flags
+    assert "--no-wasm-ion" in all_flags
     assert "--test-wasm-await-tier2" in all_flags
 
 
