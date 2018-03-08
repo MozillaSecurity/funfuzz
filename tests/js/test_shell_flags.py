@@ -55,6 +55,7 @@ def test_add_random_arch_flags():
 def test_add_random_ion_flags():
     """Test that we are able to obtain add shell runtime flags related to IonMonkey."""
     all_flags = funfuzz.js.shell_flags.add_random_ion_flags(get_current_shell_path(), [], always=True)
+    assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-aa=flow-sensitive" in all_flags
     assert "--ion-pgo=on" in all_flags
     assert "--ion-sincos=on" in all_flags

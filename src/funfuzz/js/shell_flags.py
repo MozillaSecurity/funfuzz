@@ -84,6 +84,9 @@ def add_random_ion_flags(shell_path, input_list, always=False):  # pylint: disab
     Returns:
         list: List of flags to be tested, with probable IonMonkey flags added.
     """
+    if shell_supports_flag(shell_path, "--cache-ir-stubs=on") and chance(.2, always):
+        # m-c rev 308931:1c5b92144e1e, see bug 1292659
+        input_list.append("--cache-ir-stubs=" + "on" if chance(.1, always) else "off")
     if shell_supports_flag(shell_path, "--ion-aa=flow-sensitive") and chance(.2, always):
         # m-c rev 295435:c0c1d923c292, see bug 1255008
         input_list.append("--ion-aa=flow-" + ("" if chance(.9, always) else "in") + "sensitive")
