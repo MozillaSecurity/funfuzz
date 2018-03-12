@@ -117,6 +117,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('baseline.warmup.trigger', " + rnd(20) + ");"; } },
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.warmup.trigger', " + rnd(40) + ");"; } },
 
+    // Test the baseline compiler
+    { w: 10,  v: function(d, b) { return prefix + "baselineCompiler" + "();"; } },
+
     // Force inline cache.
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.forceinlineCaches\', " + rnd(2) + ");"; } },
 
