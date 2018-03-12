@@ -95,12 +95,15 @@ def test_basic_flag_sets():
     assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(get_current_shell_path())
 
 
-def test_chance():
+def test_chance(monkeypatch):
     """Test that the chance function works as intended."""
-    assert funfuzz.js.shell_flags.chance(0.6, always=True)
-    assert funfuzz.js.shell_flags.chance(0.1, always=True)
-    assert not funfuzz.js.shell_flags.chance(0, always=False)
-    assert not funfuzz.js.shell_flags.chance(-0.2, always=False)
+    def mock_chance(i):
+        return True if i > 0 else False
+    monkeypatch.setattr(funfuzz.js.shell_flags, 'chance', mock_chance)
+    assert funfuzz.js.shell_flags.chance(0.6)
+    assert funfuzz.js.shell_flags.chance(0.1)
+    assert not funfuzz.js.shell_flags.chance(0)
+    assert not funfuzz.js.shell_flags.chance(-0.2)
 
 
 def test_random_flag_set():
