@@ -46,7 +46,7 @@ def get_current_shell_path():
 
 def test_add_random_arch_flags():
     """Test that we are able to obtain add shell runtime flags related to architecture."""
-    all_flags = funfuzz.js.shell_flags.add_random_arch_flags(get_current_shell_path(), [], always=True)
+    all_flags = funfuzz.js.shell_flags.add_random_arch_flags(get_current_shell_path(), [])
     assert "--enable-avx" in all_flags
     assert "--no-sse3" in all_flags
     if funfuzz.js.inspect_shell.queryBuildConfiguration(get_current_shell_path(), "arm-simulator"):
@@ -55,7 +55,7 @@ def test_add_random_arch_flags():
 
 def test_add_random_ion_flags():
     """Test that we are able to obtain add shell runtime flags related to IonMonkey."""
-    all_flags = funfuzz.js.shell_flags.add_random_ion_flags(get_current_shell_path(), [], always=True)
+    all_flags = funfuzz.js.shell_flags.add_random_ion_flags(get_current_shell_path(), [])
     assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-aa=flow-sensitive" in all_flags
     assert "--ion-pgo=on" in all_flags
@@ -83,7 +83,7 @@ def test_add_random_ion_flags():
 
 def test_add_random_wasm_flags():
     """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm)."""
-    all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(get_current_shell_path(), [], always=True)
+    all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(get_current_shell_path(), [])
     assert "--no-wasm-baseline" in all_flags
     assert "--no-wasm-ion" in all_flags
     assert "--test-wasm-await-tier2" in all_flags
@@ -108,7 +108,7 @@ def test_chance(monkeypatch):
 
 def test_random_flag_set():
     """Test runtime flags related to SpiderMonkey."""
-    all_flags = funfuzz.js.shell_flags.random_flag_set(get_current_shell_path(), always=True)
+    all_flags = funfuzz.js.shell_flags.random_flag_set(get_current_shell_path())
     assert "--fuzzing-safe" in all_flags
     assert "--nursery-strings=on" in all_flags
     assert "--no-array-proto-values" in all_flags
