@@ -250,7 +250,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         args.append("--no-cgc")
 
     if shell_supports_flag(shell_path, "--gc-zeal=0;0,1") and chance(.9):
-        allocations_number = 999 if chance(0) else random.randint(0, 500)  # 999 is for tests
+        allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
         # Focus testing on CheckGrayMarking (18), see:
         #     https://hg.mozilla.org/mozilla-central/rev/bdbb5822afe1
