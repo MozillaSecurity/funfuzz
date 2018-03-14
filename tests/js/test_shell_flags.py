@@ -46,8 +46,26 @@ def get_current_shell_path():
                         "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)
 
 
-def test_add_random_arch_flags():
-    """Test that we are able to obtain add shell runtime flags related to architecture."""
+def mock_chance(i):
+    """Overwrite the chance function to return True or False depending on a specific condition.
+
+    Args:
+        i (float): Intended probability between 0 < i < 1
+
+    Returns:
+        bool: True if i > 0, False otherwise.
+    """
+    return True if i > 0 else False
+
+
+def test_add_random_arch_flags(monkeypatch):
+    """Test that we are able to obtain add shell runtime flags related to architecture.
+
+    Args:
+        monkeypatch (class): monkeypatch fixture.
+    """
+    monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
+
     all_flags = funfuzz.js.shell_flags.add_random_arch_flags(get_current_shell_path(), [])
     assert "--enable-avx" in all_flags
     assert "--no-sse3" in all_flags
@@ -55,8 +73,14 @@ def test_add_random_arch_flags():
         assert "--arm-sim-icache-checks" in all_flags
 
 
-def test_add_random_ion_flags():
-    """Test that we are able to obtain add shell runtime flags related to IonMonkey."""
+def test_add_random_ion_flags(monkeypatch):
+    """Test that we are able to obtain add shell runtime flags related to IonMonkey.
+
+    Args:
+        monkeypatch (class): monkeypatch fixture.
+    """
+    monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
+
     all_flags = funfuzz.js.shell_flags.add_random_ion_flags(get_current_shell_path(), [])
     assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-aa=flow-sensitive" in all_flags
@@ -83,8 +107,14 @@ def test_add_random_ion_flags():
     assert "--ion-licm=on" in all_flags
 
 
-def test_add_random_wasm_flags():
-    """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm)."""
+def test_add_random_wasm_flags(monkeypatch):
+    """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm).
+
+    Args:
+        monkeypatch (class): monkeypatch fixture.
+    """
+    monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
+
     all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(get_current_shell_path(), [])
     assert "--no-wasm-baseline" in all_flags
     assert "--no-wasm-ion" in all_flags
@@ -98,18 +128,26 @@ def test_basic_flag_sets():
 
 
 def test_chance(monkeypatch):
-    """Test that the chance function works as intended."""
-    def mock_chance(i):
-        return True if i > 0 else False
-    monkeypatch.setattr(funfuzz.js.shell_flags, 'chance', mock_chance)
+    """Test that the chance function works as intended.
+
+    Args:
+        monkeypatch (class): monkeypatch fixture.
+    """
+    monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
     assert funfuzz.js.shell_flags.chance(0.6)
     assert funfuzz.js.shell_flags.chance(0.1)
     assert not funfuzz.js.shell_flags.chance(0)
     assert not funfuzz.js.shell_flags.chance(-0.2)
 
 
-def test_random_flag_set():
-    """Test runtime flags related to SpiderMonkey."""
+def test_random_flag_set(monkeypatch):
+    """Test runtime flags related to SpiderMonkey.
+
+    Args:
+        monkeypatch (class): monkeypatch fixture.
+    """
+    monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
+
     all_flags = funfuzz.js.shell_flags.random_flag_set(get_current_shell_path())
     assert "--fuzzing-safe" in all_flags
     assert "--nursery-strings=on" in all_flags
