@@ -237,9 +237,10 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
             # Adjusts default number of threads for offthread compilation (turned on by default)
             args.append("--cpu-count=%s" % random.randint(2, (multiprocessing.cpu_count() * 2)))
 
-    if shell_supports_flag(shell_path, "--enable-streams") and chance(.2):
-        # m-c rev 371894:64bbc26920aa, see bug 1272697
-        args.append("--enable-streams")
+    # Stop testing --enable-streams until bug 1445854 is fixed.
+    # if shell_supports_flag(shell_path, "--enable-streams") and chance(.2):
+    #     # m-c rev 371894:64bbc26920aa, see bug 1272697
+    #     args.append("--enable-streams")
 
     if shell_supports_flag(shell_path, "--no-unboxed-objects") and chance(.2):
         # m-c rev 244297:322487136b28, see bug 1162199

@@ -154,7 +154,7 @@ def test_random_flag_set(monkeypatch):
     assert "--no-array-proto-values" in all_flags
     assert "--spectre-mitigations=on" in all_flags
     assert "--ion-offthread-compile=on" in all_flags
-    assert "--enable-streams" in all_flags
+    # assert "--enable-streams" in all_flags
     assert "--no-unboxed-objects" in all_flags
     assert "--no-cgc" in all_flags
     highest_gczeal = 18
