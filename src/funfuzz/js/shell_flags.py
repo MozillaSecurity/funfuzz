@@ -11,6 +11,7 @@ from __future__ import absolute_import, print_function
 
 import multiprocessing
 import random
+import subprocess
 import sys
 
 from . import inspect_shell
@@ -32,7 +33,16 @@ def shell_supports_flag(shell_path, flag):
     Returns:
         bool: True if the flag is supported, i.e. does not cause the shell to throw an error, False otherwise.
     """
-    return inspect_shell.shellSupports(shell_path, [flag, "-e", "42"])
+    dummy_parameters = ["-e", "42"]
+    if "--gc-zeal=" in flag:
+        # The js shell requires the double quotes in '--gc-zeal="0;0,1"',
+        # but Python removes them unless we pass in shell=True
+        # subprocess.check_call returns 0 if the command succeeds, thus we want to map 0 -> True, anything else -> False
+        out = not bool(subprocess.check_call(" ".join([shell_path, flag] + dummy_parameters), shell=True))
+    else:
+        # This can be refactored when sps.captureStdout is gone
+        out = inspect_shell.shellSupports(shell_path, [flag] + dummy_parameters)
+    return out
 
 
 def chance(i):
@@ -250,7 +260,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         # m-c rev 226540:ade5e0300605, see bug 1126769
         args.append("--no-cgc")
 
-    if shell_supports_flag(shell_path, "--gc-zeal=0;0,1") and chance(.9):
+    if shell_supports_flag(shell_path, '--gc-zeal="0;0,1"') and chance(.9):
         allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
         # Focus testing on CheckGrayMarking (18), see:
@@ -271,7 +281,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
             gczeal_two = 2
 
         # m-c rev 216625:03c6a758c9e8, see bug 1101602
-        args.append("--gc-zeal=%s;%s,%s" % (gczeal_value, gczeal_two, allocations_number))
+        args.append('--gc-zeal="%s;%s,%s"' % (gczeal_value, gczeal_two, allocations_number))
 
     if shell_supports_flag(shell_path, "--no-incremental-gc") and chance(.2):
         # m-c rev 211115:35025fd9e99b, see bug 958492
