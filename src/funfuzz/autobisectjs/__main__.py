@@ -7,12 +7,7 @@
 
 from __future__ import absolute_import
 
-import sys
-
 from .autobisectjs import main
-from ..util import subprocesses as sps
 
 if __name__ == '__main__':
-    # Reopen stdout, unbuffered. This is similar to -u. From http://stackoverflow.com/a/107717
-    sys.stdout = sps.Unbuffered(sys.stdout)
     main()

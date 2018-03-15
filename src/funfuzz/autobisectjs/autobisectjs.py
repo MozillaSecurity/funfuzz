@@ -21,6 +21,7 @@ import subprocess
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
+from backports.print_function import print_
 from lithium.interestingness.utils import rel_or_abs_import
 
 from . import known_broken_earliest_working as kbew
@@ -125,9 +126,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     options.paramList = [sps.normExpUserPath(x) for x in options.parameters.split(' ') if x]
     # First check that the testcase is present.
     if '-e 42' not in options.parameters and not os.path.isfile(options.paramList[-1]):
-        print()
-        print("List of parameters to be passed to the shell is: %s" % " ".join(options.paramList))
-        print()
+        print_(flush=True)
+        print_("List of parameters to be passed to the shell is: %s" % " ".join(options.paramList), flush=True)
+        print_(flush=True)
         raise Exception('Testcase at ' + options.paramList[-1] + ' is not present.')
 
     assert options.compilationFailedLabel in ('bad', 'good', 'skip')
@@ -136,7 +137,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     if options.useInterestingnessTests:
         if len(args) < 1:
-            print("args are: %s" % args)
+            print_("args are: %s" % args, flush=True)
             parser.error('Not enough arguments.')
         if not options.browserOptions:
             for a in args:  # pylint: disable=invalid-name
@@ -173,8 +174,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     #     raise Exception('endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration')
 
     if options.parameters == '-e 42':
-        print("Note: since no parameters were specified, "
-              "we're just ensuring the shell does not crash on startup/shutdown.")
+        print_("Note: since no parameters were specified, "
+               "we're just ensuring the shell does not crash on startup/shutdown.", flush=True)
 
     if options.nameOfTreeherderBranch != 'mozilla-inbound' and not options.useTreeherderBinaries:
         raise Exception('Setting the name of branches only works for treeherder shell bisection.')
@@ -184,7 +185,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
 def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
     # pylint: disable=too-many-locals,too-many-statements
-    print("%s | Bisecting on: %s" % (time.asctime(), repoDir))
+    print_("%s | Bisecting on: %s" % (time.asctime(), repoDir), flush=True)
 
     hgPrefix = ['hg', '-R', repoDir]  # pylint: disable=invalid-name
 
@@ -235,14 +236,15 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                print("Skipped 20 times, stopping autoBisect.")
+                print_("Skipped 20 times, stopping autoBisect.", flush=True)
                 break
-        print("%s (%s) " % (label[0], label[1]), end=" ")
+        print_("%s (%s) " % (label[0], label[1]), end=" ", flush=True)
 
         if iterNum <= 0:
-            print("Finished testing the initial boundary revisions...", end=" ")
+            print_("Finished testing the initial boundary revisions...", end=" ", flush=True)
         else:
-            print("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum), end=" ")
+            print_("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum),
+                   end=" ", flush=True)
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
@@ -254,7 +256,7 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
         iterNum += 1
         endTime = time.time()
         oneRunTime = endTime - startTime
-        print("This iteration took %.3f seconds to run." % oneRunTime)
+        print_("This iteration took %.3f seconds to run." % oneRunTime, flush=True)
 
     if blamedRev is not None:
         checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
@@ -267,7 +269,7 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
     sps.captureStdout(hgPrefix + ['update', '-C', '-r', 'default'], ignoreStderr=True)
     hg_helpers.destroyPyc(repoDir)
 
-    print(time.asctime())
+    print_(time.asctime(), flush=True)
 
 
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -350,24 +352,24 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
     for p in parents:
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
-            print()
-            print("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p)
+            print_(flush=True)
+            print_("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p, flush=True)
             if not hg_helpers.isAncestor(repoDir, startRepo, p) and \
                     not hg_helpers.isAncestor(repoDir, endRepo, p):
-                print("We did not test rev %s because it is not a descendant of either %s or %s." % (
-                    p, startRepo, endRepo))
+                print_("We did not test rev %s because it is not a descendant of either %s or %s." % (
+                    p, startRepo, endRepo), flush=True)
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
             labels[p] = label
-            print("%s (%s) " % (label[0], label[1]))
-            print("As expected, the parent's label is the opposite of the blamed rev's label.")
+            print_("%s (%s) " % (label[0], label[1]), flush=True)
+            print_("As expected, the parent's label is the opposite of the blamed rev's label.", flush=True)
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            print("Parent rev %s was marked as 'skip', so the regression window includes it." % (p,))
+            print_("Parent rev %s was marked as 'skip', so the regression window includes it." % (p,), flush=True)
         elif labels[p][0] == blamedGoodOrBad:
-            print("Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad))
+            print_("Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad), flush=True)
             bisectLied = True
         else:
             assert labels[p][0] == {'good': 'bad', 'bad': 'good'}[blamedGoodOrBad]
@@ -376,23 +378,23 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
     if bisectLied:
         if missedCommonAncestor:
             ca = hg_helpers.findCommonAncestor(repoDir, parents[0], parents[1])
-            print()
-            print("Bisect blamed the merge because our initial range did not include one")
-            print("of the parents.")
-            print("The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca))
+            print_(flush=True)
+            print_("Bisect blamed the merge because our initial range did not include one", flush=True)
+            print_("of the parents.", flush=True)
+            print_("The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca), flush=True)
             label = testRev(ca)
-            print("%s (%s) " % (label[0], label[1]))
-            print("Consider re-running autoBisect with -s %s -e %s" % (ca, blamedRev))
-            print("in a configuration where earliestWorking is before the common ancestor.")
+            print_("%s (%s) " % (label[0], label[1]), flush=True)
+            print_("Consider re-running autoBisect with -s %s -e %s" % (ca, blamedRev), flush=True)
+            print_("in a configuration where earliestWorking is before the common ancestor.", flush=True)
         else:
-            print()
-            print("Most likely, bisect's result was unhelpful because one of the")
-            print("tested revisions was marked as 'good' or 'bad' for the wrong reason.")
-            print("I don't know which revision was incorrectly marked. Sorry.")
+            print_(flush=True)
+            print_("Most likely, bisect's result was unhelpful because one of the", flush=True)
+            print_("tested revisions was marked as 'good' or 'bad' for the wrong reason.", flush=True)
+            print_("I don't know which revision was incorrectly marked. Sorry.", flush=True)
     else:
-        print()
-        print("The bug was introduced by a merge (it was not present on either parent).")
-        print("I don't know which patches from each side of the merge contributed to the bug. Sorry.")
+        print_(flush=True)
+        print_("The bug was introduced by a merge (it was not present on either parent).", flush=True)
+        print_("I don't know which patches from each side of the merge contributed to the bug. Sorry.", flush=True)
 
 
 def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-return-doc
@@ -421,20 +423,20 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         repoDir = options.build_options.repoDir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
-        print()
-        print(sanitizeCsetMsg(outputResult, repoDir))
-        print()
+        print_(flush=True)
+        print_(sanitizeCsetMsg(outputResult, repoDir), flush=True)
+        print_(flush=True)
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
-        print()
-        print()
-        print("autoBisect shows this is probably related to the following changeset:")
-        print()
-        print(sanitizeCsetMsg(outputResult, repoDir))
-        print()
+        print_(flush=True)
+        print_(flush=True)
+        print_("autoBisect shows this is probably related to the following changeset:", flush=True)
+        print_(flush=True)
+        print_(sanitizeCsetMsg(outputResult, repoDir), flush=True)
+        print_(flush=True)
         blamedGoodOrBad = m.group(1)
         blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
@@ -447,7 +449,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
 
     currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
-        print("Resetting to default revision...")
+        print_("Resetting to default revision...", flush=True)
         subprocess.check_call(hgPrefix + ['update', '-C', 'default'])
         hg_helpers.destroyPyc(repoDir)
         raise Exception("hg did not suggest a changeset to test!")
@@ -477,7 +479,7 @@ def assertSaneJsBinary(cacheF):  # pylint: disable=missing-param-doc,missing-rai
         fList = os.listdir(cacheF)
         if 'build' in fList:
             if INCOMPLETE_NOTE in fList:
-                print("%s has subdirectories: %s" % (cacheF, fList))
+                print_("%s has subdirectories: %s" % (cacheF, fList), flush=True)
                 raise Exception("Downloaded binaries and incompleteBuild.txt should not both be "
                                 "present together in this directory.")
             assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'download')))
@@ -525,49 +527,50 @@ def bisectUsingTboxBins(options):  # pylint: disable=invalid-name,missing-param-
     urlsTbox = download_build.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
 
     # Download and test starting point.
-    print()
-    print("Examining starting point...")
+    print_(flush=True)
+    print_("Examining starting point...", flush=True)
     sID, startResult, _sReason, _sPosition, urlsTbox, testedIDs, _startSkippedNum = testBuildOrNeighbour(
         options, 0, urlsTbox, buildType, testedIDs)
     if sID is None:
         raise Exception('No complete builds were found.')
-    print("Numeric ID %s was tested." % sID)
+    print_("Numeric ID %s was tested." % sID, flush=True)
 
     # Download and test ending point.
-    print()
-    print("Examining ending point...")
+    print_(flush=True)
+    print_("Examining ending point...", flush=True)
     eID, endResult, _eReason, _ePosition, urlsTbox, testedIDs, _endSkippedNum = testBuildOrNeighbour(
         options, len(urlsTbox) - 1, urlsTbox, buildType, testedIDs)
     if eID is None:
         raise Exception('No complete builds were found.')
-    print("Numeric ID %s was tested." % eID)
+    print_("Numeric ID %s was tested." % eID, flush=True)
 
     if startResult == endResult:
         raise Exception('Starting and ending points should have opposite results')
 
     count = 0
-    print()
-    print("Starting bisection...")
-    print()
+    print_(flush=True)
+    print_("Starting bisection...", flush=True)
+    print_(flush=True)
     while count < MAX_ITERATIONS:
         sps.vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
         count += 1
-        print("Test number %d:" % count)
+        print_("Test number %d:" % count, flush=True)
 
         sortedUrlsTbox = sorted(urlsTbox)
         if len(sortedUrlsTbox) >= 3:
             mPosition = len(sortedUrlsTbox) // 2
         else:
-            print()
-            print('WARNING: %s has size smaller than 3. Impossible to return "middle" element.' % (sortedUrlsTbox,))
-            print()
+            print_(flush=True)
+            print_('WARNING: %s has size smaller than 3. Impossible to return "middle" element.' % (sortedUrlsTbox,),
+                   flush=True)
+            print_(flush=True)
             mPosition = len(sortedUrlsTbox)
 
         # Test the middle revision. If it is not a complete build, test ones around it.
         mID, mResult, _mReason, mPosition, urlsTbox, testedIDs, middleRevSkippedNum = testBuildOrNeighbour(
             options, mPosition, urlsTbox, buildType, testedIDs)
         if mID is None:
-            print("Middle ID is None.")
+            print_("Middle ID is None.", flush=True)
             break
 
         # Refresh the range of treeherder IDs depending on mResult.
@@ -576,21 +579,21 @@ def bisectUsingTboxBins(options):  # pylint: disable=invalid-name,missing-param-
         else:
             urlsTbox = urlsTbox[(mPosition):len(urlsTbox)]
 
-        print("Numeric ID %s was tested." % mID, end=" ")
+        print_("Numeric ID %s was tested." % mID, end=" ", flush=True)
 
         #  Exit infinite loop once we have tested the starting point, ending point and any points
         #  in the middle with results returning "incomplete".
         if (len(urlsTbox) - middleRevSkippedNum) <= 2 and mID in testedIDs:
             break
         elif len(urlsTbox) < 2:
-            print("urlsTbox is: %s" % (urlsTbox,))
+            print_("urlsTbox is: %s" % (urlsTbox,), flush=True)
             raise Exception('Length of urlsTbox should not be smaller than 2.')
         elif (len(testedIDs) - 2) > 30:
             raise Exception('Number of testedIDs has exceeded 30.')
 
-        print(showRemainingNumOfTests(urlsTbox))
+        print_(showRemainingNumOfTests(urlsTbox), flush=True)
 
-    print()
+    print_(flush=True)
     sps.vdump('Build URLs are: ' + str(urlsTbox))
     assert getIdFromTboxUrl(urlsTbox[0]) in testedIDs, 'Starting ID should have been tested.'
     assert getIdFromTboxUrl(urlsTbox[-1]) in testedIDs, 'Ending ID should have been tested.'
@@ -625,10 +628,10 @@ def ensureCacheDirHasCorrectIdNum(cacheFolder):  # pylint: disable=missing-param
         idNumSourceUrl = fContents[0].split('/')[-2]
 
         if idNumFolderName != idNumSourceUrl:
-            print()
-            print("WARNING: Numeric ID in folder name (current value: %s) is not equal to "
-                  "the numeric ID from source URL (current value: %s)" % (idNumFolderName, idNumSourceUrl))
-            print()
+            print_(flush=True)
+            print_("WARNING: Numeric ID in folder name (current value: %s) is not equal to , flush=True"
+                   "the numeric ID from source URL (current value: %s)" % (idNumFolderName, idNumSourceUrl))
+            print_(flush=True)
             raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
 
 
@@ -643,12 +646,12 @@ def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):  # pylint: 
         if offset is None:
             offset = 0
         elif offset > 16:
-            print("Failed to find a working build after ~30 tries.")
+            print_("Failed to find a working build after ~30 tries.", flush=True)
             return None, None, None, None
         elif offset > 0:
             # Stop once we are testing beyond the start & end entries of the list
             if (preferredIndex + offset >= len(urls)) and (preferredIndex - offset < 0):
-                print("Stop looping because everything within the range was tested.")
+                print_("Stop looping because everything within the range was tested.", flush=True)
                 return None, None, None, None
             offset = -offset  # pylint: disable=invalid-unary-operand-type
         else:
@@ -766,18 +769,18 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):  # p
     sTimestamp, sHash, sResult, _sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
     eTimestamp, eHash, eResult, _eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
 
-    print()
-    print("Parameters for compilation bisection:")
+    print_(flush=True)
+    print_("Parameters for compilation bisection:", flush=True)
     pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
     oOutput = '-o "' + options.output + '"' if options.output is not '' else ''  # pylint: disable=literal-comparison
     params = [i for i in ["-s " + sHash, "-e " + eHash, pOutput, oOutput, "-b <build parameters>"] if i]
-    print(" ".join(params))
+    print_(" ".join(params), flush=True)
 
-    print()
-    print("=== Treeherder Build Bisection Results by autoBisect ===")
-    print()
-    print('The "%s" changeset has the timestamp "%s" and the hash "%s".' % (sResult, sTimestamp, sHash))
-    print('The "%s" changeset has the timestamp "%s" and the hash "%s".' % (eResult, eTimestamp, eHash))
+    print_(flush=True)
+    print_("=== Treeherder Build Bisection Results by autoBisect ===", flush=True)
+    print_(flush=True)
+    print_('The "%s" changeset has the timestamp "%s" and the hash "%s".' % (sResult, sTimestamp, sHash), flush=True)
+    print_('The "%s" changeset has the timestamp "%s" and the hash "%s".' % (eResult, eTimestamp, eHash), flush=True)
 
     # Are we describing a regression window or a fix window?
     if sResult == 'good' and eResult == 'bad':
@@ -791,9 +794,9 @@ def outputTboxBisectionResults(options, interestingList, testedBuildsDict):  # p
     # Show an hgweb link
     pushlogWindow = "%s/pushloghtml?fromchange=%s&tochange=%s" % (
         getHgwebMozillaOrg(options.nameOfTreeherderBranch), sHash, eHash)
-    print()
-    print("Likely %s window: %s" % (windowType, pushlogWindow))
-    print()
+    print_(flush=True)
+    print_("Likely %s window: %s" % (windowType, pushlogWindow), flush=True)
+    print_(flush=True)
 
 
 def readIncompleteBuildTxtFile(txtFile, idNum):  # pylint: disable=missing-raises-doc,missing-param-doc,missing-type-doc
@@ -801,10 +804,10 @@ def readIncompleteBuildTxtFile(txtFile, idNum):  # pylint: disable=missing-raise
     with open(txtFile, 'r') as f:
         contentsF = f.read()
         if 'is incomplete.' not in contentsF:
-            print("Contents of %s is: %r" % (txtFile, contentsF))
+            print_("Contents of %s is: %r" % (txtFile, contentsF), flush=True)
             raise Exception('Invalid ' + INCOMPLETE_NOTE + ' file contents.')
         else:
-            print("Examined build with numeric ID %s to be incomplete. Trying another build..." % idNum)
+            print_("Examined build with numeric ID %s to be incomplete. Trying another build..." % idNum, flush=True)
 
 
 def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing-type-doc
@@ -848,15 +851,15 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):  
     if idNum is None:
         result, reason = None, None
     elif idNum in list(testedIDs):
-        print("Retrieving previous test result: ", end=" ")
+        print_("Retrieving previous test result: ", end=" ", flush=True)
         result, reason = testedIDs[idNum][2:4]
     else:
         # The build has not been tested before, so test it.
         testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
-        print("Found binary in: %s" % tboxCacheFolder)
-        print("Testing binary...", end=" ")
+        print_("Found binary in: %s" % tboxCacheFolder, flush=True)
+        print_("Testing binary...", end=" ", flush=True)
         result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
-        print("Result: %s - %s" % (result, reason))
+        print_("Result: %s - %s" % (result, reason), flush=True)
         # Adds the result and reason to testedIDs
         testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
 
@@ -874,7 +877,7 @@ def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):  # pylint: disa
         f.write('This build with numeric ID ' + num + ' is incomplete.')
     assert num == getIdFromTboxUrl(url), 'The numeric ID ' + num + \
         ' has to be the one we downloaded from ' + url
-    print("Wrote a text file that indicates numeric ID %s has an incomplete build." % num)
+    print_("Wrote a text file that indicates numeric ID %s has an incomplete build." % num, flush=True)
     return False  # False indicates that this text file has not yet been looked at.
 
 

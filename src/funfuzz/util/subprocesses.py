@@ -530,20 +530,6 @@ def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitC
     return stdOutput, retVal
 
 
-class Unbuffered(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
-    """From http://stackoverflow.com/a/107717 - Unbuffered stdout by default, similar to -u."""
-
-    def __init__(self, stream):
-        self.stream = stream
-
-    def write(self, data):  # pylint: disable=missing-docstring
-        self.stream.write(data)
-        self.stream.flush()
-
-    def __getattr__(self, attr):  # pylint: disable=missing-return-doc,missing-return-type-doc
-        return getattr(self.stream, attr)
-
-
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word 'DEBUG' to any verbose output."""
     if verbose:
