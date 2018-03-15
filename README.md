@@ -106,10 +106,10 @@ Replace anything between `<` and `>` with your desired parameters.
 
 **A:** compile_shell has been tested on:
 
-* Windows 10 and 7, with [MozillaBuild 3.0](https://wiki.mozilla.org/MozillaBuild). It should also work with Windows Server 2012 R2.
+* Windows 10 and 7, with [MozillaBuild 3.1.1](https://wiki.mozilla.org/MozillaBuild). It should also work with Windows Server 2012 R2.
 * Mac OS X 10.13
 * Ubuntu 16.04 LTS and later
-  * Note: We may try to make this work on Ubuntu 14.04 LTS (via Travis)
+  * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis)
 
 Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively and there may be a few bugs along the way.
 
