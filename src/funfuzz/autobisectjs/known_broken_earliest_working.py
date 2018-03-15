@@ -52,6 +52,8 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         skips.extend([
             # Clang failure - probably recent versions of GCC as well.
             hgrange('5232dd059c11', 'ed98e1b9168d'),  # Fx41, see bug 1140482
+            # Failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6
+            hgrange('e94dceac8090', '516c01f62d84'),  # Fx56-57, see bug 1386011
         ])
         if not options.disableProfiling:
             skips.extend([
