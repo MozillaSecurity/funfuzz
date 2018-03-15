@@ -38,6 +38,7 @@ if __name__ == "__main__":
               ':python_version=="2.7"': [
                   "functools32>=3.2.3",
                   "mercurial>=4.4.1",
+                  "subprocess32>=3.5.0rc1",
               ]
           },
           zip_safe=False)

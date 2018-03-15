@@ -11,14 +11,15 @@ from __future__ import absolute_import, print_function
 
 import multiprocessing
 import random
-import subprocess
 import sys
 
 from . import inspect_shell
 
 if sys.version_info.major == 2:
+    import subprocess32 as subprocess
     from functools32 import lru_cache  # pylint: disable=import-error
 else:
+    import subprocess
     from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
@@ -37,8 +38,9 @@ def shell_supports_flag(shell_path, flag):
     if "--gc-zeal=" in flag:
         # The js shell requires the double quotes in '--gc-zeal="0;0,1"',
         # but Python removes them unless we pass in shell=True
-        # subprocess.check_call returns 0 if the command succeeds, thus we want to map 0 -> True, anything else -> False
-        out = not bool(subprocess.check_call(" ".join([shell_path, flag] + dummy_parameters), shell=True))
+        # subprocess returns 0 if the command succeeds, thus we want to map 0 -> True, anything else -> False
+        out = not bool(subprocess.run(" ".join([shell_path, flag] + dummy_parameters),
+                                      shell=True, timeout=9, check=True).returncode)
     else:
         # This can be refactored when sps.captureStdout is gone
         out = inspect_shell.shellSupports(shell_path, [flag] + dummy_parameters)
