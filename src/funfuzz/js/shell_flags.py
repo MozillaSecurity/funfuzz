@@ -16,7 +16,8 @@ import sys
 from . import inspect_shell
 
 if sys.version_info.major == 2:
-    import subprocess32 as subprocess
+    if os.name == "posix":
+        import subprocess32 as subprocess
     from functools32 import lru_cache  # pylint: disable=import-error
 else:
     import subprocess
