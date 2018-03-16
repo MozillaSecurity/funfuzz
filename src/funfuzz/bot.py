@@ -31,7 +31,6 @@ from .util import create_collector
 from .util.lock_dir import LockDir
 
 path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
-path3 = os.path.abspath(os.path.join(path0, 'js'))  # pylint: disable=invalid-name
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
