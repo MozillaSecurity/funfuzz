@@ -270,25 +270,30 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
     if shell_supports_flag(shell_path, '--gc-zeal="0;0,1"') and chance(.9):
         allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
-        # Focus testing on CheckGrayMarking (18), see:
-        #     https://hg.mozilla.org/mozilla-central/rev/bdbb5822afe1
         highest_gczeal = 18
-        gczeal_value = highest_gczeal if chance(.2) else random.randint(0, highest_gczeal)
-        # Repurpose gczeal modes 3, 5 and 6 since they do not exist.
-        if gczeal_value == 3:
-            gczeal_value = 0
-        if gczeal_value == 5 or gczeal_value == 6:
-            gczeal_value = 2
+        gczeal_value = highest_gczeal - 3  # 3 levels disabled below
+        gczeal_a = final_value = 3 if chance(.001) else random.randint(0, gczeal_value)  # 3 is for tests
 
-        gczeal_two = highest_gczeal if chance(.2) else random.randint(0, highest_gczeal)
-        # Repurpose gczeal modes 3, 5 and 6 since they do not exist.
-        if gczeal_two == 3:
-            gczeal_two = 0
-        if gczeal_two == 5 or gczeal_two == 6:
-            gczeal_two = 2
+        gczeal_b = 4 if chance(.001) else random.randint(0, gczeal_value)  # 4 is for tests
+        if gczeal_b >= 3:  # gczeal 3 does not exist, so repurpose it
+            gczeal_b += 1
+        if gczeal_b >= 5:  # gczeal 5 does not exist, so repurpose it
+            gczeal_b += 1
+        if gczeal_b >= 6:  # gczeal 6 does not exist, so repurpose it
+            gczeal_b += 1
+
+        if gczeal_a >= 3:  # gczeal 3 does not exist, so repurpose it
+            gczeal_a += 1
+            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+        if gczeal_a >= 5:  # gczeal 5 does not exist, so repurpose it
+            gczeal_a += 1
+            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+        if gczeal_a >= 6:  # gczeal 6 does not exist, so repurpose it
+            gczeal_a += 1
+            final_value = "%s;%s" % (gczeal_a, gczeal_b)
 
         # m-c rev 216625:03c6a758c9e8, see bug 1101602
-        args.append('--gc-zeal="%s;%s,%s"' % (gczeal_value, gczeal_two, allocations_number))
+        args.append('--gc-zeal="%s,%s"' % (final_value, allocations_number))
 
     if shell_supports_flag(shell_path, "--no-incremental-gc") and chance(.2):
         # m-c rev 211115:35025fd9e99b, see bug 958492

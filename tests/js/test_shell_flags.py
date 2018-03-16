@@ -157,8 +157,7 @@ def test_random_flag_set(monkeypatch):
     # assert "--enable-streams" in all_flags
     assert "--no-unboxed-objects" in all_flags
     assert "--no-cgc" in all_flags
-    highest_gczeal = 18
-    assert '--gc-zeal="%s;%s,%s"' % (highest_gczeal, highest_gczeal, 999) in all_flags
+    assert '--gc-zeal="4;7,999"' in all_flags
     assert "--no-incremental-gc" in all_flags
     assert "--no-threads" in all_flags
     assert "--no-native-regexp" in all_flags
