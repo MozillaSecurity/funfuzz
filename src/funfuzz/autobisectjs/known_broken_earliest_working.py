@@ -24,7 +24,7 @@ def hgrange(first_bad, first_good):  # pylint: disable=missing-param-doc,missing
     # So this revset expression includes first_bad, but does not include first_good.
     # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set,
     # like we want"
-    return '(descendants(id(' + first_bad + '))-descendants(id(' + first_good + ')))'
+    return "(descendants(id(" + first_bad + "))-descendants(id(" + first_good + ")))"
 
 
 def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -40,48 +40,48 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange('7c25be97325d', 'd426154dd31d'),  # Fx38, broken spidermonkey
-        hgrange('da286f0f7a49', '62fecc6ab96e'),  # Fx39, broken spidermonkey
-        hgrange('8a416fedec44', '7f9252925e26'),  # Fx41, broken spidermonkey
-        hgrange('3bcc3881b95d', 'c609df6d3895'),  # Fx44, broken spidermonkey
-        hgrange('d3a026933bce', '5fa834fe9b96'),  # Fx52, broken spidermonkey
+        hgrange("7c25be97325d", "d426154dd31d"),  # Fx38, broken spidermonkey
+        hgrange("da286f0f7a49", "62fecc6ab96e"),  # Fx39, broken spidermonkey
+        hgrange("8a416fedec44", "7f9252925e26"),  # Fx41, broken spidermonkey
+        hgrange("3bcc3881b95d", "c609df6d3895"),  # Fx44, broken spidermonkey
+        hgrange("d3a026933bce", "5fa834fe9b96"),  # Fx52, broken spidermonkey
         hgrange("4c72627cfc6c", "926f80f2c5cc"),  # Fx60, broken spidermonkey
     ]
 
     if sps.isLinux:
         skips.extend([
             # Clang failure - probably recent versions of GCC as well.
-            hgrange('5232dd059c11', 'ed98e1b9168d'),  # Fx41, see bug 1140482
+            hgrange("5232dd059c11", "ed98e1b9168d"),  # Fx41, see bug 1140482
             # Failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6
-            hgrange('e94dceac8090', '516c01f62d84'),  # Fx56-57, see bug 1386011
+            hgrange("e94dceac8090", "516c01f62d84"),  # Fx56-57, see bug 1386011
         ])
         if not options.disableProfiling:
             skips.extend([
                 # To bypass the following month-long breakage, use "--disable-profiling"
-                hgrange('aa1da5ed8a07', '5a03382283ae'),  # Fx54-55, see bug 1339190
+                hgrange("aa1da5ed8a07", "5a03382283ae"),  # Fx54-55, see bug 1339190
             ])
 
     if sps.isWin10:
         skips.extend([
-            hgrange('be8b0845f283', 'db3ed1fdbbea'),  # Fx50, see bug 1289679
+            hgrange("be8b0845f283", "db3ed1fdbbea"),  # Fx50, see bug 1289679
         ])
 
     if not options.enableDbg:
         skips.extend([
-            hgrange('a048c55e1906', 'ddaa87cfd7fa'),  # Fx46, broken opt builds w/ --enable-gczeal
-            hgrange('c5561749c1c6', 'f4c15a88c937'),  # Fx58-59, broken opt builds w/ --enable-gczeal
+            hgrange("a048c55e1906", "ddaa87cfd7fa"),  # Fx46, broken opt builds w/ --enable-gczeal
+            hgrange("c5561749c1c6", "f4c15a88c937"),  # Fx58-59, broken opt builds w/ --enable-gczeal
         ])
 
     if options.enableMoreDeterministic:
         skips.extend([
-            hgrange('1d672188b8aa', 'ea7dabcd215e'),  # Fx40, see bug 1149739
+            hgrange("1d672188b8aa", "ea7dabcd215e"),  # Fx40, see bug 1149739
         ])
 
     if options.enableSimulatorArm32:
         skips.extend([
-            hgrange('3a580b48d1ad', '20c9570b0734'),  # Fx43, broken 32-bit ARM-simulator builds
-            hgrange('f35d1107fe2e', 'bdf975ad2fcd'),  # Fx45, broken 32-bit ARM-simulator builds
-            hgrange('6c37be9cee51', '4548ba932bde'),  # Fx50, broken 32-bit ARM-simulator builds
+            hgrange("3a580b48d1ad", "20c9570b0734"),  # Fx43, broken 32-bit ARM-simulator builds
+            hgrange("f35d1107fe2e", "bdf975ad2fcd"),  # Fx45, broken 32-bit ARM-simulator builds
+            hgrange("6c37be9cee51", "4548ba932bde"),  # Fx50, broken 32-bit ARM-simulator builds
         ])
 
     return skips
