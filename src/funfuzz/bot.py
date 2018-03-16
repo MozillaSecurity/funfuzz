@@ -8,7 +8,7 @@
 
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 
 import multiprocessing
 import os
@@ -28,6 +28,9 @@ from .util import subprocesses as sps
 from .util import fork_join
 from .util import create_collector
 from .util.lock_dir import LockDir
+
+if sys.version_info.major == 2:
+    import psutil
 
 path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
@@ -145,7 +148,11 @@ def printMachineInfo():  # pylint: disable=invalid-name
     #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
-    print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))
+    if sys.version_info.major == 2:
+        rootdir_free_space = psutil.disk_usage("/").free / (1024 ** 3)
+    else:
+        rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
+    print("Free space (GB): %.2f" % rootdir_free_space)
 
     hgrc_path = os.path.join(path0, '.hg', 'hgrc')
     if os.path.isfile(hgrc_path):

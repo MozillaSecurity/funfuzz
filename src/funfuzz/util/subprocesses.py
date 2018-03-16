@@ -9,7 +9,6 @@
 
 from __future__ import absolute_import, print_function
 
-import ctypes
 import errno
 import os
 import platform
@@ -48,21 +47,6 @@ def macVer():  # pylint: disable=invalid-name,missing-return-doc,missing-return-
     """If system is a Mac, return the mac type."""
     assert platform.system() == 'Darwin'
     return [int(x) for x in platform.mac_ver()[0].split('.')]
-
-
-def getFreeSpace(folder, mulVar):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return folder/drive free space in bytes if mulVar is 0. Adapted from http://stackoverflow.com/a/2372171 ."""
-    assert mulVar >= 0
-    if platform.system() == 'Windows':
-        free_bytes = ctypes.c_ulonglong(0)
-        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
-        return_value = float(free_bytes.value)
-    else:
-        # os.statvfs is Unix-only
-        return_value = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)  # pylint: disable=no-member
-
-    return return_value // (1024 ** mulVar)
 
 
 # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
