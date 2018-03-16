@@ -40,9 +40,12 @@ def shell_supports_flag(shell_path, flag):
     if "--gc-zeal=" in flag:
         # The js shell requires the double quotes in '--gc-zeal="0;0,1"',
         # but Python removes them unless we pass in shell=True
-        # subprocess returns 0 if the command succeeds, thus we want to map 0 -> True, anything else -> False
-        out = not bool(subprocess.run(" ".join([shell_path, flag] + dummy_parameters),
-                                      shell=True, timeout=9, check=True).returncode)
+        try:
+            subprocess.run(" ".join([shell_path, flag] + dummy_parameters),
+                           shell=True, timeout=9, check=True).check_returncode()
+            out = True
+        except subprocess.CalledProcessError:
+            out = False
     else:
         # This can be refactored when sps.captureStdout is gone
         out = inspect_shell.shellSupports(shell_path, [flag] + dummy_parameters)
