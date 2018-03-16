@@ -31,13 +31,13 @@ if __name__ == "__main__":
               "backports.print_function>=1.1.1",
               "configparser>=3.5.0",
               "future>=0.16.0",
-              "FuzzManager>=0.1.1",
-              "lithium-reducer>=0.2.0",
+              "FuzzManager>=0.1.3",
+              "lithium-reducer>=0.2.1",
           ],
           extras_require={
               ':python_version=="2.7"': [
                   "functools32>=3.2.3",
-                  "mercurial>=4.4.1",
+                  "mercurial>=4.5.2",
                   "subprocess32>=3.5.0rc1",
               ]
           },
