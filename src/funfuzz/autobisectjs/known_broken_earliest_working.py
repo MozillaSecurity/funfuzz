@@ -10,6 +10,7 @@
 from __future__ import absolute_import, print_function
 
 import os
+import platform
 import sys
 
 from pkg_resources import parse_version
@@ -95,7 +96,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
-    assert (not sps.isMac) or (sps.macVer() >= [10, 11])  # Only support at least Mac OS X 10.11
+    # Only support at least Mac OS X 10.11
+    assert (not sps.isMac) or (parse_version(platform.mac_ver()[0]) >= parse_version("10.11"))
 
     cpu_count_flag = False
     for entry in flags:  # flags is a list of flags, and the option must exactly match.

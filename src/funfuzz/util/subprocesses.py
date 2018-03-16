@@ -20,6 +20,7 @@ import sys
 import time
 
 from past.builtins import range  # pylint: disable=redefined-builtin
+from pkg_resources import parse_version
 
 verbose = False  # pylint: disable=invalid-name
 
@@ -37,16 +38,6 @@ WARNING: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\L
 WARNING: Name: DumpType  Type: REG_DWORD
 WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs.85%29.aspx
 """
-
-########################
-#  Platform Detection  #
-########################
-
-
-def macVer():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
-    """If system is a Mac, return the mac type."""
-    assert platform.system() == 'Darwin'
-    return [int(x) for x in platform.mac_ver()[0].split('.')]
 
 
 # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
@@ -160,7 +151,7 @@ def getCoreLimit():  # pylint: disable=invalid-name,missing-docstring,missing-re
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Find the required crash log in the given crash reporter directory."""
-    assert platform.system() == 'Darwin' and macVer() >= [10, 6]
+    assert parse_version(platform.mac_ver()[0]) >= parse_version("10.6")
     reportDirList = [os.path.expanduser('~'), '/']
     for baseDir in reportDirList:
         # Sometimes the crash reports end up in the root directory.
