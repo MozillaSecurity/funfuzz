@@ -29,8 +29,6 @@ isMac = (platform.system() == 'Darwin')  # pylint: disable=invalid-name
 isWin = (platform.system() == 'Windows')  # pylint: disable=invalid-name
 isWin10 = isWin and (platform.uname()[2] == '10')  # pylint: disable=invalid-name
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)  # pylint: disable=invalid-name
-# Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
-isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=invalid-name,no-member
 
 # pylint: disable=invalid-name
 noMinidumpMsg = r"""
@@ -239,8 +237,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
     if not wantStack or progname == "valgrind":
         return
 
-    # This has only been tested on 64-bit Windows 7 and higher, but should work on 64-bit Vista.
-    if isWinVistaOrHigher and isWin64:
+    # This has only been tested on 64-bit Windows 7 and higher
+    if isWin64:
         debuggerCmd = constructCdbCommand(progfullname, crashedPID)
     elif os.name == 'posix':
         debuggerCmd = constructGdbCommand(progfullname, crashedPID)
@@ -301,7 +299,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
 def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsistent-return-statements,invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
-    # On Windows Vista and above, look for a minidump.
+    # Look for a minidump.
     dumpFilename = normExpUserPath(os.path.join(
         '~', 'AppData', 'Local', 'CrashDumps', os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
     if isWin10:

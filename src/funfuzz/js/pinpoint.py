@@ -10,7 +10,6 @@
 from __future__ import absolute_import, print_function
 
 import os
-import platform
 import re
 import shutil
 import subprocess
@@ -45,24 +44,22 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     print()
 
     # pylint: disable=literal-comparison
-    if bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and build_options_str is not None:
-        if platform.uname()[2] == 'XP':
-            print("Not pinpointing to exact changeset since autoBisect does not work well in WinXP.")
-        elif testJsShellOrXpcshell(jsEngine) != "xpcshell":
-            autobisectCmd = (  # pylint: disable=invalid-name
-                [sys.executable, "-u", "-m", "funfuzz.autobisectjs"] +
-                ["-b", build_options_str] +
-                ["-p", ' '.join(engineFlags + [infilename])] +
-                ["-i"] + itest
-            )
-            print(sps.shellify(autobisectCmd))
-            autoBisectLogFilename = logPrefix + "-autobisect.txt"  # pylint: disable=invalid-name
-            subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
-            print("Done running autobisect. Log: %s" % autoBisectLogFilename)
+    if (bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and
+            build_options_str is not None and testJsShellOrXpcshell(jsEngine) != "xpcshell"):
+        autobisectCmd = (  # pylint: disable=invalid-name
+            [sys.executable, "-u", "-m", "funfuzz.autobisectjs"] +
+            ["-b", build_options_str] +
+            ["-p", ' '.join(engineFlags + [infilename])] +
+            ["-i"] + itest
+        )
+        print(sps.shellify(autobisectCmd))
+        autoBisectLogFilename = logPrefix + "-autobisect.txt"  # pylint: disable=invalid-name
+        subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
+        print("Done running autobisect. Log: %s" % autoBisectLogFilename)
 
-            with open(autoBisectLogFilename, 'r') as f:
-                lines = f.readlines()
-                autoBisectLog = file_manipulation.truncateMid(lines, 50, ["..."])  # pylint: disable=invalid-name
+        with open(autoBisectLogFilename, 'r') as f:
+            lines = f.readlines()
+            autoBisectLog = file_manipulation.truncateMid(lines, 50, ["..."])  # pylint: disable=invalid-name
     else:
         autoBisectLog = []  # pylint: disable=invalid-name
 
