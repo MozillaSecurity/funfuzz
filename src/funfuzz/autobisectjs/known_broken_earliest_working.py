@@ -128,7 +128,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if "--no-wasm" in flags:
         required.append("e9b561d60697")  # m-c 321230 Fx52, 1st w/--no-wasm, see bug 1313180
-    if "--cache-ir-stubs=on" in flags:
+    if "--cache-ir-stubs=on" in flags or "--cache-ir-stubs=off" in flags:
         required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
     if "--ion-aa=flow-sensitive" in flags or "--ion-aa=flow-insensitive" in flags:
         # m-c 295435 Fx49, 1st w/--ion-aa=[flow-sensitive|flow-insensitive], see bug 1255008
