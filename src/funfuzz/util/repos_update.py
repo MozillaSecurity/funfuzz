@@ -10,7 +10,7 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 from copy import deepcopy
 import logging
@@ -100,7 +100,7 @@ def updateRepos():  # pylint: disable=invalid-name
         for name in sorted(os.listdir(tree)):
             name_path = os.path.join(tree, name)
             if os.path.isdir(name_path) and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
-                print("Updating %s ..." % name)
+                logger.info("Updating %s ...", name)
                 updateRepo(name_path)
 
 
@@ -110,8 +110,8 @@ def main():  # pylint: disable=missing-docstring
         update_funfuzz()
         updateRepos()
     except OSError as ex:
-        print("WARNING: OSError hit:")
-        print(ex)
+        logger.info("WARNING: OSError hit:")
+        logger.info(ex)
     logger.info(time.asctime())
 
 
