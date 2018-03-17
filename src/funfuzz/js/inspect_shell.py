@@ -71,6 +71,7 @@ if sps.isWin:
 def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
     # pylint: disable=missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
+    # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = sps.captureStdout(['file', binary])[0]
     filetype = unsplit_file_type.decode("utf-8", errors="replace").split(':', 1)[1]
     if sps.isWin:

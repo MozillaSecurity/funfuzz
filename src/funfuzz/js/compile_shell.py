@@ -583,7 +583,7 @@ def extractVersions(objdir):  # pylint: disable=inconsistent-return-statements,i
     """Extract the version from js.pc and put it into *.fuzzmanagerconf."""
     jspc_dir = sps.normExpUserPath(os.path.join(objdir, 'js', 'src'))
     jspc_name = os.path.join(jspc_dir, 'js.pc')
-    # Moved to <objdir>/js/src/build/, see bug 1262241, Fx55 rev 2159959522f4
+    # Moved to <objdir>/js/src/build/, see bug 1262241, Fx55 m-c rev 351194:2159959522f4
     jspc_new_dir = os.path.join(jspc_dir, 'build')
     jspc_new_name = os.path.join(jspc_new_dir, 'js.pc')
 
