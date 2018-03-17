@@ -431,20 +431,6 @@ def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def rmDirIfEmpty(eDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Remove directory if empty."""
-    assert os.path.isdir(eDir)
-    if not os.listdir(eDir):
-        os.rmdir(eDir)
-
-
-def rmTreeIfExists(dirTree):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Remove a directory with all sub-directories and files if the directory exists."""
-    if os.path.isdir(dirTree):
-        rmTreeIncludingReadOnly(dirTree)
-    assert not os.path.isdir(dirTree)
-
-
 def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-docstring
     shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
