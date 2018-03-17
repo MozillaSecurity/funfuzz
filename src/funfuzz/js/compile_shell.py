@@ -598,6 +598,36 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     shell.set_cfg_cmd_excl_env(cfg_cmds)
 
 
+# FIXME: Potential problem area: Note that having a non-zero exit code does not mean that the  # pylint: disable=fixme
+# operation did not succeed, for example when compiling a shell. A non-zero exit code
+# can appear even though a shell compiled successfully.
+# except OSError as e:
+#     raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
+# if p.returncode != 0:
+#     oomErrorOutput = stdout if combineStderr else stderr
+#     if (isLinux or isMac) and oomErrorOutput:
+#         if 'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
+#             raise Exception('GCC running out of memory')
+#         elif 'error: unable to execute command: Killed' in oomErrorOutput:
+#             raise Exception('Clang running out of memory')
+#     if not ignoreExitCode:
+#         # Potential problem area: Note that having a non-zero exit code does not mean that the
+#         # operation did not succeed, for example when compiling a shell. A non-zero exit code
+#         # can appear even though a shell compiled successfully.
+#         print("Nonzero exit code from: ")
+#         print("  %s" % shellify(cmd))
+#         print("stdout is:")
+#         print(stdout)
+#         if stderr is not None:
+#             print("stderr is:")
+#             print(stderr)
+#     if stderr and ignoreStderr:
+#         # During configure, there will always be stderr. Sometimes this stderr causes configure to
+#         # stop the entire script, especially on Windows.
+#         print("Return code not zero, and unexpected output on stderr from: ")
+#         print("  %s" % shellify(cmd))
+#         print("%s %s" % (stdout, stderr))
+#         raise Exception('Return code not zero, and unexpected output on stderr')
 def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
     """Compile and copy a binary."""
     try:
@@ -609,6 +639,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
                              stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     except Exception as ex:  # pylint: disable=broad-except
         # This exception message is returned from sps.captureStdout via cmd_list.
+        # FIXME: raise the Exception here after captureStdout removal?  # pylint: disable=fixme
         if (platform.system() == "Linux" or platform.system() == "Darwin") and \
                 ("GCC running out of memory" in repr(ex) or "Clang running out of memory" in repr(ex)):
             # FIXME: Absolute hack to retry after hitting OOM.  # pylint: disable=fixme
