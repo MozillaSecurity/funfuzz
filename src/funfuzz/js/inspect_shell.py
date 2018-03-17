@@ -53,7 +53,12 @@ elif platform.system() == 'Linux':
 ALL_RUN_LIBS = [RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB]
 if sps.isWin:
     ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
-    for icu_ver in (52, 55, 56):
+    win_versions = []
+    # Needs to be updated when the earliest known working revision changes. Currently:
+    # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
+    win_versions.append(59)  # prior version
+    win_versions.append(60)  # m-c 391988 Fx59, 1st w/ ICU 60.1, see bug 1405993
+    for icu_ver in win_versions:
         ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + str(icu_ver) + '.dll')
         ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + str(icu_ver) + '.dll')
         ALL_RUN_LIBS.append(RUN_ICUIN_LIB_EXCL_EXT + str(icu_ver) + '.dll')
