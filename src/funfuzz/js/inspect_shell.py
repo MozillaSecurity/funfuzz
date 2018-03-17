@@ -83,8 +83,6 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
         assert 'MS Windows' in filetype
         return '32' if 'Intel 80386 32-bit' in filetype else '64'
     else:
-        if 'universal binary' in filetype:
-            raise Exception("I don't know how to deal with multiple-architecture binaries")
         if '32-bit' in filetype or 'i386' in filetype:
             assert '64-bit' not in filetype
             return '32'
