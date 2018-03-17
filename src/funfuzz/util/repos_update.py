@@ -81,7 +81,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
         gitenv = deepcopy(os.environ)
         if sps.isWin:
             gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
-        sps.timeSubprocess([GITBINARY, 'pull', '--rebase'], env=gitenv,
+        sps.timeSubprocess([GITBINARY, 'pull'], env=gitenv,
                            ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
     else:
         raise Exception('Unknown repository type: ' + repo_type)
