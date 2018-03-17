@@ -29,13 +29,6 @@ gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
 
-def lastLine(err):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    lines = err.split("\n")
-    if len(lines) >= 2:
-        return lines[-2]
-    return ""
-
-
 def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     lines = []
     for line in e:
