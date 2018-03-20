@@ -9,6 +9,7 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 import os
+import pytest
 
 import funfuzz
 
@@ -17,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
+@pytest.mark.slow
 def test_compile_shell_A_dbg():
     """Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support."""
     assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
@@ -37,6 +39,7 @@ def test_compile_shell_A_dbg():
         os.path.expanduser("~"), "shell-cache", file_name, file_name))
 
 
+@pytest.mark.slow
 def test_compile_shell_B_opt():
     """Test compilation of an opt shell with both profiling and Intl support disabled."""
     # Remember to update the expected binary filename
