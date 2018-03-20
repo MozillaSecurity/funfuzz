@@ -47,8 +47,9 @@ before_script:
     #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
     # Linting-only: (skip pylint with development Python versions)
     - |
-      NIGHTLY_VERSION="3.7"
-      if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "$NIGHTLY_VERSION" ] ; then
+      if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.7" ] ; then
+          python -m pytest --flake8 -p no:pylint -p no:cov setup.py src/
+      elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
           python -m pytest --flake8 -p no:pylint -p no:cov setup.py src/
       else
           python -m pytest --flake8 --pylint -p no:cov setup.py src/
