@@ -58,6 +58,7 @@ before_script:
     - time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
     # Run only tests and coverage, exclude linters
-    - travis_wait 50 unbuffer python -m pytest -p no:flake8 -p no:pylint --cov=`pwd` --cov-report term-missing
+    - travis_wait 50 unbuffer python -m pytest -p "no:flake8,pylint" --cov=`pwd` --cov-report term-missing -m "not slow"
+    - travis_wait 50 unbuffer python -m pytest -p "no:flake8,pylint" --cov=`pwd` --cov-report term-missing -m slow
 after_success:
     - codecov
