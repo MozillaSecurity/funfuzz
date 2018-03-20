@@ -35,7 +35,7 @@ addons:
             - valgrind
 before_install:
     # Get the required version of Python 3 into a temporary directory, but only for Python 2.7 Travis mode for now
-    # This is for compile tests to run successfully
+    # This is for compile-related tests to run successfully
     - |
       if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "2.7" ] ; then
           export PY3_BIN_TARBALL=ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834
@@ -82,19 +82,19 @@ install:
 before_script:
     # To run everything locally in local funfuzz github repository directory:
     #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
-    # Linting-only: (skip pylint with development Python versions)
+    # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
     - |
       if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.7" ] ; then
-          python -m pytest --flake8 -p no:pylint -p no:cov setup.py src/
+          (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
       elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
-          python -m pytest --flake8 -p no:pylint -p no:cov setup.py src/
+          (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
       else
-          python -m pytest --flake8 --pylint -p no:cov setup.py src/
+          (export NO_SLOW="true"; python -m pytest --flake8 --pylint -p no:cov)
       fi
     - mkdir -p ~/trees/
     - time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
-    # Run only tests and coverage, exclude linters
-    - travis_wait 50 unbuffer python -m pytest -p no:flake8 -p no:pylint --cov=`pwd` --cov-report term-missing
+    # -m and -k modes of pytest did not seem to work in Travis, so comprehensively run everything here
+    - travis_wait 50 unbuffer python -m pytest -p no:flake8,pylint --cov=`pwd` --cov-report term-missing
 after_success:
     - codecov
