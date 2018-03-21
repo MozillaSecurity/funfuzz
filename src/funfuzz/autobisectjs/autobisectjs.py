@@ -26,7 +26,6 @@ from . import known_broken_earliest_working as kbew
 from ..js import build_options
 from ..js import compile_shell
 from ..js import inspect_shell
-from ..util import file_manipulation
 from ..util import download_build
 from ..util import hg_helpers
 from ..util.lock_dir import LockDir
@@ -206,8 +205,8 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
         labels[sRepo] = ('good', 'assumed start rev is good')
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
-        currRev = hg_helpers.get_cset_hash_from_bisect_msg(file_manipulation.firstLine(
-            sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
+        currRev = hg_helpers.get_cset_hash_from_bisect_msg(
+            sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0].split('\n')[0])
 
     iterNum = 1
     if options.testInitialRevs:

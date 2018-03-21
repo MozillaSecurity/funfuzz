@@ -10,12 +10,6 @@
 from __future__ import absolute_import, print_function
 
 
-def firstLine(s):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Return the first line of any series of text with / without line breaks."""
-    return s.split('\n')[0]
-
-
 def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
