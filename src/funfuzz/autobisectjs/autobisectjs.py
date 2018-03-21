@@ -64,9 +64,6 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
                       dest='build_options',
                       help='Specify js shell build options, e.g. -b "--enable-debug --32"'
                            "(python -m funfuzz.js.build_options --help)")
-    parser.add_option('-B', '--browser',
-                      dest='browserOptions',
-                      help='Specify browser build options, e.g. -b "-c mozconfig". Deprecated.')
 
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
@@ -117,9 +114,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
                       help='Name of the branch to download. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
-    if not options.browserOptions:
-        options.build_options = build_options.parseShellOptions(options.build_options)
-        options.skipRevs = ' + '.join(kbew.known_broken_ranges(options.build_options))
+    options.build_options = build_options.parseShellOptions(options.build_options)
+    options.skipRevs = ' + '.join(kbew.known_broken_ranges(options.build_options))
 
     options.paramList = [sps.normExpUserPath(x) for x in options.parameters.split(' ') if x]
     # First check that the testcase is present.
@@ -137,20 +133,17 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         if len(args) < 1:
             print_("args are: %s" % args, flush=True)
             parser.error('Not enough arguments.')
-        if not options.browserOptions:
-            for a in args:  # pylint: disable=invalid-name
-                if a.startswith("--flags="):
-                    extraFlags = a[8:].split(' ')  # pylint: disable=invalid-name
+        for a in args:  # pylint: disable=invalid-name
+            if a.startswith("--flags="):
+                extraFlags = a[8:].split(' ')  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
+    elif len(args) >= 1:
+        parser.error('Too many arguments.')
     else:
-        assert not options.browserOptions  # autoBisect doesn't have a built-in way to run the browser
-        if len(args) >= 1:
-            parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
-    if not options.browserOptions:
-        earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
-            options.build_options, options.paramList + extraFlags, options.skipRevs)
+    earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
+        options.build_options, options.paramList + extraFlags, options.skipRevs)
 
     earliestKnown = ''  # pylint: disable=invalid-name
 
@@ -843,7 +836,7 @@ def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):  
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the build. If the build is incomplete, find a working neighbour, then return results."""
     finalIndex, idNum, tboxCacheFolder, skippedNum = getBuildOrNeighbour(
-        (not options.browserOptions), preferredIndex, urls, buildType
+        True, preferredIndex, urls, buildType
     )
 
     if idNum is None:
@@ -883,13 +876,14 @@ def main():
     """Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
-    repoDir = options.build_options.repoDir if options.build_options else options.browserOptions.repoDir
+    if options.build_options:
+        repoDir = options.build_options.repoDir
 
     with LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
                  if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
             bisectUsingTboxBins(options)
-        elif not options.browserOptions:  # Bisect using local builds
+        else:  # Bisect using local builds
             findBlamedCset(options, repoDir, compile_shell.makeTestRev(options))
 
         # Last thing we do while we have a lock.
