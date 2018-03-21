@@ -5,8 +5,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
-
-May be replaced in the future, with a better version that supports both Firefox and SpiderMonkey.
 """
 
 from __future__ import absolute_import, print_function

@@ -67,10 +67,6 @@ def getFreeSpace(folder, mulVar):  # pylint: disable=invalid-name,missing-param-
     return return_value // (1024 ** mulVar)
 
 
-#####################
-#  Shell Functions  #
-#####################
-
 # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
 # pylint: disable=missing-type-doc,too-complex,too-many-arguments,too-many-branches,too-many-statements
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=None,
