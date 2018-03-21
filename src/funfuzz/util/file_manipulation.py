@@ -7,9 +7,13 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import io
+import logging
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 
 def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
@@ -24,8 +28,8 @@ def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,m
             if (line.find("szone_error") != -1 or
                     line.find("malloc_error_break") != -1 or
                     line.find("MallocHelp") != -1):
-                print()
-                print(line)
+                FUNFUZZ_LOG.info("\n")
+                FUNFUZZ_LOG.info(line)
                 found_something = True
                 break  # Don't flood the log with repeated malloc failures
 

@@ -12,6 +12,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from builtins import object
 import io
+import logging
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -40,6 +41,9 @@ if sys.version_info.major == 2:
 else:
     import subprocess
     from pathlib import Path  # pylint: disable=import-error
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
@@ -90,16 +94,16 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     options, args = parser.parse_args()
     if args:
-        print("Warning: bot does not use positional arguments")
+        FUNFUZZ_LOG.info("Warning: bot does not use positional arguments")
 
     # pylint: disable=no-member
     if not options.useTreeherderBuilds and not build_options.DEFAULT_TREES_LOCATION.is_dir():
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
-        print()
-        print("Trees were absent from default location: %s" % build_options.DEFAULT_TREES_LOCATION)
-        print("Using treeherder builds instead...")
-        print()
+        FUNFUZZ_LOG.info()
+        FUNFUZZ_LOG.info("Trees were absent from default location: %s", build_options.DEFAULT_TREES_LOCATION)
+        FUNFUZZ_LOG.info("Using treeherder builds instead...")
+        FUNFUZZ_LOG.info()
         sys.exit("Fuzzing downloaded builds is disabled for now, until tooltool is removed. Exiting...")
 
     if options.build_options is None:
@@ -119,11 +123,12 @@ def main():  # pylint: disable=missing-docstring
     try:
         collector.refresh()
     except RuntimeError:
-        print()
-        print("Unable to find required entries in FuzzManager. Duplicate detection via sigcache will not work...")
+        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("Unable to find required entries in FuzzManager. "
+                         "Duplicate detection via sigcache will not work...")
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
-    print(options.tempDir)
+    FUNFUZZ_LOG.info(options.tempDir)
 
     build_info = ensureBuild(options)
     assert build_info.buildDir.is_dir()
@@ -145,39 +150,42 @@ def main():  # pylint: disable=missing-docstring
 
 def print_machine_info():
     """Log information about the machine."""
-    print("Platform details: %s" % " ".join(platform.uname()))
+    FUNFUZZ_LOG.info("Platform details: %s", " ".join(platform.uname()))
 
-    print("hg info: %s" % subprocess.run(["hg", "-q", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
+    FUNFUZZ_LOG.info("hg info: %s",
+                     subprocess.run(["hg", "-q", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
     if which("gdb"):
         gdb_version = subprocess.run(["gdb", "--version"],
                                      stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-        print("gdb info: %s" % gdb_version.split("\n")[0])
+        FUNFUZZ_LOG.info("gdb info: %s", gdb_version.split("\n")[0])
     if which("git"):
-        print("git info: %s" % subprocess.run(["git", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
-    print("Python version: %s" % sys.version.split()[0])
+        FUNFUZZ_LOG.info("git info: %s",
+                         subprocess.run(["git", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
+    FUNFUZZ_LOG.info("Python version: %s", sys.version.split()[0])
 
-    print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
+    FUNFUZZ_LOG.info("Number of cores visible to OS: %d", multiprocessing.cpu_count())
+
     if sys.version_info.major == 2:
         rootdir_free_space = psutil.disk_usage("/").free / (1024 ** 3)
     else:
         rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
-    print("Free space (GB): %.2f" % rootdir_free_space)
+    FUNFUZZ_LOG.info("Free space (GB): %.2f", rootdir_free_space)
 
     hgrc_path = Path("~/.hg/hgrc").expanduser()
     if hgrc_path.is_file():
-        print("The hgrc of this repository is:")
+        FUNFUZZ_LOG.info("The hgrc of this repository is:")
         with io.open(str(hgrc_path), "r", encoding="utf-8", errors="replace") as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
-            print(line.rstrip())
+            FUNFUZZ_LOG.info(line.rstrip())
 
     try:
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
         # pylint: disable=no-member
-        print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
+        FUNFUZZ_LOG.info("Corefile size (soft limit, hard limit) is: %r", resource.getrlimit(resource.RLIMIT_CORE))
     except ImportError:
-        print("Not checking corefile size as resource module is unavailable")
+        FUNFUZZ_LOG.info("Not checking corefile size as resource module is unavailable")
 
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -218,10 +226,10 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                 ))
 
             manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name
-            print("buildDir is: %s" % bDir)
-            print("buildSrc is: %s" % bSrc)
+            FUNFUZZ_LOG.info("buildDir is: %s", bDir)
+            FUNFUZZ_LOG.info("buildSrc is: %s", bSrc)
     else:
-        print("TBD: We need to switch to the fuzzfetch repository.")
+        FUNFUZZ_LOG.info("TBD: We need to switch to the fuzzfetch repository.")
         sys.exit(0)
 
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)

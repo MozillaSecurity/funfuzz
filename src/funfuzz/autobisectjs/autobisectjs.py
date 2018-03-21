@@ -7,8 +7,9 @@
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
+import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import re
@@ -17,7 +18,6 @@ import sys
 import tempfile
 import time
 
-from backports.print_function import print_
 from lithium.interestingness.utils import rel_or_abs_import
 
 from . import known_broken_earliest_working as kbew
@@ -37,6 +37,9 @@ if sys.version_info.major == 2:
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
+
+AUTOBISECTJS_LOG = logging.getLogger("autobisectjs")
+logging.basicConfig(level=logging.DEBUG)
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -117,7 +120,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     (options, args) = parser.parse_args()
     if options.useTreeherderBinaries:
-        print_("TBD: Bisection using downloaded shells is temporarily not supported.", flush=True)
+        AUTOBISECTJS_LOG.info("TBD: Bisection using downloaded shells is temporarily not supported.")
         sys.exit(0)
 
     options.build_options = build_options.parse_shell_opts(options.build_options)
@@ -127,9 +130,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     # First check that the testcase is present.
     if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
-        print_(flush=True)
-        print_("List of parameters to be passed to the shell is: %s" % " ".join(options.runtime_params), flush=True)
-        print_(flush=True)
+        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("List of parameters to be passed to the shell is: %s", " ".join(options.paramList))
+        AUTOBISECTJS_LOG.info("\n")
         raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
@@ -138,7 +141,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     if options.useInterestingnessTests:
         if len(args) < 1:
-            print_("args are: %s" % args, flush=True)
+            AUTOBISECTJS_LOG.info("args are: %s", args)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
@@ -172,8 +175,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     #     raise Exception("endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration")
 
     if options.parameters == "-e 42":
-        print_("Note: since no parameters were specified, "
-               "we're just ensuring the shell does not crash on startup/shutdown.", flush=True)
+        AUTOBISECTJS_LOG.info("Note: since no parameters were specified, "
+                              "we're just ensuring the shell does not crash on startup/shutdown.")
 
     if options.nameOfTreeherderBranch != "mozilla-inbound" and not options.useTreeherderBinaries:
         raise Exception("Setting the name of branches only works for treeherder shell bisection.")
@@ -183,8 +186,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
 def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
     # pylint: disable=too-many-locals,too-many-statements
-    repo_dir = str(repo_dir)
-    print_("%s | Bisecting on: %s" % (time.asctime(), repo_dir), flush=True)
+    AUTOBISECTJS_LOG.info("%s | Bisecting on: %s", time.asctime(), str(repo_dir))
 
     hgPrefix = ["hg", "-R", repo_dir]  # pylint: disable=invalid-name
 
@@ -193,7 +195,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     realStartRepo = sRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.startRepo)[0]
     # pylint: disable=invalid-name
     realEndRepo = eRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.endRepo)[0]
-    sps.vdump("Bisecting in the range " + sRepo + ":" + eRepo)
+    AUTOBISECTJS_LOG.info("Bisecting in the range %s:%s", sRepo, eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
@@ -247,15 +249,14 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                print_("Skipped 20 times, stopping autobisectjs.", flush=True)
+                AUTOBISECTJS_LOG.info("Skipped 20 times, stopping autobisectjs.")
                 break
-        print_("%s (%s) " % (label[0], label[1]), end=" ", flush=True)
+        AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
 
         if iterNum <= 0:
-            print_("Finished testing the initial boundary revisions...", end=" ", flush=True)
+            AUTOBISECTJS_LOG.info("Finished testing the initial boundary revisions...")
         else:
-            print_("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum),
-                   end=" ", flush=True)
+            AUTOBISECTJS_LOG.info("Bisecting for the n-th round where n is %s and 2^n is %s ...", iterNum, 2**iterNum)
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
@@ -267,23 +268,23 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         iterNum += 1
         endTime = time.time()
         oneRunTime = endTime - startTime
-        print_("This iteration took %.3f seconds to run." % oneRunTime, flush=True)
+        AUTOBISECTJS_LOG.info("This iteration took %.3f seconds to run.", oneRunTime)
 
     if blamedRev is not None:
         checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
-    sps.vdump("Resetting bisect")
+    AUTOBISECTJS_LOG.info("Resetting bisect")
     subprocess.run(hgPrefix + ["bisect", "-U", "-r"], check=True)
 
-    sps.vdump("Resetting working directory")
+    AUTOBISECTJS_LOG.info("Resetting working directory")
     subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
                    check=True,
                    cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
                    timeout=999)
     hg_helpers.destroyPyc(repo_dir)
 
-    print_(time.asctime(), flush=True)
+    AUTOBISECTJS_LOG.info(time.asctime())
 
 
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -373,24 +374,25 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     for p in parents:
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
-            print_(flush=True)
-            print_("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p, flush=True)
+            AUTOBISECTJS_LOG.info("\n")
+            AUTOBISECTJS_LOG.info("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now.", p)
             if not hg_helpers.isAncestor(repo_dir, startRepo, p) and \
                     not hg_helpers.isAncestor(repo_dir, endRepo, p):
-                print_("We did not test rev %s because it is not a descendant of either %s or %s." % (
-                    p, startRepo, endRepo), flush=True)
+                AUTOBISECTJS_LOG.info("We did not test rev %s because it is not a descendant of either %s or %s.",
+                                      p, startRepo, endRepo)
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
             labels[p] = label
-            print_("%s (%s) " % (label[0], label[1]), flush=True)
-            print_("As expected, the parent's label is the opposite of the blamed rev's label.", flush=True)
+            AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
+            AUTOBISECTJS_LOG.info("As expected, the parent's label is the opposite of the blamed rev's label.")
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            print_('Parent rev %s was marked as "skip", so the regression window includes it.' % (p,), flush=True)
+            AUTOBISECTJS_LOG.info('Parent rev %s was marked as "skip", so the regression window includes it.',
+                                  p.rstrip())
         elif labels[p][0] == blamedGoodOrBad:
-            print_("Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad), flush=True)
+            AUTOBISECTJS_LOG.info("Bisect lied to us! Parent rev %s was also %s!", p, blamedGoodOrBad)
             bisectLied = True
         else:
             assert labels[p][0] == {"good": "bad", "bad": "good"}[blamedGoodOrBad]
@@ -399,23 +401,23 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     if bisectLied:
         if missedCommonAncestor:
             ca = hg_helpers.findCommonAncestor(repo_dir, parents[0], parents[1])
-            print_(flush=True)
-            print_("Bisect blamed the merge because our initial range did not include one", flush=True)
-            print_("of the parents.", flush=True)
-            print_("The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca), flush=True)
+            AUTOBISECTJS_LOG.info("\n")
+            AUTOBISECTJS_LOG.info("Bisect blamed the merge because our initial range did not include one "
+                                  "of the parents.")
+            AUTOBISECTJS_LOG.info("The common ancestor of %s and %s is %s.", parents[0], parents[1], ca)
             label = testRev(ca)
-            print_("%s (%s) " % (label[0], label[1]), flush=True)
-            print_("Consider re-running autobisectjs with -s %s -e %s" % (ca, blamedRev), flush=True)
-            print_("in a configuration where earliestWorking is before the common ancestor.", flush=True)
+            AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
+            AUTOBISECTJS_LOG.info("Consider re-running autobisectjs with -s %s -e %s", ca, blamedRev)
+            AUTOBISECTJS_LOG.info("in a configuration where earliestWorking is before the common ancestor.")
         else:
-            print_(flush=True)
-            print_("Most likely, bisect's result was unhelpful because one of the", flush=True)
-            print_('tested revisions was marked as "good" or "bad" for the wrong reason.', flush=True)
-            print_("I don't know which revision was incorrectly marked. Sorry.", flush=True)
+            AUTOBISECTJS_LOG.info("\n")
+            AUTOBISECTJS_LOG.info("Most likely, bisect's result was unhelpful because one of the")
+            AUTOBISECTJS_LOG.info('tested revisions was marked as "good" or "bad" for the wrong reason.')
+            AUTOBISECTJS_LOG.info("I don't know which revision was incorrectly marked. Sorry.")
     else:
-        print_(flush=True)
-        print_("The bug was introduced by a merge (it was not present on either parent).", flush=True)
-        print_("I don't know which patches from each side of the merge contributed to the bug. Sorry.", flush=True)
+        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("The bug was introduced by a merge (it was not present on either parent).")
+        AUTOBISECTJS_LOG.info("I don't know which patches from each side of the merge contributed to the bug. Sorry.")
 
 
 def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-return-doc
@@ -449,20 +451,20 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         repo_dir = options.build_options.repo_dir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
-        print_(flush=True)
-        print_(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
-        print_(flush=True)
+        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info(sanitizeCsetMsg(outputResult, repo_dir))
+        AUTOBISECTJS_LOG.info("\n")
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
-        print_(flush=True)
-        print_(flush=True)
-        print_("autobisectjs shows this is probably related to the following changeset:", flush=True)
-        print_(flush=True)
-        print_(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
-        print_(flush=True)
+        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("autobisectjs shows this is probably related to the following changeset:")
+        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info(sanitizeCsetMsg(outputResult, repo_dir))
+        AUTOBISECTJS_LOG.info("\n")
         blamedGoodOrBad = m.group(1)
         blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
@@ -471,11 +473,11 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         return None, None, None, startRepo, endRepo
 
     # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
-    sps.vdump(outputLines[0])
+    AUTOBISECTJS_LOG.info(outputLines[0])
 
     currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
-        print_("Resetting to default revision...", flush=True)
+        AUTOBISECTJS_LOG.info("Resetting to default revision...")
         subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
         hg_helpers.destroyPyc(repo_dir)
         raise Exception("hg did not suggest a changeset to test!")
@@ -530,7 +532,7 @@ def main():
     with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
                  if options.useTreeherderBinaries else sm_compile_helpers.get_lock_dir_path(Path.home(), repo_dir)):
         if options.useTreeherderBinaries:
-            print_("TBD: We need to switch to the autobisect repository.", flush=True)
+            AUTOBISECTJS_LOG.info("TBD: We need to switch to the autobisect repository.")
             sys.exit(0)
         else:  # Bisect using local builds
             findBlamedCset(options, repo_dir, compile_shell.makeTestRev(options))

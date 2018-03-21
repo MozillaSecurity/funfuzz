@@ -7,10 +7,11 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import io
 import json
+import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys
@@ -32,6 +33,9 @@ if sys.version_info.major == 2:
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -67,7 +71,7 @@ def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-r
         options.repo = Path.home() / "trees" / "mozilla-central"
 
     if options.valgrind and options.use_compare_jit:
-        print("Note: When running compare_jit, the --valgrind option will be ignored")
+        FUNFUZZ_LOG.info("Note: When running compare_jit, the --valgrind option will be ignored")
 
     # kill js shell if it runs this long.
     # jsfunfuzz will quit after half this time if it's not ilooping.
@@ -89,11 +93,11 @@ def showtail(filename):  # pylint: disable=missing-docstring
     cmd = []
     cmd.extend(["tail", "-n", "20"])
     cmd.append(str(filename))
-    print(" ".join(cmd))
-    print()
+    FUNFUZZ_LOG.info(" ".join(cmd))
+    FUNFUZZ_LOG.info("\n")
     subprocess.run(cmd, check=True)
-    print()
-    print()
+    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("\n")
 
 
 def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-param-doc
@@ -143,7 +147,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
     iteration = 0
     while True:
         if targetTime and time.time() > startTime + targetTime:
-            print("Out of time!")
+            FUNFUZZ_LOG.info("Out of time!")
             fuzzjs.unlink()
             if not os.listdir(str(wtmpDir)):
                 wtmpDir.rmdir()
@@ -226,13 +230,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 else:
                     quality = 10
 
-                print("Submitting %s (quality=%s) at %s" % (reduced_log, quality, time.asctime()))
+                FUNFUZZ_LOG.info("Submitting %s (quality=%s) at %s", reduced_log, quality, time.asctime())
 
                 metadata = {}
                 if autoBisectLog:
                     metadata = {"autoBisectLog": "".join(autoBisectLog)}
                 collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
-                print("Submitted %s" % reduced_log)
+                FUNFUZZ_LOG.info("Submitted %s", reduced_log)
 
         else:
             are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags

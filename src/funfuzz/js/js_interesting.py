@@ -7,10 +7,11 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from builtins import object
 import io
+import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
@@ -35,6 +36,9 @@ if sys.version_info.major == 2:
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -152,7 +156,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
         # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
         if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
-            print("Note: No core file found on Linux - falling back to run via gdb")
+            FUNFUZZ_LOG.info("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
                          encoding="utf-8", errors="replace") as f:
@@ -187,10 +191,10 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 create_collector.printMatchingSignature(match)
                 lev = JS_FINE
         except UnicodeDecodeError:  # Sometimes FM throws due to unicode issues
-            print("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
+            FUNFUZZ_LOG.info("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
             match = False
 
-        print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
+        FUNFUZZ_LOG.info("%s | %s", logPrefix, summaryString(issues, lev, runinfo.elapsedtime))
 
         if lev != JS_FINE:
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
@@ -367,15 +371,15 @@ def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
     cwd_prefix = Path.cwd() / "m"
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)  # pylint: disable=no-member
-    print(res.lev)
+    FUNFUZZ_LOG.info(res.lev)
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
             testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
-            print("Submitting %s" % testcaseFilename)
+            FUNFUZZ_LOG.info("Submitting %s", testcaseFilename)
             quality = 0
             options.collector.submit(res.crashInfo, str(testcaseFilename), quality)  # pylint: disable=no-member
         else:
-            print("Not submitting (not interesting)")
+            FUNFUZZ_LOG.info("Not submitting (not interesting)")
 
 
 if __name__ == "__main__":

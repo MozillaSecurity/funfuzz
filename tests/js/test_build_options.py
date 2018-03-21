@@ -6,7 +6,7 @@
 
 """Test the build_options.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import logging
 import sys

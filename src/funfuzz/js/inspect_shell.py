@@ -7,9 +7,10 @@
 """Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import json
+import logging
 import os
 import platform
 import sys
@@ -17,13 +18,14 @@ import sys
 from lithium.interestingness.utils import env_with_path
 from shellescape import quote
 
-from ..util import subprocesses as sps
-
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
     import subprocess
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
@@ -146,7 +148,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
+    FUNFUZZ_LOG.info("The testing command is: %s", " ".join(quote(str(x)) for x in test_cmd))
     test_cmd_result = subprocess.run(
         test_cmd,
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
@@ -155,7 +157,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
         stdout=subprocess.PIPE,
         timeout=999)
     out, return_code = test_cmd_result.stdout.decode("utf-8", errors="replace"), test_cmd_result.returncode
-    sps.vdump("The exit code is: " + str(return_code))
+    FUNFUZZ_LOG.info("The exit code is: %s", return_code)
     return out, return_code
 
 

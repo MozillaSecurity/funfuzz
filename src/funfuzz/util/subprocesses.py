@@ -7,7 +7,7 @@
 """Miscellaneous helper functions.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import errno
 import os
@@ -57,14 +57,9 @@ def handle_rm_readonly(func, path, exc):
         OSError: Raised if the read-only files are unable to be handled
     """
     assert platform.system() == "Windows"
+
     if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
         os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
         func(path)
     else:
         raise OSError("Unable to handle read-only files.")
-
-
-def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
-    """Append the word "DEBUG" to any verbose output."""
-    if verbose:
-        print("DEBUG - %s" % inp)

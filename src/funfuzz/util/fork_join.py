@@ -7,9 +7,10 @@
 """Functions dealing with multiple processes.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import io
+import logging
 import multiprocessing
 import sys
 
@@ -20,21 +21,24 @@ if sys.version_info.major == 2:
 else:
     from pathlib import Path  # pylint: disable=import-error
 
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
+
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
 def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring
     def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
-        print("==== %s ====" % fn)
-        print()
+        FUNFUZZ_LOG.info("==== %s ====", fn)
+        FUNFUZZ_LOG.info("\n")
         with io.open(str(fn), "r", encoding="utf-8", errors="replace") as f:
             for line in f:
-                print(line.rstrip())
-        print()
+                FUNFUZZ_LOG.info(line.rstrip())
+        FUNFUZZ_LOG.info("\n")
 
     # Fork a bunch of processes
-    print("Forking %d children..." % numProcesses)
+    FUNFUZZ_LOG.info("Forking %d children...", numProcesses)
     ps = []  # pylint: disable=invalid-name
     for i in range(numProcesses):
         p = multiprocessing.Process(  # pylint: disable=invalid-name
@@ -45,13 +49,13 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
     # Wait for them all to finish, and splat their outputs
     for i in range(numProcesses):
         p = ps[i]  # pylint: disable=invalid-name
-        print("=== Waiting for child #%d (%d) to finish... ===" % (i, p.pid))
+        FUNFUZZ_LOG.info("=== Waiting for child #%d (%d) to finish... ===", i, p.pid)
         p.join()
-        print("=== Child process #%d exited with code %d ===" % (i, p.exitcode))
-        print()
+        FUNFUZZ_LOG.info("=== Child process #%d exited with code %d ===", i, p.exitcode)
+        FUNFUZZ_LOG.info("\n")
         showFile(log_name(logDir, i, "out"))
         showFile(log_name(logDir, i, "err"))
-        print()
+        FUNFUZZ_LOG.info("\n")
 
 
 # Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)
@@ -85,13 +89,13 @@ def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=inval
 
 # def test_forkJoin_inner(adj, noun, forkjoin_id):
 #     import time
-#     print("%s %s" % (adj, noun))
-#     print(forkjoin_id)
+#     FUNFUZZ_LOG.info("%s %s", adj, noun)
+#     FUNFUZZ_LOG.info(forkjoin_id)
 #     if forkjoin_id == 5:
 #         time.sleep(1)
 #         raise NameError()
 
 
 # if __name__ == "__main__":
-#     print("test_forkJoin():")
+#     FUNFUZZ_LOG.info("test_forkJoin():")
 #     test_forkJoin()

@@ -7,12 +7,13 @@
 """Allows specification of build configuration parameters.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import argparse
 from builtins import object
 import hashlib
 import io
+import logging
 import platform
 import random
 import sys
@@ -25,6 +26,9 @@ if sys.version_info.major == 2:
     from pathlib2 import Path
 else:
     from pathlib import Path  # pylint: disable=import-error
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 DEFAULT_TREES_LOCATION = Path.home() / "trees"
 
@@ -186,7 +190,7 @@ def parse_shell_opts(args):  # pylint: disable=too-many-branches
         build_options.build_options_str = args
         valid = areArgsValid(build_options)
         if not valid[0]:
-            print("WARNING: This set of build options is not tested well because: %s" % valid[1])
+            FUNFUZZ_LOG.info("WARNING: This set of build options is not tested well because: %s", valid[1])
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if DEFAULT_TREES_LOCATION.is_dir():  # pylint: disable=no-member
@@ -369,7 +373,7 @@ def get_random_valid_repo(tree):
 
 
 def main():  # pylint: disable=missing-docstring
-    print("Here are some sample random build configurations that can be generated:")
+    FUNFUZZ_LOG.info("Here are some sample random build configurations that can be generated:")
     parser, randomizer = addParserOptions()
     build_options = parser.parse_args()
 
@@ -378,11 +382,11 @@ def main():  # pylint: disable=missing-docstring
 
     for _ in range(30):
         build_options = generateRandomConfigurations(parser, randomizer)
-        print(build_options.build_options_str)
+        FUNFUZZ_LOG.info(build_options.build_options_str)
 
-    print()
-    print("Running this file directly doesn't do anything, but here's our subparser help:")
-    print()
+    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("Running this file directly doesn't do anything, but here's our subparser help:")
+    FUNFUZZ_LOG.info("\n")
     parse_shell_opts("--help")
 
 

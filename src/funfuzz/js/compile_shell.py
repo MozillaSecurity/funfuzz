@@ -7,11 +7,12 @@
 """Compiles SpiderMonkey shells on different platforms using various specified configuration parameters.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from builtins import object
 import copy
 import io
+import logging
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -39,6 +40,9 @@ if sys.version_info.major == 2:
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
@@ -105,8 +109,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         try:
             return cls.run(args)
         except CompiledShellError as ex:
-            print(repr(ex))
-            # log.error(ex)
+            FUNFUZZ_LOG.error(repr(ex))
             return 1
 
     @staticmethod
@@ -148,7 +151,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
                 shell = CompiledShell(options.build_opts, local_orig_hg_hash)
 
             obtainShell(shell, updateToRev=options.revision)
-            print(shell.get_shell_cache_js_bin_path())
+            FUNFUZZ_LOG.info(shell.get_shell_cache_js_bin_path())
 
         return 0
 
@@ -336,7 +339,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
 
 def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
     """Configures, compiles and copies a js shell according to required parameters."""
-    print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
+    FUNFUZZ_LOG.info("Compiling...")  # Output *with* a trailing newline to avoid breaking other stuff
     js_objdir_path = shell.get_shell_cache_dir() / "objdir-js"
     js_objdir_path.mkdir()
     shell.set_js_objdir(js_objdir_path)
@@ -350,13 +353,13 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
         except subprocess.CalledProcessError as ex:
             configure_try_count += 1
             if configure_try_count > 3:
-                print("Configuration of the js binary failed 3 times.")
+                FUNFUZZ_LOG.info("Configuration of the js binary failed 3 times.")
                 raise
             # This exception message is returned from sps.captureStdout via cfgBin.
-            # No idea why this is platform.system() == "Linux" as well..
+            # No idea why this is applies to Linux as well..
             if platform.system() == "Linux" or (platform.system() == "Windows" and
                                                 "Windows conftest.exe configuration permission" in repr(ex)):
-                print("Trying once more...")
+                FUNFUZZ_LOG.info("Trying once more...")
                 continue
     try:
         sm_compile(shell)
@@ -518,15 +521,15 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                 cfg_cmds[counter] = cfg_cmds[counter].replace(os.sep, "//")
             counter = counter + 1
 
-    # Print whatever we added to the environment
+    # Dump whatever we added to the environment
     env_vars = []
     for env_var in set(cfg_env.keys()) - set(orig_cfg_env.keys()):
         str_to_be_appended = str(env_var + '="' + cfg_env[str(env_var)] +
                                  '"' if " " in cfg_env[str(env_var)] else env_var +
                                  "=" + cfg_env[str(env_var)])
         env_vars.append(str_to_be_appended)
-    sps.vdump("Command to be run is: " + " ".join(quote(str(x)) for x in env_vars) + " " +
-              " ".join(quote(str(x)) for x in cfg_cmds))
+    FUNFUZZ_LOG.info("Command to be run is: %s %s",
+                     " ".join(quote(str(x)) for x in env_vars), " ".join(quote(str(x)) for x in cfg_cmds))
 
     assert shell.get_js_objdir().is_dir()
 
@@ -598,7 +601,7 @@ def sm_compile(shell):
         if ((platform.system() == "Linux" or platform.system() == "Darwin") and
                 ("internal compiler error: Killed (program cc1plus)" in out or  # GCC running out of memory
                  "error: unable to execute command: Killed" in out)):  # Clang running out of memory
-            print("Trying once more due to the compiler running out of memory...")
+            FUNFUZZ_LOG.info("Trying once more due to the compiler running out of memory...")
             out = subprocess.run(cmd_list,
                                  cwd=str(shell.get_js_objdir()),
                                  env=shell.get_env_full(),
@@ -606,9 +609,9 @@ def sm_compile(shell):
                                  stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if shell.get_shell_compiled_path().is_file():
-            print("A shell was compiled even though there was a non-zero exit code. Continuing...")
+            FUNFUZZ_LOG.info("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
-            print("%s did not result in a js shell:" % MAKE_BINARY.decode("utf-8", errors="replace"))
+            FUNFUZZ_LOG.info("%s did not result in a js shell:", MAKE_BINARY.decode("utf-8", errors="replace"))
             with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w",
                          encoding="utf-8", errors="replace") as f:
                 f.write("The first compilation of %s rev %s failed with the following output:\n" %
@@ -622,14 +625,14 @@ def sm_compile(shell):
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         shell = CompiledShell(options.build_options, rev)
-        print("Rev %s:" % rev, end=" ")
+        FUNFUZZ_LOG.info("Rev %s:", rev)
 
         try:
             obtainShell(shell, updateToRev=rev)
         except (subprocess.CalledProcessError, OSError):
             return (options.compilationFailedLabel, "compilation failed")
 
-        print("Testing...", end=" ")
+        FUNFUZZ_LOG.info("Testing...")
         return options.testAndLabel(shell.get_shell_cache_js_bin_path(), rev)
     return testRev
 
@@ -641,9 +644,9 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     cached_no_shell = shell.get_shell_cache_js_bin_path().with_suffix(".busted")
 
     if shell.get_shell_cache_js_bin_path().is_file():
-        # Don't remove the comma at the end of this line, and thus remove the newline printed.
+        # Don't remove the comma at the end of this line, and thus remove the newline that is output.
         # We would break JSBugMon.
-        print("Found cached shell...")
+        FUNFUZZ_LOG.info("Found cached shell...")
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
         if platform.system() == "Windows":
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
@@ -651,7 +654,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     elif cached_no_shell.is_file():
         raise Exception("Found a cached shell that failed compilation...")
     elif shell.get_shell_cache_dir().is_dir():
-        print("Found a cache dir without a successful/failed shell...")
+        FUNFUZZ_LOG.info("Found a cache dir without a successful/failed shell...")
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
 
     shell.get_shell_cache_dir().mkdir()
@@ -667,7 +670,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
         if s3cache_obj.downloadFile(str(shell.get_shell_name_without_ext() + ".tar.bz2"),
                                     str(shell.get_s3_tar_with_ext_full_path())):
-            print("Extracting shell...")
+            FUNFUZZ_LOG.info("Extracting shell...")
             with tarfile.open(str(shell.get_s3_tar_with_ext_full_path()), "r") as f:
                 f.extractall(str(shell.get_shell_cache_dir()))
             # Delete tarball after downloading from S3
@@ -678,10 +681,8 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
     try:
         if updateToRev:
-            # Print *with* a trailing newline to avoid breaking other stuff
-            print("Updating to rev %s in the %s repository..." % (
-                updateToRev,
-                str(shell.build_opts.repo_dir)))
+            # Output *with* a trailing newline to avoid breaking other stuff
+            FUNFUZZ_LOG.info("Updating to rev %s in the %s repository...", updateToRev, str(shell.build_opts.repo_dir))
             subprocess.run(["hg", "-R", str(shell.build_opts.repo_dir),
                             "update", "-C", "-r", updateToRev],
                            check=True,

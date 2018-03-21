@@ -8,9 +8,13 @@
 released.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from builtins import object
+import logging
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 
 class LockDir(object):
@@ -31,7 +35,7 @@ class LockDir(object):
         try:
             self.directory.mkdir()
         except OSError:
-            print("Lock directory exists: %s" % self.directory)
+            FUNFUZZ_LOG.info("Lock directory exists: %s", self.directory)
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -14,8 +14,9 @@ Config-ish bits should move to bot, OR move into a config file,
 OR this file should subprocess-run ITSELF rather than using a while loop.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
+import logging
 import os
 import sys
 import time
@@ -25,6 +26,9 @@ if sys.version_info.major == 2 and os.name == "posix":
 else:
     import subprocess
 
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
+
 
 def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-type-doc
     """Call a sequence of commands in a loop.
@@ -32,16 +36,16 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
     i = 0
     while True:
         i += 1
-        print("localLoop #%d!" % i)
+        FUNFUZZ_LOG.info("localLoop #%d!", i)
         for cmd in cmd_seq:
             try:
                 subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
-                print("Something went wrong when calling: %r" % (cmd,))
-                print("%r" % (ex,))
+                FUNFUZZ_LOG.info("Something went wrong when calling: %r", cmd.rstrip())
+                FUNFUZZ_LOG.info("%r", ex)
                 import traceback
-                print(traceback.format_exc())
-                print("Waiting %d seconds..." % wait_time)
+                FUNFUZZ_LOG.info(traceback.format_exc())
+                FUNFUZZ_LOG.info("Waiting %d seconds...", wait_time)
                 time.sleep(wait_time)
                 break
 

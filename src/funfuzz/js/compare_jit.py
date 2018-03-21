@@ -7,9 +7,10 @@
 """Test comparing the output of SpiderMonkey using various flags (usually JIT-related).
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import io
+import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys
@@ -33,6 +34,9 @@ else:
     import subprocess
     import tempfile
 
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
+
 gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
@@ -49,7 +53,7 @@ def ignore_some_stderr(err_inp):
     lines = []
     for line in err_inp:
         if line.endswith("malloc: enabling scribbling to detect mods to free blocks"):
-            # MallocScribble prints a line that includes the process's pid.
+            # MallocScribble outputs a line that includes the process's pid.
             # We don't want to include that pid in the comparison!
             pass
         elif "Bailed out of parallel operation" in line:
@@ -81,7 +85,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
-            print("Retesting %s after running Lithium:" % infilename)
+            FUNFUZZ_LOG.info("Retesting %s after running Lithium:", infilename)
             finaldir_name = (logPrefix.parent / (logPrefix.stem + "-final"))
             retest_cl = compareLevel(jsEngine, flags, infilename, finaldir_name, options, True, False)
             if retest_cl[0] != js_interesting.JS_FINE:
@@ -91,7 +95,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
                 quality = 6
         else:
             quality = 10
-        print("compare_jit: Uploading %s with quality %s" % (infilename, quality))
+        FUNFUZZ_LOG.info("compare_jit: Uploading %s with quality %s", infilename, quality)
 
         metadata = {}
         if autoBisectLog:
@@ -133,27 +137,27 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
         if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, "[[script] scriptArgs*]") or (
                 anyLineContains(r.err, "[scriptfile] [scriptarg...]"))):
-            print("Got usage error from:")
-            print("  %s" % " ".join(quote(str(x)) for x in command))
+            FUNFUZZ_LOG.info("Got usage error from:")
+            FUNFUZZ_LOG.info("  %s", " ".join(quote(str(x)) for x in command))
             assert i
             js_interesting.deleteLogs(prefix)
         elif r.lev > js_interesting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
-            print("%s | %s" % (str(infilename),
-                               js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
-                                                            r.lev,
-                                                            r.runinfo.elapsedtime)))
+            FUNFUZZ_LOG.info("%s | %s", str(infilename),
+                             js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
+                                                          r.lev,
+                                                          r.runinfo.elapsedtime))
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
             with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                 f.write("\n".join(r.issues + [" ".join(quote(str(x)) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
-            print("  %s" % " ".join(quote(str(x)) for x in command))
+            FUNFUZZ_LOG.info("  %s", " ".join(quote(str(x)) for x in command))
             return (r.lev, r.crashInfo)
         elif r.lev != js_interesting.JS_FINE or r.return_code != 0:
-            print("%s | %s" % (str(infilename), js_interesting.summaryString(
+            FUNFUZZ_LOG.info("%s | %s", str(infilename), js_interesting.summaryString(
                 r.issues + ["compare_jit is not comparing output, because the shell exited strangely"],
-                r.lev, r.runinfo.elapsedtime)))
-            print("  %s" % " ".join(quote(str(x)) for x in command))
+                r.lev, r.runinfo.elapsedtime))
+            FUNFUZZ_LOG.info("  %s", " ".join(quote(str(x)) for x in command))
             js_interesting.deleteLogs(prefix)
             if not i:
                 return (js_interesting.JS_FINE, None)
@@ -161,8 +165,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
             message = "compare_jit is not comparing output: OOM"
-            print("%s | %s" % (str(infilename), js_interesting.summaryString(
-                r.issues + [message], r.lev, r.runinfo.elapsedtime)))
+            FUNFUZZ_LOG.info("%s | %s", str(infilename), js_interesting.summaryString(
+                r.issues + [message], r.lev, r.runinfo.elapsedtime))
             js_interesting.deleteLogs(prefix)
             if not i:
                 return (js_interesting.JS_FINE, None)
@@ -200,20 +204,20 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
                 with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                     f.write(rerunCommand + "\n\n" + summary)
-                print("%s | %s" % (str(infilename), js_interesting.summaryString(
-                    issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))
+                FUNFUZZ_LOG.info("%s | %s", str(infilename), js_interesting.summaryString(
+                    issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime))
                 if quickMode:
-                    print(rerunCommand)
+                    FUNFUZZ_LOG.info(rerunCommand)
                 if showDetailedDiffs:
-                    print(summary)
-                    print()
+                    FUNFUZZ_LOG.info(summary)
+                    FUNFUZZ_LOG.info("\n")
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
                 pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)
                 crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return (js_interesting.JS_OVERALL_MISMATCH, crashInfo)
             else:
-                # print "compare_jit: match"
+                # output "compare_jit: match"
                 js_interesting.deleteLogs(prefix)
 
     # All matched :)
@@ -313,7 +317,7 @@ def interesting(_args, cwd_prefix):
 
 def main():
     options = parseOptions(sys.argv[1:])
-    print(compareLevel(
+    FUNFUZZ_LOG.info(compareLevel(
         options.jsengine, options.flags, options.infilename,  # pylint: disable=no-member
         Path(tempfile.mkdtemp("compare_jitmain")), options, True, False)[0])
 

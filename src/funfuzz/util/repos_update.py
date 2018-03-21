@@ -10,7 +10,7 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from copy import deepcopy
 import logging
@@ -27,9 +27,8 @@ else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
 
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 # Add your repository here.
 REPOS = ["gecko-dev", "octo"] + \
@@ -61,13 +60,13 @@ def time_cmd(cmd, cwd=None, env=None, timeout=None):
     if not env:
         env = os.environ.copy()
 
-    logger.info("\nRunning `%s` now..\n", " ".join(cmd))
+    FUNFUZZ_LOG.info("\nRunning `%s` now..\n", " ".join(cmd))
     cmd_start = time.time()
 
     cmd = subprocess.run(cmd, cwd=cwd, env=env, timeout=timeout)
 
     cmd_end = time.time()
-    logger.info("\n`%s` took %.3f seconds.\n", subprocess.list2cmdline(cmd.args), cmd_end - cmd_start)
+    FUNFUZZ_LOG.info("\n`%s` took %.3f seconds.\n", subprocess.list2cmdline(cmd.args), cmd_end - cmd_start)
 
 
 def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
@@ -90,19 +89,19 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
     if repo_type == "hg":
         hg_pull_cmd = ["hg", "--time", "pull", "-u"]
-        logger.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
+        FUNFUZZ_LOG.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
         out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=str(repo), stderr=subprocess.PIPE)
-        logger.info('"%s" had the above output and took - %s',
-                    subprocess.list2cmdline(out_hg_pull.args),
-                    out_hg_pull.stderr)
+        FUNFUZZ_LOG.info('"%s" had the above output and took - %s',
+                         subprocess.list2cmdline(out_hg_pull.args),
+                         out_hg_pull.stderr)
 
         hg_log_default_cmd = ["hg", "--time", "log", "-r", "default"]
-        logger.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
+        FUNFUZZ_LOG.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
         out_hg_log_default = subprocess.run(hg_log_default_cmd, check=True, cwd=str(repo),
                                             stderr=subprocess.PIPE)
-        logger.info('"%s" had the above output and took - %s',
-                    subprocess.list2cmdline(out_hg_log_default.args),
-                    out_hg_log_default.stderr)
+        FUNFUZZ_LOG.info('"%s" had the above output and took - %s',
+                         subprocess.list2cmdline(out_hg_log_default.args),
+                         out_hg_log_default.stderr)
     elif repo_type == "git":
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
@@ -126,18 +125,18 @@ def updateRepos():  # pylint: disable=invalid-name
         for name in sorted(os.listdir(str(tree))):
             name_path = Path(tree) / name
             if name_path.is_dir() and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
-                logger.info("Updating %s ...", name)
+                FUNFUZZ_LOG.info("Updating %s ...", name)
                 updateRepo(name_path)
 
 
 def main():  # pylint: disable=missing-docstring
-    logger.info(time.asctime())
+    FUNFUZZ_LOG.info(time.asctime())
     try:
         updateRepos()
     except OSError as ex:
-        logger.info("WARNING: OSError hit:")
-        logger.info(ex)
-    logger.info(time.asctime())
+        FUNFUZZ_LOG.info("WARNING: OSError hit:")
+        FUNFUZZ_LOG.info(ex)
+    FUNFUZZ_LOG.info(time.asctime())
 
 
 if __name__ == "__main__":

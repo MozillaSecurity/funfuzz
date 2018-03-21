@@ -7,7 +7,7 @@
 """Allows detection of support for various command-line flags.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import multiprocessing
 import random

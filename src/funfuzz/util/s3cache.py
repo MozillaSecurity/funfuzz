@@ -7,9 +7,10 @@
 """Functions here interact with Amazon EC2 using boto.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from builtins import object
+import logging
 import os
 import platform
 import shutil
@@ -18,6 +19,9 @@ import boto.exception
 from boto.s3.connection import Key
 from boto.s3.connection import S3Connection
 import boto.utils
+
+FUNFUZZ_LOG = logging.getLogger("funfuzz")
+logging.basicConfig(level=logging.DEBUG)
 
 
 def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
@@ -47,10 +51,11 @@ class S3Cache(object):  # pylint: disable=missing-docstring
             self.bucket = conn.get_bucket(self.bucket_name)
             return True
         except boto.provider.ProfileNotFoundError:
-            print('Unable to connect via boto using profile name "%s" in ~/.boto' % EC2_PROFILE)
+            FUNFUZZ_LOG.info('Unable to connect via boto using profile name "%s" in ~/.boto', EC2_PROFILE)
             return False
         except boto.exception.S3ResponseError:
-            print('Unable to connect to the following bucket "%s", please check your credentials.' % self.bucket_name)
+            FUNFUZZ_LOG.info('Unable to connect to the following bucket "%s", please check your credentials.',
+                             self.bucket_name)
             return False
 
     def downloadFile(self, origin, dest):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -59,14 +64,14 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         key = self.bucket.get_key(origin)
         if key is not None:
             key.get_contents_to_filename(dest)
-            print("Finished downloading.")
+            FUNFUZZ_LOG.info("Finished downloading.")
             return True
         return False
 
     def compressAndUploadDirTarball(self, directory, tarball_path):  # pylint: disable=invalid-name,missing-param-doc
         # pylint: disable=missing-type-doc
         """Compress a directory into a bz2 tarball and upload it to S3."""
-        print("Creating archive...")
+        FUNFUZZ_LOG.info("Creating archive...")
         shutil.make_archive(directory, "bztar", directory)
         self.uploadFileToS3(tarball_path)
 
@@ -75,7 +80,7 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         # Root folder of the S3 bucket
         destDir = ""  # pylint: disable=invalid-name
         destpath = os.path.join(destDir, os.path.basename(filename))
-        print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
+        FUNFUZZ_LOG.info("Uploading %s to Amazon S3 bucket %s", filename, self.bucket_name)
 
         k = Key(self.bucket)
         k.key = destpath
@@ -84,9 +89,9 @@ class S3Cache(object):  # pylint: disable=missing-docstring
     def uploadStrToS3(self, destDir, filename, contents):  # pylint: disable=invalid-name,missing-param-doc
         # pylint: disable=missing-type-doc
         """Upload a string to an S3 file."""
-        print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
+        FUNFUZZ_LOG.info("Uploading %s to Amazon S3 bucket %s", filename, self.bucket_name)
 
         k2 = Key(self.bucket)  # pylint: disable=invalid-name
         k2.key = os.path.join(destDir, filename)
         k2.set_contents_from_string(contents, reduced_redundancy=True)
-        print()  # This newline is needed to get the path of the compiled binary printed on a newline.
+        FUNFUZZ_LOG.info("\n")  # This newline is needed to get the path of the compiled binary, output on a newline.

@@ -7,7 +7,7 @@
 """Downloads coverage builds and other coverage utilities, such as grcov.
 """
 
-from __future__ import absolute_import, division, unicode_literals  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import io
 import logging
