@@ -23,7 +23,6 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 from .js import build_options
 from .js import compile_shell
 from .js import loop
-from .util import download_build
 from .util import hg_helpers
 from .util import subprocesses as sps
 from .util import fork_join
@@ -203,21 +202,8 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             print("buildDir is: %s" % bDir)
             print("buildSrc is: %s" % bSrc)
     else:
-        # Treeherder js shells
-        # Download from Treeherder and call it 'build'
-        # pylint: disable=fixme
-        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-        # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
-        bDir = 'build'  # pylint: disable=invalid-name
-        bType = download_build.defaultBuildType(options.repoName, None, True)  # pylint: disable=invalid-name
-        # pylint: disable=invalid-name
-        bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=True, wantTests=False)
-        bRev = ''  # pylint: disable=invalid-name
-
-        # These two lines are only used for treeherder js shells:
-        shell = os.path.join(bDir, "dist", "js.exe" if sps.isWin else "js")
-        # pylint: disable=invalid-name
-        manyTimedRunArgs = ["--random-flags", str(JS_SHELL_DEFAULT_TIMEOUT), "mozilla-central", shell]
+        print("TBD: We need to switch to the fuzzfetch repository.")
+        sys.exit(0)
 
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)
 

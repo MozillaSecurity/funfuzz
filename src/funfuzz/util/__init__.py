@@ -11,7 +11,6 @@ from __future__ import absolute_import
 from . import crashesat
 from . import create_collector
 from . import detect_malloc_errors
-from . import download_build
 from . import file_manipulation
 from . import fork_join
 from . import hg_helpers
