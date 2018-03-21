@@ -75,18 +75,3 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
                 lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
                 return (LITH_PLEASE_CONTINUE, lithiumHint)
         return (LITH_BUSTED, None)
-
-
-def ddsize(fn):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Count the number of chars between DDBEGIN and DDEND in a file."""
-    count = 0
-    with open(fn) as f:
-        for line in f:
-            if "DDBEGIN" in line:
-                break
-        for line in f:
-            if "DDEND" in line:
-                break
-            count += len(line)
-    return count

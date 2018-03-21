@@ -203,7 +203,6 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             else:
                 quality = 10
 
-            # ddsize = lithium_helpers.ddsize(filenameToReduce)
             print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, time.asctime()))
 
             metadata = {}
