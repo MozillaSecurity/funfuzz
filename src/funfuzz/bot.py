@@ -165,7 +165,7 @@ def printMachineInfo():  # pylint: disable=invalid-name
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     if options.existingBuildDir:
-        # Pre-downloaded treeherder builds (browser only for now)
+        # Pre-downloaded treeherder builds
         bDir = options.existingBuildDir  # pylint: disable=invalid-name
         bType = 'local-build'  # pylint: disable=invalid-name
         bSrc = bDir  # pylint: disable=invalid-name
@@ -204,7 +204,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             print("buildDir is: %s" % bDir)
             print("buildSrc is: %s" % bSrc)
     else:
-        # Treeherder js shells and browser
+        # Treeherder js shells
         # Download from Treeherder and call it 'build'
         # pylint: disable=fixme
         # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
