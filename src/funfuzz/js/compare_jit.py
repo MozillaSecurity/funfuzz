@@ -19,7 +19,6 @@ from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=imp
 from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import js_interesting
-from . import pinpoint
 from . import shell_flags
 from ..util import create_collector
 from ..util import lithium_helpers
@@ -57,7 +56,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
     if lev != js_interesting.JS_FINE:
         itest = [__file__, "--flags=" + ' '.join(flags),
                  "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
-        (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(  # pylint: disable=invalid-name
+        (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
             print("Retesting %s after running Lithium:" % infilename)
