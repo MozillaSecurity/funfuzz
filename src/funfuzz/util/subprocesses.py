@@ -463,28 +463,6 @@ def shellify(cmd):  # pylint: disable=missing-param-doc,missing-return-doc,missi
     return ' '.join(ssc)
 
 
-def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                   cwd=None, env=None, vb=False):
-    # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc,too-many-arguments
-    """Calculate how long a captureStdout command takes and prints it.
-
-    Return the stdout and return value that captureStdout passes on.
-    """
-    env = env or os.environ
-    cwd = cwd or (
-        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
-    print("Running `%s` now.." % shellify(command))
-    startTime = time.time()
-    stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
-                                      combineStderr=combineStderr, ignoreExitCode=ignoreExitCode,
-                                      currWorkingDir=cwd, env=env, verbosity=vb)
-    endTime = time.time()
-    print("`%s` took %.3f seconds." % (shellify(command), endTime - startTime))
-    print()
-    return stdOutput, retVal
-
-
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word 'DEBUG' to any verbose output."""
     if verbose:
