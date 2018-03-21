@@ -143,7 +143,8 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
                                          # The 1-line offset is added here.
                                          .replace('SPLICE DDBEGIN', 'SPLICE DDBEGIN\n'))
 
-        file_manipulation.writeLinesToFile(intendedLines, infilename)
+        with open(infilename, "w") as f:
+            f.writelines(intendedLines)
         print()
         print("Running 1 instance of 2-line reduction after moving count=X to its own line...")
         print()

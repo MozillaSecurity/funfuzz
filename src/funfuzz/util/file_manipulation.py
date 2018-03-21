@@ -55,9 +55,3 @@ def truncateMid(a, limit_each_side, insert_if_truncated):  # pylint: disable=inv
     if len(a) <= limit_each_side + limit_each_side:
         return a
     return a[0:limit_each_side] + insert_if_truncated + a[-limit_each_side:]
-
-
-def writeLinesToFile(lines, filename):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Write lines to a given filename."""
-    with open(filename, 'w') as f:
-        f.writelines(lines)
