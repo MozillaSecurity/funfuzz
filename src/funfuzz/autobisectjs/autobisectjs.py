@@ -9,12 +9,12 @@
 
 from __future__ import absolute_import, print_function
 
-import tempfile
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
