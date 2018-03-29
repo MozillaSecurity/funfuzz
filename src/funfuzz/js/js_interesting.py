@@ -23,7 +23,6 @@ from past.builtins import range  # pylint: disable=redefined-builtin
 from . import inspect_shell
 from ..util import create_collector
 from ..util import detect_malloc_errors
-from ..util import file_manipulation
 from ..util import subprocesses as sps
 
 
@@ -136,11 +135,10 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
-            file_manipulation.writeLinesToFile(
-                ['Number: ' + logPrefix + '\n',
-                 'Command: ' + sps.shellify(runthis) + '\n'] +
-                ['Status: ' + i + "\n" for i in issues],
-                logPrefix + '-summary.txt')
+            with open(logPrefix + "-summary.txt", "w") as f:
+                f.writelines(["Number: " + logPrefix + "\n",
+                              "Command: " + sps.shellify(runthis) + "\n"] +
+                             ["Status: " + i + "\n" for i in issues])
 
         self.lev = lev
         self.out = out

@@ -1,9 +1,11 @@
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
+# pylint: disable=invalid-name
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Test the compile_shell.py file."""
 
 from __future__ import absolute_import, unicode_literals
 

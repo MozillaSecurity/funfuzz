@@ -22,20 +22,21 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1000
     max_level = 18;
     max_level++;  // rnd function starts from zero
-    var level = rnd(max_level);
+    var level = final_level = rnd(max_level - 3); // 3 levels disabled below
 
     // Generate the second level.
     // ref https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1001
     var level_two = rnd(max_level - 3); // 3 levels disabled below
-    if (level_two >= 3) level_two++; // level_two 3 does not exist, so repurpose it
-    if (level_two >= 5) level_two++; // level_two 5 does not exist, so repurpose it
-    if (level_two >= 6) level_two++; // level_two 6 does not exist, so repurpose it
+    if (level_two >= 3) ++level_two; // gczeal 3 does not exist, so repurpose it
+    if (level_two >= 5) ++level_two; // gczeal 5 does not exist, so repurpose it
+    if (level_two >= 6) ++level_two; // gczeal 6 does not exist, so repurpose it
 
-    if (level == 3) level = 0; // level 3 does not exist, so repurpose it
-    if (level == 5) level = '"2;' + level_two + '"'; // level 5 does not exist, so repurpose it
-    if (level == 6) level = '"2;' + level_two + '"'; // level 6 does not exist, so repurpose it
+    if (level >= 3) final_level = '"' + (++level) + ";" + level_two + '"'; // gczeal 3 does not exist, so repurpose it
+    if (level >= 5) final_level = '"' + (++level) + ";" + level_two + '"'; // gczeal 5 does not exist, so repurpose it
+    if (level >= 6) final_level = '"' + (++level) + ";" + level_two + '"'; // gczeal 6 does not exist, so repurpose it
+
     var period = numberOfAllocs();
-    return prefix + "gczeal" + "(" + level + ", " + period + ");";
+    return prefix + "gczeal" + "(" + final_level + ", " + period + ");";
   }
 
   function callSetGCCallback() {
@@ -115,6 +116,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // Run-time equivalents to --baseline-eager, --baseline-warmup-threshold, --ion-eager, --ion-warmup-threshold
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('baseline.warmup.trigger', " + rnd(20) + ");"; } },
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.warmup.trigger', " + rnd(40) + ");"; } },
+
+    // Test the baseline compiler
+    { w: 10,  v: function(d, b) { return prefix + "baselineCompiler" + "();"; } },
 
     // Force inline cache.
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.forceinlineCaches\', " + rnd(2) + ");"; } },

@@ -5,19 +5,16 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
-
-May be replaced in the future, with a better version that supports both Firefox and SpiderMonkey.
 """
 
 from __future__ import absolute_import, print_function
 
-import math
-import tempfile
 import os
 import re
 import shutil
-import stat
 import subprocess
+import sys
+import tempfile
 import time
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
@@ -28,15 +25,10 @@ from . import known_broken_earliest_working as kbew
 from ..js import build_options
 from ..js import compile_shell
 from ..js import inspect_shell
-from ..util import file_manipulation
-from ..util import download_build
 from ..util import hg_helpers
 from ..util.lock_dir import LockDir
 from ..util import s3cache
 from ..util import subprocesses as sps
-
-INCOMPLETE_NOTE = 'incompleteBuild.txt'
-MAX_ITERATIONS = 100
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -66,9 +58,6 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
                       dest='build_options',
                       help='Specify js shell build options, e.g. -b "--enable-debug --32"'
                            "(python -m funfuzz.js.build_options --help)")
-    parser.add_option('-B', '--browser',
-                      dest='browserOptions',
-                      help='Specify browser build options, e.g. -b "-c mozconfig". Deprecated.')
 
     parser.add_option('--resetToTipFirst', dest='resetRepoFirst',
                       action='store_true',
@@ -119,9 +108,12 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
                       help='Name of the branch to download. Defaults to "%default"')
 
     (options, args) = parser.parse_args()
-    if not options.browserOptions:
-        options.build_options = build_options.parseShellOptions(options.build_options)
-        options.skipRevs = ' + '.join(kbew.known_broken_ranges(options.build_options))
+    if options.useTreeherderBinaries:
+        print_("TBD: Bisection using downloaded shells is temporarily not supported.", flush=True)
+        sys.exit(0)
+
+    options.build_options = build_options.parseShellOptions(options.build_options)
+    options.skipRevs = ' + '.join(kbew.known_broken_ranges(options.build_options))
 
     options.paramList = [sps.normExpUserPath(x) for x in options.parameters.split(' ') if x]
     # First check that the testcase is present.
@@ -139,20 +131,17 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         if len(args) < 1:
             print_("args are: %s" % args, flush=True)
             parser.error('Not enough arguments.')
-        if not options.browserOptions:
-            for a in args:  # pylint: disable=invalid-name
-                if a.startswith("--flags="):
-                    extraFlags = a[8:].split(' ')  # pylint: disable=invalid-name
+        for a in args:  # pylint: disable=invalid-name
+            if a.startswith("--flags="):
+                extraFlags = a[8:].split(' ')  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
+    elif len(args) >= 1:
+        parser.error('Too many arguments.')
     else:
-        assert not options.browserOptions  # autoBisect doesn't have a built-in way to run the browser
-        if len(args) >= 1:
-            parser.error('Too many arguments.')
         options.testAndLabel = internalTestAndLabel(options)
 
-    if not options.browserOptions:
-        earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
-            options.build_options, options.paramList + extraFlags, options.skipRevs)
+    earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
+        options.build_options, options.paramList + extraFlags, options.skipRevs)
 
     earliestKnown = ''  # pylint: disable=invalid-name
 
@@ -215,8 +204,8 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
         labels[sRepo] = ('good', 'assumed start rev is good')
         labels[eRepo] = ('bad', 'assumed end rev is bad')
         subprocess.check_call(hgPrefix + ['bisect', '-U', '-g', sRepo])
-        currRev = hg_helpers.get_cset_hash_from_bisect_msg(file_manipulation.firstLine(
-            sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0]))
+        currRev = hg_helpers.get_cset_hash_from_bisect_msg(
+            sps.captureStdout(hgPrefix + ['bisect', '-U', '-b', eRepo])[0].split('\n')[0])
 
     iterNum = 1
     if options.testInitialRevs:
@@ -467,349 +456,6 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     return None, None, currRev, start, end
 
 
-#############################################
-#  Bisection involving treeherder js shells  #
-#############################################
-
-
-def assertSaneJsBinary(cacheF):  # pylint: disable=missing-param-doc,missing-raises-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """If the cache folder is present, check that the js binary is working properly."""
-    if os.path.isdir(cacheF):
-        fList = os.listdir(cacheF)
-        if 'build' in fList:
-            if INCOMPLETE_NOTE in fList:
-                print_("%s has subdirectories: %s" % (cacheF, fList), flush=True)
-                raise Exception("Downloaded binaries and incompleteBuild.txt should not both be "
-                                "present together in this directory.")
-            assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'download')))
-            assert os.path.isdir(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist')))
-            assert os.path.isfile(sps.normExpUserPath(os.path.join(cacheF, 'build', 'dist',
-                                                                   'js' + ('.exe' if sps.isWin else ''))))
-            try:
-                shellPath = getTboxJsBinPath(cacheF)
-                # Ensure we don't fail because the shell lacks u+x
-                if not os.access(shellPath, os.X_OK):
-                    os.chmod(shellPath, stat.S_IXUSR)
-
-                # tbpl binaries are always:
-                # * run without Valgrind (they are not compiled with --enable-valgrind)
-                retCode = inspect_shell.testBinary(shellPath, ['-e', '42'], False)[1]
-                # Exit code -1073741515 on Windows shows up when a required DLL is not present.
-                # This was testable at the time of writing, see bug 953314.
-                isDllNotPresentWinStartupError = (sps.isWin and retCode == -1073741515)
-                # We should have another condition here for non-Windows platforms but we do not yet
-                # have a situation where we can test broken treeherder js shells on those platforms.
-                if isDllNotPresentWinStartupError:
-                    raise Exception('Shell startup error - a .dll file is probably not present.')
-                elif retCode != 0:
-                    raise Exception('Non-zero return code: ' + str(retCode))
-                return True  # Binary is working correctly
-            except (OSError, IOError):  # pylint: disable=overlapping-except
-                raise Exception("Cache folder %s is corrupt, please delete it and try again." % cacheF)
-        elif INCOMPLETE_NOTE in fList:
-            return True
-        else:
-            raise Exception('Neither build/ nor INCOMPLETE_NOTE were found in the cache folder.')
-    else:
-        raise Exception('Cache folder ' + cacheF + ' is not found.')
-
-
-def bisectUsingTboxBins(options):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
-    # pylint: disable=too-complex,too-many-locals,too-many-statements
-    """Download treeherder binaries and bisect them."""
-    testedIDs = {}
-    desiredArch = '32' if options.build_options.enable32 else '64'
-    buildType = download_build.defaultBuildType(
-        options.nameOfTreeherderBranch, desiredArch, options.build_options.enableDbg)
-
-    # Get list of treeherder IDs
-    urlsTbox = download_build.getBuildList(buildType, earliestBuild=options.startRepo, latestBuild=options.endRepo)
-
-    # Download and test starting point.
-    print_(flush=True)
-    print_("Examining starting point...", flush=True)
-    sID, startResult, _sReason, _sPosition, urlsTbox, testedIDs, _startSkippedNum = testBuildOrNeighbour(
-        options, 0, urlsTbox, buildType, testedIDs)
-    if sID is None:
-        raise Exception('No complete builds were found.')
-    print_("Numeric ID %s was tested." % sID, flush=True)
-
-    # Download and test ending point.
-    print_(flush=True)
-    print_("Examining ending point...", flush=True)
-    eID, endResult, _eReason, _ePosition, urlsTbox, testedIDs, _endSkippedNum = testBuildOrNeighbour(
-        options, len(urlsTbox) - 1, urlsTbox, buildType, testedIDs)
-    if eID is None:
-        raise Exception('No complete builds were found.')
-    print_("Numeric ID %s was tested." % eID, flush=True)
-
-    if startResult == endResult:
-        raise Exception('Starting and ending points should have opposite results')
-
-    count = 0
-    print_(flush=True)
-    print_("Starting bisection...", flush=True)
-    print_(flush=True)
-    while count < MAX_ITERATIONS:
-        sps.vdump('Unsorted dictionary of tested IDs is: ' + str(testedIDs))
-        count += 1
-        print_("Test number %d:" % count, flush=True)
-
-        sortedUrlsTbox = sorted(urlsTbox)
-        if len(sortedUrlsTbox) >= 3:
-            mPosition = len(sortedUrlsTbox) // 2
-        else:
-            print_(flush=True)
-            print_('WARNING: %s has size smaller than 3. Impossible to return "middle" element.' % (sortedUrlsTbox,),
-                   flush=True)
-            print_(flush=True)
-            mPosition = len(sortedUrlsTbox)
-
-        # Test the middle revision. If it is not a complete build, test ones around it.
-        mID, mResult, _mReason, mPosition, urlsTbox, testedIDs, middleRevSkippedNum = testBuildOrNeighbour(
-            options, mPosition, urlsTbox, buildType, testedIDs)
-        if mID is None:
-            print_("Middle ID is None.", flush=True)
-            break
-
-        # Refresh the range of treeherder IDs depending on mResult.
-        if mResult == endResult:
-            urlsTbox = urlsTbox[0:(mPosition + 1)]
-        else:
-            urlsTbox = urlsTbox[(mPosition):len(urlsTbox)]
-
-        print_("Numeric ID %s was tested." % mID, end=" ", flush=True)
-
-        #  Exit infinite loop once we have tested the starting point, ending point and any points
-        #  in the middle with results returning "incomplete".
-        if (len(urlsTbox) - middleRevSkippedNum) <= 2 and mID in testedIDs:
-            break
-        elif len(urlsTbox) < 2:
-            print_("urlsTbox is: %s" % (urlsTbox,), flush=True)
-            raise Exception('Length of urlsTbox should not be smaller than 2.')
-        elif (len(testedIDs) - 2) > 30:
-            raise Exception('Number of testedIDs has exceeded 30.')
-
-        print_(showRemainingNumOfTests(urlsTbox), flush=True)
-
-    print_(flush=True)
-    sps.vdump('Build URLs are: ' + str(urlsTbox))
-    assert getIdFromTboxUrl(urlsTbox[0]) in testedIDs, 'Starting ID should have been tested.'
-    assert getIdFromTboxUrl(urlsTbox[-1]) in testedIDs, 'Ending ID should have been tested.'
-    outputTboxBisectionResults(options, urlsTbox, testedIDs)
-
-
-def createTboxCacheFolder(cacheFolder):  # pylint: disable=missing-param-doc,missing-type-doc
-    """Attempt to create the treeherder js shell's cache folder if it does not exist.
-
-    If it does, check that its binaries are working properly.
-    """
-    try:
-        os.mkdir(cacheFolder)
-    except OSError:
-        assertSaneJsBinary(cacheFolder)
-
-    try:
-        ensureCacheDirHasCorrectIdNum(cacheFolder)
-    except (KeyboardInterrupt, Exception) as e:  # pylint: disable=broad-except
-        if 'Folder name numeric ID not equal to source URL numeric ID.' in repr(e):
-            sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
-
-
-def ensureCacheDirHasCorrectIdNum(cacheFolder):  # pylint: disable=missing-param-doc,missing-raises-doc,missing-type-doc
-    """Ensure that the cache folder is named with the correct numeric ID."""
-    srcUrlPath = sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download', 'source-url.txt'))
-    if os.path.isfile(srcUrlPath):
-        with open(srcUrlPath, 'r') as f:
-            fContents = f.read().splitlines()
-
-        idNumFolderName = cacheFolder.split('-')[-1]
-        idNumSourceUrl = fContents[0].split('/')[-2]
-
-        if idNumFolderName != idNumSourceUrl:
-            print_(flush=True)
-            print_("WARNING: Numeric ID in folder name (current value: %s) is not equal to , flush=True"
-                   "the numeric ID from source URL (current value: %s)" % (idNumFolderName, idNumSourceUrl))
-            print_(flush=True)
-            raise Exception('Folder name numeric ID not equal to source URL numeric ID.')
-
-
-def getBuildOrNeighbour(isJsShell, preferredIndex, urls, buildType):  # pylint: disable=inconsistent-return-statements
-    # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-    # pylint: disable=too-many-branches,too-complex
-    """Download a build. If the build is incomplete, find a working neighbour, then return results."""
-    offset = None
-    skippedChangesetNum = 0
-
-    while True:
-        if offset is None:
-            offset = 0
-        elif offset > 16:
-            print_("Failed to find a working build after ~30 tries.", flush=True)
-            return None, None, None, None
-        elif offset > 0:
-            # Stop once we are testing beyond the start & end entries of the list
-            if (preferredIndex + offset >= len(urls)) and (preferredIndex - offset < 0):
-                print_("Stop looping because everything within the range was tested.", flush=True)
-                return None, None, None, None
-            offset = -offset  # pylint: disable=invalid-unary-operand-type
-        else:
-            offset = -offset + 1  # Alternate between positive and negative offsets
-
-        newIndex = preferredIndex + offset
-
-        if newIndex < 0:
-            continue
-        elif newIndex >= len(urls):
-            continue
-
-        isWorking, idNum, tboxCacheFolder = getOneBuild(isJsShell, urls[newIndex], buildType)
-
-        if isWorking:
-            try:
-                assertSaneJsBinary(tboxCacheFolder)
-            except (KeyboardInterrupt, Exception) as e:  # pylint: disable=broad-except
-                if 'Shell startup error' in repr(e):
-                    writeIncompleteBuildTxtFile(urls[newIndex], tboxCacheFolder,
-                                                sps.normExpUserPath(os.path.join(tboxCacheFolder,
-                                                                                 INCOMPLETE_NOTE)),
-                                                idNum)
-                    continue
-            return newIndex, idNum, tboxCacheFolder, skippedChangesetNum
-        else:
-            skippedChangesetNum += 1
-            if len(urls) == 4:
-                #  If we have [good, untested, incomplete, bad], after testing the middle changeset that
-                #  has the "incomplete" result, the offset will push us the boundary changeset with the
-                #  "bad" result. In this case, switch to the beginning changeset so the offset of 1 will
-                #  push us into the untested changeset, avoiding a loop involving
-                #  "incomplete->bad->incomplete->bad->..."
-                #  See https://github.com/MozillaSecurity/funfuzz/issues/18
-                preferredIndex = 0
-
-
-def getHgwebMozillaOrg(branchName):  # pylint: disable=missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return the hgweb link of the repository, given a treeherder branch name."""
-    hgWebAddrList = ['hg.mozilla.org']
-    if branchName == 'mozilla-central':
-        hgWebAddrList.append(branchName)
-    elif branchName == 'mozilla-inbound':
-        hgWebAddrList.extend(['integration', branchName])
-    elif branchName == 'mozilla-aurora' or \
-            branchName == 'mozilla-beta' or \
-            branchName == 'mozilla-release' or \
-            'mozilla-esr' in branchName:
-        hgWebAddrList.extend(['releases', branchName])
-    return 'https://' + '/'.join(hgWebAddrList)
-
-
-def getIdFromTboxUrl(url):  # pylint: disable=missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return numeric ID from treeherder at https://archive.mozilla.org/pub/firefox/tinderbox-builds/ ."""
-    return [i for i in url.split("/") if i][-1]
-
-
-def getOneBuild(isJsShell, url, buildType):  # pylint: disable=missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Try to get a complete working build."""
-    idNum = getIdFromTboxUrl(url)
-    tboxCacheFolder = sps.normExpUserPath(os.path.join(compile_shell.ensureCacheDir(),
-                                                       'tboxjs-' + buildType + '-' + idNum))
-    createTboxCacheFolder(tboxCacheFolder)
-
-    incompleteBuildTxtFile = sps.normExpUserPath(os.path.join(tboxCacheFolder, INCOMPLETE_NOTE))
-
-    if os.path.isfile(getTboxJsBinPath(tboxCacheFolder)):
-        return True, idNum, tboxCacheFolder  # Cached, complete
-
-    if os.path.isfile(incompleteBuildTxtFile):
-        assert os.listdir(tboxCacheFolder) == [INCOMPLETE_NOTE], 'Only ' + \
-            'incompleteBuild.txt should be present in ' + tboxCacheFolder
-        readIncompleteBuildTxtFile(incompleteBuildTxtFile, idNum)
-        return False, None, None  # Cached, incomplete
-
-    if download_build.downloadBuild(url, tboxCacheFolder, jsShell=isJsShell):
-        assert os.listdir(tboxCacheFolder) == ['build'], 'Only ' + \
-            'the build subdirectory should be present in ' + tboxCacheFolder
-        return True, idNum, tboxCacheFolder  # Downloaded, complete
-    writeIncompleteBuildTxtFile(url, tboxCacheFolder, incompleteBuildTxtFile, idNum)
-    return False, None, None  # Downloaded, incomplete
-
-
-def getTboxJsBinPath(baseDir):  # pylint: disable=missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return the path to the treeherder js binary from a download folder."""
-    return sps.normExpUserPath(os.path.join(baseDir, 'build', 'dist', 'js.exe' if sps.isWin else 'js'))
-
-
-def getTimestampAndHashFromTboxFiles(folder):  # pylint: disable=missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return timestamp and changeset information from the .txt file downloaded from treeherder."""
-    downloadDir = sps.normExpUserPath(os.path.join(folder, 'build', 'download'))
-    for fn in os.listdir(downloadDir):
-        if fn.startswith('firefox-') and fn.endswith('.txt') and '_info' not in fn:
-            with open(os.path.join(downloadDir, fn), 'r') as f:
-                fContents = f.read().splitlines()
-            break
-    assert len(fContents) == 2, 'Contents of the .txt file should only have 2 lines'
-    return fContents[0], fContents[1].split('/')[-1]
-
-
-def isTboxBinInteresting(options, downloadDir, csetHash):  # pylint: disable=invalid-name,missing-param-doc
-    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
-    """Test the required treeherder binary."""
-    return options.testAndLabel(getTboxJsBinPath(downloadDir), csetHash)
-
-
-def outputTboxBisectionResults(options, interestingList, testedBuildsDict):  # pylint: disable=missing-param-doc
-    # pylint: disable=missing-raises-doc,missing-type-doc,too-many-locals
-    """Return formatted bisection results from using treeherder builds."""
-    sTimestamp, sHash, sResult, _sReason = testedBuildsDict[getIdFromTboxUrl(interestingList[0])]
-    eTimestamp, eHash, eResult, _eReason = testedBuildsDict[getIdFromTboxUrl(interestingList[-1])]
-
-    print_(flush=True)
-    print_("Parameters for compilation bisection:", flush=True)
-    pOutput = '-p "' + options.parameters + '"' if options.parameters != '-e 42' else ''
-    oOutput = '-o "' + options.output + '"' if options.output is not '' else ''  # pylint: disable=literal-comparison
-    params = [i for i in ["-s " + sHash, "-e " + eHash, pOutput, oOutput, "-b <build parameters>"] if i]
-    print_(" ".join(params), flush=True)
-
-    print_(flush=True)
-    print_("=== Treeherder Build Bisection Results by autoBisect ===", flush=True)
-    print_(flush=True)
-    print_('The "%s" changeset has the timestamp "%s" and the hash "%s".' % (sResult, sTimestamp, sHash), flush=True)
-    print_('The "%s" changeset has the timestamp "%s" and the hash "%s".' % (eResult, eTimestamp, eHash), flush=True)
-
-    # Are we describing a regression window or a fix window?
-    if sResult == 'good' and eResult == 'bad':
-        windowType = 'regression'
-    elif sResult == 'bad' and eResult == 'good':
-        windowType = 'fix'
-    else:
-        raise Exception('Unknown windowType because starting result is "%s" and ending result is "%s".' % (
-            sResult, eResult))
-
-    # Show an hgweb link
-    pushlogWindow = "%s/pushloghtml?fromchange=%s&tochange=%s" % (
-        getHgwebMozillaOrg(options.nameOfTreeherderBranch), sHash, eHash)
-    print_(flush=True)
-    print_("Likely %s window: %s" % (windowType, pushlogWindow), flush=True)
-    print_(flush=True)
-
-
-def readIncompleteBuildTxtFile(txtFile, idNum):  # pylint: disable=missing-raises-doc,missing-param-doc,missing-type-doc
-    """Read the INCOMPLETE_NOTE text file indicating that this particular build is incomplete."""
-    with open(txtFile, 'r') as f:
-        contentsF = f.read()
-        if 'is incomplete.' not in contentsF:
-            print_("Contents of %s is: %r" % (txtFile, contentsF), flush=True)
-            raise Exception('Invalid ' + INCOMPLETE_NOTE + ' file contents.')
-        else:
-            print_("Examined build with numeric ID %s to be incomplete. Trying another build..." % idNum, flush=True)
-
-
 def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing-type-doc
     """Remove old local cached directories, which were created four weeks ago."""
     # This is in autoBisect because it has a lock so we do not race while removing directories
@@ -831,67 +477,19 @@ def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing
                 shutil.rmtree(name)
 
 
-def showRemainingNumOfTests(reqList):  # pylint: disable=missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Display the approximate number of tests remaining."""
-    remainingTests = int(math.ceil(math.log(len(reqList), 2))) - 1
-    wordTest = 'tests'
-    if remainingTests == 1:
-        wordTest = 'test'
-    return '~' + str(remainingTests) + ' ' + wordTest + ' remaining...\n'
-
-
-def testBuildOrNeighbour(options, preferredIndex, urls, buildType, testedIDs):  # pylint: disable=invalid-name
-    # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-    """Test the build. If the build is incomplete, find a working neighbour, then return results."""
-    finalIndex, idNum, tboxCacheFolder, skippedNum = getBuildOrNeighbour(
-        (not options.browserOptions), preferredIndex, urls, buildType
-    )
-
-    if idNum is None:
-        result, reason = None, None
-    elif idNum in list(testedIDs):
-        print_("Retrieving previous test result: ", end=" ", flush=True)
-        result, reason = testedIDs[idNum][2:4]
-    else:
-        # The build has not been tested before, so test it.
-        testedIDs[idNum] = getTimestampAndHashFromTboxFiles(tboxCacheFolder)
-        print_("Found binary in: %s" % tboxCacheFolder, flush=True)
-        print_("Testing binary...", end=" ", flush=True)
-        result, reason = isTboxBinInteresting(options, tboxCacheFolder, testedIDs[idNum][1])
-        print_("Result: %s - %s" % (result, reason), flush=True)
-        # Adds the result and reason to testedIDs
-        testedIDs[idNum] = list(testedIDs[idNum]) + [result, reason]
-
-    return idNum, result, reason, finalIndex, urls, testedIDs, skippedNum
-
-
-def writeIncompleteBuildTxtFile(url, cacheFolder, txtFile, num):  # pylint: disable=invalid-name,missing-param-doc
-    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
-    """Write a text file indicating that this particular build is incomplete."""
-    if os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'dist'))) or \
-            os.path.isdir(sps.normExpUserPath(os.path.join(cacheFolder, 'build', 'download'))):
-        sps.rmTreeIncludingReadOnly(sps.normExpUserPath(os.path.join(cacheFolder, 'build')))
-    assert not os.path.isfile(txtFile), 'incompleteBuild.txt should not be present.'
-    with open(txtFile, 'w') as f:
-        f.write('This build with numeric ID ' + num + ' is incomplete.')
-    assert num == getIdFromTboxUrl(url), 'The numeric ID ' + num + \
-        ' has to be the one we downloaded from ' + url
-    print_("Wrote a text file that indicates numeric ID %s has an incomplete build." % num, flush=True)
-    return False  # False indicates that this text file has not yet been looked at.
-
-
 def main():
     """Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
-    repoDir = options.build_options.repoDir if options.build_options else options.browserOptions.repoDir
+    if options.build_options:
+        repoDir = options.build_options.repoDir
 
     with LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier='Tbox')
                  if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
         if options.useTreeherderBinaries:
-            bisectUsingTboxBins(options)
-        elif not options.browserOptions:  # Bisect using local builds
+            print_("TBD: We need to switch to the autobisect repository.", flush=True)
+            sys.exit(0)
+        else:  # Bisect using local builds
             findBlamedCset(options, repoDir, compile_shell.makeTestRev(options))
 
         # Last thing we do while we have a lock.

@@ -14,12 +14,14 @@ import ctypes
 import io
 import multiprocessing
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import tarfile
 import traceback
 from optparse import OptionParser  # pylint: disable=deprecated-module
+from pkg_resources import parse_version
 # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 from whichcraft import which
 
@@ -340,7 +342,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append('sh')
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.11 El Capitan and greater
-    elif sps.isMac and sps.macVer() >= [10, 11] and not shell.build_opts.enable32:
+    elif parse_version(platform.mac_ver()[0]) >= parse_version("10.11") and not shell.build_opts.enable32:
         cfg_env["CC"] = "clang " + CLANG_PARAMS
         cfg_env["CXX"] = "clang++ " + CLANG_PARAMS
         if shell.build_opts.buildWithAsan:

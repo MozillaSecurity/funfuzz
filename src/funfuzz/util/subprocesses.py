@@ -9,7 +9,6 @@
 
 from __future__ import absolute_import, print_function
 
-import ctypes
 import errno
 import os
 import platform
@@ -21,6 +20,7 @@ import sys
 import time
 
 from past.builtins import range  # pylint: disable=redefined-builtin
+from pkg_resources import parse_version
 
 verbose = False  # pylint: disable=invalid-name
 
@@ -29,8 +29,6 @@ isMac = (platform.system() == 'Darwin')  # pylint: disable=invalid-name
 isWin = (platform.system() == 'Windows')  # pylint: disable=invalid-name
 isWin10 = isWin and (platform.uname()[2] == '10')  # pylint: disable=invalid-name
 isWin64 = ('PROGRAMFILES(X86)' in os.environ)  # pylint: disable=invalid-name
-# Note that sys.getwindowsversion will be inaccurate from Win8+ onwards: http://stackoverflow.com/q/19128219
-isWinVistaOrHigher = isWin and (sys.getwindowsversion()[0] >= 6)  # pylint: disable=invalid-name,no-member
 
 # pylint: disable=invalid-name
 noMinidumpMsg = r"""
@@ -41,35 +39,6 @@ WARNING: Name: DumpType  Type: REG_DWORD
 WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs.85%29.aspx
 """
 
-########################
-#  Platform Detection  #
-########################
-
-
-def macVer():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
-    """If system is a Mac, return the mac type."""
-    assert platform.system() == 'Darwin'
-    return [int(x) for x in platform.mac_ver()[0].split('.')]
-
-
-def getFreeSpace(folder, mulVar):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return folder/drive free space in bytes if mulVar is 0. Adapted from http://stackoverflow.com/a/2372171 ."""
-    assert mulVar >= 0
-    if platform.system() == 'Windows':
-        free_bytes = ctypes.c_ulonglong(0)
-        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
-        return_value = float(free_bytes.value)
-    else:
-        # os.statvfs is Unix-only
-        return_value = float(os.statvfs(folder).f_bfree * os.statvfs(folder).f_frsize)  # pylint: disable=no-member
-
-    return return_value // (1024 ** mulVar)
-
-
-#####################
-#  Shell Functions  #
-#####################
 
 # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
 # pylint: disable=missing-type-doc,too-complex,too-many-arguments,too-many-branches,too-many-statements
@@ -182,7 +151,7 @@ def getCoreLimit():  # pylint: disable=invalid-name,missing-docstring,missing-re
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Find the required crash log in the given crash reporter directory."""
-    assert platform.system() == 'Darwin' and macVer() >= [10, 6]
+    assert parse_version(platform.mac_ver()[0]) >= parse_version("10.6")
     reportDirList = [os.path.expanduser('~'), '/']
     for baseDir in reportDirList:
         # Sometimes the crash reports end up in the root directory.
@@ -243,8 +212,8 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
     if not wantStack or progname == "valgrind":
         return
 
-    # This has only been tested on 64-bit Windows 7 and higher, but should work on 64-bit Vista.
-    if isWinVistaOrHigher and isWin64:
+    # This has only been tested on 64-bit Windows 7 and higher
+    if isWin64:
         debuggerCmd = constructCdbCommand(progfullname, crashedPID)
     elif os.name == 'posix':
         debuggerCmd = constructGdbCommand(progfullname, crashedPID)
@@ -305,7 +274,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
 def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsistent-return-statements,invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
-    # On Windows Vista and above, look for a minidump.
+    # Look for a minidump.
     dumpFilename = normExpUserPath(os.path.join(
         '~', 'AppData', 'Local', 'CrashDumps', os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
     if isWin10:
@@ -437,20 +406,6 @@ def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
-def rmDirIfEmpty(eDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Remove directory if empty."""
-    assert os.path.isdir(eDir)
-    if not os.listdir(eDir):
-        os.rmdir(eDir)
-
-
-def rmTreeIfExists(dirTree):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Remove a directory with all sub-directories and files if the directory exists."""
-    if os.path.isdir(dirTree):
-        rmTreeIncludingReadOnly(dirTree)
-    assert not os.path.isdir(dirTree)
-
-
 def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-docstring
     shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
 
@@ -506,28 +461,6 @@ def shellify(cmd):  # pylint: disable=missing-param-doc,missing-return-doc,missi
             vdump('Regex not matched, but trying to shellify anyway:')
             return ' '.join(cmd).replace('\\', '//') if isWin else ' '.join(cmd)
     return ' '.join(ssc)
-
-
-def timeSubprocess(command, ignoreStderr=False, combineStderr=False, ignoreExitCode=False,
-                   cwd=None, env=None, vb=False):
-    # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc,too-many-arguments
-    """Calculate how long a captureStdout command takes and prints it.
-
-    Return the stdout and return value that captureStdout passes on.
-    """
-    env = env or os.environ
-    cwd = cwd or (
-        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
-    print("Running `%s` now.." % shellify(command))
-    startTime = time.time()
-    stdOutput, retVal = captureStdout(command, ignoreStderr=ignoreStderr,
-                                      combineStderr=combineStderr, ignoreExitCode=ignoreExitCode,
-                                      currWorkingDir=cwd, env=env, verbosity=vb)
-    endTime = time.time()
-    print("`%s` took %.3f seconds." % (shellify(command), endTime - startTime))
-    print()
-    return stdOutput, retVal
 
 
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc

@@ -8,7 +8,7 @@
 
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 
 import multiprocessing
 import os
@@ -23,15 +23,16 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 from .js import build_options
 from .js import compile_shell
 from .js import loop
-from .util import download_build
 from .util import hg_helpers
 from .util import subprocesses as sps
 from .util import fork_join
 from .util import create_collector
 from .util.lock_dir import LockDir
 
+if sys.version_info.major == 2:
+    import psutil
+
 path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
-path3 = os.path.abspath(os.path.join(path0, 'js'))  # pylint: disable=invalid-name
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
@@ -147,7 +148,11 @@ def printMachineInfo():  # pylint: disable=invalid-name
     #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
-    print("Free space (GB): %.2f" % sps.getFreeSpace("/", 3))
+    if sys.version_info.major == 2:
+        rootdir_free_space = psutil.disk_usage("/").free / (1024 ** 3)
+    else:
+        rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
+    print("Free space (GB): %.2f" % rootdir_free_space)
 
     hgrc_path = os.path.join(path0, '.hg', 'hgrc')
     if os.path.isfile(hgrc_path):
@@ -165,7 +170,7 @@ def printMachineInfo():  # pylint: disable=invalid-name
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     if options.existingBuildDir:
-        # Pre-downloaded treeherder builds (browser only for now)
+        # Pre-downloaded treeherder builds
         bDir = options.existingBuildDir  # pylint: disable=invalid-name
         bType = 'local-build'  # pylint: disable=invalid-name
         bSrc = bDir  # pylint: disable=invalid-name
@@ -204,21 +209,8 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             print("buildDir is: %s" % bDir)
             print("buildSrc is: %s" % bSrc)
     else:
-        # Treeherder js shells and browser
-        # Download from Treeherder and call it 'build'
-        # pylint: disable=fixme
-        # FIXME: Put 'build' somewhere nicer, like ~/fuzzbuilds/. Don't re-download a build that's up to date.
-        # FIXME: randomize branch selection, get appropriate builds, use appropriate known dirs
-        bDir = 'build'  # pylint: disable=invalid-name
-        bType = download_build.defaultBuildType(options.repoName, None, True)  # pylint: disable=invalid-name
-        # pylint: disable=invalid-name
-        bSrc = download_build.downloadLatestBuild(bType, './', getJsShell=True, wantTests=False)
-        bRev = ''  # pylint: disable=invalid-name
-
-        # These two lines are only used for treeherder js shells:
-        shell = os.path.join(bDir, "dist", "js.exe" if sps.isWin else "js")
-        # pylint: disable=invalid-name
-        manyTimedRunArgs = ["--random-flags", str(JS_SHELL_DEFAULT_TIMEOUT), "mozilla-central", shell]
+        print("TBD: We need to switch to the fuzzfetch repository.")
+        sys.exit(0)
 
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)
 

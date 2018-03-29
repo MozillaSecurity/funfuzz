@@ -10,16 +10,23 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 from copy import deepcopy
 import logging
 import os
 import platform
+import sys
 import time
 
 import pip
 from . import subprocesses as sps
+
+if sys.version_info.major == 2:
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    import subprocess
 
 
 logging.basicConfig(level=logging.INFO)
@@ -41,6 +48,28 @@ if sps.isWin:
         raise OSError("Git binary not found")
 else:
     GITBINARY = 'git'
+
+
+def time_cmd(cmd, cwd=None, env=None, stderr=None, timeout=None):
+    """Calculates and outputs the time a command takes.
+
+    Args:
+        cmd (list): Command to be run.
+        cwd (str): Working directory command is to be executed in.
+        env (dict): Working environment command is to be executed in.
+        stderr (bytes): stderr shown during command execution.
+        timeout (int): Timeout for the command.
+    """
+    if not env:
+        env = os.environ.copy()
+
+    logger.info("Running `%s` now..", " ".join(cmd))
+    cmd_start = time.time()
+
+    subprocess.run(cmd, cwd=cwd, env=env, stderr=stderr, timeout=timeout)
+
+    cmd_end = time.time()
+    logger.info("`%s` took %.3f seconds.", " ".join(cmd), cmd_end - cmd_start)
 
 
 def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
@@ -73,16 +102,18 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
     repo_type = typeOfRepo(repo)
 
     if repo_type == 'hg':
-        sps.timeSubprocess(['hg', 'pull', '-u'],
-                           ignoreStderr=True, combineStderr=True, cwd=repo, vb=True)
-        sps.timeSubprocess(['hg', 'log', '-r', 'default'], cwd=repo, vb=True)
+        out_hg_pull = subprocess.run(["hg", "--time", "pull", "-u"], check=True, cwd=repo, stderr=subprocess.DEVNULL)
+        logger.info("Command with the above out_hg_pull: %s", subprocess.list2cmdline(out_hg_pull.args))
+
+        out_hg_log_default = subprocess.run(["hg", "--time", "log", "-r", "default"],
+                                            check=True, cwd=repo, stderr=subprocess.DEVNULL)
+        logger.info("Command with the above output: %s", subprocess.list2cmdline(out_hg_log_default.args))
     elif repo_type == 'git':
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
         if sps.isWin:
             gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
-        sps.timeSubprocess([GITBINARY, 'pull'], env=gitenv,
-                           ignoreStderr=True, combineStderr=True, ignoreExitCode=True, cwd=repo, vb=True)
+        time_cmd([GITBINARY, "pull"], cwd=repo, env=gitenv, stderr=subprocess.DEVNULL)
     else:
         raise Exception('Unknown repository type: ' + repo_type)
 
@@ -100,7 +131,7 @@ def updateRepos():  # pylint: disable=invalid-name
         for name in sorted(os.listdir(tree)):
             name_path = os.path.join(tree, name)
             if os.path.isdir(name_path) and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
-                print("Updating %s ..." % name)
+                logger.info("Updating %s ...", name)
                 updateRepo(name_path)
 
 
@@ -110,8 +141,8 @@ def main():  # pylint: disable=missing-docstring
         update_funfuzz()
         updateRepos()
     except OSError as ex:
-        print("WARNING: OSError hit:")
-        print(ex)
+        logger.info("WARNING: OSError hit:")
+        logger.info(ex)
     logger.info(time.asctime())
 
 

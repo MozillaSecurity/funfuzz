@@ -14,5 +14,4 @@ from . import compile_shell
 from . import inspect_shell
 from . import js_interesting
 from . import loop
-from . import pinpoint
 from . import shell_flags

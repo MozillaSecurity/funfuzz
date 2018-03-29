@@ -10,12 +10,6 @@
 from __future__ import absolute_import, print_function
 
 
-def firstLine(s):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
-    # pylint: disable=missing-type-doc
-    """Return the first line of any series of text with / without line breaks."""
-    return s.split('\n')[0]
-
-
 def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
@@ -61,9 +55,3 @@ def truncateMid(a, limit_each_side, insert_if_truncated):  # pylint: disable=inv
     if len(a) <= limit_each_side + limit_each_side:
         return a
     return a[0:limit_each_side] + insert_if_truncated + a[-limit_each_side:]
-
-
-def writeLinesToFile(lines, filename):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Write lines to a given filename."""
-    with open(filename, 'w') as f:
-        f.writelines(lines)

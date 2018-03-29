@@ -33,6 +33,7 @@ if __name__ == "__main__":
               "future>=0.16.0",
               "FuzzManager>=0.1.3",
               "lithium-reducer>=0.2.1",
+              "psutil>=5.4.3",
               "whichcraft>=0.4.1",
           ],
           extras_require={

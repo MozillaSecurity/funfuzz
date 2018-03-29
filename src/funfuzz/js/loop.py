@@ -18,7 +18,6 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from . import compare_jit
 from . import js_interesting
-from . import pinpoint
 from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
@@ -46,7 +45,7 @@ def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-r
     parser.add_option("--build",
                       action="store", dest="build_options_str",
                       help="The build options, for bisection",
-                      default=None)  # if you run loop directly without --build, pinpoint will try to guess
+                      default=None)  # if you run loop directly w/o --build, lithium_helpers.pinpoint will try to guess
     parser.add_option("--valgrind",
                       action="store_true", dest="valgrind",
                       default=False,
@@ -174,8 +173,10 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             with open(logPrefix + '-out.txt', 'r') as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace('/*FRC-', '/*') for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
-            file_manipulation.writeLinesToFile(newfileLines, logPrefix + "-orig.js")
-            file_manipulation.writeLinesToFile(newfileLines, filenameToReduce)
+            with open(logPrefix + "-orig.js", "w") as f:
+                f.writelines(newfileLines)
+            with open(filenameToReduce, "w") as f:
+                f.writelines(newfileLines)
 
             # Run Lithium and autobisect (make a reduced testcase and find a regression window)
             interestingpy = "funfuzz.js.js_interesting"  # pylint: disable=invalid-name
@@ -185,7 +186,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
-            (lithResult, _lithDetails, autoBisectLog) = pinpoint.pinpoint(  # pylint: disable=invalid-name
+            (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
                 itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
                 options.build_options_str, targetTime, res.lev)
 
@@ -203,7 +204,6 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             else:
                 quality = 10
 
-            # ddsize = lithium_helpers.ddsize(filenameToReduce)
             print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, time.asctime()))
 
             metadata = {}
@@ -219,7 +219,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                     js_interesting_options.shellIsDeterministic and are_flags_deterministic:
                 linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")  # pylint: disable=invalid-name
                 jitcomparefilename = logPrefix + "-cj-in.js"
-                file_manipulation.writeLinesToFile(linesToCompare, jitcomparefilename)
+                with open(jitcomparefilename, "w") as f:
+                    f.writelines(linesToCompare)
                 # pylint: disable=invalid-name
                 anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
                                                  logPrefix + "-cj", options.repo,

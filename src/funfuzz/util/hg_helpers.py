@@ -12,8 +12,8 @@ from __future__ import absolute_import, print_function
 import configparser
 import os
 import re
-import sys
 import subprocess
+import sys
 
 from builtins import input  # pylint: disable=redefined-builtin
 
