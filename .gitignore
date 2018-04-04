@@ -10,6 +10,7 @@
 .DS_Store
 .gdb_history
 .vscode/
+*.swp
 
 # Code coverage
 .coverage
