@@ -33,7 +33,7 @@ addons:
             - valgrind
 before_install:
     # Use GCC 5
-    - mkdir -p latest-gcc-symlinks  # See https://github.com/travis-ci/travis-ci/issues/3668#issuecomment-279276549
+    - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
     - ln -s /usr/bin/g++-5 latest-gcc-symlinks/g++
     - ln -s /usr/bin/gcc-5 latest-gcc-symlinks/gcc
     - export PATH=$PWD/latest-gcc-symlinks:$PATH
