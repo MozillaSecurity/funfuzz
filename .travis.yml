@@ -23,19 +23,19 @@ addons:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-5
-            - g++-5-multilib
-            - gcc-5
-            - gcc-5-multilib
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
 before_install:
-    # Use GCC 5
+    # Use GCC 6
     - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
-    - ln -s /usr/bin/g++-5 latest-gcc-symlinks/g++
-    - ln -s /usr/bin/gcc-5 latest-gcc-symlinks/gcc
+    - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
+    - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
     - export PATH=$PWD/latest-gcc-symlinks:$PATH
 install:
     - pip install --upgrade codecov pytest-cov pytest-flake8 pytest-pylint  # Already in venv, no need for --user
