@@ -1271,6 +1271,7 @@ var functionMakers = [
 
   // A generator that does something
   function(d, b) { return "function(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
+  function(d, b) { return "function*(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
 
   // An async function that does something
   function(d, b) { return "async function (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
@@ -1981,8 +1982,10 @@ var iterableExprMakers = Random.weighted([
 
   // A generator that yields once
   { w: 1, v: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
+  { w: 1, v: function(d, b) { return "(function*() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
   // A pass-through generator
   { w: 1, v: function(d, b) { return "/*PTHR*/(function() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+  { w: 1, v: function(d, b) { return "/*PTHR*/(function*() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
 
   // An async function that awaits once
   { w: 1, v: function(d, b) { return "(async function() { " + directivePrologue() + "await " + makeExpr(d - 1, b) + "; } })()"; } },
