@@ -1230,6 +1230,10 @@ function makeFunctionBody(d, b)
   }
 }
 
+function functionPrefix() {
+  return (rnd(2) == 0 ? "" : "async ")
+    + "function";
+}
 
 var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
@@ -1239,8 +1243,8 @@ var functionMakers = [
   makeMathyFunRef,
 
   // Functions and expression closures
-  function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
-  function(d, b) {                          return cat(["function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
+  function(d, b) { var v = makeNewId(d, b); return cat([functionPrefix(), " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
+  function(d, b) {                          return cat([functionPrefix(), " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
 
   // Arrow functions with one argument (no parens needed) (no destructuring allowed in this form?)
   function(d, b) { var v = makeNewId(d, b); return cat([     v,                            " => ", makeFunctionBody(d, b.concat([v]))]); },
@@ -1249,14 +1253,14 @@ var functionMakers = [
   function(d, b) {                          return cat(["(", makeFormalArgList(d, b), ")", " => ", makeFunctionBody(d, b)]); },
 
   // The identity function
-  function(d, b) { return "function(q) { " + directivePrologue() + "return q; }"; },
+  function(d, b) { return functionPrefix() + "(q) { " + directivePrologue() + "return q; }"; },
   function(d, b) { return "q => q"; },
 
   // A function that does something
-  function(d, b) { return "function(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }"; },
+  function(d, b) { return functionPrefix() + "(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }"; },
 
   // A function that computes something
-  function(d, b) { return "function(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
+  function(d, b) { return functionPrefix() + "(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
 
   // A generator that does something
   function(d, b) { return "function(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
@@ -1265,13 +1269,13 @@ var functionMakers = [
   function(d, b) { return "(1 for (x in []))"; },
 
   // A simple wrapping pattern
-  function(d, b) { return "/*wrap1*/(function(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
+  function(d, b) { return "/*wrap1*/(" + functionPrefix() + "(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
 
   // Wrapping with upvar: escaping, may or may not be modified
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
 
   // Wrapping with upvar: non-escaping
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
   // Apply, call
   function(d, b) { return "(" + makeFunction(d-1, b) + ").apply"; },
