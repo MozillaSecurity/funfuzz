@@ -1232,7 +1232,8 @@ function makeFunctionBody(d, b)
 
 function functionPrefix() {
   return (rnd(2) == 0 ? "" : "async ")
-    + "function";
+    + "function"
+    + (rnd(2) == 0 ? "" : "*");
 }
 
 var functionMakers = [
