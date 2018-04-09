@@ -516,11 +516,12 @@ var littleStatementMakers =
   // but unnamed functions "want" to be expressions and named functions "want" to be special statements)
   function(d, b) { return makeFunction(d, b); },
 
-  // Return, yield
+  // Return, yield, await
   function(d, b) { return cat(["return ", makeExpr(d, b), ";"]); },
   function(d, b) { return "return;"; }, // return without a value is allowed in generators; return with a value is not.
   function(d, b) { return cat(["yield ", makeExpr(d, b), ";"]); }, // note: yield can also be a left-unary operator, or something like that
   function(d, b) { return "yield;"; },
+  function(d, b) { return cat(["await ", makeExpr(d, b), ";"]); },
 
   // Expression statements
   function(d, b) { return cat([makeExpr(d, b), ";"]); },
@@ -581,6 +582,7 @@ var exceptionyStatementMakers = [
   function(d, b) { return "return;"; }, // return without a value can be mixed with yield
   function(d, b) { return cat(["return ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["yield ", makeExpr(d, b), ";"]); },
+  function(d, b) { return cat(["await ", makeExpr(d, b), ";"]); },
   function(d, b) { return cat(["throw ", makeId(d, b), ";"]); },
   function(d, b) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
   function(d, b) { return b[b.length - 1] + "." + Random.index(exceptionProperties) + ";"; },
@@ -695,7 +697,8 @@ var leftUnaryOps = [
   "!", "+", "-", "~",
   "void ", "typeof ", "delete ",
   "new ", // but note that "new" can also be a very strange left-binary operator
-  "yield " // see http://www.python.org/dev/peps/pep-0342/ .  Often needs to be parenthesized, so there's also a special exprMaker for it.
+  "yield ", // see http://www.python.org/dev/peps/pep-0342/ .  Often needs to be parenthesized, so there's also a special exprMaker for it.
+  "await ",
 ];
 
 var incDecOps = [
@@ -767,6 +770,8 @@ var exprMakers =
   // In most contexts, yield expressions must be parenthesized, so including explicitly parenthesized yields makes actually-compiling yields appear more often.
   function(d, b) { return cat(["yield ", makeExpr(d, b)]); },
   function(d, b) { return cat(["(", "yield ", makeExpr(d, b), ")"]); },
+
+  function(d, b) { return cat(["await ", makeExpr(d, b)]); },
 
   // Array functions (including extras).  The most interesting are map and filter, I think.
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
@@ -1221,15 +1226,21 @@ function makeFunctionBody(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  switch(rnd(5)) {
+  switch(rnd(6)) {
     case 0:  return cat([" { ", directivePrologue(), makeStatement(d - 1, b),   " } "]);
     case 1:  return cat([" { ", directivePrologue(), "return ", makeExpr(d, b), " } "]);
     case 2:  return cat([" { ", directivePrologue(), "yield ",  makeExpr(d, b), " } "]);
-    case 3:  return '"use asm"; ' + asmJSInterior([]);
+    case 3:  return cat([" { ", directivePrologue(), "await ",  makeExpr(d, b), " } "]);
+    case 4:  return '"use asm"; ' + asmJSInterior([]);
     default: return makeExpr(d, b); // make an "expression closure"
   }
 }
 
+function functionPrefix() {
+  return (rnd(2) == 0 ? "" : "async ")
+    + "function"
+    + (rnd(2) == 0 ? "" : "*");
+}
 
 var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
@@ -1239,8 +1250,8 @@ var functionMakers = [
   makeMathyFunRef,
 
   // Functions and expression closures
-  function(d, b) { var v = makeNewId(d, b); return cat(["function", " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
-  function(d, b) {                          return cat(["function", " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
+  function(d, b) { var v = makeNewId(d, b); return cat([functionPrefix(), " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
+  function(d, b) {                          return cat([functionPrefix(), " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
 
   // Arrow functions with one argument (no parens needed) (no destructuring allowed in this form?)
   function(d, b) { var v = makeNewId(d, b); return cat([     v,                            " => ", makeFunctionBody(d, b.concat([v]))]); },
@@ -1249,29 +1260,37 @@ var functionMakers = [
   function(d, b) {                          return cat(["(", makeFormalArgList(d, b), ")", " => ", makeFunctionBody(d, b)]); },
 
   // The identity function
-  function(d, b) { return "function(q) { " + directivePrologue() + "return q; }"; },
+  function(d, b) { return functionPrefix() + "(q) { " + directivePrologue() + "return q; }"; },
   function(d, b) { return "q => q"; },
 
   // A function that does something
-  function(d, b) { return "function(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }"; },
+  function(d, b) { return functionPrefix() + "(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }"; },
 
   // A function that computes something
-  function(d, b) { return "function(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
+  function(d, b) { return functionPrefix() + "(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
 
   // A generator that does something
   function(d, b) { return "function(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
+  function(d, b) { return "function*(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
+
+  // An async function that does something
+  function(d, b) { return "async function (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
+
+  // An async generator that does something
+  function(d, b) { return "async function* (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
+  function(d, b) { return "async function* (y) { " + directivePrologue() + "yield y; await y; " + makeStatement(d, b.concat(["y"])) + "; yield y; await y; }"; },
 
   // A generator expression -- kinda a function??
   function(d, b) { return "(1 for (x in []))"; },
 
   // A simple wrapping pattern
-  function(d, b) { return "/*wrap1*/(function(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
+  function(d, b) { return "/*wrap1*/(" + functionPrefix() + "(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
 
   // Wrapping with upvar: escaping, may or may not be modified
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
 
   // Wrapping with upvar: non-escaping
-  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(function(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
+  function(d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
 
   // Apply, call
   function(d, b) { return "(" + makeFunction(d-1, b) + ").apply"; },
@@ -1505,7 +1524,7 @@ function makeId(d, b)
   case 8: case 9: case 10:
     // some keywords that can be used as identifiers in some contexts (e.g. variables, function names, argument names)
     // but that's annoying, and some of these cause lots of syntax errors.
-    return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "of"]);
+    return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "await", "of"]);
   case 11: case 12: case 13:
     return "this." + makeId(d, b);
   case 14: case 15: case 16:
@@ -1770,7 +1789,7 @@ function makeCrazyToken()
 
   // most real keywords plus a few reserved keywords
   " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
-  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " break ", " continue ", " typeof ", " var ", " const ",
+  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " await ", " break ", " continue ", " typeof ", " var ", " const ",
 
   // reserved when found in strict mode code
   " package ",
@@ -1963,8 +1982,16 @@ var iterableExprMakers = Random.weighted([
 
   // A generator that yields once
   { w: 1, v: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
+  { w: 1, v: function(d, b) { return "(function*() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
   // A pass-through generator
   { w: 1, v: function(d, b) { return "/*PTHR*/(function() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+  { w: 1, v: function(d, b) { return "/*PTHR*/(function*() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+
+  // An async function that awaits once
+  { w: 1, v: function(d, b) { return "(async function() { " + directivePrologue() + "await " + makeExpr(d - 1, b) + "; } })()"; } },
+
+  // A pass-through async generator
+  { w: 1, v: function(d, b) { return "/*PTHR*/(async function*() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
 
   { w: 1, v: makeFunction },
   { w: 1, v: makeExpr },
