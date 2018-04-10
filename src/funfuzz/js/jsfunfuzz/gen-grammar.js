@@ -182,6 +182,10 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
 
+  // -- for-await-of
+  { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
 //  function(d, b) { return "let forCount = 0; for (let " + makeId(d, b) + " in " + makeExpr(d, b) + ") { if (forCount++ == " + rnd(3) + ") { " + makeStatement(d - 1, b) + " } }"; },
@@ -594,6 +598,7 @@ var exceptionyStatementMakers = [
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function(d, b) { var v = makeNewId(d, b); return "for await(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
 
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
@@ -1992,6 +1997,7 @@ var iterableExprMakers = Random.weighted([
 
   // A pass-through async generator
   { w: 1, v: function(d, b) { return "/*PTHR*/(async function*() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+  { w: 1, v: function(d, b) { return "/*PTHR*/(async function*() { " + directivePrologue() + "for await (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
 
   { w: 1, v: makeFunction },
   { w: 1, v: makeExpr },
