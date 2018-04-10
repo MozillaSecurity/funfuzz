@@ -73,7 +73,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 runthis)
 
         preexec_fn = ulimitSet if os.name == 'posix' else None
-        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix, preexec_fn=preexec_fn)
+        # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
+        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix.encode("utf-8"), preexec_fn=preexec_fn)
 
         lev = JS_FINE
         issues = []
