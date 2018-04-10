@@ -24,7 +24,7 @@ from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can
 
 from . import inspect_shell
 from ..util import create_collector
-from ..util import detect_malloc_errors
+from ..util import file_manipulation
 from ..util import os_ops
 
 if sys.version_info.major == 2:
@@ -107,7 +107,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
                 with open(str(logPrefix + "-crash.txt")) as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
-        elif detect_malloc_errors.amiss(logPrefix):
+        elif file_manipulation.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         elif runinfo.return_code == 0 and not in_compare_jit:
