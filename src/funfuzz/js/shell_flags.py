@@ -329,7 +329,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
 
 
 def basic_flag_sets(shell_path):
-    """These flag combos are used w/the original flag sets when run through Lithium & autoBisect.
+    """These flag combos are used w/the original flag sets when run through Lithium & autobisectjs.
 
     Args:
         shell_path (str): Path to shell.

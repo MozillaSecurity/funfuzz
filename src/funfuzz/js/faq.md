@@ -27,7 +27,7 @@ No, they are independent. We only implemented the flags that are most useful for
 
 **Q: Will the gecko-dev Git mirror of mozilla-central be supported?**
 
-The "-R" flag assumes a Mercurial clone of mozilla-central is passed in as an argument. Git repositories are not yet supported fully, and especially not for autoBisect. See [issue #2](https://github.com/MozillaSecurity/funfuzz/issues/2).
+The "-R" flag assumes a Mercurial clone of mozilla-central is passed in as an argument. Git repositories are not yet supported fully, and especially not for autobisectjs. See [issue #2](https://github.com/MozillaSecurity/funfuzz/issues/2).
 
 **Q: Can I run multiple instances of compile_shell?**
 

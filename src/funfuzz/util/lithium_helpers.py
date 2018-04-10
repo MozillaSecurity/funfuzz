@@ -34,7 +34,7 @@ runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invali
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: disable=invalid-name,missing-param-doc
              bisectRepo, build_options_str, targetTime, suspiciousLevel):
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc,too-many-arguments,too-many-locals
-    """Run Lithium and autobisect.
+    """Run Lithium and autobisectjs.
 
     itest must be an array of the form [module, ...] where module is an interestingness module.
     The module's "interesting" function must accept [...] + [jsEngine] + engineFlags + infilename
@@ -62,7 +62,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         print(sps.shellify(autobisectCmd))
         autoBisectLogFilename = logPrefix + "-autobisect.txt"  # pylint: disable=invalid-name
         subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
-        print("Done running autobisect. Log: %s" % autoBisectLogFilename)
+        print("Done running autobisectjs. Log: %s" % autoBisectLogFilename)
 
         with open(autoBisectLogFilename, 'r') as f:
             lines = f.readlines()

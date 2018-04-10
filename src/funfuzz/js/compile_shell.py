@@ -32,7 +32,7 @@ from ..util import s3cache
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 
-S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autoBisect
+S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autobisectjs
 
 if sps.isWin:
     MAKE_BINARY = "mozmake"
@@ -92,7 +92,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
     @staticmethod
     def run(argv=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-        """Build a shell and place it in the autoBisect cache."""
+        """Build a shell and place it in the autobisectjs cache."""
         usage = 'Usage: %prog [options]'
         parser = OptionParser(usage)
         parser.disable_interspersed_args()

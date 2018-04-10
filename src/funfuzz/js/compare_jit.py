@@ -258,7 +258,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     return options
 
 
-# For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
+# For use by Lithium and autobisectjs. (autobisectjs calls init multiple times because it changes the js engine name)
 def init(args):
     global gOptions  # pylint: disable=invalid-name,global-statement
     gOptions = parseOptions(args)

@@ -278,7 +278,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
 # loop uses parseOptions and ShellResult [with in_compare_jit = False]
 # compare_jit uses ShellResult [with in_compare_jit = True]
 
-# For use by Lithium and autoBisect. (autoBisect calls init multiple times because it changes the js engine name)
+# For use by Lithium and autobisectjs. (autobisectjs calls init multiple times because it changes the js engine name)
 def init(args):  # pylint: disable=missing-docstring
     global gOptions  # pylint: disable=global-statement,invalid-name
     gOptions = parseOptions(args)

@@ -123,7 +123,7 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
         # Exit codes 1 through 3 are all plausible "non-support":
         #   * "Usage error" is 1 in new js shell, 2 in old js shell, 2 in xpcshell.
         #   * "Script threw an error" is 3 in most shells, but 1 in some versions (see bug 751425).
-        # Since we want autoBisect to support all shell versions, allow all these exit codes.
+        # Since we want autobisectjs to support all shell versions, allow all these exit codes.
         return False
     else:
         raise Exception('Unexpected exit code in shellSupports ' + str(return_code))

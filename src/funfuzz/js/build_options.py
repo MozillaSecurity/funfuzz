@@ -265,7 +265,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         return False, 'FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults.'
         # Test with leak-checking disabled, test that reporting works, test only on x64 16.04
         # Test with bug 1278887
-        # Also ensure we are running autoBisect w/Valgrind having the --error-exitcode=?? flag
+        # Also ensure we are running autobisectjs w/Valgrind having the --error-exitcode=?? flag
         # Uncomment the following when we unbreak Valgrind fuzzing.
         # if not sps.isProgramInstalled('valgrind'):
         #     return False, 'Valgrind is not installed.'
@@ -324,7 +324,7 @@ def generateRandomConfigurations(parser, randomizer):  # pylint: disable=inconsi
             randomArgs.append('--run-with-valgrind')
         build_options = parser.parse_args(randomArgs)
         if areArgsValid(build_options)[0]:
-            build_options.build_options_str = ' '.join(randomArgs)  # Used for autoBisect
+            build_options.build_options_str = ' '.join(randomArgs)  # Used for autobisectjs
             build_options.enableRandom = True  # This has to be true since we are randomizing...
             return build_options
 
