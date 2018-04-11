@@ -50,7 +50,6 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
 ) = range(JS_LEVELS)
 
 
-gOptions = ""  # pylint: disable=invalid-name
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
@@ -278,21 +277,12 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
 # loop uses parseOptions and ShellResult [with in_compare_jit = False]
 # compare_jit uses ShellResult [with in_compare_jit = True]
 
-# For use by Lithium and autobisectjs. (autobisectjs calls init multiple times because it changes the js engine name)
-def init(args):  # pylint: disable=missing-docstring
-    global gOptions  # pylint: disable=global-statement,invalid-name
-    gOptions = parseOptions(args)
-
-
-# FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def interesting(opts, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    options = gOptions
-    # options, runthis, logPrefix, in_compare_jit
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
+    res = ShellResult(opts, opts.jsengineWithArgs, tempPrefix, False)
     truncateFile(tempPrefix + "-out.txt", 1000000)
     truncateFile(tempPrefix + "-err.txt", 1000000)
-    return res.lev >= gOptions.minimumInterestingLevel
+    return res.lev >= opts.minimumInterestingLevel
 
 
 # For direct, manual use

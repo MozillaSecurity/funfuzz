@@ -24,7 +24,6 @@ from ..util import create_collector
 from ..util import lithium_helpers
 from ..util import subprocesses as sps
 
-gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
 
@@ -258,17 +257,10 @@ def parseOptions(args):  # pylint: disable=invalid-name
     return options
 
 
-# For use by Lithium and autobisectjs. (autobisectjs calls init multiple times because it changes the js engine name)
-def init(args):
-    global gOptions  # pylint: disable=invalid-name,global-statement
-    gOptions = parseOptions(args)
-
-
-# FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name
+def interesting(opts, tempPrefix):  # pylint: disable=invalid-name
     actualLevel = compareLevel(  # pylint: disable=invalid-name
-        gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
-    return actualLevel >= gOptions.minimumInterestingLevel
+        opts.jsengine, opts.flags, opts.infilename, tempPrefix, opts, False, False)[0]
+    return actualLevel >= opts.minimumInterestingLevel
 
 
 def main():
