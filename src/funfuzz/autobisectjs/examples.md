@@ -44,4 +44,4 @@ You could specify the assertion message this way too:
 
 * To bisect **bugs found by compare_jit**:
 
-```python -m funfuzz.autobisectjs.autobisectjs -s 6ec4eb9786d8 -p 1183423.js -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central" -i funfuzz.js.compare_jit --minlevel=6 mozilla-central```
+```python -m funfuzz.autobisectjs.autobisectjs -s 6ec4eb9786d8 -p 1183423.js -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central" -i funfuzz.js.compare_jit --minlevel=6```

@@ -54,7 +54,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
 
     if lev != js_interesting.JS_FINE:
         itest = [__file__, "--flags=" + ' '.join(flags),
-                 "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
+                 "--minlevel=" + str(lev), "--timeout=" + str(options.timeout)]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
@@ -83,7 +83,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
 
     # options dict must be one we can pass to js_interesting.ShellResult
-    # we also use it directly for knownPath, timeout, and collector
+    # we also use it directly for timeout, and collector
     # Return: (lev, crashInfo) or (js_interesting.JS_FINE, None)
 
     combos = shell_flags.basic_flag_sets(jsEngine)
@@ -161,7 +161,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
                 rerunCommand = sps.shellify(["python -m funfuzz.js.compare_jit", "--flags=" + " ".join(flags),
-                                             "--timeout=" + str(options.timeout), options.knownPath, jsEngine,
+                                             "--timeout=" + str(options.timeout), jsEngine,
                                              os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
@@ -240,11 +240,8 @@ def parseOptions(args):  # pylint: disable=invalid-name
                       default="",
                       help="space-separated list of one set of flags")
     options, args = parser.parse_args(args)
-    if len(args) != 3:
-        raise Exception("Wrong number of positional arguments. Need 3 (knownPath, jsengine, infilename).")
-    options.knownPath = args[0]
-    options.jsengine = args[1]
-    options.infilename = args[2]
+    options.jsengine = args[0]
+    options.infilename = args[1]
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not os.path.exists(options.jsengine):
         raise Exception("js shell does not exist: " + options.jsengine)

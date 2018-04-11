@@ -60,11 +60,8 @@ def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-r
     # higher = more complex mixing, especially with regression tests.
     # lower = less time wasted in timeouts and in compare_jit testcases that are thrown away due to OOMs.
     options.timeout = int(args[0])
-
-    # FIXME: We can probably remove args[1]  # pylint: disable=fixme
-    options.knownPath = 'mozilla-central'
-    options.jsEngine = args[2]
-    options.engineFlags = args[3:]
+    options.jsEngine = args[1]
+    options.engineFlags = args[2:]
 
     return options
 
@@ -146,7 +143,6 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
         js_interesting_args.append('--timeout=' + str(options.timeout))
         if options.valgrind:
             js_interesting_args.append('--valgrind')
-        js_interesting_args.append(options.knownPath)
         js_interesting_args.append(options.jsEngine)
         if options.randomFlags:
             engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
@@ -185,7 +181,6 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                 itest.append("--valgrind")
             itest.append("--minlevel=" + str(res.lev))
             itest.append("--timeout=" + str(options.timeout))
-            itest.append(options.knownPath)
             (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
                 itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
                 options.build_options_str, targetTime, res.lev)

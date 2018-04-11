@@ -55,7 +55,7 @@ VALGRIND_ERROR_EXIT_CODE = 77
 
 class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
 
-    # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
+    # options dict should include: timeout, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
         # pylint: disable=too-many-locals,too-many-statements
         pathToBinary = runthis[0]  # pylint: disable=invalid-name
@@ -261,10 +261,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
                       default=120,
                       help="timeout in seconds")
     options, args = parser.parse_args(args)
-    if len(args) < 2:
-        raise Exception("Not enough positional arguments")
-    options.knownPath = args[0]
-    options.jsengineWithArgs = args[1:]
+    options.jsengineWithArgs = args
     options.collector = create_collector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
