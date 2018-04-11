@@ -33,13 +33,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 # Add your repository here.
-REPOS = ['gecko-dev', 'octo'] + \
-    ['mozilla-' + x for x in ['inbound', 'central', 'beta', 'release']]
+REPOS = ["gecko-dev", "octo"] + \
+    ["mozilla-" + x for x in ["inbound", "central", "beta", "release"]]
 
 if sps.isWin:
     # pylint: disable=invalid-name
-    git_64bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES'), 'Git', 'bin', 'git.exe'))
-    git_32bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+    git_64bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES"), "Git", "bin", "git.exe"))
+    git_32bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES(X86)"), "Git", "bin", "git.exe"))
     if os.path.isfile(git_64bit_path):
         GITBINARY = git_64bit_path
     elif os.path.isfile(git_32bit_path):
@@ -47,7 +47,7 @@ if sps.isWin:
     else:
         raise OSError("Git binary not found")
 else:
-    GITBINARY = 'git'
+    GITBINARY = "git"
 
 
 def time_cmd(cmd, cwd=None, env=None, timeout=None):
@@ -75,12 +75,12 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the type of repository."""
     repo_types = []
-    repo_types.append('.hg')
-    repo_types.append('.git')
+    repo_types.append(".hg")
+    repo_types.append(".git")
     for rtype in repo_types:
         if os.path.isdir(os.path.join(r, rtype)):
             return rtype[1:]
-    raise Exception('Type of repository located at ' + r + ' cannot be determined.')
+    raise Exception("Type of repository located at " + r + " cannot be determined.")
 
 
 def update_funfuzz():
@@ -100,7 +100,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert os.path.isdir(repo)
     repo_type = typeOfRepo(repo)
 
-    if repo_type == 'hg':
+    if repo_type == "hg":
         hg_pull_cmd = ["hg", "--time", "pull", "-u"]
         logger.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
         out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=repo, stderr=subprocess.PIPE)
@@ -115,14 +115,14 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
         logger.info('"%s" had the above output and took - %s',
                     subprocess.list2cmdline(out_hg_log_default.args),
                     out_hg_log_default.stderr)
-    elif repo_type == 'git':
+    elif repo_type == "git":
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
         if sps.isWin:
-            gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
+            gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
         time_cmd([GITBINARY, "pull"], cwd=repo, env=gitenv)
     else:
-        raise Exception('Unknown repository type: ' + repo_type)
+        raise Exception("Unknown repository type: " + repo_type)
 
     return True
 
@@ -132,7 +132,7 @@ def updateRepos():  # pylint: disable=invalid-name
     home_dir = sps.normExpUserPath("~")
     trees = [
         os.path.normpath(os.path.join(home_dir)),
-        os.path.normpath(os.path.join(home_dir, 'trees'))
+        os.path.normpath(os.path.join(home_dir, "trees"))
     ]
     for tree in trees:
         for name in sorted(os.listdir(tree)):
@@ -153,5 +153,5 @@ def main():  # pylint: disable=missing-docstring
     logger.info(time.asctime())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
