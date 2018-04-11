@@ -63,6 +63,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'
         # pylint: disable=invalid-name
+        assert os.path.isfile(os.path.abspath(pathToBinary + ".fuzzmanagerconf"))
         pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split('.')[0])
         pc.addProgramArguments(runthis[1:-1])
 
