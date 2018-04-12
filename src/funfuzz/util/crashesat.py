@@ -23,13 +23,13 @@ from . import subprocesses as sps
 def parse_options(arguments):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
     parser.disable_interspersed_args()
-    parser.add_option('-r', '--regex', action='store_true', dest='useRegex',
+    parser.add_option("-r", "--regex", action="store_true", dest="useRegex",
                       default=False,
-                      help='Allow search for regular expressions instead of strings.')
-    parser.add_option('-s', '--sig', action='store', dest='sig',
-                      default='',
+                      help="Allow search for regular expressions instead of strings.")
+    parser.add_option("-s", "--sig", action="store", dest="sig",
+                      default="",
                       help='Match this crash signature. Defaults to "%default".')
-    parser.add_option('-t', '--timeout', type='int', action='store', dest='condTimeout',
+    parser.add_option("-t", "--timeout", type="int", action="store", dest="condTimeout",
                       default=120,
                       help='Optionally set the timeout. Defaults to "%default" seconds.')
 

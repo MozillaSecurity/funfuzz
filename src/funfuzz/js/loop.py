@@ -70,7 +70,7 @@ def showtail(filename):  # pylint: disable=missing-docstring
     # pylint: disable=fixme
     # FIXME: Get jsfunfuzz to output start & end of interesting result boundaries instead of this.
     cmd = []
-    cmd.extend(['tail', '-n', '20'])
+    cmd.extend(["tail", "-n", "20"])
     cmd.append(filename)
     print(" ".join(cmd))
     print()
@@ -95,14 +95,14 @@ const regressionTestsRoot = %s;
 const libdir = regressionTestsRoot + %s; // needed by jit-tests
 const regressionTestList = %s;
 """ % (json.dumps(repo),
-       json.dumps(os.path.join('js', 'src', 'jit-test', 'lib') + os.sep),
+       json.dumps(os.path.join("js", "src", "jit-test", "lib") + os.sep),
        json.dumps(inTreeRegressionTests(repo)))
 
 
 def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    jit_tests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'jit-test', 'tests'))
-    js_tests = jsFilesIn(len(repo), os.path.join(repo, 'js', 'src', 'tests'))
+    jit_tests = jsFilesIn(len(repo), os.path.join(repo, "js", "src", "jit-test", "tests"))
+    js_tests = jsFilesIn(len(repo), os.path.join(repo, "js", "src", "tests"))
     return jit_tests + js_tests
 
 
@@ -111,7 +111,7 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
     return [os.path.join(path, filename)[repoPathLength:]
             for path, _dirs, files in os.walk(sps.normExpUserPath(root))
             for filename in files
-            if filename.endswith('.js')]
+            if filename.endswith(".js")]
 
 
 def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=invalid-name,missing-docstring,too-complex
@@ -140,15 +140,15 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
 
         # Construct command needed to loop jsfunfuzz fuzzing.
         js_interesting_args = []
-        js_interesting_args.append('--timeout=' + str(options.timeout))
+        js_interesting_args.append("--timeout=" + str(options.timeout))
         if options.valgrind:
-            js_interesting_args.append('--valgrind')
+            js_interesting_args.append("--valgrind")
         js_interesting_args.append(options.jsEngine)
         if options.randomFlags:
             engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
-        js_interesting_args.extend(['-e', 'maxRunTime=' + str(options.timeout * (1000 // 2))])
-        js_interesting_args.extend(['-f', fuzzjs])
+        js_interesting_args.extend(["-e", "maxRunTime=" + str(options.timeout * (1000 // 2))])
+        js_interesting_args.extend(["-f", fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
@@ -166,9 +166,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with open(logPrefix + '-out.txt', 'r') as f:
+            with open(logPrefix + "-out.txt", "r") as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
-                    l.replace('/*FRC-', '/*') for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
+                    l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
             with open(logPrefix + "-orig.js", "w") as f:
                 f.writelines(newfileLines)
             with open(filenameToReduce, "w") as f:
@@ -203,16 +203,16 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
 
             metadata = {}
             if autoBisectLog:
-                metadata = {"autoBisectLog": ''.join(autoBisectLog)}
+                metadata = {"autoBisectLog": "".join(autoBisectLog)}
             collector.submit(res.crashInfo, filenameToReduce, quality, metaData=metadata)
             print("Submitted %s" % filenameToReduce)
 
         else:
-            are_flags_deterministic = "--dump-bytecode" not in engineFlags and '-D' not in engineFlags
+            are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags
             # pylint: disable=no-member
             if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
                     js_interesting_options.shellIsDeterministic and are_flags_deterministic:
-                linesToCompare = jitCompareLines(logPrefix + '-out.txt', "/*FCM*/")  # pylint: disable=invalid-name
+                linesToCompare = jitCompareLines(logPrefix + "-out.txt", "/*FCM*/")  # pylint: disable=invalid-name
                 jitcomparefilename = logPrefix + "-cj-in.js"
                 with open(jitcomparefilename, "w") as f:
                     f.writelines(linesToCompare)
@@ -246,7 +246,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
-    with open(jsfunfuzzOutputFilename, 'r') as f:
+    with open(jsfunfuzzOutputFilename, "r") as f:
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]

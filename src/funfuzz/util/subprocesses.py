@@ -24,11 +24,11 @@ from pkg_resources import parse_version
 
 verbose = False  # pylint: disable=invalid-name
 
-isLinux = (platform.system() == 'Linux')  # pylint: disable=invalid-name
-isMac = (platform.system() == 'Darwin')  # pylint: disable=invalid-name
-isWin = (platform.system() == 'Windows')  # pylint: disable=invalid-name
-isWin10 = isWin and (platform.uname()[2] == '10')  # pylint: disable=invalid-name
-isWin64 = ('PROGRAMFILES(X86)' in os.environ)  # pylint: disable=invalid-name
+isLinux = (platform.system() == "Linux")  # pylint: disable=invalid-name
+isMac = (platform.system() == "Darwin")  # pylint: disable=invalid-name
+isWin = (platform.system() == "Windows")  # pylint: disable=invalid-name
+isWin10 = isWin and (platform.uname()[2] == "10")  # pylint: disable=invalid-name
+isWin64 = ("PROGRAMFILES(X86)" in os.environ)  # pylint: disable=invalid-name
 
 # pylint: disable=invalid-name
 noMinidumpMsg = r"""
@@ -43,17 +43,17 @@ WARNING: http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs
 # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc,missing-return-type-doc
 # pylint: disable=missing-type-doc,too-complex,too-many-arguments,too-many-branches,too-many-statements
 def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitCode=False, currWorkingDir=None,
-                  env='NOTSET', verbosity=False):
+                  env="NOTSET", verbosity=False):
     """Capture standard output, return the output as a string, along with the return value."""
     currWorkingDir = currWorkingDir or (
         os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
-    if env == 'NOTSET':
+    if env == "NOTSET":
         vdump(shellify(inputCmd))
         env = os.environ
     else:
         # There is no way yet to only print the environment variables that were added by the harness
         # We could dump all of os.environ but it is too much verbose output.
-        vdump('ENV_VARIABLES_WERE_ADDED_HERE ' + shellify(inputCmd))
+        vdump("ENV_VARIABLES_WERE_ADDED_HERE " + shellify(inputCmd))
     cmd = []
     for el in inputCmd:
         if el.startswith('"') and el.endswith('"'):
@@ -71,20 +71,20 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             env=env)
         (stdout, stderr) = p.communicate()
     except OSError as e:
-        raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
+        raise Exception(repr(e.strerror) + " error calling: " + shellify(cmd))
     if p.returncode != 0:
         oomErrorOutput = stdout if combineStderr else stderr
         if (isLinux or isMac) and oomErrorOutput:
-            if 'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
-                raise Exception('GCC running out of memory')
-            elif 'error: unable to execute command: Killed' in oomErrorOutput:
-                raise Exception('Clang running out of memory')
+            if "internal compiler error: Killed (program cc1plus)" in oomErrorOutput:
+                raise Exception("GCC running out of memory")
+            elif "error: unable to execute command: Killed" in oomErrorOutput:
+                raise Exception("Clang running out of memory")
         if not ignoreExitCode:
             # Potential problem area: Note that having a non-zero exit code does not mean that the
             # operation did not succeed, for example when compiling a shell. A non-zero exit code
             # can appear even though a shell compiled successfully.
-            # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
-            if 'no such option: -s' not in stdout:
+            # Pymake in builds earlier than revision 232553f741a0 did not support the "-s" option.
+            if "no such option: -s" not in stdout:
                 print("Nonzero exit code from: ")
                 print("  %s" % shellify(cmd))
                 print("stdout is:")
@@ -92,28 +92,28 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             if stderr is not None:
                 print("stderr is:")
                 print(stderr)
-            # Pymake in builds earlier than revision 232553f741a0 did not support the '-s' option.
-            if 'hg pull: option --rebase not recognized' not in stdout and 'no such option: -s' not in stdout:
-                if isWin and stderr and 'Permission denied' in stderr and \
-                        'configure: error: installation or configuration problem: ' + \
-                        'C++ compiler cannot create executables.' in stderr:
-                    raise Exception('Windows conftest.exe configuration permission problem')
+            # Pymake in builds earlier than revision 232553f741a0 did not support the "-s" option.
+            if "hg pull: option --rebase not recognized" not in stdout and "no such option: -s" not in stdout:
+                if isWin and stderr and "Permission denied" in stderr and \
+                        "configure: error: installation or configuration problem: " + \
+                        "C++ compiler cannot create executables." in stderr:
+                    raise Exception("Windows conftest.exe configuration permission problem")
                 else:
-                    raise Exception('Nonzero exit code')
+                    raise Exception("Nonzero exit code")
     if not combineStderr and not ignoreStderr and stderr:
         # Ignore hg color mode throwing an error in console on Windows platforms.
-        if not (isWin and 'warning: failed to set color mode to win32' in stderr):
+        if not (isWin and "warning: failed to set color mode to win32" in stderr):
             print("Unexpected output on stderr from: ")
             print("  %s" % shellify(cmd))
             print("%s %s" % (stdout, stderr))
-            raise Exception('Unexpected output on stderr')
+            raise Exception("Unexpected output on stderr")
     if stderr and ignoreStderr and stderr and p.returncode != 0:
         # During configure, there will always be stderr. Sometimes this stderr causes configure to
         # stop the entire script, especially on Windows.
         print("Return code not zero, and unexpected output on stderr from: ")
         print("  %s" % shellify(cmd))
         print("%s %s" % (stdout, stderr))
-        raise Exception('Return code not zero, and unexpected output on stderr')
+        raise Exception("Return code not zero, and unexpected output on stderr")
     if verbose or verbosity:
         print(stdout)
         if stderr is not None:
@@ -126,7 +126,7 @@ def createWtmpDir(tmpDirBase):  # pylint: disable=invalid-name,missing-param-doc
     """Create wtmp<number> directory, incrementing the number if one is already found."""
     i = 1
     while True:
-        tmpDirWithNum = 'wtmp' + str(i)
+        tmpDirWithNum = "wtmp" + str(i)
         tmpDir = os.path.join(tmpDirBase, tmpDirWithNum)
         try:
             os.mkdir(tmpDir)  # To avoid race conditions, we use try/except instead of exists/create
@@ -152,7 +152,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: di
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Find the required crash log in the given crash reporter directory."""
     assert parse_version(platform.mac_ver()[0]) >= parse_version("10.6")
-    reportDirList = [os.path.expanduser('~'), '/']
+    reportDirList = [os.path.expanduser("~"), "/"]
     for baseDir in reportDirList:
         # Sometimes the crash reports end up in the root directory.
         # This possibly happens when the value of <value>:
@@ -161,7 +161,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: di
         # It also happens when ssh'd into a computer.
         # And maybe when the computer is under heavy load.
         # See http://en.wikipedia.org/wiki/Crash_Reporter_%28Mac_OS_X%29
-        reportDir = os.path.join(baseDir, 'Library/Logs/DiagnosticReports/')
+        reportDir = os.path.join(baseDir, "Library/Logs/DiagnosticReports/")
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
         if os.path.exists(reportDir):
@@ -170,7 +170,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: di
             crashLogs = []
         # Firefox sometimes still runs as firefox-bin, at least on Mac (likely bug 658850)
         crashLogs = [x for x in crashLogs
-                     if x.startswith(progname + '_') or x.startswith(progname + '-bin_')]
+                     if x.startswith(progname + "_") or x.startswith(progname + "-bin_")]
         crashLogs.sort(reverse=True)
         for fn in crashLogs:
             fullfn = os.path.join(reportDir, fn)
@@ -215,20 +215,20 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
     # This has only been tested on 64-bit Windows 7 and higher
     if isWin64:
         debuggerCmd = constructCdbCommand(progfullname, crashedPID)
-    elif os.name == 'posix':
+    elif os.name == "posix":
         debuggerCmd = constructGdbCommand(progfullname, crashedPID)
     else:
         debuggerCmd = None
 
     if debuggerCmd:
-        vdump(' '.join(debuggerCmd))
+        vdump(" ".join(debuggerCmd))
         coreFile = debuggerCmd[-1]
         assert os.path.isfile(coreFile)
         debuggerExitCode = subprocess.call(
             debuggerCmd,
             stdin=None,
             stderr=subprocess.STDOUT,
-            stdout=open(logPrefix + "-crash.txt", 'w') if useLogFiles else None,
+            stdout=open(logPrefix + "-crash.txt", "w") if useLogFiles else None,
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
             close_fds=(os.name == "posix"),
@@ -239,9 +239,9 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
         if useLogFiles:
             if os.path.isfile(coreFile):
                 shutil.move(coreFile, logPrefix + "-core")
-                subprocess.call(["gzip", '-f', logPrefix + "-core"])
+                subprocess.call(["gzip", "-f", logPrefix + "-core"])
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.check_call(['chmod', 'og+r', logPrefix + "-core.gz"])
+                subprocess.check_call(["chmod", "og+r", logPrefix + "-core.gz"])
             return logPrefix + "-crash.txt"
         else:
             print("I don't know what to do with a core file when logPrefix is null")
@@ -268,7 +268,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
     elif isLinux:
         print("Warning: grabCrashLog() did not find a core file for PID %d." % crashedPID)
         print("Note: Your soft limit for core file sizes is currently %d. "
-              "You can increase it with 'ulimit -c' in bash." % getCoreLimit()[0])
+              'You can increase it with "ulimit -c" in bash.' % getCoreLimit()[0])
 
 
 def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsistent-return-statements,invalid-name
@@ -276,13 +276,13 @@ def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsiste
     """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
     # Look for a minidump.
     dumpFilename = normExpUserPath(os.path.join(
-        '~', 'AppData', 'Local', 'CrashDumps', os.path.basename(progfullname) + '.' + str(crashedPID) + '.dmp'))
+        "~", "AppData", "Local", "CrashDumps", os.path.basename(progfullname) + "." + str(crashedPID) + ".dmp"))
     if isWin10:
-        win64bitDebuggerFolder = os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Windows Kits', '10', 'Debuggers', 'x64')
+        win64bitDebuggerFolder = os.path.join(os.getenv("PROGRAMFILES(X86)"), "Windows Kits", "10", "Debuggers", "x64")
     else:
-        win64bitDebuggerFolder = os.path.join(os.getenv('PROGRAMW6432'), 'Debugging Tools for Windows (x64)')
+        win64bitDebuggerFolder = os.path.join(os.getenv("PROGRAMW6432"), "Debugging Tools for Windows (x64)")
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
-    cdbPath = os.path.join(win64bitDebuggerFolder, 'cdb.exe')
+    cdbPath = os.path.join(win64bitDebuggerFolder, "cdb.exe")
     if not os.path.exists(cdbPath):
         print()
         print("WARNING: cdb.exe is not found - all crashes will be interesting.")
@@ -294,14 +294,14 @@ def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsiste
         maxLoops = 300
         while True:
             if os.path.exists(dumpFilename):
-                debuggerCmdPath = getAbsPathForAdjacentFile('cdb_cmds.txt')
+                debuggerCmdPath = getAbsPathForAdjacentFile("cdb_cmds.txt")
                 assert os.path.exists(debuggerCmdPath)
 
                 cdbCmdList = []
-                cdbCmdList.append('$<' + debuggerCmdPath)
+                cdbCmdList.append("$<" + debuggerCmdPath)
 
                 # See bug 902706 about -g.
-                return [cdbPath, '-g', '-c', ';'.join(cdbCmdList), '-z', dumpFilename]
+                return [cdbPath, "-g", "-c", ";".join(cdbCmdList), "-z", dumpFilename]
 
             time.sleep(0.200)
             loops += 1
@@ -344,7 +344,7 @@ def isWinDumpingToDefaultLocation():  # pylint: disable=invalid-name,missing-ret
             try:
                 dumpFolderRegValue = winreg.QueryValueEx(key, "DumpFolder")
                 # %LOCALAPPDATA%\CrashDumps is the default location.
-                if not (dumpFolderRegValue[0] == r'%LOCALAPPDATA%\CrashDumps' and
+                if not (dumpFolderRegValue[0] == r"%LOCALAPPDATA%\CrashDumps" and
                         dumpFolderRegValue[1] == winreg.REG_EXPAND_SZ):
                     print()
                     print("WARNING: Dumps are instead appearing at: %s - "
@@ -353,7 +353,7 @@ def isWinDumpingToDefaultLocation():  # pylint: disable=invalid-name,missing-ret
                     return False
             except WindowsError as e:  # pylint: disable=undefined-variable
                 # If the key value cannot be found, the dumps will be put in the default location
-                if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
+                if e.errno == 2 and e.strerror == "The system cannot find the file specified":
                     return True
                 else:
                     raise
@@ -361,7 +361,7 @@ def isWinDumpingToDefaultLocation():  # pylint: disable=invalid-name,missing-ret
         return True
     except WindowsError as e:  # pylint: disable=undefined-variable
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
-        if e.errno == 2 and e.strerror == 'The system cannot find the file specified':
+        if e.errno == 2 and e.strerror == "The system cannot find the file specified":
             print()
             print("WARNING: The registry key HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\"
                   "Windows\\Windows Error Reporting\\LocalDumps cannot be found.")
@@ -383,15 +383,15 @@ def constructGdbCommand(progfullname, crashedPID):  # pylint: disable=invalid-na
         core_name = "/cores/core." + str(crashedPID)
     elif isLinux:
         is_pid_used = False
-        if os.path.exists('/proc/sys/kernel/core_uses_pid'):
-            with open('/proc/sys/kernel/core_uses_pid') as f:
+        if os.path.exists("/proc/sys/kernel/core_uses_pid"):
+            with open("/proc/sys/kernel/core_uses_pid") as f:
                 is_pid_used = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
-        core_name = 'core.' + str(crashedPID) if is_pid_used else 'core'  # relative path
+        core_name = "core." + str(crashedPID) if is_pid_used else "core"  # relative path
         if not os.path.isfile(core_name):
-            core_name = normExpUserPath(os.path.join('~', core_name))  # try the home dir
+            core_name = normExpUserPath(os.path.join("~", core_name))  # try the home dir
 
     if core_name and os.path.exists(core_name):
-        debuggerCmdPath = getAbsPathForAdjacentFile('gdb_cmds.txt')  # pylint: disable=invalid-name
+        debuggerCmdPath = getAbsPathForAdjacentFile("gdb_cmds.txt")  # pylint: disable=invalid-name
         assert os.path.exists(debuggerCmdPath)
 
         # Run gdb and move the core file. Tip: gdb gives more info for:
@@ -412,13 +412,13 @@ def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-do
 
 def test_rmTreeIncludingReadOnly():  # pylint: disable=invalid-name
     """Run this function in the same directory as subprocesses to test."""
-    test_dir = 'test_rmTreeIncludingReadOnly'
+    test_dir = "test_rmTreeIncludingReadOnly"
     os.mkdir(test_dir)
-    read_only_dir = os.path.join(test_dir, 'nestedReadOnlyDir')
+    read_only_dir = os.path.join(test_dir, "nestedReadOnlyDir")
     os.mkdir(read_only_dir)
-    filename = os.path.join(read_only_dir, 'test.txt')
-    with open(filename, 'w') as f:
-        f.write('testing\n')
+    filename = os.path.join(read_only_dir, "test.txt")
+    with open(filename, "w") as f:
+        f.write("testing\n")
 
     os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     os.chmod(read_only_dir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
@@ -430,12 +430,12 @@ def handleRemoveReadOnly(func, path, exc):  # pylint: disable=invalid-name,missi
     # pylint: disable=missing-type-doc
     """Handle read-only files. Adapted from http://stackoverflow.com/q/1213706 ."""
     if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
-        if os.name == 'posix':
+        if os.name == "posix":
             # Ensure parent directory is also writeable.
             pardir = os.path.abspath(os.path.join(path, os.path.pardir))
             if not os.access(pardir, os.W_OK):
                 os.chmod(pardir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        elif os.name == 'nt':
+        elif os.name == "nt":
             os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
         func(path)
     else:
@@ -458,12 +458,12 @@ def shellify(cmd):  # pylint: disable=missing-param-doc,missing-return-doc,missi
         elif okQuotedRE.match(item):
             ssc.append('"' + item + '"')
         else:
-            vdump('Regex not matched, but trying to shellify anyway:')
-            return ' '.join(cmd).replace('\\', '//') if isWin else ' '.join(cmd)
-    return ' '.join(ssc)
+            vdump("Regex not matched, but trying to shellify anyway:")
+            return " ".join(cmd).replace("\\", "//") if isWin else " ".join(cmd)
+    return " ".join(ssc)
 
 
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
-    """Append the word 'DEBUG' to any verbose output."""
+    """Append the word "DEBUG" to any verbose output."""
     if verbose:
         print("DEBUG - %s" % inp)

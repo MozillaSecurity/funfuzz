@@ -37,6 +37,6 @@ def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
 
 def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docstring
     print("Matches signature in FuzzManager:")
-    print("  Signature description: %s" % match[1].get('shortDescription'))
+    print("  Signature description: %s" % match[1].get("shortDescription"))
     print("  Signature file: %s" % match[0])
     print()

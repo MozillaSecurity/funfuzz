@@ -25,10 +25,10 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 
 ### Windows (only 64-bit supported)
 
-1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 3.0).
-2. Install [Git for Windows](https://msysgit.github.io/) to get Git for Windows in order to clone these funfuzz repositories. (32-bit works best for now)
+1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 3.1.1).
+2. Install [Git](https://git-scm.com/) to clone these funfuzz repositories.
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
-4. Make sure you install at least Microsoft Visual Studio 2015 (Community Edition is recommended) as per the build instructions above in the Setup section. Visual Studio 2017 is preferred.
+4. Make sure you install at least Microsoft Visual Studio 2017 (Community Edition is recommended) as per the build instructions above in the Setup section.
 5. Run `start-shell.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files/Git/bin/git.exe`.
     1. Run the batch file with administrator privileges to get gflags analysis working correctly.
 
@@ -82,9 +82,9 @@ In js mode, loop_bot makes use of:
 * [jsfunfuzz](src/funfuzz/js/jsfunfuzz)
 * [compare_jit](src/funfuzz/js/compare_jit.py) (if testing deterministic builds)
 * randorderfuzz (included in funfuzz, if tests are present in the mozilla repository)
-* [autoBisect](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
+* [autobisectjs](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
 
-The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).
+The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autobisectjs](src/funfuzz/autobisectjs/README.md).
 
 You will also need to need a `~/.fuzzmanagerconf` file, similar to:
 

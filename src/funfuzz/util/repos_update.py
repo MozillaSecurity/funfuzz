@@ -32,14 +32,14 @@ else:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
-# Add your repository here. Note that Valgrind does not have a hg repository.
-REPOS = ['gecko-dev', 'octo'] + \
-    ['mozilla-' + x for x in ['inbound', 'central', 'beta', 'release']]
+# Add your repository here.
+REPOS = ["gecko-dev", "octo"] + \
+    ["mozilla-" + x for x in ["inbound", "central", "beta", "release"]]
 
 if sps.isWin:
     # pylint: disable=invalid-name
-    git_64bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES'), 'Git', 'bin', 'git.exe'))
-    git_32bit_path = os.path.normpath(os.path.join(os.getenv('PROGRAMFILES(X86)'), 'Git', 'bin', 'git.exe'))
+    git_64bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES"), "Git", "bin", "git.exe"))
+    git_32bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES(X86)"), "Git", "bin", "git.exe"))
     if os.path.isfile(git_64bit_path):
         GITBINARY = git_64bit_path
     elif os.path.isfile(git_32bit_path):
@@ -47,45 +47,44 @@ if sps.isWin:
     else:
         raise OSError("Git binary not found")
 else:
-    GITBINARY = 'git'
+    GITBINARY = "git"
 
 
-def time_cmd(cmd, cwd=None, env=None, stderr=None, timeout=None):
+def time_cmd(cmd, cwd=None, env=None, timeout=None):
     """Calculates and outputs the time a command takes.
 
     Args:
         cmd (list): Command to be run.
         cwd (str): Working directory command is to be executed in.
         env (dict): Working environment command is to be executed in.
-        stderr (bytes): stderr shown during command execution.
         timeout (int): Timeout for the command.
     """
     if not env:
         env = os.environ.copy()
 
-    logger.info("Running `%s` now..", " ".join(cmd))
+    logger.info("\nRunning `%s` now..\n", " ".join(cmd))
     cmd_start = time.time()
 
-    subprocess.run(cmd, cwd=cwd, env=env, stderr=stderr, timeout=timeout)
+    cmd = subprocess.run(cmd, cwd=cwd, env=env, timeout=timeout)
 
     cmd_end = time.time()
-    logger.info("`%s` took %.3f seconds.", " ".join(cmd), cmd_end - cmd_start)
+    logger.info("\n`%s` took %.3f seconds.\n", subprocess.list2cmdline(cmd.args), cmd_end - cmd_start)
 
 
 def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the type of repository."""
     repo_types = []
-    repo_types.append('.hg')
-    repo_types.append('.git')
+    repo_types.append(".hg")
+    repo_types.append(".git")
     for rtype in repo_types:
         if os.path.isdir(os.path.join(r, rtype)):
             return rtype[1:]
-    raise Exception('Type of repository located at ' + r + ' cannot be determined.')
+    raise Exception("Type of repository located at " + r + " cannot be determined.")
 
 
 def update_funfuzz():
-    """Updates the funfuzz repository."""
+    """Updates the requirements of the funfuzz repository. This does not seem to update funfuzz into pip itself."""
     # funfuzz repository assumed to be located at ~/funfuzz
     funfuzz_dir = sps.normExpUserPath(os.path.join("~", "funfuzz"))
     assert os.path.isdir(funfuzz_dir)
@@ -101,21 +100,29 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert os.path.isdir(repo)
     repo_type = typeOfRepo(repo)
 
-    if repo_type == 'hg':
-        out_hg_pull = subprocess.run(["hg", "--time", "pull", "-u"], check=True, cwd=repo, stderr=subprocess.DEVNULL)
-        logger.info("Command with the above out_hg_pull: %s", subprocess.list2cmdline(out_hg_pull.args))
+    if repo_type == "hg":
+        hg_pull_cmd = ["hg", "--time", "pull", "-u"]
+        logger.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
+        out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=repo, stderr=subprocess.PIPE)
+        logger.info('"%s" had the above output and took - %s',
+                    subprocess.list2cmdline(out_hg_pull.args),
+                    out_hg_pull.stderr)
 
-        out_hg_log_default = subprocess.run(["hg", "--time", "log", "-r", "default"],
-                                            check=True, cwd=repo, stderr=subprocess.DEVNULL)
-        logger.info("Command with the above output: %s", subprocess.list2cmdline(out_hg_log_default.args))
-    elif repo_type == 'git':
+        hg_log_default_cmd = ["hg", "--time", "log", "-r", "default"]
+        logger.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
+        out_hg_log_default = subprocess.run(hg_log_default_cmd, check=True, cwd=repo,
+                                            stderr=subprocess.PIPE)
+        logger.info('"%s" had the above output and took - %s',
+                    subprocess.list2cmdline(out_hg_log_default.args),
+                    out_hg_log_default.stderr)
+    elif repo_type == "git":
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
         if sps.isWin:
-            gitenv['GIT_SSH_COMMAND'] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
-        time_cmd([GITBINARY, "pull"], cwd=repo, env=gitenv, stderr=subprocess.DEVNULL)
+            gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
+        time_cmd([GITBINARY, "pull"], cwd=repo, env=gitenv)
     else:
-        raise Exception('Unknown repository type: ' + repo_type)
+        raise Exception("Unknown repository type: " + repo_type)
 
     return True
 
@@ -125,7 +132,7 @@ def updateRepos():  # pylint: disable=invalid-name
     home_dir = sps.normExpUserPath("~")
     trees = [
         os.path.normpath(os.path.join(home_dir)),
-        os.path.normpath(os.path.join(home_dir, 'trees'))
+        os.path.normpath(os.path.join(home_dir, "trees"))
     ]
     for tree in trees:
         for name in sorted(os.listdir(tree)):
@@ -146,5 +153,5 @@ def main():  # pylint: disable=missing-docstring
     logger.info(time.asctime())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

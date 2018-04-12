@@ -1,15 +1,15 @@
-autoBisect will help you to find out when a changeset introduced problems. It can also point at a changeset that may have exposed the issue.
+autobisectjs will help you to find out when a changeset introduced problems. It can also point at a changeset that may have exposed the issue.
 
 It helps with work allocation:
 
 * The engineer that most recently worked on the code is the one most likely to know how to fix the bug.
 * If not, the engineer may be able to forward to someone more knowledgeable.
 
-## Find changeset that introduced problems using autoBisect
+## Find changeset that introduced problems using autobisectjs
 
 For SpiderMonkey, use the following while compiling locally:
 
-`python -m funfuzz.autobisectjs.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic"`
+`python -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic"`
 
 assuming the testcase requires "--fuzzing-safe --no-threads --ion-eager" as runtime flags.
 
@@ -28,7 +28,7 @@ If you have an internet connection, and the testcase causes problems with:
 
 you can try bisecting using downloaded builds:
 
-`python -m funfuzz.autobisectjs.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug" -T`
+`python -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug" -T`
 
 This should take < 5 minutes total assuming a fast internet connection, since it does not need to compile shells.
 
