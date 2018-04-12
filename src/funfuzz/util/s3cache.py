@@ -32,7 +32,7 @@ def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return
         return False
 
     try:
-        return bool(boto.utils.get_instance_metadata(num_retries=1, timeout=1)['instance-id'])
+        return bool(boto.utils.get_instance_metadata(num_retries=1, timeout=1)["instance-id"])
     except KeyError:
         return False
 
@@ -47,7 +47,7 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         if not isBoto:
             return False
 
-        EC2_PROFILE = None if isEC2VM() else 'laniakea'  # pylint: disable=invalid-name
+        EC2_PROFILE = None if isEC2VM() else "laniakea"  # pylint: disable=invalid-name
         try:
             conn = S3Connection(profile_name=EC2_PROFILE)
             self.bucket = conn.get_bucket(self.bucket_name)
@@ -73,13 +73,13 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         # pylint: disable=missing-type-doc
         """Compress a directory into a bz2 tarball and upload it to S3."""
         print("Creating archive...")
-        shutil.make_archive(directory, 'bztar', directory)
+        shutil.make_archive(directory, "bztar", directory)
         self.uploadFileToS3(tarball_path)
 
     def uploadFileToS3(self, filename):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
         """Upload file to S3."""
         # Root folder of the S3 bucket
-        destDir = ''  # pylint: disable=invalid-name
+        destDir = ""  # pylint: disable=invalid-name
         destpath = os.path.join(destDir, os.path.basename(filename))
         print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
 

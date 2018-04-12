@@ -32,7 +32,7 @@ from ..util import s3cache
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 
-S3_SHELL_CACHE_DIRNAME = 'shell-cache'  # Used by autobisectjs
+S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
 if sps.isWin:
     MAKE_BINARY = "mozmake"
@@ -67,16 +67,16 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         self.hgHash = hgHash  # pylint: disable=invalid-name
         self.build_opts = buildOpts
 
-        self.jsObjdir = ''  # pylint: disable=invalid-name
+        self.jsObjdir = ""  # pylint: disable=invalid-name
 
-        self.cfg = ''
-        self.destDir = ''  # pylint: disable=invalid-name
+        self.cfg = ""
+        self.destDir = ""  # pylint: disable=invalid-name
         self.addedEnv = ""  # pylint: disable=invalid-name
         self.fullEnv = ""  # pylint: disable=invalid-name
-        self.jsCfgFile = ''  # pylint: disable=invalid-name
+        self.jsCfgFile = ""  # pylint: disable=invalid-name
 
-        self.jsMajorVersion = ''  # pylint: disable=invalid-name
-        self.jsVersion = ''  # pylint: disable=invalid-name
+        self.jsMajorVersion = ""  # pylint: disable=invalid-name
+        self.jsVersion = ""  # pylint: disable=invalid-name
 
     @classmethod
     def main(cls, args=None):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
@@ -93,7 +93,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
     @staticmethod
     def run(argv=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
         """Build a shell and place it in the autobisectjs cache."""
-        usage = 'Usage: %prog [options]'
+        usage = "Usage: %prog [options]"
         parser = OptionParser(usage)
         parser.disable_interspersed_args()
 
@@ -102,14 +102,14 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         )
 
         # Specify how the shell will be built.
-        parser.add_option('-b', '--build',
-                          dest='build_opts',
-                          help="Specify build options, e.g. -b '--disable-debug --enable-optimize' "
+        parser.add_option("-b", "--build",
+                          dest="build_opts",
+                          help='Specify build options, e.g. -b "--disable-debug --enable-optimize" '
                                "(python -m funfuzz.js.build_options --help)")
 
-        parser.add_option('-r', '--rev',
-                          dest='revision',
-                          help='Specify revision to build')
+        parser.add_option("-r", "--rev",
+                          dest="revision",
+                          help="Specify revision to build")
 
         options = parser.parse_args(argv)[0]
         options.build_opts = build_options.parseShellOptions(options.build_opts)
@@ -149,7 +149,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         return self.hgHash
 
     def getJsCfgPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), 'configure'))
+        self.jsCfgFile = sps.normExpUserPath(os.path.join(self.getRepoDirJsSrc(), "configure"))
         assert os.path.isfile(self.jsCfgFile)
         return self.jsCfgFile
 
@@ -164,14 +164,14 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
     def getRepoDirJsSrc(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        return sps.normExpUserPath(os.path.join(self.getRepoDir(), 'js', 'src'))
+        return sps.normExpUserPath(os.path.join(self.getRepoDir(), "js", "src"))
 
     def getRepoName(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         return hg_helpers.getRepoNameFromHgrc(self.build_opts.repoDir)
 
     def getS3TarballWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        return self.getShellNameWithoutExt() + '.tar.bz2'
+        return self.getShellNameWithoutExt() + ".tar.bz2"
 
     def getS3TarballWithExtFullPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -188,12 +188,12 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
     def getShellCompiledPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         return sps.normExpUserPath(
-            os.path.join(self.getJsObjdir(), 'dist', 'bin', 'js' + ('.exe' if sps.isWin else '')))
+            os.path.join(self.getJsObjdir(), "dist", "bin", "js" + (".exe" if sps.isWin else "")))
 
     def getShellCompiledRunLibsPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         libs_list = [
-            sps.normExpUserPath(os.path.join(self.getJsObjdir(), 'dist', 'bin', runLib))
+            sps.normExpUserPath(os.path.join(self.getJsObjdir(), "dist", "bin", runLib))
             for runLib in inspect_shell.ALL_RUN_LIBS
         ]
         return libs_list
@@ -223,7 +223,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
 def ensureCacheDir():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
     """Return a cache directory for compiled shells to live in, and create one if needed."""
-    cache_dir = os.path.join(sps.normExpUserPath('~'), 'shell-cache')
+    cache_dir = os.path.join(sps.normExpUserPath("~"), "shell-cache")
     ensureDir(cache_dir)
 
     # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
@@ -255,27 +255,27 @@ def autoconfRun(cwDir):  # pylint: disable=invalid-name,missing-param-doc,missin
         autoconf213_mac_bin = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213" if which("brew") else "autoconf213"
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
         if not os.path.isfile(sps.normExpUserPath(autoconf213_mac_bin)):
-            autoconf213_mac_bin = 'autoconf213'
+            autoconf213_mac_bin = "autoconf213"
         subprocess.check_call([autoconf213_mac_bin], cwd=cwDir)
     elif sps.isLinux:
         # FIXME: We should use a method that is similar to the client.mk one, as per  # pylint: disable=fixme
         #   https://github.com/MozillaSecurity/funfuzz/issues/9
         try:
             # Ubuntu
-            subprocess.check_call(['autoconf2.13'], cwd=cwDir)
+            subprocess.check_call(["autoconf2.13"], cwd=cwDir)
         except OSError:
             # Fedora has a different name
-            subprocess.check_call(['autoconf-2.13'], cwd=cwDir)
+            subprocess.check_call(["autoconf-2.13"], cwd=cwDir)
     elif sps.isWin:
         # Windows needs to call sh to be able to find autoconf.
-        subprocess.check_call(['sh', 'autoconf-2.13'], cwd=cwDir)
+        subprocess.check_call(["sh", "autoconf-2.13"], cwd=cwDir)
 
 
 def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
     """Configures, compiles and copies a js shell according to required parameters."""
     print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
-    os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
-    shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+    os.mkdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), "objdir-js")))
+    shell.setJsObjdir(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), "objdir-js")))
 
     autoconfRun(shell.getRepoDirJsSrc())
     configure_try_count = 0
@@ -290,14 +290,14 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
                 raise
             # This exception message is returned from sps.captureStdout via cfgBin.
             # No idea why this is sps.isLinux as well..
-            if sps.isLinux or (sps.isWin and 'Windows conftest.exe configuration permission' in repr(ex)):
+            if sps.isLinux or (sps.isWin and "Windows conftest.exe configuration permission" in repr(ex)):
                 print("Trying once more...")
                 continue
     compileJs(shell)
     inspect_shell.verifyBinary(shell)
 
     compile_log = sps.normExpUserPath(os.path.join(shell.getShellCacheDir(),
-                                                   shell.getShellNameWithoutExt() + '.fuzzmanagerconf'))
+                                                   shell.getShellNameWithoutExt() + ".fuzzmanagerconf"))
     if not os.path.isfile(compile_log):
         envDump(shell, compile_log)
 
@@ -325,21 +325,21 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             if shell.build_opts.buildWithAsan:
                 cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
                 cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
-            cfg_cmds.append('sh')
+            cfg_cmds.append("sh")
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-            cfg_cmds.append('--target=i686-pc-linux')
+            cfg_cmds.append("--target=i686-pc-linux")
             if shell.build_opts.buildWithAsan:
-                cfg_cmds.append('--enable-address-sanitizer')
+                cfg_cmds.append("--enable-address-sanitizer")
             if shell.build_opts.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
                 # Newer configure.in changes mean that things blow up if unknown/removed configure
                 # options are entered, so specify it only if it's requested.
                 if shell.build_opts.enableArmSimulatorObsolete:
-                    cfg_cmds.append('--enable-arm-simulator')
-                cfg_cmds.append('--enable-simulator=arm')
+                    cfg_cmds.append("--enable-arm-simulator")
+                cfg_cmds.append("--enable-simulator=arm")
         else:
-            cfg_cmds.append('sh')
+            cfg_cmds.append("sh")
             cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
     # 64-bit shell on Mac OS X 10.11 El Capitan and greater
     elif parse_version(platform.mac_ver()[0]) >= parse_version("10.11") and not shell.build_opts.enable32:
@@ -350,14 +350,14 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
         if which("brew"):
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
-        cfg_cmds.append('sh')
+        cfg_cmds.append("sh")
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
-        cfg_cmds.append('--target=x86_64-apple-darwin15.6.0')  # El Capitan 10.11.6
-        cfg_cmds.append('--disable-xcode-checks')
+        cfg_cmds.append("--target=x86_64-apple-darwin15.6.0")  # El Capitan 10.11.6
+        cfg_cmds.append("--disable-xcode-checks")
         if shell.build_opts.buildWithAsan:
-            cfg_cmds.append('--enable-address-sanitizer')
+            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm64:
-            cfg_cmds.append('--enable-simulator=arm64')
+            cfg_cmds.append("--enable-simulator=arm64")
 
     elif sps.isWin:
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
@@ -374,7 +374,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_env["HOST_CXXFLAGS"] = " "
             cfg_env["HOST_LDFLAGS"] = " "
             cfg_env["LIB"] += r"C:\Program Files\LLVM\lib\clang\4.0.0\lib\windows"
-        cfg_cmds.append('sh')
+        cfg_cmds.append("sh")
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.build_opts.enable32:
             if shell.build_opts.enableSimulatorArm32:
@@ -383,15 +383,15 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                 # Newer configure.in changes mean that things blow up if unknown/removed configure
                 # options are entered, so specify it only if it's requested.
                 if shell.build_opts.enableArmSimulatorObsolete:
-                    cfg_cmds.append('--enable-arm-simulator')
-                cfg_cmds.append('--enable-simulator=arm')
+                    cfg_cmds.append("--enable-arm-simulator")
+                cfg_cmds.append("--enable-simulator=arm")
         else:
-            cfg_cmds.append('--host=x86_64-pc-mingw32')
-            cfg_cmds.append('--target=x86_64-pc-mingw32')
+            cfg_cmds.append("--host=x86_64-pc-mingw32")
+            cfg_cmds.append("--target=x86_64-pc-mingw32")
             if shell.build_opts.enableSimulatorArm64:
-                cfg_cmds.append('--enable-simulator=arm64')
+                cfg_cmds.append("--enable-simulator=arm64")
         if shell.build_opts.buildWithAsan:
-            cfg_cmds.append('--enable-address-sanitizer')
+            cfg_cmds.append("--enable-address-sanitizer")
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if shell.build_opts.buildWithClang:
@@ -400,10 +400,10 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
             cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
-        cfg_cmds.append('sh')
+        cfg_cmds.append("sh")
         cfg_cmds.append(os.path.normpath(shell.getJsCfgPath()))
         if shell.build_opts.buildWithAsan:
-            cfg_cmds.append('--enable-address-sanitizer')
+            cfg_cmds.append("--enable-address-sanitizer")
 
     if shell.build_opts.buildWithClang:
         if sps.isWin:
@@ -412,48 +412,48 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         else:
             assert "clang" in cfg_env["CC"]
             assert "clang++" in cfg_env["CXX"]
-        cfg_cmds.append('--disable-jemalloc')  # See bug 1146895
+        cfg_cmds.append("--disable-jemalloc")  # See bug 1146895
 
     if shell.build_opts.enableDbg:
-        cfg_cmds.append('--enable-debug')
+        cfg_cmds.append("--enable-debug")
     elif shell.build_opts.disableDbg:
-        cfg_cmds.append('--disable-debug')
+        cfg_cmds.append("--disable-debug")
 
     if shell.build_opts.enableOpt:
-        cfg_cmds.append('--enable-optimize' + ('=-O1' if shell.build_opts.buildWithVg else ''))
+        cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.buildWithVg else ""))
     elif shell.build_opts.disableOpt:
-        cfg_cmds.append('--disable-optimize')
+        cfg_cmds.append("--disable-optimize")
     if shell.build_opts.enableProfiling:  # Now obsolete, retained for backward compatibility
-        cfg_cmds.append('--enable-profiling')
+        cfg_cmds.append("--enable-profiling")
     if shell.build_opts.disableProfiling:
-        cfg_cmds.append('--disable-profiling')
+        cfg_cmds.append("--disable-profiling")
 
     if shell.build_opts.enableMoreDeterministic:
         # Fuzzing tweaks for more useful output, implemented in bug 706433
-        cfg_cmds.append('--enable-more-deterministic')
+        cfg_cmds.append("--enable-more-deterministic")
     if shell.build_opts.enableOomBreakpoint:  # Extra debugging help for OOM assertions
-        cfg_cmds.append('--enable-oom-breakpoint')
+        cfg_cmds.append("--enable-oom-breakpoint")
     if shell.build_opts.enableWithoutIntlApi:  # Speeds up compilation but is non-default
-        cfg_cmds.append('--without-intl-api')
+        cfg_cmds.append("--without-intl-api")
 
     if shell.build_opts.buildWithVg:
-        cfg_cmds.append('--enable-valgrind')
-        cfg_cmds.append('--disable-jemalloc')
+        cfg_cmds.append("--enable-valgrind")
+        cfg_cmds.append("--disable-jemalloc")
 
     # We add the following flags by default.
-    if os.name == 'posix':
-        cfg_cmds.append('--with-ccache')
-    cfg_cmds.append('--enable-gczeal')
-    cfg_cmds.append('--enable-debug-symbols')  # gets debug symbols on opt shells
-    cfg_cmds.append('--disable-tests')
+    if os.name == "posix":
+        cfg_cmds.append("--with-ccache")
+    cfg_cmds.append("--enable-gczeal")
+    cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
+    cfg_cmds.append("--disable-tests")
 
-    if os.name == 'nt':
+    if os.name == "nt":
         # FIXME: Replace this with sps.shellify.  # pylint: disable=fixme
         counter = 0
         for entry in cfg_cmds:
             if os.sep in entry:
                 assert sps.isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
-                cfg_cmds[counter] = cfg_cmds[counter].replace(os.sep, '//')
+                cfg_cmds[counter] = cfg_cmds[counter].replace(os.sep, "//")
             counter = counter + 1
 
     # Print whatever we added to the environment
@@ -463,7 +463,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                                  '"' if " " in cfg_env[str(env_var)] else env_var +
                                  "=" + cfg_env[str(env_var)])
         env_vars.append(str_to_be_appended)
-    sps.vdump('Command to be run is: ' + sps.shellify(env_vars) + ' ' + sps.shellify(cfg_cmds))
+    sps.vdump("Command to be run is: " + sps.shellify(env_vars) + " " + sps.shellify(cfg_cmds))
 
     js_objdir = shell.getJsObjdir()
     assert os.path.isdir(js_objdir)
@@ -474,8 +474,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
             #   but really, the whole thing likes forward slashes way better"
             # See bug 1038590 comment 9.
-            if '\\' in entry:
-                entry = entry.replace('\\', '/')
+            if "\\" in entry:
+                entry = entry.replace("\\", "/")
             changed_cfg_cmds.append(entry)
         sps.captureStdout(changed_cfg_cmds, ignoreStderr=True, currWorkingDir=js_objdir, env=cfg_env)
     else:
@@ -489,13 +489,13 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
 def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
     """Compile and copy a binary."""
     try:
-        cmd_list = [MAKE_BINARY, '-C', shell.getJsObjdir(), '-j' + str(COMPILATION_JOBS), '-s']
+        cmd_list = [MAKE_BINARY, "-C", shell.getJsObjdir(), "-j" + str(COMPILATION_JOBS), "-s"]
         out = sps.captureStdout(cmd_list, combineStderr=True, ignoreExitCode=True,
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception as ex:  # pylint: disable=broad-except
         # This exception message is returned from sps.captureStdout via cmd_list.
         if (sps.isLinux or sps.isMac) and \
-                ('GCC running out of memory' in repr(ex) or 'Clang running out of memory' in repr(ex)):
+                ("GCC running out of memory" in repr(ex) or "Clang running out of memory" in repr(ex)):
             # FIXME: Absolute hack to retry after hitting OOM.  # pylint: disable=fixme
             print("Trying once more due to the compiler running out of memory...")
             out = sps.captureStdout(cmd_list, combineStderr=True, ignoreExitCode=True,
@@ -514,13 +514,13 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
                 shutil.copy2(run_lib, shell.getShellCacheDir())
 
         version = extractVersions(shell.getJsObjdir())
-        shell.setMajorVersion(version.split('.')[0])
+        shell.setMajorVersion(version.split(".")[0])
         shell.setVersion(version)
 
         if sps.isLinux:
             # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
             # files in the objdir or else the stacks from failing testcases will lack symbols.
-            shutil.rmtree(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), 'objdir-js')))
+            shutil.rmtree(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), "objdir-js")))
     else:
         print(out.decode("utf-8", errors="replace"))
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
@@ -528,7 +528,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
 def createBustedFile(filename, e):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Create a .busted file with the exception message and backtrace included."""
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.write("Caught exception %r (%s)\n" % (e, e))
         f.write("Backtrace:\n")
         f.write(traceback.format_exc() + "\n")
@@ -543,60 +543,60 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
 
     if sps.isLinux:
-        fmconf_os = 'linux'
+        fmconf_os = "linux"
     elif sps.isMac:
-        fmconf_os = 'macosx'
+        fmconf_os = "macosx"
     elif sps.isWin:
-        fmconf_os = 'windows'
+        fmconf_os = "windows"
 
     with open(log, "a") as f:
-        f.write('# Information about shell:\n# \n')
+        f.write("# Information about shell:\n# \n")
 
-        f.write('# Create another shell in shell-cache like this one:\n')
-        f.write('# python -u -m %s -b "%s" -r %s\n# \n' % ('funfuzz.js.compile_shell',
+        f.write("# Create another shell in shell-cache like this one:\n")
+        f.write('# python -u -m %s -b "%s" -r %s\n# \n' % ("funfuzz.js.compile_shell",
                                                            shell.build_opts.build_options_str, shell.getHgHash()))
 
-        f.write('# Full environment is:\n')
-        f.write('# %s\n# \n' % str(shell.getEnvFull()))
+        f.write("# Full environment is:\n")
+        f.write("# %s\n# \n" % str(shell.getEnvFull()))
 
-        f.write('# Full configuration command with needed environment variables is:\n')
-        f.write('# %s %s\n# \n' % (sps.shellify(shell.getEnvAdded()),
+        f.write("# Full configuration command with needed environment variables is:\n")
+        f.write("# %s %s\n# \n" % (sps.shellify(shell.getEnvAdded()),
                                    sps.shellify(shell.getCfgCmdExclEnv())))
 
         # .fuzzmanagerconf details
-        f.write('\n')
-        f.write('[Main]\n')
-        f.write('platform = %s\n' % fmconf_platform)
-        f.write('product = %s\n' % shell.getRepoName())
-        f.write('product_version = %s\n' % shell.getHgHash())
-        f.write('os = %s\n' % fmconf_os)
+        f.write("\n")
+        f.write("[Main]\n")
+        f.write("platform = %s\n" % fmconf_platform)
+        f.write("product = %s\n" % shell.getRepoName())
+        f.write("product_version = %s\n" % shell.getHgHash())
+        f.write("os = %s\n" % fmconf_os)
 
-        f.write('\n')
-        f.write('[Metadata]\n')
-        f.write('buildFlags = %s\n' % shell.build_opts.build_options_str)
-        f.write('majorVersion = %s\n' % shell.getMajorVersion())
-        f.write('pathPrefix = %s%s\n' % (shell.getRepoDir(),
-                                         '/' if not shell.getRepoDir().endswith('/') else ''))
-        f.write('version = %s\n' % shell.getVersion())
+        f.write("\n")
+        f.write("[Metadata]\n")
+        f.write("buildFlags = %s\n" % shell.build_opts.build_options_str)
+        f.write("majorVersion = %s\n" % shell.getMajorVersion())
+        f.write("pathPrefix = %s%s\n" % (shell.getRepoDir(),
+                                         "/" if not shell.getRepoDir().endswith("/") else ""))
+        f.write("version = %s\n" % shell.getVersion())
 
 
 def extractVersions(objdir):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Extract the version from js.pc and put it into *.fuzzmanagerconf."""
-    jspc_dir = sps.normExpUserPath(os.path.join(objdir, 'js', 'src'))
-    jspc_name = os.path.join(jspc_dir, 'js.pc')
+    jspc_dir = sps.normExpUserPath(os.path.join(objdir, "js", "src"))
+    jspc_name = os.path.join(jspc_dir, "js.pc")
     # Moved to <objdir>/js/src/build/, see bug 1262241, Fx55 m-c rev 351194:2159959522f4
-    jspc_new_dir = os.path.join(jspc_dir, 'build')
-    jspc_new_name = os.path.join(jspc_new_dir, 'js.pc')
+    jspc_new_dir = os.path.join(jspc_dir, "build")
+    jspc_new_name = os.path.join(jspc_new_dir, "js.pc")
 
     def fixateVer(pcfile):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
         # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
         """Returns the current version number (47.0a2)."""
-        with io.open(pcfile, mode='r', encoding="utf-8", errors="replace") as f:
+        with io.open(pcfile, mode="r", encoding="utf-8", errors="replace") as f:
             for line in f:
-                if line.startswith('Version: '):
-                    # Sample line: 'Version: 47.0a2'
-                    return line.split(': ')[1].rstrip()
+                if line.startswith("Version: "):
+                    # Sample line: "Version: 47.0a2"
+                    return line.split(": ")[1].rstrip()
 
     if os.path.isfile(jspc_name):
         return fixateVer(jspc_name)
@@ -604,13 +604,13 @@ def extractVersions(objdir):  # pylint: disable=inconsistent-return-statements,i
         return fixateVer(jspc_new_name)
 
 
-def getLockDirPath(repoDir, tboxIdentifier=''):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+def getLockDirPath(repoDir, tboxIdentifier=""):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the name of the lock directory, which is in the cache directory by default."""
-    lockdir_name = ['shell', os.path.basename(repoDir), 'lock']
+    lockdir_name = ["shell", os.path.basename(repoDir), "lock"]
     if tboxIdentifier:
         lockdir_name.append(tboxIdentifier)
-    return os.path.join(ensureCacheDir(), '-'.join(lockdir_name))
+    return os.path.join(ensureCacheDir(), "-".join(lockdir_name))
 
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -621,7 +621,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
         try:
             obtainShell(shell, updateToRev=rev)
         except Exception:  # pylint: disable=broad-except
-            return (options.compilationFailedLabel, 'compilation failed')
+            return (options.compilationFailedLabel, "compilation failed")
 
         print("Testing...", end=" ")
         return options.testAndLabel(shell.getShellCacheFullPath(), rev)
@@ -654,14 +654,14 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     use_s3cache = s3cache_obj.connect()
 
     if use_s3cache:
-        if s3cache_obj.downloadFile(shell.getShellNameWithoutExt() + '.busted',
-                                    shell.getShellCacheFullPath() + '.busted'):
-            raise Exception('Found a .busted file for rev ' + shell.getHgHash())
+        if s3cache_obj.downloadFile(shell.getShellNameWithoutExt() + ".busted",
+                                    shell.getShellCacheFullPath() + ".busted"):
+            raise Exception("Found a .busted file for rev " + shell.getHgHash())
 
-        if s3cache_obj.downloadFile(shell.getShellNameWithoutExt() + '.tar.bz2',
+        if s3cache_obj.downloadFile(shell.getShellNameWithoutExt() + ".tar.bz2",
                                     shell.getS3TarballWithExtFullPath()):
             print("Extracting shell...")
-            with tarfile.open(shell.getS3TarballWithExtFullPath(), 'r') as f:
+            with tarfile.open(shell.getS3TarballWithExtFullPath(), "r") as f:
                 f.extractall(shell.getShellCacheDir())
             # Delete tarball after downloading from S3
             os.remove(shell.getS3TarballWithExtFullPath())
@@ -685,7 +685,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         os.mkdir(shell.getShellCacheDir())
         createBustedFile(cached_no_shell, ex)
         if use_s3cache:
-            s3cache_obj.uploadFileToS3(shell.getShellCacheFullPath() + '.busted')
+            s3cache_obj.uploadFileToS3(shell.getShellCacheFullPath() + ".busted")
         raise
     finally:
         if shell.build_opts.patchFile:
@@ -696,8 +696,8 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if updateLatestTxt:
             # So js-dbg-64-dm-darwin-cdcd33fd6e39 becomes js-dbg-64-dm-darwin-latest.txt with
             # js-dbg-64-dm-darwin-cdcd33fd6e39 as its contents.
-            txt_info = '-'.join(shell.getS3TarballWithExt().split('-')[:-1] + ['latest']) + '.txt'
-            s3cache_obj.uploadStrToS3('', txt_info, shell.getS3TarballWithExt())
+            txt_info = "-".join(shell.getS3TarballWithExt().split("-")[:-1] + ["latest"]) + ".txt"
+            s3cache_obj.uploadStrToS3("", txt_info, shell.getS3TarballWithExt())
         os.remove(shell.getS3TarballWithExtFullPath())
 
 
@@ -706,7 +706,7 @@ def updateRepo(repo, rev):  # pylint: disable=invalid-name,missing-param-doc,mis
     # Print *with* a trailing newline to avoid breaking other stuff
     print("Updating to rev %s in the %s repository..." % (rev.decode("utf-8", errors="replace"),
                                                           repo.decode("utf-8", errors="replace")))
-    sps.captureStdout(["hg", "-R", repo, 'update', '-C', '-r', rev], ignoreStderr=True)
+    sps.captureStdout(["hg", "-R", repo, "update", "-C", "-r", rev], ignoreStderr=True)
 
 
 def verifyFullWinPageHeap(shellPath):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
@@ -714,7 +714,7 @@ def verifyFullWinPageHeap(shellPath):  # pylint: disable=invalid-name,missing-pa
     # More info: https://msdn.microsoft.com/en-us/library/windows/hardware/ff543097(v=vs.85).aspx
     # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
     if sps.isWin:
-        gflags_bin_path = os.path.join(os.getenv('PROGRAMW6432'), 'Debugging Tools for Windows (x64)', 'gflags.exe')
+        gflags_bin_path = os.path.join(os.getenv("PROGRAMW6432"), "Debugging Tools for Windows (x64)", "gflags.exe")
         if os.path.isfile(gflags_bin_path) and os.path.isfile(shellPath):
             print(subprocess.check_output([gflags_bin_path.decode("utf-8", errors="replace"),
                                            "-p", "/enable", shellPath.decode("utf-8", errors="replace"), "/full"]))
@@ -725,5 +725,5 @@ def main():
     exit(CompiledShell.main())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -61,10 +61,10 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # pylint: disable=too-many-locals,too-many-statements
         pathToBinary = runthis[0]  # pylint: disable=invalid-name
         # This relies on the shell being a local one from compile_shell:
-        # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like './js'
+        # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like "./js"
         # pylint: disable=invalid-name
         assert os.path.isfile(os.path.abspath(pathToBinary + ".fuzzmanagerconf"))
-        pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split('.')[0])
+        pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split(".")[0])
         pc.addProgramArguments(runthis[1:-1])
 
         if options.valgrind:
@@ -73,7 +73,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 valgrindSuppressions() +
                 runthis)
 
-        preexec_fn = ulimitSet if os.name == 'posix' else None
+        preexec_fn = ulimitSet if os.name == "posix" else None
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
         runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix.encode("utf-8"), preexec_fn=preexec_fn)
 
@@ -82,7 +82,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         auxCrashData = []  # pylint: disable=invalid-name
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
-        # bullet and 'readlines' everything into memory.
+        # bullet and "readlines" everything into memory.
         with open(logPrefix + "-out.txt") as f:
             out = f.readlines()
         with open(logPrefix + "-err.txt") as f:
@@ -124,9 +124,9 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # We only care about crashes and assertion failures on shells with no symbols
         # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
         if not isinstance(crashInfo, CrashInfo.NoCrashInfo) or \
-                'Assertion failure: ' in str(crashInfo.rawStderr) or \
-                'Segmentation fault' in str(crashInfo.rawStderr) or \
-                'Bus error' in str(crashInfo.rawStderr):
+                "Assertion failure: " in str(crashInfo.rawStderr) or \
+                "Segmentation fault" in str(crashInfo.rawStderr) or \
+                "Bus error" in str(crashInfo.rawStderr):
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
 
         match = options.collector.search(crashInfo)
@@ -271,7 +271,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
-        options.jsengineWithArgs[0], 'more-deterministic')
+        options.jsengineWithArgs[0], "more-deterministic")
 
     return options
 

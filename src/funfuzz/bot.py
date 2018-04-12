@@ -50,7 +50,7 @@ class BuildInfo(object):  # pylint: disable=missing-param-doc,missing-type-doc,t
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     parser = OptionParser()
     parser.set_defaults(
-        repoName='mozilla-central',
+        repoName="mozilla-central",
         targetTime=15 * 60,       # 15 minutes
         existingBuildDir=None,
         timeout=0,
@@ -61,22 +61,22 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     parser.add_option("--build", dest="existingBuildDir",
                       help="Use an existing build directory.")
 
-    parser.add_option('--repotype', dest='repoName',
+    parser.add_option("--repotype", dest="repoName",
                       help='Sets the repository to be fuzzed. Defaults to "%default".')
 
-    parser.add_option("--target-time", dest="targetTime", type='int',
+    parser.add_option("--target-time", dest="targetTime", type="int",
                       help="Nominal amount of time to run, in seconds")
 
-    parser.add_option('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
-                      help='Download builds from treeherder instead of compiling our own.')
+    parser.add_option("-T", "--use-treeherder-builds", dest="useTreeherderBuilds", action="store_true",
+                      help="Download builds from treeherder instead of compiling our own.")
 
     # Specify how the shell will be built.
-    parser.add_option('-b', '--build-options',
-                      dest='build_options',
+    parser.add_option("-b", "--build-options",
+                      dest="build_options",
                       help='Specify build options, e.g. -b "-c opt --arch=32" for js '
-                           '(python -m funfuzz.js.build_options --help)')
+                           "(python -m funfuzz.js.build_options --help)")
 
-    parser.add_option('--timeout', type='int', dest='timeout',
+    parser.add_option("--timeout", type="int", dest="timeout",
                       help="Sets the timeout for loop. "
                            "Defaults to taking into account the speed of the computer and debugger (if any).")
 
@@ -94,9 +94,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         sys.exit("Fuzzing downloaded builds is disabled for now, until tooltool is removed. Exiting...")
 
     if options.build_options is None:
-        options.build_options = ''
-    if options.useTreeherderBuilds and options.build_options != '':
-        raise Exception('Do not use treeherder builds if one specifies build parameters')
+        options.build_options = ""
+    if options.useTreeherderBuilds and options.build_options != "":
+        raise Exception("Do not use treeherder builds if one specifies build parameters")
 
     return options
 
@@ -134,17 +134,17 @@ def main():  # pylint: disable=missing-docstring
 def printMachineInfo():  # pylint: disable=invalid-name
     """Log information about the machine."""
     print("Platform details: %s" % " ".join(platform.uname()))
-    print("hg version: %s" % sps.captureStdout(['hg', '-q', 'version'])[0])
+    print("hg version: %s" % sps.captureStdout(["hg", "-q", "version"])[0])
 
     # In here temporarily to see if mock Linux slaves on TBPL have gdb installed
     try:
-        print("gdb version: %s" % sps.captureStdout(['gdb', '--version'], combineStderr=True,
+        print("gdb version: %s" % sps.captureStdout(["gdb", "--version"], combineStderr=True,
                                                     ignoreStderr=True, ignoreExitCode=True)[0])
     except (KeyboardInterrupt, Exception) as ex:  # pylint: disable=broad-except
         print("Error involving gdb is: %r" % (ex,))
 
     # FIXME: Should have if os.path.exists(path to git) or something  # pylint: disable=fixme
-    # print("git version: %s" % sps.captureStdout(['git', '--version'], combineStderr=True,
+    # print("git version: %s" % sps.captureStdout(["git", "--version"], combineStderr=True,
     #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
@@ -154,15 +154,15 @@ def printMachineInfo():  # pylint: disable=invalid-name
         rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
     print("Free space (GB): %.2f" % rootdir_free_space)
 
-    hgrc_path = os.path.join(path0, '.hg', 'hgrc')
+    hgrc_path = os.path.join(path0, ".hg", "hgrc")
     if os.path.isfile(hgrc_path):
         print("The hgrc of this repository is:")
-        with open(hgrc_path, 'r') as f:
+        with open(hgrc_path, "r") as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
             print(line.rstrip())
 
-    if os.name == 'posix':
+    if os.name == "posix":
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
         print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
@@ -172,9 +172,9 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
     if options.existingBuildDir:
         # Pre-downloaded treeherder builds
         bDir = options.existingBuildDir  # pylint: disable=invalid-name
-        bType = 'local-build'  # pylint: disable=invalid-name
+        bType = "local-build"  # pylint: disable=invalid-name
         bSrc = bDir  # pylint: disable=invalid-name
-        bRev = ''  # pylint: disable=invalid-name
+        bRev = ""  # pylint: disable=invalid-name
         manyTimedRunArgs = []  # pylint: disable=invalid-name
     elif not options.useTreeherderBuilds:
         options.build_options = build_options.parseShellOptions(options.build_options)
@@ -183,7 +183,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
             bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
             cshell = compile_shell.CompiledShell(options.build_options, bRev)
-            updateLatestTxt = (options.build_options.repoDir == 'mozilla-central')  # pylint: disable=invalid-name
+            updateLatestTxt = (options.build_options.repoDir == "mozilla-central")  # pylint: disable=invalid-name
             compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
             bDir = cshell.getShellCacheDir()  # pylint: disable=invalid-name
@@ -224,15 +224,15 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []  # pylint: disable=invalid-name
-    manyTimedRunArgs.append('--repo=' + sps.normExpUserPath(options.build_options.repoDir))
+    manyTimedRunArgs.append("--repo=" + sps.normExpUserPath(options.build_options.repoDir))
     manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
     if options.build_options.runWithVg:
-        manyTimedRunArgs.append('--valgrind')
+        manyTimedRunArgs.append("--valgrind")
     if options.build_options.enableMoreDeterministic:
         # Treeherder shells not using compare_jit:
         #   They are not built with --enable-more-deterministic - bug 751700
-        manyTimedRunArgs.append('--compare-jit')
-    manyTimedRunArgs.append('--random-flags')
+        manyTimedRunArgs.append("--compare-jit")
+    manyTimedRunArgs.append("--random-flags")
 
     # Ordering of elements in manyTimedRunArgs is important.
     manyTimedRunArgs.append(str(options.timeout))

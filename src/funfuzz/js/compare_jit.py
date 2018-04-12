@@ -54,7 +54,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
     lev = cl[0]
 
     if lev != js_interesting.JS_FINE:
-        itest = [__file__, "--flags=" + ' '.join(flags),
+        itest = [__file__, "--flags=" + " ".join(flags),
                  "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
@@ -72,7 +72,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
 
         metadata = {}
         if autoBisectLog:
-            metadata = {"autoBisectLog": ''.join(autoBisectLog)}
+            metadata = {"autoBisectLog": "".join(autoBisectLog)}
         options.collector.submit(cl[1], infilename, quality, metaData=metadata)
         return True
 
@@ -106,8 +106,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         oom = js_interesting.oomed(r.err)
         r.err = ignoreSomeOfStderr(r.err)
 
-        if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, '[[script] scriptArgs*]') or (
-                anyLineContains(r.err, '[scriptfile] [scriptarg...]'))):
+        if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, "[[script] scriptArgs*]") or (
+                anyLineContains(r.err, "[scriptfile] [scriptarg...]"))):
             print("Got usage error from:")
             print("  %s" % sps.shellify(command))
             assert i
@@ -118,8 +118,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
-            with open(logPrefix + "-summary.txt", 'w') as f:
-                f.write('\n'.join(r.issues + [sps.shellify(command), "compare_jit found a more serious bug"]) + '\n')
+            with open(logPrefix + "-summary.txt", "w") as f:
+                f.write("\n".join(r.issues + [sps.shellify(command), "compare_jit found a more serious bug"]) + "\n")
             print("  %s" % sps.shellify(command))
             return (r.lev, r.crashInfo)
         elif r.lev != js_interesting.JS_FINE or r.return_code != 0:
@@ -166,7 +166,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                              os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
-                with open(logPrefix + "-summary.txt", 'w') as f:
+                with open(logPrefix + "-summary.txt", "w") as f:
                     f.write(rerunCommand + "\n\n" + summary)
                 print("%s | %s" % (infilename, js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))
@@ -207,7 +207,7 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
 def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Return a command to diff two files, along with the diff output (if it's short)."""
     diffcmd = ["diff", "-u", f1, f2]
-    s = ' '.join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
+    s = " ".join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
     diff = sps.captureStdout(diffcmd, ignoreExitCode=True)[0]
     if len(diff) < 10000:
         s += diff + "\n\n"  # pylint: disable=invalid-name
