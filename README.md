@@ -82,9 +82,9 @@ In js mode, loop_bot makes use of:
 * [jsfunfuzz](src/funfuzz/js/jsfunfuzz)
 * [compare_jit](src/funfuzz/js/compare_jit.py) (if testing deterministic builds)
 * randorderfuzz (included in funfuzz, if tests are present in the mozilla repository)
-* [autoBisect](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
+* [autobisectjs](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
 
-The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autoBisect](src/funfuzz/autobisectjs/README.md).
+The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autobisectjs](src/funfuzz/autobisectjs/README.md).
 
 You will also need to need a `~/.fuzzmanagerconf` file, similar to:
 

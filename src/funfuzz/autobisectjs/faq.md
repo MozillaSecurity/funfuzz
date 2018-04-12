@@ -1,10 +1,10 @@
 ## FAQ
 
-**Q: Compilation is broken! How do I use autoBisect to see when the builds broke?**
+**Q: Compilation is broken! How do I use autobisectjs to see when the builds broke?**
 
 Specify the failing revision hash in the "-e" parameter, along with desired "-b" options to build the desired SpiderMonkey build configuration. This failing revision hash must be from **Mercurial**.
 
-```python -m funfuzz.autobisectjs.autobisectjs -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic"```
+```python -m funfuzz.autobisectjs -l bad -e FAILINGREV -b "--enable-debug --enable-more-deterministic"```
 
 When done, find the first working revision hash after the breakage, as below.
 
@@ -12,9 +12,9 @@ When done, find the first working revision hash after the breakage, as below.
 
 Similar to the above, but use "-s" instead of "-e".
 
-```python -m funfuzz.autobisectjs.autobisectjs -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic```
+```python -m funfuzz.autobisectjs -l bad -s FAILINGREV -b "--enable-debug --enable-more-deterministic```
 
-**Q: What should I do with the known broken changeset ranges to prevent autoBisect from retesting those revisions?**
+**Q: What should I do with the known broken changeset ranges to prevent autobisectjs from retesting those revisions?**
 
 (This assumes you have the first bad and first good revision hashes as per the 2 questions above.)
 
@@ -22,7 +22,7 @@ You can add them to the known broken range functions in [known_broken_earliest_w
 
 **Q: The testcase is giving out assorted varied exit codes as it gets executed by older binaries. How can I fixate to a particular interesting exit code?**
 
-Pass in the "-w" argument along with the desired exit code to autoBisect. If it is negative, e.g. -11, pass in 128 - (**exit code number**), e.g. 128 - (-11) = 128 + 11 = 139, or "-w 139".
+Pass in the "-w" argument along with the desired exit code to autobisectjs. If it is negative, e.g. -11, pass in 128 - (**exit code number**), e.g. 128 - (-11) = 128 + 11 = 139, or "-w 139".
 
 **Q: The testcase is intermittent and giving weird results! What should I do to try and get more reliable results?**
 
@@ -32,16 +32,16 @@ You can try using interestingness tests to look out for the desired symptom, see
 
 You can add the earliest known working **Mercurial** revision to the earliestKnownWorkingRev function in [known_broken_earliest_working](known_broken_earliest_working.py).
 
-**Q: Does autoBisect work on nightly SpiderMonkey js shells yet?**
+**Q: Does autobisectjs work on nightly SpiderMonkey js shells yet?**
 
 No, not yet. Currently it only uses ["tinderbox-builds" js shells](https://archive.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-macosx64-debug/) by default, which are stored on a per-checkin basis only for the past month. Patches accepted!
 
-**Q: How does autoBisect compare with [mozregression](http://mozilla.github.io/mozregression/)?**
+**Q: How does autobisectjs compare with [mozregression](http://mozilla.github.io/mozregression/)?**
 
-When autoBisect was proposed and written in 2009, mozregression did not exist yet. Since 2010, both have been developed independently of each other.
+When autobisectjs was proposed and written in 2009, mozregression did not exist yet. Since 2010, both have been developed independently of each other.
 
-autoBisect was [first written](https://bugzilla.mozilla.org/show_bug.cgi?id=482536) (in Bash) [with results](https://bugzilla.mozilla.org/show_bug.cgi?id=476655#c8) in March 2009.
+autobisectjs was [first written](https://bugzilla.mozilla.org/show_bug.cgi?id=482536) (in Bash) [with results](https://bugzilla.mozilla.org/show_bug.cgi?id=476655#c8) in March 2009.
 
 mozregression had its [first landing](https://github.com/mozilla/mozregression/commit/d50509b36cb6ba45d7c54917f528bdf482d2c5e6) in February 2010.
 
-autoBisect supports bisections using compiled and downloaded (tinderbox-builds) SpiderMonkey js shells, while mozregression supports nightly and inbound builds [for various Mozilla products](http://mozilla.github.io/mozregression/).
+autobisectjs supports bisections using compiled and downloaded (tinderbox-builds) SpiderMonkey js shells, while mozregression supports nightly and inbound builds [for various Mozilla products](http://mozilla.github.io/mozregression/).

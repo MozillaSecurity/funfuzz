@@ -225,7 +225,7 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                print_("Skipped 20 times, stopping autoBisect.", flush=True)
+                print_("Skipped 20 times, stopping autobisectjs.", flush=True)
                 break
         print_("%s (%s) " % (label[0], label[1]), end=" ", flush=True)
 
@@ -263,7 +263,7 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
 
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
-    """Use autoBisectJs without interestingness tests to examine the revision of the js shell."""
+    """Use autobisectjs without interestingness tests to examine the revision of the js shell."""
     def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc,too-many-return-statements
         # pylint: disable=invalid-name
@@ -373,7 +373,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
             print_("The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca), flush=True)
             label = testRev(ca)
             print_("%s (%s) " % (label[0], label[1]), flush=True)
-            print_("Consider re-running autoBisect with -s %s -e %s" % (ca, blamedRev), flush=True)
+            print_("Consider re-running autobisectjs with -s %s -e %s" % (ca, blamedRev), flush=True)
             print_("in a configuration where earliestWorking is before the common ancestor.", flush=True)
         else:
             print_(flush=True)
@@ -422,7 +422,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     if m:
         print_(flush=True)
         print_(flush=True)
-        print_("autoBisect shows this is probably related to the following changeset:", flush=True)
+        print_("autobisectjs shows this is probably related to the following changeset:", flush=True)
         print_(flush=True)
         print_(sanitizeCsetMsg(outputResult, repoDir), flush=True)
         print_(flush=True)
@@ -458,7 +458,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
 
 def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing-type-doc
     """Remove old local cached directories, which were created four weeks ago."""
-    # This is in autoBisect because it has a lock so we do not race while removing directories
+    # This is in autobisectjs because it has a lock so we do not race while removing directories
     # Adapted from http://stackoverflow.com/a/11337407
     SECONDS_IN_A_DAY = 24 * 60 * 60
     s3CacheObj = s3cache.S3Cache(compile_shell.S3_SHELL_CACHE_DIRNAME)
@@ -478,7 +478,7 @@ def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing
 
 
 def main():
-    """Prevent running two instances of autoBisectJs concurrently - we don't want to confuse hg."""
+    """Prevent running two instances of autobisectjs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
     if options.build_options:
