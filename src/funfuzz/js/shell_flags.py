@@ -10,18 +10,15 @@
 from __future__ import absolute_import, print_function
 
 import multiprocessing
-import os
 import random
+import re
 import sys
 
 from . import inspect_shell
 
 if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
     from functools32 import lru_cache  # pylint: disable=import-error
 else:
-    import subprocess
     from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
@@ -37,18 +34,8 @@ def shell_supports_flag(shell_path, flag):
         bool: True if the flag is supported, i.e. does not cause the shell to throw an error, False otherwise.
     """
     dummy_parameters = ["-e", "42"]
-    if "--gc-zeal=" in flag:
-        # The js shell requires the double quotes in '--gc-zeal="0;0,1"',
-        # but Python removes them unless we pass in shell=True
-        try:
-            subprocess.run(" ".join([shell_path, flag] + dummy_parameters),
-                           shell=True, timeout=9, check=True).check_returncode()
-            out = True
-        except subprocess.CalledProcessError:
-            out = False
-    else:
-        # This can be refactored when sps.captureStdout is gone
-        out = inspect_shell.shellSupports(shell_path, [flag] + dummy_parameters)
+    # This can be refactored when sps.captureStdout is gone
+    out = inspect_shell.shellSupports(shell_path, [flag] + dummy_parameters)
     return out
 
 
@@ -129,10 +116,13 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if shell_supports_flag(shell_path, "--non-writable-jitcode") and chance(.2):
         # m-c rev 248578:b46d6692fe50, see bug 977805
         input_list.append("--non-writable-jitcode")
-    if (shell_supports_flag(shell_path, "--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)") and
-            chance(.2)):
+
+    forceinline_cmd = '--execute=\"setJitCompilerOption(\\\"ion.forceinlineCaches\\\",1)\"'
+    # The only way I could make nested double quotes work with subprocess. See https://stackoverflow.com/a/35913597
+    forceinline_shell_cmd = re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', forceinline_cmd)[0]
+    if shell_supports_flag(shell_path, forceinline_shell_cmd) and chance(.2):
         # m-c rev 247709:ea9608e33abe, see bug 923717
-        input_list.append("--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)")
+        input_list.append(forceinline_shell_cmd)
     if shell_supports_flag(shell_path, "--ion-extra-checks") and chance(.2):
         # m-c rev 234228:cdf93416b39a, see bug 1139152
         input_list.append("--ion-extra-checks")
@@ -267,7 +257,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         # m-c rev 226540:ade5e0300605, see bug 1126769
         args.append("--no-cgc")
 
-    if shell_supports_flag(shell_path, '--gc-zeal="0;0,1"') and chance(.9):
+    if shell_supports_flag(shell_path, "--gc-zeal=1,1") and chance(.9):
         allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
         highest_gczeal = 18
@@ -293,7 +283,9 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
             final_value = "%s;%s" % (gczeal_a, gczeal_b)
 
         # m-c rev 216625:03c6a758c9e8, see bug 1101602
-        args.append('--gc-zeal="%s,%s"' % (final_value, allocations_number))
+        if not isinstance(final_value, int) and ";" in final_value:  # Bug 1453852
+            final_value = final_value.split(";")[0]
+        args.append("--gc-zeal=%s,%s" % (final_value, allocations_number))
 
     if shell_supports_flag(shell_path, "--no-incremental-gc") and chance(.2):
         # m-c rev 211115:35025fd9e99b, see bug 958492

@@ -90,7 +90,7 @@ def test_add_random_ion_flags(monkeypatch):
     assert "--ion-shared-stubs=on" in all_flags
     assert "--ion-regalloc=testbed" in all_flags
     assert "--non-writable-jitcode" in all_flags
-    assert '--execute=setJitCompilerOption("ion.forceinlineCaches",1)' in all_flags
+    assert '--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags
     assert "--ion-extra-checks" in all_flags
     # assert "--ion-sink=on" in all_flags
     assert "--ion-loop-unrolling=on" in all_flags
@@ -157,7 +157,7 @@ def test_random_flag_set(monkeypatch):
     # assert "--enable-streams" in all_flags
     assert "--no-unboxed-objects" in all_flags
     assert "--no-cgc" in all_flags
-    assert '--gc-zeal="4;7,999"' in all_flags
+    assert "--gc-zeal=4,999" in all_flags
     assert "--no-incremental-gc" in all_flags
     assert "--no-threads" in all_flags
     assert "--no-native-regexp" in all_flags
