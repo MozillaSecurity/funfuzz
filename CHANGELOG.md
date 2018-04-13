@@ -1,3 +1,13 @@
+## 0.5.0 (201X-XX-XX)
+
+Features:
+
+* TBD
+
+Bugfixes:
+
+* TBD
+
 ## 0.4.0 (2018-04-13)
 
 Features:
