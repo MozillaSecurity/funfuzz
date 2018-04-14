@@ -13,9 +13,9 @@ import os
 import platform
 import shutil
 
-from boto.s3.connection import S3Connection, Key
 import boto.exception
 import boto.utils
+from boto.s3.connection import S3Connection, Key
 
 
 def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
