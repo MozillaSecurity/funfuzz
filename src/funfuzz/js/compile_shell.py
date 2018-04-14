@@ -34,7 +34,7 @@ from ..util.lock_dir import LockDir
 
 S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
-if sps.isWin:
+if platform.system() == "Windows":
     MAKE_BINARY = "mozmake"
     CLANG_PARAMS = "-fallback"
     # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
@@ -188,7 +188,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
     def getShellCompiledPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         return sps.normExpUserPath(
-            os.path.join(self.getJsObjdir(), "dist", "bin", "js" + (".exe" if sps.isWin else "")))
+            os.path.join(self.getJsObjdir(), "dist", "bin", "js" + (".exe" if platform.system() == "Windows" else "")))
 
     def getShellCompiledRunLibsPath(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -200,7 +200,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
     def getShellNameWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        return self.shellNameWithoutExt + (".exe" if sps.isWin else "")
+        return self.shellNameWithoutExt + (".exe" if platform.system() == "Windows" else "")
 
     def getShellNameWithoutExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
@@ -228,7 +228,7 @@ def ensureCacheDir():  # pylint: disable=invalid-name,missing-return-doc,missing
 
     # Expand long Windows paths (overcome legacy MS-DOS 8.3 stuff)
     # This has to occur after the shell-cache directory is created
-    if sps.isWin:  # adapted from http://stackoverflow.com/a/3931799
+    if platform.system() == "Windows":  # adapted from http://stackoverflow.com/a/3931799
         if sys.version_info.major == 2:
             utext = unicode   # noqa pylint: disable=redefined-builtin,undefined-variable,unicode-builtin
         else:
@@ -251,13 +251,13 @@ def ensureDir(directory):  # pylint: disable=invalid-name,missing-param-doc,miss
 
 def autoconfRun(cwDir):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Run autoconf binaries corresponding to the platform."""
-    if sps.isMac:
+    if platform.system() == "Darwin":
         autoconf213_mac_bin = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213" if which("brew") else "autoconf213"
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
         if not os.path.isfile(sps.normExpUserPath(autoconf213_mac_bin)):
             autoconf213_mac_bin = "autoconf213"
         subprocess.check_call([autoconf213_mac_bin], cwd=cwDir)
-    elif sps.isLinux:
+    elif platform.system() == "Linux":
         # FIXME: We should use a method that is similar to the client.mk one, as per  # pylint: disable=fixme
         #   https://github.com/MozillaSecurity/funfuzz/issues/9
         try:
@@ -266,7 +266,7 @@ def autoconfRun(cwDir):  # pylint: disable=invalid-name,missing-param-doc,missin
         except OSError:
             # Fedora has a different name
             subprocess.check_call(["autoconf-2.13"], cwd=cwDir)
-    elif sps.isWin:
+    elif platform.system() == "Windows":
         # Windows needs to call sh to be able to find autoconf.
         subprocess.check_call(["sh", "autoconf-2.13"], cwd=cwDir)
 
@@ -289,8 +289,9 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
                 print("Configuration of the js binary failed 3 times.")
                 raise
             # This exception message is returned from sps.captureStdout via cfgBin.
-            # No idea why this is sps.isLinux as well..
-            if sps.isLinux or (sps.isWin and "Windows conftest.exe configuration permission" in repr(ex)):
+            # No idea why this is platform.system() == "Linux" as well..
+            if platform.system() == "Linux" or (platform.system() == "Windows" and
+                                                "Windows conftest.exe configuration permission" in repr(ex)):
                 print("Trying once more...")
                 continue
     compileJs(shell)
@@ -311,7 +312,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     cfg_env["AR"] = "ar"
     if shell.build_opts.enable32 and os.name == "posix":
         # 32-bit shell on 32/64-bit x86 Linux
-        if sps.isLinux:
+        if platform.system() == "Linux":
             cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
             if shell.build_opts.buildWithClang:
                 cfg_env["CC"] = cfg_env["HOST_CC"] = str(
@@ -359,7 +360,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
 
-    elif sps.isWin:
+    elif platform.system() == "Windows":
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = "clang-cl.exe " + CLANG_PARAMS
@@ -406,7 +407,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append("--enable-address-sanitizer")
 
     if shell.build_opts.buildWithClang:
-        if sps.isWin:
+        if platform.system() == "Windows":
             assert "clang-cl" in cfg_env["CC"]
             assert "clang-cl" in cfg_env["CXX"]
         else:
@@ -452,7 +453,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         counter = 0
         for entry in cfg_cmds:
             if os.sep in entry:
-                assert sps.isWin  # MozillaBuild on Windows sometimes confuses "/" and "\".
+                assert platform.system() == "Windows"  # MozillaBuild on Windows sometimes confuses "/" and "\".
                 cfg_cmds[counter] = cfg_cmds[counter].replace(os.sep, "//")
             counter = counter + 1
 
@@ -468,7 +469,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     js_objdir = shell.getJsObjdir()
     assert os.path.isdir(js_objdir)
 
-    if sps.isWin:
+    if platform.system() == "Windows":
         changed_cfg_cmds = []
         for entry in cfg_cmds:
             # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
@@ -494,7 +495,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
                                 currWorkingDir=shell.getJsObjdir(), env=shell.getEnvFull())[0]
     except Exception as ex:  # pylint: disable=broad-except
         # This exception message is returned from sps.captureStdout via cmd_list.
-        if (sps.isLinux or sps.isMac) and \
+        if (platform.system() == "Linux" or platform.system() == "Darwin") and \
                 ("GCC running out of memory" in repr(ex) or "Clang running out of memory" in repr(ex)):
             # FIXME: Absolute hack to retry after hitting OOM.  # pylint: disable=fixme
             print("Trying once more due to the compiler running out of memory...")
@@ -517,7 +518,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
         shell.setMajorVersion(version.split(".")[0])
         shell.setVersion(version)
 
-        if sps.isLinux:
+        if platform.system() == "Linux":
             # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
             # files in the objdir or else the stacks from failing testcases will lack symbols.
             shutil.rmtree(sps.normExpUserPath(os.path.join(shell.getShellCacheDir(), "objdir-js")))
@@ -542,11 +543,11 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     #   https://wiki.mozilla.org/Security/CrashSignatures
     fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
 
-    if sps.isLinux:
+    if platform.system() == "Linux":
         fmconf_os = "linux"
-    elif sps.isMac:
+    elif platform.system() == "Darwin":
         fmconf_os = "macosx"
-    elif sps.isWin:
+    elif platform.system() == "Windows":
         fmconf_os = "windows"
 
     with open(log, "a") as f:
@@ -713,7 +714,7 @@ def verifyFullWinPageHeap(shellPath):  # pylint: disable=invalid-name,missing-pa
     """Turn on full page heap verification on Windows."""
     # More info: https://msdn.microsoft.com/en-us/library/windows/hardware/ff543097(v=vs.85).aspx
     # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
-    if sps.isWin:
+    if platform.system() == "Windows":
         gflags_bin_path = os.path.join(os.getenv("PROGRAMW6432"), "Debugging Tools for Windows (x64)", "gflags.exe")
         if os.path.isfile(gflags_bin_path) and os.path.isfile(shellPath):
             print(subprocess.check_output([gflags_bin_path.decode("utf-8", errors="replace"),

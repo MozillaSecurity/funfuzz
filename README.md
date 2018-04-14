@@ -115,15 +115,16 @@ Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively
 
 The following operating systems are old or less common and while they may still work, be prepared to **expect issues** along the way:
 
-* Windows Vista / Windows 8 / Windows 8.1
+* Windows 8 / Windows 8.1
 * Mac OS X 10.11 through 10.12
 * Ubuntu Linux 15.10 and prior (see note above about 14.04 LTS)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:
 
-* Windows XP
-* Mac OS X 10.6 through 10.10
+* Windows Vista, Windows XP and earlier
+* Mac OS X 10.10 and earlier
+* Ubuntu Linux 13.10 and earlier
 
 **Q: What version of Python does funfuzz require?**
 

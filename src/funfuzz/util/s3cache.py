@@ -10,13 +10,12 @@
 from __future__ import absolute_import, print_function
 
 import os
+import platform
 import shutil
-
-from . import subprocesses as sps
 
 isBoto = False  # pylint: disable=invalid-name
 # We need to first install boto into MozillaBuild via psbootstrap on Windows
-if not sps.isMac:
+if not platform.system() == "Darwin":
     try:
         from boto.s3.connection import S3Connection, Key
         import boto.exception
@@ -28,7 +27,7 @@ if not sps.isMac:
 
 def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
     """Test to see if the specified S3 cache is available."""
-    if sps.isMac or not isBoto:
+    if platform.system() == "Darwin" or not isBoto:
         return False
 
     try:
