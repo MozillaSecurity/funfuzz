@@ -225,10 +225,6 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         # m-c rev 406115:321c29f48508, see bug 903519
         args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
 
-    if shell_supports_flag(shell_path, "--no-array-proto-values") and chance(.2):
-        # m-c rev 403011:e1ca344ca6b5, see bug 1420101
-        args.append("--no-array-proto-values")
-
     if shell_supports_flag(shell_path, "--spectre-mitigations=on") and chance(.2):
         # m-c rev 399868:a98f615965d7, see bug 1430053
         args.append("--spectre-mitigations=" + ("on" if chance(.9) else "off"))

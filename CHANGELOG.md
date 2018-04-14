@@ -1,4 +1,4 @@
-## 0.4.0 (201X-XX-XX)
+## 0.5.0 (201X-XX-XX)
 
 Features:
 
@@ -7,6 +7,39 @@ Features:
 Bugfixes:
 
 * TBD
+
+## 0.4.0 (2018-04-13)
+
+Features:
+* Hit 40% test coverage! (previously 30%)
+* jsfunfuzz updates
+  * `async`, `for-await-of support` thanks to @arai-a 
+  * Obsolete functions removed (`E4X for-each`, `toSource`, `StopIteration`, `getPropertyDescriptor`, `Iterator`/`__iterator__`, `validategc` etc.)
+* `tooltool` removed, along with lots of other unused functions now that `DOMFuzz` is gone
+* Removed `download_build`
+  * Support for bisection using downloaded builds via `autobisect` project will be added later
+  * In the meantime, the existing support got removed as tinderbox builds are no longer produced by official builds
+* Windows ICU library versions bumped
+
+Bugfixes:
+* Entire repository standardised to use double quotes
+* Continued work towards Python 3 support, Python 3.5 is now the target
+  * More fixes for unicode/str confusion when interacting with other libraries, e.g. Lithium
+* Standardised name to `autobisectjs` since there is now the separate [autobisect project](https://github.com/MozillaSecurity/autobisect)
+* Started using more PyPI libraries
+  * e.g. `whichcraft` instead of in-house functions without tests
+* `shell_flags` got rewritten
+  * Added new runtime flags, e.g. `--spectre-mitigations=on`
+  * Tests added
+* Start moving towards the `subprocess32` PyPI library
+  * En route to removing the `captureStdout` function
+
+Platform support:
+* Removed support for Mac 32-bit builds as they became obsolete everywhere
+* Linux builds now require GCC 6 (official build requirement)
+
+Notes:
+* Windows is still on the 0.1.x legacy branch, until Python 3.5+ support is completed
 
 ## 0.3.0 (2017-12-21)
 

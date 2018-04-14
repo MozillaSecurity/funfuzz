@@ -20,7 +20,7 @@ RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
 RUN_PLC_LIB = ""
 
-if sps.isWin:
+if platform.system() == "Windows":
     # Update if the following changes:
     # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
     RUN_ICUUC_LIB_EXCL_EXT = "icuuc"
@@ -51,7 +51,7 @@ elif platform.system() == "Linux":
 # These include running the js shell (mozglue) and should be in dist/bin.
 # At least Windows required the ICU libraries.
 ALL_RUN_LIBS = [RUN_MOZGLUE_LIB, RUN_NSPR_LIB, RUN_PLDS_LIB, RUN_PLC_LIB]
-if sps.isWin:
+if platform.system() == "Windows":
     ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
     WIN_ICU_VERS = []
     # Needs to be updated when the earliest known working revision changes. Currently:
@@ -79,7 +79,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = sps.captureStdout(["file", binary])[0]
     filetype = unsplit_file_type.decode("utf-8", errors="replace").split(":", 1)[1]
-    if sps.isWin:
+    if platform.system() == "Windows":
         assert "MS Windows" in filetype
         return "32" if "Intel 80386 32-bit" in filetype else "64"
     else:
@@ -96,7 +96,7 @@ def constructVgCmdList(errorCode=77):  # pylint: disable=invalid-name,missing-pa
     """Construct default parameters needed to run valgrind with."""
     valgrind_cmds = []
     valgrind_cmds.append("valgrind")
-    if sps.isMac:
+    if platform.system() == "Darwin":
         valgrind_cmds.append("--dsymutil=yes")
     valgrind_cmds.append("--error-exitcode=" + str(errorCode))
     # See bug 913876 comment 18:

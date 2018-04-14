@@ -29,7 +29,7 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 2. Install [Git](https://git-scm.com/) to clone these funfuzz repositories.
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
 4. Make sure you install at least Microsoft Visual Studio 2017 (Community Edition is recommended) as per the build instructions above in the Setup section.
-5. Run `start-shell.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files/Git/bin/git.exe`.
+5. Run `start-shell.bat` to get a MSYS shell. You can use Git by calling its absolute path, e.g. `/c/Program\ Files/Git/bin/git.exe`.
     1. Run the batch file with administrator privileges to get gflags analysis working correctly.
 
 
@@ -115,15 +115,16 @@ Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively
 
 The following operating systems are old or less common and while they may still work, be prepared to **expect issues** along the way:
 
-* Windows Vista / Windows 8 / Windows 8.1
+* Windows 8 / Windows 8.1
 * Mac OS X 10.11 through 10.12
 * Ubuntu Linux 15.10 and prior (see note above about 14.04 LTS)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:
 
-* Windows XP
-* Mac OS X 10.6 through 10.10
+* Windows Vista, Windows XP and earlier
+* Mac OS X 10.10 and earlier
+* Ubuntu Linux 13.10 and earlier
 
 **Q: What version of Python does funfuzz require?**
 

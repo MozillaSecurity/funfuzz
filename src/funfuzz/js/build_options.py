@@ -161,7 +161,7 @@ def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-
     parser, randomizer = addParserOptions()
     build_options = parser.parse_args(inputArgs.split())
 
-    if sps.isMac:
+    if platform.system() == "Darwin":
         build_options.buildWithClang = True  # Clang seems to be the only supported compiler
 
     if build_options.enableArmSimulatorObsolete:
@@ -228,7 +228,7 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         fileName.append("intlDisabled")
     if build_options.enableSimulatorArm32 or build_options.enableSimulatorArm64:
         fileName.append("armSim")
-    fileName.append("windows" if sps.isWin else platform.system().lower())
+    fileName.append("windows" if platform.system() == "Windows" else platform.system().lower())
     if build_options.patchFile:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         fileName.append(os.path.basename(build_options.patchFile).split(".")[0])
@@ -258,7 +258,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if not args.enableDbg and args.disableOpt:
         return False, "Making a non-debug, non-optimized build would be kind of silly."
 
-    if sps.isMac and args.enable32:
+    if platform.system() == "Darwin" and args.enable32:
         return False, "We are no longer going to ship 32-bit Mac binaries."
 
     if args.buildWithVg:
@@ -275,18 +275,18 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # if args.buildWithAsan:
         #     return False, "One should not compile with both Valgrind flags and ASan flags."
 
-        # if sps.isWin:
+        # if platform.system() == "Windows":
         #     return False, "Valgrind does not work on Windows."
-        # if sps.isMac:
+        # if platform.system() == "Darwin":
         #     return False, "Valgrind does not work well with Mac OS X 10.10 Yosemite."
 
     if args.runWithVg and not args.buildWithVg:
         return False, "--run-with-valgrind needs --build-with-valgrind."
 
     if args.buildWithClang:
-        if sps.isLinux and not args.buildWithAsan:
+        if platform.system() == "Linux" and not args.buildWithAsan:
             return False, "We do not really care about non-Asan clang-compiled Linux builds yet."
-        if sps.isWin:
+        if platform.system() == "Windows":
             return False, "Clang builds on Windows are not supported well yet."
 
     if args.buildWithAsan:
@@ -296,15 +296,15 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # since releng machines only test non-deterministic builds.
         if not args.enableMoreDeterministic:
             return False, "We should test deterministic ASan builds."
-        if sps.isLinux:  # https://github.com/MozillaSecurity/funfuzz/issues/25
+        if platform.system() == "Linux":  # https://github.com/MozillaSecurity/funfuzz/issues/25
             return False, "Linux ASan builds cannot yet submit to FuzzManager."
-        if sps.isMac:  # https://github.com/MozillaSecurity/funfuzz/issues/25
+        if platform.system() == "Darwin":  # https://github.com/MozillaSecurity/funfuzz/issues/25
             return False, "Mac ASan builds cannot yet submit to FuzzManager."
-        if sps.isWin:
+        if platform.system() == "Windows":
             return False, "Asan is not yet supported on Windows."
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
-        if sps.isWin:
+        if platform.system() == "Windows":
             return False, "Nobody runs the ARM simulator on Windows."
         if args.enableSimulatorArm32 and not args.enable32:
             return False, "The 32-bit ARM simulator builds are only for 32-bit binaries."

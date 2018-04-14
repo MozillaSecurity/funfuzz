@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 REPOS = ["gecko-dev", "octo"] + \
     ["mozilla-" + x for x in ["inbound", "central", "beta", "release"]]
 
-if sps.isWin:
+if platform.system() == "Windows":
     # pylint: disable=invalid-name
     git_64bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES"), "Git", "bin", "git.exe"))
     git_32bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES(X86)"), "Git", "bin", "git.exe"))
@@ -118,7 +118,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
     elif repo_type == "git":
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
-        if sps.isWin:
+        if platform.system() == "Windows":
             gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
         time_cmd([GITBINARY, "pull"], cwd=repo, env=gitenv)
     else:

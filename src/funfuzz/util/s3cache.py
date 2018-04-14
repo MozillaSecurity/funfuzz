@@ -10,25 +10,17 @@
 from __future__ import absolute_import, print_function
 
 import os
+import platform
 import shutil
 
-from . import subprocesses as sps
-
-isBoto = False  # pylint: disable=invalid-name
-# We need to first install boto into MozillaBuild via psbootstrap on Windows
-if not sps.isMac:
-    try:
-        from boto.s3.connection import S3Connection, Key
-        import boto.exception
-        import boto.utils  # Cannot find this if only boto is imported
-        isBoto = True  # pylint: disable=invalid-name
-    except ImportError:
-        isBoto = False  # pylint: disable=invalid-name
+import boto.exception
+import boto.utils
+from boto.s3.connection import S3Connection, Key
 
 
 def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
-    """Test to see if the specified S3 cache is available."""
-    if sps.isMac or not isBoto:
+    """Test to see if the specified S3 cache is available, but only on non-WSL Linux systems."""
+    if not (platform.system() == "Linux" and "Microsoft" not in platform.release()):
         return False
 
     try:
@@ -43,8 +35,8 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         self.bucket_name = bucket_name
 
     def connect(self):  # pylint: disable=missing-return-doc,missing-return-type-doc
-        """Connect to the S3 bucket."""
-        if not isBoto:
+        """Connect to the S3 bucket, but only on non-WSL Linux systems."""
+        if not (platform.system() == "Linux" and "Microsoft" not in platform.release()):
             return False
 
         EC2_PROFILE = None if isEC2VM() else "laniakea"  # pylint: disable=invalid-name
