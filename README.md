@@ -29,7 +29,7 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 2. Install [Git](https://git-scm.com/) to clone these funfuzz repositories.
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
 4. Make sure you install at least Microsoft Visual Studio 2017 (Community Edition is recommended) as per the build instructions above in the Setup section.
-5. Run `start-shell.bat` to get a MSYS shell. Do not use the MSYS shell that comes with Git for Windows. You can use Git by calling its absolute path, e.g. `/c/Program\ Files/Git/bin/git.exe`.
+5. Run `start-shell.bat` to get a MSYS shell. You can use Git by calling its absolute path, e.g. `/c/Program\ Files/Git/bin/git.exe`.
     1. Run the batch file with administrator privileges to get gflags analysis working correctly.
 
 
