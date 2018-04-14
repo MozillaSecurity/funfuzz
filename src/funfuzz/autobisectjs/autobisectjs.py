@@ -325,7 +325,7 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
         else:
             raise ValueError("Invalid condition script specified: %s" % interestingness_name)
 
-        if conditionScript.interesting(None, tempPrefix, opts=opts):  # None is a dummy variable
+        if conditionScript.interesting(opts, tempPrefix):
             innerResult = ("bad", "interesting")  # pylint: disable=invalid-name
         else:
             innerResult = ("good", "not interesting")  # pylint: disable=invalid-name

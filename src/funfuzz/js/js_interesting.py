@@ -275,8 +275,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
 # loop uses parseOptions and ShellResult [with in_compare_jit = False]
 # compare_jit uses ShellResult [with in_compare_jit = True]
 
-# Unused variable args is for Lithium compatibility purposes
-def interesting(_args, tempPrefix, opts=None):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def interesting(opts, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     res = ShellResult(opts, opts.jsengineWithArgs, tempPrefix, False)
     truncateFile(tempPrefix + "-out.txt", 1000000)

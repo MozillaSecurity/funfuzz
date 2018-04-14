@@ -254,9 +254,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     return options
 
 
-# FIXME: lithium doesn't know to set opts when reducing..! So it can't yet work with condition scripts...
-# Unused variable args is for Lithium compatibility purposes
-def interesting(_args, tempPrefix, opts=None):  # pylint: disable=invalid-name
+def interesting(opts, tempPrefix):  # pylint: disable=invalid-name
     actualLevel = compareLevel(  # pylint: disable=invalid-name
         opts.jsengine, opts.flags, opts.infilename, tempPrefix, opts, False, False)[0]
     return actualLevel >= opts.minimumInterestingLevel
