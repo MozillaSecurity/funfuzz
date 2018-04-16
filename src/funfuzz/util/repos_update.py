@@ -19,7 +19,6 @@ import platform
 import sys
 import time
 
-import pip
 from . import subprocesses as sps
 
 if sys.version_info.major == 2:
@@ -83,17 +82,6 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     raise Exception("Type of repository located at " + r + " cannot be determined.")
 
 
-def update_funfuzz():
-    """Updates the requirements of the funfuzz repository. This does not seem to update funfuzz into pip itself."""
-    # funfuzz repository assumed to be located at ~/funfuzz
-    funfuzz_dir = sps.normExpUserPath(os.path.join("~", "funfuzz"))
-    assert os.path.isdir(funfuzz_dir)
-    assert typeOfRepo(funfuzz_dir) == "git"
-    if pip.main(["install", "--upgrade", funfuzz_dir]) and platform.system() == "Linux":
-        logger.info('\npip errored out, retrying with "--user"\n')
-        pip.main(["install", "--user", "--upgrade", funfuzz_dir])
-
-
 def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Update a repository. Return False if missing; return True if successful; raise an exception if updating fails."""
@@ -145,7 +133,6 @@ def updateRepos():  # pylint: disable=invalid-name
 def main():  # pylint: disable=missing-docstring
     logger.info(time.asctime())
     try:
-        update_funfuzz()
         updateRepos()
     except OSError as ex:
         logger.info("WARNING: OSError hit:")

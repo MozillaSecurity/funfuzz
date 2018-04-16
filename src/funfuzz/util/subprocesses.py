@@ -196,7 +196,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
     """Return the crash log if found."""
     progname = os.path.basename(progfullname)
 
-    useLogFiles = isinstance(logPrefix, str)
+    useLogFiles = isinstance(logPrefix, ("".__class__, u"".__class__))
     if useLogFiles:
         if os.path.exists(logPrefix + "-crash.txt"):
             os.remove(logPrefix + "-crash.txt")
