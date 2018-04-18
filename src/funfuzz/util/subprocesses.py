@@ -134,12 +134,12 @@ def createWtmpDir(tmpDirBase):  # pylint: disable=invalid-name,missing-param-doc
 def disableCorefile():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
     import resource  # module only available on POSIX  pylint: disable=import-error
-    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))  # pylint: disable=no-member
 
 
 def getCoreLimit():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     import resource  # module only available on POSIX  pylint: disable=import-error
-    return resource.getrlimit(resource.RLIMIT_CORE)
+    return resource.getrlimit(resource.RLIMIT_CORE)  # pylint: disable=no-member
 
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: disable=invalid-name,missing-param-doc
