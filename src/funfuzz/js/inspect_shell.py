@@ -9,8 +9,8 @@
 
 from __future__ import absolute_import, print_function
 
-import os
 import platform
+from shellescape import quote
 
 from lithium.interestingness.utils import env_with_path
 
@@ -133,7 +133,7 @@ def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,mi
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    # sps.vdump("The testing command is: " + sps.shellify(test_cmd))
+    sps.vdump("The testing command is: " + " ".join([quote(x) for x in test_cmd]))
     out, return_code = sps.captureStdout(test_cmd, combineStderr=True, ignoreStderr=True,
                                          ignoreExitCode=True, env=env_with_path(str(shellPath.parent)))
     sps.vdump("The exit code is: " + str(return_code))

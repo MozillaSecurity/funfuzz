@@ -17,6 +17,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
 from past.builtins import range  # pylint: disable=redefined-builtin
+from shellescape import quote
 
 from . import js_interesting
 from . import shell_flags
@@ -109,7 +110,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, "[[script] scriptArgs*]") or (
                 anyLineContains(r.err, "[scriptfile] [scriptarg...]"))):
             print("Got usage error from:")
-            print("  %s" % sps.shellify(command))
+            print("  %s" % " ".join([quote(x) for x in command]))
             assert i
             js_interesting.deleteLogs(prefix)
         elif r.lev > js_interesting.JS_OVERALL_MISMATCH:
@@ -119,14 +120,15 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
             with open(logPrefix + "-summary.txt", "w") as f:
-                f.write("\n".join(r.issues + [sps.shellify(command), "compare_jit found a more serious bug"]) + "\n")
-            print("  %s" % sps.shellify(command))
+                f.write("\n".join(r.issues + [" ".join([quote(x) for x in command]),
+                                              "compare_jit found a more serious bug"]) + "\n")
+            print("  %s" % " ".join([quote(x) for x in command]))
             return (r.lev, r.crashInfo)
         elif r.lev != js_interesting.JS_FINE or r.return_code != 0:
             print("%s | %s" % (infilename, js_interesting.summaryString(
                 r.issues + ["compare_jit is not comparing output, because the shell exited strangely"],
                 r.lev, r.runinfo.elapsedtime)))
-            print("  %s" % sps.shellify(command))
+            print("  %s" % " ".join([quote(x) for x in command]))
             js_interesting.deleteLogs(prefix)
             if not i:
                 return (js_interesting.JS_FINE, None)
@@ -161,11 +163,15 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
-                rerunCommand = sps.shellify(["python -m funfuzz.js.compare_jit", "--flags=" + " ".join(flags),
-                                             "--timeout=" + str(options.timeout), options.knownPath, jsEngine,
-                                             os.path.basename(infilename)])
+                rerunCommand = " ".join([quote(x) for x in ["python -m funfuzz.js.compare_jit",
+                                                            "--flags=" + " ".join(flags),
+                                                            "--timeout=" + str(options.timeout),
+                                                            options.knownPath,
+                                                            jsEngine,
+                                                            os.path.basename(infilename)]])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
-                summary = "  " + sps.shellify(commands[0]) + "\n  " + sps.shellify(command) + "\n\n" + summary
+                summary = ("  " + " ".join([quote(x) for x in commands[0]]) + "\n  " +
+                           " ".join([quote(x) for x in command]) + "\n\n" + summary)
                 with open(logPrefix + "-summary.txt", "w") as f:
                     f.write(rerunCommand + "\n\n" + summary)
                 print("%s | %s" % (infilename, js_interesting.summaryString(

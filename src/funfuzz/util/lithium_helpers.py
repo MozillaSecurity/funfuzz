@@ -18,11 +18,11 @@ import tempfile
 
 from lithium.interestingness.utils import file_contains_str
 from past.builtins import range  # pylint: disable=redefined-builtin
+from shellescape import quote
 
 from ..js.js_interesting import JS_OVERALL_MISMATCH, JS_VG_AMISS
 from ..js.inspect_shell import testJsShellOrXpcshell
 from . import file_manipulation
-from . import subprocesses as sps
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
@@ -47,7 +47,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
 
     print()
     print("Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:")
-    print(sps.shellify([sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
+    print(" ".join([quote(x) for x in [sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs]))
     print()
 
     # pylint: disable=literal-comparison
@@ -59,7 +59,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-p", " ".join(engineFlags + [infilename])] +
             ["-i"] + itest
         )
-        print(sps.shellify(autobisectCmd))
+        print(" ".join([quote(x) for x in autobisectCmd]))
         autoBisectLogFilename = logPrefix + "-autobisect.txt"  # pylint: disable=invalid-name
         subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
         print("Done running autobisectjs. Log: %s" % autoBisectLogFilename)
@@ -92,7 +92,7 @@ def runLithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     lithlogfn = logPrefix + "-lith-out.txt"
     print("Preparing to run Lithium, log file %s" % lithlogfn)
-    print(sps.shellify(runlithiumpy + lithArgs))
+    print(" ".join([quote(x) for x in runlithiumpy + lithArgs]))
     subprocess.call(runlithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
     print("Done running Lithium")
     if deletableLithTemp:
@@ -138,7 +138,7 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
         reductionCount[0] += 1
         # Remove empty elements
         fullLithArgs = [x for x in (strategy + lithArgs) if x]  # pylint: disable=invalid-name
-        print(sps.shellify([sys.executable, "-u", "-m", "lithium"] + fullLithArgs))
+        print(" ".join([quote(x) for x in [sys.executable, "-u", "-m", "lithium"] + fullLithArgs]))
 
         desc = "-chars" if strategy == "--char" else "-lines"
         (lithResult, lithDetails) = runLithium(  # pylint: disable=invalid-name
