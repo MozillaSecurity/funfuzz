@@ -7,7 +7,7 @@
 """Known broken changeset ranges of SpiderMonkey are specified in this file.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import os
 import platform

@@ -7,7 +7,7 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 
 def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc

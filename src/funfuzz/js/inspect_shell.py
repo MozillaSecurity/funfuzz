@@ -7,7 +7,7 @@
 """Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import json
 import os

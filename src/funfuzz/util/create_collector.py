@@ -7,7 +7,7 @@
 """Functions here make use of a Collector created from FuzzManager.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 import sys
 

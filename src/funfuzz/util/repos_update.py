@@ -10,7 +10,7 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 from copy import deepcopy
 import logging
