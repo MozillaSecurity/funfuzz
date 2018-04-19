@@ -15,7 +15,7 @@ import sys
 
 from pkg_resources import parse_version
 
-if os.name == "posix" and sys.version_info.major == 2:
+if sys.version_info.major == 2 and os.name == "posix":
     import subprocess32 as subprocess  # pylint: disable=import-error
 else:
     import subprocess
