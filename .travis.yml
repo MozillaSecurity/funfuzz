@@ -37,6 +37,9 @@ addons:
 #     - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
 #     - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
 #     - PATH=$PWD/latest-gcc-symlinks:$PATH
+#     # Be explicit for the Mozilla build system to pick up GCC 6
+#     - export CC=$PWD/latest-gcc-symlinks/gcc
+#     - export CXX=$PWD/latest-gcc-symlinks/g++
 install:
     # Already in venv, no need for --user
     - python -m pip --version
