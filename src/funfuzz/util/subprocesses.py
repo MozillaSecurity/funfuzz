@@ -41,12 +41,12 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
     currWorkingDir = currWorkingDir or (
         os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
     if env == "NOTSET":
-        vdump(" ".join([quote(x) for x in inputCmd]))
+        vdump(" ".join(quote(x) for x in inputCmd))
         env = os.environ
     else:
         # There is no way yet to only print the environment variables that were added by the harness
         # We could dump all of os.environ but it is too much verbose output.
-        vdump("ENV_VARIABLES_WERE_ADDED_HERE " + " ".join([quote(x) for x in inputCmd]))
+        vdump("ENV_VARIABLES_WERE_ADDED_HERE " + " ".join(quote(x) for x in inputCmd))
     cmd = []
     for el in inputCmd:
         if el.startswith('"') and el.endswith('"'):
@@ -64,7 +64,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             env=env)
         (stdout, stderr) = p.communicate()
     except OSError as e:
-        raise Exception(repr(e.strerror) + " error calling: " + " ".join([quote(x) for x in cmd]))
+        raise Exception(repr(e.strerror) + " error calling: " + " ".join(quote(x) for x in cmd))
     if p.returncode != 0:
         oomErrorOutput = stdout if combineStderr else stderr
         if (platform.system() == "Linux" or platform.system() == "Darwin") and oomErrorOutput:
@@ -79,7 +79,7 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
             # Pymake in builds earlier than revision 232553f741a0 did not support the "-s" option.
             if "no such option: -s" not in stdout:
                 print("Nonzero exit code from: ")
-                print("  %s" % " ".join([quote(x) for x in cmd]))
+                print("  %s" % " ".join(quote(x) for x in cmd))
                 print("stdout is:")
                 print(stdout)
             if stderr is not None:
@@ -97,14 +97,14 @@ def captureStdout(inputCmd, ignoreStderr=False, combineStderr=False, ignoreExitC
         # Ignore hg color mode throwing an error in console on Windows platforms.
         if not (platform.system() == "Windows" and "warning: failed to set color mode to win32" in stderr):
             print("Unexpected output on stderr from: ")
-            print("  %s" % " ".join([quote(x) for x in cmd]))
+            print("  %s" % " ".join(quote(x) for x in cmd))
             print("%s %s" % (stdout, stderr))
             raise Exception("Unexpected output on stderr")
     if stderr and ignoreStderr and stderr and p.returncode != 0:
         # During configure, there will always be stderr. Sometimes this stderr causes configure to
         # stop the entire script, especially on Windows.
         print("Return code not zero, and unexpected output on stderr from: ")
-        print("  %s" % " ".join([quote(x) for x in cmd]))
+        print("  %s" % " ".join(quote(x) for x in cmd))
         print("%s %s" % (stdout, stderr))
         raise Exception("Return code not zero, and unexpected output on stderr")
     if verbose or verbosity:
@@ -229,7 +229,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
             preexec_fn=(disableCorefile if platform.system() == "Linux" else None)
         )
         if debuggerExitCode != 0:
-            print("Debugger exited with code %d : %s" % (debuggerExitCode, " ".join([quote(x) for x in debuggerCmd])))
+            print("Debugger exited with code %d : %s" % (debuggerExitCode, " ".join(quote(x) for x in debuggerCmd)))
         if useLogFiles:
             if os.path.isfile(coreFile):
                 shutil.move(coreFile, logPrefix + "-core")

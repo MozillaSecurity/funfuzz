@@ -140,7 +140,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if lev != JS_FINE:
             with open(logPrefix + "-summary.txt", "w") as f:
                 f.writelines(["Number: " + logPrefix + "\n",
-                              "Command: " + " ".join([quote(x) for x in runthis]) + "\n"] +
+                              "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
 
         self.lev = lev

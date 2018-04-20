@@ -134,7 +134,7 @@ def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,mi
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
-    sps.vdump("The testing command is: " + " ".join([quote(x) for x in test_cmd]))
+    sps.vdump("The testing command is: " + " ".join(quote(x) for x in test_cmd))
     out, return_code = sps.captureStdout(test_cmd, combineStderr=True, ignoreStderr=True,
                                          ignoreExitCode=True, env=env_with_path(
                                              os.path.dirname(os.path.abspath(shellPath))))
