@@ -109,7 +109,7 @@ Replace anything between `<` and `>` with your desired parameters.
 * Windows 10 and 7, with [MozillaBuild 3.1.1](https://wiki.mozilla.org/MozillaBuild). It should also work with Windows Server 2012 R2.
 * Mac OS X 10.13
 * Ubuntu 16.04 LTS and later
-  * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis)
+  * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis), but not the compile_shell tests (2.7 Travis mode) due to Python 3.5+ requirements
 
 Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively and there may be a few bugs along the way.
 
@@ -128,4 +128,4 @@ Support for the following operating systems **have been removed**:
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** We recommend the Python 2.7.x series. There is no support for Python 3 yet, although there is work happening for the move to Python 3.
+**A:** We recommend the Python 2.7.x series. There is no support for Python 3 yet, although there is work happening for the move to Python 3. Due to [bug 1451065](https://bugzilla.mozilla.org/show_bug.cgi?id=1451065), Python 3.5+ will be required to be installed for the `compile_shell` tests to work, even in 2.7 mode.
