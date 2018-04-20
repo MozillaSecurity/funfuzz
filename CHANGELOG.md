@@ -25,7 +25,7 @@ Notes:
 Features:
 * Hit 40% test coverage! (previously 30%)
 * jsfunfuzz updates
-  * `async`, `for-await-of support` thanks to @arai-a 
+  * `async`, `for-await-of support` thanks to @arai-a
   * Obsolete functions removed (`E4X for-each`, `toSource`, `StopIteration`, `getPropertyDescriptor`, `Iterator`/`__iterator__`, `validategc` etc.)
 * `tooltool` removed, along with lots of other unused functions now that `DOMFuzz` is gone
 * Removed `download_build`
