@@ -20,24 +20,25 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
         packages:
-            - autoconf2.13
+            # - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
-before_install:
-    # Use GCC 6
-    - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
-    - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
-    - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
-    - PATH=$PWD/latest-gcc-symlinks:$PATH
+# before_install:
+#     # Use GCC 6
+#     - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
+#     - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
+#     - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
+#     - PATH=$PWD/latest-gcc-symlinks:$PATH
 install:
+    - python -m pip install --upgrade setuptools
     - python -m pip --version
     - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
     # Already in venv, no need for --user
@@ -62,8 +63,12 @@ before_script:
       else
           python -m pytest --flake8 --pylint -p no:cov setup.py src/
       fi
-    - mkdir -p ~/trees/
-    - time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
+    # Only clone if on Python 3.5 and above
+    - |
+      if ! [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "2.7" ] ; then
+          mkdir -p ~/trees/
+          time hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
+      fi
 script:
     # Run only tests and coverage, exclude linters
     - travis_wait 50 unbuffer python -m pytest -p no:flake8 -p no:pylint --cov=`pwd` --cov-report term-missing

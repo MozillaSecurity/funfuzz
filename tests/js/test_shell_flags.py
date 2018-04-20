@@ -14,6 +14,7 @@ import os
 import sys
 
 import funfuzz
+import pytest
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error
@@ -25,6 +26,7 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 @lru_cache(maxsize=None)
 def get_current_shell_path():
     """Retrieve the path to the currently built shell.
@@ -58,6 +60,7 @@ def mock_chance(i):
     return True if i > 0 else False
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 def test_add_random_arch_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to architecture.
 
@@ -73,6 +76,7 @@ def test_add_random_arch_flags(monkeypatch):
         assert "--arm-sim-icache-checks" in all_flags
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 def test_add_random_ion_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to IonMonkey.
 
@@ -107,6 +111,7 @@ def test_add_random_ion_flags(monkeypatch):
     assert "--ion-licm=on" in all_flags
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 def test_add_random_wasm_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm).
 
@@ -121,6 +126,7 @@ def test_add_random_wasm_flags(monkeypatch):
     assert "--test-wasm-await-tier2" in all_flags
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 def test_basic_flag_sets():
     """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
     important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
@@ -140,6 +146,7 @@ def test_chance(monkeypatch):
     assert not funfuzz.js.shell_flags.chance(-0.2)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 def test_random_flag_set(monkeypatch):
     """Test runtime flags related to SpiderMonkey.
 
@@ -166,6 +173,7 @@ def test_random_flag_set(monkeypatch):
     assert "--dump-bytecode" in all_flags
 
 
+@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 def test_shell_supports_flag():
     """Test that the shell does support flags as intended."""
     assert funfuzz.js.shell_flags.shell_supports_flag(get_current_shell_path(), "--fuzzing-safe")
