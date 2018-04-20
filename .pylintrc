@@ -25,16 +25,13 @@ accept-no-yields-doc=no
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-# Note: old-division can be removed once Python 2.7 gets EOL. It was interfering with pathlib2 usage
-# For all intents and purposes, all errors that old-division had pointed out were already fixed prior to pathlib2
-# It should be re-added to the enable= line below
-disable=locally-disabled,no-absolute-import,old-division,suppressed-message,useless-suppression
+disable=locally-disabled,no-absolute-import,suppressed-message,useless-suppression
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-enable=apply-builtin,backtick,bad-inline-option,bad-python3-import,basestring-builtin,buffer-builtin,cmp-builtin,cmp-method,coerce-builtin,coerce-method,delslice-method,deprecated-pragma,deprecated-str-translate-call,deprecated-string-function,dict-iter-method,dict-view-method,div-method,eq-without-hash,exception-message-attribute,execfile-builtin,file-builtin,file-ignored,filter-builtin-not-iterating,getslice-method,hex-method,idiv-method,import-star-module-level,indexing-exception,input-builtin,intern-builtin,invalid-str-codec,locally-enabled,long-builtin,long-suffix,map-builtin-not-iterating,metaclass-assignment,next-method-called,nonzero-method,oct-method,old-ne-operator,old-octal-literal,old-raise-syntax,parameter-unpacking,print-statement,raising-string,range-builtin-not-iterating,raw-checker-failed,raw_input-builtin,rdiv-method,reduce-builtin,reload-builtin,round-builtin,setslice-method,standarderror-builtin,sys-max-int,unichr-builtin,unicode-builtin,unpacking-in-except,using-cmp-argument,xrange-builtin,zip-builtin-not-iterating
+enable=apply-builtin,backtick,bad-inline-option,bad-python3-import,basestring-builtin,buffer-builtin,cmp-builtin,cmp-method,coerce-builtin,coerce-method,delslice-method,deprecated-pragma,deprecated-str-translate-call,deprecated-string-function,dict-iter-method,dict-view-method,div-method,eq-without-hash,exception-message-attribute,execfile-builtin,file-builtin,file-ignored,filter-builtin-not-iterating,getslice-method,hex-method,idiv-method,import-star-module-level,indexing-exception,input-builtin,intern-builtin,invalid-str-codec,locally-enabled,long-builtin,long-suffix,map-builtin-not-iterating,metaclass-assignment,next-method-called,nonzero-method,oct-method,old-division,old-ne-operator,old-octal-literal,old-raise-syntax,parameter-unpacking,print-statement,raising-string,range-builtin-not-iterating,raw-checker-failed,raw_input-builtin,rdiv-method,reduce-builtin,reload-builtin,round-builtin,setslice-method,standarderror-builtin,sys-max-int,unichr-builtin,unicode-builtin,unpacking-in-except,using-cmp-argument,xrange-builtin,zip-builtin-not-iterating
 
 [BASIC]
 

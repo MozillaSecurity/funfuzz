@@ -34,7 +34,6 @@ if __name__ == "__main__":
               "future>=0.16.0",
               "FuzzManager>=0.1.3",
               "lithium-reducer>=0.2.1",
-              "pathlib2>=2.3.0",
               "psutil>=5.4.3",
               "pytest-cov>=2.5.1",
               "pytest-flake8>=1.0.0",
