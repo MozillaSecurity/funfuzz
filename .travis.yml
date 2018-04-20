@@ -39,6 +39,7 @@ before_install:
     - PATH=$PWD/latest-gcc-symlinks:$PATH
 install:
     - python -m pip --version
+    - python -m pip install --upgrade setuptools  # For pathlib2 ideally, see https://git.io/vpqgl
     - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
     # Already in venv, no need for --user
     - python -m pip install --upgrade codecov pytest-cov pytest-flake8 pytest-pylint
