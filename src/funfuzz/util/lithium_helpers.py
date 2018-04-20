@@ -19,10 +19,11 @@ import tempfile
 from lithium.interestingness.utils import file_contains_str
 from past.builtins import range  # pylint: disable=redefined-builtin
 
-from ..js.js_interesting import JS_OVERALL_MISMATCH, JS_VG_AMISS
-from ..js.inspect_shell import testJsShellOrXpcshell
 from . import file_manipulation
 from . import subprocesses as sps
+from ..js.inspect_shell import testJsShellOrXpcshell
+from ..js.js_interesting import JS_OVERALL_MISMATCH
+from ..js.js_interesting import JS_VG_AMISS
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 

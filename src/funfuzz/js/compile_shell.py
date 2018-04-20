@@ -13,6 +13,7 @@ import copy
 import ctypes
 import io
 import multiprocessing
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
 import shutil
@@ -20,9 +21,9 @@ import subprocess
 import sys
 import tarfile
 import traceback
-from optparse import OptionParser  # pylint: disable=deprecated-module
-from pkg_resources import parse_version
+
 # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
+from pkg_resources import parse_version
 from whichcraft import which
 
 from . import build_options

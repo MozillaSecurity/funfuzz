@@ -9,13 +9,12 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+from builtins import input  # pylint: disable=redefined-builtin
 import configparser
 import os
 import re
 import subprocess
 import sys
-
-from builtins import input  # pylint: disable=redefined-builtin
 
 from . import subprocesses as sps
 

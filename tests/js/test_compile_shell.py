@@ -13,8 +13,9 @@ import logging
 import os
 import sys
 
-import funfuzz
 import pytest
+
+import funfuzz
 
 funfuzz_log = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)

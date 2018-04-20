@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import re
 import shutil
@@ -16,7 +17,6 @@ import subprocess
 import sys
 import tempfile
 import time
-from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from backports.print_function import print_
 from lithium.interestingness.utils import rel_or_abs_import
@@ -26,9 +26,9 @@ from ..js import build_options
 from ..js import compile_shell
 from ..js import inspect_shell
 from ..util import hg_helpers
-from ..util.lock_dir import LockDir
 from ..util import s3cache
 from ..util import subprocesses as sps
+from ..util.lock_dir import LockDir
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc

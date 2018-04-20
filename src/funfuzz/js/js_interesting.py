@@ -9,22 +9,20 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys
-from optparse import OptionParser  # pylint: disable=deprecated-module
-
-import lithium.interestingness.timed_run as timed_run
 
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
-import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
+import lithium.interestingness.timed_run as timed_run
 from past.builtins import range  # pylint: disable=redefined-builtin
 
 from . import inspect_shell
 from ..util import create_collector
 from ..util import detect_malloc_errors
 from ..util import subprocesses as sps
-
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".

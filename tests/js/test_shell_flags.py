@@ -13,8 +13,9 @@ import logging
 import os
 import sys
 
-import funfuzz
 import pytest
+
+import funfuzz
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error
