@@ -38,6 +38,7 @@ before_install:
     - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
     - PATH=$PWD/latest-gcc-symlinks:$PATH
 install:
+    - python -m pip install --upgrade setuptools
     - python -m pip --version
     - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
     # Already in venv, no need for --user
