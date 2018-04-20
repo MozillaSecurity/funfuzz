@@ -9,7 +9,6 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
-import os
 import re
 import shutil
 import subprocess
@@ -24,6 +23,11 @@ from . import file_manipulation
 from ..js.inspect_shell import testJsShellOrXpcshell
 from ..js.js_interesting import JS_OVERALL_MISMATCH
 from ..js.js_interesting import JS_VG_AMISS
+
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
@@ -43,7 +47,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     """
     lithArgs = itest + [jsEngine] + engineFlags + [infilename]  # pylint: disable=invalid-name
 
-    (lithResult, lithDetails) = strategicReduction(  # pylint: disable=invalid-name
+    (lithResult, lithDetails) = reduction_strat(  # pylint: disable=invalid-name
         logPrefix, infilename, lithArgs, targetTime, suspiciousLevel)
 
     print()
@@ -62,10 +66,10 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         )
         print(" ".join(quote(x) for x in autobisectCmd))
         autoBisectLogFilename = logPrefix + "-autobisect.txt"  # pylint: disable=invalid-name
-        subprocess.call(autobisectCmd, stdout=open(autoBisectLogFilename, "w"), stderr=subprocess.STDOUT)
+        subprocess.call(autobisectCmd, stdout=open(str(autoBisectLogFilename), "w"), stderr=subprocess.STDOUT)
         print("Done running autobisectjs. Log: %s" % autoBisectLogFilename)
 
-        with open(autoBisectLogFilename, "r") as f:
+        with open(str(autoBisectLogFilename), "r") as f:
             lines = f.readlines()
             autoBisectLog = file_manipulation.truncateMid(lines, 50, ["..."])  # pylint: disable=invalid-name
     else:
@@ -74,7 +78,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     return (lithResult, lithDetails, autoBisectLog)
 
 
-def runLithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Run Lithium as a subprocess: reduce to the smallest file that has at least the same unhappiness level.
 
@@ -89,12 +93,12 @@ def runLithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name
     else:
         # loop is being run standalone
         lithtmp = logPrefix + "-lith-tmp"
-        os.mkdir(lithtmp)
+        Path.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     lithlogfn = logPrefix + "-lith-out.txt"
     print("Preparing to run Lithium, log file %s" % lithlogfn)
     print(" ".join(quote(x) for x in runlithiumpy + lithArgs))
-    subprocess.call(runlithiumpy + lithArgs, stdout=open(lithlogfn, "w"), stderr=subprocess.STDOUT)
+    subprocess.call(runlithiumpy + lithArgs, stdout=open(str(lithlogfn), "w"), stderr=subprocess.STDOUT)
     print("Done running Lithium")
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)
@@ -105,7 +109,7 @@ def runLithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name
 
 def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    with open(lithlogfn) as f:
+    with open(str(lithlogfn)) as f:
         for line in f:
             if line.startswith("Lithium result"):
                 print(line.rstrip())
@@ -125,43 +129,52 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
         return (LITH_BUSTED, None)
 
 
-def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=invalid-name
+def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc,too-complex
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     """Reduce jsfunfuzz output files using Lithium by using various strategies."""
+    # RMassert isinstance(cacheDir, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
+
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name
-    backupFilename = infilename + "-backup"  # pylint: disable=invalid-name
+    backup_file = infilename + "-backup"
 
-    def lithReduceCmd(strategy):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
+    def lith_reduce(strategy):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
         # pylint: disable=missing-return-type-doc,missing-type-doc
-        """Lithium reduction commands accepting various strategies."""
+        """Lithium reduction commands accepting various strategies.
+
+        Args:
+            strategy (str): Intended strategy to use
+
+        Returns:
+            (tuple): The finished Lithium run result and details
+        """
         reductionCount[0] += 1
         # Remove empty elements
-        fullLithArgs = [x for x in (strategy + lithArgs) if x]  # pylint: disable=invalid-name
-        print(" ".join(quote(x) for x in [sys.executable, "-u", "-m", "lithium"] + fullLithArgs))
+        full_lith_args = [x for x in (strategy + lithArgs) if x]
+        print(" ".join(quote(x) for x in [sys.executable, "-u", "-m", "lithium"] + full_lith_args))
 
         desc = "-chars" if strategy == "--char" else "-lines"
-        (lithResult, lithDetails) = runLithium(  # pylint: disable=invalid-name
-            fullLithArgs, "%s-%s%s" % (logPrefix, reductionCount[0], desc), targetTime)
-        if lithResult == LITH_FINISHED:
-            shutil.copy2(infilename, backupFilename)
+        (lith_result, lith_details) = run_lithium(  # pylint: disable=invalid-name
+            full_lith_args, "%s-%s%s" % (logPrefix, reductionCount[0], desc), targetTime)
+        if lith_result == LITH_FINISHED:
+            shutil.copy2(infilename, backup_file)
 
-        return lithResult, lithDetails
+        return lith_result, lith_details
 
     print()
     print("Running the first line reduction...")
     print()
     # Step 1: Run the first instance of line reduction.
-    lithResult, lithDetails = lithReduceCmd([])  # pylint: disable=invalid-name
+    lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
 
-    if lithDetails is not None:  # lithDetails can be None if testcase no longer becomes interesting
-        origNumOfLines = int(lithDetails.split()[0])  # pylint: disable=invalid-name
+    if lith_details is not None:  # lith_details can be None if testcase no longer becomes interesting
+        origNumOfLines = int(lith_details.split()[0])  # pylint: disable=invalid-name
 
     hasTryItOut = False  # pylint: disable=invalid-name
     hasTryItOutRegex = re.compile(r'count=[0-9]+; tryItOut\("')  # pylint: disable=invalid-name
 
-    with open(infilename, "r") as f:
+    with open(str(infilename), "r") as f:
         for line in file_manipulation.linesWith(f, '; tryItOut("'):
             # Checks if testcase came from jsfunfuzz or compare_jit.
             # Do not use .match here, it only matches from the start of the line:
@@ -171,29 +184,29 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
                 break
 
     # Step 2: Run 1 instance of 1-line reduction after moving tryItOut and count=X around.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
 
         tryItOutAndCountRegex = re.compile(r'"\);\ncount=([0-9]+); tryItOut\("',  # pylint: disable=invalid-name
                                            re.MULTILINE)
-        with open(infilename, "r") as f:
+        with open(str(infilename), "r") as f:
             infileContents = f.read()  # pylint: disable=invalid-name
             infileContents = re.sub(tryItOutAndCountRegex,  # pylint: disable=invalid-name
                                     ';\\\n"); count=\\1; tryItOut("\\\n',
                                     infileContents)
-        with open(infilename, "w") as f:
+        with open(str(infilename), "w") as f:
             f.write(infileContents)
 
         print()
         print("Running 1 instance of 1-line reduction after moving tryItOut and count=X...")
         print()
         # --chunksize=1: Reduce only individual lines, for only 1 round.
-        lithResult, lithDetails = lithReduceCmd(["--chunksize=1"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--chunksize=1"])  # pylint: disable=invalid-name
 
     # Step 3: Run 1 instance of 2-line reduction after moving count=X to its own line and add a
     # 1-line offset.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         intendedLines = []  # pylint: disable=invalid-name
-        with open(infilename, "r") as f:
+        with open(str(infilename), "r") as f:
             for line in f:  # The testcase is likely to already be partially reduced.
                 if "dumpln(cookie" not in line:  # jsfunfuzz-specific line ignore
                     # This should be simpler than re.compile.
@@ -202,61 +215,61 @@ def strategicReduction(logPrefix, infilename, lithArgs, targetTime, lev):  # pyl
                                          # The 1-line offset is added here.
                                          .replace("SPLICE DDBEGIN", "SPLICE DDBEGIN\n"))
 
-        with open(infilename, "w") as f:
+        with open(str(infilename), "w") as f:
             f.writelines(intendedLines)
         print()
         print("Running 1 instance of 2-line reduction after moving count=X to its own line...")
         print()
-        lithResult, lithDetails = lithReduceCmd(["--chunksize=2"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--chunksize=2"])  # pylint: disable=invalid-name
 
     # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         print()
         print("Running 1 instance of 2-line reduction again...")
         print()
-        lithResult, lithDetails = lithReduceCmd(["--chunksize=2"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--chunksize=2"])  # pylint: disable=invalid-name
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH and  # pylint: disable=invalid-name
-                                          file_contains_str(infilename, "isAsmJSCompilationAvailable"))
+                                          file_contains_str(str(infilename), "isAsmJSCompilationAvailable"))
     # Step 5 (not always run): Run character reduction within interesting lines.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
+    if lith_result == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
             lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:
         print()
         print("Running character reduction...")
         print()
-        lithResult, lithDetails = lithReduceCmd(["--char"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--char"])  # pylint: disable=invalid-name
 
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         infileContents = []  # pylint: disable=invalid-name
-        with open(infilename, "r") as f:
+        with open(str(infilename), "r") as f:
             for line in f:
                 if "NIGEBDD" in line:
                     infileContents.append(line.replace("NIGEBDD", "DDBEGIN"))
                     infileContents.append("\n")  # The 1-line offset is added here.
                     continue
                 infileContents.append(line)
-        with open(infilename, "w") as f:
+        with open(str(infilename), "w") as f:
             f.writelines(infileContents)
 
         print()
         print("Running line reduction with a 1-line offset...")
         print()
-        lithResult, lithDetails = lithReduceCmd([])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
 
     # Step 7: Run line reduction for a final time.
-    if lithResult == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
+    if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         print()
         print("Running the final line reduction...")
         print()
-        lithResult, lithDetails = lithReduceCmd([])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
 
     # Restore from backup if testcase can no longer be reproduced halfway through reduction.
-    if lithResult != LITH_FINISHED and lithResult != LITH_PLEASE_CONTINUE:
+    if lith_result != LITH_FINISHED and lith_result != LITH_PLEASE_CONTINUE:
         # Probably can move instead of copy the backup, once this has stabilised.
-        if os.path.isfile(backupFilename):
-            shutil.copy2(backupFilename, infilename)
+        if backup_file.is_file():
+            shutil.copy2(str(backup_file), infilename)
         else:
-            print("DEBUG! backupFilename is supposed to be: %s" % backupFilename)
+            print("DEBUG! backup_file is supposed to be: %s" % backup_file)
 
-    return lithResult, lithDetails
+    return lith_result, lith_details

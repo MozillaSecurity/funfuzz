@@ -12,7 +12,6 @@ from __future__ import absolute_import, print_function  # isort:skip
 import argparse
 from builtins import object  # pylint: disable=redefined-builtin
 import hashlib
-import os
 import platform
 import random
 import sys
@@ -20,9 +19,13 @@ import sys
 from past.builtins import range  # pylint: disable=redefined-builtin
 
 from ..util import hg_helpers
-from ..util import subprocesses as sps
 
-DEFAULT_TREES_LOCATION = sps.normExpUserPath(os.path.join("~", "trees"))
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
+
+DEFAULT_TREES_LOCATION = Path.home() / "trees"
 
 
 def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -67,11 +70,13 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                         action="store_true",
                         default=False,
                         help='Chooses sensible random build options. Defaults to "%(default)s".')
-    parser.add_argument("-R", "--repoDir",
-                        dest="repoDir",
+    parser.add_argument("-R", "--repodir",
+                        dest="repo_dir",
+                        type=Path,
                         help="Sets the source repository.")
     parser.add_argument("-P", "--patch",
-                        dest="patchFile",
+                        dest="patch_file",
+                        type=Path,
                         help="Define the path to a single JS patch. Ensure mq is installed.")
 
     # Basic spidermonkey options
@@ -156,11 +161,17 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     return parser, randomizer
 
 
-def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Return a "build_options" object, which is intended to be immutable."""
+def parse_shell_opts(args):
+    """Parses shell options into a build_options object.
+
+    Args:
+        args (object): Arguments to be parsed
+
+    Returns:
+        build_options: An immutable build_options object
+    """
     parser, randomizer = addParserOptions()
-    build_options = parser.parse_args(inputArgs.split())
+    build_options = parser.parse_args(args.split())
 
     if platform.system() == "Darwin":
         build_options.buildWithClang = True  # Clang seems to be the only supported compiler
@@ -171,31 +182,29 @@ def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-
     if build_options.enableRandom:
         build_options = generateRandomConfigurations(parser, randomizer)
     else:
-        build_options.build_options_str = inputArgs
+        build_options.build_options_str = args
         valid = areArgsValid(build_options)
         if not valid[0]:
             print("WARNING: This set of build options is not tested well because: %s" % valid[1])
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
-    if os.path.isdir(DEFAULT_TREES_LOCATION):
+    if DEFAULT_TREES_LOCATION.is_dir():
         # Repositories do not get randomized if a repository is specified.
-        if build_options.repoDir is None:
+        if build_options.repo_dir is None:
             # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
-            if build_options.enableRandom and not build_options.patchFile:
-                build_options.repoDir = getRandomValidRepo(DEFAULT_TREES_LOCATION)
+            if build_options.enableRandom and not build_options.patch_file:
+                build_options.repo_dir = get_random_valid_repo(DEFAULT_TREES_LOCATION)
             else:
-                build_options.repoDir = os.path.realpath(sps.normExpUserPath(
-                    os.path.join(DEFAULT_TREES_LOCATION, "mozilla-central")))
+                build_options.repo_dir = DEFAULT_TREES_LOCATION / "mozilla-central"
 
-            if not os.path.isdir(build_options.repoDir):
-                sys.exit("repoDir is not specified, and a default repository location cannot be confirmed. Exiting...")
+            if not build_options.repo_dir.is_dir():
+                sys.exit("repo_dir is not specified, and a default repository location cannot be confirmed. Exiting...")
 
-        assert hg_helpers.isRepoValid(build_options.repoDir)
+        assert (build_options.repo_dir / ".hg" / "hgrc").is_file()
 
-        if build_options.patchFile:
-            hg_helpers.ensureMqEnabled()
-            build_options.patchFile = sps.normExpUserPath(build_options.patchFile)
-            assert os.path.isfile(build_options.patchFile)
+        if build_options.patch_file:
+            hg_helpers.ensure_mq_enabled()
+            assert build_options.patch_file.resolve().is_file()
     else:
         sys.exit("DEFAULT_TREES_LOCATION not found at: %s. Exiting..." % DEFAULT_TREES_LOCATION)
 
@@ -230,10 +239,10 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     if build_options.enableSimulatorArm32 or build_options.enableSimulatorArm64:
         fileName.append("armSim")
     fileName.append("windows" if platform.system() == "Windows" else platform.system().lower())
-    if build_options.patchFile:
+    if build_options.patch_file:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
-        fileName.append(os.path.basename(build_options.patchFile).split(".")[0])
-        with open(os.path.abspath(build_options.patchFile), "r") as f:
+        fileName.append(build_options.patch_file.name)
+        with open(str(build_options.patch_file.resolve()), "r") as f:
             readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult).hexdigest()[:12])
@@ -332,20 +341,28 @@ def generateRandomConfigurations(parser, randomizer):  # pylint: disable=inconsi
             return build_options
 
 
-def getRandomValidRepo(treeLocation):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
-    validRepos = []  # pylint: disable=invalid-name
-    for repo in ["mozilla-central", "mozilla-beta"]:
-        if os.path.isfile(sps.normExpUserPath(os.path.join(
-                treeLocation, repo, ".hg", "hgrc"))):
-            validRepos.append(repo)
+def get_random_valid_repo(tree):
+    """Given a path to Mozilla Mercurial repositories, return a randomly chosen valid one.
+
+    Args:
+        tree (str): Intended location of Mozilla Mercurial repositories
+
+    Returns:
+        Path: Location of a valid Mozilla repository
+    """
+    assert isinstance(tree, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
+    tree = tree.resolve()
+
+    valid_repos = []
+    for _ in ["mozilla-central", "mozilla-beta"]:
+        if (tree / _ / ".hg" / "hgrc").is_file():
+            valid_repos.append(_)
 
     # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
-    if "mozilla-beta" in validRepos and chance(0.5):
-        validRepos.remove("mozilla-beta")
+    if "mozilla-beta" in valid_repos and chance(0.5):
+        valid_repos.remove("mozilla-beta")
 
-    return os.path.realpath(sps.normExpUserPath(
-        os.path.join(treeLocation, random.choice(validRepos))))
+    return tree / random.choice(valid_repos)
 
 
 def main():  # pylint: disable=missing-docstring
@@ -363,7 +380,7 @@ def main():  # pylint: disable=missing-docstring
     print()
     print("Running this file directly doesn't do anything, but here's our subparser help:")
     print()
-    parseShellOptions("--help")
+    parse_shell_opts("--help")
 
 
 if __name__ == "__main__":

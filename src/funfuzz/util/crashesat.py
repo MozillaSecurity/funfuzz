@@ -6,7 +6,7 @@
 
 """Lithium's "crashesat" interestingness test to assess whether a binary crashes at a desired location.
 
-Not merged into Lithium, unsure if this still works for now. Still relies on grabCrashLog.
+Not merged into Lithium, unsure if this still works for now. Still relies on grab_crash_log.
 """
 
 from __future__ import absolute_import, print_function  # isort:skip
@@ -17,7 +17,7 @@ import os
 import lithium.interestingness.timed_run as timed_run
 from lithium.interestingness.utils import file_contains
 
-from . import subprocesses as sps
+from . import os_ops
 
 
 def parse_options(arguments):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
@@ -44,7 +44,7 @@ def interesting(cli_args, temp_prefix):  # pylint: disable=missing-docstring,mis
     # Examine stack for crash signature, this is needed if crash_sig is specified.
     runinfo = timed_run.timed_run(args, timeout, temp_prefix)
     if runinfo.sta == timed_run.CRASHED:
-        sps.grabCrashLog(args[0], runinfo.pid, temp_prefix, True)
+        os_ops.grab_crash_log(args[0], runinfo.pid, temp_prefix, True)
 
     time_str = " (%.3f seconds)" % runinfo.elapsedtime
 

@@ -10,10 +10,14 @@
 from __future__ import absolute_import, print_function  # isort:skip
 
 import multiprocessing
-import os
 import sys
 
 from past.builtins import range  # pylint: disable=redefined-builtin
+
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
@@ -24,7 +28,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
     def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
         print("==== %s ====" % fn)
         print()
-        with open(fn) as f:
+        with open(str(fn)) as f:
             for line in f:
                 print(line.rstrip())
         print()
@@ -45,20 +49,29 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         p.join()
         print("=== Child process #%d exited with code %d ===" % (i, p.exitcode))
         print()
-        showFile(logFileName(logDir, i, "out"))
-        showFile(logFileName(logDir, i, "err"))
+        showFile(log_name(logDir, i, "out"))
+        showFile(log_name(logDir, i, "err"))
         print()
 
 
 # Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)
-def logFileName(logDir, i, t):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
-    return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
+def log_name(log_dir, i, log_type):
+    """Returns the path of the forkjoin log file as a string.
+
+    Args:
+        log_dir (str): Directory of the log file
+        i (int): Log number
+        log_type (str): Log type
+
+    Returns:
+        str: The forkjoin log file path
+    """
+    return str(Path(log_dir) / ("forkjoin-%s-%s.txt" % (i, log_type)))
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    sys.stdout = open(logFileName(logDir, i, "out"), "w", buffering=0)
-    sys.stderr = open(logFileName(logDir, i, "err"), "w", buffering=0)
+    sys.stdout = open(log_name(logDir, i, "out"), "w", buffering=0)
+    sys.stderr = open(log_name(logDir, i, "err"), "w", buffering=0)
     fun(*(someArgs + (i,)))
 
 

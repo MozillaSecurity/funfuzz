@@ -10,6 +10,7 @@ from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import logging
 import os
+import platform
 import sys
 import unittest
 
@@ -20,8 +21,10 @@ from funfuzz import util
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error
+    from pathlib2 import Path
 else:
     from functools import lru_cache  # pylint: disable=no-name-in-module
+    from pathlib import Path  # pylint: disable=import-error
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -30,15 +33,19 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class CompileShellTests(unittest.TestCase):
     """"TestCase class for functions in compile_shell.py"""
+    # Paths
+    mc_hg_repo = Path.home() / "trees" / "mozilla-central"
+    shell_cache = Path.home() / "shell-cache"
+
     @pytest.mark.slow
     @lru_cache(maxsize=None)
     def test_shell_compile(self):
         """Test compilation of shells depending on the specified environment variable.
 
         Returns:
-            str: Path to the compiled shell.
+            Path: Path to the compiled shell.
         """
-        self.assertTrue(os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central")))
+        self.assertTrue(self.mc_hg_repo.is_dir())  # pylint: disable=no-member
         # Change the repository location by uncommenting this line and specifying the right one
         # "-R ~/trees/mozilla-central/")
 
@@ -47,8 +54,8 @@ class CompileShellTests(unittest.TestCase):
         # Remember to update the corresponding BUILD build parameters in .travis.yml as well
         build_opts = os.environ.get("BUILD", default_parameters_debug)
 
-        opts_parsed = js.build_options.parseShellOptions(build_opts)
-        hg_hash_of_default = util.hg_helpers.getRepoHashAndId(opts_parsed.repoDir)[0]
+        opts_parsed = js.build_options.parse_shell_opts(build_opts)
+        hg_hash_of_default = util.hg_helpers.get_repo_hash_and_id(opts_parsed.repo_dir)[0]
         # Ensure exit code is 0
         self.assertTrue(not js.compile_shell.CompiledShell(opts_parsed, hg_hash_of_default).run(["-b", build_opts]))
 
@@ -60,7 +67,9 @@ class CompileShellTests(unittest.TestCase):
             # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
             file_name = "js-64-profDisabled-intlDisabled-linux-" + hg_hash_of_default
 
-        compiled_bin = os.path.join(os.path.expanduser("~"), "shell-cache", file_name, file_name)
-        self.assertTrue(os.path.isfile(compiled_bin))
+        js_bin_path = self.shell_cache / file_name / file_name
+        if platform.system() == "Windows":
+            js_bin_path.with_suffix(".exe")
+        self.assertTrue(js_bin_path.is_file())
 
-        return compiled_bin
+        return js_bin_path

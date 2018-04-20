@@ -13,7 +13,6 @@ from __future__ import absolute_import, division, print_function  # isort:skip
 from builtins import object  # pylint: disable=redefined-builtin
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
-import os
 import platform
 import shutil
 import sys
@@ -30,9 +29,11 @@ from .util import subprocesses as sps
 from .util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
+    from pathlib2 import Path
     import psutil
+else:
+    from pathlib import Path  # pylint: disable=import-error
 
-path0 = os.path.dirname(os.path.abspath(__file__))  # pylint: disable=invalid-name
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
@@ -84,7 +85,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     if args:
         print("Warning: bot does not use positional arguments")
 
-    if not options.useTreeherderBuilds and not os.path.isdir(build_options.DEFAULT_TREES_LOCATION):
+    if not options.useTreeherderBuilds and not build_options.DEFAULT_TREES_LOCATION.is_dir():
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
         print()
@@ -106,7 +107,7 @@ def main():  # pylint: disable=missing-docstring
 
     options = parseOpts()
 
-    collector = create_collector.createCollector("jsfunfuzz")
+    collector = create_collector.make_collector()
     try:
         collector.refresh()
     except RuntimeError as ex:
@@ -118,10 +119,10 @@ def main():  # pylint: disable=missing-docstring
     print(options.tempDir)
 
     build_info = ensureBuild(options)
-    assert os.path.isdir(build_info.buildDir)
+    assert build_info.buildDir.is_dir()
 
     number_of_processes = multiprocessing.cpu_count()
-    if "-asan" in build_info.buildDir:
+    if "-asan" in str(build_info.buildDir):
         # This should really be based on the amount of RAM available, but I don't know how to compute that in Python.
         # I could guess 1 GB RAM per core, but that wanders into sketchyville.
         number_of_processes = max(number_of_processes // 2, 1)
@@ -143,7 +144,7 @@ def printMachineInfo():  # pylint: disable=invalid-name
     except (KeyboardInterrupt, Exception) as ex:  # pylint: disable=broad-except
         print("Error involving gdb is: %r" % (ex,))
 
-    # FIXME: Should have if os.path.exists(path to git) or something  # pylint: disable=fixme
+    # FIXME: Should have if which(git) or something  # pylint: disable=fixme
     # print("git version: %s" % sps.captureStdout(["git", "--version"], combineStderr=True,
     #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
@@ -154,10 +155,10 @@ def printMachineInfo():  # pylint: disable=invalid-name
         rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
     print("Free space (GB): %.2f" % rootdir_free_space)
 
-    hgrc_path = os.path.join(path0, ".hg", "hgrc")
-    if os.path.isfile(hgrc_path):
+    hgrc_path = Path("~/.hg/hgrc").expanduser()
+    if hgrc_path.is_file():
         print("The hgrc of this repository is:")
-        with open(hgrc_path, "r") as f:
+        with open(str(hgrc_path), "r") as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
             print(line.rstrip())
@@ -180,16 +181,16 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         bRev = ""  # pylint: disable=invalid-name
         manyTimedRunArgs = []  # pylint: disable=invalid-name
     elif not options.useTreeherderBuilds:
-        options.build_options = build_options.parseShellOptions(options.build_options)
+        options.build_options = build_options.parse_shell_opts(options.build_options)
         options.timeout = options.timeout or (300 if options.build_options.runWithVg else JS_SHELL_DEFAULT_TIMEOUT)
 
-        with LockDir(compile_shell.getLockDirPath(options.build_options.repoDir)):
-            bRev = hg_helpers.getRepoHashAndId(options.build_options.repoDir)[0]  # pylint: disable=invalid-name
+        with LockDir(compile_shell.get_lock_dir_path(Path.home(), options.build_options.repo_dir)):
+            bRev = hg_helpers.get_repo_hash_and_id(options.build_options.repo_dir)[0]  # pylint: disable=invalid-name
             cshell = compile_shell.CompiledShell(options.build_options, bRev)
-            updateLatestTxt = (options.build_options.repoDir == "mozilla-central")  # pylint: disable=invalid-name
+            updateLatestTxt = (options.build_options.repo_dir == "mozilla-central")  # pylint: disable=invalid-name
             compile_shell.obtainShell(cshell, updateLatestTxt=updateLatestTxt)
 
-            bDir = cshell.getShellCacheDir()  # pylint: disable=invalid-name
+            bDir = cshell.get_shell_cache_dir()  # pylint: disable=invalid-name
             # Strip out first 3 chars or else the dir name in fuzzing jobs becomes:
             #   js-js-dbg-opt-64-dm-linux
             bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
@@ -202,7 +203,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                 "==============================================\n\n" % (
                     "funfuzz.js.compile_shell",
                     options.build_options.build_options_str,
-                    options.build_options.repoDir,
+                    options.build_options.repo_dir,
                     bRev,
                     cshell.getRepoName(),
                     time.asctime()
@@ -219,7 +220,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
 
 def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
-    tempDir = tempfile.mkdtemp("loop" + str(i))  # pylint: disable=invalid-name
+    tempDir = Path(tempfile.mkdtemp("loop" + str(i)))  # pylint: disable=invalid-name
     loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
 
 
@@ -227,7 +228,7 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []  # pylint: disable=invalid-name
-    manyTimedRunArgs.append("--repo=" + sps.normExpUserPath(options.build_options.repoDir))
+    manyTimedRunArgs.append("--repo=%s" % options.build_options.repo_dir)
     manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
     if options.build_options.runWithVg:
         manyTimedRunArgs.append("--valgrind")
@@ -240,7 +241,7 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     # Ordering of elements in manyTimedRunArgs is important.
     manyTimedRunArgs.append(str(options.timeout))
     manyTimedRunArgs.append(cshell.getRepoName())  # known bugs' directory
-    manyTimedRunArgs.append(cshell.getShellCacheFullPath())
+    manyTimedRunArgs.append(cshell.get_shell_cache_js_bin_path())
     return manyTimedRunArgs
 
 

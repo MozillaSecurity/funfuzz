@@ -13,5 +13,6 @@ from . import compare_jit
 from . import compile_shell
 from . import inspect_shell
 from . import js_interesting
+from . import link_fuzzer
 from . import loop
 from . import shell_flags

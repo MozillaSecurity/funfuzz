@@ -21,7 +21,7 @@ def amiss(log_prefix):  # pylint: disable=missing-docstring,missing-return-doc,m
     PLINE = ""
     PPLINE = ""
 
-    with open(log_prefix + "-err.txt") as f:
+    with open(str(log_prefix + "-err.txt")) as f:
         for line in f:
             if scanLine(line):
                 found_something = True

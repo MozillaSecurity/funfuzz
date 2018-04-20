@@ -26,7 +26,7 @@ from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can
 from . import inspect_shell
 from ..util import create_collector
 from ..util import detect_malloc_errors
-from ..util import subprocesses as sps
+from ..util import os_ops
 
 if sys.version_info.major == 2:
     if os.name == "posix":
@@ -92,9 +92,9 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
-        with open(logPrefix + "-out.txt") as f:
+        with open(str(logPrefix + "-out.txt")) as f:
             out = f.readlines()
-        with open(logPrefix + "-err.txt") as f:
+        with open(str(logPrefix + "-err.txt")) as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
@@ -105,8 +105,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
-            if sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True):
-                with open(logPrefix + "-crash.txt") as f:
+            if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
+                with open(str(logPrefix + "-crash.txt")) as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif detect_malloc_errors.amiss(logPrefix):
             issues.append("malloc error")
@@ -170,7 +170,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
-            with open(logPrefix + "-summary.txt", "w") as f:
+            with open(str(logPrefix + "-summary.txt"), "w") as f:
                 f.writelines(["Number: " + logPrefix + "\n",
                               "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
@@ -237,7 +237,7 @@ def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,m
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
     if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
-        with open(fn, "r+") as f:
+        with open(str(fn), "r+") as f:
             f.truncate(maxSize)
 
 
@@ -303,7 +303,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
     options.jsengineWithArgs = args[1:]
-    options.collector = create_collector.createCollector("jsfunfuzz")
+    options.collector = create_collector.make_collector()
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(

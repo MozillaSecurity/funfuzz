@@ -15,7 +15,7 @@ def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,miss
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
     before = []
     after = []
-    with open(filename, "r") as f:
+    with open(str(filename), "r") as f:
         for line in f:
             before.append(line)
             if line.find("SPLICE") != -1:

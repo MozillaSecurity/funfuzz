@@ -9,7 +9,6 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
-import os
 import platform
 
 from lithium.interestingness.utils import env_with_path
@@ -78,7 +77,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # pylint: disable=missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
     # We can possibly use the python-magic-bin PyPI library in the future
-    unsplit_file_type = sps.captureStdout(["file", binary])[0]
+    unsplit_file_type = sps.captureStdout(["file", str(binary)])[0]
     filetype = unsplit_file_type.decode("utf-8", errors="replace").split(":", 1)[1]
     if platform.system() == "Windows":
         assert "MS Windows" in filetype
@@ -133,11 +132,10 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
 def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
-    test_cmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
+    test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
     sps.vdump("The testing command is: " + " ".join(quote(x) for x in test_cmd))
     out, return_code = sps.captureStdout(test_cmd, combineStderr=True, ignoreStderr=True,
-                                         ignoreExitCode=True, env=env_with_path(
-                                             os.path.dirname(os.path.abspath(shellPath))))
+                                         ignoreExitCode=True, env=env_with_path(str(shellPath.parent)))
     sps.vdump("The exit code is: " + str(return_code))
     return out, return_code
 
@@ -158,7 +156,7 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
 
 def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Verify that the binary is compiled as intended."""
-    binary = sh.getShellCacheFullPath()
+    binary = sh.get_shell_cache_js_bin_path()
 
     assert archOfBinary(binary) == ("32" if sh.build_opts.enable32 else "64")
 

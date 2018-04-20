@@ -9,20 +9,25 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
-import os
+import sys
 
 from Collector.Collector import Collector
 
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
 
-def createCollector(tool):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    assert tool == "jsfunfuzz"
-    cache_dir = os.path.normpath(os.path.expanduser(os.path.join("~", "sigcache")))
-    try:
-        os.mkdir(cache_dir)
-    except OSError:
-        pass  # cache_dir already exists
-    collector = Collector(sigCacheDir=cache_dir, tool=tool)
-    return collector
+
+def make_collector():
+    """Creates a jsfunfuzz collector specifying ~/sigcache as the signature cache dir
+
+    Returns:
+        Collector: jsfunfuzz collector object
+    """
+    sigcache_path = Path.home() / "sigcache"
+    sigcache_path.mkdir(exist_ok=True)
+    return Collector(sigCacheDir=str(sigcache_path), tool="jsfunfuzz")
 
 
 def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
