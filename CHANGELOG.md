@@ -8,6 +8,18 @@ Bugfixes:
 
 * TBD
 
+## 0.4.1 (2018-04-19)
+
+Bugfixes:
+* Fixed crashes in `grabCrashLog` by dealing with `str`/`unicode` types better
+* Made `repos_update` not update funfuzz anymore, since [pip 10 no longer comes](https://blog.python.org/2018/04/pip-10-has-been-released.html) with a `main` method and we should not rely on the internals of pip
+* Simplified `boto` import code
+* Inlined platform detection code instead of relying on `subprocesses`
+* Tweaked Travis / AppVeyor CI configurations
+
+Notes:
+* Windows is still on the 0.1.x legacy branch, until Python 3.5+ support is completed
+
 ## 0.4.0 (2018-04-13)
 
 Features:
