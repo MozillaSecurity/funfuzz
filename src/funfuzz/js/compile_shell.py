@@ -563,8 +563,8 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# %s\n# \n" % str(shell.getEnvFull()))
 
         f.write("# Full configuration command with needed environment variables is:\n")
-        f.write("# %s %s\n# \n" % (" ".join([quote(x) for x in shell.getEnvAdded()])),
-                " ".join([quote(x) for x in shell.getCfgCmdExclEnv()]))
+        f.write("# %s %s\n# \n" % (" ".join([quote(x) for x in shell.getEnvAdded()]),
+                                   " ".join([quote(x) for x in shell.getCfgCmdExclEnv()])))
 
         # .fuzzmanagerconf details
         f.write("\n")
