@@ -7,7 +7,7 @@
 """Functions to concatenate files, with one specially for js files.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # isort:skip
 
 import os
 

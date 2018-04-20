@@ -7,7 +7,7 @@
 """Helper functions to use the Lithium reducer.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # isort:skip
 
 import os
 import re
@@ -20,9 +20,10 @@ from lithium.interestingness.utils import file_contains_str
 from past.builtins import range  # pylint: disable=redefined-builtin
 from shellescape import quote
 
-from ..js.js_interesting import JS_OVERALL_MISMATCH, JS_VG_AMISS
-from ..js.inspect_shell import testJsShellOrXpcshell
 from . import file_manipulation
+from ..js.inspect_shell import testJsShellOrXpcshell
+from ..js.js_interesting import JS_OVERALL_MISMATCH
+from ..js.js_interesting import JS_VG_AMISS
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 

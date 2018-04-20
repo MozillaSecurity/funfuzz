@@ -7,14 +7,15 @@
 
 """Test the shell_flags.py file."""
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import logging
 import os
 import sys
 
-import funfuzz
 import pytest
+
+import funfuzz
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error

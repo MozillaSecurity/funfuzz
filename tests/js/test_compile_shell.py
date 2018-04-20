@@ -7,14 +7,15 @@
 
 """Test the compile_shell.py file."""
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import logging
 import os
 import sys
 
-import funfuzz
 import pytest
+
+import funfuzz
 
 funfuzz_log = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)

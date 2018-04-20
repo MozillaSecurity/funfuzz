@@ -7,12 +7,13 @@
 """Compiles SpiderMonkey shells on different platforms using various specified configuration parameters.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 import copy
 import ctypes
 import io
 import multiprocessing
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
 import shutil
@@ -20,10 +21,10 @@ import subprocess
 import sys
 import tarfile
 import traceback
-from optparse import OptionParser  # pylint: disable=deprecated-module
+
+# Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 from pkg_resources import parse_version
 from shellescape import quote
-# Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 from whichcraft import which
 
 from . import build_options

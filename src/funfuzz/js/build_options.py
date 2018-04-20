@@ -7,7 +7,7 @@
 """Allows specification of build configuration parameters.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # isort:skip
 
 import argparse
 import hashlib
