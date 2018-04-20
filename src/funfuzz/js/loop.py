@@ -7,22 +7,22 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # isort:skip
 
 import json
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import subprocess
 import sys
 import time
-from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from . import compare_jit
 from . import js_interesting
 from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
-from ..util import lithium_helpers
 from ..util import link_js
+from ..util import lithium_helpers
 from ..util import subprocesses as sps
 
 

@@ -8,9 +8,10 @@
 
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import, division, print_function  # isort:skip
 
 import multiprocessing
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
 import shutil
@@ -18,15 +19,13 @@ import sys
 import tempfile
 import time
 
-from optparse import OptionParser  # pylint: disable=deprecated-module
-
 from .js import build_options
 from .js import compile_shell
 from .js import loop
+from .util import create_collector
+from .util import fork_join
 from .util import hg_helpers
 from .util import subprocesses as sps
-from .util import fork_join
-from .util import create_collector
 from .util.lock_dir import LockDir
 
 if sys.version_info.major == 2:

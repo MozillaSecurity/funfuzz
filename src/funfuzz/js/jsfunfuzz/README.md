@@ -22,7 +22,7 @@ To test an existing SpiderMonkey shell called `./js`, run:
 
 If loop detects a new bug, it will run [Lithium](https://github.com/MozillaSecurity/lithium/) to reduce the testcase. It will call Lithium with either [js_interesting](../js_interesting.py) or [compare_jit](../compare_jit.py) as the "interestingness test".
 
-Using [funfuzz.bot](../../bot.py) --test-type=js, you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loop for parallelism.
+Using [funfuzz.bot](../../bot.py), you can automate downloading or building new versions of the SpiderMonkey shell, and running several instances of loop for parallelism.
 
 Through randorderfuzz, if the harness detects tests in the mozilla-central tree, it may load or incorporate tests into its fuzzing input in a random order.
 

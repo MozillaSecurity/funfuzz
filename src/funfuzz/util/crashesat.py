@@ -9,10 +9,10 @@
 Not merged into Lithium, unsure if this still works for now. Still relies on grabCrashLog.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # isort:skip
 
-import os
 from optparse import OptionParser  # pylint: disable=deprecated-module
+import os
 
 import lithium.interestingness.timed_run as timed_run
 from lithium.interestingness.utils import file_contains
