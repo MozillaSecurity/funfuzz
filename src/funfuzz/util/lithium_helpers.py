@@ -7,7 +7,7 @@
 """Helper functions to use the Lithium reducer.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # isort:skip
 
 import os
 import re
