@@ -11,6 +11,7 @@
 .gdb_history
 .vscode/
 *.swp
+.idea/
 
 # Code coverage
 .coverage*
