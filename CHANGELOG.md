@@ -8,6 +8,18 @@ Bugfixes:
 
 * TBD
 
+## 0.4.2 (2018-04-20)
+
+Bugfixes:
+*  Fix #185 - `Commandline argument -t "js" in bot.py is not recognized. But it is mentioned in the readme.md.`
+*  Disable tests involving compile_shell on Python 2.7 mode unless Python 3.5+ is installed due to a mozilla-central requirement.
+  * This temporarily lowers code coverage numbers reported to Codecov via Travis, until Python 3.5+ support is finished.
+* Integrated the isort Python checker into flake8 linting process
+* More automation / documentation / linting fixes
+
+Notes:
+* Windows is still on the 0.1.x legacy branch, until Python 3.5+ support is completed
+
 ## 0.4.1 (2018-04-19)
 
 Bugfixes:
