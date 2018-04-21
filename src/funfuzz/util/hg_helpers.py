@@ -176,7 +176,7 @@ def hgQpopQrmAppliedPatch(patchFile, repoDir):  # pylint: disable=invalid-name,m
                                                       combineStderr=True, ignoreStderr=True,
                                                       ignoreExitCode=True)
     if qpop_return_code != 0:
-        print("`hg qpop` output is: " % qpop_output)
+        print("`hg qpop` output is: " + qpop_output)
         raise Exception("Return code from `hg qpop` is: " + str(qpop_return_code))
 
     print("Patch qpop'ed...", end=" ")
