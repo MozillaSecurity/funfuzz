@@ -11,7 +11,6 @@ from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import logging
 import os
-import sys
 
 import pytest
 
@@ -22,7 +21,6 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 @pytest.mark.slow
 def test_compile_shell_A_dbg():
     """Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support."""
@@ -44,7 +42,6 @@ def test_compile_shell_A_dbg():
         os.path.expanduser("~"), "shell-cache", file_name, file_name))
 
 
-@pytest.mark.skipif(sys.version_info < (3, 5), reason="compile_shell requires Python 3.5")
 @pytest.mark.slow
 def test_compile_shell_B_opt():
     """Test compilation of an opt shell with both profiling and Intl support disabled."""
