@@ -22,9 +22,12 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 is_ci_no_slow = ("CI" in os.environ and os.environ["CI"] == "true" and
                  "NO_SLOW" in os.environ and os.environ["NO_SLOW"] == "true")
+slow_test = pytest.mark.xfail(is_ci_no_slow,
+                              raises=AssertionError,
+                              reason="NO_SLOW is true, so skipping this test on Travis CI.")
 
 
-@pytest.mark.xfail(is_ci_no_slow, raises=AssertionError, reason="NO_SLOW is true, so skipping this test on Travis CI.")
+@slow_test
 def test_compile_shell_A_dbg():
     """Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support."""
     assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
@@ -45,7 +48,7 @@ def test_compile_shell_A_dbg():
         os.path.expanduser("~"), "shell-cache", file_name, file_name))
 
 
-@pytest.mark.xfail(is_ci_no_slow, raises=AssertionError, reason="NO_SLOW is true, so skipping this test on Travis CI.")
+@slow_test
 def test_compile_shell_B_opt():
     """Test compilation of an opt shell with both profiling and Intl support disabled."""
     assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
