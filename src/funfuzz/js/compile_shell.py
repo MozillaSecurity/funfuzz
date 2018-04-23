@@ -24,6 +24,7 @@ import traceback
 
 # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 from pkg_resources import parse_version
+from shellescape import quote
 from whichcraft import which
 
 from . import build_options
@@ -450,7 +451,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     cfg_cmds.append("--disable-tests")
 
     if os.name == "nt":
-        # FIXME: Replace this with sps.shellify.  # pylint: disable=fixme
+        # FIXME: Replace this with shellescape's quote  # pylint: disable=fixme
         counter = 0
         for entry in cfg_cmds:
             if os.sep in entry:
@@ -465,7 +466,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                                  '"' if " " in cfg_env[str(env_var)] else env_var +
                                  "=" + cfg_env[str(env_var)])
         env_vars.append(str_to_be_appended)
-    sps.vdump("Command to be run is: " + sps.shellify(env_vars) + " " + sps.shellify(cfg_cmds))
+    sps.vdump("Command to be run is: " + " ".join(quote(x) for x in env_vars) + " " +
+              " ".join(quote(x) for x in cfg_cmds))
 
     js_objdir = shell.getJsObjdir()
     assert os.path.isdir(js_objdir)
@@ -562,8 +564,8 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# %s\n# \n" % str(shell.getEnvFull()))
 
         f.write("# Full configuration command with needed environment variables is:\n")
-        f.write("# %s %s\n# \n" % (sps.shellify(shell.getEnvAdded()),
-                                   sps.shellify(shell.getCfgCmdExclEnv())))
+        f.write("# %s %s\n# \n" % (" ".join(quote(x) for x in shell.getEnvAdded()),
+                                   " ".join(quote(x) for x in shell.getCfgCmdExclEnv())))
 
         # .fuzzmanagerconf details
         f.write("\n")

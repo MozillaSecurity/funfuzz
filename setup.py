@@ -39,6 +39,7 @@ if __name__ == "__main__":
               "pytest-cov>=2.5.1",
               "pytest-flake8>=1.0.0",
               "pytest-pylint>=0.9.0",
+              "shellescape>=3.4.1",
               "whichcraft>=0.4.1",
           ],
           extras_require={

@@ -18,6 +18,7 @@ from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=imp
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 import lithium.interestingness.timed_run as timed_run
 from past.builtins import range  # pylint: disable=redefined-builtin
+from shellescape import quote
 
 from . import inspect_shell
 from ..util import create_collector
@@ -137,7 +138,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if lev != JS_FINE:
             with open(logPrefix + "-summary.txt", "w") as f:
                 f.writelines(["Number: " + logPrefix + "\n",
-                              "Command: " + sps.shellify(runthis) + "\n"] +
+                              "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
 
         self.lev = lev
