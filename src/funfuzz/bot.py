@@ -164,6 +164,7 @@ def printMachineInfo():  # pylint: disable=invalid-name
     if os.name == "posix":
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
+        # pylint: disable=no-member
         print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
 
 

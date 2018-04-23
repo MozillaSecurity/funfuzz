@@ -18,6 +18,7 @@ from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=imp
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
 import lithium.interestingness.timed_run as timed_run
 from past.builtins import range  # pylint: disable=redefined-builtin
+from shellescape import quote
 
 from . import inspect_shell
 from ..util import create_collector
@@ -136,7 +137,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if lev != JS_FINE:
             with open(logPrefix + "-summary.txt", "w") as f:
                 f.writelines(["Number: " + logPrefix + "\n",
-                              "Command: " + sps.shellify(runthis) + "\n"] +
+                              "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
 
         self.lev = lev
@@ -233,11 +234,11 @@ def ulimitSet():  # pylint: disable=invalid-name
 
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
+    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))  # pylint: disable=no-member
 
     # Limit corefiles to 0.5 GB.
     halfGB = int(GB // 2)  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
+    resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))  # pylint: disable=no-member
 
 
 def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
