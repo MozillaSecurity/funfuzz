@@ -7,15 +7,59 @@ matrix:
     fast_finish: true
     include:
         - python: "2.7"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
+        - python: "2.7"
+          env: >
+              BUILD="--disable-debug --disable-profiling --without-intl-api"
         - python: "3.5"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
+        - python: "3.5"
+          env: >
+              BUILD="--disable-debug --disable-profiling --without-intl-api"
         - python: "3.6"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
+        - python: "3.6"
+          env: >
+              BUILD="--disable-debug --disable-profiling --without-intl-api"
         - python: "3.7-dev"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
+        - python: "3.7-dev"
+          env: >
+              BUILD="--disable-debug --disable-profiling --without-intl-api"
+        # Sanity checks, so only run debug builds
         - python: "nightly"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
         - python: "pypy3.5-5.10.1"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
     allow_failures:
         - python: "3.7-dev"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
+        - python: "3.7-dev"
+          env: >
+              BUILD="--disable-debug --disable-profiling --without-intl-api"
+        # Sanity checks, so only run debug builds
         - python: "nightly"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
         - python: "pypy3.5-5.10.1"
+          env: >
+              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+              --build-with-valgrind --enable-oom-breakpoint"
 addons:
     apt:
         config:
