@@ -55,7 +55,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
     lev = cl[0]
 
     if lev != js_interesting.JS_FINE:
-        itest = [__file__, "--flags=" + " ".join(flags),
+        itest = [__name__, "--flags=" + " ".join(flags),
                  "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
