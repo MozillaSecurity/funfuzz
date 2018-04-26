@@ -35,15 +35,18 @@ if __name__ == "__main__":
               "future>=0.16.0",
               "FuzzManager>=0.1.3",
               "lithium-reducer>=0.2.1",
+              "pathlib2==2.3.2",
               "psutil>=5.4.3",
               "pytest-cov>=2.5.1",
               "pytest-flake8>=1.0.0",
               "pytest-pylint>=0.9.0",
+              "requests==2.18.4",
               "shellescape>=3.4.1",
               "whichcraft>=0.4.1",
           ],
           extras_require={
               ':python_version=="2.7"': [
+                  "backports.tempfile==1.0",
                   "functools32>=3.2.3",
                   "mercurial>=4.5.3",
                   "subprocess32>=3.5.0rc1",
