@@ -168,6 +168,9 @@ def add_random_wasm_flags(shell_path, input_list=False):
     Returns:
         list: List of flags to be tested, with probable wasm flags added.
     """
+    if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
+        # m-c rev 413255:302befe7689a, see bug 1445272
+        input_list.append("--wasm-gc")
     if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.8):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")

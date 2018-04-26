@@ -126,6 +126,7 @@ def test_add_random_wasm_flags(monkeypatch):
     monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
 
     all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(get_current_shell_path(), [])
+    assert "--wasm-gc" in all_flags
     assert "--no-wasm-baseline" in all_flags
     assert "--no-wasm-ion" in all_flags
     assert "--test-wasm-await-tier2" in all_flags
