@@ -8,6 +8,4 @@
 
 from __future__ import absolute_import
 
-from . import bot
-from . import loop_bot
-from . import run_ccoverage
+from . import get_build

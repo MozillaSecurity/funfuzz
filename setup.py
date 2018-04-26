@@ -16,6 +16,7 @@ if __name__ == "__main__":
           packages=[
               "funfuzz",
               "funfuzz.autobisectjs",
+              "funfuzz.ccoverage",
               "funfuzz.js",
               "funfuzz.util",
           ],
