@@ -2,6 +2,7 @@ dist: trusty
 sudo: required  # has ~2x RAM: https://docs.travis-ci.com/user/reference/overview/#Virtualization-environments
 group: travis_latest
 language: python
+cache: pip
 matrix:
     fast_finish: true
     include:
