@@ -48,11 +48,15 @@ def parse_args(args=None):
     return arg_parser.parse_args(args)
 
 
-def main():
-    """Gets a coverage build, run it for a set amount of time then report it """
+def main(argparse_args=None):
+    """Gets a coverage build, run it for a set amount of time then report it.
+
+    Args:
+        argparse_args (None): Argument parameters, defaults to None.
+    """
     if platform.system() != "Linux":
         sys.exit("Coverage mode must be run on Linux.")
-    args = parse_args()
+    args = parse_args(argparse_args)
     logging.basicConfig(datefmt="%Y-%m-%d %H:%M:%S",
                         format="%(asctime)s %(levelname)-8s %(message)s",
                         level=logging.DEBUG if args.verbose else logging.INFO)
