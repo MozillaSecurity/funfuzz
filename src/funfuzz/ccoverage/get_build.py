@@ -34,7 +34,8 @@ def get_coverage_build(dirpath, args):
     RUN_COV_LOG.info("Extracting coverage build zip file...")
     build_zip = zipfile.ZipFile(build_request_data)
     extract_folder = dirpath / "cov-build"
-    extract_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created for Python 3.5 reasons
+    extract_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created
+    # In 3.5 <= Python < 3.6, .extractall does not automatically create intermediate folders that do not exist
     build_zip.extractall(str(extract_folder.resolve()))
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
 
