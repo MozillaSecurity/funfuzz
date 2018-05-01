@@ -2,6 +2,7 @@ dist: trusty
 sudo: required  # has ~2x RAM: https://docs.travis-ci.com/user/reference/overview/#Virtualization-environments
 group: travis_latest
 language: python
+cache: pip
 matrix:
     fast_finish: true
     include:
@@ -14,6 +15,7 @@ matrix:
     allow_failures:
         - python: "3.7-dev"
         - python: "nightly"
+        - python: "pypy3.5-5.10.1"
 addons:
     apt:
         config:

@@ -17,7 +17,6 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
 import shutil
-import subprocess
 import sys
 import tarfile
 import traceback
@@ -33,6 +32,11 @@ from ..util import hg_helpers
 from ..util import s3cache
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
+
+if sys.version_info.major == 2 and os.name == "posix":
+    import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    import subprocess
 
 S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
@@ -260,14 +264,12 @@ def autoconfRun(cwDir):  # pylint: disable=invalid-name,missing-param-doc,missin
             autoconf213_mac_bin = "autoconf213"
         subprocess.check_call([autoconf213_mac_bin], cwd=cwDir)
     elif platform.system() == "Linux":
-        # FIXME: We should use a method that is similar to the client.mk one, as per  # pylint: disable=fixme
-        #   https://github.com/MozillaSecurity/funfuzz/issues/9
-        try:
-            # Ubuntu
-            subprocess.check_call(["autoconf2.13"], cwd=cwDir)
-        except OSError:
-            # Fedora has a different name
-            subprocess.check_call(["autoconf-2.13"], cwd=cwDir)
+        if which("autoconf2.13"):
+            subprocess.run(["autoconf2.13"], check=True, cwd=cwDir)
+        elif which("autoconf-2.13"):
+            subprocess.run(["autoconf-2.13"], check=True, cwd=cwDir)
+        elif which("autoconf213"):
+            subprocess.run(["autoconf213"], check=True, cwd=cwDir)
     elif platform.system() == "Windows":
         # Windows needs to call sh to be able to find autoconf.
         subprocess.check_call(["sh", "autoconf-2.13"], cwd=cwDir)

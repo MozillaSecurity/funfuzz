@@ -95,9 +95,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if shell_supports_flag(shell_path, "--cache-ir-stubs=on") and chance(.2):
         # m-c rev 308931:1c5b92144e1e, see bug 1292659
         input_list.append("--cache-ir-stubs=" + ("on" if chance(.1) else "off"))
-    if shell_supports_flag(shell_path, "--ion-aa=flow-sensitive") and chance(.2):
-        # m-c rev 295435:c0c1d923c292, see bug 1255008
-        input_list.append("--ion-aa=flow-" + ("" if chance(.9) else "in") + "sensitive")
     if shell_supports_flag(shell_path, "--ion-pgo=on") and chance(.2):
         # m-c rev 272274:b0a0ff5fa705, see bug 1209515
         input_list.append("--ion-pgo=" + ("on" if chance(.1) else "off"))
@@ -171,6 +168,9 @@ def add_random_wasm_flags(shell_path, input_list=False):
     Returns:
         list: List of flags to be tested, with probable wasm flags added.
     """
+    if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
+        # m-c rev 413255:302befe7689a, see bug 1445272
+        input_list.append("--wasm-gc")
     if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.8):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")

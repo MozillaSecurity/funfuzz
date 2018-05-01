@@ -106,6 +106,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if "--wasm-gc" in flags:
+        required.append("302befe7689a")  # m-c 413255 Fx61, 1st w/--wasm-gc, see bug 1445272
     if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
         required.append("321c29f48508")  # m-c 406115 Fx60, 1st w/--nursery-strings=on, see bug 903519
     if "--spectre-mitigations=on" in flags or "--spectre-mitigations=off" in flags:
@@ -135,9 +137,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("e9b561d60697")  # m-c 321230 Fx52, 1st w/--no-wasm, see bug 1313180
     if "--cache-ir-stubs=on" in flags or "--cache-ir-stubs=off" in flags:
         required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
-    if "--ion-aa=flow-sensitive" in flags or "--ion-aa=flow-insensitive" in flags:
-        # m-c 295435 Fx49, 1st w/--ion-aa=[flow-sensitive|flow-insensitive], see bug 1255008
-        required.append("c0c1d923c292")
     if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
         required.append("b0a0ff5fa705")  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:
