@@ -9,9 +9,7 @@ install:
     - "%PYTHON%\\python.exe -m pip install --upgrade setuptools pip"
     - "%PYTHON%\\python.exe -m pip --version"
     - "git.exe --version"
-    - "%PYTHON%\\python.exe -m pip install --upgrade flake8 pylint codecov"
-    - "%PYTHON%\\python.exe -m pip install --upgrade pytest-flake8 pytest-pylint pytest-cov"
-    - "%PYTHON%\\python.exe -m pip install -e ."
+    - "%PYTHON%\\python.exe -m pip install --upgrade -r requirements.txt"
     - "choco install codecov"
 build: off
 test_script:

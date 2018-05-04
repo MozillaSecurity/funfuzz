@@ -1,5 +1,4 @@
 # coding=utf-8
-# pylint: disable=invalid-name
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +14,7 @@ import unittest
 
 import funfuzz
 
-funfuzz_log = logging.getLogger("funfuzz_test")
+FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
@@ -23,7 +22,7 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 class TestCase(unittest.TestCase):
     """"TestCase class for general functions, e.g. backport ones."""
     if sys.version_info.major == 2:
-        def assertRaisesRegex(self, *args, **kwds):  # pylint: disable=arguments-differ
+        def assertRaisesRegex(self, *args, **kwds):  # pylint: disable=arguments-differ,invalid-name
             # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
             """Adds support for raising exceptions with messages containing desired regex."""
             return self.assertRaisesRegexp(*args, **kwds)  # pylint: disable=deprecated-method
@@ -31,7 +30,7 @@ class TestCase(unittest.TestCase):
 
 class HgHelpersTests(TestCase):
     """"TestCase class for functions in hg_helpers.py"""
-    def test_get_cset_hash_from_bisect_msg(self):
+    def test_get_cset_hash_in_bisectmsg(self):
         """Test that we are able to extract the changeset hash from bisection output."""
         self.assertEqual(funfuzz.util.hg_helpers.get_cset_hash_from_bisect_msg("x 12345:abababababab"), "abababababab")
         self.assertEqual(funfuzz.util.hg_helpers.get_cset_hash_from_bisect_msg("x 12345:123412341234"), "123412341234")
