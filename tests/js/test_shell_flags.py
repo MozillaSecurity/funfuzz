@@ -1,5 +1,4 @@
 # coding=utf-8
-# pylint: disable=invalid-name
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,13 +17,13 @@ import funfuzz
 
 from .test_compile_shell import test_shell_compile
 
-funfuzz_log = logging.getLogger("funfuzz_test")
+FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
-is_ci_no_slow = ("CI" in os.environ and os.environ["CI"] == "true" and
+IS_CI_NO_SLOW = ("CI" in os.environ and os.environ["CI"] == "true" and
                  "NO_SLOW" in os.environ and os.environ["NO_SLOW"] == "true")
-slow_test = pytest.mark.xfail(is_ci_no_slow,
+SLOW_TEST = pytest.mark.xfail(IS_CI_NO_SLOW,
                               raises=AssertionError,
                               reason="NO_SLOW is true, so skipping this test on Travis CI.")
 
@@ -41,7 +40,7 @@ def mock_chance(i):
     return True if i > 0 else False
 
 
-@slow_test
+@SLOW_TEST
 def test_add_random_arch_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to architecture.
 
@@ -57,7 +56,7 @@ def test_add_random_arch_flags(monkeypatch):
         assert "--arm-sim-icache-checks" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_add_random_ion_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to IonMonkey.
 
@@ -91,7 +90,7 @@ def test_add_random_ion_flags(monkeypatch):
     assert "--ion-licm=on" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_add_random_wasm_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm).
 
@@ -107,7 +106,7 @@ def test_add_random_wasm_flags(monkeypatch):
     assert "--test-wasm-await-tier2" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_basic_flag_sets():
     """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
     important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
@@ -127,7 +126,7 @@ def test_chance(monkeypatch):
     assert not funfuzz.js.shell_flags.chance(-0.2)
 
 
-@slow_test
+@SLOW_TEST
 def test_random_flag_set(monkeypatch):
     """Test runtime flags related to SpiderMonkey.
 
@@ -154,7 +153,7 @@ def test_random_flag_set(monkeypatch):
     assert "--dump-bytecode" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_shell_supports_flag():
     """Test that the shell does support flags as intended."""
     assert funfuzz.js.shell_flags.shell_supports_flag(test_shell_compile(), "--fuzzing-safe")
