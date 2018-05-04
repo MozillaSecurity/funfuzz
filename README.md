@@ -7,7 +7,7 @@ Most of the code other than testcase generation is written in Python: restarting
 
 ## Setup
 
-Install the required pip packages using `pip install -r requirements.txt`.
+Install the required pip packages using `pip install <path to funfuzz repository>`. To install all the packages needed for development, use `pip install -r src/funfuzz.requirements.txt` (assuming you are in the funfuzz repository).
 
 Some parts of the fuzzer will only activate if the Python scripts can find your mozilla-central tree:
 ```
@@ -18,10 +18,6 @@ hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central/
 Some parts of the harness assume a clean **Mercurial** clone of the mozilla trees. There is insufficient testing with Git for now - please file an issue if you hit problems with Git repositories of mozilla trees.
 
 If you want to use these scripts to compile SpiderMonkey or Firefox, install the usual prerequisites for [building Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions) or [building SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Build_Documentation). There are [additional requirements for building with Address Sanitizer](https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer).
-
-After the addition of FuzzManager support, you will need to first install the pip packages listed in requirements.txt of [FuzzManager](https://github.com/MozillaSecurity/FuzzManager).
-
-Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
 
 ### Windows (only 64-bit supported)
 
