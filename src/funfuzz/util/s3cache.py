@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+from builtins import object  # pylint: disable=redefined-builtin
 import os
 import platform
 import shutil

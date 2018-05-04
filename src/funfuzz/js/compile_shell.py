@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
+from builtins import object  # pylint: disable=redefined-builtin
 import copy
 import ctypes
 import io

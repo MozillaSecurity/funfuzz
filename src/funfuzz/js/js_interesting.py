@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+from builtins import object  # pylint: disable=redefined-builtin
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys

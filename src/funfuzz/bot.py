@@ -10,6 +10,7 @@
 
 from __future__ import absolute_import, division, print_function  # isort:skip
 
+from builtins import object  # pylint: disable=redefined-builtin
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
