@@ -72,9 +72,7 @@ install:
     - python -m pip --version
     - python -m pip install --upgrade setuptools
     - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
-    - python -m pip install --upgrade pytest pytest-flake8 pytest-pylint
-    - python -m pip install --upgrade codecov pytest-cov
-    - python -m pip install --upgrade -e .
+    - python -m pip install --upgrade -r src/funfuzz/requirements.txt
     - git --version
     - hg --version
     - python2 --version

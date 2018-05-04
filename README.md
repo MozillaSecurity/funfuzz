@@ -7,7 +7,7 @@ Most of the code other than testcase generation is written in Python: restarting
 
 ## Setup
 
-Install the required pip packages using `pip install <path to funfuzz repository>`. To install all the packages needed for development, use `pip install -r src/funfuzz.requirements.txt` (assuming you are in the funfuzz repository).
+Install the required pip packages using `pip install -r src/funfuzz/requirements.txt` (assuming you are in the funfuzz repository).
 
 Some parts of the fuzzer will only activate if the Python scripts can find your mozilla-central tree:
 ```
