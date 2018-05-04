@@ -22,6 +22,7 @@ if __name__ == "__main__":
           ],
           package_data={"funfuzz": [
               "autobisectjs/*",
+              "ccoverage/*",
               "js/*",
               "js/jsfunfuzz/*",
               "js/shared/*",
