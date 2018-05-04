@@ -25,7 +25,7 @@ Here's a guide to [pip and virtualenv](https://www.dabapps.com/blog/introduction
 
 ### Windows (only 64-bit supported)
 
-1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 3.1.1).
+1. Install [MozillaBuild](https://wiki.mozilla.org/MozillaBuild) (Using compile_shell for SpiderMonkey requires at least version 3.2).
 2. Install [Git](https://git-scm.com/) to clone these funfuzz repositories.
 3. Install [Debugging Tools for Windows](https://msdn.microsoft.com/en-us/windows/hardware/hh852365.aspx) to get cdb.exe and thus stacks from crashes.
 4. Make sure you install at least Microsoft Visual Studio 2017 (Community Edition is recommended) as per the build instructions above in the Setup section.
@@ -106,16 +106,17 @@ Replace anything between `<` and `>` with your desired parameters.
 
 **A:** compile_shell has been tested on:
 
-* Windows 10 and 7, with [MozillaBuild 3.1.1](https://wiki.mozilla.org/MozillaBuild). It should also work with Windows Server 2012 R2.
+* Windows 10 and 7, with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild).
 * Mac OS X 10.13
 * Ubuntu 16.04 LTS and later
-  * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis), but not the compile_shell tests (2.7 Travis mode) due to Python 3.5+ requirements
+  * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis)
 
 Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively and there may be a few bugs along the way.
 
-The following operating systems are old or less common and while they may still work, be prepared to **expect issues** along the way:
+The following operating systems are less common and while they may still work, be prepared to **expect issues** along the way:
 
 * Windows 8 / Windows 8.1
+* Windows Server 2012 R2
 * Mac OS X 10.11 through 10.12
 * Ubuntu Linux 15.10 and prior (see note above about 14.04 LTS)
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
