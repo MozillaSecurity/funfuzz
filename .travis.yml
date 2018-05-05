@@ -4,140 +4,140 @@ group: travis_latest
 language: python
 cache: pip
 matrix:
-    fast_finish: true
-    include:
-        - python: "2.7"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "2.7"
-          env: >
-              BUILD="--disable-debug --disable-profiling --without-intl-api"
-        - python: "3.5"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "3.5"
-          env: >
-              BUILD="--disable-debug --disable-profiling --without-intl-api"
-        - python: "3.6"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "3.6"
-          env: >
-              BUILD="--disable-debug --disable-profiling --without-intl-api"
-        - python: "3.7-dev"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "3.7-dev"
-          env: >
-              BUILD="--disable-debug --disable-profiling --without-intl-api"
-        # Sanity checks, so only run debug builds
-        - python: "nightly"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "pypy3.5-5.10.1"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-    allow_failures:
-        - python: "3.7-dev"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "3.7-dev"
-          env: >
-              BUILD="--disable-debug --disable-profiling --without-intl-api"
-        # Sanity checks, so only run debug builds
-        - python: "nightly"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
-        - python: "pypy3.5-5.10.1"
-          env: >
-              BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-              --build-with-valgrind --enable-oom-breakpoint"
+  fast_finish: true
+  include:
+    - python: "2.7"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "2.7"
+      env: >
+        BUILD="--disable-debug --disable-profiling --without-intl-api"
+    - python: "3.5"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "3.5"
+      env: >
+        BUILD="--disable-debug --disable-profiling --without-intl-api"
+    - python: "3.6"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "3.6"
+      env: >
+        BUILD="--disable-debug --disable-profiling --without-intl-api"
+    - python: "3.7-dev"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "3.7-dev"
+      env: >
+        BUILD="--disable-debug --disable-profiling --without-intl-api"
+    # Sanity checks, so only run debug builds
+    - python: "nightly"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "pypy3.5-5.10.1"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+  allow_failures:
+    - python: "3.7-dev"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "3.7-dev"
+      env: >
+        BUILD="--disable-debug --disable-profiling --without-intl-api"
+    # Sanity checks, so only run debug builds
+    - python: "nightly"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
+    - python: "pypy3.5-5.10.1"
+      env: >
+        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
+        --build-with-valgrind --enable-oom-breakpoint"
 addons:
-    apt:
-        config:
-            retries: true
-        sources:
-            - ubuntu-toolchain-r-test
-        packages:
-            - autoconf2.13
-            - cargo
-            - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
-            - gdb
-            - lib32z1  # needed by 32-bit builds
-            - libc6-dbg  # needed by Valgrind
-            - valgrind
+  apt:
+    config:
+      retries: true
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - autoconf2.13
+      - cargo
+      - expect-dev  # unbuffer requires this
+      - g++-6
+      - g++-6-multilib
+      - gcc-6
+      - gcc-6-multilib
+      - gdb
+      - lib32z1  # needed by 32-bit builds
+      - libc6-dbg  # needed by Valgrind
+      - valgrind
 before_install:
-    # Get the required version of Python 3 into a temporary directory, but only for Python 2.7 Travis mode for now
-    # This is for compile-related tests to run successfully
-    - |
-      if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "2.7" ] ; then
-          export PY3_BIN_TARBALL=ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834
-          echo "PY3_BIN_TARBALL is: $PY3_BIN_TARBALL"
-          export PY3_TARBALL_EXT=.tar.gz
-          echo "PY3_TARBALL_EXT is: $PY3_TARBALL_EXT"
-          export ACTIVEPYTHON_DOWNLOAD_URL=https://downloads.activestate.com/ActivePython/releases
-          echo "ACTIVEPYTHON_DOWNLOAD_URL is: $ACTIVEPYTHON_DOWNLOAD_URL"
-          export PY3_URL=$ACTIVEPYTHON_DOWNLOAD_URL/3.6.0.3600/$PY3_BIN_TARBALL$PY3_TARBALL_EXT
-          echo "PY3_URL is: $PY3_URL"
-          curl -sSf -o $PY3_BIN_TARBALL$PY3_TARBALL_EXT $PY3_URL
-          echo 'Finished downloading Python 3 tarball...'
-          mkdir -p ~/py3-bin
-          sudo tar xzf $PY3_BIN_TARBALL$PY3_TARBALL_EXT --directory ~/py3-bin
-          echo 'Finished extracting tarball...'
-          export PYTHON3=~/py3-bin/$PY3_BIN_TARBALL/INSTALLDIR/bin/python3
-          $PYTHON3 --version
-      else
-          echo 'Not running in Python 2.7 Travis mode...'
-      fi
-    # Use GCC 6
-    - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
-    - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
-    - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
-    - PATH=$PWD/latest-gcc-symlinks:$PATH
-    # Be explicit for the Mozilla build system to pick up GCC 6
-    - export CC=$PWD/latest-gcc-symlinks/gcc
-    - export CXX=$PWD/latest-gcc-symlinks/g++
-    - gcc --version
-    - g++ --version
+  # Get the required version of Python 3 into a temporary directory, but only for Python 2.7 Travis mode for now
+  # This is for compile-related tests to run successfully
+  - |
+    if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "2.7" ] ; then
+      export PY3_BIN_TARBALL=ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834
+      echo "PY3_BIN_TARBALL is: $PY3_BIN_TARBALL"
+      export PY3_TARBALL_EXT=.tar.gz
+      echo "PY3_TARBALL_EXT is: $PY3_TARBALL_EXT"
+      export ACTIVEPYTHON_DOWNLOAD_URL=https://downloads.activestate.com/ActivePython/releases
+      echo "ACTIVEPYTHON_DOWNLOAD_URL is: $ACTIVEPYTHON_DOWNLOAD_URL"
+      export PY3_URL=$ACTIVEPYTHON_DOWNLOAD_URL/3.6.0.3600/$PY3_BIN_TARBALL$PY3_TARBALL_EXT
+      echo "PY3_URL is: $PY3_URL"
+      curl -sSf -o $PY3_BIN_TARBALL$PY3_TARBALL_EXT $PY3_URL
+      echo 'Finished downloading Python 3 tarball...'
+      mkdir -p ~/py3-bin
+      sudo tar xzf $PY3_BIN_TARBALL$PY3_TARBALL_EXT --directory ~/py3-bin
+      echo 'Finished extracting tarball...'
+      export PYTHON3=~/py3-bin/$PY3_BIN_TARBALL/INSTALLDIR/bin/python3
+      $PYTHON3 --version
+    else
+      echo 'Not running in Python 2.7 Travis mode...'
+    fi
+  # Use GCC 6
+  - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
+  - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
+  - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
+  - PATH=$PWD/latest-gcc-symlinks:$PATH
+  # Be explicit for the Mozilla build system to pick up GCC 6
+  - export CC=$PWD/latest-gcc-symlinks/gcc
+  - export CXX=$PWD/latest-gcc-symlinks/g++
+  - gcc --version
+  - g++ --version
 install:
-    # Already in venv, no need for --user
-    - python -m pip install --upgrade setuptools pip
-    - python -m pip --version
-    - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
-    - python -m pip install --upgrade -r requirements.txt
-    - git --version
-    - hg --version
-    - python2 --version
-    - python3 --version
-    - pypy3 --version || true  # Ignore exit code if pypy3 does not exist
+  # Already in venv, no need for --user
+  - python -m pip install --upgrade setuptools pip
+  - python -m pip --version
+  - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
+  - python -m pip install --upgrade -r requirements.txt
+  - git --version
+  - hg --version
+  - python2 --version
+  - python3 --version
+  - pypy3 --version || true  # Ignore exit code if pypy3 does not exist
 before_script:
-    # To run everything locally in local funfuzz github repository directory:
-    #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
-    # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
-    - |
-      if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.7" ] ; then
-          (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
-      elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
-          (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
-      else
-          (export NO_SLOW="true"; python -m pytest --flake8 --pylint -p no:cov)
-      fi
-    - mkdir -p ~/trees/
-    - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
+  # To run everything locally in local funfuzz github repository directory:
+  #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
+  # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
+  - |
+    if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.7" ] ; then
+      (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
+    elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
+      (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
+    else
+      (export NO_SLOW="true"; python -m pytest --flake8 --pylint -p no:cov)
+    fi
+  - mkdir -p ~/trees/
+  - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
-    # -m and -k modes of pytest did not seem to work in Travis, so comprehensively run everything here
-    - travis_wait 50 unbuffer python -m pytest -p no:flake8,pylint --cov --cov-report term-missing
+  # -m and -k modes of pytest did not seem to work in Travis, so comprehensively run everything here
+  - travis_wait 50 unbuffer python -m pytest -p no:flake8,pylint --cov --cov-report term-missing
 after_success:
-    - codecov
+  - codecov
