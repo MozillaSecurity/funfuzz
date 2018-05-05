@@ -8,7 +8,7 @@ environment:
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade setuptools pip"
   - "%PYTHON%\\python.exe -m pip --version"
-  - "git.exe --version"
+  - "git --version"
   - "%PYTHON%\\python.exe -m pip install --upgrade -r requirements.txt"
   - "choco install codecov"
 build: off
