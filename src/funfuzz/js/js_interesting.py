@@ -12,6 +12,7 @@ from __future__ import absolute_import, print_function  # isort:skip
 from builtins import object  # pylint: disable=redefined-builtin
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+import platform
 import sys
 
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
@@ -20,11 +21,20 @@ import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-
 import lithium.interestingness.timed_run as timed_run
 from past.builtins import range  # pylint: disable=redefined-builtin
 from shellescape import quote
+from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
 from . import inspect_shell
 from ..util import create_collector
 from ..util import detect_malloc_errors
 from ..util import subprocesses as sps
+
+if sys.version_info.major == 2:
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
+    import subprocess
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -116,6 +126,23 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if lev != JS_FINE:
             for issue in issues:
                 err.append("[Non-crash bug] " + issue)
+
+        # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
+        if platform.system() == "Linux" and which("gdb") and not auxCrashData:
+            print("Note: No core file found on Linux - falling back to run via gdb")
+            extracted_gdb_cmds = ["-ex", "run"]
+            with open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r") as f:
+                for line in f:
+                    if line.rstrip() and not line.startswith("#") and not line.startswith("echo"):
+                        extracted_gdb_cmds.append("-ex")
+                        extracted_gdb_cmds.append("%s" % line.rstrip())
+            no_main_log_gdb_log = subprocess.run(
+                ["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] + runthis,
+                check=True,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE
+            )
+            auxCrashData = no_main_log_gdb_log.stdout
 
         # Finally, make a CrashInfo object and parse stack traces for asan/crash/assertion bugs
         crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
