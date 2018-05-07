@@ -261,6 +261,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
 
     if platform.system() == "Darwin" and args.enable32:
         return False, "We are no longer going to ship 32-bit Mac binaries."
+    if "Microsoft" in platform.release() and args.enable32:
+        return False, "WSL does not seem to support 32-bit Linux binaries yet."
 
     if args.buildWithVg:
         return False, "FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults."
