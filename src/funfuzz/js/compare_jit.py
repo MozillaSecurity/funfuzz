@@ -95,7 +95,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         combos = [combos[0]]
 
     if flags:
-        combos.append(flags)
+        combos.insert(0, flags)
 
     commands = [[jsEngine] + combo + [infilename] for combo in combos]
 
