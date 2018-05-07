@@ -22,10 +22,9 @@ import sys
 import tarfile
 import traceback
 
-# Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 from pkg_resources import parse_version
 from shellescape import quote
-from whichcraft import which
+from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
 from . import build_options
 from . import inspect_shell
