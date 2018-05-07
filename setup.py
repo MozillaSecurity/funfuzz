@@ -54,7 +54,7 @@ if __name__ == "__main__":
               ':python_version=="2.7"': [
                   "backports.tempfile==1.0",
                   "functools32==3.2.3.post2",
-                  "mercurial==4.5.3",
+                  "mercurial==4.6",
                   "subprocess32==3.5.0rc1",
               ]
           },
