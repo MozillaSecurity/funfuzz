@@ -128,7 +128,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 err.append("[Non-crash bug] " + issue)
 
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
-        if platform.system() == "Linux" and which("gdb") and not auxCrashData:
+        if not in_compare_jit and platform.system() == "Linux" and which("gdb") and not auxCrashData:
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r") as f:
