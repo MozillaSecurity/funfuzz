@@ -17,6 +17,8 @@ import zipfile
 
 import requests
 
+from ..js.inspect_shell import queryBuildConfiguration
+
 if sys.version_info.major == 2:
     from pathlib2 import Path
 else:
@@ -51,10 +53,8 @@ def get_coverage_build(dirpath, args):
     assert js_cov_bin.is_file()
 
     # Check that the binary is non-debug.
-    # Wait for captureStdout to be removed first
-    # assert not funfuzz.js.inspect_shell.queryBuildConfiguration(str(js_cov_bin), "debug")
-    # Wait for bug 1457326 to get landed first
-    # assert funfuzz.js.inspect_shell.queryBuildConfiguration(str(js_cov_bin), "coverage")
+    assert not queryBuildConfiguration(js_cov_bin, "debug")
+    assert queryBuildConfiguration(js_cov_bin, "coverage")
 
     js_cov_fmconf = extract_folder / "dist" / "bin" / (js_cov_bin_name + ".fuzzmanagerconf")
     assert js_cov_fmconf.is_file()
