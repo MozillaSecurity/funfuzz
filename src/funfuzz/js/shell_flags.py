@@ -333,7 +333,7 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
-        ["--fuzzing-safe", "--baseline-eager"],
+        ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
     ]
     if shell_supports_flag(shell_path, "--non-writable-jitcode"):

@@ -12,7 +12,7 @@ import logging
 
 import funfuzz
 
-FUNFUZZ_LOG = logging.getLogger("run_ccoverage_test")
+FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 

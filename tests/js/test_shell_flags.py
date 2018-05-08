@@ -1,5 +1,4 @@
 # coding=utf-8
-# pylint: disable=invalid-name
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,47 +10,22 @@ from __future__ import absolute_import, unicode_literals  # isort:skip
 
 import logging
 import os
-import sys
 
 import pytest
 
 import funfuzz
 
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
+from .test_compile_shell import test_shell_compile
 
-funfuzz_log = logging.getLogger("funfuzz_test")
+FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
-is_ci_no_slow = ("CI" in os.environ and os.environ["CI"] == "true" and
+IS_CI_NO_SLOW = ("CI" in os.environ and os.environ["CI"] == "true" and
                  "NO_SLOW" in os.environ and os.environ["NO_SLOW"] == "true")
-slow_test = pytest.mark.xfail(is_ci_no_slow,
+SLOW_TEST = pytest.mark.xfail(IS_CI_NO_SLOW,
                               raises=AssertionError,
                               reason="NO_SLOW is true, so skipping this test on Travis CI.")
-
-
-@lru_cache(maxsize=None)
-def get_current_shell_path():
-    """Retrieve the path to the currently built shell.
-
-    Returns:
-        str: Path to the compiled shell.
-    """
-    assert os.path.isdir(os.path.join(os.path.expanduser("~"), "trees", "mozilla-central"))
-    # Remember to update the expected binary filename
-    build_opts = ("--enable-debug --disable-optimize --enable-more-deterministic "
-                  "--build-with-valgrind --enable-oom-breakpoint")
-    # Change the repository location by uncommenting this line and specifying the right one
-    # "-R ~/trees/mozilla-central/")
-    build_opts_processed = funfuzz.js.build_options.parseShellOptions(build_opts)
-    hg_hash_of_default = funfuzz.util.hg_helpers.getRepoHashAndId(build_opts_processed.repoDir)[0]
-
-    return os.path.join(os.path.expanduser("~"), "shell-cache",
-                        "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default,
-                        "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default)
 
 
 def mock_chance(i):
@@ -66,7 +40,7 @@ def mock_chance(i):
     return True if i > 0 else False
 
 
-@slow_test
+@SLOW_TEST
 def test_add_random_arch_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to architecture.
 
@@ -75,14 +49,14 @@ def test_add_random_arch_flags(monkeypatch):
     """
     monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
 
-    all_flags = funfuzz.js.shell_flags.add_random_arch_flags(get_current_shell_path(), [])
+    all_flags = funfuzz.js.shell_flags.add_random_arch_flags(test_shell_compile(), [])
     assert "--enable-avx" in all_flags
     assert "--no-sse3" in all_flags
-    if funfuzz.js.inspect_shell.queryBuildConfiguration(get_current_shell_path(), "arm-simulator"):
+    if funfuzz.js.inspect_shell.queryBuildConfiguration(test_shell_compile(), "arm-simulator"):
         assert "--arm-sim-icache-checks" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_add_random_ion_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to IonMonkey.
 
@@ -91,7 +65,7 @@ def test_add_random_ion_flags(monkeypatch):
     """
     monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
 
-    all_flags = funfuzz.js.shell_flags.add_random_ion_flags(get_current_shell_path(), [])
+    all_flags = funfuzz.js.shell_flags.add_random_ion_flags(test_shell_compile(), [])
     assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-pgo=on" in all_flags
     assert "--ion-sincos=on" in all_flags
@@ -116,7 +90,7 @@ def test_add_random_ion_flags(monkeypatch):
     assert "--ion-licm=on" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_add_random_wasm_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to WebAssembly (wasm).
 
@@ -125,18 +99,18 @@ def test_add_random_wasm_flags(monkeypatch):
     """
     monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
 
-    all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(get_current_shell_path(), [])
+    all_flags = funfuzz.js.shell_flags.add_random_wasm_flags(test_shell_compile(), [])
     assert "--wasm-gc" in all_flags
     assert "--no-wasm-baseline" in all_flags
     assert "--no-wasm-ion" in all_flags
     assert "--test-wasm-await-tier2" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_basic_flag_sets():
     """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
     important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
-    assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(get_current_shell_path())
+    assert important_flag_set in funfuzz.js.shell_flags.basic_flag_sets(test_shell_compile())
 
 
 def test_chance(monkeypatch):
@@ -152,7 +126,7 @@ def test_chance(monkeypatch):
     assert not funfuzz.js.shell_flags.chance(-0.2)
 
 
-@slow_test
+@SLOW_TEST
 def test_random_flag_set(monkeypatch):
     """Test runtime flags related to SpiderMonkey.
 
@@ -161,7 +135,7 @@ def test_random_flag_set(monkeypatch):
     """
     monkeypatch.setattr(funfuzz.js.shell_flags, "chance", mock_chance)
 
-    all_flags = funfuzz.js.shell_flags.random_flag_set(get_current_shell_path())
+    all_flags = funfuzz.js.shell_flags.random_flag_set(test_shell_compile())
     assert "--fuzzing-safe" in all_flags
     assert "--nursery-strings=on" in all_flags
     assert "--spectre-mitigations=on" in all_flags
@@ -179,7 +153,7 @@ def test_random_flag_set(monkeypatch):
     assert "--dump-bytecode" in all_flags
 
 
-@slow_test
+@SLOW_TEST
 def test_shell_supports_flag():
     """Test that the shell does support flags as intended."""
-    assert funfuzz.js.shell_flags.shell_supports_flag(get_current_shell_path(), "--fuzzing-safe")
+    assert funfuzz.js.shell_flags.shell_supports_flag(test_shell_compile(), "--fuzzing-safe")
