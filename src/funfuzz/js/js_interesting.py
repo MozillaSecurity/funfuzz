@@ -127,8 +127,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             for issue in issues:
                 err.append("[Non-crash bug] " + issue)
 
+        activated = False  # Turn on when trying to report *reliable* testcases that do not have a coredump
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
-        if not in_compare_jit and platform.system() == "Linux" and which("gdb") and not auxCrashData:
+        # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
+        # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
+        if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r") as f:
