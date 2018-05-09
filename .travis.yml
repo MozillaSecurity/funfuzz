@@ -128,11 +128,11 @@ before_script:
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
   - |
     if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.7" ] ; then
-      (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
+      python -m pytest --flake8 -p no:pylint,cov -m "not slow"
     elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
-      (export NO_SLOW="true"; python -m pytest --flake8 -p no:pylint,cov)
+      python -m pytest --flake8 -p no:pylint,cov -m "not slow"
     else
-      (export NO_SLOW="true"; python -m pytest --flake8 --pylint -p no:cov)
+      python -m pytest --flake8 --pylint -p no:cov -m "not slow"
     fi
   - mkdir -p ~/trees/
   - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central

@@ -9,6 +9,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import logging
+import unittest
 
 import funfuzz
 
@@ -17,7 +18,10 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
-def test_main():
-    """Run run_ccoverage with test parameters."""
-    funfuzz.run_ccoverage.main(
-        argparse_args=["--url", "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"])
+class RunCcoverageTests(unittest.TestCase):
+    """"TestCase class for functions in run_ccoverage.py"""
+    def test_main(self):
+        """Run run_ccoverage with test parameters."""
+        build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
+        # run_ccoverage's main method does not actually return anything.
+        self.assertTrue(not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url]))
