@@ -34,17 +34,17 @@ class OsOpsTests(unittest.TestCase):
             tmp_dir = Path(tmp_dir)
 
             wtmp_dir_1 = os_ops.make_wtmp_dir(tmp_dir)
-            self.assertTrue(wtmp_dir_1.is_dir())
+            self.assertTrue(wtmp_dir_1.is_dir())  # pylint: disable=no-member
             self.assertTrue(wtmp_dir_1.name.endswith("1"))
 
             wtmp_dir_2 = os_ops.make_wtmp_dir(tmp_dir)
-            self.assertTrue(wtmp_dir_2.is_dir())
+            self.assertTrue(wtmp_dir_2.is_dir())  # pylint: disable=no-member
             self.assertTrue(wtmp_dir_2.name.endswith("2"))
 
             wtmp_dir_3 = os_ops.make_wtmp_dir(tmp_dir)
-            self.assertTrue(wtmp_dir_3.is_dir())
+            self.assertTrue(wtmp_dir_3.is_dir())  # pylint: disable=no-member
             self.assertTrue(wtmp_dir_3.name.endswith("3"))
 
             wtmp_dir_4 = os_ops.make_wtmp_dir(tmp_dir)
-            self.assertTrue(wtmp_dir_4.is_dir())
+            self.assertTrue(wtmp_dir_4.is_dir())  # pylint: disable=no-member
             self.assertTrue(wtmp_dir_4.name.endswith("4"))

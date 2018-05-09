@@ -9,6 +9,7 @@
 
 # reset ; rg -g '!*subprocesses.py' -g '!*crashesat.py' -g '!*s3cache.py' -g '!*test_shell_flags.py'
 #   -g '!*test_compile_shell.py' -g '!*known_broken*.py' -t py "import os$"
+# disable no-member pylint messages can be removed after https://github.com/PyCQA/pylint/issues/1660 lands on 1.8
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
@@ -777,7 +778,7 @@ def verify_full_win_pageheap(shell_path):
     # More info: https://msdn.microsoft.com/en-us/library/windows/hardware/ff543097(v=vs.85).aspx
     # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
     gflags_bin_path = Path(os.getenv("PROGRAMW6432")) / "Debugging Tools for Windows (x64)" / "gflags.exe"
-    if gflags_bin_path.is_file() and shell_path.is_file():
+    if gflags_bin_path.is_file() and shell_path.is_file():  # pylint: disable=no-member
         print(subprocess.check_output([str(gflags_bin_path).decode("utf-8", errors="replace"),
                                        "-p", "/enable", shell_path.decode("utf-8", errors="replace"), "/full"]))
 
