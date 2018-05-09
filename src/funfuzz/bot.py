@@ -162,11 +162,13 @@ def printMachineInfo():  # pylint: disable=invalid-name
         for line in hgrc_contents:
             print(line.rstrip())
 
-    if os.name == "posix":
+    try:
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
         # pylint: disable=no-member
         print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
+    except ImportError:
+        print("Not checking corefile size as resource module is unavailable")
 
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc

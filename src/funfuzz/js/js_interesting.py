@@ -83,9 +83,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 valgrindSuppressions() +
                 runthis)
 
-        preexec_fn = ulimitSet if os.name == "posix" else None
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
-        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix.encode("utf-8"), preexec_fn=preexec_fn)
+        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix.encode("utf-8"), preexec_fn=set_ulimit)
 
         lev = JS_FINE
         issues = []
@@ -263,18 +262,21 @@ def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,mis
         os.remove(logPrefix + "-core.gz")
 
 
-def ulimitSet():  # pylint: disable=invalid-name
-    """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
-    # module only available on POSIX
-    import resource  # pylint: disable=import-error
+def set_ulimit():
+    """Sets appropriate resource limits for the JS shell when on POSIX."""
+    try:
+        import resource  # pylint: disable=import-error
 
-    # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
-    GB = 2**30  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))  # pylint: disable=no-member
+        # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
+        giga_byte = 2**30
+        resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
 
-    # Limit corefiles to 0.5 GB.
-    halfGB = int(GB // 2)  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))  # pylint: disable=no-member
+        # log.debug("Limit corefiles to 0.5 GB")
+        half_giga_byte = int(giga_byte // 2)
+        resource.setrlimit(resource.RLIMIT_CORE, (half_giga_byte, half_giga_byte))  # pylint: disable=no-member
+    except ImportError:
+        # log.debug("Skipping resource import as a non-POSIX platform was detected: %s", platform.system())
+        return
 
 
 def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
