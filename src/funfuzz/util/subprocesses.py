@@ -403,7 +403,7 @@ def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing
 
 
 def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-docstring
-    shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
+    shutil.rmtree(dirTree, onerror=handleRemoveReadOnly if platform.system() == "Windows" else None)
 
 
 def test_rmTreeIncludingReadOnly():  # pylint: disable=invalid-name
