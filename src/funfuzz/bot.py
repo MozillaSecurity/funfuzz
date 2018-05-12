@@ -26,7 +26,6 @@ from .js import loop
 from .util import create_collector
 from .util import fork_join
 from .util import hg_helpers
-from .util import subprocesses as sps
 from .util.lock_dir import LockDir
 
 if sys.version_info.major == 2:

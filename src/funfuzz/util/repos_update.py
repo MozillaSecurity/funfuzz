@@ -19,8 +19,6 @@ import platform
 import sys
 import time
 
-from . import subprocesses as sps
-
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
