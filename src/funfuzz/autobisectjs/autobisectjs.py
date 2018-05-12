@@ -10,9 +10,9 @@
 from __future__ import absolute_import, print_function  # isort:skip
 
 from optparse import OptionParser  # pylint: disable=deprecated-module
+import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -31,8 +31,11 @@ from ..util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
     from pathlib2 import Path
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
+    import subprocess
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -198,9 +201,15 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         subprocess.check_call(hgPrefix + ["purge", "--all"])
 
     # Reset bisect ranges and set skip ranges.
-    sps.captureStdout(hgPrefix + ["bisect", "-r"])
+    subprocess.run(hgPrefix + ["bisect", "-r"],
+                   check=True,
+                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   timeout=99)
     if options.skipRevs:
-        sps.captureStdout(hgPrefix + ["bisect", "--skip", options.skipRevs])
+        subprocess.run(hgPrefix + ["bisect", "--skip", options.skipRevs],
+                       check=True,
+                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                       timeout=300)
 
     labels = {}
     # Specify `hg bisect` ranges.
@@ -210,8 +219,14 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         labels[sRepo] = ("good", "assumed start rev is good")
         labels[eRepo] = ("bad", "assumed end rev is bad")
         subprocess.check_call(hgPrefix + ["bisect", "-U", "-g", sRepo])
+        mid_bisect_output = subprocess.run(
+            hgPrefix + ["bisect", "-U", "-b", eRepo],
+            check=True,
+            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            stdout=subprocess.PIPE,
+            timeout=300).stdout.decode("utf-8", errors="replace")
         currRev = hg_helpers.get_cset_hash_from_bisect_msg(
-            sps.captureStdout(hgPrefix + ["bisect", "-U", "-b", eRepo])[0].split("\n")[0])
+            mid_bisect_output.split("\n"))
 
     iterNum = 1
     if options.testInitialRevs:
@@ -261,7 +276,10 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     subprocess.check_call(hgPrefix + ["bisect", "-U", "-r"])
 
     sps.vdump("Resetting working directory")
-    sps.captureStdout(hgPrefix + ["update", "-C", "-r", "default"], ignoreStderr=True)
+    subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
+                   check=True,
+                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   timeout=999)
     hg_helpers.destroyPyc(repo_dir)
 
     print_(time.asctime(), flush=True)
@@ -340,8 +358,13 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     bisectLied = False
     missedCommonAncestor = False
 
-    parents = sps.captureStdout(["hg", "-R", repo_dir] + ["parent", "--template={node|short},",
-                                                          "-r", blamedRev])[0].split(",")[:-1]
+    hg_parent_output = subprocess.run(
+        ["hg", "-R", repo_dir] + ["parent", "--template={node|short},", "-r", blamedRev],
+        check=True,
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stdout=subprocess.PIPE,
+        timeout=99).stdout.decode("utf-8", errors="replace")
+    parents = hg_parent_output.split(",")[:-1]
 
     if len(parents) == 1:
         return
@@ -413,7 +436,12 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     # pylint: disable=too-many-arguments
     """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
-    outputResult = sps.captureStdout(hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev])[0]
+    outputResult = subprocess.run(
+        hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev],
+        check=True,
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stdout=subprocess.PIPE,
+        timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
 
     if options.build_options:

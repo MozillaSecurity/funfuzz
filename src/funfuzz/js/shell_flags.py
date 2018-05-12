@@ -33,9 +33,7 @@ def shell_supports_flag(shell_path, flag):
     Returns:
         bool: True if the flag is supported, i.e. does not cause the shell to throw an error, False otherwise.
     """
-    dummy_parameters = ["-e", "42"]
-    # This can be refactored when sps.captureStdout is gone
-    out = inspect_shell.shellSupports(shell_path, [flag] + dummy_parameters)
+    out = inspect_shell.shellSupports(shell_path, [flag, "-e", "42"])
     return out
 
 

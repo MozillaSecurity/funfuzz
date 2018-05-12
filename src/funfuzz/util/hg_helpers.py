@@ -13,15 +13,17 @@ from builtins import input  # pylint: disable=redefined-builtin
 import configparser
 import os
 import re
-import subprocess
 import sys
 
 from . import subprocesses as sps
 
 if sys.version_info.major == 2:
     from pathlib2 import Path
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
+    import subprocess
 
 
 def destroyPyc(repo_dir):  # pylint: disable=invalid-name,missing-docstring
@@ -57,24 +59,39 @@ def ensure_mq_enabled():
 
 def findCommonAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    return sps.captureStdout(["hg", "-R", str(repo_dir), "log", "-r", "ancestor(" + a + "," + b + ")",
-                              "--template={node|short}"])[0]
+    return subprocess.run(
+        ["hg", "-R", str(repo_dir), "log", "-r", "ancestor(" + a + "," + b + ")", "--template={node|short}"],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        check=True,
+        stdout=subprocess.PIPE,
+        timeout=999
+        ).stdout.decode("utf-8", errors="replace")
 
 
 def isAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return true iff |a| is an ancestor of |b|. Throw if |a| or |b| does not exist."""
-    return sps.captureStdout(["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")",
-                              "--template={node|short}"])[0] != ""
+    return subprocess.run(
+        ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        check=True,
+        stdout=subprocess.PIPE,
+        timeout=999
+        ).stdout.decode("utf-8", errors="replace") != ""
 
 
 def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return true iff |a| exists and is an ancestor of |b|."""
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
-    out = sps.captureStdout(["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")",
-                             "--template={node|short}"], combineStderr=True, ignoreExitCode=True)[0]
-    return out != "" and out.decode("utf-8", errors="replace").find("abort: unknown revision") < 0
+    out = subprocess.run(
+        ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        timeout=999
+        ).stdout.decode("utf-8", errors="replace")
+    return out != "" and out.find("abort: unknown revision") < 0
 
 
 def get_cset_hash_from_bisect_msg(msg):
@@ -114,7 +131,13 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
     # This returns null if the repository is not on default.
     hg_log_template_cmds = ["hg", "-R", str(repo_dir), "log", "-r", repo_rev,
                             "--template", "{node|short} {rev}"]
-    hg_id_full = sps.captureStdout(hg_log_template_cmds)[0]
+    hg_id_full = subprocess.run(
+        hg_log_template_cmds,
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        check=True,
+        stdout=subprocess.PIPE,
+        timeout=99
+        ).stdout.decode("utf-8", errors="replace")
     is_on_default = bool(hg_id_full)
     if not is_on_default:
         update_default = input("Not on default tip! "
@@ -131,9 +154,15 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
                                     "{node|short} {rev}"]
         else:
             raise ValueError("Invalid choice.")
-        hg_id_full = sps.captureStdout(hg_log_template_cmds)[0]
+        hg_id_full = subprocess.run(
+            hg_log_template_cmds,
+            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            check=True,
+            stdout=subprocess.PIPE,
+            timeout=99
+            ).stdout.decode("utf-8", errors="replace")
     assert hg_id_full != ""
-    (hg_id_hash, hg_id_local_num) = hg_id_full.decode("utf-8", errors="replace").split(" ")
+    (hg_id_hash, hg_id_local_num) = hg_id_full.split(" ")
     sps.vdump("Finished getting the hash and local id number of the repository.")
     return hg_id_hash, hg_id_local_num, is_on_default
 
@@ -171,9 +200,14 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
     # We may have passed in the patch with or without the full directory.
     patch_abs_path = patch_file.resolve()
     pname = patch_abs_path.name
-    qimport_output, qimport_return_code = sps.captureStdout(["hg", "-R", str(repo_dir), "qimport", str(patch_abs_path)],
-                                                            combineStderr=True, ignoreStderr=True,
-                                                            ignoreExitCode=True)
+    qimport_result = subprocess.run(
+        ["hg", "-R", str(repo_dir), "qimport", patch_abs_path],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        timeout=99)
+    qimport_output, qimport_return_code = (qimport_result.stdout.decode("utf-8", errors="replace"),
+                                           qimport_result.returncode)
     if qimport_return_code != 0:
         if "already exists" in qimport_output:
             print("A patch with the same name has already been qpush'ed. Please qremove it first.")
@@ -181,8 +215,14 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
 
     print("Patch qimport'ed...", end=" ")
 
-    qpush_output, qpush_return_code = sps.captureStdout(["hg", "-R", str(repo_dir), "qpush", pname],
-                                                        combineStderr=True, ignoreStderr=True)
+    qpush_result = subprocess.run(
+        ["hg", "-R", str(repo_dir), "qpush", pname],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        check=True,
+        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        timeout=99)
+    qpush_output, qpush_return_code = qpush_result.stdout.decode("utf-8", errors="replace"), qpush_result.returncode
     assert " is empty" not in qpush_output, "Patch to be qpush'ed should not be empty."
 
     if qpush_return_code != 0:
@@ -207,9 +247,13 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
     Raises:
         OSError: Raises when `hg qpop` did not return a return code of 0
     """
-    qpop_output, qpop_return_code = sps.captureStdout(["hg", "-R", str(repo_dir), "qpop"],
-                                                      combineStderr=True, ignoreStderr=True,
-                                                      ignoreExitCode=True)
+    qpop_result = subprocess.run(
+        ["hg", "-R", str(repo_dir), "qpop"],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        timeout=99)
+    qpop_output, qpop_return_code = qpop_result.stdout.decode("utf-8", errors="replace"), qpop_result.returncode
     if qpop_return_code != 0:
         print("`hg qpop` output is: " + qpop_output)
         raise OSError("Return code from `hg qpop` is: " + str(qpop_return_code))

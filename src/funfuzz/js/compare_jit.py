@@ -10,6 +10,7 @@
 from __future__ import absolute_import, print_function  # isort:skip
 
 from optparse import OptionParser  # pylint: disable=deprecated-module
+import os
 import sys
 
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
@@ -22,7 +23,11 @@ from . import js_interesting
 from . import shell_flags
 from ..util import create_collector
 from ..util import lithium_helpers
-from ..util import subprocesses as sps
+
+if sys.version_info.major == 2 and os.name == "posix":
+    import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    import subprocess
 
 if sys.version_info.major == 2:
     from pathlib2 import Path
@@ -220,7 +225,10 @@ def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing
     """Return a command to diff two files, along with the diff output (if it's short)."""
     diffcmd = ["diff", "-u", f1, f2]
     s = " ".join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
-    diff = sps.captureStdout(diffcmd, ignoreExitCode=True)[0]
+    diff = subprocess.run(diffcmd,
+                          cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                          stdout=subprocess.PIPE,
+                          timeout=99).stdout.decode("utf-8", errors="replace")
     if len(diff) < 10000:
         s += diff + "\n\n"  # pylint: disable=invalid-name
     else:

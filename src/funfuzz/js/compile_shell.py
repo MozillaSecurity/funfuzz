@@ -521,9 +521,21 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             if "\\" in entry:
                 entry = entry.replace("\\", "/")
             changed_cfg_cmds.append(entry)
-        sps.captureStdout(changed_cfg_cmds, ignoreStderr=True, currWorkingDir=str(shell.get_js_objdir()), env=cfg_env)
+        out = subprocess.run(changed_cfg_cmds,
+                             check=True,
+                             cwd=str(shell.get_js_objdir()),
+                             env=cfg_env,
+                             stderr=subprocess.STDOUT,
+                             stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     else:
-        sps.captureStdout(cfg_cmds, ignoreStderr=True, currWorkingDir=str(shell.get_js_objdir()), env=cfg_env)
+        out = subprocess.run(cfg_cmds,
+                             check=True,
+                             cwd=str(shell.get_js_objdir()),
+                             env=cfg_env,
+                             stderr=subprocess.STDOUT,
+                             stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+
+    # We could save the stdout here into a file if it throws
 
     shell.setEnvAdded(env_vars)
     shell.setEnvFull(cfg_env)
@@ -534,22 +546,30 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
     """Compile and copy a binary."""
     try:
         cmd_list = [MAKE_BINARY, "-C", str(shell.get_js_objdir()), "-j" + str(COMPILATION_JOBS), "-s"]
-        out = sps.captureStdout(cmd_list, combineStderr=True, ignoreExitCode=True,
-                                currWorkingDir=str(shell.get_js_objdir()), env=shell.getEnvFull())[0]
+        out = subprocess.run(cmd_list,
+                             cwd=str(shell.get_js_objdir()),
+                             env=shell.getEnvFull(),
+                             stderr=subprocess.STDOUT,
+                             stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     except Exception as ex:  # pylint: disable=broad-except
         # This exception message is returned from sps.captureStdout via cmd_list.
         if (platform.system() == "Linux" or platform.system() == "Darwin") and \
                 ("GCC running out of memory" in repr(ex) or "Clang running out of memory" in repr(ex)):
             # FIXME: Absolute hack to retry after hitting OOM.  # pylint: disable=fixme
             print("Trying once more due to the compiler running out of memory...")
-            out = sps.captureStdout(cmd_list, combineStderr=True, ignoreExitCode=True,
-                                    currWorkingDir=shell.get_js_objdir(), env=shell.getEnvFull())[0]
+            out = subprocess.run(cmd_list,
+                                 cwd=str(shell.get_js_objdir()),
+                                 env=shell.getEnvFull(),
+                                 stderr=subprocess.STDOUT,
+                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if shell.get_shell_compiled_path().is_file():
             print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
             print("%s did not result in a js shell:" % MAKE_BINARY.decode("utf-8", errors="replace"))
             raise
+
+    # We could save the stdout here into a file if it throws
 
     if shell.get_shell_compiled_path().is_file():
         shutil.copy2(str(shell.get_shell_compiled_path()), str(shell.get_shell_cache_js_bin_path()))
@@ -766,7 +786,11 @@ def updateRepo(repo, rev):  # pylint: disable=invalid-name,missing-param-doc,mis
     # Print *with* a trailing newline to avoid breaking other stuff
     print("Updating to rev %s in the %s repository..." % (rev.decode("utf-8", errors="replace"),
                                                           repo.decode("utf-8", errors="replace")))
-    sps.captureStdout(["hg", "-R", repo, "update", "-C", "-r", rev], ignoreStderr=True)
+    subprocess.run(["hg", "-R", repo, "update", "-C", "-r", rev],
+                   check=True,
+                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   stderr=subprocess.DEVNULL,
+                   timeout=999)
 
 
 def verify_full_win_pageheap(shell_path):

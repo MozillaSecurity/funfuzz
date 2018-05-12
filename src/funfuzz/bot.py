@@ -13,6 +13,7 @@ from __future__ import absolute_import, division, print_function  # isort:skip
 from builtins import object  # pylint: disable=redefined-builtin
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
+import os
 import platform
 import shutil
 import sys
@@ -31,7 +32,10 @@ from .util.lock_dir import LockDir
 if sys.version_info.major == 2:
     from pathlib2 import Path
     import psutil
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
 else:
+    import subprocess
     from pathlib import Path  # pylint: disable=import-error
 
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
@@ -136,18 +140,24 @@ def main():  # pylint: disable=missing-docstring
 def printMachineInfo():  # pylint: disable=invalid-name
     """Log information about the machine."""
     print("Platform details: %s" % " ".join(platform.uname()))
-    print("hg version: %s" % sps.captureStdout(["hg", "-q", "version"])[0])
-
-    # In here temporarily to see if mock Linux slaves on TBPL have gdb installed
+    print("hg version: %s" %
+          subprocess.run(["hg", "-q", "version"],
+                         check=True,
+                         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                         stdout=subprocess.PIPE,
+                         timeout=9).stdout.rstrip())
     try:
-        print("gdb version: %s" % sps.captureStdout(["gdb", "--version"], combineStderr=True,
-                                                    ignoreStderr=True, ignoreExitCode=True)[0])
-    except (KeyboardInterrupt, Exception) as ex:  # pylint: disable=broad-except
+        print("gdb version: %s" %
+              subprocess.run(
+                  ["gdb", "--version"],
+                  cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                  stderr=subprocess.STDOUT,
+                  stdout=subprocess.PIPE,
+                  timeout=9).stdout.decode("utf-8", errors="replace").split("\n")[0])
+    except (KeyboardInterrupt, subprocess.CalledProcessError) as ex:
         print("Error involving gdb is: %r" % (ex,))
 
     # FIXME: Should have if which(git) or something  # pylint: disable=fixme
-    # print("git version: %s" % sps.captureStdout(["git", "--version"], combineStderr=True,
-    #                                             ignoreStderr=True, ignoreExitCode=True)[0])
     print("Python version: %s" % sys.version.split()[0])
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
     if sys.version_info.major == 2:
