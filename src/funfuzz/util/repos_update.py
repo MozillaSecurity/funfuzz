@@ -20,9 +20,11 @@ import sys
 import time
 
 if sys.version_info.major == 2:
+    from pathlib2 import Path
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
+    from pathlib import Path  # pylint: disable=import-error
     import subprocess
 
 
@@ -38,9 +40,9 @@ if platform.system() == "Windows":
     git_64bit_path = Path(os.getenv("PROGRAMFILES")) / "Git" / "bin" / "git.exe"
     git_32bit_path = Path(os.getenv("PROGRAMFILES(X86)")) / "Git" / "bin" / "git.exe"
     if git_64bit_path.is_file():
-        GITBINARY = git_64bit_path
+        GITBINARY = str(git_64bit_path)
     elif git_32bit_path.is_file():
-        GITBINARY = git_32bit_path
+        GITBINARY = str(git_32bit_path)
     else:
         raise OSError("Git binary not found")
 else:
