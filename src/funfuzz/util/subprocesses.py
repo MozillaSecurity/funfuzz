@@ -18,12 +18,6 @@ import stat
 verbose = False  # pylint: disable=invalid-name
 
 
-def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
-    """Get the absolute path of a particular file, given its base directory and filename."""
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
-
-
 def rm_tree_incl_readonly(dir_tree):
     """Remove a directory tree including all read-only files.
 
@@ -73,10 +67,6 @@ def handle_rm_readonly(func, path, exc):
         func(path)
     else:
         raise OSError("Unable to handle read-only files.")
-
-
-def normExpUserPath(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    return os.path.normpath(os.path.expanduser(p))
 
 
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
