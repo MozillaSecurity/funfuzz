@@ -521,19 +521,19 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             if "\\" in entry:
                 entry = entry.replace("\\", "/")
             changed_cfg_cmds.append(entry)
-        out = subprocess.run(changed_cfg_cmds,
-                             check=True,
-                             cwd=str(shell.get_js_objdir()),
-                             env=cfg_env,
-                             stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        subprocess.run(changed_cfg_cmds,
+                       check=True,
+                       cwd=str(shell.get_js_objdir()),
+                       env=cfg_env,
+                       stderr=subprocess.STDOUT,
+                       stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     else:
-        out = subprocess.run(cfg_cmds,
-                             check=True,
-                             cwd=str(shell.get_js_objdir()),
-                             env=cfg_env,
-                             stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        subprocess.run(cfg_cmds,
+                       check=True,
+                       cwd=str(shell.get_js_objdir()),
+                       env=cfg_env,
+                       stderr=subprocess.STDOUT,
+                       stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
 
     # We could save the stdout here into a file if it throws
 
