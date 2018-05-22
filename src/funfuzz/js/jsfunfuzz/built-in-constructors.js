@@ -68,7 +68,8 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
       // Skip Worker in shell (removed in bug 771281).
       if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement" && !(jsshell && gn == "Worker")) {
         var g = glob[gn];
-        if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
+        // if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
+        if (typeof g == "function" && (g.toString().indexOf("[native code]") != -1 || g.toString().indexOf("[source ") != -1)) {
           constructors.push(gn);
           builtinProperties.push(gn);
           builtinFunctions.push(gn);
@@ -83,14 +84,15 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
   exploreDeeper(Math, "Math");
   exploreDeeper(JSON, "JSON");
-  exploreDeeper(Proxy, "Proxy");
+  //exploreDeeper(Proxy, "Proxy");
 
   if (debugMode) {
-    for (let x of constructors) print("^^^^^ " + x);
-    for (let x of builtinProperties) print("***** " + x);
-    for (let x of builtinFunctions) print("===== " + x);
-    for (let x of allMethodNames) print("!!!!! " + x);
-    for (let x of allPropertyNames) print("&&&&& " + x);
+    var i;
+    for (i = 0; i < constructors.length; i++) print("^^^^^ " + constructors[i]);
+    for (i = 0; i < builtinProperties.length; i++) print("***** " + builtinProperties[i]);
+    for (i = 0; i < builtinFunctions.length; i++) print("===== " + builtinFunctions[i]);
+    for (i = 0; i < allMethodNames.length; i++) print("!!!!! " + allMethodNames[i]);
+    for (i = 0; i < allPropertyNames.length; i++) print("&&&&& " + allPropertyNames[i]);
     print(uneval(builtinObjects));
     quit();
   }

@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/MozillaSecurity/funfuzz.svg?branch=master)](https://travis-ci.org/MozillaSecurity/funfuzz) [![Build status](https://ci.appveyor.com/api/projects/status/m8gw5echa7f2f26r/branch/master?svg=true)](https://ci.appveyor.com/project/MozillaSecurity/funfuzz/branch/master) [![codecov](https://codecov.io/gh/MozillaSecurity/funfuzz/branch/master/graph/badge.svg)](https://codecov.io/gh/MozillaSecurity/funfuzz)
 
+NOTE: This fork modifies the original jsfunfuzz to only use ES5, which allows it to fuzz JS engines that only support ES5. However, the fuzzer may still generate ES6 code, which will likely generate syntax errors. funfuzz already randomly generates syntatically invalid code, so this only increases the amount of times that happens.
+
 This repository contains several JavaScript-based fuzzers. [jsfunfuzz](js/jsfunfuzz) tests JavaScript engines and can run in a JavaScript shell, compare_jit compares output from SpiderMonkey using different flags, while randorderfuzz throws in random tests from the mozilla-central directory into generated jsfunfuzz output.
 
 Most of the code other than testcase generation is written in Python: restarting the program when it exits or crashes, noticing evidence of new bugs from the program's output, [reducing testcases](https://github.com/MozillaSecurity/lithium/), and [identifying when regressions were introduced](src/funfuzz/autobisectjs/README.md).

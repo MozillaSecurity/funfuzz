@@ -51,8 +51,8 @@ function makeStatement(d, b)
   return (Random.index(statementMakers))(d, b);
 }
 
-var varBinder = ["var ", "let ", "const ", ""];
-var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
+var varBinder = ["var ", ""];
+var varBinderFor = ["var ", ""]; // const is a syntax error in for loops
 
 // The reason there are several types of loops here is to create different
 // types of scripts without introducing infinite loops.
@@ -118,7 +118,7 @@ function makeTypeUnstableLoop(d, b) {
   var a = makeMixedTypeArray(d, b);
   var v = makeNewId(d, b);
   var bv = b.concat([v]);
-  return "/*tLoop*/for (let " + v + " of " + a + ") { " + makeStatement(d - 2, bv) + " }";
+  return "/*tLoop*/for (var " + v + " in " + a + ") { " + makeStatement(d - 2, bv) + " }";
 }
 
 
@@ -208,10 +208,10 @@ var statementMakers = Random.weighted([
   { w: 3, v: function(d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
 
   // "let" blocks, with bound variable used inside the block
-  { w: 2, v: function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, ")", " { ", makeStatement(d, b.concat([v])), " }"]); } },
+  { w: 2, v: function(d, b) { var v = makeNewId(d, b); return cat(["var ", "(", v, ")", " { ", makeStatement(d, b.concat([v])), " }"]); } },
 
   // "let" blocks, with and without multiple bindings, with and without initial values
-  { w: 2, v: function(d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
+  { w: 2, v: function(d, b) { return cat(["var ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
 
   // Conditionals, perhaps with 'else if' / 'else'
   { w: 1, v: function(d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d, b)]); } },
@@ -340,9 +340,9 @@ function inlineTest(filename)
 {
   // Inline a regression test, adding NODIFF (to disable differential testing) if it calls a testing function that might throw.
 
-  const s = "/* " + filename + " */ " + read(filename) + "\n";
+  var s = "/* " + filename + " */ " + read(filename) + "\n";
 
-  const noDiffTestingFunctions = [
+  var noDiffTestingFunctions = [
     // These can throw
     "gcparam",
     "startgc",
@@ -356,7 +356,9 @@ function inlineTest(filename)
     "PerfMeasurement",
   ];
 
-  for (var f of noDiffTestingFunctions) {
+  var i;
+  for (i = 0; i < noDiffTestingFunctions.length; i++) {
+    var f = noDiffTestingFunctions[i];
     if (s.indexOf(f) != -1) {
       return "/*NODIFF*/ " + s;
     }
@@ -595,19 +597,19 @@ var exceptionyStatementMakers = [
   function(d, b) { return cat([makeLValue(d, b), " = ", makeId(d, b), ";"]); },
 
   // Iteration is also useful to test because it asserts that there is no pending exception.
-  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
-  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
-  function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
-  function(d, b) { var v = makeNewId(d, b); return "for await(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function(d, b) { var v = makeNewId(d, b); return "for(var " + v + " in []);"; },
+  function(d, b) { var v = makeNewId(d, b); return "for(var " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function(d, b) { var v = makeNewId(d, b); return "for(var " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function(d, b) { var v = makeNewId(d, b); return "for await(var " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
 
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
-  function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
-  function(d, b) { return "with({}) { " + makeExceptionyStatement(d, b) + " } "; },
-  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])) + "}"; },
-  function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());"; },
-  function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b) + "}"; },
-  function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());"; },
+  // function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
+  // function(d, b) { return "with({}) { " + makeExceptionyStatement(d, b) + " } "; },
+  // function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])) + "}"; },
+  // function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());"; },
+  // function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b) + "}"; },
+  // function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());"; },
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
@@ -818,9 +820,9 @@ var exprMakers =
   function(d, b) { return ""; },
 
   // Let expressions -- note the lack of curly braces.
-  function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v,                            ") ", makeExpr(d - 1, b.concat([v]))]); },
-  function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, " = ", makeExpr(d - 1, b), ") ", makeExpr(d - 1, b.concat([v]))]); },
-  function(d, b) {                          return cat(["let ", "(", makeLetHead(d, b),            ") ", makeExpr(d, b)]); },
+  // function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v,                            ") ", makeExpr(d - 1, b.concat([v]))]); },
+  // function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, " = ", makeExpr(d - 1, b), ") ", makeExpr(d - 1, b.concat([v]))]); },
+  // function(d, b) {                          return cat(["let ", "(", makeLetHead(d, b),            ") ", makeExpr(d, b)]); },
 
   // Comments and whitespace
   function(d, b) { return cat([" /* Comment */", makeExpr(d, b)]); },
@@ -1096,7 +1098,7 @@ function makeShapeyConstructorLoop(d, b)
   return makeShapeyConstructor(d - 1, b) +
     "/*tLoopC*/for (let " + v + " of " + a + ") { " +
      "try{" +
-       "let " + v2 + " = " + Random.index(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
+       "var " + v2 + " = " + Random.index(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
        //"print(uneval(" + v2 + "));" +
        makeStatement(d - 2, bvv) +
      "}catch(e){print('TTEE ' + e); }" +
@@ -1310,7 +1312,7 @@ var functionMakers = [
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function(d, b) { return "eval"; }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
-  function(d, b) { return "(let (e=eval) e)"; },
+//  function(d, b) { return "(let (e=eval) e)"; },
   function(d, b) { return "new Function"; }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
   function(d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
   function(d, b) { return "Function"; }, // without "new"
@@ -1793,8 +1795,8 @@ function makeCrazyToken()
   "...", "=>",
 
   // most real keywords plus a few reserved keywords
-  " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
-  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " await ", " break ", " continue ", " typeof ", " var ", " const ",
+  " in ", " instanceof ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
+  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " await ", " break ", " continue ", " typeof ", " var ",
 
   // reserved when found in strict mode code
   " package ",

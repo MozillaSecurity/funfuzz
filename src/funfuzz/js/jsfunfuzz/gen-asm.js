@@ -39,7 +39,9 @@ function asmJSInterior(foreignFunctions, sanePlease)
 function importForeign(foreignFunctions)
 {
   var s = "";
-  for (let h of foreignFunctions) {
+  var i;
+  for (i = 0; i < foreignFunctions.length; i++) {
+    var h = foreignFunctions[i];
     s += "  var " + h + " = foreign." + h + ";\n";
   }
   return s;
@@ -402,5 +404,3 @@ function intLiteralRange(min, max)
   var sign = val < 0 ? "-" : "";
   return sign + "0x" + Math.abs(val).toString(16);
 }
-
-

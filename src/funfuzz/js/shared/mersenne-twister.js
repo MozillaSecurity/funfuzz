@@ -57,9 +57,9 @@
 
 function MersenneTwister19937()
 {
-  const N = 624;
-  const M = 397;
-  const MAG01 = new Int32Array([0, 0x9908b0df]);
+  var N = 624;
+  var M = 397;
+  var MAG01 = new Int32Array([0, 0x9908b0df]);
 
   var mt = new Int32Array(N);   /* the array for the state vector */
   var mti = 625;

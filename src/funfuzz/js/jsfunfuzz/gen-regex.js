@@ -93,7 +93,9 @@ function quantifierHelper(pm, min, max, pms)
 
 function regexQuantified(dr, operator, min, max)
 {
-  var [re, pms] = regexPattern(dr, true);
+  var a = regexPattern(dr, true);
+  var re = a[0];
+  var pms = a[1];
   var newpms = [];
   for (var i = 0; i < POTENTIAL_MATCHES; i++)
     newpms[i] = quantifierHelper(pms[i], min, max, pms);
@@ -103,8 +105,14 @@ function regexQuantified(dr, operator, min, max)
 
 function regexConcatenation(dr)
 {
-  var [re1, strings1] = regexPattern(dr, false);
-  var [re2, strings2] = regexPattern(dr, false);
+  var a = regexPattern(dr, false);
+  var re1 = a[0];
+  var strings1 = a[1];
+
+  a = regexPattern(dr, false);
+  var re2 = a[0];
+  var strings2 = a[1];
+
   var newStrings = [];
 
   for (var i = 0; i < POTENTIAL_MATCHES; i++)
@@ -127,8 +135,13 @@ function regexConcatenation(dr)
 
 function regexDisjunction(dr)
 {
-  var [re1, strings1] = regexPattern(dr, false);
-  var [re2, strings2] = regexPattern(dr, false);
+  var a = regexPattern(dr, false);
+  var re1 = a[0];
+  var strings1 = a[1];
+
+  a = regexPattern(dr, false);
+  var re2 = a[0];
+  var strings2 = a[1];
   var newStrings = [];
 
   for (var i = 0; i < POTENTIAL_MATCHES; i++)
@@ -148,7 +161,10 @@ function regexDisjunction(dr)
 
 function regexGrouped(prefix, dr, postfix)
 {
-  var [re, strings] = regexPattern(dr, false);
+    var a = regexPattern(dr, false);
+  var re = a[0];
+  var strings = a[1];
+
   var newStrings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     newStrings[i] = rnd(5) ? strings[i] : "";
@@ -173,7 +189,10 @@ var hexDigits = [
 
 function regexTerm()
 {
-  var [re, oneString] = regexTermPair();
+  var a = regexTermPair();
+  var re = a[0];
+  var oneString = a[1];
+
   var strings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     strings[i] = rnd(5) ? oneString : regexTermPair()[1];
@@ -210,7 +229,9 @@ var regexCharacterMakers = Random.weighted([
 
 function regexCharacter()
 {
-  var [matcher, charcode] = Random.index(regexCharacterMakers)();
+  var a = Random.index(regexCharacterMakers)();
+  var matcher = a[0];
+  var charcode = a[1];
   switch(rnd(10)) {
     case 0:  return [matcher, charcode + 32]; // lowercase
     case 1:  return [matcher, charcode - 32]; // uppercase
@@ -251,7 +272,7 @@ function regexShortStringsWith(frequentChars) {
 var regexTermMakers =
   [
     function() { return regexCharacterClass(); },
-    function() { var [re, cc] = regexCharacter();   return [re, regexOneCharStringsWith([String.fromCharCode(cc)])]; },
+    function() { var a = regexCharacter(); var re = a[0]; var cc = a[1]; return [re, regexOneCharStringsWith([String.fromCharCode(cc)])]; },
     function() { return [Random.index(regexBuiltInCharClasses), regexOneCharStringsWith(["0", "a", "_"])]; },
     function() { return ["[^]",                                 regexOneCharStringsWith(["\n"])];     },
     function() { return [".",                                   regexOneCharStringsWith(["\n"])];     },
@@ -299,9 +320,11 @@ function regexCharacterClass()
       var a = regexCharacter();
       var b = regexCharacter();
       if ((a[1] <= b[1]) == !!rnd(10)) {
-        [lo, hi] = [a, b];
+        lo = a;
+        hi = b;
       } else {
-        [lo, hi] = [b, a];
+        lo = b;
+        hi = a;
       }
 
       re += lo[0] + "-" + hi[0];
