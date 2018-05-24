@@ -159,8 +159,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
         if options.randomFlags:
             engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
-        js_interesting_args.extend(["-e", "maxRunTime=" + str(options.timeout * (1000 // 2))])
-        js_interesting_args.extend(["-f", fuzzjs])
+        #js_interesting_args.extend(["-e", "maxRunTime=" + str(options.timeout * (1000 // 2))])
+        #js_interesting_args.extend(["-f", fuzzjs])
+        js_interesting_args.extend([fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
@@ -231,7 +232,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 metadata = {}
                 if autoBisectLog:
                     metadata = {"autoBisectLog": "".join(autoBisectLog)}
-                collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
+                #collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
                 print("Submitted %s" % reduced_log)
 
         else:
