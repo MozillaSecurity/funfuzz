@@ -291,6 +291,10 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
 def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branches
     """Check whether Windows minidumps are enabled and set to go to Windows' default location.
 
+    Raises:
+        WindowsError: Raises if querying for the DumpType key throws and it is unrelated to various issues,
+                      e.g. the key not being present.
+
     Returns:
         bool: Returns True when Windows has dumping enabled, and is dumping to the default location, otherwise False
     """
