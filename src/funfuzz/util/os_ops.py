@@ -292,7 +292,9 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
     """Check whether Windows minidumps are enabled and set to go to Windows' default location.
 
     Raises:
-        WindowsError: Raises if querying for the DumpType key throws and it is unrelated to various issues,
+        OSError: Raises if querying for the DumpType key throws and it is unrelated to various issues in Python 3,
+                 e.g. the key not being present.
+        WindowsError: Raises if querying for the DumpType key throws and it is unrelated to various issues in Python 2,
                       e.g. the key not being present.
 
     Returns:
@@ -316,7 +318,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
                 if not (dump_type_reg_value[0] == 1 and dump_type_reg_value[1] == winreg.REG_DWORD):
                     print(NO_DUMP_MSG)
                     return False
-            except WindowsError as ex:  # pylint: disable=undefined-variable
+            except (OSError, WindowsError) as ex:  # pylint: disable=undefined-variable
                 if ex.errno == 2:
                     print(NO_DUMP_MSG)
                     return False
@@ -333,7 +335,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
                           "all crashes will be uninteresting." % dump_folder_reg_value[0])
                     print()
                     return False
-            except WindowsError as ex:  # pylint: disable=undefined-variable
+            except (OSError, WindowsError) as ex:  # pylint: disable=undefined-variable
                 # If the key value cannot be found, the dumps will be put in the default location
                 if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
                     return True
@@ -341,7 +343,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
                     raise
 
         return True
-    except WindowsError as ex:  # pylint: disable=undefined-variable
+    except (OSError, WindowsError) as ex:  # pylint: disable=undefined-variable
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
         if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
             print()
