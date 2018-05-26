@@ -311,7 +311,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     options.knownPath = args[0]
     options.jsengineWithArgs = args[1:]
     options.collector = create_collector.make_collector()
-    if not os.path.exists(options.jsengineWithArgs[0]):
+    if not options.jsengineWithArgs[0].is_file():
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
         options.jsengineWithArgs[0], "more-deterministic")

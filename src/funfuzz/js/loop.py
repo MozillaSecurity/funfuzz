@@ -85,7 +85,7 @@ def showtail(filename):  # pylint: disable=missing-docstring
     # FIXME: Get jsfunfuzz to output start & end of interesting result boundaries instead of this.
     cmd = []
     cmd.extend(["tail", "-n", "20"])
-    cmd.append(filename)
+    cmd.append(str(filename))
     print(" ".join(cmd))
     print()
     subprocess.check_call(cmd)
