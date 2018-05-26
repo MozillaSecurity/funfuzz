@@ -73,7 +73,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like "./js"
         # pylint: disable=invalid-name
         assert os.path.isfile(os.path.abspath(pathToBinary + ".fuzzmanagerconf"))
-        pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split(".")[0])
+        pc = ProgramConfiguration.fromBinary(str(pathToBinary.parent / pathToBinary.stem))
         pc.addProgramArguments(runthis[1:-1])
 
         if options.valgrind:
@@ -91,9 +91,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
-        with open(str(logPrefix + "-out.txt")) as f:
+        out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+        with open(str(out_log)) as f:
             out = f.readlines()
-        with open(str(logPrefix + "-err.txt")) as f:
+        err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+        with open(str(err_log)) as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
@@ -105,7 +107,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
-                with open(str(logPrefix + "-crash.txt")) as f:
+                crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+                with open(str(crash_log)) as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif file_manipulation.amiss(logPrefix):
             issues.append("malloc error")
@@ -169,8 +172,9 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
-            with open(str(logPrefix + "-summary.txt"), "w") as f:
-                f.writelines(["Number: " + logPrefix + "\n",
+            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            with open(str(summary_log), "w") as f:
+                f.writelines(["Number: " + str(logPrefix) + "\n",
                               "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
 
@@ -249,16 +253,19 @@ def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,mis
     """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
-    os.remove(logPrefix + "-out.txt")
-    os.remove(logPrefix + "-err.txt")
-    if os.path.exists(logPrefix + "-crash.txt"):
-        os.remove(logPrefix + "-crash.txt")
-    if os.path.exists(logPrefix + "-vg.xml"):
-        os.remove(logPrefix + "-vg.xml")
+    (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt").unlink()
+    (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt").unlink()
+    crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+    if crash_log.is_file():
+        crash_log.unlink()
+    valgrind_xml = (logPrefix.parent / (logPrefix.stem + "-vg")).with_suffix(".xml")
+    if valgrind_xml.is_file():
+        valgrind_xml.unlink()
     # pylint: disable=fixme
     # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
-    if os.path.exists(logPrefix + "-core.gz"):
-        os.remove(logPrefix + "-core.gz")
+    core_gzip = (logPrefix.parent / (logPrefix.stem + "-core")).with_suffix(".gz")
+    if core_gzip.is_file():
+        core_gzip.unlink()
 
 
 def set_ulimit():

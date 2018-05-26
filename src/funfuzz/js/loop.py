@@ -167,17 +167,21 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                                          js_interesting_options.jsengineWithArgs, logPrefix, False)
 
         if res.lev != js_interesting.JS_FINE:
-            showtail(logPrefix + "-out.txt")
-            showtail(logPrefix + "-err.txt")
+            out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+            showtail(out_log)
+            err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+            showtail(err_log)
 
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
-            filenameToReduce = logPrefix + "-reduced.js"  # pylint: disable=invalid-name
+            reduced_log = (logPrefix.parent / (logPrefix.stem + "-reduced")).with_suffix(".js")
+            filenameToReduce = reduced_log  # pylint: disable=invalid-name
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with open(str(logPrefix + "-out.txt"), "r") as f:
+            with open(str(out_log), "r") as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
-            with open(str(logPrefix + "-orig.js"), "w") as f:
+            orig_log = (logPrefix.parent / (logPrefix.stem + "-orig")).with_suffix(".js")
+            with open(str(orig_log), "w") as f:
                 f.writelines(newfileLines)
             with open(str(filenameToReduce), "w") as f:
                 f.writelines(newfileLines)
@@ -199,7 +203,10 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                 # pylint: disable=no-member
                 fargs = js_interesting_options.jsengineWithArgs[:-1] + [filenameToReduce]
                 # pylint: disable=invalid-name
-                retestResult = js_interesting.ShellResult(js_interesting_options, fargs, logPrefix + "-final", False)
+                retestResult = js_interesting.ShellResult(js_interesting_options,
+                                                          fargs,
+                                                          logPrefix.parent / (logPrefix.stem + "-final"),
+                                                          False)
                 if retestResult.lev > js_interesting.JS_FINE:
                     res = retestResult
                     quality = 0
@@ -221,13 +228,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             # pylint: disable=no-member
             if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
                     js_interesting_options.shellIsDeterministic and are_flags_deterministic:
-                linesToCompare = jitCompareLines(logPrefix + "-out.txt", "/*FCM*/")  # pylint: disable=invalid-name
-                jitcomparefilename = logPrefix + "-cj-in.js"
+                out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+                linesToCompare = jitCompareLines(out_log, "/*FCM*/")  # pylint: disable=invalid-name
+                jitcomparefilename = (logPrefix.parent / (logPrefix.stem + "-cj-in")).with_suffix(".js")
                 with open(str(jitcomparefilename), "w") as f:
                     f.writelines(linesToCompare)
                 # pylint: disable=invalid-name
                 anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
-                                                 logPrefix + "-cj", options.repo,
+                                                 logPrefix.parent / (logPrefix.stem + "-cj"), options.repo,
                                                  options.build_options_str, targetTime, js_interesting_options)
                 if not anyBug:
                     jitcomparefilename.unlink()

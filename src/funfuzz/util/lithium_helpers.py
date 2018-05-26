@@ -65,7 +65,8 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-i"] + itest
         )
         print(" ".join(quote(x) for x in autobisectCmd))
-        autoBisectLogFilename = logPrefix + "-autobisect.txt"  # pylint: disable=invalid-name
+        # pylint: disable=invalid-name
+        autoBisectLogFilename = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
         subprocess.call(autobisectCmd, stdout=open(str(autoBisectLogFilename), "w"), stderr=subprocess.STDOUT)
         print("Done running autobisectjs. Log: %s" % autoBisectLogFilename)
 
@@ -92,10 +93,10 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
         lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
     else:
         # loop is being run standalone
-        lithtmp = logPrefix + "-lith-tmp"
+        lithtmp = logPrefix.parent / (logPrefix.stem + "-lith-tmp")
         Path.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
-    lithlogfn = logPrefix + "-lith-out.txt"
+    lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
     print("Preparing to run Lithium, log file %s" % lithlogfn)
     print(" ".join(quote(x) for x in runlithiumpy + lithArgs))
     subprocess.call(runlithiumpy + lithArgs, stdout=open(str(lithlogfn), "w"), stderr=subprocess.STDOUT)

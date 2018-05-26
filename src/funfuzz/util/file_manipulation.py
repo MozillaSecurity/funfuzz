@@ -15,7 +15,8 @@ def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,m
     which are signs of malloc being unhappy (double free, out-of-memory, etc).
     """
     found_something = False
-    with open(log_prefix + "-err.txt") as f:
+    err_log = (log_prefix.parent / (log_prefix.stem + "-err")).with_suffix(".txt")
+    with open(str(err_log)) as f:
         for line in f:
             line = line.strip("\x07").rstrip("\n")
             if (line.find("szone_error") != -1 or

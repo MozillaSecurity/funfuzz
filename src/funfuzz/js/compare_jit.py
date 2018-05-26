@@ -59,8 +59,9 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     # pylint: disable=too-many-arguments,too-many-locals
 
+    initialdir_name = (logPrefix.parent / (logPrefix.stem + "-initial"))
     # pylint: disable=invalid-name
-    cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)
+    cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, True)
     lev = cl[0]
 
     if lev != js_interesting.JS_FINE:
@@ -70,7 +71,8 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
             print("Retesting %s after running Lithium:" % infilename)
-            retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
+            finaldir_name = (logPrefix.parent / (logPrefix.stem + "-final"))
+            retest_cl = compareLevel(jsEngine, flags, infilename, finaldir_name, options, True, False)
             if retest_cl[0] != js_interesting.JS_FINE:
                 cl = retest_cl
                 quality = 0
@@ -111,7 +113,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     commands = [[jsEngine] + combo + [str(infilename)] for combo in combos]
 
     for i in range(0, len(commands)):
-        prefix = logPrefix + "-r" + str(i)
+        prefix = (logPrefix.parent / ("%s-r%s" % (logPrefix.stem, str(i))))
         command = commands[i]
         r = js_interesting.ShellResult(options, command, prefix, True)  # pylint: disable=invalid-name
 
@@ -130,7 +132,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
-            with open(str(logPrefix + "-summary.txt"), "w") as f:
+            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            with open(str(summary_log), "w") as f:
                 f.write("\n".join(r.issues + [" ".join(quote(x) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
             print("  %s" % " ".join(quote(x) for x in command))
@@ -183,7 +186,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = ("  " + " ".join(quote(x) for x in commands[0]) + "\n  " +
                            " ".join(quote(x) for x in command) + "\n\n" + summary)
-                with open(str(logPrefix + "-summary.txt"), "w") as f:
+                summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+                with open(str(summary_log), "w") as f:
                     f.write(rerunCommand + "\n\n" + summary)
                 print("%s | %s" % (str(infilename), js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))
