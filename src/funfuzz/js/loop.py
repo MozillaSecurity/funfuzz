@@ -93,7 +93,7 @@ def showtail(filename):  # pylint: disable=missing-docstring
     print()
 
 
-def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-docstring,missing-param-doc
+def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
     return """
@@ -183,7 +183,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                 f.writelines(newfileLines)
 
             # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
-            interestingpy = "funfuzz.js.js_interesting"  # pylint: disable=invalid-name
+            interestingpy = "funfuzz.js.js_interesting"
             itest = [interestingpy]
             if options.valgrind:
                 itest.append("--valgrind")

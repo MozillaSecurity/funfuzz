@@ -83,7 +83,7 @@ if platform.system() == "Windows":
 
 
 def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
-    # pylint: disable=missing-raises-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+    # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = subprocess.run(
