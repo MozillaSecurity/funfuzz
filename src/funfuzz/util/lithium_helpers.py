@@ -65,18 +65,17 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-i"] + itest
         )
         print(" ".join(quote(x) for x in autobisectCmd))
-        # pylint: disable=invalid-name
-        autoBisectLogFilename = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
-        subprocess.call(autobisectCmd, stdout=open(str(autoBisectLogFilename), "w"), stderr=subprocess.STDOUT)
-        print("Done running autobisectjs. Log: %s" % autoBisectLogFilename)
+        autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
+        subprocess.call(autobisectCmd, stdout=open(str(autobisect_log), "w"), stderr=subprocess.STDOUT)
+        print("Done running autobisectjs. Log: %s" % autobisect_log)
 
-        with open(str(autoBisectLogFilename), "r") as f:
+        with open(str(autobisect_log), "r") as f:
             lines = f.readlines()
-            autoBisectLog = file_manipulation.truncateMid(lines, 50, ["..."])  # pylint: disable=invalid-name
+            autobisect_log_trunc = file_manipulation.truncateMid(lines, 50, ["..."])
     else:
-        autoBisectLog = []  # pylint: disable=invalid-name
+        autobisect_log_trunc = []  # pylint: disable=invalid-name
 
-    return (lithResult, lithDetails, autoBisectLog)
+    return (lithResult, lithDetails, autobisect_log_trunc)
 
 
 def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
