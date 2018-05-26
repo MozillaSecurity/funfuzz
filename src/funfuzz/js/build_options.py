@@ -17,7 +17,7 @@ import platform
 import random
 import sys
 
-from past.builtins import range  # pylint: disable=redefined-builtin
+from past.builtins import range
 
 from ..util import hg_helpers
 from ..util import subprocesses as sps
@@ -203,7 +203,7 @@ def parseShellOptions(inputArgs):  # pylint: disable=invalid-name,missing-param-
 
 
 def computeShellType(build_options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex,too-many-branches
+    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
     """Return configuration information of the shell."""
     fileName = ["js"]  # pylint: disable=invalid-name
     if build_options.enableDbg:
@@ -319,7 +319,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     return True, ""
 
 
-def generateRandomConfigurations(parser, randomizer):  # pylint: disable=inconsistent-return-statements,invalid-name
+def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid-name
     # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     while True:
         randomArgs = randomizer.getRandomSubset()  # pylint: disable=invalid-name

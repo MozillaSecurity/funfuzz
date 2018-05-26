@@ -17,7 +17,7 @@ import sys
 import tempfile
 
 from lithium.interestingness.utils import file_contains_str
-from past.builtins import range  # pylint: disable=redefined-builtin
+from past.builtins import range
 from shellescape import quote
 
 from . import file_manipulation

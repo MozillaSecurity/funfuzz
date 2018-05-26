@@ -236,7 +236,7 @@ def ensureCacheDir():  # pylint: disable=invalid-name,missing-return-doc,missing
     # This has to occur after the shell-cache directory is created
     if platform.system() == "Windows":  # adapted from http://stackoverflow.com/a/3931799
         if sys.version_info.major == 2:
-            utext = unicode   # noqa pylint: disable=redefined-builtin,undefined-variable,unicode-builtin
+            utext = unicode   # noqa pylint: disable=undefined-variable,unicode-builtin
         else:
             utext = str
         win_temp_dir = utext(cache_dir)
