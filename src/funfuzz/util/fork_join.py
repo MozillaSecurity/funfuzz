@@ -69,8 +69,8 @@ def log_name(log_dir, i, log_type):
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    sys.stdout = open(log_name(logDir, i, "out"), "w", buffering=0)  # I WONDER .decode("utf-8", errors="replace")
-    sys.stderr = open(log_name(logDir, i, "err"), "w", buffering=0)  # I WONDER .decode("utf-8", errors="replace")
+    sys.stdout = open(log_name(logDir, i, "out"), "wb", buffering=0)  # I WONDER .decode("utf-8", errors="replace")
+    sys.stderr = open(log_name(logDir, i, "err"), "wb", buffering=0)  # I WONDER .decode("utf-8", errors="replace")
     fun(*(someArgs + (i,)))
 
 
