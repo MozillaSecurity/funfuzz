@@ -133,8 +133,9 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
         regressionTestPrologue = ""  # pylint: disable=invalid-name
 
     fuzzjs = wtmpDir / "jsfunfuzz.js"
-    assert fuzzjs.is_file()
+
     link_fuzzer.link_fuzzer(fuzzjs, regressionTestPrologue)
+    assert fuzzjs.is_file()
 
     iteration = 0
     while True:
