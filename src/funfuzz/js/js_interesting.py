@@ -83,7 +83,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 runthis)
 
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
-        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix.encode("utf-8"), preexec_fn=set_ulimit)
+        runthis = [str(x) if isinstance(x, Path) else x for x in runthis]  # Convert all Paths to strings for Lithium
+        runinfo = timed_run.timed_run(runthis, options.timeout, str(logPrefix).encode("utf-8"), preexec_fn=set_ulimit)
 
         lev = JS_FINE
         issues = []
