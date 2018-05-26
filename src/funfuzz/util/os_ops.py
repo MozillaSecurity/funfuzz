@@ -160,14 +160,14 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     progname = prog_full_path.name
 
     use_logfiles = isinstance(log_prefix, ("".__class__, u"".__class__))
-    crash_log_path = Path(log_prefix + "-crash.txt")
-    core_path = Path(log_prefix + "-core")
+    crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
+    core_file = (log_prefix.parent / (log_prefix.stem + "-core"))
 
     if use_logfiles:
-        if crash_log_path.is_file():
-            crash_log_path.unlink()
-        if core_path.is_file():
-            core_path.unlink()
+        if crash_log.is_file():
+            crash_log.unlink()
+        if core_file.is_file():
+            core_file.unlink()
 
     if not want_stack or progname == "valgrind":
         return ""
@@ -188,7 +188,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             dbggr_cmd,
             stdin=None,
             stderr=subprocess.STDOUT,
-            stdout=open(str(crash_log_path), "w") if use_logfiles else None,
+            stdout=open(str(crash_log), "w") if use_logfiles else None,
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
             close_fds=(os.name == "posix"),
@@ -199,11 +199,11 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             print("Debugger exited with code %d : %s" % (dbbgr_exit_code, " ".join(quote(x) for x in dbggr_cmd)))
         if use_logfiles:
             if core_file.is_file():
-                shutil.move(str(core_file), str(core_path))
-                subprocess.call(["gzip", "-f", str(core_path)])
+                shutil.move(str(core_file), str(core_file))
+                subprocess.call(["gzip", "-f", str(core_file)])
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.check_call(["chmod", "og+r", "%s.gz" % core_path])
-            return str(crash_log_path)
+                subprocess.check_call(["chmod", "og+r", "%s.gz" % core_file])
+            return str(crash_log)
         else:
             print("I don't know what to do with a core file when log_prefix is null")
 
@@ -271,13 +271,14 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
                         # Copy, don't rename, because we might not have permissions
                         # (especially for the system rather than user crash log directory)
                         # Use copyfile, as we do not want to copy the permissions metadata over
-                        shutil.copyfile(str(full_report_path), log_prefix + "-crash.txt")
-                        subprocess.run(["chmod", "og+r", log_prefix + "-crash.txt"],
+                        crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
+                        shutil.copyfile(str(full_report_path), str(crash_log))
+                        subprocess.run(["chmod", "og+r", str(crash_log)],
                                        # pylint: disable=no-member
                                        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
                                        check=True,
                                        timeout=9)
-                        return log_prefix + "-crash.txt"
+                        return str(crash_log)
                     return str(full_report_path)
 
             except OSError:

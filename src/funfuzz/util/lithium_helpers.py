@@ -137,7 +137,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name
-    backup_file = infilename + "-backup"
+    backup_file = (logPrefix.parent / (logPrefix.stem + "-backup"))
 
     def lith_reduce(strategy):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
         # pylint: disable=missing-return-type-doc,missing-type-doc

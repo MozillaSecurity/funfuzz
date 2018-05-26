@@ -334,8 +334,10 @@ def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docs
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
-    truncateFile(tempPrefix + "-out.txt", 1000000)
-    truncateFile(tempPrefix + "-err.txt", 1000000)
+    out_log = (tempPrefix.parent / (tempPrefix.stem + "-out")).with_suffix(".txt")
+    err_log = (tempPrefix.parent / (tempPrefix.stem + "-err")).with_suffix(".txt")
+    truncateFile(out_log, 1000000)
+    truncateFile(err_log, 1000000)
     return res.lev >= gOptions.minimumInterestingLevel
 
 

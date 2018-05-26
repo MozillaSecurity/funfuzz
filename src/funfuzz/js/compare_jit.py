@@ -211,23 +211,27 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
 
 # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
+def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix1):
     issues = []
     summary = ""
     if mismatchErr:
         issues.append("[Non-crash bug] Mismatch on stderr")
         summary += "[Non-crash bug] Mismatch on stderr\n"
-        summary += diffFiles(prefix0 + "-err.txt", prefix + "-err.txt")
+        err0_log = (prefix0.parent / (prefix0.stem + "-err")).with_suffix(".txt")
+        err1_log = (prefix1.parent / (prefix1.stem + "-err")).with_suffix(".txt")
+        summary += diffFiles(err0_log, err1_log)
     if mismatchOut:
         issues.append("[Non-crash bug] Mismatch on stdout")
         summary += "[Non-crash bug] Mismatch on stdout\n"
-        summary += diffFiles(prefix0 + "-out.txt", prefix + "-out.txt")
+        out0_log = (prefix0.parent / (prefix0.stem + "-out")).with_suffix(".txt")
+        out1_log = (prefix1.parent / (prefix1.stem + "-out")).with_suffix(".txt")
+        summary += diffFiles(out0_log, out1_log)
     return (summary, issues)
 
 
 def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Return a command to diff two files, along with the diff output (if it's short)."""
-    diffcmd = ["diff", "-u", f1, f2]
+    diffcmd = ["diff", "-u", str(f1), str(f2)]
     s = " ".join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
     diff = subprocess.run(diffcmd,
                           cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
