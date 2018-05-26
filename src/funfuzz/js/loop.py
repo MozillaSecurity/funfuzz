@@ -175,7 +175,6 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
 
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
             reduced_log = (logPrefix.parent / (logPrefix.stem + "-reduced")).with_suffix(".js")
-            filenameToReduce = reduced_log  # pylint: disable=invalid-name
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
             with open(str(out_log), "r") as f:
@@ -184,7 +183,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             orig_log = (logPrefix.parent / (logPrefix.stem + "-orig")).with_suffix(".js")
             with open(str(orig_log), "w") as f:
                 f.writelines(newfileLines)
-            with open(str(filenameToReduce), "w") as f:
+            with open(str(reduced_log), "w") as f:
                 f.writelines(newfileLines)
 
             # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
@@ -196,13 +195,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             itest.append("--timeout=" + str(options.timeout))
             itest.append(options.knownPath)
             (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
-                itest, logPrefix, options.jsEngine, engineFlags, filenameToReduce, options.repo,
+                itest, logPrefix, options.jsEngine, engineFlags, reduced_log, options.repo,
                 options.build_options_str, targetTime, res.lev)
 
             # Upload with final output
             if lithResult == lithium_helpers.LITH_FINISHED:
                 # pylint: disable=no-member
-                fargs = js_interesting_options.jsengineWithArgs[:-1] + [filenameToReduce]
+                fargs = js_interesting_options.jsengineWithArgs[:-1] + [reduced_log]
                 # pylint: disable=invalid-name
                 retestResult = js_interesting.ShellResult(js_interesting_options,
                                                           fargs,
@@ -216,13 +215,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             else:
                 quality = 10
 
-            print("Submitting %s (quality=%s) at %s" % (filenameToReduce, quality, time.asctime()))
+            print("Submitting %s (quality=%s) at %s" % (reduced_log, quality, time.asctime()))
 
             metadata = {}
             if autoBisectLog:
                 metadata = {"autoBisectLog": "".join(autoBisectLog)}
-            collector.submit(res.crashInfo, filenameToReduce, quality, metaData=metadata)
-            print("Submitted %s" % filenameToReduce)
+            collector.submit(res.crashInfo, reduced_log, quality, metaData=metadata)
+            print("Submitted %s" % reduced_log)
 
         else:
             are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags
