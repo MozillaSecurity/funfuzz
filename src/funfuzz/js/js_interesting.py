@@ -68,11 +68,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
         # pylint: disable=too-many-locals,too-many-statements
-        pathToBinary = runthis[0]  # pylint: disable=invalid-name
+        pathToBinary = runthis[0].resolve()  # pylint: disable=invalid-name
         # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like "./js"
         # pylint: disable=invalid-name
-        assert os.path.isfile(os.path.abspath(pathToBinary + ".fuzzmanagerconf"))
+        assert pathToBinary.with_suffix(".fuzzmanagerconf").is_file()
         pc = ProgramConfiguration.fromBinary(str(pathToBinary.parent / pathToBinary.stem))
         pc.addProgramArguments(runthis[1:-1])
 
