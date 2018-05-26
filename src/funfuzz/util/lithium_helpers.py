@@ -52,7 +52,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
 
     print()
     print("Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:")
-    print(" ".join(quote(x) for x in [sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
+    print(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
     print()
 
     # pylint: disable=literal-comparison
@@ -64,7 +64,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-p", " ".join(engineFlags + [infilename])] +
             ["-i"] + itest
         )
-        print(" ".join(quote(x) for x in autobisectCmd))
+        print(" ".join(quote(str(x)) for x in autobisectCmd))
         autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
         subprocess.call(autobisectCmd, stdout=open(str(autobisect_log), "w"), stderr=subprocess.STDOUT)
         print("Done running autobisectjs. Log: %s" % autobisect_log)
@@ -97,7 +97,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
         lithArgs = ["--tempdir=" + lithtmp] + lithArgs
     lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
     print("Preparing to run Lithium, log file %s" % lithlogfn)
-    print(" ".join(quote(x) for x in runlithiumpy + lithArgs))
+    print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
     subprocess.call(runlithiumpy + lithArgs, stdout=open(str(lithlogfn), "w"), stderr=subprocess.STDOUT)
     print("Done running Lithium")
     if deletableLithTemp:
@@ -152,7 +152,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         reductionCount[0] += 1
         # Remove empty elements
         full_lith_args = [x for x in (strategy + lithArgs) if x]
-        print(" ".join(quote(x) for x in [sys.executable, "-u", "-m", "lithium"] + full_lith_args))
+        print(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium"] + full_lith_args))
 
         desc = "-chars" if strategy == "--char" else "-lines"
         (lith_result, lith_details) = run_lithium(  # pylint: disable=invalid-name

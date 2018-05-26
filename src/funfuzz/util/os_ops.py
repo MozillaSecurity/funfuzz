@@ -196,7 +196,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             preexec_fn=(disable_corefile if platform.system() == "Linux" else None)
         )
         if dbbgr_exit_code != 0:
-            print("Debugger exited with code %d : %s" % (dbbgr_exit_code, " ".join(quote(x) for x in dbggr_cmd)))
+            print("Debugger exited with code %d : %s" % (dbbgr_exit_code, " ".join(quote(str(x)) for x in dbggr_cmd)))
         if use_logfiles:
             if core_file.is_file():
                 shutil.move(str(core_file), str(core_file))

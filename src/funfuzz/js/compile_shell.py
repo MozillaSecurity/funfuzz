@@ -507,8 +507,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
                                  '"' if " " in cfg_env[str(env_var)] else env_var +
                                  "=" + cfg_env[str(env_var)])
         env_vars.append(str_to_be_appended)
-    sps.vdump("Command to be run is: " + " ".join(quote(x) for x in env_vars) + " " +
-              " ".join(quote(x) for x in cfg_cmds))
+    sps.vdump("Command to be run is: " + " ".join(quote(str(x)) for x in env_vars) + " " +
+              " ".join(quote(str(x)) for x in cfg_cmds))
 
     assert shell.get_js_objdir().is_dir()
 
@@ -624,8 +624,8 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# %s\n# \n" % str(shell.getEnvFull()))
 
         f.write("# Full configuration command with needed environment variables is:\n")
-        f.write("# %s %s\n# \n" % (" ".join(quote(x) for x in shell.getEnvAdded()),
-                                   " ".join(quote(x) for x in shell.getCfgCmdExclEnv())))
+        f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.getEnvAdded()),
+                                   " ".join(quote(str(x)) for x in shell.getCfgCmdExclEnv())))
 
         # .fuzzmanagerconf details
         f.write("\n")

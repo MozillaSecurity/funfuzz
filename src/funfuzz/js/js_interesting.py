@@ -179,7 +179,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
             with open(str(summary_log), "w") as f:
                 f.writelines(["Number: " + str(logPrefix) + "\n",
-                              "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
+                              "Command: " + " ".join(quote(str(x)) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
 
         self.lev = lev

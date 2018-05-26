@@ -146,7 +146,7 @@ def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,mi
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    sps.vdump("The testing command is: " + " ".join(quote(x) for x in test_cmd))
+    sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
     test_cmd_result = subprocess.run(
         test_cmd,
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
