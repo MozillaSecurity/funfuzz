@@ -252,7 +252,3 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     manyTimedRunArgs.append(cshell.getRepoName())  # known bugs' directory
     manyTimedRunArgs.append(cshell.get_shell_cache_js_bin_path())
     return manyTimedRunArgs
-
-
-if __name__ == "__main__":
-    main()
