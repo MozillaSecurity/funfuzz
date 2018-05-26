@@ -45,7 +45,7 @@ def rm_tree_incl_readonly(dir_tree):
 
 
 def handle_rm_readonly(func, path, exc):
-    """Handle read-only files. Adapted from http://stackoverflow.com/q/1213706 and some docs below adapted from
+    """Handle read-only files on Windows. Adapted from http://stackoverflow.com/q/1213706 and some docs adapted from
     Python 2.7 official docs.
 
     Args:
@@ -56,14 +56,9 @@ def handle_rm_readonly(func, path, exc):
     Raises:
         OSError: Raised if the read-only files are unable to be handled
     """
+    assert platform.system() == "Windows"
     if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
-        if os.name == "posix":
-            # Ensure parent directory is also writeable.
-            pardir = os.path.abspath(os.path.join(path, os.path.pardir))
-            if not os.access(pardir, os.W_OK):
-                os.chmod(pardir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        elif os.name == "nt":
-            os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
+        os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
         func(path)
     else:
         raise OSError("Unable to handle read-only files.")
