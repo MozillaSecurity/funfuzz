@@ -26,7 +26,7 @@ def make_collector():
         Collector: jsfunfuzz collector object
     """
     sigcache_path = Path.home() / "sigcache"
-    sigcache_path.mkdir(exist_ok=True)  # pylint: disable=no-member
+    sigcache_path.mkdir(exist_ok=True)
     return Collector(sigCacheDir=str(sigcache_path), tool="jsfunfuzz")
 
 
