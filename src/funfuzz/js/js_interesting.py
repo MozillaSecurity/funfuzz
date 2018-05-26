@@ -240,7 +240,7 @@ def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,m
 
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
-    if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
+    if fn.is_file() and fn.stat().st_size > maxSize:
         with open(str(fn), "r+") as f:
             f.truncate(maxSize)
 
