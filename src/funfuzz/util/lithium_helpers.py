@@ -158,7 +158,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         (lith_result, lith_details) = run_lithium(  # pylint: disable=invalid-name
             full_lith_args, "%s-%s%s" % (logPrefix, reductionCount[0], desc), targetTime)
         if lith_result == LITH_FINISHED:
-            shutil.copy2(infilename, backup_file)
+            shutil.copy2(str(infilename), str(backup_file))
 
         return lith_result, lith_details
 
@@ -268,7 +268,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     if lith_result != LITH_FINISHED and lith_result != LITH_PLEASE_CONTINUE:
         # Probably can move instead of copy the backup, once this has stabilised.
         if backup_file.is_file():
-            shutil.copy2(str(backup_file), infilename)
+            shutil.copy2(str(backup_file), str(infilename))
         else:
             print("DEBUG! backup_file is supposed to be: %s" % backup_file)
 
