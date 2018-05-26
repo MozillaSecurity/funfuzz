@@ -45,7 +45,7 @@ class CompileShellTests(unittest.TestCase):
         Returns:
             Path: Path to the compiled shell.
         """
-        self.assertTrue(self.mc_hg_repo.is_dir())
+        self.assertTrue(self.mc_hg_repo.is_dir())  # pylint: disable=no-member
         # Change the repository location by uncommenting this line and specifying the right one
         # "-R ~/trees/mozilla-central/")
 

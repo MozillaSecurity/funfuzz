@@ -51,6 +51,7 @@ class HgHelpersTests(TestCase):
                                      "The variable msg is:")):
             hg_helpers.get_cset_hash_from_bisect_msg("1a2345 - abababababab")
 
+    # pylint: disable=no-member
     @pytest.mark.skipif(not (trees_location / "mozilla-central" / ".hg" / "hgrc").is_file(),
                         reason="requires a Mozilla Mercurial repository")
     def test_hgrc_repo_name(self):
