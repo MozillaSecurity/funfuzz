@@ -5,19 +5,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import itertools
-
 from setuptools import setup
 
-EXTRAS = {
-    ':python_version=="2.7"': [
-        "backports.tempfile>=1.0",
-        "functools32>=3.2.3.post2",
-        "mercurial>=4.5.3",
-        "subprocess32>=3.5.0rc1",
-    ]
-}
-EXTRAS[""] = list(set(itertools.chain.from_iterable(EXTRAS.values())))
+EXTRAS = {}
+EXTRAS[':python_version=="2.7"'] = [
+    "mercurial>=4.5.3",
+    "backports.tempfile>=1.0",
+    "functools32>=3.2.3.post2",
+    "subprocess32>=3.5.0rc1",
+]
 EXTRAS["test"] = [
     "codecov==2.0.15",
     "coverage==4.5.1",
