@@ -88,7 +88,6 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     if args:
         print("Warning: bot does not use positional arguments")
 
-    # pylint: disable=no-member
     if not options.useTreeherderBuilds and not build_options.DEFAULT_TREES_LOCATION.is_dir():
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True

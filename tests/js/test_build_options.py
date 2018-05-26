@@ -44,7 +44,6 @@ class BuildOptionsTests(unittest.TestCase):
     monkeypatch = MonkeyPatch()
     trees_location = Path.home() / "trees"
 
-    # pylint: disable=no-member
     @pytest.mark.skipif(not (trees_location / "mozilla-central" / ".hg" / "hgrc").is_file(),
                         reason="requires a Mozilla Mercurial repository")
     def test_get_random_valid_repo(self):
