@@ -354,8 +354,8 @@ def get_random_valid_repo(tree):
     tree = tree.resolve()
 
     valid_repos = []
-    for _ in ["mozilla-central", "mozilla-beta"]:
-        if (tree / _ / ".hg" / "hgrc").is_file():
+    for branch in ["mozilla-central", "mozilla-beta"]:
+        if (tree / branch / ".hg" / "hgrc").is_file():
             valid_repos.append(_)
 
     # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
