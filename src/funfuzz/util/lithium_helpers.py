@@ -45,7 +45,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     The module's "interesting" function must accept [...] + [jsEngine] + engineFlags + infilename
     (If it's not prepared to accept engineFlags, engineFlags must be empty.)
     """
-    lithArgs = itest + [jsEngine] + engineFlags + [infilename]  # pylint: disable=invalid-name
+    lithArgs = itest + [str(jsEngine)] + engineFlags + [str(infilename)]  # pylint: disable=invalid-name
 
     (lithResult, lithDetails) = reduction_strat(  # pylint: disable=invalid-name
         logPrefix, infilename, lithArgs, targetTime, suspiciousLevel)
@@ -94,7 +94,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
         # loop is being run standalone
         lithtmp = logPrefix.parent / (logPrefix.stem + "-lith-tmp")
         Path.mkdir(lithtmp)
-        lithArgs = ["--tempdir=" + lithtmp] + lithArgs
+        lithArgs = ["--tempdir=" + str(lithtmp)] + lithArgs
     lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
     print("Preparing to run Lithium, log file %s" % lithlogfn)
     print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
@@ -103,7 +103,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)
     r = readLithiumResult(lithlogfn)  # pylint: disable=invalid-name
-    subprocess.call(["gzip", "-f", lithlogfn])
+    subprocess.call(["gzip", "-f", str(lithlogfn)])
     return r
 
 
@@ -155,7 +155,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         desc = "-chars" if strategy == "--char" else "-lines"
         (lith_result, lith_details) = run_lithium(  # pylint: disable=invalid-name
-            full_lith_args, "%s-%s%s" % (logPrefix, reductionCount[0], desc), targetTime)
+            full_lith_args, (logPrefix.parent / ("%s-%s%s" % (logPrefix.stem, reductionCount[0], desc))), targetTime)
         if lith_result == LITH_FINISHED:
             shutil.copy2(str(infilename), str(backup_file))
 

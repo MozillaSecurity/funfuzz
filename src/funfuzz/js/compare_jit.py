@@ -84,7 +84,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
         metadata = {}
         if autoBisectLog:
             metadata = {"autoBisectLog": "".join(autoBisectLog)}
-        options.collector.submit(cl[1], infilename, quality, metaData=metadata)
+        options.collector.submit(cl[1], str(infilename), quality, metaData=metadata)
         return True
 
     return False

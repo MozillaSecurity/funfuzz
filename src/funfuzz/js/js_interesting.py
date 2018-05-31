@@ -312,10 +312,10 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     if len(args) < 2:
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
-    options.jsengineWithArgs = args[1:]
+    options.jsengineWithArgs = [Path(args[1]).resolve()] + args[1:-1] + [Path(args[-1]).resolve()]
+    assert options.jsengineWithArgs[0].is_file()  # js shell
+    assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
-    if not options.jsengineWithArgs[0].is_file():
-        raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
         options.jsengineWithArgs[0], "more-deterministic")
 
@@ -347,6 +347,7 @@ def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docs
 # For direct, manual use
 def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
+    tempPrefixISNOTAPATH
     tempPrefix = "m"  # pylint: disable=invalid-name
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)  # pylint: disable=no-member
     print(res.lev)

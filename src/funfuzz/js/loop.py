@@ -220,7 +220,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             metadata = {}
             if autoBisectLog:
                 metadata = {"autoBisectLog": "".join(autoBisectLog)}
-            collector.submit(res.crashInfo, reduced_log, quality, metaData=metadata)
+            collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
             print("Submitted %s" % reduced_log)
 
         else:
