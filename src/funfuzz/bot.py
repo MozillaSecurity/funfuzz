@@ -20,6 +20,8 @@ import sys
 import tempfile
 import time
 
+from whichcraft import which
+
 from .js import build_options
 from .js import compile_shell
 from .js import loop
@@ -107,7 +109,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
 
 def main():  # pylint: disable=missing-docstring
-    printMachineInfo()
+    print_machine_info()
 
     options = parseOpts()
 
@@ -136,28 +138,19 @@ def main():  # pylint: disable=missing-docstring
     shutil.rmtree(options.tempDir)
 
 
-def printMachineInfo():  # pylint: disable=invalid-name
+def print_machine_info():
     """Log information about the machine."""
     print("Platform details: %s" % " ".join(platform.uname()))
-    print("hg version: %s" %
-          subprocess.run(["hg", "-q", "version"],
-                         check=True,
-                         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
-                         stdout=subprocess.PIPE,
-                         timeout=9).stdout.rstrip())
-    try:
-        print("gdb version: %s" %
-              subprocess.run(
-                  ["gdb", "--version"],
-                  cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
-                  stderr=subprocess.STDOUT,
-                  stdout=subprocess.PIPE,
-                  timeout=9).stdout.decode("utf-8", errors="replace").split("\n")[0])
-    except (KeyboardInterrupt, subprocess.CalledProcessError) as ex:
-        print("Error involving gdb is: %r" % (ex,))
 
-    # FIXME: Should have if which(git) or something  # pylint: disable=fixme
+    print("hg info: %s" % subprocess.run(["hg", "-q", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
+    if which("gdb"):
+        gdb_version = subprocess.run(["gdb", "--version"],
+                                     stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        print("gdb info: %s" % gdb_version.split("\n")[0])
+    if which("git"):
+        print("git info: %s" % subprocess.run(["git", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
     print("Python version: %s" % sys.version.split()[0])
+
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
     if sys.version_info.major == 2:
         rootdir_free_space = psutil.disk_usage("/").free / (1024 ** 3)
