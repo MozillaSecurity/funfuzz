@@ -118,9 +118,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if shell_supports_flag(shell_path, "--ion-regalloc=testbed") and chance(.2):
         # m-c rev 248962:47e92bae09fd, see bug 1170840
         input_list.append("--ion-regalloc=testbed")
-    if shell_supports_flag(shell_path, "--non-writable-jitcode") and chance(.2):
-        # m-c rev 248578:b46d6692fe50, see bug 977805
-        input_list.append("--non-writable-jitcode")
 
     forceinline_cmd = '--execute=\"setJitCompilerOption(\\\"ion.forceinlineCaches\\\",1)\"'
     # The only way I could make nested double quotes work with subprocess. See https://stackoverflow.com/a/35913597
@@ -347,9 +344,8 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
     ]
-    if shell_supports_flag(shell_path, "--non-writable-jitcode"):
-        basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager",
-                            "--non-writable-jitcode", "--ion-check-range-analysis",
+    if shell_supports_flag(shell_path, "--ion-extra-checks"):
+        basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",
                             "--ion-extra-checks", "--no-sse3"])
     if shell_supports_flag(shell_path, "--no-wasm"):
         basic_flags.append(["--fuzzing-safe", "--no-baseline", "--no-asmjs",

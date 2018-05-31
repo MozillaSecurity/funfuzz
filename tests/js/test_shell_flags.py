@@ -65,7 +65,6 @@ class ShellFlagsTests(CompileShellTests):
         self.assertTrue("--ion-instruction-reordering=on" in all_flags)
         self.assertTrue("--ion-shared-stubs=on" in all_flags)
         self.assertTrue("--ion-regalloc=testbed" in all_flags)
-        self.assertTrue("--non-writable-jitcode" in all_flags)
         self.assertTrue('--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags)
         self.assertTrue("--ion-extra-checks" in all_flags)
         # self.assertTrue("--ion-sink=on" in all_flags)
