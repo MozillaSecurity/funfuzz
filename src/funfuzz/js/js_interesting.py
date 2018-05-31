@@ -347,7 +347,6 @@ def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docs
 # For direct, manual use
 def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
-    tempPrefixISNOTAPATH
     tempPrefix = "m"  # pylint: disable=invalid-name
     res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)  # pylint: disable=no-member
     print(res.lev)
