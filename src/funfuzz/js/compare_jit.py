@@ -16,7 +16,6 @@ import sys
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
-from past.builtins import range
 from shellescape import quote
 
 from . import js_interesting
@@ -112,7 +111,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     commands = [[jsEngine] + combo + [str(infilename)] for combo in combos]
 
-    for i in range(0, len(commands)):
+    for i, command in enumerate(commands):
         prefix = (logPrefix.parent / ("%s-r%s" % (logPrefix.stem, str(i))))
         command = commands[i]
         r = js_interesting.ShellResult(options, command, prefix, True)  # pylint: disable=invalid-name
