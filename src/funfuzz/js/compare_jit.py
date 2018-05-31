@@ -305,7 +305,3 @@ def main():
     print(compareLevel(
         options.jsengine, options.flags, options.infilename,  # pylint: disable=no-member
         tempfile.mkdtemp("compare_jitmain"), options, True, False)[0])
-
-
-if __name__ == "__main__":
-    main()

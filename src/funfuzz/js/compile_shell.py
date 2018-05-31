@@ -818,7 +818,3 @@ def verify_full_win_pageheap(shell_path):
 def main():
     """Execute main() function in CompiledShell class."""
     exit(CompiledShell.main())
-
-
-if __name__ == "__main__":
-    main()

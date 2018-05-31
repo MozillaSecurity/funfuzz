@@ -359,7 +359,3 @@ def main():  # pylint: disable=missing-docstring
             options.collector.submit(res.crashInfo, testcaseFilename, quality)  # pylint: disable=no-member
         else:
             print("Not submitting (not interesting)")
-
-
-if __name__ == "__main__":
-    main()
