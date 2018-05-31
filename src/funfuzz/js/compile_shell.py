@@ -69,7 +69,13 @@ class CompiledShellError(Exception):
     pass
 
 
-class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-many-public-methods
+class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
+    """A CompiledShell object represents an actual compiled shell binary.
+
+    Args:
+        build_opts (object): Object containing the build options defined in build_options.py
+        hg_hash (str): Changeset hash
+    """
     def __init__(self, build_opts, hg_hash):
         self.shell_name_without_ext = build_options.computeShellName(build_opts, hg_hash)
         self.hg_hash = hg_hash
