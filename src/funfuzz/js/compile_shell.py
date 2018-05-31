@@ -732,7 +732,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
     if use_s3cache:
         if s3cache_obj.downloadFile(str(shell.get_shell_name_without_ext() + ".busted"),
-                                    str(shell.get_shell_cache_js_bin_path() + ".busted")):
+                                    str(shell.get_shell_cache_js_bin_path()) + ".busted"):
             raise Exception("Found a .busted file for rev " + shell.get_hg_hash())
 
         if s3cache_obj.downloadFile(str(shell.get_shell_name_without_ext() + ".tar.bz2"),
@@ -764,7 +764,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         shell.get_shell_cache_dir().mkdir()
         createBustedFile(cached_no_shell, ex)
         if use_s3cache:
-            s3cache_obj.uploadFileToS3(str(shell.get_shell_cache_js_bin_path() + ".busted"))
+            s3cache_obj.uploadFileToS3(str(shell.get_shell_cache_js_bin_path()) + ".busted")
         raise
     finally:
         if shell.build_opts.patch_file:
