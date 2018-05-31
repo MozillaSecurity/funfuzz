@@ -110,7 +110,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
-            if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
+            if os_ops.grab_crash_log(str(runthis[0]), runinfo.pid, logPrefix, True):
                 crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
                 with open(str(crash_log)) as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
@@ -145,7 +145,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                         extracted_gdb_cmds.append("-ex")
                         extracted_gdb_cmds.append("%s" % line.rstrip())
             no_main_log_gdb_log = subprocess.run(
-                ["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] + runthis,
+                (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
+                    [str(x) if isinstance(x, Path) else x for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE
