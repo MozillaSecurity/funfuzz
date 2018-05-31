@@ -133,12 +133,12 @@ def createWtmpDir(tmpDirBase):  # pylint: disable=invalid-name,missing-param-doc
 def disableCorefile():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
     import resource  # module only available on POSIX  pylint: disable=import-error
-    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))  # pylint: disable=no-member
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
 def getCoreLimit():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     import resource  # module only available on POSIX  pylint: disable=import-error
-    return resource.getrlimit(resource.RLIMIT_CORE)  # pylint: disable=no-member
+    return resource.getrlimit(resource.RLIMIT_CORE)
 
 
 def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):  # pylint: disable=invalid-name,missing-param-doc
@@ -265,7 +265,7 @@ def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: dis
               'You can increase it with "ulimit -c" in bash.' % getCoreLimit()[0])
 
 
-def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=inconsistent-return-statements,invalid-name
+def constructCdbCommand(progfullname, crashedPID):  # pylint: disable=invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Construct a command that uses the Windows debugger (cdb.exe) to turn a minidump file into a stack trace."""
     assert platform.system() == "Windows"
@@ -403,7 +403,7 @@ def getAbsPathForAdjacentFile(filename):  # pylint: disable=invalid-name,missing
 
 
 def rmTreeIncludingReadOnly(dirTree):  # pylint: disable=invalid-name,missing-docstring
-    shutil.rmtree(dirTree, onerror=handleRemoveReadOnly)
+    shutil.rmtree(dirTree, onerror=handleRemoveReadOnly if platform.system() == "Windows" else None)
 
 
 def test_rmTreeIncludingReadOnly():  # pylint: disable=invalid-name

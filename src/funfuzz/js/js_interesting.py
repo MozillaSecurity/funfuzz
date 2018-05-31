@@ -15,11 +15,10 @@ import os
 import platform
 import sys
 
-# These pylint errors exist because FuzzManager is not Python 3-compatible yet
-from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
-import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
+from FTB.ProgramConfiguration import ProgramConfiguration
+import FTB.Signatures.CrashInfo as CrashInfo
 import lithium.interestingness.timed_run as timed_run
-from past.builtins import range  # pylint: disable=redefined-builtin
+from past.builtins import range
 from shellescape import quote
 from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
@@ -126,8 +125,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             for issue in issues:
                 err.append("[Non-crash bug] " + issue)
 
+        activated = False  # Turn on when trying to report *reliable* testcases that do not have a coredump
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
-        if not in_compare_jit and platform.system() == "Linux" and which("gdb") and not auxCrashData:
+        # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
+        # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
+        if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r") as f:
@@ -155,10 +157,14 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 "Bus error" in str(crashInfo.rawStderr):
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
 
-        match = options.collector.search(crashInfo)
-        if match[0] is not None:
-            create_collector.printMatchingSignature(match)
-            lev = JS_FINE
+        try:
+            match = options.collector.search(crashInfo)
+            if match[0] is not None:
+                create_collector.printMatchingSignature(match)
+                lev = JS_FINE
+        except UnicodeDecodeError:  # Sometimes FM throws due to unicode issues
+            print("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
+            match = False
 
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
@@ -214,7 +220,7 @@ def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missi
     return None
 
 
-def oomed(err):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they run out of memory
     for line in err:
         if hitMemoryLimit(line):
@@ -262,11 +268,11 @@ def ulimitSet():  # pylint: disable=invalid-name
 
     # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
     GB = 2**30  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))  # pylint: disable=no-member
+    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
 
     # Limit corefiles to 0.5 GB.
     halfGB = int(GB // 2)  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))  # pylint: disable=no-member
+    resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
 
 
 def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc

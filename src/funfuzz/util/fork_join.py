@@ -13,14 +13,13 @@ import multiprocessing
 import os
 import sys
 
-from past.builtins import range  # pylint: disable=redefined-builtin
+from past.builtins import range
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
-def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
+def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring
     def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
         print("==== %s ====" % fn)
         print()

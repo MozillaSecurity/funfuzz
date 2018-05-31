@@ -7,6 +7,27 @@
 
 from setuptools import setup
 
+EXTRAS = {}
+EXTRAS[':python_version=="2.7"'] = [
+    "mercurial>=4.5.3",
+    "backports.tempfile>=1.0",
+    "functools32>=3.2.3.post2",
+    "subprocess32>=3.5.0rc1",
+]
+EXTRAS["test"] = [
+    "codecov==2.0.15",
+    "coverage==4.5.1",
+    "flake8==3.5.0",
+    "flake8-isort==2.5",
+    "isort==4.3.4",
+    "pylint==1.9.1",
+    "pytest==3.6.0",
+    "pytest-cov==2.5.1",
+    "pytest-flake8==1.0.1",
+    "pytest-pylint==0.9.0",
+]
+
+
 if __name__ == "__main__":
     setup(name="funfuzz",
           version="0.5.0a1",
@@ -30,32 +51,15 @@ if __name__ == "__main__":
           ]},
           package_dir={"": "src"},
           install_requires=[
-              "backports.print_function==1.1.1",
-              "boto==2.48.0",
-              "codecov==2.0.15",
-              "configparser==3.5.0",
-              "coverage==4.5.1",
-              "flake8==3.5.0",
-              "flake8-isort==2.5",
-              "future==0.16.0",
-              "isort==4.3.4",
+              "backports.print_function>=1.1.1",
+              "boto>=2.48.0",
+              "configparser>=3.5.0",
+              "future>=0.16.0",
               "pathlib2>=2.1.0",
-              "psutil==5.4.5",
-              "pylint==1.8.4",
-              "pytest==3.5.1",
-              "pytest-cov==2.5.1",
-              "pytest-flake8==1.0.1",
-              "pytest-pylint==0.9.0",
-              "requests==2.18.4",
-              "shellescape==3.4.1",
-              "whichcraft==0.4.1",
+              "psutil>=5.4.5",
+              "requests>=2.18.4",
+              "shellescape>=3.4.1",
+              "whichcraft>=0.4.1",
           ],
-          extras_require={
-              ':python_version=="2.7"': [
-                  "backports.tempfile==1.0",
-                  "functools32==3.2.3.post2",
-                  "mercurial>=4.5.3",
-                  "subprocess32==3.5.0rc1",
-              ]
-          },
+          extras_require=EXTRAS,
           zip_safe=False)
