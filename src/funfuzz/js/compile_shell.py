@@ -7,10 +7,6 @@
 """Compiles SpiderMonkey shells on different platforms using various specified configuration parameters.
 """
 
-# reset ; rg -g '!*subprocesses.py' -g '!*crashesat.py' -g '!*s3cache.py' -g '!*test_shell_flags.py'
-#   -g '!*test_compile_shell.py' -g '!*known_broken*.py' -t py "import os$"
-# disable no-member pylint messages can be removed after https://github.com/PyCQA/pylint/issues/1660 lands on 1.8
-
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 from builtins import object  # pylint: disable=redefined-builtin
@@ -76,10 +72,10 @@ class CompiledShellError(Exception):
 class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-many-public-methods
     def __init__(self, build_opts, hg_hash):
         self.shell_name_without_ext = build_options.computeShellName(build_opts, hg_hash)
-        self.hg_hash = hg_hash  # pylint: disable=invalid-name
+        self.hg_hash = hg_hash
         self.build_opts = build_opts
 
-        self.js_objdir = ""  # pylint: disable=invalid-name
+        self.js_objdir = ""
 
         self.cfg = ""
         self.destDir = ""  # pylint: disable=invalid-name
@@ -158,7 +154,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
         return self.fullEnv
 
     def get_hg_hash(self):
-        """Retrieve the hash of the current changeset of the repository
+        """Retrieve the hash of the current changeset of the repository.
 
         Returns:
             str: Changeset hash

@@ -146,7 +146,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                         extracted_gdb_cmds.append("%s" % line.rstrip())
             no_main_log_gdb_log = subprocess.run(
                 (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
-                    [str(x) if isinstance(x, Path) else x for x in runthis]),
+                 [str(x) if isinstance(x, Path) else x for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE
