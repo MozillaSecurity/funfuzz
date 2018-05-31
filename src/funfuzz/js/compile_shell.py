@@ -759,7 +759,16 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
     try:
         if updateToRev:
-            updateRepo(shell.build_opts.repo_dir, updateToRev)
+            # Print *with* a trailing newline to avoid breaking other stuff
+            print("Updating to rev %s in the %s repository..." % (
+                updateToRev.decode("utf-8", errors="replace"),
+                shell.build_opts.repo_dir.decode("utf-8", errors="replace")))
+            subprocess.run(["hg", "-R", shell.build_opts.repo_dir, "update", "-C", "-r", updateToRev],
+                           check=True,
+                           # pylint: disable=no-member
+                           cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
+                           stderr=subprocess.DEVNULL,
+                           timeout=999)
         if shell.build_opts.patch_file:
             hg_helpers.patch_hg_repo_with_mq(shell.build_opts.patch_file, shell.get_repo_dir())
 
@@ -790,18 +799,6 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             txt_info = "-".join(str(shell.getS3TarballWithExt()).split("-")[:-1] + ["latest"]) + ".txt"
             s3cache_obj.uploadStrToS3("", txt_info, str(shell.getS3TarballWithExt()))
         shell.get_s3_tar_with_ext_full_path().unlink()
-
-
-def updateRepo(repo, rev):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Update repository to the specific revision."""
-    # Print *with* a trailing newline to avoid breaking other stuff
-    print("Updating to rev %s in the %s repository..." % (rev.decode("utf-8", errors="replace"),
-                                                          repo.decode("utf-8", errors="replace")))
-    subprocess.run(["hg", "-R", repo, "update", "-C", "-r", rev],
-                   check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
-                   stderr=subprocess.DEVNULL,
-                   timeout=999)
 
 
 def verify_full_win_pageheap(shell_path):
