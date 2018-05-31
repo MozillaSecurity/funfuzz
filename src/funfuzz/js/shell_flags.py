@@ -64,6 +64,14 @@ def add_random_arch_flags(shell_path, input_list=False):
     if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
         # m-c rev 165993:c450eb3abde4, see bug 965247
         input_list.append("--arm-sim-icache-checks")
+    if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
+        # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
+        # m-c rev 192164:f1bacafe789c, see bug 1020834
+        input_list.append("--arm-asm-nop-fill=1")
+    if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
+        # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
+        # m-c rev 190582:5399dc155c3b, see bug 1028008
+        input_list.append("--arm-hwcap=vfp")
 
     if shell_supports_flag(shell_path, "--enable-avx") and chance(.2):
         # m-c rev 223959:5e6e959f0043, see bug 1118235
@@ -129,6 +137,9 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     # --ion-sink=on is still not ready to be fuzzed
     # if chance(.2):  # m-c rev 217242:9188c8b7962b, see bug 1093674
     #     input_list.append("--ion-sink=" + ("on" if chance(.1) else "off"))
+    if chance(.2):  # m-c rev 204669:891d587c19c4, see bug 1063816
+        # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
+        input_list.append("--ion-warmup-threshold=100")
     if chance(.2):  # m-c rev 198804:aa33f4725177, see bug 1039458
         input_list.append("--ion-loop-unrolling=" + ("on" if chance(.9) else "off"))
     if chance(.2):  # m-c rev 194672:b2a822934b97, see bug 992845

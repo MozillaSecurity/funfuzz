@@ -48,6 +48,10 @@ class ShellFlagsTests(CompileShellTests):
         self.assertTrue("--no-sse3" in all_flags)
         if js.inspect_shell.queryBuildConfiguration(self.test_shell_compile(), "arm-simulator"):
             self.assertTrue("--arm-sim-icache-checks" in all_flags)
+        if js.inspect_shell.queryBuildConfiguration(self.test_shell_compile(), "arm-simulator"):
+            self.assertTrue("--arm-asm-nop-fill=1" in all_flags)
+        if js.inspect_shell.queryBuildConfiguration(self.test_shell_compile(), "arm-simulator"):
+            self.assertTrue("--arm-hwcap=vfp" in all_flags)
 
     @pytest.mark.slow
     def test_add_random_ion_flags(self):
@@ -65,6 +69,7 @@ class ShellFlagsTests(CompileShellTests):
         self.assertTrue('--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags)
         self.assertTrue("--ion-extra-checks" in all_flags)
         # self.assertTrue("--ion-sink=on" in all_flags)
+        self.assertTrue("--ion-warmup-threshold=100" in all_flags)
         self.assertTrue("--ion-loop-unrolling=on" in all_flags)
         self.assertTrue("--ion-scalar-replacement=on" in all_flags)
         self.assertTrue("--ion-check-range-analysis" in all_flags)
