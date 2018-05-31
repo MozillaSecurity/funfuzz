@@ -345,12 +345,12 @@ def get_random_valid_repo(tree):
     """Given a path to Mozilla Mercurial repositories, return a randomly chosen valid one.
 
     Args:
-        tree (str): Intended location of Mozilla Mercurial repositories
+        tree (Path): Intended location of Mozilla Mercurial repositories
 
     Returns:
         Path: Location of a valid Mozilla repository
     """
-    assert isinstance(tree, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
+    assert isinstance(tree, Path)
     tree = tree.resolve()
 
     valid_repos = []
