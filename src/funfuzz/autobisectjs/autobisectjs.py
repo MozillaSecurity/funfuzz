@@ -498,7 +498,7 @@ def rm_old_local_cached_dirs(cache_dir):
     Args:
         cache_dir (Path): Full path to the cache directory
     """
-    assert isinstance(cache_dir, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
+    assert isinstance(cache_dir, Path)
     cache_dir = cache_dir.expanduser()
 
     # This is in autobisectjs because it has a lock so we do not race while removing directories

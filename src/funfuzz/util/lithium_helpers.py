@@ -133,7 +133,6 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc,too-complex
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     """Reduce jsfunfuzz output files using Lithium by using various strategies."""
-    # RMassert isinstance(cacheDir, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
 
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name

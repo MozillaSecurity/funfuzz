@@ -363,7 +363,7 @@ def make_wtmp_dir(base_dir):
     Returns:
         Path: Full path to the numbered wtmp directory
     """
-    assert isinstance(base_dir, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
+    assert isinstance(base_dir, Path)
 
     i = 1
     while True:

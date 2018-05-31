@@ -99,7 +99,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # we also use it directly for knownPath, timeout, and collector
     # Return: (lev, crashInfo) or (js_interesting.JS_FINE, None)
 
-    assert isinstance(infilename, Path)  # We can remove casting Path to str after moving to Python 3.6+ completely
+    assert isinstance(infilename, Path)
 
     combos = shell_flags.basic_flag_sets(jsEngine)
 
