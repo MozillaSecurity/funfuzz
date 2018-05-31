@@ -29,9 +29,11 @@ else:
     import subprocess
 
 if sys.version_info.major == 2:
+    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
     from pathlib2 import Path
 else:
     from pathlib import Path  # pylint: disable=import-error
+    import tempfile
 
 gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
@@ -299,7 +301,6 @@ def interesting(_args, tempPrefix):  # pylint: disable=invalid-name
 
 
 def main():
-    import tempfile
     options = parseOptions(sys.argv[1:])
     print(compareLevel(
         options.jsengine, options.flags, options.infilename,  # pylint: disable=no-member
