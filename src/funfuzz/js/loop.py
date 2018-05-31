@@ -20,10 +20,8 @@ from . import compare_jit
 from . import js_interesting
 from . import link_fuzzer
 from . import shell_flags
-from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithium_helpers
-from ..util import subprocesses as sps
 
 if sys.version_info.major == 2:
     from pathlib2 import Path
