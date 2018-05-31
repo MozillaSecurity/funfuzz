@@ -134,11 +134,20 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
         return 0
 
-    def getCfgCmdExclEnv(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
+    def get_cfg_cmd_excl_env(self):
+        """Retrieve the configure command excluding the enviroment variables.
+
+        Returns:
+            list: Configure command
+        """
         return self.cfg
 
-    def setCfgCmdExclEnv(self, cfg):  # pylint: disable=invalid-name,missing-docstring
+    def set_cfg_cmd_excl_env(self, cfg):
+        """Sets the configure command excluding the enviroment variables.
+
+        Args:
+            cfg (list): Configure command
+        """
         self.cfg = cfg
 
     def setEnvAdded(self, addedEnv):  # pylint: disable=invalid-name,missing-docstring
@@ -535,7 +544,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
 
     shell.setEnvAdded(env_vars)
     shell.setEnvFull(cfg_env)
-    shell.setCfgCmdExclEnv(cfg_cmds)
+    shell.set_cfg_cmd_excl_env(cfg_cmds)
 
 
 def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
@@ -621,7 +630,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
 
         f.write("# Full configuration command with needed environment variables is:\n")
         f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.getEnvAdded()),
-                                   " ".join(quote(str(x)) for x in shell.getCfgCmdExclEnv())))
+                                   " ".join(quote(str(x)) for x in shell.get_cfg_cmd_excl_env())))
 
         # .fuzzmanagerconf details
         f.write("\n")
