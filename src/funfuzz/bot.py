@@ -236,7 +236,6 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
 
     # Ordering of elements in manyTimedRunArgs is important.
     manyTimedRunArgs.append(str(options.timeout))
-    manyTimedRunArgs.append(cshell.getRepoName())  # known bugs' directory
     manyTimedRunArgs.append(cshell.getShellCacheFullPath())
     return manyTimedRunArgs
 

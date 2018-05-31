@@ -25,7 +25,6 @@ from ..util import create_collector
 from ..util import lithium_helpers
 from ..util import subprocesses as sps
 
-gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
 
@@ -56,7 +55,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
 
     if lev != js_interesting.JS_FINE:
         itest = [__name__, "--flags=" + " ".join(flags),
-                 "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
+                 "--minlevel=" + str(lev), "--timeout=" + str(options.timeout)]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
@@ -85,7 +84,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
 
     # options dict must be one we can pass to js_interesting.ShellResult
-    # we also use it directly for knownPath, timeout, and collector
+    # we also use it directly for timeout, and collector
     # Return: (lev, crashInfo) or (js_interesting.JS_FINE, None)
 
     combos = shell_flags.basic_flag_sets(jsEngine)
@@ -166,7 +165,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 rerunCommand = " ".join(quote(x) for x in ["python -m funfuzz.js.compare_jit",
                                                            "--flags=" + " ".join(flags),
                                                            "--timeout=" + str(options.timeout),
-                                                           options.knownPath,
                                                            jsEngine,
                                                            os.path.basename(infilename)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
@@ -247,11 +245,8 @@ def parseOptions(args):  # pylint: disable=invalid-name
                       default="",
                       help="space-separated list of one set of flags")
     options, args = parser.parse_args(args)
-    if len(args) != 3:
-        raise Exception("Wrong number of positional arguments. Need 3 (knownPath, jsengine, infilename).")
-    options.knownPath = args[0]
-    options.jsengine = args[1]
-    options.infilename = args[2]
+    options.jsengine = args[0]
+    options.infilename = args[1]
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not os.path.exists(options.jsengine):
         raise Exception("js shell does not exist: " + options.jsengine)
@@ -264,17 +259,10 @@ def parseOptions(args):  # pylint: disable=invalid-name
     return options
 
 
-# For use by Lithium and autobisectjs. (autobisectjs calls init multiple times because it changes the js engine name)
-def init(args):
-    global gOptions  # pylint: disable=invalid-name,global-statement
-    gOptions = parseOptions(args)
-
-
-# FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name
+def interesting(opts, tempPrefix):  # pylint: disable=invalid-name
     actualLevel = compareLevel(  # pylint: disable=invalid-name
-        gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
-    return actualLevel >= gOptions.minimumInterestingLevel
+        opts.jsengine, opts.flags, opts.infilename, tempPrefix, opts, False, False)[0]
+    return actualLevel >= opts.minimumInterestingLevel
 
 
 def main():

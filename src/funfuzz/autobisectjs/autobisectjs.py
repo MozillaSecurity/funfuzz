@@ -23,8 +23,10 @@ from lithium.interestingness.utils import rel_or_abs_import
 
 from . import known_broken_earliest_working as kbew
 from ..js import build_options
+from ..js import compare_jit
 from ..js import compile_shell
 from ..js import inspect_shell
+from ..js import js_interesting
 from ..util import hg_helpers
 from ..util import s3cache
 from ..util import subprocesses as sps
@@ -305,7 +307,8 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
 def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Make use of interestingness scripts to decide whether the changeset is good or bad."""
-    conditionScript = rel_or_abs_import(interestingness[0])  # pylint: disable=invalid-name
+    interestingness_name = interestingness[0]
+    conditionScript = rel_or_abs_import(interestingness_name)  # pylint: disable=invalid-name
     conditionArgPrefix = interestingness[1:]  # pylint: disable=invalid-name
 
     def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
@@ -313,10 +316,16 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
         conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList  # pylint: disable=invalid-name
         tempDir = tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash)  # pylint: disable=invalid-name
         tempPrefix = os.path.join(tempDir, "t")  # pylint: disable=invalid-name
-        if hasattr(conditionScript, "init"):
-            # Since we're changing the js shell name, call init() again!
-            conditionScript.init(conditionArgs)
-        if conditionScript.interesting(conditionArgs, tempPrefix):
+
+        assert "js_interesting" in interestingness_name or "compare_jit" in interestingness_name
+        if "js_interesting" in interestingness_name:
+            opts = js_interesting.parseOptions(conditionArgs)
+        elif "compare_jit" in interestingness_name:
+            opts = compare_jit.parseOptions(conditionArgs)
+        else:
+            raise ValueError("Invalid condition script specified: %s" % interestingness_name)
+
+        if conditionScript.interesting(opts, tempPrefix):
             innerResult = ("bad", "interesting")  # pylint: disable=invalid-name
         else:
             innerResult = ("good", "not interesting")  # pylint: disable=invalid-name

@@ -24,7 +24,7 @@ from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can
 
 from . import inspect_shell
 from ..util import create_collector
-from ..util import detect_malloc_errors
+from ..util import file_manipulation
 from ..util import subprocesses as sps
 
 if sys.version_info.major == 2:
@@ -59,13 +59,12 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
 ) = range(JS_LEVELS)
 
 
-gOptions = ""  # pylint: disable=invalid-name
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
 class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
 
-    # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
+    # options dict should include: timeout, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
         # pylint: disable=too-many-locals,too-many-statements
         pathToBinary = runthis[0]  # pylint: disable=invalid-name
@@ -108,7 +107,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             if sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True):
                 with open(logPrefix + "-crash.txt") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
-        elif detect_malloc_errors.amiss(logPrefix):
+        elif file_manipulation.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         elif runinfo.return_code == 0 and not in_compare_jit:
@@ -296,10 +295,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
                       default=120,
                       help="timeout in seconds")
     options, args = parser.parse_args(args)
-    if len(args) < 2:
-        raise Exception("Not enough positional arguments")
-    options.knownPath = args[0]
-    options.jsengineWithArgs = args[1:]
+    options.jsengineWithArgs = args
     options.collector = create_collector.createCollector("jsfunfuzz")
     if not os.path.exists(options.jsengineWithArgs[0]):
         raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
@@ -312,21 +308,12 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
 # loop uses parseOptions and ShellResult [with in_compare_jit = False]
 # compare_jit uses ShellResult [with in_compare_jit = True]
 
-# For use by Lithium and autobisectjs. (autobisectjs calls init multiple times because it changes the js engine name)
-def init(args):  # pylint: disable=missing-docstring
-    global gOptions  # pylint: disable=global-statement,invalid-name
-    gOptions = parseOptions(args)
-
-
-# FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def interesting(opts, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    options = gOptions
-    # options, runthis, logPrefix, in_compare_jit
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
+    res = ShellResult(opts, opts.jsengineWithArgs, tempPrefix, False)
     truncateFile(tempPrefix + "-out.txt", 1000000)
     truncateFile(tempPrefix + "-err.txt", 1000000)
-    return res.lev >= gOptions.minimumInterestingLevel
+    return res.lev >= opts.minimumInterestingLevel
 
 
 # For direct, manual use

@@ -10,6 +10,25 @@
 from __future__ import absolute_import, print_function  # isort:skip
 
 
+def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+    """Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
+    which are signs of malloc being unhappy (double free, out-of-memory, etc).
+    """
+    found_something = False
+    with open(log_prefix + "-err.txt") as f:
+        for line in f:
+            line = line.strip("\x07").rstrip("\n")
+            if (line.find("szone_error") != -1 or
+                    line.find("malloc_error_break") != -1 or
+                    line.find("MallocHelp") != -1):
+                print()
+                print(line)
+                found_something = True
+                break  # Don't flood the log with repeated malloc failures
+
+    return found_something
+
+
 def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
