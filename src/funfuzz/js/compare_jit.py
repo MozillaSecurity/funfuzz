@@ -23,16 +23,14 @@ from . import shell_flags
 from ..util import create_collector
 from ..util import lithium_helpers
 
-if sys.version_info.major == 2 and os.name == "posix":
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
-
 if sys.version_info.major == 2:
     import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
     from pathlib2 import Path
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
+    import subprocess
     import tempfile
 
 gOptions = ""  # pylint: disable=invalid-name
