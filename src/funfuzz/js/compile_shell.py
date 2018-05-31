@@ -77,7 +77,7 @@ class CompiledShell(object):  # pylint: disable=missing-docstring,too-many-insta
 
         self.js_objdir = ""
 
-        self.cfg = ""
+        self.cfg = []
         self.destDir = ""  # pylint: disable=invalid-name
         self.addedEnv = ""  # pylint: disable=invalid-name
         self.fullEnv = ""  # pylint: disable=invalid-name
