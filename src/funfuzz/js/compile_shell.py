@@ -89,7 +89,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.full_env = ""
         self.js_cfg_file = ""
 
-        self.jsVersion = ""  # pylint: disable=invalid-name
+        self.js_version = ""  # pylint: disable=invalid-name
 
     @classmethod
     def main(cls, args=None):
@@ -318,11 +318,21 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         """
         return self.shell_name_without_ext
 
-    def getVersion(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        return self.jsVersion
+    def get_version(self):
+        """Retrieve the version number of the js shell as extracted from js.pc
 
-    def setVersion(self, jsVersion):  # pylint: disable=invalid-name,missing-docstring
-        self.jsVersion = jsVersion
+        Returns:
+            str: Version number of the js shell
+        """
+        return self.js_version
+
+    def set_version(self, js_version):
+        """Set the version number of the js shell as extracted from js.pc
+
+        Args:
+            js_version (str): Version number of the js shell
+        """
+        self.js_version = js_version
 
 
 def ensure_cache_dir(base_dir):
@@ -624,7 +634,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
 
         version = extract_vers(shell.get_js_objdir())
-        shell.setVersion(version)
+        shell.set_version(version)
 
         if platform.system() == "Linux":
             # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
@@ -683,9 +693,9 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("\n")
         f.write("[Metadata]\n")
         f.write("buildFlags = %s\n" % shell.build_opts.build_options_str)
-        f.write("majorVersion = %s\n" % shell.getVersion().split(".")[0])
+        f.write("majorVersion = %s\n" % shell.get_version().split(".")[0])
         f.write("pathPrefix = %s/\n" % shell.get_repo_dir())
-        f.write("version = %s\n" % shell.getVersion())
+        f.write("version = %s\n" % shell.get_version())
 
 
 def extract_vers(objdir):  # pylint: disable=inconsistent-return-statements
