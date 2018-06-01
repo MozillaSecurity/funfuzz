@@ -58,6 +58,9 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     # pylint: disable=too-many-arguments,too-many-locals
 
+    # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
+    if not isinstance(logPrefix, Path):
+        logPrefix = Path(logPrefix)
     initialdir_name = (logPrefix.parent / (logPrefix.stem + "-initial"))
     # pylint: disable=invalid-name
     cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, True)

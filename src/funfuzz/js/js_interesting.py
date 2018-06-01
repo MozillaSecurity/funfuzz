@@ -68,6 +68,10 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
         # pylint: disable=too-many-locals,too-many-statements
+
+        # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
+        if not isinstance(logPrefix, Path):
+            logPrefix = Path(logPrefix)
         pathToBinary = runthis[0].resolve()  # pylint: disable=invalid-name
         # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like "./js"
