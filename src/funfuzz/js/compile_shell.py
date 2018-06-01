@@ -86,7 +86,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.cfg = []
         self.destDir = ""  # pylint: disable=invalid-name
         self.added_env = ""
-        self.fullEnv = ""  # pylint: disable=invalid-name
+        self.full_env = ""
         self.js_cfg_file = ""
 
         self.jsMajorVersion = ""  # pylint: disable=invalid-name
@@ -187,11 +187,21 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         """
         return self.added_env
 
-    def setEnvFull(self, fullEnv):  # pylint: disable=invalid-name,missing-docstring
-        self.fullEnv = fullEnv
+    def set_env_full(self, full_env):
+        """Set the full environment including the newly added variables.
 
-    def getEnvFull(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        return self.fullEnv
+        Args:
+            full_env (list): Full environment
+        """
+        self.full_env = full_env
+
+    def get_env_full(self):
+        """Retrieve the full environment including the newly added variables.
+
+        Returns:
+            list: Full environment
+        """
+        return self.full_env
 
     def get_hg_hash(self):
         """Retrieve the hash of the current changeset of the repository.
@@ -574,7 +584,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     # We could save the stdout here into a file if it throws
 
     shell.set_env_added(env_vars)
-    shell.setEnvFull(cfg_env)
+    shell.set_env_full(cfg_env)
     shell.set_cfg_cmd_excl_env(cfg_cmds)
 
 
@@ -584,7 +594,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
         cmd_list = [MAKE_BINARY, "-C", str(shell.get_js_objdir()), "-j" + str(COMPILATION_JOBS), "-s"]
         out = subprocess.run(cmd_list,
                              cwd=str(shell.get_js_objdir()),
-                             env=shell.getEnvFull(),
+                             env=shell.get_env_full(),
                              stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     except Exception as ex:  # pylint: disable=broad-except
@@ -595,7 +605,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
             print("Trying once more due to the compiler running out of memory...")
             out = subprocess.run(cmd_list,
                                  cwd=str(shell.get_js_objdir()),
-                                 env=shell.getEnvFull(),
+                                 env=shell.get_env_full(),
                                  stderr=subprocess.STDOUT,
                                  stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
@@ -657,7 +667,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
                                                            shell.build_opts.build_options_str, shell.get_hg_hash()))
 
         f.write("# Full environment is:\n")
-        f.write("# %s\n# \n" % str(shell.getEnvFull()))
+        f.write("# %s\n# \n" % str(shell.get_env_full()))
 
         f.write("# Full configuration command with needed environment variables is:\n")
         f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.get_env_added()),
