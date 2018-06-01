@@ -89,7 +89,6 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.full_env = ""
         self.js_cfg_file = ""
 
-        self.jsMajorVersion = ""  # pylint: disable=invalid-name
         self.jsVersion = ""  # pylint: disable=invalid-name
 
     @classmethod
@@ -318,14 +317,6 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
             str: Name of the compiled js shell without the file extension
         """
         return self.shell_name_without_ext
-
-    # Version numbers
-    def getMajorVersion(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
-        return self.jsMajorVersion
-
-    def setMajorVersion(self, jsMajorVersion):  # pylint: disable=invalid-name,missing-docstring
-        self.jsMajorVersion = jsMajorVersion
 
     def getVersion(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         return self.jsVersion
@@ -633,7 +624,6 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
 
         version = extract_vers(shell.get_js_objdir())
-        shell.setMajorVersion(version.split(".")[0])
         shell.setVersion(version)
 
         if platform.system() == "Linux":
@@ -693,7 +683,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("\n")
         f.write("[Metadata]\n")
         f.write("buildFlags = %s\n" % shell.build_opts.build_options_str)
-        f.write("majorVersion = %s\n" % shell.getMajorVersion())
+        f.write("majorVersion = %s\n" % shell.getVersion().split(".")[0])
         f.write("pathPrefix = %s/\n" % shell.get_repo_dir())
         f.write("version = %s\n" % shell.getVersion())
 
