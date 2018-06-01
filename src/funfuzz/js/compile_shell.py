@@ -325,7 +325,7 @@ def autoconf_run(working_dir):
     if platform.system() == "Darwin":
         autoconf213_mac_bin = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213" if which("brew") else "autoconf213"
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
-        if not Path(autoconf213_mac_bin).is_file():
+        if not Path(which(autoconf213_mac_bin)).is_file():
             autoconf213_mac_bin = "autoconf213"
         subprocess.run([autoconf213_mac_bin], check=True, cwd=str(working_dir))
     elif platform.system() == "Linux":
