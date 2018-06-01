@@ -20,11 +20,13 @@ from funfuzz import js
 from funfuzz import util
 
 if sys.version_info.major == 2:
+    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
     from functools32 import lru_cache  # pylint: disable=import-error
     from pathlib2 import Path
 else:
     from functools import lru_cache  # pylint: disable=no-name-in-module
     from pathlib import Path  # pylint: disable=import-error
+    import tempfile
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
