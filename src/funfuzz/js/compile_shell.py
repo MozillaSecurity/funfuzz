@@ -85,7 +85,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
 
         self.cfg = []
         self.destDir = ""  # pylint: disable=invalid-name
-        self.addedEnv = ""  # pylint: disable=invalid-name
+        self.added_env = ""
         self.fullEnv = ""  # pylint: disable=invalid-name
         self.js_cfg_file = ""  # pylint: disable=invalid-name
 
@@ -156,11 +156,21 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         """
         self.cfg = cfg
 
-    def setEnvAdded(self, addedEnv):  # pylint: disable=invalid-name,missing-docstring
-        self.addedEnv = addedEnv
+    def set_env_added(self, added_env):
+        """Set environment variables that were added.
 
-    def getEnvAdded(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-        return self.addedEnv
+        Args:
+            added_env (list): Added environment variables
+        """
+        self.added_env = added_env
+
+    def get_env_added(self):
+        """Retrieve environment variables that were added.
+
+        Returns:
+            list: Added environment variables
+        """
+        return self.added_env
 
     def setEnvFull(self, fullEnv):  # pylint: disable=invalid-name,missing-docstring
         self.fullEnv = fullEnv
@@ -548,7 +558,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
 
     # We could save the stdout here into a file if it throws
 
-    shell.setEnvAdded(env_vars)
+    shell.set_env_added(env_vars)
     shell.setEnvFull(cfg_env)
     shell.set_cfg_cmd_excl_env(cfg_cmds)
 
@@ -635,7 +645,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# %s\n# \n" % str(shell.getEnvFull()))
 
         f.write("# Full configuration command with needed environment variables is:\n")
-        f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.getEnvAdded()),
+        f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.get_env_added()),
                                    " ".join(quote(str(x)) for x in shell.get_cfg_cmd_excl_env())))
 
         # .fuzzmanagerconf details
