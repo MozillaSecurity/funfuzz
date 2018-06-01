@@ -52,12 +52,13 @@ def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,mis
     return lines
 
 
-# For use by loop
-# Returns True if any kind of bug is found
-def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
-    # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    # pylint: disable=too-many-arguments,too-many-locals
+def compare_jit(jsEngine,  # pylint: disable=invalid-name,too-many-arguments,too-many-locals
+                flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
+    """For use in loop.py
 
+    Returns:
+        bool: True if any kind of bug is found, otherwise False
+    """
     # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
     if not isinstance(logPrefix, Path):
         logPrefix = Path(logPrefix)
