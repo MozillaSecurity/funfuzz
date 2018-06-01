@@ -93,7 +93,15 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.jsVersion = ""  # pylint: disable=invalid-name
 
     @classmethod
-    def main(cls, args=None):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
+    def main(cls, args=None):
+        """Main function of CompiledShell class.
+
+        Args:
+            args (object): Additional parameters
+
+        Returns:
+            int: 0, to denote a successful compile and 1, to denote a failed compile
+        """
         # logging.basicConfig(format="%(message)s", level=logging.INFO)
 
         try:
@@ -105,8 +113,15 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
             return 1
 
     @staticmethod
-    def run(argv=None):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
-        """Build a shell and place it in the autobisectjs cache."""
+    def run(argv=None):
+        """Build a shell and place it in the autobisectjs cache.
+
+        Args:
+            argv (object): Additional parameters
+
+        Returns:
+            int: 0, to denote a successful compile
+        """
         usage = "Usage: %prog [options]"
         parser = OptionParser(usage)
         parser.disable_interspersed_args()
