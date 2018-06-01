@@ -46,7 +46,7 @@ if platform.system() == "Windows":
     else:
         raise OSError("Git binary not found")
 else:
-    GITBINARY = "git"
+    GITBINARY = str("git")
 
 
 def time_cmd(cmd, cwd=None, env=None, timeout=None):
