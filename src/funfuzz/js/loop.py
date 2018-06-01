@@ -12,7 +12,6 @@ from __future__ import absolute_import, print_function  # isort:skip
 import json
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
-import subprocess
 import sys
 import time
 
@@ -24,9 +23,12 @@ from ..util import file_manipulation
 from ..util import lithium_helpers
 
 if sys.version_info.major == 2:
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
     from pathlib2 import Path
 else:
     from pathlib import Path  # pylint: disable=import-error
+    import subprocess
 
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -86,7 +88,7 @@ def showtail(filename):  # pylint: disable=missing-docstring
     cmd.append(str(filename))
     print(" ".join(cmd))
     print()
-    subprocess.check_call(cmd)
+    subprocess.run(cmd, check=True)
     print()
     print()
 

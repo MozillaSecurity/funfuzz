@@ -184,7 +184,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         sps.vdump(" ".join(dbggr_cmd))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
-        dbbgr_exit_code = subprocess.call(
+        dbbgr_exit_code = subprocess.run(
             dbggr_cmd,
             stdin=None,
             stderr=subprocess.STDOUT,
@@ -200,9 +200,9 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         if use_logfiles:
             if core_file.is_file():
                 shutil.move(str(core_file), str(core_file))
-                subprocess.call(["gzip", "-f", str(core_file)])
+                subprocess.run(["gzip", "-f", str(core_file)], check=True)
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.check_call(["chmod", "og+r", "%s.gz" % core_file])
+                subprocess.run(["chmod", "og+r", "%s.gz" % core_file], check=True)
             return str(crash_log)
         else:
             print("I don't know what to do with a core file when log_prefix is null")

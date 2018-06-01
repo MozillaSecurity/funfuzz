@@ -196,9 +196,9 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
-        subprocess.check_call(hgPrefix + ["update", "-C", "default"])
+        subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
         # Throws exit code 255 if purge extension is not enabled in .hgrc:
-        subprocess.check_call(hgPrefix + ["purge", "--all"])
+        subprocess.run(hgPrefix + ["purge", "--all"], check=True)
 
     # Reset bisect ranges and set skip ranges.
     subprocess.run(hgPrefix + ["bisect", "-r"],
@@ -218,7 +218,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     else:
         labels[sRepo] = ("good", "assumed start rev is good")
         labels[eRepo] = ("bad", "assumed end rev is bad")
-        subprocess.check_call(hgPrefix + ["bisect", "-U", "-g", sRepo])
+        subprocess.run(hgPrefix + ["bisect", "-U", "-g", sRepo], check=True)
         mid_bisect_output = subprocess.run(
             hgPrefix + ["bisect", "-U", "-b", eRepo],
             check=True,
@@ -273,7 +273,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
                           realEndRepo)
 
     sps.vdump("Resetting bisect")
-    subprocess.check_call(hgPrefix + ["bisect", "-U", "-r"])
+    subprocess.run(hgPrefix + ["bisect", "-U", "-r"], check=True)
 
     sps.vdump("Resetting working directory")
     subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
@@ -475,7 +475,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
         print_("Resetting to default revision...", flush=True)
-        subprocess.check_call(hgPrefix + ["update", "-C", "default"])
+        subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
         hg_helpers.destroyPyc(repo_dir)
         raise Exception("hg did not suggest a changeset to test!")
 

@@ -9,9 +9,9 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 
@@ -25,9 +25,12 @@ from ..js.js_interesting import JS_OVERALL_MISMATCH
 from ..js.js_interesting import JS_VG_AMISS
 
 if sys.version_info.major == 2:
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
     from pathlib2 import Path
 else:
     from pathlib import Path  # pylint: disable=import-error
+    import subprocess
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
@@ -66,7 +69,8 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         )
         print(" ".join(quote(str(x)) for x in autobisectCmd))
         autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
-        subprocess.call(autobisectCmd, stdout=open(str(autobisect_log), "w"), stderr=subprocess.STDOUT)
+        with open(str(autobisect_log), "w") as f:
+            subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
         print("Done running autobisectjs. Log: %s" % autobisect_log)
 
         with open(str(autobisect_log), "r") as f:
@@ -98,12 +102,13 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
     print("Preparing to run Lithium, log file %s" % lithlogfn)
     print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
-    subprocess.call(runlithiumpy + lithArgs, stdout=open(str(lithlogfn), "w"), stderr=subprocess.STDOUT)
+    with open(str(lithlogfn), "w") as f:
+        subprocess.run(runlithiumpy + lithArgs, stderr=subprocess.STDOUT, stdout=f)
     print("Done running Lithium")
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)
     r = readLithiumResult(lithlogfn)  # pylint: disable=invalid-name
-    subprocess.call(["gzip", "-f", str(lithlogfn)])
+    subprocess.run(["gzip", "-f", str(lithlogfn)], check=True)
     return r
 
 

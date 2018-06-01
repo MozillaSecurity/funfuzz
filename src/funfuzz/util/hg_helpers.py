@@ -147,7 +147,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
             print("Aborting...")
             sys.exit(0)
         elif update_default == "d":
-            subprocess.check_call(["hg", "-R", str(repo_dir), "update", "default"])
+            subprocess.run(["hg", "-R", str(repo_dir), "update", "default"], check=True)
             is_on_default = True
         elif update_default == "u":
             hg_log_template_cmds = ["hg", "-R", str(repo_dir), "log", "-r", "parents()", "--template",
@@ -229,8 +229,8 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
         qpop_qrm_applied_patch(patch_file, repo_dir)
         print("You may have untracked .rej or .orig files in the repository.")
         print("`hg status` output of the repository of interesting files in %s :" % repo_dir)
-        subprocess.check_call(["hg", "-R", str(repo_dir), "status", "--modified", "--added",
-                               "--removed", "--deleted"])
+        subprocess.run(["hg", "-R", str(repo_dir), "status", "--modified", "--added",
+                        "--removed", "--deleted"], check=True)
         raise OSError("Return code from `hg qpush` is: " + str(qpush_return_code))
 
     print("Patch qpush'ed. Continuing...", end=" ")
@@ -259,5 +259,5 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
         raise OSError("Return code from `hg qpop` is: " + str(qpop_return_code))
 
     print("Patch qpop'ed...", end=" ")
-    subprocess.check_call(["hg", "-R", str(repo_dir), "qdelete", patch_file.name])
+    subprocess.run(["hg", "-R", str(repo_dir), "qdelete", patch_file.name], check=True)
     print("Patch qdelete'd.")

@@ -7,17 +7,23 @@
 """Loop of { update repos, call bot } to allow things to run unattended
 All command-line options are passed through to bot
 
-Since this script updates the fuzzing repo, it should be very simple, and use subprocess.call() rather than import
+This script used to update funfuzz itself (when run as scripts, no longer supported)
+so it uses subprocess.run() rather than import
 
 Config-ish bits should move to bot, OR move into a config file,
-OR this file should subprocess-call ITSELF rather than using a while loop.
+OR this file should subprocess-run ITSELF rather than using a while loop.
 """
 
 from __future__ import absolute_import, print_function  # isort:skip
 
-import subprocess
+import os
 import sys
 import time
+
+if sys.version_info.major == 2 and os.name == "posix":
+    import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    import subprocess
 
 
 def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-type-doc
@@ -29,7 +35,7 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
         print("localLoop #%d!" % i)
         for cmd in cmd_seq:
             try:
-                subprocess.check_call(cmd)
+                subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
                 print("Something went wrong when calling: %r" % (cmd,))
                 print("%r" % (ex,))

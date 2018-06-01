@@ -317,7 +317,7 @@ def autoconf_run(working_dir):
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
         if not Path(autoconf213_mac_bin).is_file():
             autoconf213_mac_bin = "autoconf213"
-        subprocess.check_call([autoconf213_mac_bin], cwd=str(working_dir))
+        subprocess.run([autoconf213_mac_bin], check=True, cwd=str(working_dir))
     elif platform.system() == "Linux":
         if which("autoconf2.13"):
             subprocess.run(["autoconf2.13"], check=True, cwd=str(working_dir))
@@ -327,7 +327,7 @@ def autoconf_run(working_dir):
             subprocess.run(["autoconf213"], check=True, cwd=str(working_dir))
     elif platform.system() == "Windows":
         # Windows needs to call sh to be able to find autoconf.
-        subprocess.check_call(["sh", "autoconf-2.13"], cwd=str(working_dir))
+        subprocess.run(["sh", "autoconf-2.13"], check=True, cwd=str(working_dir))
 
 
 def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
@@ -811,8 +811,11 @@ def verify_full_win_pageheap(shell_path):
     # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
     gflags_bin_path = Path(os.getenv("PROGRAMW6432")) / "Debugging Tools for Windows (x64)" / "gflags.exe"
     if gflags_bin_path.is_file() and shell_path.is_file():  # pylint: disable=no-member
-        print(subprocess.check_output([str(gflags_bin_path).decode("utf-8", errors="replace"),
-                                       "-p", "/enable", shell_path.decode("utf-8", errors="replace"), "/full"]))
+        print(subprocess.run([str(gflags_bin_path).decode("utf-8", errors="replace"),
+                              "-p", "/enable", shell_path.decode("utf-8", errors="replace"), "/full"],
+                             check=True,
+                             stderr=subprocess.STDOUT,
+                             stdout=subprocess.PIPE).stdout)
 
 
 def main():
