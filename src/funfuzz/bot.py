@@ -207,7 +207,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                     options.build_options.build_options_str,
                     options.build_options.repo_dir,
                     bRev,
-                    cshell.getRepoName(),
+                    cshell.get_repo_name(),
                     time.asctime()
                 ))
 
@@ -242,6 +242,6 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
 
     # Ordering of elements in manyTimedRunArgs is important.
     manyTimedRunArgs.append(str(options.timeout))
-    manyTimedRunArgs.append(cshell.getRepoName())  # known bugs' directory
+    manyTimedRunArgs.append(cshell.get_repo_name())  # known bugs' directory
     manyTimedRunArgs.append(cshell.get_shell_cache_js_bin_path())
     return manyTimedRunArgs

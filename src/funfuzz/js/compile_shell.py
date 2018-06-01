@@ -244,7 +244,12 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         """
         return self.build_opts.repo_dir
 
-    def getRepoName(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    def get_repo_name(self):
+        """Retrieve the name of a Mercurial repository.
+
+        Returns:
+            str: Name of the repository
+        """
         return hg_helpers.hgrc_repo_name(self.build_opts.repo_dir)
 
     def getS3TarballWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
@@ -677,7 +682,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("\n")
         f.write("[Main]\n")
         f.write("platform = %s\n" % fmconf_platform)
-        f.write("product = %s\n" % shell.getRepoName())
+        f.write("product = %s\n" % shell.get_repo_name())
         f.write("product_version = %s\n" % shell.get_hg_hash())
         f.write("os = %s\n" % fmconf_os)
 
