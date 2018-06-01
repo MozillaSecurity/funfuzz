@@ -87,7 +87,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.destDir = ""  # pylint: disable=invalid-name
         self.added_env = ""
         self.fullEnv = ""  # pylint: disable=invalid-name
-        self.js_cfg_file = ""  # pylint: disable=invalid-name
+        self.js_cfg_file = ""
 
         self.jsMajorVersion = ""  # pylint: disable=invalid-name
         self.jsVersion = ""  # pylint: disable=invalid-name
