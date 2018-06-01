@@ -37,6 +37,18 @@ class CompileShellTests(unittest.TestCase):
     mc_hg_repo = Path.home() / "trees" / "mozilla-central"
     shell_cache = Path.home() / "shell-cache"
 
+    def test_autoconf_run():  # pylint: disable=no-method-argument
+        """Test the autoconf runs properly."""
+        with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:
+            tmp_dir = Path(tmp_dir)
+
+            (tmp_dir / "configure.in").touch()  # configure.in is required by autoconf2.13
+            js.compile_shell.autoconf_run(tmp_dir)
+
+    def test_ensure_cache_dir(self):
+        """Test the shell-cache dir is created properly if it does not exist."""
+        self.assertTrue(js.compile_shell.ensure_cache_dir().is_dir())
+
     @pytest.mark.slow
     @lru_cache(maxsize=None)
     def test_shell_compile(self):
