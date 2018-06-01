@@ -337,13 +337,13 @@ def init(args):  # pylint: disable=missing-docstring
 
 
 # FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
-    out_log = (tempPrefix.parent / (tempPrefix.stem + "-out")).with_suffix(".txt")
-    err_log = (tempPrefix.parent / (tempPrefix.stem + "-err")).with_suffix(".txt")
+    res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)
+    out_log = (cwd_prefix.parent / (cwd_prefix.stem + "-out")).with_suffix(".txt")
+    err_log = (cwd_prefix.parent / (cwd_prefix.stem + "-err")).with_suffix(".txt")
     truncateFile(out_log, 1000000)
     truncateFile(err_log, 1000000)
     return res.lev >= gOptions.minimumInterestingLevel
@@ -352,8 +352,8 @@ def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docs
 # For direct, manual use
 def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
-    tempPrefix = "m"  # pylint: disable=invalid-name
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)  # pylint: disable=no-member
+    cwd_prefix = "m"
+    res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)  # pylint: disable=no-member
     print(res.lev)
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member

@@ -295,9 +295,9 @@ def init(args):
 
 
 # FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name
+def interesting(_args, cwd_prefix):
     actualLevel = compareLevel(  # pylint: disable=invalid-name
-        gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
+        gOptions.jsengine, gOptions.flags, gOptions.infilename, cwd_prefix, gOptions, False, False)[0]
     return actualLevel >= gOptions.minimumInterestingLevel
 
 
