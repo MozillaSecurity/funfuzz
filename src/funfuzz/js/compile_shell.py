@@ -252,8 +252,12 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         """
         return hg_helpers.hgrc_repo_name(self.build_opts.repo_dir)
 
-    def getS3TarballWithExt(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
+    def get_s3_tar_name_with_ext(self):
+        """Retrieve the name of the compressed shell tarball to be obtained from/sent to S3.
+
+        Returns:
+            str: Name of the tarball
+        """
         return self.get_shell_name_without_ext() + ".tar.bz2"
 
     def get_s3_tar_with_ext_full_path(self):
@@ -262,7 +266,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             Path: Full path to the tarball in the local shell cache directory
         """
-        return ensure_cache_dir(Path.home()) / self.getS3TarballWithExt()
+        return ensure_cache_dir(Path.home()) / self.get_s3_tar_name_with_ext()
 
     def get_shell_cache_dir(self):
         """Retrieve the shell cache directory of the intended js binary.
@@ -836,8 +840,8 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if updateLatestTxt:
             # So js-dbg-64-dm-darwin-cdcd33fd6e39 becomes js-dbg-64-dm-darwin-latest.txt with
             # js-dbg-64-dm-darwin-cdcd33fd6e39 as its contents.
-            txt_info = "-".join(str(shell.getS3TarballWithExt()).split("-")[:-1] + ["latest"]) + ".txt"
-            s3cache_obj.uploadStrToS3("", txt_info, str(shell.getS3TarballWithExt()))
+            txt_info = "-".join(str(shell.get_s3_tar_name_with_ext()).split("-")[:-1] + ["latest"]) + ".txt"
+            s3cache_obj.uploadStrToS3("", txt_info, str(shell.get_s3_tar_name_with_ext()))
         shell.get_s3_tar_with_ext_full_path().unlink()
 
 
