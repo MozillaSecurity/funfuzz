@@ -37,9 +37,17 @@ gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
 
-def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+def ignore_some_stderr(err_inp):
+    """Ignores parts of a list depending on whether they are needed.
+
+    Args:
+        err_inp (list): Stderr
+
+    Returns:
+        list: Stderr with potentially some lines removed
+    """
     lines = []
-    for line in e:
+    for line in err_inp:
         if line.endswith("malloc: enabling scribbling to detect mods to free blocks"):
             # MallocScribble prints a line that includes the process's pid.
             # We don't want to include that pid in the comparison!
@@ -122,7 +130,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         r = js_interesting.ShellResult(options, command, prefix, True)  # pylint: disable=invalid-name
 
         oom = js_interesting.oomed(r.err)
-        r.err = ignoreSomeOfStderr(r.err)
+        r.err = ignore_some_stderr(r.err)
 
         if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, "[[script] scriptArgs*]") or (
                 anyLineContains(r.err, "[scriptfile] [scriptarg...]"))):
