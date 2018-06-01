@@ -352,7 +352,7 @@ def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing
 # For direct, manual use
 def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
-    cwd_prefix = "m"
+    cwd_prefix = Path.cwd() / "m"
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)  # pylint: disable=no-member
     print(res.lev)
     if options.submit:  # pylint: disable=no-member
