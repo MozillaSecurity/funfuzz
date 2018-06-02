@@ -20,13 +20,11 @@ from funfuzz import js
 from funfuzz import util
 
 if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
     from functools32 import lru_cache  # pylint: disable=import-error
     from pathlib2 import Path
 else:
     from functools import lru_cache  # pylint: disable=no-name-in-module
     from pathlib import Path  # pylint: disable=import-error
-    import tempfile
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -38,20 +36,6 @@ class CompileShellTests(unittest.TestCase):
     # Paths
     mc_hg_repo = Path.home() / "trees" / "mozilla-central"
     shell_cache = Path.home() / "shell-cache"
-
-    def test_autoconf_run(self):  # pylint: disable=no-self-use
-        """Test the autoconf runs properly."""
-        with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:
-            tmp_dir = Path(tmp_dir)
-
-            # configure.in is required by autoconf2.13
-            (tmp_dir / "configure.in").touch()  # pylint: disable=no-member
-            js.compile_shell.autoconf_run(tmp_dir)
-
-    def test_ensure_cache_dir(self):
-        """Test the shell-cache dir is created properly if it does not exist, and things work even though it does."""
-        self.assertTrue(js.compile_shell.ensure_cache_dir(None).is_dir())
-        self.assertTrue(js.compile_shell.ensure_cache_dir(Path.home()).is_dir())  # pylint: disable=no-member
 
     @pytest.mark.slow
     @lru_cache(maxsize=None)

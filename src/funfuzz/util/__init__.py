@@ -18,4 +18,5 @@ from . import lock_dir
 from . import os_ops
 from . import repos_update
 from . import s3cache
+from . import sm_compile_helpers
 from . import subprocesses

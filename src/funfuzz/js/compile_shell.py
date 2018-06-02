@@ -11,7 +11,6 @@ from __future__ import absolute_import, print_function, unicode_literals  # isor
 
 from builtins import object  # pylint: disable=redefined-builtin
 import copy
-import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -19,7 +18,6 @@ import platform
 import shutil
 import sys
 import tarfile
-import traceback
 
 from pkg_resources import parse_version
 from shellescape import quote
@@ -29,6 +27,7 @@ from . import build_options
 from . import inspect_shell
 from ..util import hg_helpers
 from ..util import s3cache
+from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 
@@ -140,7 +139,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         options = parser.parse_args(argv)[0]
         options.build_opts = build_options.parse_shell_opts(options.build_opts)
 
-        with LockDir(get_lock_dir_path(Path.home(), options.build_opts.repo_dir)):
+        with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.build_opts.repo_dir)):
             if options.revision:
                 shell = CompiledShell(options.build_opts, options.revision)
             else:
@@ -263,7 +262,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             Path: Full path to the tarball in the local shell cache directory
         """
-        return ensure_cache_dir(Path.home()) / self.get_s3_tar_name_with_ext()
+        return sm_compile_helpers.ensure_cache_dir(Path.home()) / self.get_s3_tar_name_with_ext()
 
     def get_shell_cache_dir(self):
         """Retrieve the shell cache directory of the intended js binary.
@@ -271,7 +270,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             Path: Full path to the shell cache directory of the intended js binary
         """
-        return ensure_cache_dir(Path.home()) / self.get_shell_name_without_ext()
+        return sm_compile_helpers.ensure_cache_dir(Path.home()) / self.get_shell_name_without_ext()
 
     def get_shell_cache_js_bin_path(self):
         """Retrieve the full path to the js binary located in the shell cache.
@@ -279,7 +278,8 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             Path: Full path to the js binary in the shell cache
         """
-        return ensure_cache_dir(Path.home()) / self.get_shell_name_without_ext() / self.get_shell_name_with_ext()
+        return (sm_compile_helpers.ensure_cache_dir(Path.home()) /
+                self.get_shell_name_without_ext() / self.get_shell_name_with_ext())
 
     def get_shell_compiled_path(self):
         """Retrieve the full path to the original location of js binary compiled in the shell cache.
@@ -333,46 +333,6 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.js_version = js_version
 
 
-def ensure_cache_dir(base_dir):
-    """Retrieve a cache directory for compiled shells to live in, and create one if needed.
-
-    Args:
-        base_dir (Path): Base directory to create the cache directory in
-
-    Returns:
-        Path: Returns the full shell-cache path
-    """
-    if not base_dir:
-        base_dir = Path.home()
-    cache_dir = base_dir / "shell-cache"
-    cache_dir.mkdir(exist_ok=True)
-    return cache_dir
-
-
-def autoconf_run(working_dir):
-    """Run autoconf binaries corresponding to the platform.
-
-    Args:
-        working_dir (Path): Directory to be set as the current working directory
-    """
-    if platform.system() == "Darwin":
-        autoconf213_mac_bin = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213" if which("brew") else "autoconf213"
-        # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
-        if not Path(which(autoconf213_mac_bin)).is_file():
-            autoconf213_mac_bin = "autoconf213"
-        subprocess.run([autoconf213_mac_bin], check=True, cwd=str(working_dir))
-    elif platform.system() == "Linux":
-        if which("autoconf2.13"):
-            subprocess.run(["autoconf2.13"], check=True, cwd=str(working_dir))
-        elif which("autoconf-2.13"):
-            subprocess.run(["autoconf-2.13"], check=True, cwd=str(working_dir))
-        elif which("autoconf213"):
-            subprocess.run(["autoconf213"], check=True, cwd=str(working_dir))
-    elif platform.system() == "Windows":
-        # Windows needs to call sh to be able to find autoconf.
-        subprocess.run(["sh", "autoconf-2.13"], check=True, cwd=str(working_dir))
-
-
 def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
     """Configures, compiles and copies a js shell according to required parameters."""
     print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
@@ -380,7 +340,7 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
     js_objdir_path.mkdir()
     shell.set_js_objdir(js_objdir_path)
 
-    autoconf_run(shell.get_repo_dir() / "js" / "src")
+    sm_compile_helpers.autoconf_run(shell.get_repo_dir() / "js" / "src")
     configure_try_count = 0
     while True:
         try:
@@ -402,7 +362,7 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
 
     compile_log = shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".fuzzmanagerconf")
     if not compile_log.is_file():
-        envDump(shell, compile_log)
+        sm_compile_helpers.envDump(shell, compile_log)
 
 
 def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-complex,too-many-branches
@@ -662,7 +622,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
             if run_lib.is_file():
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
 
-        version = extract_vers(shell.get_js_objdir())
+        version = sm_compile_helpers.extract_vers(shell.get_js_objdir())
         shell.set_version(version)
 
         if platform.system() == "Linux":
@@ -672,105 +632,6 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
     else:
         print(out.decode("utf-8", errors="replace"))
         raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
-
-
-def createBustedFile(filename, e):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Create a .busted file with the exception message and backtrace included."""
-    with open(str(filename), "w") as f:
-        f.write("Caught exception %r (%s)\n" % (e, e))
-        f.write("Backtrace:\n")
-        f.write(traceback.format_exc() + "\n")
-
-    print("Compilation failed (%s) (details in %s)" % (e, filename))
-
-
-def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Dump environment to a .fuzzmanagerconf file."""
-    # Platform and OS detection for the spec, part of which is in:
-    #   https://wiki.mozilla.org/Security/CrashSignatures
-    fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
-
-    if platform.system() == "Linux":
-        fmconf_os = "linux"
-    elif platform.system() == "Darwin":
-        fmconf_os = "macosx"
-    elif platform.system() == "Windows":
-        fmconf_os = "windows"
-
-    with open(str(log), "a") as f:
-        f.write("# Information about shell:\n# \n")
-
-        f.write("# Create another shell in shell-cache like this one:\n")
-        f.write('# python -u -m %s -b "%s" -r %s\n# \n' % ("funfuzz.js.compile_shell",
-                                                           shell.build_opts.build_options_str, shell.get_hg_hash()))
-
-        f.write("# Full environment is:\n")
-        f.write("# %s\n# \n" % str(shell.get_env_full()))
-
-        f.write("# Full configuration command with needed environment variables is:\n")
-        f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.get_env_added()),
-                                   " ".join(quote(str(x)) for x in shell.get_cfg_cmd_excl_env())))
-
-        # .fuzzmanagerconf details
-        f.write("\n")
-        f.write("[Main]\n")
-        f.write("platform = %s\n" % fmconf_platform)
-        f.write("product = %s\n" % shell.get_repo_name())
-        f.write("product_version = %s\n" % shell.get_hg_hash())
-        f.write("os = %s\n" % fmconf_os)
-
-        f.write("\n")
-        f.write("[Metadata]\n")
-        f.write("buildFlags = %s\n" % shell.build_opts.build_options_str)
-        f.write("majorVersion = %s\n" % shell.get_version().split(".")[0])
-        f.write("pathPrefix = %s/\n" % shell.get_repo_dir())
-        f.write("version = %s\n" % shell.get_version())
-
-
-def extract_vers(objdir):  # pylint: disable=inconsistent-return-statements
-    """Extract the version from js.pc and put it into *.fuzzmanagerconf.
-
-    Args:
-        objdir (Path): Full path to the objdir
-
-    Raises:
-        OSError: Raises when js.pc is not found
-
-    Returns:
-        str: Version number of the compiled js shell
-    """
-    jspc_file_path = objdir / "js" / "src" / "js.pc"
-    # Moved to <objdir>/js/src/build/, see bug 1262241, Fx55 m-c rev 351194:2159959522f4
-    jspc_new_file_path = objdir / "js" / "src" / "build" / "js.pc"
-
-    if jspc_file_path.is_file():
-        actual_path = jspc_file_path
-    elif jspc_new_file_path.is_file():
-        actual_path = jspc_new_file_path
-    else:
-        raise OSError("js.pc file not found - needed to extract the version number")
-
-    with io.open(str(actual_path), mode="r", encoding="utf-8", errors="replace") as f:
-        for line in f:
-            if line.startswith("Version: "):  # Sample line: "Version: 47.0a2"
-                return line.split(": ")[1].rstrip()
-
-
-def get_lock_dir_path(cache_dir_base, repo_dir, tbox_id=""):
-    """Return the name of the lock directory.
-
-    Args:
-        cache_dir_base (Path): Base directory where the cache directory is located
-        repo_dir (Path): Full path to the repository
-        tbox_id (str): Tinderbox entry id
-
-    Returns:
-        Path: Full path to the shell cache lock directory
-    """
-    lockdir_name = "shell-%s-lock" % repo_dir.name
-    if tbox_id:
-        lockdir_name += "-%s" % tbox_id
-    return ensure_cache_dir(cache_dir_base) / lockdir_name
 
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -791,7 +652,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
 def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-raises-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Obtain a js shell. Keep the objdir for now, especially .a files, for symbols."""
-    assert get_lock_dir_path(Path.home(), shell.build_opts.repo_dir).is_dir()
+    assert sm_compile_helpers.get_lock_dir_path(Path.home(), shell.build_opts.repo_dir).is_dir()
     cached_no_shell = shell.get_shell_cache_js_bin_path().with_suffix(".busted")
 
     if shell.get_shell_cache_js_bin_path().is_file():
@@ -800,7 +661,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         print("Found cached shell...")
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
         if platform.system() == "Windows":
-            verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
+            sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
         return
     elif cached_no_shell.is_file():
         raise Exception("Found a cached shell that failed compilation...")
@@ -827,7 +688,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             # Delete tarball after downloading from S3
             shell.get_s3_tar_with_ext_full_path().unlink()
             if platform.system() == "Windows":
-                verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
+                sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
             return
 
     try:
@@ -847,7 +708,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
         cfgJsCompile(shell)
         if platform.system() == "Windows":
-            verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
+            sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
     except KeyboardInterrupt:
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         raise
@@ -855,7 +716,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         # Remove the cache dir, but recreate it with only the .busted file.
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         shell.get_shell_cache_dir().mkdir()
-        createBustedFile(cached_no_shell, ex)
+        sm_compile_helpers.createBustedFile(cached_no_shell, ex)
         if use_s3cache:
             s3cache_obj.uploadFileToS3(str(shell.get_shell_cache_js_bin_path()) + ".busted")
         raise
@@ -872,23 +733,6 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             txt_info = "-".join(str(shell.get_s3_tar_name_with_ext()).split("-")[:-1] + ["latest"]) + ".txt"
             s3cache_obj.uploadStrToS3("", txt_info, str(shell.get_s3_tar_name_with_ext()))
         shell.get_s3_tar_with_ext_full_path().unlink()
-
-
-def verify_full_win_pageheap(shell_path):
-    """Turn on full page heap verification on Windows.
-
-    Args:
-        shell_path (Path): Path to the compiled js shell
-    """
-    # More info: https://msdn.microsoft.com/en-us/library/windows/hardware/ff543097(v=vs.85).aspx
-    # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
-    gflags_bin_path = Path(os.getenv("PROGRAMW6432")) / "Debugging Tools for Windows (x64)" / "gflags.exe"
-    if gflags_bin_path.is_file() and shell_path.is_file():  # pylint: disable=no-member
-        print(subprocess.run([str(gflags_bin_path).decode("utf-8", errors="replace"),
-                              "-p", "/enable", shell_path.decode("utf-8", errors="replace"), "/full"],
-                             check=True,
-                             stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE).stdout)
 
 
 def main():
