@@ -26,6 +26,7 @@ from ..js import compile_shell
 from ..js import inspect_shell
 from ..util import hg_helpers
 from ..util import s3cache
+from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 
@@ -526,8 +527,8 @@ def main():
     if options.build_options:
         repo_dir = options.build_options.repo_dir
 
-    with LockDir(compile_shell.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
-                 if options.useTreeherderBinaries else compile_shell.get_lock_dir_path(Path.home(), repo_dir)):
+    with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
+                 if options.useTreeherderBinaries else sm_compile_helpers.get_lock_dir_path(Path.home(), repo_dir)):
         if options.useTreeherderBinaries:
             print_("TBD: We need to switch to the autobisect repository.", flush=True)
             sys.exit(0)
@@ -536,4 +537,4 @@ def main():
 
         # Last thing we do while we have a lock.
         # Note that this only clears old *local* cached directories, not remote ones.
-        rm_old_local_cached_dirs(compile_shell.ensure_cache_dir(Path.home()))
+        rm_old_local_cached_dirs(sm_compile_helpers.ensure_cache_dir(Path.home()))

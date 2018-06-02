@@ -28,6 +28,7 @@ from .js import loop
 from .util import create_collector
 from .util import fork_join
 from .util import hg_helpers
+from .util import sm_compile_helpers
 from .util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
@@ -186,7 +187,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
         options.build_options = build_options.parse_shell_opts(options.build_options)
         options.timeout = options.timeout or (300 if options.build_options.runWithVg else JS_SHELL_DEFAULT_TIMEOUT)
 
-        with LockDir(compile_shell.get_lock_dir_path(Path.home(), options.build_options.repo_dir)):
+        with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.build_options.repo_dir)):
             bRev = hg_helpers.get_repo_hash_and_id(options.build_options.repo_dir)[0]  # pylint: disable=invalid-name
             cshell = compile_shell.CompiledShell(options.build_options, bRev)
             updateLatestTxt = (options.build_options.repo_dir == "mozilla-central")  # pylint: disable=invalid-name
