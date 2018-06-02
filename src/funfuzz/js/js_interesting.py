@@ -363,7 +363,7 @@ def main():  # pylint: disable=missing-docstring
             testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
             print("Submitting %s" % testcaseFilename)
             quality = 0
-            options.collector.submit(res.crashInfo, testcaseFilename, quality)  # pylint: disable=no-member
+            options.collector.submit(res.crashInfo, str(testcaseFilename), quality)  # pylint: disable=no-member
         else:
             print("Not submitting (not interesting)")
 
