@@ -72,7 +72,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
         logPrefix = Path(logPrefix)
-        pathToBinary = runthis[0].resolve()  # pylint: disable=invalid-name
+        pathToBinary = runthis[0].expanduser().resolve()  # pylint: disable=invalid-name
         # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like "./js"
         # pylint: disable=invalid-name
