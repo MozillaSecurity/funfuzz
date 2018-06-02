@@ -11,6 +11,7 @@ from __future__ import absolute_import, print_function, unicode_literals  # isor
 
 from builtins import object  # pylint: disable=redefined-builtin
 import copy
+import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -357,7 +358,7 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
                                                 "Windows conftest.exe configuration permission" in repr(ex)):
                 print("Trying once more...")
                 continue
-    compileJs(shell)
+    sm_compile(shell)
     inspect_shell.verifyBinary(shell)
 
     compile_log = shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".fuzzmanagerconf")
@@ -556,65 +557,27 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     shell.set_cfg_cmd_excl_env(cfg_cmds)
 
 
-# FIXME: Potential problem area: Note that having a non-zero exit code does not mean that the  # pylint: disable=fixme
-# operation did not succeed, for example when compiling a shell. A non-zero exit code
-# can appear even though a shell compiled successfully.
-# except OSError as e:
-#     raise Exception(repr(e.strerror) + ' error calling: ' + shellify(cmd))
-# if p.returncode != 0:
-#     oomErrorOutput = stdout if combineStderr else stderr
-#     if (isLinux or isMac) and oomErrorOutput:
-#         if 'internal compiler error: Killed (program cc1plus)' in oomErrorOutput:
-#             raise Exception('GCC running out of memory')
-#         elif 'error: unable to execute command: Killed' in oomErrorOutput:
-#             raise Exception('Clang running out of memory')
-#     if not ignoreExitCode:
-#         # Potential problem area: Note that having a non-zero exit code does not mean that the
-#         # operation did not succeed, for example when compiling a shell. A non-zero exit code
-#         # can appear even though a shell compiled successfully.
-#         print("Nonzero exit code from: ")
-#         print("  %s" % shellify(cmd))
-#         print("stdout is:")
-#         print(stdout)
-#         if stderr is not None:
-#             print("stderr is:")
-#             print(stderr)
-#     if stderr and ignoreStderr:
-#         # During configure, there will always be stderr. Sometimes this stderr causes configure to
-#         # stop the entire script, especially on Windows.
-#         print("Return code not zero, and unexpected output on stderr from: ")
-#         print("  %s" % shellify(cmd))
-#         print("%s %s" % (stdout, stderr))
-#         raise Exception('Return code not zero, and unexpected output on stderr')
-def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
-    """Compile and copy a binary."""
-    try:
-        cmd_list = [MAKE_BINARY, "-C", str(shell.get_js_objdir()), "-j" + str(COMPILATION_JOBS), "-s"]
-        out = subprocess.run(cmd_list,
-                             cwd=str(shell.get_js_objdir()),
-                             env=shell.get_env_full(),
-                             stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-    except Exception as ex:  # pylint: disable=broad-except
-        # This exception message is returned from sps.captureStdout via cmd_list.
-        # FIXME: raise the Exception here after captureStdout removal?  # pylint: disable=fixme
-        if (platform.system() == "Linux" or platform.system() == "Darwin") and \
-                ("GCC running out of memory" in repr(ex) or "Clang running out of memory" in repr(ex)):
-            # FIXME: Absolute hack to retry after hitting OOM.  # pylint: disable=fixme
-            print("Trying once more due to the compiler running out of memory...")
-            out = subprocess.run(cmd_list,
-                                 cwd=str(shell.get_js_objdir()),
-                                 env=shell.get_env_full(),
-                                 stderr=subprocess.STDOUT,
-                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-        # A non-zero error can be returned during make, but eventually a shell still gets compiled.
-        if shell.get_shell_compiled_path().is_file():
-            print("A shell was compiled even though there was a non-zero exit code. Continuing...")
-        else:
-            print("%s did not result in a js shell:" % MAKE_BINARY.decode("utf-8", errors="replace"))
-            raise
+def sm_compile(shell):
+    """Compile a binary and copy essential compiled files into a desired structure.
 
-    # We could save the stdout here into a file if it throws
+    Args:
+        shell (object): SpiderMonkey shell parameters
+
+    Raises:
+        OSError: Raises when a compiled shell is absent
+
+    Returns:
+        Path: Path to the compiled shell
+    """
+    cmd_list = [MAKE_BINARY, "-C", str(shell.get_js_objdir()), "-j" + str(COMPILATION_JOBS), "-s"]
+    # Note that having a non-zero exit code does not mean that the operation did not succeed,
+    # for example when compiling a shell. A non-zero exit code can appear even though a shell compiled successfully.
+    # Thus, we should *not* use check=True here.
+    out = subprocess.run(cmd_list,
+                         cwd=str(shell.get_js_objdir()),
+                         env=shell.get_env_full(),
+                         stderr=subprocess.STDOUT,
+                         stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
 
     if shell.get_shell_compiled_path().is_file():
         shutil.copy2(str(shell.get_shell_compiled_path()), str(shell.get_shell_cache_js_bin_path()))
@@ -629,8 +592,27 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
             # files in the objdir or else the stacks from failing testcases will lack symbols.
             shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
     else:
-        print(out.decode("utf-8", errors="replace"))
-        raise Exception(MAKE_BINARY + " did not result in a js shell, no exception thrown.")
+        if ((platform.system() == "Linux" or platform.system() == "Darwin") and
+                ("internal compiler error: Killed (program cc1plus)" in out or  # GCC running out of memory
+                 "error: unable to execute command: Killed" in out)):  # Clang running out of memory
+            print("Trying once more due to the compiler running out of memory...")
+            out = subprocess.run(cmd_list,
+                                 cwd=str(shell.get_js_objdir()),
+                                 env=shell.get_env_full(),
+                                 stderr=subprocess.STDOUT,
+                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        # A non-zero error can be returned during make, but eventually a shell still gets compiled.
+        if shell.get_shell_compiled_path().is_file():
+            print("A shell was compiled even though there was a non-zero exit code. Continuing...")
+        else:
+            print("%s did not result in a js shell:" % MAKE_BINARY.decode("utf-8", errors="replace"))
+            with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w") as f:
+                f.write("The first compilation of %s rev %s failed with the following output:\n" %
+                        (shell.get_repo_name(), shell.get_hg_hash()))
+                f.write(out.decode("utf-8", errors="replace"))
+            raise OSError(MAKE_BINARY + " did not result in a js shell.")
+
+    return shell.get_shell_compiled_path()
 
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
