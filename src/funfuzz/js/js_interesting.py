@@ -89,7 +89,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
         runinfo = timed_run.timed_run(
-            [str(x) if isinstance(x, Path) else x for x in runthis],  # Convert all Paths to strings for Lithium
+            [str(x) else x for x in runthis],  # Convert all Paths/bytes to strings for Lithium
             options.timeout,
             str(logPrefix).encode("utf-8"),
             preexec_fn=set_ulimit)
@@ -152,7 +152,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                         extracted_gdb_cmds.append("%s" % line.rstrip())
             no_main_log_gdb_log = subprocess.run(
                 (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
-                 [str(x) if isinstance(x, Path) else x for x in runthis]),
+                 [str(x) for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE
