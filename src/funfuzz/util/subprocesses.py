@@ -35,7 +35,7 @@ def rm_tree_incl_readonly(dir_tree):
 #     read_only_dir = os.path.join(test_dir, "nestedReadOnlyDir")
 #     os.mkdir(read_only_dir)
 #     filename = os.path.join(read_only_dir, "test.txt")
-#     with io.open(filename, "w") as f:
+#     with io.open(filename, "w", encoding="utf-8", errors="replace") as f:
 #         f.write("testing\n")
 
 #     os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)

@@ -178,13 +178,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             reduced_log = (logPrefix.parent / (logPrefix.stem + "-reduced")).with_suffix(".js")
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with io.open(str(out_log), "r") as f:
+            with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
             orig_log = (logPrefix.parent / (logPrefix.stem + "-orig")).with_suffix(".js")
-            with io.open(str(orig_log), "w") as f:
+            with io.open(str(orig_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
-            with io.open(str(reduced_log), "w") as f:
+            with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
 
             # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
@@ -232,7 +232,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                 out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
                 linesToCompare = jitCompareLines(out_log, "/*FCM*/")  # pylint: disable=invalid-name
                 jitcomparefilename = (logPrefix.parent / (logPrefix.stem + "-cj-in")).with_suffix(".js")
-                with io.open(str(jitcomparefilename), "w") as f:
+                with io.open(str(jitcomparefilename), "w", encoding="utf-8", errors="replace") as f:
                     f.writelines(linesToCompare)
                 # pylint: disable=invalid-name
                 anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
@@ -264,7 +264,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "wasmIsSupported = function() { return true; };\n",
         "// DDBEGIN\n"
     ]
-    with io.open(str(jsfunfuzzOutputFilename), "r") as f:
+    with io.open(str(jsfunfuzzOutputFilename), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
             if line.startswith(marker):
                 sline = line[len(marker):]

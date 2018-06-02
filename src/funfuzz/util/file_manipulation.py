@@ -18,7 +18,7 @@ def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,m
     """
     found_something = False
     err_log = (log_prefix.parent / (log_prefix.stem + "-err")).with_suffix(".txt")
-    with io.open(str(err_log), "r") as f:
+    with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
             line = line.strip("\x07").rstrip("\n")
             if (line.find("szone_error") != -1 or
@@ -37,7 +37,7 @@ def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,miss
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
     before = []
     after = []
-    with io.open(str(filename), "r") as f:
+    with io.open(str(filename), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
             before.append(line)
             if line.find("SPLICE") != -1:

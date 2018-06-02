@@ -146,7 +146,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
-            with io.open(str(summary_log), "w") as f:
+            with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                 f.write("\n".join(r.issues + [" ".join(quote(str(x)) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
             print("  %s" % " ".join(quote(str(x)) for x in command))
@@ -200,7 +200,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
                            " ".join(quote(str(x)) for x in command) + "\n\n" + summary)
                 summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
-                with io.open(str(summary_log), "w") as f:
+                with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                     f.write(rerunCommand + "\n\n" + summary)
                 print("%s | %s" % (str(infilename), js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))

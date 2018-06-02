@@ -27,7 +27,7 @@ def link_fuzzer(target_path, prologue=""):
     """
     base_dir = Path(__file__).parent
 
-    with io.open(str(target_path), "w") as f:  # Create the full jsfunfuzz file
+    with io.open(str(target_path), "w", encoding="utf-8", errors="replace") as f:  # Create the full jsfunfuzz file
         if prologue:
             f.write(prologue)
 

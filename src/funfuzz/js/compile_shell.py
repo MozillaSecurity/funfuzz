@@ -606,7 +606,8 @@ def sm_compile(shell):
             print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
             print("%s did not result in a js shell:" % MAKE_BINARY.decode("utf-8", errors="replace"))
-            with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w") as f:
+            with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w",
+                         encoding="utf-8", errors="replace") as f:
                 f.write("The first compilation of %s rev %s failed with the following output:\n" %
                         (shell.get_repo_name(), shell.get_hg_hash()))
                 f.write(out.decode("utf-8", errors="replace"))

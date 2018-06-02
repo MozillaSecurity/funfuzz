@@ -101,10 +101,10 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
         out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
-        with io.open(str(out_log), "r") as f:
+        with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
             out = f.readlines()
         err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
-        with io.open(str(err_log), "r") as f:
+        with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
@@ -117,7 +117,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         elif runinfo.sta == timed_run.CRASHED:
             if os_ops.grab_crash_log(str(runthis[0]), runinfo.pid, logPrefix, True):
                 crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
-                with io.open(str(crash_log), "r") as f:
+                with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif file_manipulation.amiss(logPrefix):
             issues.append("malloc error")
@@ -144,7 +144,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
-            with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r") as f:
+            with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
+                         encoding="utf-8", errors="replace") as f:
                 for line in f:
                     if line.rstrip() and not line.startswith("#") and not line.startswith("echo"):
                         extracted_gdb_cmds.append("-ex")
@@ -183,7 +184,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         if lev != JS_FINE:
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
-            with io.open(str(summary_log), "w") as f:
+            with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(["Number: " + str(logPrefix) + "\n",
                               "Command: " + " ".join(quote(str(x)) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
@@ -250,7 +251,7 @@ def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,m
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
     if fn.is_file() and fn.stat().st_size > maxSize:
-        with io.open(str(fn), "r+") as f:
+        with io.open(str(fn), "r+", encoding="utf-8", errors="replace") as f:
             f.truncate(maxSize)
 
 

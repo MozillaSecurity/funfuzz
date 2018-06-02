@@ -163,7 +163,7 @@ def print_machine_info():
     hgrc_path = Path("~/.hg/hgrc").expanduser()
     if hgrc_path.is_file():
         print("The hgrc of this repository is:")
-        with io.open(str(hgrc_path), "r") as f:
+        with io.open(str(hgrc_path), "r", encoding="utf-8", errors="replace") as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
             print(line.rstrip())
