@@ -622,8 +622,7 @@ def compileJs(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-
             if run_lib.is_file():
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
 
-        version = sm_compile_helpers.extract_vers(shell.get_js_objdir())
-        shell.set_version(version)
+        shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
 
         if platform.system() == "Linux":
             # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
