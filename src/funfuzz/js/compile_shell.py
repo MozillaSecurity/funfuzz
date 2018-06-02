@@ -102,10 +102,8 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
             int: 0, to denote a successful compile and 1, to denote a failed compile
         """
         # logging.basicConfig(format="%(message)s", level=logging.INFO)
-
         try:
             return cls.run(args)
-
         except CompiledShellError as ex:
             print(repr(ex))
             # log.error(ex)
