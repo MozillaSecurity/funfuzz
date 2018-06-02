@@ -720,3 +720,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 def main():
     """Execute main() function in CompiledShell class."""
     exit(CompiledShell.main())
+
+
+if __name__ == "__main__":
+    main()

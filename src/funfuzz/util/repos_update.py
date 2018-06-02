@@ -138,3 +138,7 @@ def main():  # pylint: disable=missing-docstring
         logger.info("WARNING: OSError hit:")
         logger.info(ex)
     logger.info(time.asctime())
+
+
+if __name__ == "__main__":
+    main()

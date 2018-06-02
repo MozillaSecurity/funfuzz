@@ -51,3 +51,7 @@ def main():  # pylint: disable=missing-docstring
         [sys.executable, "-u", "-m", "funfuzz.util.repos_update"],
         [sys.executable, "-u", "-m", "funfuzz.bot"] + sys.argv[1:]
     ], 60)
+
+
+if __name__ == "__main__":
+    main()

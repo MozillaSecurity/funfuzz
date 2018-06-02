@@ -382,3 +382,7 @@ def main():  # pylint: disable=missing-docstring
     print("Running this file directly doesn't do anything, but here's our subparser help:")
     print()
     parse_shell_opts("--help")
+
+
+if __name__ == "__main__":
+    main()
