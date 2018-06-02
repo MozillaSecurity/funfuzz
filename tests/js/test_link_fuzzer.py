@@ -8,6 +8,7 @@
 
 from __future__ import absolute_import, unicode_literals  # isort:skip
 
+import io
 import logging
 import sys
 import unittest
@@ -37,7 +38,7 @@ class LinkFuzzerTests(unittest.TestCase):
             link_fuzzer.link_fuzzer(jsfunfuzz_tmp)
 
             found = False
-            with open(str(jsfunfuzz_tmp)) as f:
+            with io.open(str(jsfunfuzz_tmp), "r") as f:
                 for line in f:
                     if "It's looking good" in line:
                         found = True

@@ -11,6 +11,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from builtins import object  # pylint: disable=redefined-builtin
+import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -162,7 +163,7 @@ def print_machine_info():
     hgrc_path = Path("~/.hg/hgrc").expanduser()
     if hgrc_path.is_file():
         print("The hgrc of this repository is:")
-        with open(str(hgrc_path), "r") as f:
+        with io.open(str(hgrc_path), "r") as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
             print(line.rstrip())

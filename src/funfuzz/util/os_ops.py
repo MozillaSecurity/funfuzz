@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function  # isort:skip
 
+import io
 import os
 import platform
 import shutil
@@ -110,7 +111,7 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         is_pid_used = False
         core_uses_pid_path = Path("/proc/sys/kernel/core_uses_pid")
         if core_uses_pid_path.is_file():
-            with open(str(core_uses_pid_path)) as f:
+            with io.open(str(core_uses_pid_path), "r") as f:
                 is_pid_used = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
         core_name = "core." + str(crashed_pid) if is_pid_used else "core"
         core_name_path = Path.cwd() / core_name
@@ -188,7 +189,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             dbggr_cmd,
             stdin=None,
             stderr=subprocess.STDOUT,
-            stdout=open(str(crash_log), "w") if use_logfiles else None,
+            stdout=io.open(str(crash_log), "w") if use_logfiles else None,
             # It would be nice to use this everywhere, but it seems to be broken on Windows
             # (http://docs.python.org/library/subprocess.html)
             close_fds=(os.name == "posix"),
@@ -264,7 +265,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         for file_name in crash_logs:
             full_report_path = reports_dir / file_name
             try:
-                with open(str(full_report_path)) as f:
+                with io.open(str(full_report_path), "r") as f:
                     first_line = f.readline()
                 if first_line.rstrip().endswith("[%s]" % crash_pid):
                     if use_log_files:

@@ -12,6 +12,7 @@ from __future__ import absolute_import, print_function, unicode_literals  # isor
 import argparse
 from builtins import object  # pylint: disable=redefined-builtin
 import hashlib
+import io
 import platform
 import random
 import sys
@@ -242,7 +243,7 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     if build_options.patch_file:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         fileName.append(build_options.patch_file.name)
-        with open(str(build_options.patch_file.resolve()), "r") as f:
+        with io.open(str(build_options.patch_file.resolve()), "r") as f:
             readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult).hexdigest()[:12])

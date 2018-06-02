@@ -69,7 +69,7 @@ def autoconf_run(working_dir):
 
 def createBustedFile(filename, e):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Create a .busted file with the exception message and backtrace included."""
-    with open(str(filename), "w") as f:
+    with io.open(str(filename), "w") as f:
         f.write("Caught exception %r (%s)\n" % (e, e))
         f.write("Backtrace:\n")
         f.write(traceback.format_exc() + "\n")
@@ -90,7 +90,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     elif platform.system() == "Windows":
         fmconf_os = "windows"
 
-    with open(str(log), "a") as f:
+    with io.open(str(log), "a") as f:
         f.write("# Information about shell:\n# \n")
 
         f.write("# Create another shell in shell-cache like this one:\n")

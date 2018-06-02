@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
+import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys
@@ -145,7 +146,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
-            with open(str(summary_log), "w") as f:
+            with io.open(str(summary_log), "w") as f:
                 f.write("\n".join(r.issues + [" ".join(quote(str(x)) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
             print("  %s" % " ".join(quote(str(x)) for x in command))
@@ -199,7 +200,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
                            " ".join(quote(str(x)) for x in command) + "\n\n" + summary)
                 summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
-                with open(str(summary_log), "w") as f:
+                with io.open(str(summary_log), "w") as f:
                     f.write(rerunCommand + "\n\n" + summary)
                 print("%s | %s" % (str(infilename), js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))

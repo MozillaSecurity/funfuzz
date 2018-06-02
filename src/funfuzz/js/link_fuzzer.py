@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import
 
+import io
 import sys
 
 if sys.version_info.major == 2:
@@ -26,7 +27,7 @@ def link_fuzzer(target_path, prologue=""):
     """
     base_dir = Path(__file__).parent
 
-    with open(str(target_path), "w") as f:  # Create the full jsfunfuzz file
+    with io.open(str(target_path), "w") as f:  # Create the full jsfunfuzz file
         if prologue:
             f.write(prologue)
 

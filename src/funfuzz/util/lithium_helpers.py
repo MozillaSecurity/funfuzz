@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
+import io
 import os
 import re
 import shutil
@@ -69,11 +70,11 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         )
         print(" ".join(quote(str(x)) for x in autobisectCmd))
         autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
-        with open(str(autobisect_log), "w") as f:
+        with io.open(str(autobisect_log), "w") as f:
             subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
         print("Done running autobisectjs. Log: %s" % autobisect_log)
 
-        with open(str(autobisect_log), "r") as f:
+        with io.open(str(autobisect_log), "r") as f:
             lines = f.readlines()
             autobisect_log_trunc = file_manipulation.truncateMid(lines, 50, ["..."])
     else:
@@ -102,7 +103,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
     print("Preparing to run Lithium, log file %s" % lithlogfn)
     print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
-    with open(str(lithlogfn), "w") as f:
+    with io.open(str(lithlogfn), "w") as f:
         subprocess.run(runlithiumpy + lithArgs, stderr=subprocess.STDOUT, stdout=f)
     print("Done running Lithium")
     if deletableLithTemp:
@@ -114,7 +115,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
 
 def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    with open(str(lithlogfn)) as f:
+    with io.open(str(lithlogfn), "r") as f:
         for line in f:
             if line.startswith("Lithium result"):
                 print(line.rstrip())
@@ -178,7 +179,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     hasTryItOut = False  # pylint: disable=invalid-name
     hasTryItOutRegex = re.compile(r'count=[0-9]+; tryItOut\("')  # pylint: disable=invalid-name
 
-    with open(str(infilename), "r") as f:
+    with io.open(str(infilename), "r") as f:
         for line in file_manipulation.linesWith(f, '; tryItOut("'):
             # Checks if testcase came from jsfunfuzz or compare_jit.
             # Do not use .match here, it only matches from the start of the line:
@@ -192,12 +193,12 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         tryItOutAndCountRegex = re.compile(r'"\);\ncount=([0-9]+); tryItOut\("',  # pylint: disable=invalid-name
                                            re.MULTILINE)
-        with open(str(infilename), "r") as f:
+        with io.open(str(infilename), "r") as f:
             infileContents = f.read()  # pylint: disable=invalid-name
             infileContents = re.sub(tryItOutAndCountRegex,  # pylint: disable=invalid-name
                                     ';\\\n"); count=\\1; tryItOut("\\\n',
                                     infileContents)
-        with open(str(infilename), "w") as f:
+        with io.open(str(infilename), "w") as f:
             f.write(infileContents)
 
         print()
@@ -210,7 +211,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # 1-line offset.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         intendedLines = []  # pylint: disable=invalid-name
-        with open(str(infilename), "r") as f:
+        with io.open(str(infilename), "r") as f:
             for line in f:  # The testcase is likely to already be partially reduced.
                 if "dumpln(cookie" not in line:  # jsfunfuzz-specific line ignore
                     # This should be simpler than re.compile.
@@ -219,7 +220,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
                                          # The 1-line offset is added here.
                                          .replace("SPLICE DDBEGIN", "SPLICE DDBEGIN\n"))
 
-        with open(str(infilename), "w") as f:
+        with io.open(str(infilename), "w") as f:
             f.writelines(intendedLines)
         print()
         print("Running 1 instance of 2-line reduction after moving count=X to its own line...")
@@ -246,14 +247,14 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         infileContents = []  # pylint: disable=invalid-name
-        with open(str(infilename), "r") as f:
+        with io.open(str(infilename), "r") as f:
             for line in f:
                 if "NIGEBDD" in line:
                     infileContents.append(line.replace("NIGEBDD", "DDBEGIN"))
                     infileContents.append("\n")  # The 1-line offset is added here.
                     continue
                 infileContents.append(line)
-        with open(str(infilename), "w") as f:
+        with io.open(str(infilename), "w") as f:
             f.writelines(infileContents)
 
         print()
