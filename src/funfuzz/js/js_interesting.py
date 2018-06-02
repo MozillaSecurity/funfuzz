@@ -319,7 +319,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     if len(args) < 2:
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
-    options.jsengineWithArgs = [Path(args[1]).resolve()] + args[1:-1] + [Path(args[-1]).resolve()]
+    options.jsengineWithArgs = [Path(args[1]).resolve()] + args[2:-1] + [Path(args[-1]).resolve()]
     assert options.jsengineWithArgs[0].is_file()  # js shell
     assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
