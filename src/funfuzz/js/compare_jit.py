@@ -284,9 +284,9 @@ def parseOptions(args):  # pylint: disable=invalid-name
     options, args = parser.parse_args(args)
     if len(args) != 3:
         raise Exception("Wrong number of positional arguments. Need 3 (knownPath, jsengine, infilename).")
-    options.knownPath = Path(args[0]).resolve()
-    options.jsengine = Path(args[1]).resolve()
-    options.infilename = Path(args[2]).resolve()
+    options.knownPath = Path(args[0]).expanduser().resolve()
+    options.jsengine = Path(args[1]).expanduser().resolve()
+    options.infilename = Path(args[2]).expanduser().resolve()
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not options.jsengine.is_file():
         raise Exception("js shell does not exist: " + options.jsengine)
