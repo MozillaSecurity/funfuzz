@@ -285,11 +285,11 @@ def set_ulimit():
 
         # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
         giga_byte = 2**30
-        resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))
+        resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
 
         # log.debug("Limit corefiles to 0.5 GB")
         half_giga_byte = int(giga_byte // 2)
-        resource.setrlimit(resource.RLIMIT_CORE, (half_giga_byte, half_giga_byte))
+        resource.setrlimit(resource.RLIMIT_CORE, (half_giga_byte, half_giga_byte))  # pylint: disable=no-member
     except ImportError:
         # log.debug("Skipping resource import as a non-POSIX platform was detected: %s", platform.system())
         return

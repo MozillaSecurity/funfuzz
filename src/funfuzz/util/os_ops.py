@@ -230,6 +230,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     elif platform.system() == "Linux":
         print("Warning: grab_crash_log() did not find a core file for PID %d." % crashed_pid)
         print("Note: Your soft limit for core file sizes is currently %d. "
+              # pylint: disable=indexing-exception
               'You can increase it with "ulimit -c" in bash.' % get_core_limit()[0])
 
 
