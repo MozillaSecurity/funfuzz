@@ -35,5 +35,5 @@ def link_fuzzer(target_path, prologue=""):
             entry = entry.rstrip()
             if entry and not entry.startswith("#"):
                 file_path = base_dir / Path(entry)
-                f.write("\n\n// %s\n\n" % str(file_path).split("funfuzz", 1)[1][1:])
+                f.write(("\n\n// %s\n\n" % str(file_path).split("funfuzz", 1)[1][1:]).decode("utf-8", errors="replace"))
                 f.write(file_path.read_text())  # pylint: disable=no-member
