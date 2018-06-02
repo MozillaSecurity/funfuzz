@@ -35,7 +35,7 @@ class ForkJoinTests(unittest.TestCase):
             tmp_dir = Path(tmp_dir)
             log_path = tmp_dir / "forkjoin-1-out.txt"
 
-            with io.open(str(log_path), "w") as f:
+            with io.open(str(log_path), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines("test")
 
             self.assertEqual(fork_join.log_name(tmp_dir, 1, "out"), str(log_path))

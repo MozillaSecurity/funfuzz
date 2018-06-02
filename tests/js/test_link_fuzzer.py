@@ -38,7 +38,7 @@ class LinkFuzzerTests(unittest.TestCase):
             link_fuzzer.link_fuzzer(jsfunfuzz_tmp)
 
             found = False
-            with io.open(str(jsfunfuzz_tmp), "r") as f:
+            with io.open(str(jsfunfuzz_tmp), "r", encoding="utf-8", errors="replace") as f:
                 for line in f:
                     if "It's looking good" in line:
                         found = True
