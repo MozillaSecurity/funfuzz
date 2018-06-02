@@ -346,7 +346,7 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
         try:
             cfgBin(shell)
             break
-        except Exception as ex:  # pylint: disable=broad-except
+        except subprocess.CalledProcessError as ex:
             configure_try_count += 1
             if configure_try_count > 3:
                 print("Configuration of the js binary failed 3 times.")
@@ -640,7 +640,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
         try:
             obtainShell(shell, updateToRev=rev)
-        except Exception:  # pylint: disable=broad-except
+        except subprocess.CalledProcessError:
             return (options.compilationFailedLabel, "compilation failed")
 
         print("Testing...", end=" ")
@@ -711,7 +711,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     except KeyboardInterrupt:
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         raise
-    except Exception as ex:
+    except subprocess.CalledProcessError as ex:
         # Remove the cache dir, but recreate it with only the .busted file.
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         shell.get_shell_cache_dir().mkdir()
