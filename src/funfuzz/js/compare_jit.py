@@ -289,7 +289,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     options.infilename = Path(args[2]).expanduser().resolve()
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not options.jsengine.is_file():
-        raise Exception("js shell does not exist: " + options.jsengine)
+        raise OSError("js shell does not exist: " + options.jsengine)
 
     # For js_interesting:
     options.valgrind = False
