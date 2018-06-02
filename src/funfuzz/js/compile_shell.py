@@ -298,7 +298,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
             Path: Full path to the original location of the libraries of js binary compiled in the shell cache
         """
         return [
-            self.get_js_objdir() / "dist" / "bin" / (runlib for runlib in inspect_shell.ALL_RUN_LIBS)
+            self.get_js_objdir() / "dist" / "bin" / runlib for runlib in inspect_shell.ALL_RUN_LIBS
         ]
 
     def get_shell_name_with_ext(self):
