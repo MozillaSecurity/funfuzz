@@ -341,6 +341,7 @@ def init(args):  # pylint: disable=missing-docstring
 # FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
 def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
+    cwd_prefix = Path(cwd_prefix)  # Lithium uses this function and cwd_prefix from Lithium is not a Path
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)
