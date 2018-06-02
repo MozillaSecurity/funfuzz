@@ -39,12 +39,13 @@ class CompileShellTests(unittest.TestCase):
     mc_hg_repo = Path.home() / "trees" / "mozilla-central"
     shell_cache = Path.home() / "shell-cache"
 
-    def test_autoconf_run():  # pylint: disable=no-method-argument
+    def test_autoconf_run(self):  # pylint: disable=no-self-use
         """Test the autoconf runs properly."""
         with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:
             tmp_dir = Path(tmp_dir)
 
-            (tmp_dir / "configure.in").touch()  # configure.in is required by autoconf2.13
+            # configure.in is required by autoconf2.13
+            (tmp_dir / "configure.in").touch()  # pylint: disable=no-member
             js.compile_shell.autoconf_run(tmp_dir)
 
     def test_ensure_cache_dir(self):
