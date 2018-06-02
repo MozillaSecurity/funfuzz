@@ -191,7 +191,9 @@ def parse_shell_opts(args):
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if DEFAULT_TREES_LOCATION.is_dir():  # pylint: disable=no-member
         # Repositories do not get randomized if a repository is specified.
-        if build_options.repo_dir is None:
+        if build_options.repo_dir:
+            build_options.repo_dir = build_options.repo_dir.expanduser()
+        else:
             # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
             if build_options.enableRandom and not build_options.patch_file:
                 build_options.repo_dir = get_random_valid_repo(DEFAULT_TREES_LOCATION)
