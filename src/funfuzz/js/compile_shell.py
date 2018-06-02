@@ -678,7 +678,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             # Print *with* a trailing newline to avoid breaking other stuff
             print("Updating to rev %s in the %s repository..." % (
                 updateToRev.decode("utf-8", errors="replace"),
-                shell.build_opts.repo_dir.decode("utf-8", errors="replace")))
+                str(shell.build_opts.repo_dir).decode("utf-8", errors="replace")))
             subprocess.run(["hg", "-R", shell.build_opts.repo_dir, "update", "-C", "-r", updateToRev],
                            check=True,
                            # pylint: disable=no-member

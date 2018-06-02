@@ -177,7 +177,7 @@ def verify_full_win_pageheap(shell_path):
     gflags_bin_path = Path(os.getenv("PROGRAMW6432")) / "Debugging Tools for Windows (x64)" / "gflags.exe"
     if gflags_bin_path.is_file() and shell_path.is_file():  # pylint: disable=no-member
         print(subprocess.run([str(gflags_bin_path).decode("utf-8", errors="replace"),
-                              "-p", "/enable", shell_path.decode("utf-8", errors="replace"), "/full"],
+                              "-p", "/enable", str(shell_path).decode("utf-8", errors="replace"), "/full"],
                              check=True,
                              stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE).stdout)
