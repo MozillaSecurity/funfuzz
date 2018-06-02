@@ -360,7 +360,7 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     missedCommonAncestor = False
 
     hg_parent_output = subprocess.run(
-        ["hg", "-R", repo_dir] + ["parent", "--template={node|short},", "-r", blamedRev],
+        ["hg", "-R", str(repo_dir)] + ["parent", "--template={node|short},", "-r", blamedRev],
         check=True,
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         stdout=subprocess.PIPE,

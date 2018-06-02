@@ -679,7 +679,8 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             print("Updating to rev %s in the %s repository..." % (
                 updateToRev.decode("utf-8", errors="replace"),
                 str(shell.build_opts.repo_dir).decode("utf-8", errors="replace")))
-            subprocess.run(["hg", "-R", shell.build_opts.repo_dir, "update", "-C", "-r", updateToRev],
+            subprocess.run(["hg", "-R", str(shell.build_opts.repo_dir),
+                            "update", "-C", "-r", updateToRev],
                            check=True,
                            # pylint: disable=no-member
                            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
