@@ -307,6 +307,7 @@ def init(args):
 
 # FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
 def interesting(_args, cwd_prefix):
+    cwd_prefix = Path(cwd_prefix)  # Lithium uses this function and cwd_prefix from Lithium is not a Path
     actualLevel = compareLevel(  # pylint: disable=invalid-name
         gOptions.jsengine, gOptions.flags, gOptions.infilename, cwd_prefix, gOptions, False, False)[0]
     return actualLevel >= gOptions.minimumInterestingLevel
