@@ -115,7 +115,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
-            if os_ops.grab_crash_log(str(runthis[0]), runinfo.pid, logPrefix, True):
+            if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
                 crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
