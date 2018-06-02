@@ -49,8 +49,9 @@ class CompileShellTests(unittest.TestCase):
             js.compile_shell.autoconf_run(tmp_dir)
 
     def test_ensure_cache_dir(self):
-        """Test the shell-cache dir is created properly if it does not exist."""
-        self.assertTrue(js.compile_shell.ensure_cache_dir().is_dir())
+        """Test the shell-cache dir is created properly if it does not exist, and things work even though it does."""
+        self.assertTrue(js.compile_shell.ensure_cache_dir(None).is_dir())
+        self.assertTrue(js.compile_shell.ensure_cache_dir(Path.home()).is_dir())  # pylint: disable=no-member
 
     @pytest.mark.slow
     @lru_cache(maxsize=None)
