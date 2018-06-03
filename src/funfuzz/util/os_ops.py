@@ -195,7 +195,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             close_fds=(os.name == "posix"),
             # Do not generate a core_file if gdb crashes in Linux
             preexec_fn=(disable_corefile if platform.system() == "Linux" else None)
-        )
+        ).returncode
         if dbbgr_exit_code != 0:
             print("Debugger exited with code %d : %s" % (dbbgr_exit_code, " ".join(quote(str(x)) for x in dbggr_cmd)))
         if use_logfiles:
