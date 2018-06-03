@@ -10,13 +10,13 @@ from __future__ import absolute_import
 
 from . import crashesat
 from . import create_collector
-from . import detect_malloc_errors
 from . import file_manipulation
 from . import fork_join
 from . import hg_helpers
-from . import link_js
 from . import lithium_helpers
 from . import lock_dir
+from . import os_ops
 from . import repos_update
 from . import s3cache
+from . import sm_compile_helpers
 from . import subprocesses

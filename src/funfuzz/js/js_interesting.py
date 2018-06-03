@@ -7,9 +7,10 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 from builtins import object  # pylint: disable=redefined-builtin
+import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
@@ -24,8 +25,8 @@ from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can
 
 from . import inspect_shell
 from ..util import create_collector
-from ..util import detect_malloc_errors
-from ..util import subprocesses as sps
+from ..util import file_manipulation
+from ..util import os_ops
 
 if sys.version_info.major == 2:
     if os.name == "posix":
@@ -68,12 +69,15 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
         # pylint: disable=too-many-locals,too-many-statements
-        pathToBinary = runthis[0]  # pylint: disable=invalid-name
+
+        # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
+        logPrefix = Path(logPrefix)
+        pathToBinary = runthis[0].expanduser().resolve()  # pylint: disable=invalid-name
         # This relies on the shell being a local one from compile_shell:
         # Ignore trailing ".exe" in Win, also abspath makes it work w/relative paths like "./js"
         # pylint: disable=invalid-name
-        assert os.path.isfile(os.path.abspath(pathToBinary + ".fuzzmanagerconf"))
-        pc = ProgramConfiguration.fromBinary(os.path.abspath(pathToBinary).split(".")[0])
+        assert pathToBinary.with_suffix(".fuzzmanagerconf").is_file()
+        pc = ProgramConfiguration.fromBinary(str(pathToBinary.parent / pathToBinary.stem))
         pc.addProgramArguments(runthis[1:-1])
 
         if options.valgrind:
@@ -82,9 +86,12 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 valgrindSuppressions() +
                 runthis)
 
-        preexec_fn = ulimitSet if os.name == "posix" else None
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
-        runinfo = timed_run.timed_run(runthis, options.timeout, logPrefix.encode("utf-8"), preexec_fn=preexec_fn)
+        runinfo = timed_run.timed_run(
+            [str(x) for x in runthis],  # Convert all Paths/bytes to strings for Lithium
+            options.timeout,
+            str(logPrefix).encode("utf-8"),
+            preexec_fn=set_ulimit)
 
         lev = JS_FINE
         issues = []
@@ -92,9 +99,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
-        with open(logPrefix + "-out.txt") as f:
+        out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+        with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
             out = f.readlines()
-        with open(logPrefix + "-err.txt") as f:
+        err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+        with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
@@ -105,10 +114,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
-            if sps.grabCrashLog(runthis[0], runinfo.pid, logPrefix, True):
-                with open(logPrefix + "-crash.txt") as f:
+            if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
+                crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+                with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
-        elif detect_malloc_errors.amiss(logPrefix):
+        elif file_manipulation.amiss(logPrefix):
             issues.append("malloc error")
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
         elif runinfo.return_code == 0 and not in_compare_jit:
@@ -133,13 +143,15 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
-            with open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r") as f:
+            with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
+                         encoding="utf-8", errors="replace") as f:
                 for line in f:
                     if line.rstrip() and not line.startswith("#") and not line.startswith("echo"):
                         extracted_gdb_cmds.append("-ex")
                         extracted_gdb_cmds.append("%s" % line.rstrip())
             no_main_log_gdb_log = subprocess.run(
-                ["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] + runthis,
+                (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
+                 [str(x) for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE
@@ -170,9 +182,10 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
 
         if lev != JS_FINE:
-            with open(logPrefix + "-summary.txt", "w") as f:
-                f.writelines(["Number: " + logPrefix + "\n",
-                              "Command: " + " ".join(quote(x) for x in runthis) + "\n"] +
+            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
+                f.writelines(["Number: " + str(logPrefix) + "\n",
+                              "Command: " + " ".join(quote(str(x)) for x in runthis) + "\n"] +
                              ["Status: " + i + "\n" for i in issues])
 
         self.lev = lev
@@ -236,8 +249,8 @@ def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,m
 
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
-    if os.path.exists(fn) and os.path.getsize(fn) > maxSize:
-        with open(fn, "r+") as f:
+    if fn.is_file() and fn.stat().st_size > maxSize:
+        with io.open(str(fn), "r+", encoding="utf-8", errors="replace") as f:
             f.truncate(maxSize)
 
 
@@ -250,30 +263,36 @@ def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,mis
     """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
-    os.remove(logPrefix + "-out.txt")
-    os.remove(logPrefix + "-err.txt")
-    if os.path.exists(logPrefix + "-crash.txt"):
-        os.remove(logPrefix + "-crash.txt")
-    if os.path.exists(logPrefix + "-vg.xml"):
-        os.remove(logPrefix + "-vg.xml")
+    (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt").unlink()
+    (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt").unlink()
+    crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+    if crash_log.is_file():
+        crash_log.unlink()
+    valgrind_xml = (logPrefix.parent / (logPrefix.stem + "-vg")).with_suffix(".xml")
+    if valgrind_xml.is_file():
+        valgrind_xml.unlink()
     # pylint: disable=fixme
     # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
-    if os.path.exists(logPrefix + "-core.gz"):
-        os.remove(logPrefix + "-core.gz")
+    core_gzip = (logPrefix.parent / (logPrefix.stem + "-core")).with_suffix(".gz")
+    if core_gzip.is_file():
+        core_gzip.unlink()
 
 
-def ulimitSet():  # pylint: disable=invalid-name
-    """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
-    # module only available on POSIX
-    import resource  # pylint: disable=import-error
+def set_ulimit():
+    """Sets appropriate resource limits for the JS shell when on POSIX."""
+    try:
+        import resource  # pylint: disable=import-error
 
-    # Limit address space to 2GB (or 1GB on ARM boards such as ODROID).
-    GB = 2**30  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_AS, (2 * GB, 2 * GB))
+        # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
+        giga_byte = 2**30
+        resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
 
-    # Limit corefiles to 0.5 GB.
-    halfGB = int(GB // 2)  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_CORE, (halfGB, halfGB))
+        # log.debug("Limit corefiles to 0.5 GB")
+        half_giga_byte = int(giga_byte // 2)
+        resource.setrlimit(resource.RLIMIT_CORE, (half_giga_byte, half_giga_byte))  # pylint: disable=no-member
+    except ImportError:
+        # log.debug("Skipping resource import as a non-POSIX platform was detected: %s", platform.system())
+        return
 
 
 def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -299,10 +318,10 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     if len(args) < 2:
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
-    options.jsengineWithArgs = args[1:]
-    options.collector = create_collector.createCollector("jsfunfuzz")
-    if not os.path.exists(options.jsengineWithArgs[0]):
-        raise Exception("js shell does not exist: " + options.jsengineWithArgs[0])
+    options.jsengineWithArgs = [Path(args[1]).resolve()] + args[2:-1] + [Path(args[-1]).resolve()]
+    assert options.jsengineWithArgs[0].is_file()  # js shell
+    assert options.jsengineWithArgs[-1].is_file()  # testcase
+    options.collector = create_collector.make_collector()
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
         options.jsengineWithArgs[0], "more-deterministic")
 
@@ -319,28 +338,31 @@ def init(args):  # pylint: disable=missing-docstring
 
 
 # FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
+def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
+    cwd_prefix = Path(cwd_prefix)  # Lithium uses this function and cwd_prefix from Lithium is not a Path
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)
-    truncateFile(tempPrefix + "-out.txt", 1000000)
-    truncateFile(tempPrefix + "-err.txt", 1000000)
+    res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)
+    out_log = (cwd_prefix.parent / (cwd_prefix.stem + "-out")).with_suffix(".txt")
+    err_log = (cwd_prefix.parent / (cwd_prefix.stem + "-err")).with_suffix(".txt")
+    truncateFile(out_log, 1000000)
+    truncateFile(err_log, 1000000)
     return res.lev >= gOptions.minimumInterestingLevel
 
 
 # For direct, manual use
 def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
-    tempPrefix = "m"  # pylint: disable=invalid-name
-    res = ShellResult(options, options.jsengineWithArgs, tempPrefix, False)  # pylint: disable=no-member
+    cwd_prefix = Path.cwd() / "m"
+    res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)  # pylint: disable=no-member
     print(res.lev)
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
             testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
             print("Submitting %s" % testcaseFilename)
             quality = 0
-            options.collector.submit(res.crashInfo, testcaseFilename, quality)  # pylint: disable=no-member
+            options.collector.submit(res.crashInfo, str(testcaseFilename), quality)  # pylint: disable=no-member
         else:
             print("Not submitting (not interesting)")
 

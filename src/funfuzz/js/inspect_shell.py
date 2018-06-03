@@ -7,15 +7,23 @@
 """Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
+import json
 import os
 import platform
+import sys
 
 from lithium.interestingness.utils import env_with_path
 from shellescape import quote
 
 from ..util import subprocesses as sps
+
+if sys.version_info.major == 2:
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    import subprocess
 
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
@@ -78,8 +86,12 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test if a binary is 32-bit or 64-bit."""
     # We can possibly use the python-magic-bin PyPI library in the future
-    unsplit_file_type = sps.captureStdout(["file", binary])[0]
-    filetype = unsplit_file_type.decode("utf-8", errors="replace").split(":", 1)[1]
+    unsplit_file_type = subprocess.run(
+        ["file", str(binary)],
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stdout=subprocess.PIPE,
+        timeout=99).stdout.decode("utf-8", errors="replace")
+    filetype = unsplit_file_type.split(":", 1)[1]
     if platform.system() == "Windows":
         assert "MS Windows" in filetype
         return "32" if "Intel 80386 32-bit" in filetype else "64"
@@ -133,11 +145,16 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
 def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
-    test_cmd = (constructVgCmdList() if useValgrind else []) + [shellPath] + args
-    sps.vdump("The testing command is: " + " ".join(quote(x) for x in test_cmd))
-    out, return_code = sps.captureStdout(test_cmd, combineStderr=True, ignoreStderr=True,
-                                         ignoreExitCode=True, env=env_with_path(
-                                             os.path.dirname(os.path.abspath(shellPath))))
+    test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
+    sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
+    test_cmd_result = subprocess.run(
+        test_cmd,
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        env=env_with_path(str(shellPath.parent)),
+        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        timeout=999)
+    out, return_code = test_cmd_result.stdout.decode("utf-8", errors="replace"), test_cmd_result.returncode
     sps.vdump("The exit code is: " + str(return_code))
     return out, return_code
 
@@ -151,14 +168,14 @@ def testJsShellOrXpcshell(s):  # pylint: disable=invalid-name,missing-param-doc,
 def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
-    ans = testBinary(s, ["-e", 'print(getBuildConfiguration()["' + parameter + '"])'],
-                     False)[0]
-    return ans.decode("utf-8", errors="replace").find("true") != -1
+    return json.loads(testBinary(s,
+                                 ["-e", 'print(getBuildConfiguration()["' + parameter + '"])'],
+                                 False)[0].rstrip().lower())
 
 
 def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Verify that the binary is compiled as intended."""
-    binary = sh.getShellCacheFullPath()
+    binary = sh.get_shell_cache_js_bin_path()
 
     assert archOfBinary(binary) == ("32" if sh.build_opts.enable32 else "64")
 

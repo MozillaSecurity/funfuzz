@@ -7,13 +7,18 @@
 """Functions dealing with multiple processes.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
+import io
 import multiprocessing
-import os
 import sys
 
 from past.builtins import range
+
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
@@ -23,7 +28,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
     def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
         print("==== %s ====" % fn)
         print()
-        with open(fn) as f:
+        with io.open(str(fn), "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 print(line.rstrip())
         print()
@@ -44,20 +49,29 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         p.join()
         print("=== Child process #%d exited with code %d ===" % (i, p.exitcode))
         print()
-        showFile(logFileName(logDir, i, "out"))
-        showFile(logFileName(logDir, i, "err"))
+        showFile(log_name(logDir, i, "out"))
+        showFile(log_name(logDir, i, "err"))
         print()
 
 
 # Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)
-def logFileName(logDir, i, t):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
-    return os.path.join(logDir, "forkjoin-" + str(i) + "-" + t + ".txt")
+def log_name(log_dir, i, log_type):
+    """Returns the path of the forkjoin log file as a string.
+
+    Args:
+        log_dir (str): Directory of the log file
+        i (int): Log number
+        log_type (str): Log type
+
+    Returns:
+        str: The forkjoin log file path
+    """
+    return str(Path(log_dir) / ("forkjoin-%s-%s.txt" % (i, log_type)))
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    sys.stdout = open(logFileName(logDir, i, "out"), "w", buffering=0)
-    sys.stderr = open(logFileName(logDir, i, "err"), "w", buffering=0)
+    sys.stdout = io.open(log_name(logDir, i, "out"), "wb", buffering=0)
+    sys.stderr = io.open(log_name(logDir, i, "err"), "wb", buffering=0)
     fun(*(someArgs + (i,)))
 
 
@@ -65,19 +79,19 @@ def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=inval
 # * "Green Chairs" from the first few processes
 # * A pause and error (with stack trace) from process 5
 # * "Green Chairs" again from the rest.
-def test_forkJoin():  # pylint: disable=invalid-name,missing-docstring
-    forkJoin(".", 8, test_forkJoin_inner, "Green", "Chairs")
+# def test_forkJoin():  # pylint: disable=invalid-name,missing-docstring
+#     forkJoin(".", 8, test_forkJoin_inner, "Green", "Chairs")
 
 
-def test_forkJoin_inner(adj, noun, forkjoin_id):  # pylint: disable=invalid-name,missing-docstring
-    import time
-    print("%s %s" % (adj, noun))
-    print(forkjoin_id)
-    if forkjoin_id == 5:
-        time.sleep(1)
-        raise NameError()
+# def test_forkJoin_inner(adj, noun, forkjoin_id):  # pylint: disable=invalid-name,missing-docstring
+#     import time
+#     print("%s %s" % (adj, noun))
+#     print(forkjoin_id)
+#     if forkjoin_id == 5:
+#         time.sleep(1)
+#         raise NameError()
 
 
-if __name__ == "__main__":
-    print("test_forkJoin():")
-    test_forkJoin()
+# if __name__ == "__main__":
+#     print("test_forkJoin():")
+#     test_forkJoin()

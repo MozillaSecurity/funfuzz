@@ -10,7 +10,7 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 from copy import deepcopy
 import logging
@@ -19,12 +19,12 @@ import platform
 import sys
 import time
 
-from . import subprocesses as sps
-
 if sys.version_info.major == 2:
+    from pathlib2 import Path
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
+    from pathlib import Path  # pylint: disable=import-error
     import subprocess
 
 
@@ -37,16 +37,16 @@ REPOS = ["gecko-dev", "octo"] + \
 
 if platform.system() == "Windows":
     # pylint: disable=invalid-name
-    git_64bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES"), "Git", "bin", "git.exe"))
-    git_32bit_path = os.path.normpath(os.path.join(os.getenv("PROGRAMFILES(X86)"), "Git", "bin", "git.exe"))
-    if os.path.isfile(git_64bit_path):
-        GITBINARY = git_64bit_path
-    elif os.path.isfile(git_32bit_path):
-        GITBINARY = git_32bit_path
+    git_64bit_path = Path(os.getenv("PROGRAMFILES")) / "Git" / "bin" / "git.exe"
+    git_32bit_path = Path(os.getenv("PROGRAMFILES(X86)")) / "Git" / "bin" / "git.exe"
+    if git_64bit_path.is_file():  # pylint: disable=no-member
+        GITBINARY = str(git_64bit_path)
+    elif git_32bit_path.is_file():  # pylint: disable=no-member
+        GITBINARY = str(git_32bit_path)
     else:
         raise OSError("Git binary not found")
 else:
-    GITBINARY = "git"
+    GITBINARY = str("git")
 
 
 def time_cmd(cmd, cwd=None, env=None, timeout=None):
@@ -77,7 +77,7 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     repo_types.append(".hg")
     repo_types.append(".git")
     for rtype in repo_types:
-        if os.path.isdir(os.path.join(r, rtype)):
+        if (r / rtype).is_dir():
             return rtype[1:]
     raise Exception("Type of repository located at " + r + " cannot be determined.")
 
@@ -85,20 +85,20 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
 def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Update a repository. Return False if missing; return True if successful; raise an exception if updating fails."""
-    assert os.path.isdir(repo)
+    repo.is_dir()
     repo_type = typeOfRepo(repo)
 
     if repo_type == "hg":
         hg_pull_cmd = ["hg", "--time", "pull", "-u"]
         logger.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
-        out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=repo, stderr=subprocess.PIPE)
+        out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=str(repo), stderr=subprocess.PIPE)
         logger.info('"%s" had the above output and took - %s',
                     subprocess.list2cmdline(out_hg_pull.args),
                     out_hg_pull.stderr)
 
         hg_log_default_cmd = ["hg", "--time", "log", "-r", "default"]
         logger.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
-        out_hg_log_default = subprocess.run(hg_log_default_cmd, check=True, cwd=repo,
+        out_hg_log_default = subprocess.run(hg_log_default_cmd, check=True, cwd=str(repo),
                                             stderr=subprocess.PIPE)
         logger.info('"%s" had the above output and took - %s',
                     subprocess.list2cmdline(out_hg_log_default.args),
@@ -108,7 +108,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
         gitenv = deepcopy(os.environ)
         if platform.system() == "Windows":
             gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
-        time_cmd([GITBINARY, "pull"], cwd=repo, env=gitenv)
+        time_cmd([GITBINARY, "pull"], cwd=str(repo), env=gitenv)
     else:
         raise Exception("Unknown repository type: " + repo_type)
 
@@ -117,15 +117,15 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
 def updateRepos():  # pylint: disable=invalid-name
     """Update Mercurial and Git repositories located in ~ and ~/trees ."""
-    home_dir = sps.normExpUserPath("~")
+    home_dir = Path.home()
     trees = [
-        os.path.normpath(os.path.join(home_dir)),
-        os.path.normpath(os.path.join(home_dir, "trees"))
+        home_dir,
+        home_dir / "trees"
     ]
     for tree in trees:
-        for name in sorted(os.listdir(tree)):
-            name_path = os.path.join(tree, name)
-            if os.path.isdir(name_path) and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
+        for name in sorted(os.listdir(str(tree))):
+            name_path = Path(tree) / name
+            if name_path.is_dir() and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
                 logger.info("Updating %s ...", name)
                 updateRepo(name_path)
 

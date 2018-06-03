@@ -7,7 +7,29 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
+
+import io
+
+
+def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
+    """Look for "szone_error" (Tiger), "malloc_error_break" (Leopard), "MallocHelp" (?)
+    which are signs of malloc being unhappy (double free, out-of-memory, etc).
+    """
+    found_something = False
+    err_log = (log_prefix.parent / (log_prefix.stem + "-err")).with_suffix(".txt")
+    with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip("\x07").rstrip("\n")
+            if (line.find("szone_error") != -1 or
+                    line.find("malloc_error_break") != -1 or
+                    line.find("MallocHelp") != -1):
+                print()
+                print(line)
+                found_something = True
+                break  # Don't flood the log with repeated malloc failures
+
+    return found_something
 
 
 def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -15,7 +37,7 @@ def fuzzSplice(filename):  # pylint: disable=invalid-name,missing-param-doc,miss
     """Return the lines of a file, minus the ones between the two lines containing SPLICE."""
     before = []
     after = []
-    with open(filename, "r") as f:
+    with io.open(str(filename), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
             before.append(line)
             if line.find("SPLICE") != -1:

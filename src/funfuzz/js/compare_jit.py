@@ -7,8 +7,9 @@
 """Test comparing the output of SpiderMonkey using various flags (usually JIT-related).
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
+import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys
@@ -16,22 +17,38 @@ import sys
 # These pylint errors exist because FuzzManager is not Python 3-compatible yet
 from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
 import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
-from past.builtins import range
 from shellescape import quote
 
 from . import js_interesting
 from . import shell_flags
 from ..util import create_collector
 from ..util import lithium_helpers
-from ..util import subprocesses as sps
+
+if sys.version_info.major == 2:
+    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
+    from pathlib2 import Path
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    from pathlib import Path  # pylint: disable=import-error
+    import subprocess
+    import tempfile
 
 gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name
 
 
-def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+def ignore_some_stderr(err_inp):
+    """Ignores parts of a list depending on whether they are needed.
+
+    Args:
+        err_inp (list): Stderr
+
+    Returns:
+        list: Stderr with potentially some lines removed
+    """
     lines = []
-    for line in e:
+    for line in err_inp:
         if line.endswith("malloc: enabling scribbling to detect mods to free blocks"):
             # MallocScribble prints a line that includes the process's pid.
             # We don't want to include that pid in the comparison!
@@ -44,14 +61,19 @@ def ignoreSomeOfStderr(e):  # pylint: disable=invalid-name,missing-docstring,mis
     return lines
 
 
-# For use by loop
-# Returns True if any kind of bug is found
-def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
-    # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    # pylint: disable=too-many-arguments,too-many-locals
+def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-many-arguments
+                flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
+    """For use in loop.py
 
+    Returns:
+        bool: True if any kind of bug is found, otherwise False
+    """
+    # pylint: disable=too-many-locals
+    # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
+    logPrefix = Path(logPrefix)
+    initialdir_name = (logPrefix.parent / (logPrefix.stem + "-initial"))
     # pylint: disable=invalid-name
-    cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-initial", options, False, True)
+    cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, True)
     lev = cl[0]
 
     if lev != js_interesting.JS_FINE:
@@ -61,7 +83,8 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
             print("Retesting %s after running Lithium:" % infilename)
-            retest_cl = compareLevel(jsEngine, flags, infilename, logPrefix + "-final", options, True, False)
+            finaldir_name = (logPrefix.parent / (logPrefix.stem + "-final"))
+            retest_cl = compareLevel(jsEngine, flags, infilename, finaldir_name, options, True, False)
             if retest_cl[0] != js_interesting.JS_FINE:
                 cl = retest_cl
                 quality = 0
@@ -74,7 +97,7 @@ def compare_jit(jsEngine, flags, infilename, logPrefix, repo, build_options_str,
         metadata = {}
         if autoBisectLog:
             metadata = {"autoBisectLog": "".join(autoBisectLog)}
-        options.collector.submit(cl[1], infilename, quality, metaData=metadata)
+        options.collector.submit(cl[1], str(infilename), quality, metaData=metadata)
         return True
 
     return False
@@ -88,6 +111,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # we also use it directly for knownPath, timeout, and collector
     # Return: (lev, crashInfo) or (js_interesting.JS_FINE, None)
 
+    assert isinstance(infilename, Path)
+
     combos = shell_flags.basic_flag_sets(jsEngine)
 
     if quickMode:
@@ -97,38 +122,39 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     if flags:
         combos.insert(0, flags)
 
-    commands = [[jsEngine] + combo + [infilename] for combo in combos]
+    commands = [[jsEngine] + combo + [str(infilename)] for combo in combos]
 
-    for i in range(0, len(commands)):
-        prefix = logPrefix + "-r" + str(i)
+    for i, command in enumerate(commands):
+        prefix = (logPrefix.parent / ("%s-r%s" % (logPrefix.stem, str(i))))
         command = commands[i]
         r = js_interesting.ShellResult(options, command, prefix, True)  # pylint: disable=invalid-name
 
         oom = js_interesting.oomed(r.err)
-        r.err = ignoreSomeOfStderr(r.err)
+        r.err = ignore_some_stderr(r.err)
 
         if (r.return_code == 1 or r.return_code == 2) and (anyLineContains(r.out, "[[script] scriptArgs*]") or (
                 anyLineContains(r.err, "[scriptfile] [scriptarg...]"))):
             print("Got usage error from:")
-            print("  %s" % " ".join(quote(x) for x in command))
+            print("  %s" % " ".join(quote(str(x)) for x in command))
             assert i
             js_interesting.deleteLogs(prefix)
         elif r.lev > js_interesting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
-            print("%s | %s" % (infilename,
+            print("%s | %s" % (str(infilename),
                                js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
                                                             r.lev,
                                                             r.runinfo.elapsedtime)))
-            with open(logPrefix + "-summary.txt", "w") as f:
-                f.write("\n".join(r.issues + [" ".join(quote(x) for x in command),
+            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
+                f.write("\n".join(r.issues + [" ".join(quote(str(x)) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
-            print("  %s" % " ".join(quote(x) for x in command))
+            print("  %s" % " ".join(quote(str(x)) for x in command))
             return (r.lev, r.crashInfo)
         elif r.lev != js_interesting.JS_FINE or r.return_code != 0:
-            print("%s | %s" % (infilename, js_interesting.summaryString(
+            print("%s | %s" % (str(infilename), js_interesting.summaryString(
                 r.issues + ["compare_jit is not comparing output, because the shell exited strangely"],
                 r.lev, r.runinfo.elapsedtime)))
-            print("  %s" % " ".join(quote(x) for x in command))
+            print("  %s" % " ".join(quote(str(x)) for x in command))
             js_interesting.deleteLogs(prefix)
             if not i:
                 return (js_interesting.JS_FINE, None)
@@ -136,7 +162,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
             message = "compare_jit is not comparing output: OOM"
-            print("%s | %s" % (infilename, js_interesting.summaryString(
+            print("%s | %s" % (str(infilename), js_interesting.summaryString(
                 r.issues + [message], r.lev, r.runinfo.elapsedtime)))
             js_interesting.deleteLogs(prefix)
             if not i:
@@ -163,18 +189,19 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
-                rerunCommand = " ".join(quote(x) for x in ["python -m funfuzz.js.compare_jit",
-                                                           "--flags=" + " ".join(flags),
-                                                           "--timeout=" + str(options.timeout),
-                                                           options.knownPath,
-                                                           jsEngine,
-                                                           os.path.basename(infilename)])
+                rerunCommand = " ".join(quote(str(x)) for x in ["python -m funfuzz.js.compare_jit",
+                                                                "--flags=" + " ".join(flags),
+                                                                "--timeout=" + str(options.timeout),
+                                                                options.knownPath,
+                                                                jsEngine,
+                                                                str(infilename.name)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
-                summary = ("  " + " ".join(quote(x) for x in commands[0]) + "\n  " +
-                           " ".join(quote(x) for x in command) + "\n\n" + summary)
-                with open(logPrefix + "-summary.txt", "w") as f:
+                summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
+                           " ".join(quote(str(x)) for x in command) + "\n\n" + summary)
+                summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+                with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                     f.write(rerunCommand + "\n\n" + summary)
-                print("%s | %s" % (infilename, js_interesting.summaryString(
+                print("%s | %s" % (str(infilename), js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)))
                 if quickMode:
                     print(rerunCommand)
@@ -196,25 +223,32 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
 
 # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix):
+def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix1):
     issues = []
     summary = ""
     if mismatchErr:
         issues.append("[Non-crash bug] Mismatch on stderr")
         summary += "[Non-crash bug] Mismatch on stderr\n"
-        summary += diffFiles(prefix0 + "-err.txt", prefix + "-err.txt")
+        err0_log = (prefix0.parent / (prefix0.stem + "-err")).with_suffix(".txt")
+        err1_log = (prefix1.parent / (prefix1.stem + "-err")).with_suffix(".txt")
+        summary += diffFiles(err0_log, err1_log)
     if mismatchOut:
         issues.append("[Non-crash bug] Mismatch on stdout")
         summary += "[Non-crash bug] Mismatch on stdout\n"
-        summary += diffFiles(prefix0 + "-out.txt", prefix + "-out.txt")
+        out0_log = (prefix0.parent / (prefix0.stem + "-out")).with_suffix(".txt")
+        out1_log = (prefix1.parent / (prefix1.stem + "-out")).with_suffix(".txt")
+        summary += diffFiles(out0_log, out1_log)
     return (summary, issues)
 
 
 def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Return a command to diff two files, along with the diff output (if it's short)."""
-    diffcmd = ["diff", "-u", f1, f2]
+    diffcmd = ["diff", "-u", str(f1), str(f2)]
     s = " ".join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
-    diff = sps.captureStdout(diffcmd, ignoreExitCode=True)[0]
+    diff = subprocess.run(diffcmd,
+                          cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                          stdout=subprocess.PIPE,
+                          timeout=99).stdout.decode("utf-8", errors="replace")
     if len(diff) < 10000:
         s += diff + "\n\n"  # pylint: disable=invalid-name
     else:
@@ -249,17 +283,17 @@ def parseOptions(args):  # pylint: disable=invalid-name
     options, args = parser.parse_args(args)
     if len(args) != 3:
         raise Exception("Wrong number of positional arguments. Need 3 (knownPath, jsengine, infilename).")
-    options.knownPath = args[0]
-    options.jsengine = args[1]
-    options.infilename = args[2]
+    options.knownPath = Path(args[0]).expanduser().resolve()
+    options.jsengine = Path(args[1]).expanduser().resolve()
+    options.infilename = Path(args[2]).expanduser().resolve()
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
-    if not os.path.exists(options.jsengine):
-        raise Exception("js shell does not exist: " + options.jsengine)
+    if not options.jsengine.is_file():
+        raise OSError("js shell does not exist: " + options.jsengine)
 
     # For js_interesting:
     options.valgrind = False
     options.shellIsDeterministic = True  # We shouldn't be in compare_jit with a non-deterministic build
-    options.collector = create_collector.createCollector("jsfunfuzz")
+    options.collector = create_collector.make_collector()
 
     return options
 
@@ -271,18 +305,18 @@ def init(args):
 
 
 # FIXME: _args is unused here, we should check if it can be removed?  # pylint: disable=fixme
-def interesting(_args, tempPrefix):  # pylint: disable=invalid-name
+def interesting(_args, cwd_prefix):
+    cwd_prefix = Path(cwd_prefix)  # Lithium uses this function and cwd_prefix from Lithium is not a Path
     actualLevel = compareLevel(  # pylint: disable=invalid-name
-        gOptions.jsengine, gOptions.flags, gOptions.infilename, tempPrefix, gOptions, False, False)[0]
+        gOptions.jsengine, gOptions.flags, gOptions.infilename, cwd_prefix, gOptions, False, False)[0]
     return actualLevel >= gOptions.minimumInterestingLevel
 
 
 def main():
-    import tempfile
     options = parseOptions(sys.argv[1:])
     print(compareLevel(
         options.jsengine, options.flags, options.infilename,  # pylint: disable=no-member
-        tempfile.mkdtemp("compare_jitmain"), options, True, False)[0])
+        Path(tempfile.mkdtemp("compare_jitmain")), options, True, False)[0])
 
 
 if __name__ == "__main__":

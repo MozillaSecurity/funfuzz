@@ -11,11 +11,16 @@ from __future__ import absolute_import, division, unicode_literals  # isort:skip
 
 import io
 import logging
-import os
+import sys
 import tarfile
 import zipfile
 
 import requests
+
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+else:
+    from pathlib import Path  # pylint: disable=import-error
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
 
@@ -41,7 +46,8 @@ def get_coverage_build(dirpath, args):
 
     js_cov_bin_name = "js"
     js_cov_bin = extract_folder / "dist" / "bin" / js_cov_bin_name
-    os.chmod(str(js_cov_bin), os.stat(str(js_cov_bin)).st_mode | 0o111)  # Ensure the js binary is executable
+
+    Path.chmod(js_cov_bin, Path.stat(js_cov_bin).st_mode | 0o111)  # Ensure the js binary is executable
     assert js_cov_bin.is_file()
 
     # Check that the binary is non-debug.

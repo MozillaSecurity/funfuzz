@@ -8,18 +8,20 @@
 released.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 from builtins import object  # pylint: disable=redefined-builtin
-import os
 
 
-class LockDir(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
+class LockDir(object):  # pylint: disable=too-few-public-methods
     """Create a filesystem-based lock while in scope.
 
     Use:
         with LockDir(path):
             # No other code is concurrently using LockDir(path)
+
+    Args:
+        directory (str): Lock directory name
     """
 
     def __init__(self, directory):
@@ -27,10 +29,10 @@ class LockDir(object):  # pylint: disable=missing-param-doc,missing-type-doc,too
 
     def __enter__(self):
         try:
-            os.mkdir(self.directory)
+            self.directory.mkdir()
         except OSError:
-            print("Lock file exists: %s" % self.directory)
+            print("Lock directory exists: %s" % self.directory)
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        os.rmdir(self.directory)
+        self.directory.rmdir()

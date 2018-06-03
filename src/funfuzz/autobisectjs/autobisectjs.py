@@ -7,13 +7,12 @@
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, unicode_literals  # isort:skip
 
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -27,8 +26,17 @@ from ..js import compile_shell
 from ..js import inspect_shell
 from ..util import hg_helpers
 from ..util import s3cache
+from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
+
+if sys.version_info.major == 2:
+    from pathlib2 import Path
+    if os.name == "posix":
+        import subprocess32 as subprocess  # pylint: disable=import-error
+else:
+    from pathlib import Path  # pylint: disable=import-error
+    import subprocess
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -112,16 +120,17 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         print_("TBD: Bisection using downloaded shells is temporarily not supported.", flush=True)
         sys.exit(0)
 
-    options.build_options = build_options.parseShellOptions(options.build_options)
+    options.build_options = build_options.parse_shell_opts(options.build_options)
     options.skipRevs = " + ".join(kbew.known_broken_ranges(options.build_options))
 
-    options.paramList = [sps.normExpUserPath(x) for x in options.parameters.split(" ") if x]
+    options.runtime_params = [x for x in options.parameters.split(" ") if x]
+
     # First check that the testcase is present.
-    if "-e 42" not in options.parameters and not os.path.isfile(options.paramList[-1]):
+    if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
         print_(flush=True)
-        print_("List of parameters to be passed to the shell is: %s" % " ".join(options.paramList), flush=True)
+        print_("List of parameters to be passed to the shell is: %s" % " ".join(options.runtime_params), flush=True)
         print_(flush=True)
-        raise Exception("Testcase at " + options.paramList[-1] + " is not present.")
+        raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
 
@@ -141,24 +150,24 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         options.testAndLabel = internalTestAndLabel(options)
 
     earliestKnownQuery = kbew.earliest_known_working_rev(  # pylint: disable=invalid-name
-        options.build_options, options.paramList + extraFlags, options.skipRevs)
+        options.build_options, options.runtime_params + extraFlags, options.skipRevs)
 
     earliestKnown = ""  # pylint: disable=invalid-name
 
     if not options.useTreeherderBinaries:
         # pylint: disable=invalid-name
-        earliestKnown = hg_helpers.getRepoHashAndId(options.build_options.repoDir, repoRev=earliestKnownQuery)[0]
+        earliestKnown = hg_helpers.get_repo_hash_and_id(options.build_options.repo_dir, repo_rev=earliestKnownQuery)[0]
 
     if options.startRepo is None:
         if options.useTreeherderBinaries:
             options.startRepo = "default"
         else:
             options.startRepo = earliestKnown
-    # elif not (options.useTreeherderBinaries or hg_helpers.isAncestor(options.build_options.repoDir,
+    # elif not (options.useTreeherderBinaries or hg_helpers.isAncestor(options.build_options.repo_dir,
     #                                                              earliestKnown, options.startRepo)):
     #     raise Exception("startRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration")
     #
-    # if not options.useTreeherderBinaries and not hg_helpers.isAncestor(options.build_options.repoDir,
+    # if not options.useTreeherderBinaries and not hg_helpers.isAncestor(options.build_options.repo_dir,
     #                                                                earliestKnown, options.endRepo):
     #     raise Exception("endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration")
 
@@ -172,29 +181,36 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     return options
 
 
-def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
+def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
     # pylint: disable=too-many-locals,too-many-statements
-    print_("%s | Bisecting on: %s" % (time.asctime(), repoDir), flush=True)
+    repo_dir = str(repo_dir)
+    print_("%s | Bisecting on: %s" % (time.asctime(), repo_dir), flush=True)
 
-    hgPrefix = ["hg", "-R", repoDir]  # pylint: disable=invalid-name
+    hgPrefix = ["hg", "-R", repo_dir]  # pylint: disable=invalid-name
 
     # Resolve names such as "tip", "default", or "52707" to stable hg hash ids, e.g. "9f2641871ce8".
     # pylint: disable=invalid-name
-    realStartRepo = sRepo = hg_helpers.getRepoHashAndId(repoDir, repoRev=options.startRepo)[0]
+    realStartRepo = sRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.startRepo)[0]
     # pylint: disable=invalid-name
-    realEndRepo = eRepo = hg_helpers.getRepoHashAndId(repoDir, repoRev=options.endRepo)[0]
+    realEndRepo = eRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.endRepo)[0]
     sps.vdump("Bisecting in the range " + sRepo + ":" + eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
-        subprocess.check_call(hgPrefix + ["update", "-C", "default"])
+        subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
         # Throws exit code 255 if purge extension is not enabled in .hgrc:
-        subprocess.check_call(hgPrefix + ["purge", "--all"])
+        subprocess.run(hgPrefix + ["purge", "--all"], check=True)
 
     # Reset bisect ranges and set skip ranges.
-    sps.captureStdout(hgPrefix + ["bisect", "-r"])
+    subprocess.run(hgPrefix + ["bisect", "-r"],
+                   check=True,
+                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   timeout=99)
     if options.skipRevs:
-        sps.captureStdout(hgPrefix + ["bisect", "--skip", options.skipRevs])
+        subprocess.run(hgPrefix + ["bisect", "--skip", options.skipRevs],
+                       check=True,
+                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                       timeout=300)
 
     labels = {}
     # Specify `hg bisect` ranges.
@@ -203,9 +219,15 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
     else:
         labels[sRepo] = ("good", "assumed start rev is good")
         labels[eRepo] = ("bad", "assumed end rev is bad")
-        subprocess.check_call(hgPrefix + ["bisect", "-U", "-g", sRepo])
+        subprocess.run(hgPrefix + ["bisect", "-U", "-g", sRepo], check=True)
+        mid_bisect_output = subprocess.run(
+            hgPrefix + ["bisect", "-U", "-b", eRepo],
+            check=True,
+            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            stdout=subprocess.PIPE,
+            timeout=300).stdout.decode("utf-8", errors="replace")
         currRev = hg_helpers.get_cset_hash_from_bisect_msg(
-            sps.captureStdout(hgPrefix + ["bisect", "-U", "-b", eRepo])[0].split("\n")[0])
+            mid_bisect_output.split("\n"))
 
     iterNum = 1
     if options.testInitialRevs:
@@ -248,15 +270,18 @@ def findBlamedCset(options, repoDir, testRev):  # pylint: disable=invalid-name,m
         print_("This iteration took %.3f seconds to run." % oneRunTime, flush=True)
 
     if blamedRev is not None:
-        checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
+        checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
     sps.vdump("Resetting bisect")
-    subprocess.check_call(hgPrefix + ["bisect", "-U", "-r"])
+    subprocess.run(hgPrefix + ["bisect", "-U", "-r"], check=True)
 
     sps.vdump("Resetting working directory")
-    sps.captureStdout(hgPrefix + ["update", "-C", "-r", "default"], ignoreStderr=True)
-    hg_helpers.destroyPyc(repoDir)
+    subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
+                   check=True,
+                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   timeout=999)
+    hg_helpers.destroyPyc(repo_dir)
 
     print_(time.asctime(), flush=True)
 
@@ -267,7 +292,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
     def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc,too-many-return-statements
         # pylint: disable=invalid-name
-        (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.paramList,
+        (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.runtime_params,
                                                             options.build_options.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
@@ -310,30 +335,37 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
 
     def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        conditionArgs = conditionArgPrefix + [shellFilename] + options.paramList  # pylint: disable=invalid-name
-        tempDir = tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash)  # pylint: disable=invalid-name
-        tempPrefix = os.path.join(tempDir, "t")  # pylint: disable=invalid-name
+        # pylint: disable=invalid-name
+        conditionArgs = conditionArgPrefix + [str(shellFilename)] + options.runtime_params
+        temp_dir = Path(tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash))
+        temp_prefix = temp_dir / "t"
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
             conditionScript.init(conditionArgs)
-        if conditionScript.interesting(conditionArgs, tempPrefix):
+        if conditionScript.interesting(conditionArgs, str(temp_prefix)):
             innerResult = ("bad", "interesting")  # pylint: disable=invalid-name
         else:
             innerResult = ("good", "not interesting")  # pylint: disable=invalid-name
-        if os.path.isdir(tempDir):
-            sps.rmTreeIncludingReadOnly(tempDir)
+        if temp_dir.is_dir():
+            sps.rm_tree_incl_readonly(str(temp_dir))
         return innerResult
     return inner
 
 
 # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-many-arguments
-def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
+def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, startRepo, endRepo):
     """If bisect blamed a merge, try to figure out why."""
+    repo_dir = str(repo_dir)
     bisectLied = False
     missedCommonAncestor = False
 
-    parents = sps.captureStdout(["hg", "-R", repoDir] + ["parent", "--template={node|short},",
-                                                         "-r", blamedRev])[0].split(",")[:-1]
+    hg_parent_output = subprocess.run(
+        ["hg", "-R", str(repo_dir)] + ["parent", "--template={node|short},", "-r", blamedRev],
+        check=True,
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stdout=subprocess.PIPE,
+        timeout=99).stdout.decode("utf-8", errors="replace")
+    parents = hg_parent_output.split(",")[:-1]
 
     if len(parents) == 1:
         return
@@ -343,8 +375,8 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
         if labels.get(p) is None:
             print_(flush=True)
             print_("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p, flush=True)
-            if not hg_helpers.isAncestor(repoDir, startRepo, p) and \
-                    not hg_helpers.isAncestor(repoDir, endRepo, p):
+            if not hg_helpers.isAncestor(repo_dir, startRepo, p) and \
+                    not hg_helpers.isAncestor(repo_dir, endRepo, p):
                 print_("We did not test rev %s because it is not a descendant of either %s or %s." % (
                     p, startRepo, endRepo), flush=True)
                 # Note this in case we later decide the bisect result is wrong.
@@ -366,7 +398,7 @@ def checkBlameParents(repoDir, blamedRev, blamedGoodOrBad, labels, testRev, star
     # Explain why bisect blamed the merge.
     if bisectLied:
         if missedCommonAncestor:
-            ca = hg_helpers.findCommonAncestor(repoDir, parents[0], parents[1])
+            ca = hg_helpers.findCommonAncestor(repo_dir, parents[0], parents[1])
             print_(flush=True)
             print_("Bisect blamed the merge because our initial range did not include one", flush=True)
             print_("of the parents.", flush=True)
@@ -394,7 +426,7 @@ def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-ret
     for line in msgList:
         if line.find("<") != -1 and line.find("@") != -1 and line.find(">") != -1:
             line = " ".join(line.split(" ")[:-1])
-        elif line.startswith("changeset:") and "mozilla-central" in repo:
+        elif line.startswith("changeset:") and "mozilla-central" in str(repo):
             line = "changeset:   https://hg.mozilla.org/mozilla-central/rev/" + line.split(":")[-1]
         sanitizedMsgList.append(line)
     return "\n".join(sanitizedMsgList)
@@ -405,15 +437,20 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     # pylint: disable=too-many-arguments
     """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
-    outputResult = sps.captureStdout(hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev])[0]
+    outputResult = subprocess.run(
+        hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev],
+        check=True,
+        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        stdout=subprocess.PIPE,
+        timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
 
     if options.build_options:
-        repoDir = options.build_options.repoDir
+        repo_dir = options.build_options.repo_dir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
         print_(flush=True)
-        print_(sanitizeCsetMsg(outputResult, repoDir), flush=True)
+        print_(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
         print_(flush=True)
         return None, None, None, startRepo, endRepo
 
@@ -424,7 +461,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         print_(flush=True)
         print_("autobisectjs shows this is probably related to the following changeset:", flush=True)
         print_(flush=True)
-        print_(sanitizeCsetMsg(outputResult, repoDir), flush=True)
+        print_(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
         print_(flush=True)
         blamedGoodOrBad = m.group(1)
         blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
@@ -439,8 +476,8 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
         print_("Resetting to default revision...", flush=True)
-        subprocess.check_call(hgPrefix + ["update", "-C", "default"])
-        hg_helpers.destroyPyc(repoDir)
+        subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
+        hg_helpers.destroyPyc(repo_dir)
         raise Exception("hg did not suggest a changeset to test!")
 
     # Update the startRepo/endRepo values.
@@ -456,8 +493,15 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     return None, None, currRev, start, end
 
 
-def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing-type-doc
-    """Remove old local cached directories, which were created four weeks ago."""
+def rm_old_local_cached_dirs(cache_dir):
+    """Remove old local cached directories, which were created four weeks ago.
+
+    Args:
+        cache_dir (Path): Full path to the cache directory
+    """
+    assert isinstance(cache_dir, Path)
+    cache_dir = cache_dir.expanduser()
+
     # This is in autobisectjs because it has a lock so we do not race while removing directories
     # Adapted from http://stackoverflow.com/a/11337407
     SECONDS_IN_A_DAY = 24 * 60 * 60
@@ -467,14 +511,13 @@ def rmOldLocalCachedDirs(cacheDir):  # pylint: disable=missing-param-doc,missing
     else:
         NUMBER_OF_DAYS = 28
 
-    cacheDir = sps.normExpUserPath(cacheDir)
-    names = [os.path.join(cacheDir, fname) for fname in os.listdir(cacheDir)]
+    names = [cache_dir / x for x in cache_dir.iterdir()]
 
     for name in names:
-        if os.path.isdir(name):
-            timediff = time.mktime(time.gmtime()) - os.stat(name).st_atime
+        if name.is_dir():
+            timediff = time.mktime(time.gmtime()) - Path.stat(name).st_atime
             if timediff > SECONDS_IN_A_DAY * NUMBER_OF_DAYS:
-                shutil.rmtree(name)
+                shutil.rmtree(str(name))
 
 
 def main():
@@ -482,16 +525,16 @@ def main():
     options = parseOpts()
 
     if options.build_options:
-        repoDir = options.build_options.repoDir
+        repo_dir = options.build_options.repo_dir
 
-    with LockDir(compile_shell.getLockDirPath(options.nameOfTreeherderBranch, tboxIdentifier="Tbox")
-                 if options.useTreeherderBinaries else compile_shell.getLockDirPath(repoDir)):
+    with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
+                 if options.useTreeherderBinaries else sm_compile_helpers.get_lock_dir_path(Path.home(), repo_dir)):
         if options.useTreeherderBinaries:
             print_("TBD: We need to switch to the autobisect repository.", flush=True)
             sys.exit(0)
         else:  # Bisect using local builds
-            findBlamedCset(options, repoDir, compile_shell.makeTestRev(options))
+            findBlamedCset(options, repo_dir, compile_shell.makeTestRev(options))
 
         # Last thing we do while we have a lock.
         # Note that this only clears old *local* cached directories, not remote ones.
-        rmOldLocalCachedDirs(compile_shell.ensureCacheDir())
+        rm_old_local_cached_dirs(sm_compile_helpers.ensure_cache_dir(Path.home()))

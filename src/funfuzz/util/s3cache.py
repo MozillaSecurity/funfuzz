@@ -7,7 +7,7 @@
 """Functions here interact with Amazon EC2 using boto.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
+from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 from builtins import object  # pylint: disable=redefined-builtin
 import os
