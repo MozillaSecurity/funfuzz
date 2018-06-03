@@ -12,7 +12,7 @@ EXTRAS[':python_version=="2.7"'] = [
     "mercurial>=4.5.3",
     "backports.tempfile>=1.0",
     "functools32>=3.2.3.post2",
-    "subprocess32>=3.5.0rc1",
+    "subprocess32>=3.5.1",
 ]
 EXTRAS["test"] = [
     "codecov==2.0.15",
