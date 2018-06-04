@@ -622,7 +622,7 @@ def sm_compile(shell):
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         shell = CompiledShell(options.build_options, rev)
-        print("Rev %s:" % rev.decode("utf-8", errors="replace"), end=" ")
+        print("Rev %s:" % rev, end=" ")
 
         try:
             obtainShell(shell, updateToRev=rev)
@@ -680,8 +680,8 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if updateToRev:
             # Print *with* a trailing newline to avoid breaking other stuff
             print("Updating to rev %s in the %s repository..." % (
-                updateToRev.decode("utf-8", errors="replace"),
-                str(shell.build_opts.repo_dir).decode("utf-8", errors="replace")))
+                updateToRev,
+                str(shell.build_opts.repo_dir)))
             subprocess.run(["hg", "-R", str(shell.build_opts.repo_dir),
                             "update", "-C", "-r", updateToRev],
                            check=True,
