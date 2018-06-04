@@ -59,7 +59,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
 
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdb_path = win64_debugging_folder / "cdb.exe"
-    if cdb_path.is_file():  # pylint: disable=no-member
+    if not cdb_path.is_file():  # pylint: disable=no-member
         print()
         print("WARNING: cdb.exe is not found - all crashes will be interesting.")
         print()
