@@ -90,11 +90,15 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if not platform.system() == "Windows":
             timed_run_kw = {"preexec_fn": set_ulimit}
 
+        lithium_logPrefix = str(logPrefix).encode("utf-8")
+        if isinstance(lithium_logPrefix, bytes):  # Total hack to make Python 2/3 work with Lithium
+            lithium_logPrefix = lithium_logPrefix.decode("utf-8", errors="replace")
+
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
         runinfo = timed_run.timed_run(
             [str(x) for x in runthis],  # Convert all Paths/bytes to strings for Lithium
             options.timeout,
-            str(logPrefix).encode("utf-8"),
+            lithium_logPrefix,
             **timed_run_kw)
 
         lev = JS_FINE
