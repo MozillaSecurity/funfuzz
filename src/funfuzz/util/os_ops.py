@@ -186,7 +186,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
         dbbgr_exit_code = subprocess.run(
-            dbggr_cmd,
+            [str(x) for x in dbggr_cmd],
             stdin=None,
             stderr=subprocess.STDOUT,
             stdout=io.open(str(crash_log), "w", encoding="utf-8", errors="replace") if use_logfiles else None,
