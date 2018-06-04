@@ -50,7 +50,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
     """
     assert platform.system() == "Windows"
     # Look for a minidump.
-    dump_name = Path.home() / "AppData" / "Local" / "CrashDumps" / "%s.%s.dmp" % (prog_full_path.name, crashed_pid)
+    dump_name = Path.home() / "AppData" / "Local" / "CrashDumps" / ("%s.%s.dmp" % (prog_full_path.name, crashed_pid))
 
     if platform.uname()[2] == "10":  # Windows 10
         win64_debugging_folder = Path(os.getenv("PROGRAMFILES(X86)")) / "Windows Kits" / "10" / "Debuggers" / "x64"
