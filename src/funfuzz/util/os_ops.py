@@ -182,7 +182,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         dbggr_cmd = None
 
     if dbggr_cmd:
-        sps.vdump(" ".join(dbggr_cmd))
+        sps.vdump(" ".join([str(x) for x in dbggr_cmd]))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
         dbbgr_exit_code = subprocess.run(
