@@ -160,7 +160,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     """
     progname = prog_full_path.name
 
-    use_logfiles = isinstance(log_prefix, ("".__class__, u"".__class__, bytes))
+    use_logfiles = isinstance(log_prefix, ("".__class__, u"".__class__, bytes, Path))
     crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
     core_file = (log_prefix.parent / (log_prefix.stem + "-core"))
 
