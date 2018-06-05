@@ -46,7 +46,7 @@ def get_coverage_build(dirpath, args):
     build_zip.extractall(str(extract_folder.resolve()))
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
 
-    js_cov_bin_name = "js"
+    js_cov_bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
     js_cov_bin = extract_folder / "dist" / "bin" / js_cov_bin_name
 
     Path.chmod(js_cov_bin, Path.stat(js_cov_bin).st_mode | 0o111)  # Ensure the js binary is executable
@@ -71,7 +71,17 @@ def get_grcov(dirpath, args):
         dirpath (Path): Directory in which build is to be downloaded in.
         args (class): Command line arguments.
     """
-    grcov_filename_with_ext = "grcov-linux-x86_64.tar.bz2"
+    append_os = ""
+    if platform.system() == "Linux":
+        append_os = "linux"
+    elif platform.system() == "Darwin":
+        append_os = "osx"
+    elif platform.system() == "Windows":
+        append_os = "win"
+    else:
+        raise OSError("Unknown unsupported platform:", platform.system())
+    grcov_filename_with_ext = "grcov-%s-x86_64.tar.bz2" % append_os
+
     grcov_url = "https://github.com/marco-c/grcov/releases/download/v%s/%s" % (args.grcov_ver, grcov_filename_with_ext)
 
     RUN_COV_LOG.info("Downloading grcov into %s from %s", str(dirpath), grcov_url)
@@ -83,4 +93,5 @@ def get_grcov(dirpath, args):
             f.extractall(str(grcov_bin_folder.resolve()))
 
     RUN_COV_LOG.info("grcov tarball extracted to this folder: %s", grcov_bin_folder.resolve())
-    assert (grcov_bin_folder / "grcov").is_file()
+    grcov_bin = grcov_bin_folder / "grcov" + (".exe" if platform.system() == "Windows" else "")
+    assert grcov_bin.is_file()
