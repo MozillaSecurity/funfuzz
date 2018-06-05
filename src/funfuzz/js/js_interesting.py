@@ -91,7 +91,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             timed_run_kw = {"preexec_fn": set_ulimit}
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
-        if isinstance(lithium_logPrefix, bytes):  # Total hack to make Python 2/3 work with Lithium
+        # Total hack to make Python 2/3 work with Lithium
+        if sys.version_info.major == 3 and isinstance(lithium_logPrefix, bytes):
             # pylint: disable=redefined-variable-type
             lithium_logPrefix = lithium_logPrefix.decode("utf-8", errors="replace")
 
