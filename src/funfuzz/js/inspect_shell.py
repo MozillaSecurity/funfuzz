@@ -170,7 +170,7 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     return json.loads(testBinary(s,
                                  ["-e", 'print(getBuildConfiguration()["' + parameter + '"])'],
-                                 False)[0].rstrip().lower())
+                                 False, stderr=subprocess.DEVNULL)[0].rstrip().lower())
 
 
 def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
