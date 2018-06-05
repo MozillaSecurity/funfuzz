@@ -92,7 +92,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
         # Total hack to make Python 2/3 work with Lithium
-        if isinstance(lithium_logPrefix, b"".__class__):
+        if sys.version_info.major == 3 and isinstance(lithium_logPrefix, b"".__class__):
             # pylint: disable=redefined-variable-type
             lithium_logPrefix = lithium_logPrefix.decode("utf-8", errors="replace")
 
