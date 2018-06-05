@@ -63,6 +63,8 @@ def get_coverage_build(dirpath, args):
     js_cov_unified_gcno = extract_folder / "js" / "src" / "Unified_cpp_js_src0.gcno"
     assert js_cov_unified_gcno.is_file()
 
+    return js_cov_bin
+
 
 def get_grcov(dirpath, args):
     """Gets a grcov binary.
@@ -95,3 +97,5 @@ def get_grcov(dirpath, args):
     RUN_COV_LOG.info("grcov tarball extracted to this folder: %s", grcov_bin_folder.resolve())
     grcov_bin = grcov_bin_folder / "grcov" + (".exe" if platform.system() == "Windows" else "")
     assert grcov_bin.is_file()
+
+    return grcov_bin
