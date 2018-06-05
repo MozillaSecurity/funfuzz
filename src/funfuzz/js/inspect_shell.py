@@ -142,8 +142,8 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
         raise Exception("Unexpected exit code in shellSupports " + str(return_code))
 
 
-def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc
+def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylint: disable=invalid-name
+    # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
     sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
@@ -151,7 +151,7 @@ def testBinary(shellPath, args, useValgrind):  # pylint: disable=invalid-name,mi
         test_cmd,
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         env=env_with_path(str(shellPath.parent)),
-        stderr=subprocess.STDOUT,
+        stderr=stderr,
         stdout=subprocess.PIPE,
         timeout=999)
     out, return_code = test_cmd_result.stdout.decode("utf-8", errors="replace"), test_cmd_result.returncode
