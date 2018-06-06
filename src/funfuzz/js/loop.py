@@ -123,8 +123,8 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
             if filename.endswith(".js")]
 
 
-def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=invalid-name,missing-docstring,too-complex
-    # pylint: disable=too-many-branches,too-many-locals,too-many-statements,unused-argument
+def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint: disable=invalid-name,missing-docstring
+    # pylint: disable=too-many-branches,too-complex,too-many-locals,too-many-statements,unused-argument
     options = parseOpts(args)
     # engineFlags is overwritten later if --random-flags is set.
     engineFlags = options.engineFlags  # pylint: disable=invalid-name
@@ -166,9 +166,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
         iteration += 1
         logPrefix = wtmpDir / ("w" + str(iteration))  # pylint: disable=invalid-name
 
+        env = {}  # default environment will be used
+        if ccoverage:
+            env["GCOV_PREFIX_STRIP"] = 13  # Assumes ccoverage build from b.f.m.o
+            env["GCOV_PREFIX"] = str(wtmpDir)
+
         res = js_interesting.ShellResult(js_interesting_options,
                                          # pylint: disable=no-member
-                                         js_interesting_options.jsengineWithArgs, logPrefix, False)
+                                         js_interesting_options.jsengineWithArgs, logPrefix, False, env)
 
         if res.lev != js_interesting.JS_FINE:
             out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
@@ -285,4 +290,4 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
 if __name__ == "__main__":
     # pylint: disable=no-member
     many_timed_runs(None, sps.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
-                    sys.argv[1:], create_collector.make_collector())
+                    sys.argv[1:], create_collector.make_collector(), False)
