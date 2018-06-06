@@ -101,12 +101,14 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
     """
     assert os.name == "posix"
     # On Mac and Linux, look for a core file.
-    core_name = None
+    core_name = ""
+    core_name_path = Path()
     if platform.system() == "Darwin":
         # Core files will be generated if you do:
         #   mkdir -p /cores/
         #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
         core_name = "/cores/core." + str(crashed_pid)
+        core_name_path = Path(core_name)
     elif platform.system() == "Linux":
         is_pid_used = False
         core_uses_pid_path = Path("/proc/sys/kernel/core_uses_pid")
