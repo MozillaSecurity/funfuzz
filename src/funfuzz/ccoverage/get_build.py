@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, unicode_literals  # isort:skip
 
 import io
 import logging
+import platform
 import sys
 import tarfile
 import zipfile
