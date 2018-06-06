@@ -146,7 +146,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             print("Out of time!")
             fuzzjs.unlink()
             if not os.listdir(str(wtmpDir)):
-                wtmpDir.remove()
+                wtmpDir.rmdir()
             break
 
         # Construct command needed to loop jsfunfuzz fuzzing.
