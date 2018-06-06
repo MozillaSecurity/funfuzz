@@ -34,6 +34,9 @@ def get_coverage_build(dirpath, args):
     Args:
         dirpath (Path): Directory in which build is to be downloaded in.
         args (class): Command line arguments.
+
+    Returns:
+        Path: Path to the js coverage build
     """
     RUN_COV_LOG.info("Downloading coverage build zip file into %s from %s", str(dirpath), args.url)
     with requests.get(args.url, stream=True) as f:
@@ -73,6 +76,12 @@ def get_grcov(dirpath, args):
     Args:
         dirpath (Path): Directory in which build is to be downloaded in.
         args (class): Command line arguments.
+
+    Raises:
+        OSError: Raises if the current platform is neither Windows, Linux nor macOS
+
+    Returns:
+        Path: Path to the grcov binary file
     """
     append_os = ""
     if platform.system() == "Linux":
