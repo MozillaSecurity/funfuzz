@@ -68,7 +68,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit, env=None):  # pylint: disable=too-complex
-        # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+        # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
 
         # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
         logPrefix = Path(logPrefix)
