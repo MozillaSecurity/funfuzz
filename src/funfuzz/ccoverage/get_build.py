@@ -95,7 +95,7 @@ def get_grcov(dirpath, args):
             f.extractall(str(grcov_bin_folder.resolve()))
 
     RUN_COV_LOG.info("grcov tarball extracted to this folder: %s", grcov_bin_folder.resolve())
-    grcov_bin = grcov_bin_folder / "grcov" + (".exe" if platform.system() == "Windows" else "")
+    grcov_bin = grcov_bin_folder / ("grcov" + (".exe" if platform.system() == "Windows" else ""))
     assert grcov_bin.is_file()
 
     return grcov_bin
