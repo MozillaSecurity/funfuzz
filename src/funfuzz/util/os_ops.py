@@ -265,7 +265,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         else:
             crash_logs = []
 
-        for file_name in crash_logs:
+        for file_name in (x for x in crash_logs if crash_logs):
             full_report_path = reports_dir / file_name
             try:
                 with io.open(str(full_report_path), "r", encoding="utf-8", errors="replace") as f:
