@@ -72,7 +72,7 @@ def main(argparse_args=None):
         ccoverage.get_build.get_grcov(dirpath, args)
         cov_result_file = ccoverage.gatherer.gather_coverage(dirpath)
         if args.report:
-            ccoverage.reporter.report_coverage(dirpath)
+            ccoverage.reporter.report_coverage(cov_result_file)
 
 
 if __name__ == "__main__":
