@@ -261,7 +261,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
         if reports_dir.is_dir():  # pylint: disable=no-member
-            crash_logs = [x for x in reports_dir.iterdir()].sort(reverse=True)  # pylint: disable=no-member
+            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)  # pylint: disable=no-member
         else:
             crash_logs = []
 
