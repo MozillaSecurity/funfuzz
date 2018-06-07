@@ -32,6 +32,9 @@ def gather_coverage(dirpath):
 
     Args:
         dirpath (Path): Directory in which build is to be downloaded in.
+
+    Returns:
+        Path: Path to the coverage results file
     """
     RUN_COV_LOG.info("Coverage build is being run in the following directory: %s", str(dirpath))
     bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
@@ -58,6 +61,9 @@ def gather_coverage(dirpath):
     RUN_COV_LOG.info("Finished generating grcov data")
 
     RUN_COV_LOG.info("Writing grcov data to disk...")
-    with io.open(str(dirpath / "results_cov.json"), "w", encoding="utf-8", errors="replace") as f:
+    cov_output_file = dirpath / "results_cov.json"
+    with io.open(str(cov_output_file), "w", encoding="utf-8", errors="replace") as f:
         f.write(cov_output)
     RUN_COV_LOG.info("Finished writing grcov data to disk")
+
+    return cov_output_file
