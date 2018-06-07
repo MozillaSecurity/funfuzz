@@ -157,7 +157,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
         js_interesting_args.append(str(options.knownPath))
         js_interesting_args.append(str(options.jsEngine))
         if options.randomFlags:
-            engineFlags = shell_flags.random_flag_set(str(options.jsEngine))  # pylint: disable=invalid-name
+            engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
         js_interesting_args.extend(["-e", "maxRunTime=" + str(options.timeout * (1000 // 2))])
         js_interesting_args.extend(["-f", fuzzjs])
