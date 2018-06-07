@@ -40,8 +40,7 @@ def gather_coverage(dirpath):
     loop_args = ["--compare-jit", "--random-flags",
                  str(JS_SHELL_DEFAULT_TIMEOUT), "KNOWNPATH", str(cov_build_bin_path), "--fuzzing-safe"]
 
-    cov_timeout = 60
-    # cov_timeout = 85000  # 85,000 seconds is just under a day
+    cov_timeout = 85000  # 85,000 seconds is just under a day
     RUN_COV_LOG.info("Fuzzing a coverage build for %s seconds...", str(cov_timeout))
     many_timed_runs(cov_timeout, dirpath, loop_args, create_collector.make_collector(), True)
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
