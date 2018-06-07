@@ -192,8 +192,8 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 rerunCommand = " ".join(quote(str(x)) for x in ["python -m funfuzz.js.compare_jit",
                                                                 "--flags=" + " ".join(flags),
                                                                 "--timeout=" + str(options.timeout),
-                                                                options.knownPath,
-                                                                jsEngine,
+                                                                str(options.knownPath),
+                                                                str(jsEngine),
                                                                 str(infilename.name)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
@@ -209,7 +209,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                     print(summary)
                     print()
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
-                pc = ProgramConfiguration.fromBinary(jsEngine)  # pylint: disable=invalid-name
+                pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)
                 crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return (js_interesting.JS_OVERALL_MISMATCH, crashInfo)
@@ -288,7 +288,7 @@ def parseOptions(args):  # pylint: disable=invalid-name
     options.infilename = Path(args[2]).expanduser().resolve()
     options.flags = options.flagsSpaceSep.split(" ") if options.flagsSpaceSep else []
     if not options.jsengine.is_file():
-        raise OSError("js shell does not exist: " + options.jsengine)
+        raise OSError("js shell does not exist: %s" % options.jsengine)
 
     # For js_interesting:
     options.valgrind = False

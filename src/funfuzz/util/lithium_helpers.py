@@ -65,8 +65,8 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         autobisectCmd = (  # pylint: disable=invalid-name
             [sys.executable, "-u", "-m", "funfuzz.autobisectjs"] +
             ["-b", build_options_str] +
-            ["-p", " ".join(engineFlags + [infilename])] +
-            ["-i"] + itest
+            ["-p", " ".join(engineFlags + [str(infilename)])] +
+            ["-i"] + [str(x) for x in itest]
         )
         print(" ".join(quote(str(x)) for x in autobisectCmd))
         autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
