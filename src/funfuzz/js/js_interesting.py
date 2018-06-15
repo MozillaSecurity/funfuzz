@@ -67,8 +67,8 @@ VALGRIND_ERROR_EXIT_CODE = 77
 class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
 
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
-    def __init__(self, options, runthis, logPrefix, in_compare_jit):  # pylint: disable=too-complex,too-many-branches
-        # pylint: disable=too-many-locals,too-many-statements
+    def __init__(self, options, runthis, logPrefix, in_compare_jit, env=None):  # pylint: disable=too-complex
+        # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
 
         # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
         logPrefix = Path(logPrefix)
@@ -87,6 +87,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 runthis)
 
         timed_run_kw = {}
+        timed_run_kw = {"env": env}
         if not platform.system() == "Windows":
             timed_run_kw = {"preexec_fn": set_ulimit}
 

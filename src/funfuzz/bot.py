@@ -225,7 +225,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
 def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
     tempDir = Path(tempfile.mkdtemp("loop" + str(i)))  # pylint: disable=invalid-name
-    loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector)
+    loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector, False)
 
 
 def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc

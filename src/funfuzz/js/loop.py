@@ -123,8 +123,8 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
             if filename.endswith(".js")]
 
 
-def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=invalid-name,missing-docstring,too-complex
-    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint: disable=invalid-name,missing-docstring
+    # pylint: disable=too-many-branches,too-complex,too-many-locals,too-many-statements,unused-argument
     options = parseOpts(args)
     # engineFlags is overwritten later if --random-flags is set.
     engineFlags = options.engineFlags  # pylint: disable=invalid-name
@@ -166,9 +166,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
         iteration += 1
         logPrefix = wtmpDir / ("w" + str(iteration))  # pylint: disable=invalid-name
 
+        env = {}  # default environment will be used
+        if ccoverage:
+            env["GCOV_PREFIX_STRIP"] = 13  # Assumes ccoverage build from b.f.m.o
+            env["GCOV_PREFIX"] = str(wtmpDir)
+
         res = js_interesting.ShellResult(js_interesting_options,
                                          # pylint: disable=no-member
-                                         js_interesting_options.jsengineWithArgs, logPrefix, False)
+                                         js_interesting_options.jsengineWithArgs, logPrefix, False, env)
 
         if res.lev != js_interesting.JS_FINE:
             out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
@@ -189,42 +194,43 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
             with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
 
-            # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
-            interestingpy = "funfuzz.js.js_interesting"
-            itest = [interestingpy]
-            if options.valgrind:
-                itest.append("--valgrind")
-            itest.append("--minlevel=" + str(res.lev))
-            itest.append("--timeout=" + str(options.timeout))
-            itest.append(options.knownPath)
-            (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
-                itest, logPrefix, options.jsEngine, engineFlags, reduced_log, options.repo,
-                options.build_options_str, targetTime, res.lev)
+            if not ccoverage:
+                # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
+                interestingpy = "funfuzz.js.js_interesting"
+                itest = [interestingpy]
+                if options.valgrind:
+                    itest.append("--valgrind")
+                itest.append("--minlevel=" + str(res.lev))
+                itest.append("--timeout=" + str(options.timeout))
+                itest.append(options.knownPath)
+                (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
+                    itest, logPrefix, options.jsEngine, engineFlags, reduced_log, options.repo,
+                    options.build_options_str, targetTime, res.lev)
 
-            # Upload with final output
-            if lithResult == lithium_helpers.LITH_FINISHED:
-                # pylint: disable=no-member
-                fargs = js_interesting_options.jsengineWithArgs[:-1] + [reduced_log]
-                # pylint: disable=invalid-name
-                retestResult = js_interesting.ShellResult(js_interesting_options,
-                                                          fargs,
-                                                          logPrefix.parent / (logPrefix.stem + "-final"),
-                                                          False)
-                if retestResult.lev > js_interesting.JS_FINE:
-                    res = retestResult
-                    quality = 0
+                # Upload with final output
+                if lithResult == lithium_helpers.LITH_FINISHED:
+                    # pylint: disable=no-member
+                    fargs = js_interesting_options.jsengineWithArgs[:-1] + [reduced_log]
+                    # pylint: disable=invalid-name
+                    retestResult = js_interesting.ShellResult(js_interesting_options,
+                                                              fargs,
+                                                              logPrefix.parent / (logPrefix.stem + "-final"),
+                                                              False)
+                    if retestResult.lev > js_interesting.JS_FINE:
+                        res = retestResult
+                        quality = 0
+                    else:
+                        quality = 6
                 else:
-                    quality = 6
-            else:
-                quality = 10
+                    quality = 10
 
-            print("Submitting %s (quality=%s) at %s" % (reduced_log, quality, time.asctime()))
+                print("Submitting %s (quality=%s) at %s" % (reduced_log, quality, time.asctime()))
 
-            metadata = {}
-            if autoBisectLog:
-                metadata = {"autoBisectLog": "".join(autoBisectLog)}
-            collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
-            print("Submitted %s" % reduced_log)
+                metadata = {}
+                if autoBisectLog:
+                    metadata = {"autoBisectLog": "".join(autoBisectLog)}
+                collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
+                print("Submitted %s" % reduced_log)
 
         else:
             are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags
@@ -236,11 +242,12 @@ def many_timed_runs(targetTime, wtmpDir, args, collector):  # pylint: disable=in
                 jitcomparefilename = (logPrefix.parent / (logPrefix.stem + "-cj-in")).with_suffix(".js")
                 with io.open(str(jitcomparefilename), "w", encoding="utf-8", errors="replace") as f:
                     f.writelines(linesToCompare)
-                # pylint: disable=invalid-name
-                anyBug = compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
-                                                 logPrefix.parent / (logPrefix.stem + "-cj"), options.repo,
-                                                 options.build_options_str, targetTime, js_interesting_options)
-                if not anyBug:
+                if not ccoverage:
+                    # pylint: disable=invalid-name
+                    compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
+                                            logPrefix.parent / (logPrefix.stem + "-cj"), options.repo,
+                                            options.build_options_str, targetTime, js_interesting_options)
+                if jitcomparefilename.is_file():
                     jitcomparefilename.unlink()
 
             js_interesting.deleteLogs(logPrefix)
@@ -285,4 +292,4 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
 if __name__ == "__main__":
     # pylint: disable=no-member
     many_timed_runs(None, sps.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
-                    sys.argv[1:], create_collector.make_collector())
+                    sys.argv[1:], create_collector.make_collector(), False)

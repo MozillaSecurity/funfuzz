@@ -39,7 +39,7 @@ def parse_args(args=None):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--report", action="store_true", help="Report results to FuzzManager")
     arg_parser.add_argument("--grcov_ver",
-                            default="0.1.34",
+                            default="0.1.37",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
     arg_parser.add_argument("--url",
                             required=True,
@@ -67,5 +67,10 @@ def main(argparse_args=None):
 
         ccoverage.get_build.get_coverage_build(dirpath, args)
         ccoverage.get_build.get_grcov(dirpath, args)
-        # ccoverage.gatherer.gather_coverage(dirpath)
-        # ccoverage.reporter.report_coverage(dirpath)
+        cov_result_file = ccoverage.gatherer.gather_coverage(dirpath)
+        if args.report:
+            ccoverage.reporter.report_coverage(cov_result_file)
+
+
+if __name__ == "__main__":
+    main()
