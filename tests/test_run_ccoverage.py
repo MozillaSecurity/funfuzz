@@ -11,6 +11,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 import unittest
 
+import pytest
+
 import funfuzz
 
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
