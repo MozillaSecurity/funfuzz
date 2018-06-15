@@ -118,7 +118,7 @@ def main():  # pylint: disable=missing-docstring
     collector = create_collector.make_collector()
     try:
         collector.refresh()
-    except RuntimeError as ex:
+    except RuntimeError:
         print()
         print("Unable to find required entries in FuzzManager. Duplicate detection via sigcache will not work...")
 
