@@ -120,8 +120,7 @@ def main():  # pylint: disable=missing-docstring
         collector.refresh()
     except RuntimeError as ex:
         print()
-        print("Unable to find required entries in .fuzzmanagerconf, exiting...")
-        sys.exit(ex)
+        print("Unable to find required entries in FuzzManager. Duplicate detection via sigcache will not work...")
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
     print(options.tempDir)
