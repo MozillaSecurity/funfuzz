@@ -38,9 +38,6 @@ def parse_args(args=None):
     """
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--report", action="store_true", help="Report results to FuzzManager")
-    # arg_parser.add_argument("-c", "--ccov_cmd_with_flags",
-    #                         required=True,
-    #                         help="Parameters to pass to many_timed_run")
     arg_parser.add_argument("--grcov_ver",
                             default="0.1.37",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
@@ -58,7 +55,7 @@ def main(argparse_args=None):
         argparse_args (None): Argument parameters, defaults to None.
     """
     if platform.system() != "Linux":
-        sys.exit("Coverage mode must be run on Linux for now.")
+        sys.exit("Coverage mode must be run on Linux.")
     args = parse_args(argparse_args)
     logging.basicConfig(datefmt="%Y-%m-%d %H:%M:%S",
                         format="%(asctime)s %(levelname)-8s %(message)s",
