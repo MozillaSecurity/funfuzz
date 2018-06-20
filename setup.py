@@ -9,10 +9,10 @@ from setuptools import setup
 
 EXTRAS = {}
 EXTRAS[':python_version=="2.7"'] = [
-    "mercurial>=4.5.3",
+    "mercurial>=4.6.1",
     "backports.tempfile>=1.0",
     "functools32>=3.2.3.post2",
-    "subprocess32>=3.5.1",
+    "subprocess32>=3.5.2",
 ]
 EXTRAS["test"] = [
     "codecov==2.0.15",
@@ -20,8 +20,8 @@ EXTRAS["test"] = [
     "flake8==3.5.0",
     "flake8-isort==2.5",
     "isort==4.3.4",
-    "pylint==1.9.1",
-    "pytest==3.6.0",
+    "pylint==1.9.2",
+    "pytest==3.6.2",
     "pytest-cov==2.5.1",
     "pytest-flake8==1.0.1",
     "pytest-pylint==0.9.0",
