@@ -87,9 +87,9 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 runthis)
 
         timed_run_kw = {}
-        timed_run_kw = {"env": env}
+        timed_run_kw["env"] = (env or os.environ)
         if not platform.system() == "Windows":
-            timed_run_kw = {"preexec_fn": set_ulimit}
+            timed_run_kw["preexec_fn"] = set_ulimit
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
         # Total hack to make Python 2/3 work with Lithium

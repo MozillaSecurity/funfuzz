@@ -168,12 +168,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
 
         env = {}  # default environment will be used
         if ccoverage:
-            env["GCOV_PREFIX_STRIP"] = 13  # Assumes ccoverage build from b.f.m.o
-            env["GCOV_PREFIX"] = str(wtmpDir)
+            env["GCOV_PREFIX_STRIP"] = "13"  # Assumes ccoverage build from b.f.m.o
+            cov_build_path = Path(args[-2]).parent.parent.parent
+            assert "cov-build" in str(cov_build_path)
+            env["GCOV_PREFIX"] = str(cov_build_path)
 
         res = js_interesting.ShellResult(js_interesting_options,
                                          # pylint: disable=no-member
-                                         js_interesting_options.jsengineWithArgs, logPrefix, False, env)
+                                         js_interesting_options.jsengineWithArgs, logPrefix, False, env=env)
 
         if res.lev != js_interesting.JS_FINE:
             out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
