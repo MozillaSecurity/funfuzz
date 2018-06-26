@@ -15,7 +15,9 @@ import logging
 import platform
 import sys
 
-from funfuzz import ccoverage
+from .ccoverage import gatherer
+from .ccoverage import get_build
+from .ccoverage import reporter
 
 if sys.version_info.major == 2:
     import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
@@ -65,11 +67,11 @@ def main(argparse_args=None):
     with tempfile.TemporaryDirectory(suffix="funfuzzcov") as dirpath:
         dirpath = Path(dirpath)
 
-        ccoverage.get_build.get_coverage_build(dirpath, args)
-        ccoverage.get_build.get_grcov(dirpath, args)
-        cov_result_file = ccoverage.gatherer.gather_coverage(dirpath)
+        get_build.get_coverage_build(dirpath, args)
+        get_build.get_grcov(dirpath, args)
+        cov_result_file = gatherer.gather_coverage(dirpath)
         if args.report:
-            ccoverage.reporter.report_coverage(cov_result_file)
+            reporter.report_coverage(cov_result_file)
 
 
 if __name__ == "__main__":
