@@ -11,8 +11,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 import unittest
 
-import pytest
-
 import funfuzz
 
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
@@ -22,7 +20,6 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class RunCcoverageTests(unittest.TestCase):
     """"TestCase class for functions in run_ccoverage.py"""
-    @pytest.mark.skip(reason="disable for now until actual use")
     def test_main(self):
         """Run run_ccoverage with test parameters."""
         build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
