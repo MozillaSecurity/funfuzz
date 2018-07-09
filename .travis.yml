@@ -130,16 +130,16 @@ before_script:
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
   - |
     if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.7" ] ; then
-      python -m pytest --flake8 -p no:pylint,cov -m "not slow"
+      python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
-      python -m pytest --flake8 -p no:pylint,cov -m "not slow"
+      python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     else
-      python -m pytest --flake8 --pylint -p no:cov -m "not slow"
+      python -m pytest -s --flake8 --pylint -p no:cov -m "not slow"
     fi
   - mkdir -p ~/trees/
   - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
   # -m and -k modes of pytest did not seem to work in Travis, so comprehensively run everything here
-  - travis_wait 50 unbuffer python -m pytest -p no:flake8,pylint --cov --cov-report term-missing
+  - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
 after_success:
   - codecov
