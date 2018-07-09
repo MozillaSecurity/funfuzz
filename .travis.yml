@@ -139,7 +139,6 @@ before_script:
   - mkdir -p ~/trees/
   - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
-  # -m and -k modes of pytest did not seem to work in Travis, so comprehensively run everything here
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
 after_success:
   - codecov
