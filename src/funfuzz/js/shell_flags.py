@@ -333,7 +333,7 @@ def basic_flag_sets(shell_path):
     """
     basic_flags = [
         # Parts of this flag permutation come from:
-        # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
+        # https://hg.mozilla.org/mozilla-central/file/afdeb0288690/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe"],
@@ -341,13 +341,11 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],  # --no-wasm cannot be in compare_jit
     ]
     if shell_supports_flag(shell_path, "--ion-extra-checks"):
         basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",
                             "--ion-extra-checks", "--no-sse3"])
-    if shell_supports_flag(shell_path, "--no-wasm"):
-        basic_flags.append(["--fuzzing-safe", "--no-baseline", "--no-asmjs",
-                            "--no-wasm", "--no-native-regexp"])
     if shell_supports_flag(shell_path, "--nursery-strings=on"):
         basic_flags.append(["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager",
                             "--test-wasm-await-tier2", "--spectre-mitigations=on", "--nursery-strings=on"])
