@@ -18,6 +18,7 @@ EXTRAS[':python_version=="2.7"'] = [
 EXTRAS["test"] = [
     "codecov==2.0.15",
     "coverage==4.5.1",
+    "distro>=1.3.0",
     "flake8==3.5.0",
     "flake8-isort==2.5",
     "isort==4.3.4",
