@@ -39,6 +39,7 @@ class RunCcoverageTests(unittest.TestCase):
     @pytest.mark.skipif(distro.linux_distribution()[0] == "Ubuntu" and
                         parse_version(distro.linux_distribution()[1]) < parse_version("16.04"),
                         reason="Code coverage binary crashes in 14.04 Trusty but works in 16.04 Xenial and up")
+    @pytest.mark.slow
     def test_main(self):
         """Run run_ccoverage with test parameters."""
         RunCcoverageTests.monkeypatch.setattr(funfuzz.ccoverage.gatherer, "ccov_time", mock_ccov_time)
