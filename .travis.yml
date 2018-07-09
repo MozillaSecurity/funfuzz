@@ -134,7 +134,7 @@ before_script:
     elif [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "3.8" ] ; then
       python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     else
-      python -m pytest -s --flake8 --pylint -p no:cov -m "not slow"
+      python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
   - mkdir -p ~/trees/
   - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central

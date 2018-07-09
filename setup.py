@@ -24,7 +24,7 @@ EXTRAS["test"] = [
     "pytest==3.6.2",
     "pytest-cov==2.5.1",
     "pytest-flake8==1.0.1",
-    "pytest-pylint==0.9.0",
+    "pytest-pylint==0.11.0",
 ]
 
 
