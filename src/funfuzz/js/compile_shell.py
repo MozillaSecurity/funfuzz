@@ -358,7 +358,10 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
                                                 "Windows conftest.exe configuration permission" in repr(ex)):
                 print("Trying once more...")
                 continue
-    sm_compile(shell)
+    try:
+        sm_compile(shell)
+    except (subprocess.CalledProcessError, OSError):
+        raise
     inspect_shell.verifyBinary(shell)
 
     compile_log = shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".fuzzmanagerconf")
@@ -623,7 +626,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
         try:
             obtainShell(shell, updateToRev=rev)
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, OSError):
             return (options.compilationFailedLabel, "compilation failed")
 
         print("Testing...", end=" ")
@@ -695,7 +698,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     except KeyboardInterrupt:
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         raise
-    except subprocess.CalledProcessError as ex:
+    except (subprocess.CalledProcessError, OSError) as ex:
         # Remove the cache dir, but recreate it with only the .busted file.
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         shell.get_shell_cache_dir().mkdir()
