@@ -610,7 +610,7 @@ def sm_compile(shell):
                          encoding="utf-8", errors="replace") as f:
                 f.write("The first compilation of %s rev %s failed with the following output:\n" %
                         (shell.get_repo_name(), shell.get_hg_hash()))
-                f.write(out.decode("utf-8", errors="replace"))
+                f.write(out)
             raise OSError(MAKE_BINARY + " did not result in a js shell.")
 
     return shell.get_shell_compiled_path()
