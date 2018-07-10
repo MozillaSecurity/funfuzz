@@ -332,6 +332,9 @@ before_install:
     fi
   - gcc --version
   - g++ --version
+  - clang --version
+  - clang++ --version
+  - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
 install:
   # Already in venv, no need for --user
   - python -m pip install --upgrade setuptools pip
