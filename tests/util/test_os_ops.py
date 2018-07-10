@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-"""Test the compile_shell.py file."""
+"""Test the os_ops.py file."""
 
 from __future__ import absolute_import, unicode_literals  # isort:skip
 
