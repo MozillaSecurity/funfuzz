@@ -37,7 +37,7 @@ runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invali
 
 # Status returns for runLithium and many_timed_runs
 (HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,
- LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_PLEASE_CONTINUE, LITH_BUSTED) = range(8)
+ LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_BUSTED) = range(7)
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: disable=invalid-name,missing-param-doc
@@ -128,10 +128,6 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
             elif (line.startswith("Lithium result: not interesting") or
                   line.startswith("Lithium result: the original testcase is not")):
                 return (LITH_NO_REPRO, None)
-            elif line.startswith("Lithium result: please continue using: "):
-                # pylint: disable=invalid-name
-                lithiumHint = line[len("Lithium result: please continue using: "):].rstrip()
-                return (LITH_PLEASE_CONTINUE, lithiumHint)
         return (LITH_BUSTED, None)
 
 
@@ -270,7 +266,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
 
     # Restore from backup if testcase can no longer be reproduced halfway through reduction.
-    if lith_result != LITH_FINISHED and lith_result != LITH_PLEASE_CONTINUE:
+    if lith_result != LITH_FINISHED:
         # Probably can move instead of copy the backup, once this has stabilised.
         if backup_file.is_file():
             shutil.copy2(str(backup_file), str(infilename))
