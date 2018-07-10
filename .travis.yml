@@ -103,13 +103,18 @@ before_install:
       echo 'Not running in Python 2.7 Travis mode...'
     fi
   # Use GCC 6
-  - mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
-  - ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
-  - ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
-  - PATH=$PWD/latest-gcc-symlinks:$PATH
-  # Be explicit for the Mozilla build system to pick up GCC 6
-  - export CC=$PWD/latest-gcc-symlinks/gcc
-  - export CXX=$PWD/latest-gcc-symlinks/g++
+  - |
+    if [ `which gcc-6` ] && [ `which g++-6` ] ; then
+      mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
+      ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
+      ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
+      PATH=$PWD/latest-gcc-symlinks:$PATH
+      # Be explicit for the Mozilla build system to pick up GCC 6
+      export CC=$PWD/latest-gcc-symlinks/gcc
+      export CXX=$PWD/latest-gcc-symlinks/g++
+    else
+      echo 'gcc-6 and g++-6 are both not found...'
+    fi
   - gcc --version
   - g++ --version
 install:
