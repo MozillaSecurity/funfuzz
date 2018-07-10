@@ -36,8 +36,7 @@ else:
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
 # Status returns for runLithium and many_timed_runs
-(HAPPY, NO_REPRO_AT_ALL, NO_REPRO_EXCEPT_BY_URL, LITH_NO_REPRO,
- LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_BUSTED) = range(7)
+(HAPPY, LITH_NO_REPRO, LITH_FINISHED, LITH_RETESTED_STILL_INTERESTING, LITH_BUSTED) = range(5)
 
 
 def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: disable=invalid-name,missing-param-doc
