@@ -1,4 +1,3 @@
-dist: trusty
 sudo: required  # has ~2x RAM: https://docs.travis-ci.com/user/reference/overview/#Virtualization-environments
 group: travis_latest
 language: python
@@ -7,78 +6,294 @@ matrix:
   fast_finish: true
   include:
     - python: "2.7"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "2.7"
+      dist: trusty
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "3.5"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "3.5"
+      dist: trusty
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "3.6"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "3.6"
+      dist: trusty
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
-    - python: "3.7-dev"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
+    - python: "3.7"
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
-    - python: "3.7-dev"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          # sources:
+          #   - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
+    - python: "3.7"
+      dist: xenial
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          # sources:
+          #   - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     # Sanity checks, so only run debug builds
     - python: "nightly"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "pypy3.5-5.10.1"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
   allow_failures:
-    - python: "3.7-dev"
-      env: >
-        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
-    - python: "3.7-dev"
-      env: >
-        BUILD="--disable-debug --disable-profiling --without-intl-api"
     # Sanity checks, so only run debug builds
     - python: "nightly"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
     - python: "pypy3.5-5.10.1"
+      dist: trusty
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
-addons:
-  apt:
-    update: true
-    config:
-      retries: true
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - autoconf2.13
-      - cargo
-      - expect-dev  # unbuffer requires this
-      - g++-6
-      - g++-6-multilib
-      - gcc-6
-      - gcc-6-multilib
-      - gdb
-      - lib32z1  # needed by 32-bit builds
-      - libc6-dbg  # needed by Valgrind
-      - valgrind
+      addons:
+        apt:
+          update: true
+          config:
+            retries: true
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - autoconf2.13
+            - cargo
+            - expect-dev  # unbuffer requires this
+            - g++-6
+            - g++-6-multilib
+            - gcc-6
+            - gcc-6-multilib
+            - gdb
+            - lib32z1  # needed by 32-bit builds
+            - libc6-dbg  # needed by Valgrind
+            - valgrind
 before_install:
   # Get the required version of Python 3 into a temporary directory, but only for Python 2.7 Travis mode for now
   # This is for compile-related tests to run successfully
