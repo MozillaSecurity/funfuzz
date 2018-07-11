@@ -1,5 +1,5 @@
 [report]
-include=*/funfuzz/*
+include = */funfuzz/*
 exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
