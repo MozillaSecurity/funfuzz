@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 import unittest
 
+from CovReporter import CovReporter
 from _pytest.monkeypatch import MonkeyPatch
 import distro
 from pkg_resources import parse_version
@@ -32,6 +33,19 @@ def mock_ccov_time():
     return 3
 
 
+def mock_covreporter_main(argv=None):  # pylint: disable=unused-argument
+    """Overwrite the main function in CovReporter to not submit reports during the test run.
+
+    Args:
+        argv (list): List of parameters to be passed to CovReporter
+
+    Returns:
+        int: Simulates a successful submission exit code
+    """
+    FUNFUZZ_TEST_LOG.info("Simulating a successful submission...")
+    return 0
+
+
 class RunCcoverageTests(unittest.TestCase):
     """"TestCase class for functions in run_ccoverage.py"""
 
@@ -46,6 +60,7 @@ class RunCcoverageTests(unittest.TestCase):
         monkey = MonkeyPatch()
         with monkey.context() as monkey_context:
             monkey_context.setattr(funfuzz.ccoverage.gatherer, "ccov_time", mock_ccov_time)
+            monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
 
             # run_ccoverage's main method does not actually return anything.
-            self.assertTrue(not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url]))
+            self.assertTrue(not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url, "--report"]))
