@@ -1,5 +1,7 @@
-[report]
+[run]
 concurrency = "multiprocessing"
+
+[report]
 include = */funfuzz/*
 exclude_lines =
     # Have to re-enable the standard pragma
