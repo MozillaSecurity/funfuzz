@@ -90,8 +90,6 @@ def get_grcov(dirpath, args):
         append_os = "osx"
     elif platform.system() == "Windows":
         append_os = "win"
-    else:
-        raise OSError("Unknown unsupported platform:", platform.system())
     grcov_filename_with_ext = "grcov-%s-x86_64.tar.bz2" % append_os
 
     grcov_url = "https://github.com/marco-c/grcov/releases/download/v%s/%s" % (args.grcov_ver, grcov_filename_with_ext)
