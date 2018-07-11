@@ -34,7 +34,7 @@ from .util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
     from pathlib2 import Path
-    import psutil
+    import psutil  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
