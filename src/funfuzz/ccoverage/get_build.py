@@ -83,13 +83,7 @@ def get_grcov(dirpath, args):
     Returns:
         Path: Path to the grcov binary file
     """
-    append_os = ""
-    if platform.system() == "Linux":
-        append_os = "linux"
-    elif platform.system() == "Darwin":
-        append_os = "osx"
-    elif platform.system() == "Windows":
-        append_os = "win"
+    append_os = "win" if platform.system() == "Windows" else ("osx" if platform.system() == "Darwin" else "linux")
     grcov_filename_with_ext = "grcov-%s-x86_64.tar.bz2" % append_os
 
     grcov_url = "https://github.com/marco-c/grcov/releases/download/v%s/%s" % (args.grcov_ver, grcov_filename_with_ext)
