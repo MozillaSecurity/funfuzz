@@ -34,7 +34,6 @@ def mock_ccov_time():
 
 class RunCcoverageTests(unittest.TestCase):
     """"TestCase class for functions in run_ccoverage.py"""
-    monkeypatch = MonkeyPatch()
 
     @pytest.mark.skipif(distro.linux_distribution()[0] == "Ubuntu" and
                         parse_version(distro.linux_distribution()[1]) < parse_version("16.04"),
@@ -42,8 +41,11 @@ class RunCcoverageTests(unittest.TestCase):
     @pytest.mark.slow
     def test_main(self):
         """Run run_ccoverage with test parameters."""
-        RunCcoverageTests.monkeypatch.setattr(funfuzz.ccoverage.gatherer, "ccov_time", mock_ccov_time)
-
         build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
-        # run_ccoverage's main method does not actually return anything.
-        self.assertTrue(not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url]))
+
+        monkey = MonkeyPatch()
+        with monkey.context() as monkey_context:
+            monkey_context.setattr(funfuzz.ccoverage.gatherer, "ccov_time", mock_ccov_time)
+
+            # run_ccoverage's main method does not actually return anything.
+            self.assertTrue(not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url]))
