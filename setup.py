@@ -12,6 +12,7 @@ EXTRAS[':python_version=="2.7"'] = [
     "mercurial>=4.6.2",
     "backports.tempfile>=1.0",
     "functools32>=3.2.3.post2",
+    "psutil>=5.4.6",
     "subprocess32>=3.5.2",
 ]
 EXTRAS["test"] = [
@@ -56,7 +57,6 @@ if __name__ == "__main__":
               "configparser>=3.5.0",
               "future>=0.16.0",
               "pathlib2>=2.1.0",
-              "psutil>=5.4.5",
               "requests>=2.18.4",
               "shellescape>=3.4.1",
               "whichcraft>=0.4.1",
