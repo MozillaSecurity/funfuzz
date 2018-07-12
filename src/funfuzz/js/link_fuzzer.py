@@ -7,7 +7,7 @@
 """Concatenate js files to create jsfunfuzz.
 """
 
-from __future__ import absolute_import, division, print_function  # isort:skip
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import io
 import sys
