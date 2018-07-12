@@ -14,9 +14,8 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import sys
 
-# These pylint errors exist because FuzzManager is not Python 3-compatible yet
-from FTB.ProgramConfiguration import ProgramConfiguration  # pylint: disable=import-error
-import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=import-error,no-name-in-module
+from FTB.ProgramConfiguration import ProgramConfiguration
+import FTB.Signatures.CrashInfo as CrashInfo
 from shellescape import quote
 
 from . import js_interesting

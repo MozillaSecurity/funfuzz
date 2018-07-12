@@ -124,7 +124,7 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
 
 
 def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint: disable=invalid-name,missing-docstring
-    # pylint: disable=too-many-branches,too-complex,too-many-locals,too-many-statements,unused-argument
+    # pylint: disable=too-many-branches,too-complex,too-many-locals,too-many-statements
     options = parseOpts(args)
     # engineFlags is overwritten later if --random-flags is set.
     engineFlags = options.engineFlags  # pylint: disable=invalid-name
@@ -245,7 +245,6 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 with io.open(str(jitcomparefilename), "w", encoding="utf-8", errors="replace") as f:
                     f.writelines(linesToCompare)
                 if not ccoverage:
-                    # pylint: disable=invalid-name
                     compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
                                             logPrefix.parent / (logPrefix.stem + "-cj"), options.repo,
                                             options.build_options_str, targetTime, js_interesting_options)

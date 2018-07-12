@@ -28,7 +28,7 @@ def rm_tree_incl_readonly(dir_tree):
 
 
 # This test needs updates for the move to pathlib, and needs to move to pytest
-# def test_rm_tree_incl_readonly():  # pylint: disable=invalid-name
+# def test_rm_tree_incl_readonly():
 #     """Run this function in the same directory as subprocesses to test."""
 #     test_dir = "test_rm_tree_incl_readonly"
 #     os.mkdir(test_dir)

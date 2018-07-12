@@ -77,7 +77,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             lines = f.readlines()
             autobisect_log_trunc = file_manipulation.truncateMid(lines, 50, ["..."])
     else:
-        autobisect_log_trunc = []  # pylint: disable=invalid-name
+        autobisect_log_trunc = []
 
     return (lithResult, lithDetails, autobisect_log_trunc)
 
@@ -139,8 +139,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     reductionCount = [0]  # pylint: disable=invalid-name
     backup_file = (logPrefix.parent / (logPrefix.stem + "-backup"))
 
-    def lith_reduce(strategy):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-        # pylint: disable=missing-return-type-doc,missing-type-doc
+    def lith_reduce(strategy):
         """Lithium reduction commands accepting various strategies.
 
         Args:
@@ -155,7 +154,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         print(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium"] + full_lith_args))
 
         desc = "-chars" if strategy == "--char" else "-lines"
-        (lith_result, lith_details) = run_lithium(  # pylint: disable=invalid-name
+        (lith_result, lith_details) = run_lithium(
             full_lith_args, (logPrefix.parent / ("%s-%s%s" % (logPrefix.stem, reductionCount[0], desc))), targetTime)
         if lith_result == LITH_FINISHED:
             shutil.copy2(str(infilename), str(backup_file))
@@ -166,7 +165,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     print("Running the first line reduction...")
     print()
     # Step 1: Run the first instance of line reduction.
-    lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
+    lith_result, lith_details = lith_reduce([])
 
     if lith_details is not None:  # lith_details can be None if testcase no longer becomes interesting
         origNumOfLines = int(lith_details.split()[0])  # pylint: disable=invalid-name
@@ -200,7 +199,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         print("Running 1 instance of 1-line reduction after moving tryItOut and count=X...")
         print()
         # --chunksize=1: Reduce only individual lines, for only 1 round.
-        lith_result, lith_details = lith_reduce(["--chunksize=1"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--chunksize=1"])
 
     # Step 3: Run 1 instance of 2-line reduction after moving count=X to its own line and add a
     # 1-line offset.
@@ -220,14 +219,14 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         print()
         print("Running 1 instance of 2-line reduction after moving count=X to its own line...")
         print()
-        lith_result, lith_details = lith_reduce(["--chunksize=2"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         print()
         print("Running 1 instance of 2-line reduction again...")
         print()
-        lith_result, lith_details = lith_reduce(["--chunksize=2"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH and  # pylint: disable=invalid-name
                                           file_contains_str(str(infilename), "isAsmJSCompilationAvailable"))
@@ -237,7 +236,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         print()
         print("Running character reduction...")
         print()
-        lith_result, lith_details = lith_reduce(["--char"])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce(["--char"])
 
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
@@ -255,14 +254,14 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         print()
         print("Running line reduction with a 1-line offset...")
         print()
-        lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce([])
 
     # Step 7: Run line reduction for a final time.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
         print()
         print("Running the final line reduction...")
         print()
-        lith_result, lith_details = lith_reduce([])  # pylint: disable=invalid-name
+        lith_result, lith_details = lith_reduce([])
 
     # Restore from backup if testcase can no longer be reproduced halfway through reduction.
     if lith_result != LITH_FINISHED:

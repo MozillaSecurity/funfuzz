@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
-from builtins import object  # pylint: disable=redefined-builtin
+from builtins import object
 import copy
 import io
 import multiprocessing
@@ -89,7 +89,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.full_env = ""
         self.js_cfg_file = ""
 
-        self.js_version = ""  # pylint: disable=invalid-name
+        self.js_version = ""
 
     @classmethod
     def main(cls, args=None):

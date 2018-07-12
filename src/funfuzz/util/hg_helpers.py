@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
-from builtins import input  # pylint: disable=redefined-builtin
+from builtins import input
 import configparser
 import os
 import re

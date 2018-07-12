@@ -79,11 +79,11 @@ def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=inval
 # * "Green Chairs" from the first few processes
 # * A pause and error (with stack trace) from process 5
 # * "Green Chairs" again from the rest.
-# def test_forkJoin():  # pylint: disable=invalid-name,missing-docstring
+# def test_forkJoin():
 #     forkJoin(".", 8, test_forkJoin_inner, "Green", "Chairs")
 
 
-# def test_forkJoin_inner(adj, noun, forkjoin_id):  # pylint: disable=invalid-name,missing-docstring
+# def test_forkJoin_inner(adj, noun, forkjoin_id):
 #     import time
 #     print("%s %s" % (adj, noun))
 #     print(forkjoin_id)

@@ -10,10 +10,10 @@ released.
 
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
-from builtins import object  # pylint: disable=redefined-builtin
+from builtins import object
 
 
-class LockDir(object):  # pylint: disable=too-few-public-methods
+class LockDir(object):
     """Create a filesystem-based lock while in scope.
 
     Use:

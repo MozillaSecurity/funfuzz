@@ -10,7 +10,7 @@
 from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
 
 import argparse
-from builtins import object  # pylint: disable=redefined-builtin
+from builtins import object
 import hashlib
 import io
 import platform
