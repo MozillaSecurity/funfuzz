@@ -62,4 +62,5 @@ if __name__ == "__main__":
               "whichcraft>=0.4.1",
           ],
           extras_require=EXTRAS,
+          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4",
           zip_safe=False)
