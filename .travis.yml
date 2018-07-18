@@ -6,7 +6,7 @@ matrix:
   fast_finish: true
   include:
     - python: "2.7"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -15,22 +15,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "2.7"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
       addons:
@@ -38,22 +39,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "3.5"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -62,22 +64,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "3.5"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
       addons:
@@ -85,22 +88,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "3.6"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -109,22 +113,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "3.6"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--disable-debug --disable-profiling --without-intl-api"
       addons:
@@ -132,16 +137,17 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -197,7 +203,7 @@ matrix:
             - valgrind
     # Sanity checks, so only run debug builds
     - python: "nightly"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -206,22 +212,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "pypy3.5-5.10.1"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -230,16 +237,17 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -247,7 +255,7 @@ matrix:
   allow_failures:
     # Sanity checks, so only run debug builds
     - python: "nightly"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -256,22 +264,23 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
     - python: "pypy3.5-5.10.1"
-      dist: trusty
+      dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
         --build-with-valgrind --enable-oom-breakpoint"
@@ -280,16 +289,17 @@ matrix:
           update: true
           config:
             retries: true
-          sources:
-            - ubuntu-toolchain-r-test
+          # sources:
+          #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
             - cargo
             - expect-dev  # unbuffer requires this
-            - g++-6
-            - g++-6-multilib
-            - gcc-6
-            - gcc-6-multilib
+            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
+            # - g++-6
+            # - g++-6-multilib
+            # - gcc-6
+            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -318,18 +328,18 @@ before_install:
       echo 'Not running in Python 2.7 Travis mode...'
     fi
   # Use GCC 6
-  - |
-    if [ `which gcc-6` ] && [ `which g++-6` ] ; then
-      mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
-      ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
-      ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
-      PATH=$PWD/latest-gcc-symlinks:$PATH
-      # Be explicit for the Mozilla build system to pick up GCC 6
-      export CC=$PWD/latest-gcc-symlinks/gcc
-      export CXX=$PWD/latest-gcc-symlinks/g++
-    else
-      echo 'gcc-6 and g++-6 are both not found...'
-    fi
+  # - |
+  #   if [ `which gcc-6` ] && [ `which g++-6` ] ; then
+  #     mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
+  #     ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
+  #     ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
+  #     PATH=$PWD/latest-gcc-symlinks:$PATH
+  #     # Be explicit for the Mozilla build system to pick up GCC 6
+  #     export CC=$PWD/latest-gcc-symlinks/gcc
+  #     export CXX=$PWD/latest-gcc-symlinks/g++
+  #   else
+  #     echo 'gcc-6 and g++-6 are both not found...'
+  #   fi
   - gcc --version
   - g++ --version
   - clang --version
