@@ -37,7 +37,7 @@ class SmCompileHelpersTests(unittest.TestCase):
             (tmp_dir / "configure.in").touch()  # pylint: disable=no-member
             util.sm_compile_helpers.autoconf_run(tmp_dir)
 
-    def test_ensure_cache_dir(self):
+    def test_ensure_cache_dir(self):  # pylint: disable=no-self-use
         """Test the shell-cache dir is created properly if it does not exist, and things work even though it does."""
-        self.assertTrue(util.sm_compile_helpers.ensure_cache_dir(None).is_dir())
-        self.assertTrue(util.sm_compile_helpers.ensure_cache_dir(Path.home()).is_dir())  # pylint: disable=no-member
+        assert util.sm_compile_helpers.ensure_cache_dir(None).is_dir()
+        assert util.sm_compile_helpers.ensure_cache_dir(Path.home()).is_dir()  # pylint: disable=no-member

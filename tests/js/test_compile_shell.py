@@ -45,7 +45,7 @@ class CompileShellTests(unittest.TestCase):
         Returns:
             Path: Path to the compiled shell.
         """
-        self.assertTrue(self.mc_hg_repo.is_dir())  # pylint: disable=no-member
+        assert self.mc_hg_repo.is_dir()  # pylint: disable=no-member
         # Change the repository location by uncommenting this line and specifying the right one
         # "-R ~/trees/mozilla-central/")
 
@@ -57,7 +57,7 @@ class CompileShellTests(unittest.TestCase):
         opts_parsed = js.build_options.parse_shell_opts(build_opts)
         hg_hash_of_default = util.hg_helpers.get_repo_hash_and_id(opts_parsed.repo_dir)[0]
         # Ensure exit code is 0
-        self.assertTrue(not js.compile_shell.CompiledShell(opts_parsed, hg_hash_of_default).run(["-b", build_opts]))
+        assert not js.compile_shell.CompiledShell(opts_parsed, hg_hash_of_default).run(["-b", build_opts])
 
         if default_parameters_debug in build_opts:
             # Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support.
@@ -70,6 +70,6 @@ class CompileShellTests(unittest.TestCase):
         js_bin_path = self.shell_cache / file_name / file_name
         if platform.system() == "Windows":
             js_bin_path.with_suffix(".exe")
-        self.assertTrue(js_bin_path.is_file())
+        assert js_bin_path.is_file()
 
         return js_bin_path

@@ -29,7 +29,7 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class LinkFuzzerTests(unittest.TestCase):
     """"TestCase class for functions in link_fuzzer.py"""
-    def test_link_fuzzer(self):
+    def test_link_fuzzer(self):  # pylint: disable=no-self-use
         """Test that a full jsfunfuzz file can be created."""
         with tempfile.TemporaryDirectory(suffix="link_fuzzer_test") as tmp_dir:
             tmp_dir = Path(tmp_dir)
@@ -44,4 +44,4 @@ class LinkFuzzerTests(unittest.TestCase):
                         found = True
                         break
 
-            self.assertTrue(found)
+            assert found
