@@ -21,7 +21,7 @@ from funfuzz import util
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from functools import lru_cache  # pylint: disable=no-name-in-module
     from pathlib import Path  # pylint: disable=import-error

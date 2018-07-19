@@ -25,7 +25,7 @@ from ..util import lithium_helpers
 
 if sys.version_info.major == 2:
     import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
