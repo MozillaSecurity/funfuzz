@@ -6,9 +6,11 @@
 
 """Test the sm_compile_helpers.py file."""
 
+import io
 import logging
 from pathlib import Path
 import platform
+import shutil
 import tempfile
 import unittest
 
@@ -23,16 +25,71 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class SmCompileHelpersTests(unittest.TestCase):
     """"TestCase class for functions in sm_compile_helpers.py"""
-    @staticmethod
-    @pytest.mark.skipif(platform.system() == "Windows", reason="Windows on Travis is still new and experimental")
-    def test_autoconf_run():
-        """Test the autoconf runs properly."""
-        with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:
-            tmp_dir = Path(tmp_dir)
+    tmp_dir_object = tempfile.TemporaryDirectory(suffix="_sm_compile_helpers_test")
+    tmp_dir = Path(tmp_dir_object.name)
 
-            # configure.in is required by autoconf2.13
-            (tmp_dir / "configure.in").touch()  # pylint: disable=no-member
-            util.sm_compile_helpers.autoconf_run(tmp_dir)
+    # For ICU tests
+    icu_m4_rel_dir = Path("build") / "autoconf"
+    icu_m4_rel_path = icu_m4_rel_dir / "icu.m4"
+    mc_icu_m4 = Path("~/trees/mozilla-central").expanduser() / icu_m4_rel_path
+    icu_m4_test_abs_path = tmp_dir / icu_m4_rel_path
+
+    @classmethod
+    def setup_class(cls):
+        """Copy over the ICU m4 file from mozilla-central."""
+        icu_m4_test_dir = cls.tmp_dir / cls.icu_m4_rel_dir
+        Path.mkdir(icu_m4_test_dir, parents=True)
+
+    @classmethod
+    def teardown_class(cls):
+        """Remove the temporary directory on test completion."""
+        cls.tmp_dir_object.cleanup()
+
+    @pytest.mark.skipif(platform.system() != "Linux",
+                        reason="sed version check only works with GNU sed, not macOS BSD sed")
+    def test_icu_m4_replace(self):
+        """Test the bionic change replaces properly."""
+        shutil.copy2(self.mc_icu_m4, self.icu_m4_test_abs_path)
+
+        util.sm_compile_helpers.icu_m4_replace(self.tmp_dir)
+
+        # Double check
+        with io.open(str(self.icu_m4_test_abs_path), "r", encoding="utf-8", errors="replace") as f:
+            found = False
+            for line in f.readlines():
+                if r"s/^[[[:space:]]]*#[[:space:]]*define[[:space:]][[:space:]]*U_ICU_VERSION_MAJOR_NUM" in line:
+                    found = True
+                    break
+            assert found
+
+        self.icu_m4_test_abs_path.unlink()
+
+    @pytest.mark.skipif(platform.system() != "Linux",
+                        reason="sed version check only works with GNU sed, not macOS BSD sed")
+    def test_icu_m4_undo(self):
+        """Test the bionic change reverse-replaces properly."""
+        shutil.copy2(self.mc_icu_m4, self.icu_m4_test_abs_path)
+
+        util.sm_compile_helpers.icu_m4_replace(self.tmp_dir)
+        util.sm_compile_helpers.icu_m4_undo(self.tmp_dir)
+
+        # Double check
+        with io.open(str(self.icu_m4_test_abs_path), "r", encoding="utf-8", errors="replace") as f:
+            found = False
+            for line in f.readlines():
+                if r"s/^[[:space:]]*#[[:space:]]*define[[:space:]][[:space:]]*U_ICU_VERSION_MAJOR_NUM" in line:
+                    found = True
+                    break
+            assert found
+
+        self.icu_m4_test_abs_path.unlink()
+
+    @pytest.mark.skipif(platform.system() == "Windows", reason="Windows on Travis is still new and experimental")
+    def test_autoconf_run(self):
+        """Test the autoconf runs properly."""
+        # configure.in is required by autoconf2.13
+        (self.tmp_dir / "configure.in").touch()  # pylint: disable=no-member
+        util.sm_compile_helpers.autoconf_run(self.tmp_dir)
 
     @staticmethod
     def test_ensure_cache_dir():

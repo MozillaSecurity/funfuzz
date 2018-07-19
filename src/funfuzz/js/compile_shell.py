@@ -674,6 +674,15 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if shell.build_opts.patch_file:
             hg_helpers.patch_hg_repo_with_mq(shell.build_opts.patch_file, shell.get_repo_dir())
 
+        if (platform.system() == "Linux" and
+                parse_version(subprocess.run(["sed", "--version"], stdout=subprocess.PIPE)
+                              .stdout.decode("utf-8", errors="replace").split()[3])
+                >= parse_version("4.3") and
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
+            print("Patching for Linux systems with sed >= 4.3 ...", flush=True)
+            sm_compile_helpers.icu_m4_replace(Path(shell.get_repo_dir()))  # Patch the icu.m4 file
+            print("Patching completed.", flush=True)
+
         cfgJsCompile(shell)
         if platform.system() == "Windows":
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
@@ -694,6 +703,15 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             s3cache_obj.uploadFileToS3(f"{shell.get_shell_cache_js_bin_path()}.busted")
         raise
     finally:
+        if (platform.system() == "Linux" and
+                parse_version(subprocess.run(["sed", "--version"], stdout=subprocess.PIPE)
+                              .stdout.decode("utf-8", errors="replace").split()[3])
+                >= parse_version("4.3") and
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
+            print("Undo-ing patch for Linux systems with sed >= 4.3 ...", flush=True)
+            sm_compile_helpers.icu_m4_undo(Path(shell.get_repo_dir()))  # Undo the icu.m4 patch
+            print("Undo completed.", flush=True)
+
         if shell.build_opts.patch_file:
             hg_helpers.qpop_qrm_applied_patch(shell.build_opts.patch_file, shell.get_repo_dir())
 

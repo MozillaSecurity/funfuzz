@@ -8,7 +8,6 @@
 """
 
 import platform
-import subprocess
 
 from pkg_resources import parse_version
 
@@ -131,12 +130,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, removed in m-c 455252, Fx66
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
-    # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
-    if (platform.system() == "Linux" and
-            parse_version(subprocess.run(["sed", "--version"],
-                                         stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").split()[3])
-            >= parse_version("4.3")):
-        required.append("ebcbf47a83e7")  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
         required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if "--no-wasm" in flags:
