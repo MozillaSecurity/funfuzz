@@ -334,7 +334,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
-        options.jsengineWithArgs[0], "more-deterministic")
+        options.jsengineWithArgs[0], "more-deterministic") if False else True
 
     return options
 
