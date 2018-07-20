@@ -296,34 +296,34 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
                                                             options.build_options.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
-            return ("bad", "Specified-bad output")
+            return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
-            return ("bad", "Specified-bad exit code " + str(exitCode))
+            return "bad", "Specified-bad exit code " + str(exitCode)
         elif options.watchExitCode is None and 129 <= exitCode <= 159:
-            return ("bad", "High exit code " + str(exitCode))
+            return "bad", "High exit code " + str(exitCode)
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
-                return ("bad", "Specified-bad exit code %s (after converting to signal)" % exitCode)
+                return "bad", "Specified-bad exit code %s (after converting to signal)" % exitCode
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
-                return ("good", "Bad output, but not the specified one")
+                return "good", "Bad output, but not the specified one"
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
-                return ("good", "Negative exit code, but not the specified one")
-            return ("bad", "Negative exit code " + str(exitCode))
+                return "good", "Negative exit code, but not the specified one"
+            return "bad", "Negative exit code " + str(exitCode)
         elif exitCode == 0:
-            return ("good", "Exit code 0")
+            return "good", "Exit code 0"
         elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
                 options.output != "") and (stdoutStderr.find("usage: js [") != -1 or
                                            stdoutStderr.find("Error: Short option followed by junk") != -1 or
                                            stdoutStderr.find("Error: Invalid long option:") != -1 or
                                            stdoutStderr.find("Error: Invalid short option:") != -1):
-            return ("good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter")
+            return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
-            return ("good", "Acceptable exit code " + str(exitCode))
+            return "good", "Acceptable exit code " + str(exitCode)
         elif options.watchExitCode is not None:
-            return ("good", "Unknown exit code " + str(exitCode) + ", but not the specified one")
-        return ("bad", "Unknown exit code " + str(exitCode))
+            return "good", "Unknown exit code " + str(exitCode) + ", but not the specified one"
+        return "bad", "Unknown exit code " + str(exitCode)
     return inner
 
 

@@ -623,7 +623,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
         try:
             obtainShell(shell, updateToRev=rev)
         except (subprocess.CalledProcessError, OSError):
-            return (options.compilationFailedLabel, "compilation failed")
+            return options.compilationFailedLabel, "compilation failed"
 
         print("Testing...", end=" ")
         return options.testAndLabel(shell.get_shell_cache_js_bin_path(), rev)

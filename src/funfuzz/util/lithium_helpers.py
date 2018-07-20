@@ -79,7 +79,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     else:
         autobisect_log_trunc = []
 
-    return (lithResult, lithDetails, autobisect_log_trunc)
+    return lithResult, lithDetails, autobisect_log_trunc
 
 
 def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -119,15 +119,15 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
             if line.startswith("Lithium result"):
                 print(line.rstrip())
             if line.startswith("Lithium result: interesting"):
-                return (LITH_RETESTED_STILL_INTERESTING, None)
+                return LITH_RETESTED_STILL_INTERESTING, None
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 # pylint: disable=invalid-name
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
-                return (LITH_FINISHED, reducedTo)
+                return LITH_FINISHED, reducedTo
             elif (line.startswith("Lithium result: not interesting") or
                   line.startswith("Lithium result: the original testcase is not")):
-                return (LITH_NO_REPRO, None)
-        return (LITH_BUSTED, None)
+                return LITH_NO_REPRO, None
+        return LITH_BUSTED, None
 
 
 def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=invalid-name

@@ -255,7 +255,7 @@ def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-
 
 def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
+    amissDetails = "" if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
     return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 
