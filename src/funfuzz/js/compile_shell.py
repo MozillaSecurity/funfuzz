@@ -347,7 +347,7 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
         try:
             cfgBin(shell)
             break
-        except subprocess.CalledProcessError as ex:
+        except subprocess.CalledProcessError:
             configure_try_count += 1
             if configure_try_count > 3:
                 print("Configuration of the js binary failed 3 times.")
