@@ -23,7 +23,7 @@ from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithium_helpers
-from ..util import subprocesses as sps
+from ..util import os_ops
 
 if sys.version_info.major == 2:
     if os.name == "posix":
@@ -294,5 +294,5 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
 
 if __name__ == "__main__":
     # pylint: disable=no-member
-    many_timed_runs(None, sps.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
+    many_timed_runs(None, os_ops.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
                     sys.argv[1:], create_collector.make_collector(), False)
