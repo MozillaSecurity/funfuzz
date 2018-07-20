@@ -104,7 +104,7 @@ const regressionTestsRoot = %s;
 const libdir = regressionTestsRoot + %s; // needed by jit-tests
 const regressionTestList = %s;
 """ % (json.dumps(str(repo) + os.sep),
-       json.dumps(os.sep.join(["js", "src", "jit-test", "lib"]) + os.sep),
+       json.dumps(str(Path("js") / "src" / "jit-test" / "lib") + os.sep),
        json.dumps(inTreeRegressionTests(repo)))
 
 
