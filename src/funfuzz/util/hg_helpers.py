@@ -83,6 +83,7 @@ def isAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-do
 def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return true iff |a| exists and is an ancestor of |b|."""
+    # Note that if |a| is the same as |b|, it will return True
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
     out = subprocess.run(
         ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
