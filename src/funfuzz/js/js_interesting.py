@@ -86,8 +86,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 valgrindSuppressions() +
                 runthis)
 
-        timed_run_kw = {}
-        timed_run_kw["env"] = (env or os.environ)
+        timed_run_kw = {"env": (env or os.environ)}
         if not platform.system() == "Windows":
             timed_run_kw["preexec_fn"] = set_ulimit
 
