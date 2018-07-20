@@ -32,23 +32,6 @@ RUN_PLC_LIB = ""
 RUN_TESTPLUG_LIB = ""
 
 if platform.system() == "Windows":
-    # Update if the following changes:
-    # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
-    RUN_ICUUC_LIB_EXCL_EXT = "icuuc"
-    # Debug builds seem to have their debug "d" notation *before* the ICU version.
-    # Check https://dxr.mozilla.org/mozilla-central/search?q=%40BINPATH%40%2Ficudt&case=true&redirect=true
-    RUN_ICUUCD_LIB_EXCL_EXT = "icuucd"
-    RUN_ICUIN_LIB_EXCL_EXT = "icuin"
-    RUN_ICUIND_LIB_EXCL_EXT = "icuind"
-    RUN_ICUIO_LIB_EXCL_EXT = "icuio"
-    RUN_ICUIOD_LIB_EXCL_EXT = "icuiod"
-    RUN_ICUDT_LIB_EXCL_EXT = "icudt"
-    RUN_ICUDTD_LIB_EXCL_EXT = "icudtd"
-    RUN_ICUTEST_LIB_EXCL_EXT = "icutest"
-    RUN_ICUTESTD_LIB_EXCL_EXT = "icutestd"
-    RUN_ICUTU_LIB_EXCL_EXT = "icutu"
-    RUN_ICUTUD_LIB_EXCL_EXT = "icutud"
-
     RUN_MOZGLUE_LIB = "mozglue.dll"
     RUN_NSPR_LIB = "nspr4.dll"
     RUN_PLDS_LIB = "plds4.dll"
@@ -71,6 +54,24 @@ if platform.system() == "Windows":
     WIN_ICU_VERS.append(60)  # m-c 391988 Fx59, 1st w/ ICU 60.1, see bug 1405993
     WIN_ICU_VERS.append(61)  # m-c 410692 Fx61, 1st w/ ICU 61.1, see bug 1445465
     WIN_ICU_VERS.append(62)  # m-c 425600 Fx63, 1st w/ ICU 62.1, see bug 1466471
+
+    # Update if the following changes:
+    # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
+    RUN_ICUUC_LIB_EXCL_EXT = "icuuc"
+    # Debug builds seem to have their debug "d" notation *before* the ICU version.
+    # Check https://dxr.mozilla.org/mozilla-central/search?q=%40BINPATH%40%2Ficudt&case=true&redirect=true
+    RUN_ICUUCD_LIB_EXCL_EXT = "icuucd"
+    RUN_ICUIN_LIB_EXCL_EXT = "icuin"
+    RUN_ICUIND_LIB_EXCL_EXT = "icuind"
+    RUN_ICUIO_LIB_EXCL_EXT = "icuio"
+    RUN_ICUIOD_LIB_EXCL_EXT = "icuiod"
+    RUN_ICUDT_LIB_EXCL_EXT = "icudt"
+    RUN_ICUDTD_LIB_EXCL_EXT = "icudtd"
+    RUN_ICUTEST_LIB_EXCL_EXT = "icutest"
+    RUN_ICUTESTD_LIB_EXCL_EXT = "icutestd"
+    RUN_ICUTU_LIB_EXCL_EXT = "icutu"
+    RUN_ICUTUD_LIB_EXCL_EXT = "icutud"
+
     for icu_ver in WIN_ICU_VERS:
         ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + str(icu_ver) + ".dll")
         ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
