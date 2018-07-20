@@ -28,7 +28,8 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class OsOpsTests(unittest.TestCase):
     """"TestCase class for functions in os_ops.py"""
-    def test_make_wtmp_dir(self):  # pylint: disable=no-self-use
+    @staticmethod
+    def test_make_wtmp_dir():
         """Test that incrementally numbered wtmp directories can be created"""
         with tempfile.TemporaryDirectory(suffix="make_wtmp_dir_test") as tmp_dir:
             tmp_dir = Path(tmp_dir)

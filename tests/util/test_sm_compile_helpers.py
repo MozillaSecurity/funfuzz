@@ -28,7 +28,8 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class SmCompileHelpersTests(unittest.TestCase):
     """"TestCase class for functions in sm_compile_helpers.py"""
-    def test_autoconf_run(self):  # pylint: disable=no-self-use
+    @staticmethod
+    def test_autoconf_run():
         """Test the autoconf runs properly."""
         with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:
             tmp_dir = Path(tmp_dir)
@@ -37,7 +38,8 @@ class SmCompileHelpersTests(unittest.TestCase):
             (tmp_dir / "configure.in").touch()  # pylint: disable=no-member
             util.sm_compile_helpers.autoconf_run(tmp_dir)
 
-    def test_ensure_cache_dir(self):  # pylint: disable=no-self-use
+    @staticmethod
+    def test_ensure_cache_dir():
         """Test the shell-cache dir is created properly if it does not exist, and things work even though it does."""
         assert util.sm_compile_helpers.ensure_cache_dir(None).is_dir()
         assert util.sm_compile_helpers.ensure_cache_dir(Path.home()).is_dir()  # pylint: disable=no-member

@@ -29,7 +29,8 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class ForkJoinTests(unittest.TestCase):
     """"TestCase class for functions in fork_join.py"""
-    def test_log_name(self):  # pylint: disable=no-self-use
+    @staticmethod
+    def test_log_name():
         """Test that incrementally numbered wtmp directories can be created"""
         with tempfile.TemporaryDirectory(suffix="make_wtmp_dir_test") as tmp_dir:
             tmp_dir = Path(tmp_dir)
