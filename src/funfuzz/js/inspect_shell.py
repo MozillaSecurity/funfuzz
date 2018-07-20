@@ -67,6 +67,8 @@ if platform.system() == "Windows":
     # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     WIN_ICU_VERS.append(59)  # prior version
     WIN_ICU_VERS.append(60)  # m-c 391988 Fx59, 1st w/ ICU 60.1, see bug 1405993
+    WIN_ICU_VERS.append(61)  # m-c 410692 Fx61, 1st w/ ICU 61.1, see bug 1445465
+    WIN_ICU_VERS.append(62)  # m-c 425600 Fx63, 1st w/ ICU 62.1, see bug 1466471
     for icu_ver in WIN_ICU_VERS:
         ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + str(icu_ver) + ".dll")
         ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
