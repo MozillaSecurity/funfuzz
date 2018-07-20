@@ -112,7 +112,9 @@ def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstri
     # pylint: disable=missing-return-type-doc
     jit_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "jit-test" / "tests")
     js_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests")
-    return jit_tests + js_tests
+    non262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "non262")
+    test262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "test262")
+    return jit_tests + js_tests + non262_tests + test262_tests
 
 
 def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
