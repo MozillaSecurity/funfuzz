@@ -234,6 +234,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         iterNum -= 2
 
     skipCount = 0
+    blamedGoodOrBad = None
     blamedRev = None
 
     while currRev is not None:
@@ -445,6 +446,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
 
+    repo_dir = None
     if options.build_options:
         repo_dir = options.build_options.repo_dir
 
@@ -524,6 +526,7 @@ def main():
     """Prevent running two instances of autobisectjs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
+    repo_dir = None
     if options.build_options:
         repo_dir = options.build_options.repo_dir
 

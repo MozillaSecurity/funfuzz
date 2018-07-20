@@ -167,6 +167,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # Step 1: Run the first instance of line reduction.
     lith_result, lith_details = lith_reduce([])
 
+    origNumOfLines = None  # pylint: disable=invalid-name
     if lith_details is not None:  # lith_details can be None if testcase no longer becomes interesting
         origNumOfLines = int(lith_details.split()[0])  # pylint: disable=invalid-name
 

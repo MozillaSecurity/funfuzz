@@ -86,6 +86,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     #   https://wiki.mozilla.org/Security/CrashSignatures
     fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
 
+    fmconf_os = None
     if platform.system() == "Linux":
         fmconf_os = "linux"
     elif platform.system() == "Darwin":

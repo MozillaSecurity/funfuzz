@@ -59,6 +59,7 @@ class CompileShellTests(unittest.TestCase):
         # Ensure exit code is 0
         assert not js.compile_shell.CompiledShell(opts_parsed, hg_hash_of_default).run(["-b", build_opts])
 
+        file_name = None
         if default_parameters_debug in build_opts:
             # Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support.
             file_name = "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default

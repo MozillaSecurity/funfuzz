@@ -123,6 +123,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     commands = [[jsEngine] + combo + [str(infilename)] for combo in combos]
 
+    r0 = None
+    prefix0 = None
+
     for i, command in enumerate(commands):
         prefix = (logPrefix.parent / ("%s-r%s" % (logPrefix.stem, str(i))))
         command = commands[i]

@@ -25,9 +25,11 @@ if sys.version_info.major == 2:
 else:
     import subprocess
 
+RUN_MOZGLUE_LIB = ""
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
 RUN_PLC_LIB = ""
+RUN_TESTPLUG_LIB = ""
 
 if platform.system() == "Windows":
     # Update if the following changes:
