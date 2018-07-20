@@ -282,7 +282,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # Test with bug 1278887
         # Also ensure we are running autobisectjs w/Valgrind having the --error-exitcode=?? flag
         # Uncomment the following when we unbreak Valgrind fuzzing.
-        # if not sps.isProgramInstalled("valgrind"):
+        # if not which("valgrind"):
         #     return False, "Valgrind is not installed."
         # if not args.enableOpt:
         #     # FIXME: Isn't this enabled by default??  # pylint: disable=fixme
