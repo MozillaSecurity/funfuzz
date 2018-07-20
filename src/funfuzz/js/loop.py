@@ -233,6 +233,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 if autoBisectLog:
                     metadata = {"autoBisectLog": "".join(autoBisectLog)}
                 #collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
+                collector.generate(res.crashInfo, True, False, 5)
                 print("Submitted %s" % reduced_log)
 
         else:
