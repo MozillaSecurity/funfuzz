@@ -352,12 +352,8 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
             if configure_try_count > 3:
                 print("Configuration of the js binary failed 3 times.")
                 raise
-            # This exception message is returned from sps.captureStdout via cfgBin.
-            # No idea why this is platform.system() == "Linux" as well..
-            if platform.system() == "Linux" or (platform.system() == "Windows" and
-                                                "Windows conftest.exe configuration permission" in repr(ex)):
-                print("Trying once more...")
-                continue
+            print("Trying once more...")
+            continue
     try:
         sm_compile(shell)
     except (subprocess.CalledProcessError, OSError):
