@@ -134,11 +134,8 @@ def main():  # pylint: disable=missing-docstring
         # I could guess 1 GB RAM per core, but that wanders into sketchyville.
         number_of_processes = max(number_of_processes // 2, 1)
 
-    if sys.version_info.major == 2:
-        fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info,
-                           collector)
-    else:
-        loopFuzzingAndReduction(options, build_info, collector, 0)
+    fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info,
+                       collector)
 
     shutil.rmtree(options.tempDir)
 
