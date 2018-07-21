@@ -298,11 +298,11 @@ before_install:
   - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
 install:
   # Already in venv, no need for --user
-  - python -m pip install --upgrade setuptools pip
-  - python -m pip --version
-  - python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
-  - python -m pip install --upgrade .[test]  # Installs python testing-related packages
-  - python -m pip install --upgrade -r requirements.txt  # Gets FuzzManager, lithium-reducer from GitHub
+  - travis_retry python -m pip install --upgrade setuptools pip
+  - travis_retry python -m pip --version
+  - travis_retry python -m pip install --upgrade google-compute-engine  # For boto to work in Travis
+  - travis_retry python -m pip install --upgrade .[test]  # Installs python testing-related packages
+  - travis_retry python -m pip install --upgrade -r requirements.txt  # Gets FuzzManager, lithium-reducer from GitHub
   - git --version
   - hg --version
   - python2 --version
@@ -321,8 +321,8 @@ before_script:
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
   - mkdir -p ~/trees/
-  - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
+  - travis_retry time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
 after_success:
-  - codecov
+  - travis_retry codecov
