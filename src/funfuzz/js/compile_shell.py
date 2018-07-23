@@ -684,7 +684,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
                            # pylint: disable=no-member
                            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
                            stderr=subprocess.DEVNULL,
-                           timeout=999)
+                           timeout=9999)
         if shell.build_opts.patch_file:
             hg_helpers.patch_hg_repo_with_mq(shell.build_opts.patch_file, shell.get_repo_dir())
 
