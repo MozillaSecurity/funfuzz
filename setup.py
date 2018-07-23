@@ -20,6 +20,7 @@ EXTRAS["test"] = [
     "coverage==4.5.1",
     "flake8==3.5.0",
     "flake8-isort==2.5",
+    "flake8-print==3.1.0",
     "isort==4.3.4",
     "pylint==1.9.2",
     "pytest==3.6.3",
