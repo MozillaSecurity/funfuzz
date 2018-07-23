@@ -47,7 +47,7 @@ JS_LEVEL_NAMES = [
     "jsfunfuzz decided to exit",
     "overall mismatch",
     "valgrind error",
-    "new assert or crash"
+    "new assert or crash",
 ]
 assert len(JS_LEVEL_NAMES) == JS_LEVELS
 (
@@ -56,7 +56,7 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
     JS_DECIDED_TO_EXIT,                 # correctness (only jsfunfuzzLevel)
     JS_OVERALL_MISMATCH,                # correctness (only compare_jit)
     JS_VG_AMISS,                        # memory safety
-    JS_NEW_ASSERT_OR_CRASH              # memory safety or other issue that is definitely a bug
+    JS_NEW_ASSERT_OR_CRASH,             # memory safety or other issue that is definitely a bug
 ) = range(JS_LEVELS)
 
 
@@ -165,7 +165,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                  [str(x) for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE,
             )
             auxCrashData = no_main_log_gdb_log.stdout
 

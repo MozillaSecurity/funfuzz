@@ -20,6 +20,7 @@ EXTRAS["test"] = [
     "codecov==2.0.15",
     "coverage==4.5.1",
     "flake8==3.5.0",
+    "flake8-commas==2.0.0",
     "flake8-isort==2.5",
     "flake8-quotes==1.0.0",
     "isort==4.3.4",
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     setup(name="funfuzz",
           version="0.5.0a1",
           entry_points={
-              "console_scripts": ["funfuzz = funfuzz.bot:main"]
+              "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },
           packages=[
               "funfuzz",

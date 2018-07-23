@@ -274,7 +274,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
         "wasmIsSupported = function() { return true; };\n",
-        "// DDBEGIN\n"
+        "// DDBEGIN\n",
     ]
     with io.open(str(jsfunfuzzOutputFilename), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
@@ -287,7 +287,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
                     lines.append(sline)
     lines += [
         "\ntry{print(uneval(this));}catch(e){}\n",
-        "// DDEND\n"
+        "// DDEND\n",
     ]
     return lines
 

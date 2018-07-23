@@ -41,7 +41,7 @@ class Randomizer(object):  # pylint: disable=missing-docstring
         self.options.append({
             "name": name,
             "fastDeviceWeight": fastDeviceWeight,
-            "slowDeviceWeight": slowDeviceWeight
+            "slowDeviceWeight": slowDeviceWeight,
         })
 
     def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc

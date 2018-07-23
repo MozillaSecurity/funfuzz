@@ -64,7 +64,7 @@ def findCommonAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         check=True,
         stdout=subprocess.PIPE,
-        timeout=999
+        timeout=999,
         ).stdout.decode("utf-8", errors="replace")
 
 
@@ -76,7 +76,7 @@ def isAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-do
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         check=True,
         stdout=subprocess.PIPE,
-        timeout=999
+        timeout=999,
         ).stdout.decode("utf-8", errors="replace") != ""
 
 
@@ -90,7 +90,7 @@ def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
-        timeout=999
+        timeout=999,
         ).stdout.decode("utf-8", errors="replace")
     return out != "" and out.find("abort: unknown revision") < 0
 
@@ -137,7 +137,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
         cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
         check=True,
         stdout=subprocess.PIPE,
-        timeout=99
+        timeout=99,
         ).stdout.decode("utf-8", errors="replace")
     is_on_default = bool(hg_id_full)
     if not is_on_default:
@@ -160,7 +160,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
             cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
             check=True,
             stdout=subprocess.PIPE,
-            timeout=99
+            timeout=99,
             ).stdout.decode("utf-8", errors="replace")
     assert hg_id_full != ""
     (hg_id_hash, hg_id_local_num) = hg_id_full.split(" ")

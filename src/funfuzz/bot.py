@@ -211,7 +211,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                     options.build_options.repo_dir,
                     bRev,
                     cshell.get_repo_name(),
-                    time.asctime()
+                    time.asctime(),
                 ))
 
             manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name

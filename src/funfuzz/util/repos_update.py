@@ -120,7 +120,7 @@ def updateRepos():  # pylint: disable=invalid-name
     home_dir = Path.home()
     trees = [
         home_dir,
-        home_dir / "trees"
+        home_dir / "trees",
     ]
     for tree in trees:
         for name in sorted(os.listdir(str(tree))):
