@@ -94,4 +94,4 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         k2 = Key(self.bucket)  # pylint: disable=invalid-name
         k2.key = os.path.join(destDir, filename)
         k2.set_contents_from_string(contents, reduced_redundancy=True)
-        FUNFUZZ_LOG.info("\n")  # This newline is needed to get the path of the compiled binary, output on a newline.
+        FUNFUZZ_LOG.info("")  # This newline is needed to get the path of the compiled binary, output on a newline.

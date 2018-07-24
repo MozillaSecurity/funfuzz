@@ -94,10 +94,10 @@ def showtail(filename):  # pylint: disable=missing-docstring
     cmd.extend(["tail", "-n", "20"])
     cmd.append(str(filename))
     FUNFUZZ_LOG.info(" ".join(cmd))
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
     subprocess.run(cmd, check=True)
-    FUNFUZZ_LOG.info("\n")
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
+    FUNFUZZ_LOG.info("")
 
 
 def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-param-doc

@@ -384,9 +384,9 @@ def main():  # pylint: disable=missing-docstring
         build_options = generateRandomConfigurations(parser, randomizer)
         FUNFUZZ_LOG.info(build_options.build_options_str)
 
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
     FUNFUZZ_LOG.info("Running this file directly doesn't do anything, but here's our subparser help:")
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
     parse_shell_opts("--help")
 
 

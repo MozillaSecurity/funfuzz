@@ -31,11 +31,11 @@ logging.basicConfig(level=logging.DEBUG)
 def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring
     def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
         FUNFUZZ_LOG.info("==== %s ====", fn)
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         with io.open(str(fn), "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 FUNFUZZ_LOG.info(line.rstrip())
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
 
     # Fork a bunch of processes
     FUNFUZZ_LOG.info("Forking %d children...", numProcesses)
@@ -52,10 +52,10 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         FUNFUZZ_LOG.info("=== Waiting for child #%d (%d) to finish... ===", i, p.pid)
         p.join()
         FUNFUZZ_LOG.info("=== Child process #%d exited with code %d ===", i, p.exitcode)
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         showFile(log_name(logDir, i, "out"))
         showFile(log_name(logDir, i, "err"))
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
 
 
 # Functions used by forkJoin are top-level so they can be "pickled" (required on Windows)

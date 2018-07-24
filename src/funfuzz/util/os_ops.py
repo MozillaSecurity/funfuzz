@@ -62,9 +62,9 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdb_path = win64_debugging_folder / "cdb.exe"
     if not cdb_path.is_file():  # pylint: disable=no-member
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("WARNING: cdb.exe is not found - all crashes will be interesting.")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         return []
 
     if is_win_dumping_to_default():
@@ -336,10 +336,10 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
                 # %LOCALAPPDATA%\CrashDumps is the default location.
                 if not (dump_folder_reg_value[0] == r"%LOCALAPPDATA%\CrashDumps" and
                         dump_folder_reg_value[1] == winreg.REG_EXPAND_SZ):
-                    FUNFUZZ_LOG.info("\n")
+                    FUNFUZZ_LOG.info("")
                     FUNFUZZ_LOG.info("WARNING: Dumps are instead appearing at: %s - "
                                      "all crashes will be uninteresting.", dump_folder_reg_value[0])
-                    FUNFUZZ_LOG.info("\n")
+                    FUNFUZZ_LOG.info("")
                     return False
             except OSError as ex:
                 # If the key value cannot be found, the dumps will be put in the default location
@@ -352,10 +352,10 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
     except OSError as ex:
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
         if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
-            FUNFUZZ_LOG.info("\n")
+            FUNFUZZ_LOG.info("")
             FUNFUZZ_LOG.info("WARNING: The registry key HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\"
                              "Windows\\Windows Error Reporting\\LocalDumps cannot be found.")
-            FUNFUZZ_LOG.info("\n")
+            FUNFUZZ_LOG.info("")
             return False
         else:
             raise

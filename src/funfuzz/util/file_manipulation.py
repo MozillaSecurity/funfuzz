@@ -28,7 +28,7 @@ def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,m
             if (line.find("szone_error") != -1 or
                     line.find("malloc_error_break") != -1 or
                     line.find("MallocHelp") != -1):
-                FUNFUZZ_LOG.info("\n")
+                FUNFUZZ_LOG.info("")
                 FUNFUZZ_LOG.info(line)
                 found_something = True
                 break  # Don't flood the log with repeated malloc failures

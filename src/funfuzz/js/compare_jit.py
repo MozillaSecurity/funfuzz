@@ -210,7 +210,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                     FUNFUZZ_LOG.info(rerunCommand)
                 if showDetailedDiffs:
                     FUNFUZZ_LOG.info(summary)
-                    FUNFUZZ_LOG.info("\n")
+                    FUNFUZZ_LOG.info("")
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
                 pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)

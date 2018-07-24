@@ -36,16 +36,16 @@ def make_collector():
 
 def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
     if crashInfo.createShortSignature() != "No crash detected":
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("crashInfo:")
         FUNFUZZ_LOG.info("  Short Signature: %s", crashInfo.createShortSignature())
         FUNFUZZ_LOG.info("  Class name: %s", crashInfo.__class__.__name__)   # "NoCrashInfo", etc
         FUNFUZZ_LOG.info("  Stack trace: %r", crashInfo.backtrace.rstrip())
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
 
 
 def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docstring
     FUNFUZZ_LOG.info("Matches signature in FuzzManager:")
     FUNFUZZ_LOG.info("  Signature description: %s", match[1].get("shortDescription"))
     FUNFUZZ_LOG.info("  Signature file: %s", match[0])
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")

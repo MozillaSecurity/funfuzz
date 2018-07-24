@@ -130,9 +130,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     # First check that the testcase is present.
     if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         AUTOBISECTJS_LOG.info("List of parameters to be passed to the shell is: %s", " ".join(options.paramList))
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
@@ -374,7 +374,7 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     for p in parents:
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
-            AUTOBISECTJS_LOG.info("\n")
+            AUTOBISECTJS_LOG.info("")
             AUTOBISECTJS_LOG.info("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now.", p)
             if not hg_helpers.isAncestor(repo_dir, startRepo, p) and \
                     not hg_helpers.isAncestor(repo_dir, endRepo, p):
@@ -401,7 +401,7 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     if bisectLied:
         if missedCommonAncestor:
             ca = hg_helpers.findCommonAncestor(repo_dir, parents[0], parents[1])
-            AUTOBISECTJS_LOG.info("\n")
+            AUTOBISECTJS_LOG.info("")
             AUTOBISECTJS_LOG.info("Bisect blamed the merge because our initial range did not include one "
                                   "of the parents.")
             AUTOBISECTJS_LOG.info("The common ancestor of %s and %s is %s.", parents[0], parents[1], ca)
@@ -410,12 +410,12 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
             AUTOBISECTJS_LOG.info("Consider re-running autobisectjs with -s %s -e %s", ca, blamedRev)
             AUTOBISECTJS_LOG.info("in a configuration where earliestWorking is before the common ancestor.")
         else:
-            AUTOBISECTJS_LOG.info("\n")
+            AUTOBISECTJS_LOG.info("")
             AUTOBISECTJS_LOG.info("Most likely, bisect's result was unhelpful because one of the")
             AUTOBISECTJS_LOG.info('tested revisions was marked as "good" or "bad" for the wrong reason.')
             AUTOBISECTJS_LOG.info("I don't know which revision was incorrectly marked. Sorry.")
     else:
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         AUTOBISECTJS_LOG.info("The bug was introduced by a merge (it was not present on either parent).")
         AUTOBISECTJS_LOG.info("I don't know which patches from each side of the merge contributed to the bug. Sorry.")
 
@@ -451,20 +451,20 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         repo_dir = options.build_options.repo_dir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         AUTOBISECTJS_LOG.info(sanitizeCsetMsg(outputResult, repo_dir))
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
-        AUTOBISECTJS_LOG.info("\n")
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
+        AUTOBISECTJS_LOG.info("")
         AUTOBISECTJS_LOG.info("autobisectjs shows this is probably related to the following changeset:")
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         AUTOBISECTJS_LOG.info(sanitizeCsetMsg(outputResult, repo_dir))
-        AUTOBISECTJS_LOG.info("\n")
+        AUTOBISECTJS_LOG.info("")
         blamedGoodOrBad = m.group(1)
         blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo

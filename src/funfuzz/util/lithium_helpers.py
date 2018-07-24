@@ -57,11 +57,11 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     (lithResult, lithDetails) = reduction_strat(  # pylint: disable=invalid-name
         logPrefix, infilename, lithArgs, targetTime, suspiciousLevel)
 
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
     FUNFUZZ_LOG.info("Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:")
     FUNFUZZ_LOG.info(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium",
                                                       "--strategy=check-only"] + lithArgs))
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
 
     # pylint: disable=literal-comparison
     if (bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and
@@ -166,9 +166,9 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         return lith_result, lith_details
 
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
     FUNFUZZ_LOG.info("Running the first line reduction...")
-    FUNFUZZ_LOG.info("\n")
+    FUNFUZZ_LOG.info("")
     # Step 1: Run the first instance of line reduction.
     lith_result, lith_details = lith_reduce([])
 
@@ -200,9 +200,9 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         with io.open(str(infilename), "w", encoding="utf-8", errors="replace") as f:
             f.write(infileContents)
 
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Running 1 instance of 1-line reduction after moving tryItOut and count=X...")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         # --chunksize=1: Reduce only individual lines, for only 1 round.
         lith_result, lith_details = lith_reduce(["--chunksize=1"])
 
@@ -221,16 +221,16 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         with io.open(str(infilename), "w", encoding="utf-8", errors="replace") as f:
             f.writelines(intendedLines)
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Running 1 instance of 2-line reduction after moving count=X to its own line...")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Running 1 instance of 2-line reduction again...")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH and  # pylint: disable=invalid-name
@@ -238,9 +238,9 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # Step 5 (not always run): Run character reduction within interesting lines.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
             lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Running character reduction...")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         lith_result, lith_details = lith_reduce(["--char"])
 
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
@@ -256,16 +256,16 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         with io.open(str(infilename), "w", encoding="utf-8", errors="replace") as f:
             f.writelines(infileContents)
 
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Running line reduction with a 1-line offset...")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         lith_result, lith_details = lith_reduce([])
 
     # Step 7: Run line reduction for a final time.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Running the final line reduction...")
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         lith_result, lith_details = lith_reduce([])
 
     # Restore from backup if testcase can no longer be reproduced halfway through reduction.

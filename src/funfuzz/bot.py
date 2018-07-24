@@ -123,7 +123,7 @@ def main():  # pylint: disable=missing-docstring
     try:
         collector.refresh()
     except RuntimeError:
-        FUNFUZZ_LOG.info("\n")
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Unable to find required entries in FuzzManager. "
                          "Duplicate detection via sigcache will not work...")
 
