@@ -20,7 +20,7 @@ import sys
 import time
 
 if sys.version_info.major == 2:
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
@@ -119,7 +119,7 @@ def updateRepos():  # pylint: disable=invalid-name
     home_dir = Path.home()
     trees = [
         home_dir,
-        home_dir / "trees"
+        home_dir / "trees",
     ]
     for tree in trees:
         for name in sorted(os.listdir(str(tree))):

@@ -22,7 +22,7 @@ from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
@@ -90,6 +90,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     #   https://wiki.mozilla.org/Security/CrashSignatures
     fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
 
+    fmconf_os = None
     if platform.system() == "Linux":
         fmconf_os = "linux"
     elif platform.system() == "Darwin":
@@ -183,8 +184,7 @@ def verify_full_win_pageheap(shell_path):
     # or https://blogs.msdn.microsoft.com/webdav_101/2010/06/22/detecting-heap-corruption-using-gflags-and-dumps/
     gflags_bin_path = Path(os.getenv("PROGRAMW6432")) / "Debugging Tools for Windows (x64)" / "gflags.exe"
     if gflags_bin_path.is_file() and shell_path.is_file():  # pylint: disable=no-member
-        FUNFUZZ_LOG.info(subprocess.run([str(gflags_bin_path).decode("utf-8", errors="replace"),
-                                         "-p", "/enable", str(shell_path).decode("utf-8", errors="replace"), "/full"],
+        FUNFUZZ_LOG.info(subprocess.run([str(gflags_bin_path), "-p", "/enable", str(shell_path), "/full"],
                                         check=True,
                                         stderr=subprocess.STDOUT,
                                         stdout=subprocess.PIPE).stdout)

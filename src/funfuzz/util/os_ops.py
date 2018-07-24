@@ -23,7 +23,7 @@ from shellescape import quote
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
@@ -198,7 +198,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             # (http://docs.python.org/library/subprocess.html)
             close_fds=(os.name == "posix"),
             # Do not generate a core_file if gdb crashes in Linux
-            preexec_fn=(disable_corefile if platform.system() == "Linux" else None)
+            preexec_fn=(disable_corefile if platform.system() == "Linux" else None),
         ).returncode
         if dbbgr_exit_code != 0:
             FUNFUZZ_LOG.info("Debugger exited with code %d : %s",

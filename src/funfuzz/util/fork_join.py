@@ -17,7 +17,7 @@ import sys
 from past.builtins import range
 
 if sys.version_info.major == 2:
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
 
@@ -38,7 +38,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         FUNFUZZ_LOG.info("")
 
     # Fork a bunch of processes
-    FUNFUZZ_LOG.info("Forking %d children...", numProcesses)
+    FUNFUZZ_LOG.info("Forking %s children...", str(numProcesses))
     ps = []  # pylint: disable=invalid-name
     for i in range(numProcesses):
         p = multiprocessing.Process(  # pylint: disable=invalid-name
@@ -49,10 +49,10 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
     # Wait for them all to finish, and splat their outputs
     for i in range(numProcesses):
         p = ps[i]  # pylint: disable=invalid-name
-        FUNFUZZ_LOG.info("=== Waiting for child #%d (%d) to finish... ===", i, p.pid)
+        FUNFUZZ_LOG.info("=== Waiting for child #%s (%s) to finish... ===", str(i), str(p.pid))
         p.join()
-        FUNFUZZ_LOG.info("=== Child process #%d exited with code %d ===", i, p.exitcode)
-        FUNFUZZ_LOG.info("")
+        FUNFUZZ_LOG.info("=== Child process #%s exited with code %s ===", str(i), str(p.exitcode))
+        FUNFUZZ_LOG.info()
         showFile(log_name(logDir, i, "out"))
         showFile(log_name(logDir, i, "err"))
         FUNFUZZ_LOG.info("")
@@ -74,8 +74,12 @@ def log_name(log_dir, i, log_type):
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    sys.stdout = io.open(log_name(logDir, i, "out"), "wb", buffering=0)
-    sys.stderr = io.open(log_name(logDir, i, "err"), "wb", buffering=0)
+    if sys.version_info.major == 2:
+        sys.stdout = io.open(log_name(logDir, i, "out"), "wb", buffering=0)
+        sys.stderr = io.open(log_name(logDir, i, "err"), "wb", buffering=0)
+    else:
+        sys.stdout = io.open(log_name(logDir, i, "out"), "w", buffering=1)
+        sys.stderr = io.open(log_name(logDir, i, "err"), "w", buffering=1)
     fun(*(someArgs + (i,)))
 
 

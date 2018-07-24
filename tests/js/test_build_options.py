@@ -18,7 +18,7 @@ import pytest
 from funfuzz.js import build_options
 
 if sys.version_info.major == 2:
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
 
@@ -50,5 +50,4 @@ class BuildOptionsTests(unittest.TestCase):
     def test_get_random_valid_repo(self):
         """Test that a valid repository can be obtained."""
         BuildOptionsTests.monkeypatch.setattr(build_options, "chance", mock_chance)
-        self.assertEqual(build_options.get_random_valid_repo(self.trees_location),
-                         self.trees_location / "mozilla-central")
+        assert build_options.get_random_valid_repo(self.trees_location) == self.trees_location / "mozilla-central"

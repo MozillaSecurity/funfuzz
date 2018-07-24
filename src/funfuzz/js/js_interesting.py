@@ -32,7 +32,7 @@ from ..util import os_ops
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
@@ -51,7 +51,7 @@ JS_LEVEL_NAMES = [
     "jsfunfuzz decided to exit",
     "overall mismatch",
     "valgrind error",
-    "new assert or crash"
+    "new assert or crash",
 ]
 assert len(JS_LEVEL_NAMES) == JS_LEVELS
 (
@@ -60,7 +60,7 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
     JS_DECIDED_TO_EXIT,                 # correctness (only jsfunfuzzLevel)
     JS_OVERALL_MISMATCH,                # correctness (only compare_jit)
     JS_VG_AMISS,                        # memory safety
-    JS_NEW_ASSERT_OR_CRASH              # memory safety or other issue that is definitely a bug
+    JS_NEW_ASSERT_OR_CRASH,             # memory safety or other issue that is definitely a bug
 ) = range(JS_LEVELS)
 
 
@@ -90,8 +90,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 valgrindSuppressions() +
                 runthis)
 
-        timed_run_kw = {}
-        timed_run_kw["env"] = (env or os.environ)
+        timed_run_kw = {"env": (env or os.environ)}
         if not platform.system() == "Windows":
             timed_run_kw["preexec_fn"] = set_ulimit
 
@@ -169,7 +168,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                  [str(x) for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE,
             )
             auxCrashData = no_main_log_gdb_log.stdout
 
@@ -259,7 +258,7 @@ def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-
 
 def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
+    amissDetails = "" if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
     return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
 
 

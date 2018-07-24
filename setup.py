@@ -7,34 +7,37 @@
 
 from setuptools import setup
 
-EXTRAS = {}
-EXTRAS[':python_version=="2.7"'] = [
-    "mercurial>=4.6.2",
-    "backports.tempfile>=1.0",
-    "functools32>=3.2.3.post2",
-    "psutil>=5.4.6",
-    "subprocess32>=3.5.2",
-]
-EXTRAS["test"] = [
-    "codecov==2.0.15",
-    "coverage==4.5.1",
-    "flake8==3.5.0",
-    "flake8-isort==2.5",
-    "flake8-print==3.1.0",
-    "isort==4.3.4",
-    "pylint==1.9.2",
-    "pytest==3.6.3",
-    "pytest-cov==2.5.1",
-    "pytest-flake8==1.0.1",
-    "pytest-pylint==0.11.0",
-]
+EXTRAS = {
+    ':python_version=="2.7"': [
+        "mercurial>=4.6.2",
+        "backports.tempfile>=1.0",
+        "functools32>=3.2.3.post2",
+        "pathlib2>=2.1.0",
+        "psutil>=5.4.6",
+        "subprocess32>=3.5.2",
+    ],
+    "test": [
+        "codecov==2.0.15",
+        "coverage==4.5.1",
+        "flake8==3.5.0",
+        "flake8-commas==2.0.0",
+        "flake8-isort==2.5",
+        "flake8-print==3.1.0",
+        "flake8-quotes==1.0.0",
+        "isort==4.3.4",
+        "pylint==1.9.2",
+        "pytest==3.6.3",
+        "pytest-cov==2.5.1",
+        "pytest-flake8==1.0.1",
+        "pytest-pylint==0.11.0",
+    ]}
 
 
 if __name__ == "__main__":
     setup(name="funfuzz",
           version="0.5.0a1",
           entry_points={
-              "console_scripts": ["funfuzz = funfuzz.bot:main"]
+              "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },
           packages=[
               "funfuzz",
@@ -56,7 +59,6 @@ if __name__ == "__main__":
               "boto>=2.48.0",
               "configparser>=3.5.0",
               "future>=0.16.0",
-              "pathlib2>=2.1.0",
               "requests>=2.18.4",
               "shellescape>=3.4.1",
               "whichcraft>=0.4.1",

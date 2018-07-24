@@ -34,7 +34,7 @@ from .util import sm_compile_helpers
 from .util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
     import psutil  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
@@ -139,11 +139,8 @@ def main():  # pylint: disable=missing-docstring
         # I could guess 1 GB RAM per core, but that wanders into sketchyville.
         number_of_processes = max(number_of_processes // 2, 1)
 
-    if sys.version_info.major == 2:
-        fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info,
-                           collector)
-    else:
-        loopFuzzingAndReduction(options, build_info, collector, 0)
+    fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info,
+                       collector)
 
     shutil.rmtree(options.tempDir)
 
@@ -222,7 +219,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                     options.build_options.repo_dir,
                     bRev,
                     cshell.get_repo_name(),
-                    time.asctime()
+                    time.asctime(),
                 ))
 
             manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name

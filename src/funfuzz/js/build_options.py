@@ -23,7 +23,7 @@ from past.builtins import range
 from ..util import hg_helpers
 
 if sys.version_info.major == 2:
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
 
@@ -45,7 +45,7 @@ class Randomizer(object):  # pylint: disable=missing-docstring
         self.options.append({
             "name": name,
             "fastDeviceWeight": fastDeviceWeight,
-            "slowDeviceWeight": slowDeviceWeight
+            "slowDeviceWeight": slowDeviceWeight,
         })
 
     def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
@@ -286,7 +286,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # Test with bug 1278887
         # Also ensure we are running autobisectjs w/Valgrind having the --error-exitcode=?? flag
         # Uncomment the following when we unbreak Valgrind fuzzing.
-        # if not sps.isProgramInstalled("valgrind"):
+        # if not which("valgrind"):
         #     return False, "Valgrind is not installed."
         # if not args.enableOpt:
         #     # FIXME: Isn't this enabled by default??  # pylint: disable=fixme
