@@ -125,4 +125,4 @@ Support for the following operating systems **have been removed**:
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** funfuzz requires the Python 2.7.x series. Due to [bug 1451065](https://bugzilla.mozilla.org/show_bug.cgi?id=1451065), Python 3.5+ will be required to be installed for the `compile_shell` tests to work, even in 2.7 mode. There is currently single core fuzzing support for Python 3.5+, on the as-yet unreleased 0.5.0 version.
+**A:** Python 2.7 or 3.5+. Version 0.5.x will be the last version to support 2.7.
