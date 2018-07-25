@@ -68,7 +68,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     parser.add_option("-b", "--build",
                       dest="build_options",
                       help='Specify js shell build options, e.g. -b "--enable-debug --32"'
-                           "(python -m funfuzz.js.build_options --help)")
+                           "(%s -m funfuzz.js.build_options --help)" % re.search("python[2-3]", os.__file__).group(0))
 
     parser.add_option("--resetToTipFirst", dest="resetRepoFirst",
                       action="store_true",

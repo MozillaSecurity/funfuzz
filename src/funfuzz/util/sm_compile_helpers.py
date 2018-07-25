@@ -13,6 +13,7 @@ import io
 import logging
 import os
 import platform
+import re
 import sys
 import traceback
 
@@ -102,8 +103,9 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# Information about shell:\n# \n")
 
         f.write("# Create another shell in shell-cache like this one:\n")
-        f.write('# python -u -m %s -b "%s" -r %s\n# \n' % ("funfuzz.js.compile_shell",
-                                                           shell.build_opts.build_options_str, shell.get_hg_hash()))
+        f.write('# %s -u -m %s -b "%s" -r %s\n# \n' % (re.search("python[2-3]", os.__file__).group(0),
+                                                       "funfuzz.js.compile_shell",
+                                                       shell.build_opts.build_options_str, shell.get_hg_hash()))
 
         f.write("# Full environment is:\n")
         f.write("# %s\n# \n" % str(shell.get_env_full()))

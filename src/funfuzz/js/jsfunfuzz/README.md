@@ -13,7 +13,7 @@ Once it creates a function body, it does the following things with it:
 
 To test an existing SpiderMonkey shell called `./js`, run:
 
-`python -m funfuzz.js.loop --random-flags --compare-jit 20 mozilla-central ./js`
+`<python executable> -m funfuzz.js.loop --random-flags --compare-jit 20 mozilla-central ./js`
 
 * `--random-flags` tells it to use [shell_flags](../shell_flags.py) to
 * `--compare-jit` tells it to run [compare_jit](../compare_jit.py) on most of the generated code, detecting bugs where adding optimization flags like --ion-eager changes the output.

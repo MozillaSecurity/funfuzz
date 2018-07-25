@@ -14,6 +14,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import logging
+import os
+import re
 import sys
 
 import lithium.interestingness.timed_run as timed_run
@@ -38,7 +40,8 @@ def interesting(cli_args, temp_prefix):
         bool: True if the intended signature shows up on the stack, False otherwise.
     """
     parser = argparse.ArgumentParser(prog="crashesat",
-                                     usage="python -m lithium %(prog)s [options] binary [flags] testcase.ext")
+                                     usage=(re.search("python[2-3]", os.__file__).group(0) +
+                                            " -m lithium %(prog)s [options] binary [flags] testcase.ext"))
     parser.add_argument("-r", "--regex", action="store_true", default=False,
                         help="Allow search for regular expressions instead of strings.")
     parser.add_argument("-s", "--sig", default="", type=str,

@@ -17,6 +17,7 @@ import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
+import re
 import shutil
 import sys
 import tempfile
@@ -209,11 +210,12 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
             bSrc = (  # pylint: disable=invalid-name
                 "Create another shell in shell-cache like this one:\n"
-                'python -u -m %s -b "%s -R %s" -r %s\n\n'
+                '%s -u -m %s -b "%s -R %s" -r %s\n\n'
                 "==============================================\n"
                 "|  Fuzzing %s js shell builds\n"
                 "|  DATE: %s\n"
                 "==============================================\n\n" % (
+                    re.search("python[2-3]", os.__file__).group(0),
                     "funfuzz.js.compile_shell",
                     options.build_options.build_options_str,
                     options.build_options.repo_dir,

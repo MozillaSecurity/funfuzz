@@ -37,9 +37,9 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     # Paste numbers into: https://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
-    # - (1) python -m funfuzz.autobisectjs --compilationFailedLabel=bad -e FAILINGREV
+    # - (1) <python executable> -m funfuzz.autobisectjs --compilationFailedLabel=bad -e FAILINGREV
     # - (2) will tell you when the brokenness ended
-    # - (2) python -m funfuzz.autobisectjs --compilationFailedLabel=bad -s FAILINGREV
+    # - (2) <python executable> -m funfuzz.autobisectjs --compilationFailedLabel=bad -s FAILINGREV
 
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
