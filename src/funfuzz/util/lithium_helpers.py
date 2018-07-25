@@ -28,7 +28,7 @@ from ..js.js_interesting import JS_VG_AMISS
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
@@ -79,7 +79,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     else:
         autobisect_log_trunc = []
 
-    return (lithResult, lithDetails, autobisect_log_trunc)
+    return lithResult, lithDetails, autobisect_log_trunc
 
 
 def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -119,15 +119,15 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
             if line.startswith("Lithium result"):
                 print(line.rstrip())
             if line.startswith("Lithium result: interesting"):
-                return (LITH_RETESTED_STILL_INTERESTING, None)
+                return LITH_RETESTED_STILL_INTERESTING, None
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 # pylint: disable=invalid-name
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
-                return (LITH_FINISHED, reducedTo)
+                return LITH_FINISHED, reducedTo
             elif (line.startswith("Lithium result: not interesting") or
                   line.startswith("Lithium result: the original testcase is not")):
-                return (LITH_NO_REPRO, None)
-        return (LITH_BUSTED, None)
+                return LITH_NO_REPRO, None
+        return LITH_BUSTED, None
 
 
 def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=invalid-name
@@ -167,6 +167,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # Step 1: Run the first instance of line reduction.
     lith_result, lith_details = lith_reduce([])
 
+    origNumOfLines = None  # pylint: disable=invalid-name
     if lith_details is not None:  # lith_details can be None if testcase no longer becomes interesting
         origNumOfLines = int(lith_details.split()[0])  # pylint: disable=invalid-name
 

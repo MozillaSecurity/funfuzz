@@ -16,6 +16,7 @@ import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
+import re
 import shutil
 import sys
 import tarfile
@@ -35,7 +36,7 @@ from ..util.lock_dir import LockDir
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
@@ -131,7 +132,8 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         parser.add_option("-b", "--build",
                           dest="build_opts",
                           help='Specify build options, e.g. -b "--disable-debug --enable-optimize" '
-                               "(python -m funfuzz.js.build_options --help)")
+                               "(%s -m funfuzz.js.build_options --help)" % re.search(
+                                   "python[2-3]", os.__file__).group(0))
 
         parser.add_option("-r", "--rev",
                           dest="revision",
@@ -347,17 +349,13 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
         try:
             cfgBin(shell)
             break
-        except subprocess.CalledProcessError as ex:
+        except subprocess.CalledProcessError:
             configure_try_count += 1
             if configure_try_count > 3:
                 print("Configuration of the js binary failed 3 times.")
                 raise
-            # This exception message is returned from sps.captureStdout via cfgBin.
-            # No idea why this is platform.system() == "Linux" as well..
-            if platform.system() == "Linux" or (platform.system() == "Windows" and
-                                                "Windows conftest.exe configuration permission" in repr(ex)):
-                print("Trying once more...")
-                continue
+            print("Trying once more...")
+            continue
     try:
         sm_compile(shell)
     except (subprocess.CalledProcessError, OSError):
@@ -608,7 +606,7 @@ def sm_compile(shell):
         if shell.get_shell_compiled_path().is_file():
             print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
-            print("%s did not result in a js shell:" % MAKE_BINARY.decode("utf-8", errors="replace"))
+            print("%s did not result in a js shell:" % MAKE_BINARY)
             with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w",
                          encoding="utf-8", errors="replace") as f:
                 f.write("The first compilation of %s rev %s failed with the following output:\n" %
@@ -627,7 +625,7 @@ def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,miss
         try:
             obtainShell(shell, updateToRev=rev)
         except (subprocess.CalledProcessError, OSError):
-            return (options.compilationFailedLabel, "compilation failed")
+            return options.compilationFailedLabel, "compilation failed"
 
         print("Testing...", end=" ")
         return options.testAndLabel(shell.get_shell_cache_js_bin_path(), rev)
@@ -688,7 +686,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
                            # pylint: disable=no-member
                            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
                            stderr=subprocess.DEVNULL,
-                           timeout=999)
+                           timeout=9999)
         if shell.build_opts.patch_file:
             hg_helpers.patch_hg_repo_with_mq(shell.build_opts.patch_file, shell.get_repo_dir())
 

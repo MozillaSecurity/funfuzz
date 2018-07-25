@@ -23,12 +23,12 @@ from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithium_helpers
-from ..util import subprocesses as sps
+from ..util import os_ops
 
 if sys.version_info.major == 2:
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
@@ -104,7 +104,7 @@ const regressionTestsRoot = %s;
 const libdir = regressionTestsRoot + %s; // needed by jit-tests
 const regressionTestList = %s;
 """ % (json.dumps(str(repo) + os.sep),
-       json.dumps(os.sep.join(["js", "src", "jit-test", "lib"]) + os.sep),
+       json.dumps(str(Path("js") / "src" / "jit-test" / "lib") + os.sep),
        json.dumps(inTreeRegressionTests(repo)))
 
 
@@ -112,7 +112,9 @@ def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstri
     # pylint: disable=missing-return-type-doc
     jit_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "jit-test" / "tests")
     js_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests")
-    return jit_tests + js_tests
+    non262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "non262")
+    test262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "test262")
+    return jit_tests + js_tests + non262_tests + test262_tests
 
 
 def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
@@ -272,7 +274,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
         "wasmIsSupported = function() { return true; };\n",
-        "// DDBEGIN\n"
+        "// DDBEGIN\n",
     ]
     with io.open(str(jsfunfuzzOutputFilename), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
@@ -285,12 +287,12 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
                     lines.append(sline)
     lines += [
         "\ntry{print(uneval(this));}catch(e){}\n",
-        "// DDEND\n"
+        "// DDEND\n",
     ]
     return lines
 
 
 if __name__ == "__main__":
     # pylint: disable=no-member
-    many_timed_runs(None, sps.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
+    many_timed_runs(None, os_ops.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
                     sys.argv[1:], create_collector.make_collector(), False)

@@ -12,6 +12,7 @@ from __future__ import absolute_import, print_function, unicode_literals  # isor
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+import re
 import sys
 
 from FTB.ProgramConfiguration import ProgramConfiguration
@@ -25,7 +26,7 @@ from ..util import lithium_helpers
 
 if sys.version_info.major == 2:
     import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
@@ -123,6 +124,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     commands = [[jsEngine] + combo + [str(infilename)] for combo in combos]
 
+    r0 = None
+    prefix0 = None
+
     for i, command in enumerate(commands):
         prefix = (logPrefix.parent / ("%s-r%s" % (logPrefix.stem, str(i))))
         command = commands[i]
@@ -148,7 +152,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 f.write("\n".join(r.issues + [" ".join(quote(str(x)) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
             print("  %s" % " ".join(quote(str(x)) for x in command))
-            return (r.lev, r.crashInfo)
+            return r.lev, r.crashInfo
         elif r.lev != js_interesting.JS_FINE or r.return_code != 0:
             print("%s | %s" % (str(infilename), js_interesting.summaryString(
                 r.issues + ["compare_jit is not comparing output, because the shell exited strangely"],
@@ -156,7 +160,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             print("  %s" % " ".join(quote(str(x)) for x in command))
             js_interesting.deleteLogs(prefix)
             if not i:
-                return (js_interesting.JS_FINE, None)
+                return js_interesting.JS_FINE, None
         elif oom:
             # If the shell or python hit a memory limit, we consider the rest of the computation
             # "tainted" for the purpose of correctness comparison.
@@ -165,7 +169,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 r.issues + [message], r.lev, r.runinfo.elapsedtime)))
             js_interesting.deleteLogs(prefix)
             if not i:
-                return (js_interesting.JS_FINE, None)
+                return js_interesting.JS_FINE, None
         elif not i:
             # Stash output from this run (the first one), so for subsequent runs, we can compare against it.
             (r0, prefix0) = (r, prefix)  # pylint: disable=invalid-name
@@ -188,12 +192,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
-                rerunCommand = " ".join(quote(str(x)) for x in ["python -m funfuzz.js.compare_jit",
-                                                                "--flags=" + " ".join(flags),
-                                                                "--timeout=" + str(options.timeout),
-                                                                str(options.knownPath),
-                                                                str(jsEngine),
-                                                                str(infilename.name)])
+                rerunCommand = " ".join(quote(str(x)) for x in [
+                    "%s -m funfuzz.js.compare_jit" % re.search("python[2-3]", os.__file__).group(0),
+                    "--flags=" + " ".join(flags),
+                    "--timeout=" + str(options.timeout),
+                    str(options.knownPath),
+                    str(jsEngine),
+                    str(infilename.name)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
                            " ".join(quote(str(x)) for x in command) + "\n\n" + summary)
@@ -211,14 +216,14 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)
                 crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
-                return (js_interesting.JS_OVERALL_MISMATCH, crashInfo)
+                return js_interesting.JS_OVERALL_MISMATCH, crashInfo
             else:
                 # print "compare_jit: match"
                 js_interesting.deleteLogs(prefix)
 
     # All matched :)
     js_interesting.deleteLogs(prefix0)
-    return (js_interesting.JS_FINE, None)
+    return js_interesting.JS_FINE, None
 
 
 # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -237,7 +242,7 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix1):
         out0_log = (prefix0.parent / (prefix0.stem + "-out")).with_suffix(".txt")
         out1_log = (prefix1.parent / (prefix1.stem + "-out")).with_suffix(".txt")
         summary += diffFiles(out0_log, out1_log)
-    return (summary, issues)
+    return summary, issues
 
 
 def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc

@@ -21,7 +21,7 @@ from funfuzz import util
 
 if sys.version_info.major == 2:
     from functools32 import lru_cache  # pylint: disable=import-error
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
 else:
     from functools import lru_cache  # pylint: disable=no-name-in-module
     from pathlib import Path  # pylint: disable=import-error
@@ -45,7 +45,7 @@ class CompileShellTests(unittest.TestCase):
         Returns:
             Path: Path to the compiled shell.
         """
-        self.assertTrue(self.mc_hg_repo.is_dir())  # pylint: disable=no-member
+        assert self.mc_hg_repo.is_dir()  # pylint: disable=no-member
         # Change the repository location by uncommenting this line and specifying the right one
         # "-R ~/trees/mozilla-central/")
 
@@ -57,8 +57,9 @@ class CompileShellTests(unittest.TestCase):
         opts_parsed = js.build_options.parse_shell_opts(build_opts)
         hg_hash_of_default = util.hg_helpers.get_repo_hash_and_id(opts_parsed.repo_dir)[0]
         # Ensure exit code is 0
-        self.assertTrue(not js.compile_shell.CompiledShell(opts_parsed, hg_hash_of_default).run(["-b", build_opts]))
+        assert not js.compile_shell.CompiledShell(opts_parsed, hg_hash_of_default).run(["-b", build_opts])
 
+        file_name = None
         if default_parameters_debug in build_opts:
             # Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support.
             file_name = "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default
@@ -70,6 +71,6 @@ class CompileShellTests(unittest.TestCase):
         js_bin_path = self.shell_cache / file_name / file_name
         if platform.system() == "Windows":
             js_bin_path.with_suffix(".exe")
-        self.assertTrue(js_bin_path.is_file())
+        assert js_bin_path.is_file()
 
         return js_bin_path

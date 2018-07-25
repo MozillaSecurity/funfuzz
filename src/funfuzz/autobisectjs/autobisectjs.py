@@ -31,7 +31,7 @@ from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
-    from pathlib2 import Path
+    from pathlib2 import Path  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
 else:
@@ -65,7 +65,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     parser.add_option("-b", "--build",
                       dest="build_options",
                       help='Specify js shell build options, e.g. -b "--enable-debug --32"'
-                           "(python -m funfuzz.js.build_options --help)")
+                           "(%s -m funfuzz.js.build_options --help)" % re.search("python[2-3]", os.__file__).group(0))
 
     parser.add_option("--resetToTipFirst", dest="resetRepoFirst",
                       action="store_true",
@@ -234,6 +234,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         iterNum -= 2
 
     skipCount = 0
+    blamedGoodOrBad = None
     blamedRev = None
 
     while currRev is not None:
@@ -296,34 +297,34 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
                                                             options.build_options.runWithVg)
 
         if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
-            return ("bad", "Specified-bad output")
+            return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
-            return ("bad", "Specified-bad exit code " + str(exitCode))
+            return "bad", "Specified-bad exit code " + str(exitCode)
         elif options.watchExitCode is None and 129 <= exitCode <= 159:
-            return ("bad", "High exit code " + str(exitCode))
+            return "bad", "High exit code " + str(exitCode)
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
-                return ("bad", "Specified-bad exit code %s (after converting to signal)" % exitCode)
+                return "bad", "Specified-bad exit code %s (after converting to signal)" % exitCode
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
-                return ("good", "Bad output, but not the specified one")
+                return "good", "Bad output, but not the specified one"
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
-                return ("good", "Negative exit code, but not the specified one")
-            return ("bad", "Negative exit code " + str(exitCode))
+                return "good", "Negative exit code, but not the specified one"
+            return "bad", "Negative exit code " + str(exitCode)
         elif exitCode == 0:
-            return ("good", "Exit code 0")
+            return "good", "Exit code 0"
         elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
                 options.output != "") and (stdoutStderr.find("usage: js [") != -1 or
                                            stdoutStderr.find("Error: Short option followed by junk") != -1 or
                                            stdoutStderr.find("Error: Invalid long option:") != -1 or
                                            stdoutStderr.find("Error: Invalid short option:") != -1):
-            return ("good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter")
+            return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
-            return ("good", "Acceptable exit code " + str(exitCode))
+            return "good", "Acceptable exit code " + str(exitCode)
         elif options.watchExitCode is not None:
-            return ("good", "Unknown exit code " + str(exitCode) + ", but not the specified one")
-        return ("bad", "Unknown exit code " + str(exitCode))
+            return "good", "Unknown exit code " + str(exitCode) + ", but not the specified one"
+        return "bad", "Unknown exit code " + str(exitCode)
     return inner
 
 
@@ -445,6 +446,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
 
+    repo_dir = None
     if options.build_options:
         repo_dir = options.build_options.repo_dir
 
@@ -524,6 +526,7 @@ def main():
     """Prevent running two instances of autobisectjs concurrently - we don't want to confuse hg."""
     options = parseOpts()
 
+    repo_dir = None
     if options.build_options:
         repo_dir = options.build_options.repo_dir
 
