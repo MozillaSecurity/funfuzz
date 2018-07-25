@@ -24,6 +24,7 @@ from lithium.interestingness.utils import file_contains
 from . import os_ops
 
 if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
     from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
@@ -52,6 +53,12 @@ def interesting(cli_args, temp_prefix):
     args = parser.parse_args(cli_args)
 
     log = logging.getLogger(__name__)
+    log.setLevel(logging.DEBUG)
+    log_handler = logging.StreamHandler()
+    log_formatter = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                              fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+    log_handler.setFormatter(log_formatter)
+    log.addHandler(log_handler)
 
     # Examine stack for crash signature, this is needed if args.sig is specified.
     runinfo = timed_run.timed_run(args.cmd_with_flags, args.timeout, temp_prefix)

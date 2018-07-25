@@ -31,6 +31,7 @@ from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 
 if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
     from pathlib2 import Path  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
@@ -39,7 +40,12 @@ else:
     import subprocess
 
 AUTOBISECTJS_LOG = logging.getLogger("autobisectjs")
-logging.basicConfig(level=logging.DEBUG)
+AUTOBISECTJS_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+AUTOBISECTJS_LOG.addHandler(LOG_HANDLER)
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc

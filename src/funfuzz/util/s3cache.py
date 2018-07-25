@@ -14,14 +14,23 @@ import logging
 import os
 import platform
 import shutil
+import sys
 
 import boto.exception
 from boto.s3.connection import Key
 from boto.s3.connection import S3Connection
 import boto.utils
 
+if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
+
 FUNFUZZ_LOG = logging.getLogger("funfuzz")
-logging.basicConfig(level=logging.DEBUG)
+FUNFUZZ_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+FUNFUZZ_LOG.addHandler(LOG_HANDLER)
 
 
 def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc

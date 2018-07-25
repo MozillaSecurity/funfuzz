@@ -17,13 +17,19 @@ from funfuzz.js import link_fuzzer
 
 if sys.version_info.major == 2:
     import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
+    import logging_tz  # pylint: disable=import-error
     from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
     import tempfile
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
-logging.basicConfig(level=logging.DEBUG)
+FUNFUZZ_TEST_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 

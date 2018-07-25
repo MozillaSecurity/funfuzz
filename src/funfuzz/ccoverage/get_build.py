@@ -21,11 +21,18 @@ import requests
 from ..js.inspect_shell import queryBuildConfiguration
 
 if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
     from pathlib2 import Path  # pylint: disable=import-error
 else:
     from pathlib import Path  # pylint: disable=import-error
 
-RUN_COV_LOG = logging.getLogger("funfuzz")
+RUN_COV_LOG = logging.getLogger("run_ccoverage")
+RUN_COV_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+RUN_COV_LOG.addHandler(LOG_HANDLER)
 
 
 def get_coverage_build(dirpath, args):

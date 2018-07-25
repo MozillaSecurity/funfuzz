@@ -12,6 +12,7 @@ EXTRAS = {
         "mercurial>=4.6.2",
         "backports.tempfile>=1.0",
         "functools32>=3.2.3.post2",
+        "logging-tz>=0.1",
         "pathlib2>=2.1.0",
         "psutil>=5.4.6",
         "subprocess32>=3.5.2",

@@ -9,6 +9,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import logging
+import sys
 
 from _pytest.monkeypatch import MonkeyPatch
 import pytest
@@ -17,8 +18,16 @@ from funfuzz import js
 
 from .test_compile_shell import CompileShellTests
 
+if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
+
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
-logging.basicConfig(level=logging.DEBUG)
+FUNFUZZ_TEST_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 

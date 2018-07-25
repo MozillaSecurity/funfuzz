@@ -30,6 +30,7 @@ from ..util import file_manipulation
 from ..util import os_ops
 
 if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
     if os.name == "posix":
         import subprocess32 as subprocess  # pylint: disable=import-error
     from pathlib2 import Path  # pylint: disable=import-error
@@ -38,7 +39,12 @@ else:
     import subprocess
 
 FUNFUZZ_LOG = logging.getLogger("funfuzz")
-logging.basicConfig(level=logging.DEBUG)
+FUNFUZZ_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+FUNFUZZ_LOG.addHandler(LOG_HANDLER)
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".

@@ -11,9 +11,18 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import io
 import logging
+import sys
+
+if sys.version_info.major == 2:
+    import logging_tz  # pylint: disable=import-error
 
 FUNFUZZ_LOG = logging.getLogger("funfuzz")
-logging.basicConfig(level=logging.DEBUG)
+FUNFUZZ_LOG.setLevel(logging.DEBUG)
+LOG_HANDLER = logging.StreamHandler()
+LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+LOG_HANDLER.setFormatter(LOG_FORMATTER)
+FUNFUZZ_LOG.addHandler(LOG_HANDLER)
 
 
 def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
