@@ -193,7 +193,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
                 rerunCommand = " ".join(quote(str(x)) for x in [
-                    "%s -m funfuzz.js.compare_jit" % re.search("python[2-3]", os.__file__).group(0),
+                    "%s -m funfuzz.js.compare_jit" % re.search("python.*[2-3]", os.__file__).group(0).replace("/", ""),
                     "--flags=" + " ".join(flags),
                     "--timeout=" + str(options.timeout),
                     str(options.knownPath),

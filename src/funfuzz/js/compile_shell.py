@@ -133,7 +133,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
                           dest="build_opts",
                           help='Specify build options, e.g. -b "--disable-debug --enable-optimize" '
                                "(%s -m funfuzz.js.build_options --help)" % re.search(
-                                   "python[2-3]", os.__file__).group(0))
+                                   "python.*[2-3]", os.__file__).group(0).replace("/", ""))
 
         parser.add_option("-r", "--rev",
                           dest="revision",
