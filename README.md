@@ -102,7 +102,7 @@ Replace anything between `<` and `>` with your desired parameters.
 
 **A:** compile_shell has been tested on:
 
-* Windows 10 and 7, with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild).
+* Windows 10 and 7, with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild) and using Python 3 only.
 * Mac OS X 10.13
 * Ubuntu 16.04 LTS and later
   * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis)
@@ -125,4 +125,4 @@ Support for the following operating systems **have been removed**:
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** Python 2.7 or 3.5+. Version 0.5.x will be the last version to support 2.7.
+**A:** Python 2.7 or 3.5+. Version 0.5.x will be the last version to support 2.7 on POSIX platforms, Windows already requires Python 3 (found in MozillaBuild).

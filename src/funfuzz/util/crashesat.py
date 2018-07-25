@@ -41,7 +41,7 @@ def interesting(cli_args, temp_prefix):
         bool: True if the intended signature shows up on the stack, False otherwise.
     """
     parser = argparse.ArgumentParser(prog="crashesat",
-                                     usage=(re.search("python[2-3]", os.__file__).group(0) +
+                                     usage=(re.search("python.*[2-3]", os.__file__).group(0).replace("/", "") +
                                             " -m lithium %(prog)s [options] binary [flags] testcase.ext"))
     parser.add_argument("-r", "--regex", action="store_true", default=False,
                         help="Allow search for regular expressions instead of strings.")

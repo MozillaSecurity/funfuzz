@@ -221,7 +221,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                 "|  Fuzzing %s js shell builds\n"
                 "|  DATE: %s\n"
                 "==============================================\n\n" % (
-                    re.search("python[2-3]", os.__file__).group(0),
+                    re.search("python.*[2-3]", os.__file__).group(0).replace("/", ""),
                     "funfuzz.js.compile_shell",
                     options.build_options.build_options_str,
                     options.build_options.repo_dir,
