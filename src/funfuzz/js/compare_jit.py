@@ -12,6 +12,7 @@ from __future__ import absolute_import, print_function, unicode_literals  # isor
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+import re
 import sys
 
 from FTB.ProgramConfiguration import ProgramConfiguration
@@ -191,12 +192,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             if mismatchErr or mismatchOut:
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
-                rerunCommand = " ".join(quote(str(x)) for x in ["python -m funfuzz.js.compare_jit",
-                                                                "--flags=" + " ".join(flags),
-                                                                "--timeout=" + str(options.timeout),
-                                                                str(options.knownPath),
-                                                                str(jsEngine),
-                                                                str(infilename.name)])
+                rerunCommand = " ".join(quote(str(x)) for x in [
+                    "%s -m funfuzz.js.compare_jit" % re.search("python[2-3]", os.__file__).group(0),
+                    "--flags=" + " ".join(flags),
+                    "--timeout=" + str(options.timeout),
+                    str(options.knownPath),
+                    str(jsEngine),
+                    str(infilename.name)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
                 summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
                            " ".join(quote(str(x)) for x in command) + "\n\n" + summary)

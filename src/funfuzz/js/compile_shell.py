@@ -16,6 +16,7 @@ import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import platform
+import re
 import shutil
 import sys
 import tarfile
@@ -131,7 +132,8 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         parser.add_option("-b", "--build",
                           dest="build_opts",
                           help='Specify build options, e.g. -b "--disable-debug --enable-optimize" '
-                               "(python -m funfuzz.js.build_options --help)")
+                               "(%s -m funfuzz.js.build_options --help)" % re.search(
+                                   "python[2-3]", os.__file__).group(0))
 
         parser.add_option("-r", "--rev",
                           dest="revision",
