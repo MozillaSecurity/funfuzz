@@ -20,6 +20,9 @@
 /.cache/
 /.pytest_cache/
 
+# mypy
+/.mypy_cache/
+
 # Installing via `pip install --user --upgrade -e` - develop mode
 src/funfuzz.egg-info/
 
