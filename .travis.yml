@@ -296,6 +296,7 @@ before_install:
   - clang --version
   - clang++ --version
   - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
+  - llvm-config --version || true  # Ignore exit code if llvm-config does not exist
 install:
   # Already in venv, no need for --user
   - travis_retry python -m pip install --upgrade setuptools pip
