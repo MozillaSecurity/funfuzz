@@ -296,7 +296,10 @@ before_install:
   - clang --version
   - clang++ --version
   - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
+  - which llvm-config || true  # Find out location of llvm-config
+  - export LLVM_CONFIG=/usr/local/clang-5.0.0/bin/llvm-config  # From llvm-config location
   - llvm-config --version || true  # Ignore exit code if llvm-config does not exist
+  - /usr/bin/llvm-config --version || true  # Ignore exit code if llvm-config does not exist
 install:
   # Already in venv, no need for --user
   - travis_retry python -m pip install --upgrade setuptools pip
