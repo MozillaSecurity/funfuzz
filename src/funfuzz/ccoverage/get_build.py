@@ -29,8 +29,12 @@ else:
 RUN_COV_LOG = logging.getLogger("run_ccoverage")
 RUN_COV_LOG.setLevel(logging.DEBUG)
 LOG_HANDLER = logging.StreamHandler()
-LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
-                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+if sys.version_info.major == 2:
+    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                              fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+else:
+    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+                                      fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
 LOG_HANDLER.setFormatter(LOG_FORMATTER)
 RUN_COV_LOG.addHandler(LOG_HANDLER)
 
