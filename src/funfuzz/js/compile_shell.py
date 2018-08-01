@@ -376,8 +376,8 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
         sm_compile_helpers.envDump(shell, compile_log)
 
 
-def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-complex,too-many-branches
-    # pylint: disable=too-many-statements
+def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
+    # pylint: disable=too-complex,too-many-branches,too-many-statements
     """Configure a binary according to required parameters."""
     cfg_cmds = []
     cfg_env = copy.deepcopy(os.environ)
@@ -537,30 +537,36 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
 
     assert shell.get_js_objdir().is_dir()
 
-    if platform.system() == "Windows":
-        changed_cfg_cmds = []
-        for entry in cfg_cmds:
-            # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
-            #   but really, the whole thing likes forward slashes way better"
-            # See bug 1038590 comment 9.
-            if "\\" in entry:
-                entry = entry.replace("\\", "/")
-            changed_cfg_cmds.append(entry)
-        subprocess.run(changed_cfg_cmds,
-                       check=True,
-                       cwd=str(shell.get_js_objdir()),
-                       env=cfg_env,
-                       stderr=subprocess.STDOUT,
-                       stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-    else:
-        subprocess.run(cfg_cmds,
-                       check=True,
-                       cwd=str(shell.get_js_objdir()),
-                       env=cfg_env,
-                       stderr=subprocess.STDOUT,
-                       stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-
-    # We could save the stdout here into a file if it throws
+    try:
+        if platform.system() == "Windows":
+            changed_cfg_cmds = []
+            for entry in cfg_cmds:
+                # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
+                #   but really, the whole thing likes forward slashes way better"
+                # See bug 1038590 comment 9.
+                if "\\" in entry:
+                    entry = entry.replace("\\", "/")
+                changed_cfg_cmds.append(entry)
+            subprocess.run(changed_cfg_cmds,
+                           check=True,
+                           cwd=str(shell.get_js_objdir()),
+                           env=cfg_env,
+                           stderr=subprocess.STDOUT,
+                           stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        else:
+            subprocess.run(cfg_cmds,
+                           check=True,
+                           cwd=str(shell.get_js_objdir()),
+                           env=cfg_env,
+                           stderr=subprocess.STDOUT,
+                           stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+    except subprocess.CalledProcessError as ex:
+        with io.open(str(shell.get_shell_cache_dir() / ".busted"), "a",
+                     encoding="utf-8", errors="replace") as f:
+            f.write("Configuration of %s rev %s failed with the following output:\n" %
+                    (shell.get_repo_name(), shell.get_hg_hash()))
+            f.write(ex.stdout.decode("utf-8", errors="replace"))
+        raise
 
     shell.set_env_added(env_vars)
     shell.set_env_full(cfg_env)
@@ -616,9 +622,9 @@ def sm_compile(shell):
             FUNFUZZ_LOG.info("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
             FUNFUZZ_LOG.info("%s did not result in a js shell:", MAKE_BINARY)
-            with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w",
+            with io.open(str(shell.get_shell_cache_dir() / ".busted"), "a",
                          encoding="utf-8", errors="replace") as f:
-                f.write("The first compilation of %s rev %s failed with the following output:\n" %
+                f.write("Compilation of %s rev %s failed with the following output:\n" %
                         (shell.get_repo_name(), shell.get_hg_hash()))
                 f.write(out)
             raise OSError(MAKE_BINARY + " did not result in a js shell.")

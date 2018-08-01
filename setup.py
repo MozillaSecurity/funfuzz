@@ -26,11 +26,11 @@ EXTRAS = {
         "flake8-print==3.1.0",
         "flake8-quotes==1.0.0",
         "isort==4.3.4",
-        "pylint==1.9.2",
-        "pytest==3.6.3",
+        "pylint==1.9.3",
+        "pytest==3.6.4",
         "pytest-cov==2.5.1",
-        "pytest-flake8==1.0.1",
-        "pytest-pylint==0.11.0",
+        "pytest-flake8==1.0.2",
+        "pytest-pylint==0.12.0",
     ]}
 
 
