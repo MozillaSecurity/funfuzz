@@ -300,6 +300,12 @@ before_install:
   - export LLVM_CONFIG=/usr/local/clang-5.0.0/bin/llvm-config  # From llvm-config location
   - llvm-config --version || true  # Ignore exit code if llvm-config does not exist
   - /usr/bin/llvm-config --version || true  # Ignore exit code if llvm-config does not exist
+  # Ensure latest Rust is installed
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
+  - source $HOME/.cargo/env
+  - rustup update stable
+  - rustup --version
+  - rustc --version
 install:
   # Already in venv, no need for --user
   - travis_retry python -m pip install --upgrade setuptools pip
