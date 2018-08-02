@@ -81,7 +81,7 @@ def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-r
         options.repo = Path.home() / "trees" / "mozilla-central"
 
     if options.valgrind and options.use_compare_jit:
-        FUNFUZZ_LOG.info("Note: When running compare_jit, the --valgrind option will be ignored")
+        FUNFUZZ_LOG.warning("When running compare_jit, the --valgrind option will be ignored")
 
     # kill js shell if it runs this long.
     # jsfunfuzz will quit after half this time if it's not ilooping.

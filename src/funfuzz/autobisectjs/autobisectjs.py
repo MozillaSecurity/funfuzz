@@ -131,7 +131,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     (options, args) = parser.parse_args()
     if options.useTreeherderBinaries:
-        AUTOBISECTJS_LOG.info("TBD: Bisection using downloaded shells is temporarily not supported.")
+        AUTOBISECTJS_LOG.error("TBD: Bisection using downloaded shells is temporarily not supported.")
         sys.exit(0)
 
     options.build_options = build_options.parse_shell_opts(options.build_options)
@@ -141,9 +141,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     # First check that the testcase is present.
     if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
-        AUTOBISECTJS_LOG.info("")
-        AUTOBISECTJS_LOG.info("List of parameters to be passed to the shell is: %s", " ".join(options.paramList))
-        AUTOBISECTJS_LOG.info("")
+        AUTOBISECTJS_LOG.error("")
+        AUTOBISECTJS_LOG.error("List of parameters to be passed to the shell is: %s", " ".join(options.paramList))
+        AUTOBISECTJS_LOG.error("")
         raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
@@ -152,7 +152,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     if options.useInterestingnessTests:
         if len(args) < 1:
-            AUTOBISECTJS_LOG.info("args are: %s", args)
+            AUTOBISECTJS_LOG.debug("args are: %s", args)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
@@ -186,7 +186,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     #     raise Exception("endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration")
 
     if options.parameters == "-e 42":
-        AUTOBISECTJS_LOG.info("Note: since no parameters were specified, "
+        AUTOBISECTJS_LOG.info("Since no parameters were specified, "
                               "we're just ensuring the shell does not crash on startup/shutdown.")
 
     if options.nameOfTreeherderBranch != "mozilla-inbound" and not options.useTreeherderBinaries:
@@ -261,7 +261,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                AUTOBISECTJS_LOG.info("Skipped 20 times, stopping autobisectjs.")
+                AUTOBISECTJS_LOG.warning("Skipped 20 times, stopping autobisectjs.")
                 break
         AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
 
@@ -546,7 +546,7 @@ def main():
     with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
                  if options.useTreeherderBinaries else sm_compile_helpers.get_lock_dir_path(Path.home(), repo_dir)):
         if options.useTreeherderBinaries:
-            AUTOBISECTJS_LOG.info("TBD: We need to switch to the autobisect repository.")
+            AUTOBISECTJS_LOG.error("TBD: We need to switch to the autobisect repository.")
             sys.exit(0)
         else:  # Bisect using local builds
             findBlamedCset(options, repo_dir, compile_shell.makeTestRev(options))

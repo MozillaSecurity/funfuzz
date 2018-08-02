@@ -105,16 +105,16 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     options, args = parser.parse_args()
     if args:
-        FUNFUZZ_LOG.info("Warning: bot does not use positional arguments")
+        FUNFUZZ_LOG.warning("bot does not use positional arguments")
 
     # pylint: disable=no-member
     if not options.useTreeherderBuilds and not build_options.DEFAULT_TREES_LOCATION.is_dir():
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
-        FUNFUZZ_LOG.info()
+        FUNFUZZ_LOG.info("")
         FUNFUZZ_LOG.info("Trees were absent from default location: %s", build_options.DEFAULT_TREES_LOCATION)
         FUNFUZZ_LOG.info("Using treeherder builds instead...")
-        FUNFUZZ_LOG.info()
+        FUNFUZZ_LOG.info("")
         sys.exit("Fuzzing downloaded builds is disabled for now, until tooltool is removed. Exiting...")
 
     if options.build_options is None:
@@ -134,9 +134,9 @@ def main():  # pylint: disable=missing-docstring
     try:
         collector.refresh()
     except RuntimeError:
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Unable to find required entries in FuzzManager. "
-                         "Duplicate detection via sigcache will not work...")
+        FUNFUZZ_LOG.warning("")
+        FUNFUZZ_LOG.warning("Unable to find required entries in FuzzManager. "
+                            "Duplicate detection via sigcache will not work...")
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
     FUNFUZZ_LOG.info(options.tempDir)
@@ -193,7 +193,7 @@ def print_machine_info():
         # pylint: disable=no-member
         FUNFUZZ_LOG.info("Corefile size (soft limit, hard limit) is: %r", resource.getrlimit(resource.RLIMIT_CORE))
     except ImportError:
-        FUNFUZZ_LOG.info("Not checking corefile size as resource module is unavailable")
+        FUNFUZZ_LOG.warning("Not checking corefile size as resource module is unavailable")
 
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -238,7 +238,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             FUNFUZZ_LOG.info("buildDir is: %s", bDir)
             FUNFUZZ_LOG.info("buildSrc is: %s", bSrc)
     else:
-        FUNFUZZ_LOG.info("TBD: We need to switch to the fuzzfetch repository.")
+        FUNFUZZ_LOG.error("TBD: We need to switch to the fuzzfetch repository.")
         sys.exit(0)
 
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)

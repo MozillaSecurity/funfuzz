@@ -64,11 +64,11 @@ class S3Cache(object):  # pylint: disable=missing-docstring
             self.bucket = conn.get_bucket(self.bucket_name)
             return True
         except boto.provider.ProfileNotFoundError:
-            FUNFUZZ_LOG.info('Unable to connect via boto using profile name "%s" in ~/.boto', EC2_PROFILE)
+            FUNFUZZ_LOG.warning('Unable to connect via boto using profile name "%s" in ~/.boto', EC2_PROFILE)
             return False
         except boto.exception.S3ResponseError:
-            FUNFUZZ_LOG.info('Unable to connect to the following bucket "%s", please check your credentials.',
-                             self.bucket_name)
+            FUNFUZZ_LOG.warning('Unable to connect to the following bucket "%s", please check your credentials.',
+                                self.bucket_name)
             return False
 
     def downloadFile(self, origin, dest):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc

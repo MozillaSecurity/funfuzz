@@ -165,7 +165,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
         # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
         if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
-            FUNFUZZ_LOG.info("Note: No core file found on Linux - falling back to run via gdb")
+            FUNFUZZ_LOG.info("No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
                          encoding="utf-8", errors="replace") as f:
@@ -200,7 +200,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 create_collector.printMatchingSignature(match)
                 lev = JS_FINE
         except UnicodeDecodeError:  # Sometimes FM throws due to unicode issues
-            FUNFUZZ_LOG.info("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
+            FUNFUZZ_LOG.warning("FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
             match = False
 
         FUNFUZZ_LOG.info("%s | %s", logPrefix, summaryString(issues, lev, runinfo.elapsedtime))

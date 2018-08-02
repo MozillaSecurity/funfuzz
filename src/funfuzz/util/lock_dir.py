@@ -48,7 +48,7 @@ class LockDir(object):
         try:
             self.directory.mkdir()
         except OSError:
-            FUNFUZZ_LOG.info("Lock directory exists: %s", self.directory)
+            FUNFUZZ_LOG.error("Lock directory exists: %s", self.directory)
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):

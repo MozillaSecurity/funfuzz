@@ -200,7 +200,7 @@ def parse_shell_opts(args):  # pylint: disable=too-many-branches
         build_options.build_options_str = args
         valid = areArgsValid(build_options)
         if not valid[0]:
-            FUNFUZZ_LOG.info("WARNING: This set of build options is not tested well because: %s", valid[1])
+            FUNFUZZ_LOG.warning("This set of build options is not tested well because: %s", valid[1])
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if DEFAULT_TREES_LOCATION.is_dir():  # pylint: disable=no-member

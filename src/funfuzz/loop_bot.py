@@ -51,10 +51,10 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
             try:
                 subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
-                FUNFUZZ_LOG.info("Something went wrong when calling: %r", cmd.rstrip())
-                FUNFUZZ_LOG.info("%r", ex)
+                FUNFUZZ_LOG.warning("Something went wrong when calling: %r", cmd.rstrip())
+                FUNFUZZ_LOG.warning("%r", ex)
                 import traceback
-                FUNFUZZ_LOG.info(traceback.format_exc())
+                FUNFUZZ_LOG.warning(traceback.format_exc())
                 FUNFUZZ_LOG.info("Waiting %d seconds...", wait_time)
                 time.sleep(wait_time)
                 break

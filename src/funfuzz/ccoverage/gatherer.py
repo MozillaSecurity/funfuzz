@@ -47,7 +47,7 @@ def gather_coverage(dirpath):
     Returns:
         Path: Path to the coverage results file
     """
-    RUN_COV_LOG.info("Coverage build is being run in the following directory: %s", str(dirpath))
+    RUN_COV_LOG.debug("Coverage build is being run in the following directory: %s", str(dirpath))
     bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
     cov_build_bin_path = dirpath / "cov-build" / "dist" / "bin" / bin_name
     assert cov_build_bin_path.is_file()
@@ -57,7 +57,7 @@ def gather_coverage(dirpath):
     cov_timeout = 85000  # 85,000 seconds is just under a day
     RUN_COV_LOG.info("Fuzzing a coverage build for %s seconds...", str(cov_timeout))
     many_timed_runs(cov_timeout, dirpath, loop_args, create_collector.make_collector(), True)
-    RUN_COV_LOG.info("Finished fuzzing the coverage build")
+    RUN_COV_LOG.debug("Finished fuzzing the coverage build")
 
     fm_conf = configparser.SafeConfigParser()
     fm_conf.read(str(dirpath / "cov-build" / "dist" / "bin" / "js.fuzzmanagerconf"))
@@ -69,12 +69,12 @@ def gather_coverage(dirpath):
                                  "-p", "/srv/jenkins/jobs/mozilla-central-clone/workspace/"],
                                 check=True,
                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-    RUN_COV_LOG.info("Finished generating grcov data")
+    RUN_COV_LOG.debug("Finished generating grcov data")
 
     RUN_COV_LOG.info("Writing grcov data to disk...")
     cov_output_file = dirpath / "results_cov.json"
     with io.open(str(cov_output_file), "w", encoding="utf-8", errors="replace") as f:
         f.write(cov_output)
-    RUN_COV_LOG.info("Finished writing grcov data to disk")
+    RUN_COV_LOG.debug("Finished writing grcov data to disk")
 
     return cov_output_file

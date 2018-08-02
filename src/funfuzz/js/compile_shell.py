@@ -116,7 +116,6 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             int: 0, to denote a successful compile and 1, to denote a failed compile
         """
-        # logging.basicConfig(format="%(message)s", level=logging.INFO)
         try:
             return cls.run(args)
         except CompiledShellError as ex:
@@ -365,9 +364,9 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
         except subprocess.CalledProcessError:
             configure_try_count += 1
             if configure_try_count > 3:
-                FUNFUZZ_LOG.info("Configuration of the js binary failed 3 times.")
+                FUNFUZZ_LOG.error("Configuration of the js binary failed 3 times.")
                 raise
-            FUNFUZZ_LOG.info("Trying once more...")
+            FUNFUZZ_LOG.warning("Trying once more...")
             continue
     try:
         sm_compile(shell)
@@ -536,8 +535,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
                                  '"' if " " in cfg_env[str(env_var)] else env_var +
                                  "=" + cfg_env[str(env_var)])
         env_vars.append(str_to_be_appended)
-    FUNFUZZ_LOG.info("Command to be run is: %s %s",
-                     " ".join(quote(str(x)) for x in env_vars), " ".join(quote(str(x)) for x in cfg_cmds))
+    FUNFUZZ_LOG.debug("Command to be run is: %s %s",
+                      " ".join(quote(str(x)) for x in env_vars), " ".join(quote(str(x)) for x in cfg_cmds))
 
     assert shell.get_js_objdir().is_dir()
 
@@ -623,9 +622,9 @@ def sm_compile(shell):
                                  stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
         # A non-zero error can be returned during make, but eventually a shell still gets compiled.
         if shell.get_shell_compiled_path().is_file():
-            FUNFUZZ_LOG.info("A shell was compiled even though there was a non-zero exit code. Continuing...")
+            FUNFUZZ_LOG.debug("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
-            FUNFUZZ_LOG.info("%s did not result in a js shell:", MAKE_BINARY)
+            FUNFUZZ_LOG.error("%s did not result in a js shell:", MAKE_BINARY)
             with io.open(str(shell.get_shell_cache_dir() / ".busted"), "a",
                          encoding="utf-8", errors="replace") as f:
                 f.write("Compilation of %s rev %s failed with the following output:\n" %

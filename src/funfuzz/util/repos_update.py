@@ -144,8 +144,8 @@ def main():  # pylint: disable=missing-docstring
     try:
         updateRepos()
     except OSError as ex:
-        FUNFUZZ_LOG.info("WARNING: OSError hit:")
-        FUNFUZZ_LOG.info(ex)
+        FUNFUZZ_LOG.warning("OSError hit:")
+        FUNFUZZ_LOG.warning(ex)
     FUNFUZZ_LOG.info(time.asctime())
 
 

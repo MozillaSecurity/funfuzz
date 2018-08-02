@@ -65,7 +65,7 @@ def ensure_mq_enabled():
     try:
         user_hgrc_cfg.get("extensions", "mq")
     except configparser.NoOptionError:
-        FUNFUZZ_LOG.info('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
+        FUNFUZZ_LOG.error('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
         raise
 
 
@@ -157,7 +157,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
                                "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
         update_default = update_default.strip()
         if update_default == "a":
-            FUNFUZZ_LOG.info("Aborting...")
+            FUNFUZZ_LOG.error("Aborting...")
             sys.exit(0)
         elif update_default == "d":
             subprocess.run(["hg", "-R", str(repo_dir), "update", "default"], check=True)
@@ -176,7 +176,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
             ).stdout.decode("utf-8", errors="replace")
     assert hg_id_full != ""
     (hg_id_hash, hg_id_local_num) = hg_id_full.split(" ")
-    FUNFUZZ_LOG.info("Finished getting the hash and local id number of the repository.")
+    FUNFUZZ_LOG.debug("Finished getting the hash and local id number of the repository.")
     return hg_id_hash, hg_id_local_num, is_on_default
 
 
@@ -223,7 +223,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
                                            qimport_result.returncode)
     if qimport_return_code != 0:
         if "already exists" in qimport_output:
-            FUNFUZZ_LOG.info("A patch with the same name has already been qpush'ed. Please qremove it first.")
+            FUNFUZZ_LOG.error("A patch with the same name has already been qpush'ed. Please qremove it first.")
         raise OSError("Return code from `hg qimport` is: " + str(qimport_return_code))
 
     FUNFUZZ_LOG.info("Patch qimport'ed...")
@@ -240,8 +240,8 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
 
     if qpush_return_code != 0:
         qpop_qrm_applied_patch(patch_file, repo_dir)
-        FUNFUZZ_LOG.info("You may have untracked .rej or .orig files in the repository.")
-        FUNFUZZ_LOG.info("`hg status` output of the repository of interesting files in %s :", repo_dir)
+        FUNFUZZ_LOG.error("You may have untracked .rej or .orig files in the repository.")
+        FUNFUZZ_LOG.error("`hg status` output of the repository of interesting files in %s :", repo_dir)
         subprocess.run(["hg", "-R", str(repo_dir), "status", "--modified", "--added",
                         "--removed", "--deleted"], check=True)
         raise OSError("Return code from `hg qpush` is: " + str(qpush_return_code))
@@ -268,7 +268,7 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
         timeout=99)
     qpop_output, qpop_return_code = qpop_result.stdout.decode("utf-8", errors="replace"), qpop_result.returncode
     if qpop_return_code != 0:
-        FUNFUZZ_LOG.info("`hg qpop` output is: %s", qpop_output)
+        FUNFUZZ_LOG.error("`hg qpop` output is: %s", qpop_output)
         raise OSError("Return code from `hg qpop` is: " + str(qpop_return_code))
 
     FUNFUZZ_LOG.info("Patch qpop'ed...")
