@@ -43,10 +43,10 @@ AUTOBISECTJS_LOG = logging.getLogger("autobisectjs")
 AUTOBISECTJS_LOG.setLevel(logging.INFO)
 LOG_HANDLER = logging.StreamHandler()
 if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
                                               fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
 else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
+    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
                                       fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
 LOG_HANDLER.setFormatter(LOG_FORMATTER)
 AUTOBISECTJS_LOG.addHandler(LOG_HANDLER)
