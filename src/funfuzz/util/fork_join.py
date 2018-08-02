@@ -62,7 +62,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         FUNFUZZ_LOG.info("=== Waiting for child #%s (%s) to finish... ===", str(i), str(p.pid))
         p.join()
         FUNFUZZ_LOG.info("=== Child process #%s exited with code %s ===", str(i), str(p.exitcode))
-        FUNFUZZ_LOG.info()
+        FUNFUZZ_LOG.info("")
         showFile(log_name(logDir, i, "out"))
         showFile(log_name(logDir, i, "err"))
         FUNFUZZ_LOG.info("")
