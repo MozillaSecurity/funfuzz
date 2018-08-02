@@ -131,16 +131,16 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
     # pylint: disable=missing-return-type-doc
     with io.open(str(lithlogfn), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
-            if line.startswith("Lithium result"):
+            if "Lithium result" in line:
                 FUNFUZZ_LOG.info(line.rstrip())
-            if line.startswith("Lithium result: interesting"):
+            if "Lithium result: interesting" in line:
                 return LITH_RETESTED_STILL_INTERESTING, None
-            elif line.startswith("Lithium result: succeeded, reduced to: "):
+            elif "Lithium result: succeeded, reduced to: " in line:
                 # pylint: disable=invalid-name
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
                 return LITH_FINISHED, reducedTo
-            elif (line.startswith("Lithium result: not interesting") or
-                  line.startswith("Lithium result: the original testcase is not")):
+            elif ("Lithium result: not interesting" in line or
+                  "Lithium result: the original testcase is not" in line):
                 return LITH_NO_REPRO, None
         return LITH_BUSTED, None
 

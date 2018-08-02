@@ -135,7 +135,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             lev = max(lev, JS_VG_AMISS)
             valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
             for line in err:
-                if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
+                if valgrindErrorPrefix and valgrindErrorPrefix in line:
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
@@ -148,7 +148,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         elif runinfo.return_code == 0 and not in_compare_jit:
             # We might have(??) run jsfunfuzz directly, so check for special kinds of bugs
             for line in out:
-                if line.startswith("Found a bug: ") and not ("NestTest" in line and oomed(err)):
+                if "Found a bug: " in line and not ("NestTest" in line and oomed(err)):
                     lev = JS_DECIDED_TO_EXIT
                     issues.append(line.rstrip())
             if options.shellIsDeterministic and not understoodJsfunfuzzExit(out, err) and not oomed(err):
@@ -170,7 +170,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
                          encoding="utf-8", errors="replace") as f:
                 for line in f:
-                    if line.rstrip() and not line.startswith("#") and not line.startswith("echo"):
+                    if line.rstrip() and "#" not in line and "echo" not in line:
                         extracted_gdb_cmds.append("-ex")
                         extracted_gdb_cmds.append("%s" % line.rstrip())
             no_main_log_gdb_log = subprocess.run(
@@ -231,9 +231,9 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
             return True
 
     for line in out:
-        if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
+        if "It's looking good!" in line or "jsfunfuzz broke its own scripting environment: " in line:
             return True
-        if line.startswith("Found a bug: "):
+        if "Found a bug: " in line:
             return True
 
     return False
