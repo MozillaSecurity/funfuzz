@@ -40,7 +40,7 @@ else:
     import subprocess
 
 AUTOBISECTJS_LOG = logging.getLogger("autobisectjs")
-AUTOBISECTJS_LOG.setLevel(logging.DEBUG)
+AUTOBISECTJS_LOG.setLevel(logging.INFO)
 LOG_HANDLER = logging.StreamHandler()
 if sys.version_info.major == 2:
     LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",

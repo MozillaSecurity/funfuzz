@@ -53,7 +53,7 @@ def interesting(cli_args, temp_prefix):
     args = parser.parse_args(cli_args)
 
     log = logging.getLogger(__name__)
-    log.setLevel(logging.DEBUG)
+    log.setLevel(logging.INFO)
     log_handler = logging.StreamHandler()
     if sys.version_info.major == 2:
         log_formatter = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",

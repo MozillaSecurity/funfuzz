@@ -23,7 +23,7 @@ else:
     from pathlib import Path  # pylint: disable=import-error
 
 FUNFUZZ_LOG = logging.getLogger("funfuzz")
-FUNFUZZ_LOG.setLevel(logging.DEBUG)
+FUNFUZZ_LOG.setLevel(logging.INFO)
 LOG_HANDLER = logging.StreamHandler()
 if sys.version_info.major == 2:
     LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",

@@ -28,7 +28,7 @@ else:
     import tempfile
 
 RUN_COV_LOG = logging.getLogger("run_ccoverage")
-RUN_COV_LOG.setLevel(logging.DEBUG)
+RUN_COV_LOG.setLevel(logging.INFO)
 LOG_HANDLER = logging.StreamHandler()
 if sys.version_info.major == 2:
     LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S%z]",
