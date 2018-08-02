@@ -35,15 +35,15 @@ else:
     from pathlib import Path  # pylint: disable=import-error
     import subprocess
 
-FUNFUZZ_LOG = logging.getLogger("funfuzz")
+FUNFUZZ_LOG = logging.getLogger(__name__)
 FUNFUZZ_LOG.setLevel(logging.INFO)
 LOG_HANDLER = logging.StreamHandler()
 if sys.version_info.major == 2:
     LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
 else:
     LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
 LOG_HANDLER.setFormatter(LOG_FORMATTER)
 FUNFUZZ_LOG.addHandler(LOG_HANDLER)
 

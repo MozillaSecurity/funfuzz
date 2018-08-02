@@ -57,10 +57,10 @@ def interesting(cli_args, temp_prefix):
     log_handler = logging.StreamHandler()
     if sys.version_info.major == 2:
         log_formatter = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                                  fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+                                                  fmt="%(asctime)s %(levelname)-8s %(message)s")
     else:
         log_formatter = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                          fmt="%(asctime)s %(name)s %(levelname)-8s %(message)s")
+                                          fmt="%(asctime)s %(levelname)-8s %(message)s")
     log_handler.setFormatter(log_formatter)
     log.addHandler(log_handler)
 
