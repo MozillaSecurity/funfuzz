@@ -425,6 +425,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = "clang-cl.exe " + CLANG_PARAMS
             cfg_env["CXX"] = "clang-cl.exe " + CLANG_PARAMS
+            cfg_env["LINKER"] = "lld-link.exe"
         if shell.build_opts.buildWithAsan:
             cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
