@@ -110,6 +110,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("302befe7689a")  # m-c 413255 Fx61, 1st w/--wasm-gc, see bug 1445272
     if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
         required.append("321c29f48508")  # m-c 406115 Fx60, 1st w/--nursery-strings=on, see bug 903519
+    if platform.system() == "Windows" and options.buildWithClang:
+        required.append("da5d7ba9a855")  # m-c 404087 Fx60, 1st w/ clang-cl.exe and MSVC 2017 builds, see bug 1402915
     if "--spectre-mitigations=on" in flags or "--spectre-mitigations=off" in flags:
         required.append("a98f615965d7")  # m-c 399868 Fx59, 1st w/--spectre-mitigations=on, see bug 1430053
     if "--test-wasm-await-tier2" in flags:
