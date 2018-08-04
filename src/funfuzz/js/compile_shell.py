@@ -653,7 +653,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
         return
     elif cached_no_shell.is_file():
-        raise Exception("Found a cached shell that failed compilation...")
+        raise OSError("Found a cached shell that failed compilation...")
     elif shell.get_shell_cache_dir().is_dir():
         print("Found a cache dir without a successful/failed shell...")
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
