@@ -14,7 +14,6 @@ import os
 import platform
 import re
 import sys
-import traceback
 
 from shellescape import quote
 from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
@@ -69,16 +68,6 @@ def autoconf_run(working_dir):
     elif platform.system() == "Windows":
         # Windows needs to call sh to be able to find autoconf.
         subprocess.run(["sh", "autoconf-2.13"], check=True, cwd=str(working_dir))
-
-
-def createBustedFile(filename, e):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Create a .busted file with the exception message and backtrace included."""
-    with io.open(str(filename), "w", encoding="utf-8", errors="replace") as f:
-        f.write("Caught exception %r (%s)\n" % (e, e))
-        f.write("Backtrace:\n")
-        f.write(traceback.format_exc() + "\n")
-
-    print("Compilation failed (%s) (details in %s)" % (e, filename))
 
 
 def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc

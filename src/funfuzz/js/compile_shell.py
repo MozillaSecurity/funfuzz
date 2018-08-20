@@ -20,6 +20,7 @@ import re
 import shutil
 import sys
 import tarfile
+import traceback
 
 from pkg_resources import parse_version
 from shellescape import quote
@@ -693,10 +694,15 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         raise
     except (subprocess.CalledProcessError, OSError) as ex:
-        # Remove the cache dir, but recreate it with only the .busted file.
-        sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
-        shell.get_shell_cache_dir().mkdir()
-        sm_compile_helpers.createBustedFile(cached_no_shell, ex)
+        shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
+        if shell.get_shell_cache_js_bin_path().is_file():  # Switch to contextlib.suppress when we are fully on Python 3
+            shell.get_shell_cache_js_bin_path().unlink()
+        with io.open(str(cached_no_shell), "a", encoding="utf-8", errors="replace") as f:
+            f.write("\nCaught exception %r (%s)\n" % (ex, ex))
+            f.write("Backtrace:\n")
+            f.write(traceback.format_exc() + "\n")
+        print("Compilation failed (%s) (details in %s)" % (ex, cached_no_shell))
+
         if use_s3cache:
             s3cache_obj.uploadFileToS3(str(shell.get_shell_cache_js_bin_path()) + ".busted")
         raise
