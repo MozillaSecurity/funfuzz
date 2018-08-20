@@ -542,7 +542,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
                            stderr=subprocess.STDOUT,
                            stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     except subprocess.CalledProcessError as ex:
-        with io.open(str(shell.get_shell_cache_dir() / ".busted"), "a",
+        with io.open(str(shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".busted")), "a",
                      encoding="utf-8", errors="replace") as f:
             f.write("Configuration of %s rev %s failed with the following output:\n" %
                     (shell.get_repo_name(), shell.get_hg_hash()))
@@ -603,7 +603,7 @@ def sm_compile(shell):
             print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
             print("%s did not result in a js shell:" % MAKE_BINARY)
-            with io.open(str(shell.get_shell_cache_dir() / ".busted"), "a",
+            with io.open(str(shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".busted")), "a",
                          encoding="utf-8", errors="replace") as f:
                 f.write("Compilation of %s rev %s failed with the following output:\n" %
                         (shell.get_repo_name(), shell.get_hg_hash()))
