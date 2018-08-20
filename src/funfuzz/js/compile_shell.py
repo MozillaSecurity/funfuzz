@@ -344,19 +344,8 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
     shell.set_js_objdir(js_objdir_path)
 
     sm_compile_helpers.autoconf_run(shell.get_repo_dir() / "js" / "src")
-    configure_try_count = 0
-    while True:
-        try:
-            cfgBin(shell)
-            break
-        except subprocess.CalledProcessError:
-            configure_try_count += 1
-            if configure_try_count > 3:
-                print("Configuration of the js binary failed 3 times.")
-                raise
-            print("Trying once more...")
-            continue
     try:
+        cfgBin(shell)
         sm_compile(shell)
     except (subprocess.CalledProcessError, OSError):
         raise
