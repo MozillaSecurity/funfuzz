@@ -217,6 +217,7 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
             return True
 
     for line in out:
+        # Note that "jsfunfuzz broke its own scripting environment: " is not currently generated in error-reporting.js
         if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
             return True
         if line.startswith("Found a bug: "):
