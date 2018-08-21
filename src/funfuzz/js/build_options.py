@@ -306,13 +306,9 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
 
     if args.buildWithAsan:
         if not args.buildWithClang:
-            return False, "We should test ASan builds that are only compiled with Clang."
-        # Also check for determinism to prevent LLVM compilation from happening on releng machines,
-        # since releng machines only test non-deterministic builds.
-        if not args.enableMoreDeterministic:
-            return False, "We should test deterministic ASan builds."
-        if platform.system() == "Linux":  # https://github.com/MozillaSecurity/funfuzz/issues/25
-            return False, "Linux ASan builds cannot yet submit to FuzzManager."
+            return False, "We must only test ASan builds with Clang, else GCC builds crash on startup."
+        if args.enable32:
+            return False, "We are only testing 64-bit ASan builds as a start."
         if platform.system() == "Darwin":  # https://github.com/MozillaSecurity/funfuzz/issues/25
             return False, "Mac ASan builds cannot yet submit to FuzzManager."
         if platform.system() == "Windows":

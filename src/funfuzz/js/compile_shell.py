@@ -52,11 +52,8 @@ if platform.system() == "Windows":
     CLANG_ASAN_PARAMS = ""
 else:
     MAKE_BINARY = "make"
-    CLANG_PARAMS = "-Qunused-arguments"
-    # See https://bugzilla.mozilla.org/show_bug.cgi?id=935795#c3 for some of the following flags:
-    # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc -mllvm -asan-stack=0"
-    # The flags above seem to fix a problem not on the js shell.
-    CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
+    CLANG_PARAMS = ""
+    CLANG_ASAN_PARAMS = "-fsanitize=address"
     SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
     CLANG_X86_FLAG = "-arch i386"
 
@@ -377,13 +374,10 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["CC"] = "gcc -m32 %s" % SSE2_FLAGS
             cfg_env["CXX"] = "g++ -m32 %s" % SSE2_FLAGS
         if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
-            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
+            raise OSError("We do not support 32-bit ASan builds")
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=i686-pc-linux")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm32:
             # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
             # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
@@ -449,9 +443,9 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = "clang " + CLANG_PARAMS
             cfg_env["CXX"] = "clang++ " + CLANG_PARAMS
-        if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
-            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
+            if shell.build_opts.buildWithAsan:
+                cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
+                cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.buildWithAsan:
