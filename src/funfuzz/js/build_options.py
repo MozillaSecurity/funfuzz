@@ -309,6 +309,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
             return False, "We must only test ASan builds with Clang, else GCC builds crash on startup."
         if args.enable32:
             return False, "We are only testing 64-bit ASan builds as a start."
+        if platform.system() == "Linux" and "Microsoft" in platform.release():
+            return False, "Linux ASan builds cannot yet work in WSL though there may be workarounds."
         if platform.system() == "Darwin":  # https://github.com/MozillaSecurity/funfuzz/issues/25
             return False, "Mac ASan builds cannot yet submit to FuzzManager."
         if platform.system() == "Windows":
