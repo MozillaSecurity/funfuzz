@@ -315,6 +315,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
             return False, "Mac ASan builds cannot yet submit to FuzzManager."
         if platform.system() == "Windows":
             return False, "Asan is not yet supported on Windows."
+        if platform.system() == "Windows" and args.enable32:
+            return False, "ASan is explicitly not supported in 32-bit Windows builds."
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
         if platform.system() == "Windows":
