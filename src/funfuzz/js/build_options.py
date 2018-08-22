@@ -304,8 +304,6 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.buildWithClang:
         if platform.system() == "Linux" and not args.buildWithAsan:
             return False, "We do not really care about non-Asan clang-compiled Linux builds yet."
-        if platform.system() == "Windows":
-            return False, "Clang builds on Windows are not supported well yet."
 
     if args.buildWithAsan:
         if not args.buildWithClang:
