@@ -420,7 +420,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
                                   "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
             cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"] = (r"C:\Program Files\LLVM\lib\clang\6.0.1\lib\windows"
                                                      r"\clang_rt.asan_dynamic-x86_64.dll")
-            cfg_env["LIB"] = cfg_env.get("LIB", 0) + r"C:\Program Files\LLVM\lib\clang\6.0.1\lib\windows"
+            cfg_env["LIB"] = cfg_env.get("LIB", "") + r"C:\Program Files\LLVM\lib\clang\6.0.1\lib\windows"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.enable32:
