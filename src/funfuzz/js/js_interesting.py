@@ -87,7 +87,9 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 runthis)
 
         timed_run_kw = {"env": (env or os.environ)}
-        if not platform.system() == "Windows":
+        if not (platform.system() == "Windows" or
+                # We cannot set a limit for RLIMIT_AS for ASan binaries
+                inspect_shell.queryBuildConfiguration(options.jsengineWithArgs[0], "asan")):
             timed_run_kw["preexec_fn"] = set_ulimit
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
@@ -295,6 +297,7 @@ def set_ulimit():
         import resource  # pylint: disable=import-error
 
         # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
+        # We cannot set a limit for RLIMIT_AS for ASan binaries
         giga_byte = 2**30
         resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
 
