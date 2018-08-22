@@ -106,10 +106,10 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                   dest="disableProfiling",
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
-    # Alternative compiler for Linux and Windows. Clang is always turned on, on Macs.
+    # Alternative compiler for Linux. Clang is always turned on, on Win and Mac.
     randomizeBool(["--build-with-clang"], 0.5, 0.5,
                   dest="buildWithClang",
-                  help='Build with clang. Defaults to "True" on Macs, "%(default)s" otherwise.')
+                  help='Build with clang. Defaults to "True" on Win and Mac, "%(default)s" otherwise.')
     # Memory debuggers
     randomizeBool(["--build-with-asan"], 0.3, 0,
                   dest="buildWithAsan",
@@ -176,6 +176,9 @@ def parse_shell_opts(args):  # pylint: disable=too-many-branches
 
     if platform.system() == "Darwin":
         build_options.buildWithClang = True  # Clang seems to be the only supported compiler
+
+    if platform.system() == "Windows":
+        build_options.buildWithClang = True
 
     if build_options.enableArmSimulatorObsolete:
         build_options.enableSimulatorArm32 = True
