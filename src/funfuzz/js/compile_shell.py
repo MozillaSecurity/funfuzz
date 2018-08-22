@@ -374,10 +374,13 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["CC"] = "gcc -m32 %s" % SSE2_FLAGS
             cfg_env["CXX"] = "g++ -m32 %s" % SSE2_FLAGS
         if shell.build_opts.buildWithAsan:
-            raise OSError("We do not support 32-bit ASan builds")
+            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
+            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=i686-pc-linux")
+        if shell.build_opts.buildWithAsan:
+            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm32:
             # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
             # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
