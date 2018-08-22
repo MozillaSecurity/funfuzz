@@ -162,7 +162,7 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     return parser, randomizer
 
 
-def parse_shell_opts(args):  # pylint: disable=too-many-branches
+def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
     """Parses shell options into a build_options object.
 
     Args:
