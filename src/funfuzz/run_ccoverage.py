@@ -72,6 +72,7 @@ def main(argparse_args=None):
         cov_result_file = gatherer.gather_coverage(dirpath)
         if args.report:
             reporter.report_coverage(cov_result_file)
+        reporter.disable_pool()
 
 
 if __name__ == "__main__":

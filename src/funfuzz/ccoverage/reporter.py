@@ -10,10 +10,24 @@
 from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import logging
+import os
 
 from CovReporter import CovReporter
+from EC2Reporter import EC2Reporter
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
+
+
+def disable_pool():
+    """Disables coverage pool on collection completion."""
+    spotman_env_var_name = "EC2SPOTMANAGER_POOLID"
+    if spotman_env_var_name in os.environ:
+        pool_id = os.environ[spotman_env_var_name]
+        RUN_COV_LOG.info("About to disable EC2SpotManager pool ID: %s", pool_id)
+        EC2Reporter.main(argv=["--disable", str(pool_id)])
+        RUN_COV_LOG.info("Pool disabled!")
+    else:
+        RUN_COV_LOG.info("No pools were disabled, as the %s environment variable was not found", spotman_env_var_name)
 
 
 def report_coverage(cov_results):
