@@ -41,7 +41,7 @@ def parse_args(args=None):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--report", action="store_true", help="Report results to FuzzManager")
     arg_parser.add_argument("--grcov_ver",
-                            default="0.1.37",
+                            default="0.2.3",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
     arg_parser.add_argument("--url",
                             required=True,
