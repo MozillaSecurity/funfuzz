@@ -63,7 +63,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--ion-pgo=on" in all_flags
         assert "--ion-sincos=on" in all_flags
         assert "--ion-instruction-reordering=on" in all_flags
-        assert "--ion-shared-stubs=on" in all_flags
         assert "--ion-regalloc=testbed" in all_flags
         assert '--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags
         assert "--ion-extra-checks" in all_flags

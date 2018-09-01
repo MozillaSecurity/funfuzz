@@ -110,9 +110,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if shell_supports_flag(shell_path, "--ion-instruction-reordering=on") and chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
         input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
-    if shell_supports_flag(shell_path, "--ion-shared-stubs=on") and chance(.2):
-        # m-c rev 257573:3655d19ce241, see bug 1168756
-        input_list.append("--ion-shared-stubs=" + ("on" if chance(.1) else "off"))
     if shell_supports_flag(shell_path, "--ion-regalloc=testbed") and chance(.2):
         # m-c rev 248962:47e92bae09fd, see bug 1170840
         input_list.append("--ion-regalloc=testbed")

@@ -148,8 +148,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
     if "--ion-instruction-reordering=on" in flags or "--ion-instruction-reordering=off" in flags:
         required.append("59d2f2e62420")  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
-    if "--ion-shared-stubs=on" in flags or "--ion-shared-stubs=off" in flags:
-        required.append("3655d19ce241")  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
         # For ARM64: This should get updated whenever ARM64 builds are stable
         required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
