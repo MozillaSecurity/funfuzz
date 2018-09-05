@@ -145,13 +145,15 @@ def print_machine_info():
     """Log information about the machine."""
     print("Platform details: %s" % " ".join(platform.uname()))
 
-    print("hg info: %s" % subprocess.run(["hg", "-q", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
+    print("hg info: %s" % subprocess.run(["hg", "-q", "version"],
+        check=True, stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip())
     if which("gdb"):
         gdb_version = subprocess.run(["gdb", "--version"],
                                      stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
         print("gdb info: %s" % gdb_version.split("\n")[0])
     if which("git"):
-        print("git info: %s" % subprocess.run(["git", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
+        print("git info: %s" % subprocess.run(["git", "version"],
+            check=True, stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip())
     print("Python version: %s" % sys.version.split()[0])
 
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
