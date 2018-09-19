@@ -906,10 +906,6 @@ var exprMakers =
   // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
   function(d, b) { return "(void options('strict'))"; },
 
-  // Spidermonkey: versions
-  // Commenting out because this version function has been removed as of m-c rev 392455 (Fx59) - 589914e65db7
-  //function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; },
-
   // More special Spidermonkey shell functions
   // (Note: functions without returned objects or visible side effects go in testing-functions.js, in order to allow presence/absence differential testing.)
   //  function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
