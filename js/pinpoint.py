@@ -15,10 +15,11 @@ import re
 import shutil
 import subprocess
 import sys
-from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
-from inspectShell import testJsShellOrXpcshell
 
 from lithium.interestingness.utils import file_contains_str
+
+from jsInteresting import JS_OVERALL_MISMATCH, JS_VG_AMISS
+from inspectShell import testJsShellOrXpcshell
 
 p0 = os.path.dirname(os.path.abspath(__file__))
 autobisectpy = os.path.abspath(os.path.join(p0, os.pardir, 'autobisect-js', 'autoBisect.py'))

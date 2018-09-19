@@ -13,6 +13,10 @@ import os
 import sys
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
+# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
+from FTB.ProgramConfiguration import ProgramConfiguration
+
 import jsInteresting
 import pinpoint
 import shellFlags
@@ -23,10 +27,6 @@ sys.path.append(path1)
 import subprocesses as sps
 import lithOps
 import createCollector
-
-# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
-import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
-from FTB.ProgramConfiguration import ProgramConfiguration
 
 
 gOptions = ""

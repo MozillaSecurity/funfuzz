@@ -11,9 +11,10 @@ from __future__ import absolute_import, print_function
 import os
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
-import subprocesses as sps
 import lithium.interestingness.timed_run as timed_run
 from lithium.interestingness.utils import file_contains
+
+import subprocesses as sps
 
 
 def parseOptions(arguments):

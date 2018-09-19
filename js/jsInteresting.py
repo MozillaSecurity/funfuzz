@@ -14,6 +14,11 @@ import os
 import sys
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
+# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
+import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
+from FTB.ProgramConfiguration import ProgramConfiguration
+import lithium.interestingness.timed_run as timed_run
+
 import inspectShell
 p0 = os.path.dirname(os.path.abspath(__file__))
 p2 = os.path.abspath(os.path.join(p0, os.pardir, "detect"))
@@ -25,11 +30,6 @@ sys.path.append(p3)
 import subprocesses as sps
 import createCollector
 import fileManipulation
-import lithium.interestingness.timed_run as timed_run
-
-# no-name-in-module pylint error exists for Python 3 only because FuzzManager is not Python 3-compatible yet
-import FTB.Signatures.CrashInfo as CrashInfo  # pylint: disable=no-name-in-module
-from FTB.ProgramConfiguration import ProgramConfiguration
 
 
 # Levels of unhappiness.
