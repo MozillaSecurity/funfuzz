@@ -14,8 +14,8 @@ install:
     - "%PYTHON%\\python.exe -m pip --version"
     - "%PYTHON%\\python.exe -m virtualenv --version"
     - "git.exe --version"
-    - "%PYTHON%\\python.exe -m pip install --upgrade flake8 pylint"
-    - "%PYTHON%\\python.exe -m pip install --upgrade pytest-flake8 pytest-pylint"
+    - "%PYTHON%\\python.exe -m pip install --upgrade flake8==3.5.0 pylint==1.9.3 pytest==3.7.4"
+    - "%PYTHON%\\python.exe -m pip install --upgrade pytest-flake8==1.0.2 pytest-pylint==0.12.3"
     - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
 build: off
 test_script:
