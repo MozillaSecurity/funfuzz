@@ -990,6 +990,8 @@ function makeNewGlobalArg(d, b)
     propStrs.push("cloneSingletons: " + makeBoolean(d - 1, b));
   if (rnd(2))
     propStrs.push("disableLazyParsing: " + makeBoolean(d - 1, b));
+  if (rnd(2))
+    propStrs.push("invisibleToDebugger: " + makeBoolean(d - 1, b));
   return "{ " + propStrs.join(", ") + " }";
 }
 
