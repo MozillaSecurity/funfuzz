@@ -1281,9 +1281,6 @@ var functionMakers = [
   function(d, b) { return "async function* (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
   function(d, b) { return "async function* (y) { " + directivePrologue() + "yield y; await y; " + makeStatement(d, b.concat(["y"])) + "; yield y; await y; }"; },
 
-  // A generator expression -- kinda a function??
-  function(d, b) { return "(1 for (x in []))"; },
-
   // A simple wrapping pattern
   function(d, b) { return "/*wrap1*/(" + functionPrefix() + "(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
 
@@ -1976,10 +1973,6 @@ var iterableExprMakers = Random.weighted([
 
   // Array comprehensions (JavaScript 1.7)
   { w: 1, v: function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
-
-  // Generator expressions (JavaScript 1.8)
-  { w: 1, v: function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); } },
-  { w: 1, v: function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); } },
 
   // A generator that yields once
   { w: 1, v: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
