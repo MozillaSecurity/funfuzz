@@ -170,6 +170,7 @@ var makeEvilCallback;
       ", lineNumber: 42" +
       ", isRunOnce: " + makeBoolean(d, b) +
       ", noScriptRval: " + makeBoolean(d, b) +
+      ", saveIncrementalBytecode: " + makeBoolean(d, b) +
       ", sourceIsLazy: " + makeBoolean(d, b) +
       ", catchTermination: " + makeBoolean(d, b) +
       ((rnd(5) == 0) ? (
