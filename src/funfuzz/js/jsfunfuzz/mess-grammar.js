@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global print, Random, rnd */
+
 // Randomly ignore the grammar 1 in TOTALLY_RANDOM times we generate any grammar node.
 var TOTALLY_RANDOM = 1000;
 

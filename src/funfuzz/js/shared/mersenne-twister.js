@@ -14,6 +14,8 @@
 // lines commented with // are additional comments in this JavaScript version.
 // before using this version, create at least one instance of MersenneTwister19937 class, and initialize the each state, given below in c comments, of all the instances.
 
+/* global Int32Array */
+
 /*
    A C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.

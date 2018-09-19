@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global dumpln, errorToString, evalcx, newGlobal, print, tryRunningDirectly, xpcshell */
+
 /*********************
  * SANDBOXED RUNNING *
  *********************/
@@ -80,12 +82,12 @@ function useSpidermonkeyShellSandbox(sandboxType)
 function newGeckoSandbox(n)
 {
   var t = (typeof n == "number") ? n : 1;
-  var s = Components.utils.Sandbox("http://x" + t + ".example.com/");
+  var s = Components.utils.Sandbox("http://x" + t + ".example.com/"); // eslint-disable-line no-undef
 
   // Allow the sandbox to do a few things
   s.newGeckoSandbox = newGeckoSandbox;
   s.evalInSandbox = function(str, sbx) {
-    return Components.utils.evalInSandbox(str, sbx);
+    return Components.utils.evalInSandbox(str, sbx); // eslint-disable-line no-undef
   };
   s.print = function(str) { print(str); };
 
@@ -97,7 +99,7 @@ function useGeckoSandbox() {
 
   return function(f, code, wtt) {
     try {
-      Components.utils.evalInSandbox(code, primarySandbox);
+      Components.utils.evalInSandbox(code, primarySandbox); // eslint-disable-line no-undef
     } catch(e) {
       // It might not be safe to operate on |e|.
     }

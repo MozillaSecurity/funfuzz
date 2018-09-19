@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global console, debug, gc, print, readline:writable, rnd, uneval:writable, verifyprebarriers, wasmIsSupported */
+/* XPCNativeWrapper */
+
 // jsfunfuzz is best run in a command-line shell.  It can also run in
 // a web browser, but you might have trouble reproducing bugs that way.
 
@@ -11,8 +14,8 @@ var ENGINE_SPIDERMONKEY_TRUNK = 1;
 var ENGINE_JAVASCRIPTCORE = 4;
 
 var engine = ENGINE_UNKNOWN;
-var jsshell = (typeof window == "undefined");
-var xpcshell = jsshell && (typeof Components == "object");
+var jsshell = (typeof window == "undefined"); // eslint-disable-line no-undef
+var xpcshell = jsshell && (typeof Components == "object"); // eslint-disable-line no-undef
 var dump;
 var dumpln;
 var printImportant;
@@ -29,19 +32,19 @@ if (jsshell) {
 
     // Avoid accidentally waiting for user input that will never come.
     readline = function(){};
-  } else if (typeof XPCNativeWrapper == "function") {
+  } else if (typeof XPCNativeWrapper == "function") { // eslint-disable-line no-undef
     // e.g. xpcshell or firefox
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof debug == "function") {
     engine = ENGINE_JAVASCRIPTCORE;
   }
 } else {
-  if (navigator.userAgent.indexOf("WebKit") != -1) {
+  if (navigator.userAgent.indexOf("WebKit") != -1) { // eslint-disable-line no-undef
     // XXX detect Google Chrome for V8
     engine = ENGINE_JAVASCRIPTCORE;
     // This worked in Safari 3.0, but it might not work in Safari 3.1.
     dump = function(s) { console.log(s); };
-  } else if (navigator.userAgent.indexOf("Gecko") != -1) {
+  } else if (navigator.userAgent.indexOf("Gecko") != -1) { // eslint-disable-line no-undef
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof dump != "function") {
     // In other browsers, jsfunfuzz does not know how to log anything.
@@ -51,9 +54,9 @@ if (jsshell) {
 
   printImportant = function(s) {
     dumpln(s);
-    var p = document.createElement("pre");
-    p.appendChild(document.createTextNode(s));
-    document.body.appendChild(p);
+    var p = document.createElement("pre"); // eslint-disable-line no-undef
+    p.appendChild(document.createTextNode(s)); // eslint-disable-line no-undef
+    document.body.appendChild(p); // eslint-disable-line no-undef
   };
 }
 

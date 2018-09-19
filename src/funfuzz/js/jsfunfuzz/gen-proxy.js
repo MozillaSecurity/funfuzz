@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global bp:writable, makeExpr, makeFunction, Random, rnd, TOTALLY_RANDOM, totallyRandom */
+
 // In addition, can always use "undefined" or makeFunction
 // Forwarding proxy code based on http://wiki.ecmascript.org/doku.php?id=harmony:proxies "Example: a no-op forwarding proxy"
 // The letter 'x' is special.

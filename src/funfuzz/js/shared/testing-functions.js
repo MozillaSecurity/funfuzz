@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global final_level:writable, max_level:writable, oomAfterAllocations, oomAtAllocation, Random, resetOOMFailure, rnd */
+
 // Generate calls to SpiderMonkey "testing functions" for:
 // * testing that they do not cause assertions/crashes
 // * testing that they do not alter visible results (compare_jit with and without the call)

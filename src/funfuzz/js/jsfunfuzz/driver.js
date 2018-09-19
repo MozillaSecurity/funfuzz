@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global count:writable, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, jsshell */
+/* global makeScript, mathInitFCM, print, printImportant, Random, rnd, tryItOut, uneval */
+
 function start(glob)
 {
   var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
@@ -41,7 +44,7 @@ function start(glob)
       lastTime = new Date();
     } while(lastTime - startTime < MAX_TOTAL_TIME);
   } else {
-    setTimeout(testStuffForAWhile, 200);
+    setTimeout(testStuffForAWhile, 200); // eslint-disable-line no-undef
   }
 
   function testStuffForAWhile()
@@ -52,7 +55,7 @@ function start(glob)
     if (count % 10000 < 100)
       printImportant("Iterations: " + count);
 
-    setTimeout(testStuffForAWhile, 30);
+    setTimeout(testStuffForAWhile, 30); // eslint-disable-line no-undef
   }
 
   function testOne()

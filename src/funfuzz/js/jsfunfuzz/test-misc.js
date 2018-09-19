@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global count, disassemble, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, foundABug, getBuildConfiguration */
+/* global nestingConsistencyTest, Reflect, tryEnsureSanity, verbose */
+
 function optionalTests(f, code, wtt)
 {
   if (count % 100 == 1) {

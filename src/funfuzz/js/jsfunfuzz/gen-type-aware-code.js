@@ -3,6 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global builtinFunctions, builtinObjects, builtinProperties, loopCount, makeAsmJSFunction, makeAsmJSModule */
+/* global makeBoolean, makeExpr, makeFunction, makeFunctionBody, makeFunOnCallChain, makeGlobal, makeIterable */
+/* global makePropertyDescriptor, makePropertyName, makeRegex, makeRegexUseBlock, makeRegisterStompFunction */
+/* global makeScriptForEval, makeStatement, Random, rnd, simpleSource, typedArrayConstructors, uniqueVarName */
+/* global varBinder */
+
 /***********************
  * TEST BUILT-IN TYPES *
  ***********************/

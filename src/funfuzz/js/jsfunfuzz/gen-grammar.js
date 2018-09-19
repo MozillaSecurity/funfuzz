@@ -3,6 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global allMethodNames, allPropertyNames, arrayBufferType, asmJSInterior, binaryMathFunctions, builtinFunctions */
+/* global builtinObjectNames, builtinProperties, cat, constructors, engine, ENGINE_JAVASCRIPTCORE, evalcx */
+/* global fuzzTestingFunctionsCtor, jsshell, js_src_tests_dir, libdir, loopCount, loopModulo, makeBuilderStatement */
+/* global makeEvilCallback, makeImmediateRecursiveCall, makeMathExpr, makeMathFunction, makeMathyFunAndTest */
+/* global makeMathyFunRef, makeProxyHandler, makeProxyHandlerFactory, makeRegex, makeRegexUseBlock, makeRegexUseExpr */
+/* global makeRegisterStompBody, oomTest, Random, read, regressionTestList, regressionTestsRoot, rnd, simpleSource */
+/* global stripSemicolon, TOTALLY_RANDOM, totallyRandom, unaryMathFunctions, uneval, UNTERMINATED_COMMENT */
+/* global w_pltfrm_res_dir, XPCNativeWrapper, xpcshell */
+
 /****************************
  * GRAMMAR-BASED GENERATION *
  ****************************/

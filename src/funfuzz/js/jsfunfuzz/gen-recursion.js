@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global makeExpr, makeMixedTypeArray, makeStatement, Random, rnd, uniqueVarName */
+
 /*
 David Anderson suggested creating the following recursive structures:
   - recurse down an array of mixed types, car cdr kinda thing
