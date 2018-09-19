@@ -103,7 +103,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     commands = [[jsEngine] + combo + [infilename] for combo in combos]
 
-    for i in range(0, len(commands)):
+    for i in range(0, len(commands)):  # pylint: disable=consider-using-enumerate
         prefix = logPrefix + "-r" + str(i)
         command = commands[i]
         r = jsInteresting.ShellResult(options, command, prefix, True)

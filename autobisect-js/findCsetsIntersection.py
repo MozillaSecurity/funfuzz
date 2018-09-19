@@ -50,7 +50,7 @@ def main():
     brokenRanges = kbew.knownBrokenRanges(options)
 
     cnt = 0
-    for i in range(0, len(brokenRanges)):
+    for i in range(0, len(brokenRanges)):  # pylint: disable=consider-using-enumerate
         print("Analyzing revset: %s which matches %s changesets" % (
             brokenRanges[i], countCsets(brokenRanges[i], repoDir)))
         for j in range(i + 1, len(brokenRanges)):
