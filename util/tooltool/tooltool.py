@@ -306,7 +306,7 @@ class Manifest(object):
             except ValueError:
                 raise InvalidManifest("trying to read invalid manifest file")
 
-    def dump(self, output_file, fmt='json'):
+    def dump(self, output_file, fmt='json'):  # pylint: disable=inconsistent-return-statements
         assert fmt in self.valid_formats
         if fmt == 'json':
             rv = json.dump(
@@ -314,7 +314,7 @@ class Manifest(object):
             print("", file=output_file)
             return rv
 
-    def dumps(self, fmt='json'):
+    def dumps(self, fmt='json'):  # pylint: disable=inconsistent-return-statements
         assert fmt in self.valid_formats
         if fmt == 'json':
             return json.dumps(self.file_records, cls=FileRecordJSONEncoder)
@@ -872,7 +872,7 @@ def upload(manifest, message, base_urls, auth_file, region):
     return success
 
 
-def process_command(options, args):
+def process_command(options, args):  # pylint: disable=inconsistent-return-statements
     """ I know how to take a list of program arguments and
     start doing the right thing with them"""
     cmd = args[0]

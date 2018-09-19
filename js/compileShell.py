@@ -579,7 +579,7 @@ def envDump(shell, log):
         f.write('version = %s\n' % shell.getVersion())
 
 
-def extractVersions(objdir):
+def extractVersions(objdir):  # pylint: disable=inconsistent-return-statements
     """Extract the version from js.pc and put it into *.fuzzmanagerconf."""
     jspcDir = sps.normExpUserPath(os.path.join(objdir, 'js', 'src'))
     jspcFilename = os.path.join(jspcDir, 'js.pc')
@@ -587,7 +587,7 @@ def extractVersions(objdir):
     jspcNewDir = os.path.join(jspcDir, 'build')
     jspcNewFilename = os.path.join(jspcNewDir, 'js.pc')
 
-    def fixateVer(pcfile):
+    def fixateVer(pcfile):  # pylint: disable=inconsistent-return-statements
         """Returns the current version number (47.0a2)."""
         with io.open(pcfile, mode='r', encoding="utf-8", errors="replace") as f:
             for line in f:

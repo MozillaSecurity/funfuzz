@@ -31,7 +31,7 @@ def amiss(logPrefix):
     return foundSomething
 
 
-def scanLine(line):
+def scanLine(line):  # pylint: disable=inconsistent-return-statements
     global ppline, pline
 
     line = line.strip("\x07").rstrip("\n")

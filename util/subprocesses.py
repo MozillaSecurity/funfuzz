@@ -230,7 +230,7 @@ def grabMacCrashLog(progname, crashedPID, logPrefix, useLogFiles):
     return None
 
 
-def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):
+def grabCrashLog(progfullname, crashedPID, logPrefix, wantStack):  # pylint: disable=inconsistent-return-statements
     """Return the crash log if found."""
     progname = os.path.basename(progfullname)
 
