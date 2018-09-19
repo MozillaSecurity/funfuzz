@@ -712,8 +712,7 @@ var incDecOps = [
 
 
 var specialProperties = [
-  "__count__",
-  "__parent__", "__proto__", "constructor", "prototype",
+  "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
   "toString", "valueOf",
@@ -786,7 +785,7 @@ var exprMakers =
   function(d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
   function(d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
 
-  // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
+  // RegExp replace.  This is interesting for the same reason as array extras.
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
