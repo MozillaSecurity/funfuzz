@@ -17,7 +17,13 @@
 // * tryRunningDirectly(), which uses eval() or new Function().
 //   * This creates the most "interesting" testcases.
 
-var tryRunning = xpcshell ? useGeckoSandbox() : tryRunningDirectly;
+var tryRunning;
+if (xpcshell) {  // Adapted from ternary operator - this longer form helps reducers reduce better
+  tryRunning = useGeckoSandbox();
+} else {
+  tryRunning = tryRunningDirectly;
+}
+
 function fillShellSandbox(sandbox)
 {
   var safeFuns = [
