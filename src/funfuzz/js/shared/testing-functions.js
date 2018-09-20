@@ -163,6 +163,10 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
     { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
 
+    // Test recomputeWrappers - see bug 1492406
+    { w: 10,  v: function(d, b) { return prefix + "recomputeWrappers" + "();"; } },
+    // Also test recomputeWrappers calling newGlobal, see the bug
+
     // [TestingFunctions.cpp, but debug-only and CRASHY]
     // After N js_malloc memory allocations, fail every following allocation
     { w: 1,  v: function(d, b) { return (typeof oomAfterAllocations == "function" && rnd(1000) === 0) ? prefix + "oomAfterAllocations" + "(" + (numberOfAllocs() - 1) + ");" : "void 0;"; } },
