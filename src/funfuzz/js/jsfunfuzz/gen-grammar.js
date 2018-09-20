@@ -278,6 +278,7 @@ var statementMakers = Random.weighted([
 if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
     function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
+    function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ", { keepFailing: true })"; },
   ]);
 }
 
