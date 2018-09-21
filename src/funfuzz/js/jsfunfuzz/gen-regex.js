@@ -192,7 +192,7 @@ function regexCharCode()
 // These return matching pairs: [regex fragment, charcode for a matching one-character string].
 var regexCharacterMakers = Random.weighted([
   // Possibly incorrect
-  { w:20, v: function() { var cc = regexCharCode(); return [       String.fromCharCode(cc), cc]; } }, // literal that doesn't need to be escaped (OR wrong)
+  { w: 20, v: function() { var cc = regexCharCode(); return [      String.fromCharCode(cc), cc]; } }, // literal that doesn't need to be escaped (OR wrong)
   { w: 4, v: function() { var cc = regexCharCode(); return ["\\" + String.fromCharCode(cc), cc]; } }, // escaped special character OR unnecessary escape (OR wrong)
   { w: 1, v: function() { return ["\\0",  0]; } },  // null [ignoring the "do not follow this with another digit" rule which would turn it into an octal escape]
   { w: 1, v: function() { return ["\\B", 66]; } },  // literal B -- ONLY within a character class. (Elsewhere, it's a "zero-width non-word boundary".)
