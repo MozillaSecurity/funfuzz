@@ -68,7 +68,7 @@ var HOTLOOP = 60;
 function loopCount() { return rnd(rnd(HOTLOOP * 3)); }
 function loopModulo() { return (rnd(2) ? rnd(rnd(HOTLOOP * 2)) : rnd(5)) + 2; }
 
-function simpleSource(s)
+function simpleSource(st)
 {
   function hexify(c)
   {
@@ -79,16 +79,16 @@ function simpleSource(s)
     return "\\u" + hex;
   }
 
-  if (typeof s == "string")
+  if (typeof st == "string")
     return ("\"" +
-      s.replace(/\\/g, "\\\\")
-       .replace(/\"/g, "\\\"")
-       .replace(/\0/g, "\\0")
-       .replace(/\n/g, "\\n")
-       .replace(/[^ -~]/g, hexify) + // not space (32) through tilde (126)
+      st.replace(/\\/g, "\\\\")
+        .replace(/\"/g, "\\\"")
+        .replace(/\0/g, "\\0")
+        .replace(/\n/g, "\\n")
+        .replace(/[^ -~]/g, hexify) + // not space (32) through tilde (126)
       "\"");
   else
-    return "" + s; // hope this is right ;)  should work for numbers.
+    return "" + st; // hope this is right ;)  should work for numbers.
 }
 
 var haveRealUneval = (typeof uneval == "function");
