@@ -51,7 +51,7 @@ function makeRegexUseBlock(d, b, rexExpr, strExpr)
               "uneval(s.match(r))",
               "s.search(r)",
               "s.replace(r, " + makeReplacement(d, bv) + (rnd(3) ? "" : ", " + simpleSource(randomRegexFlags())) + ")",
-              "s.split(r)"
+              "s.split(r)",
             ]) +
           "); " +
           (rnd(3) ? "" : "print(r.lastIndex); ")

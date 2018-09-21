@@ -32,26 +32,26 @@ var recursiveFunctions = [
     text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); @ } else { @ } @ })",
     vars: ["depth"],
     args: function(d, b) { return singleRecursionDepth(d, b); },
-    test: function(f) { try { f(5000); } catch(e) { } return true; }
+    test: function(f) { try { f(5000); } catch(e) { } return true; },
   },
   {
     text: "(function factorial(N) { @; if (N == 0) { @; return 1; } @; return N * factorial(N - 1); @ })",
     vars: ["N"],
     args: function(d, b) { return singleRecursionDepth(d, b); },
-    test: function(f) { return f(10) == 3628800; }
+    test: function(f) { return f(10) == 3628800; },
   },
   {
     text: "(function factorial_tail(N, Acc) { @; if (N == 0) { @; return Acc; } @; return factorial_tail(N - 1, Acc * N); @ })",
     vars: ["N", "Acc"],
     args: function(d, b) { return singleRecursionDepth(d, b) + ", 1"; },
-    test: function(f) { return f(10, 1) == 3628800; }
+    test: function(f) { return f(10, 1) == 3628800; },
   },
   {
     // two recursive calls
     text: "(function fibonacci(N) { @; if (N <= 1) { @; return 1; } @; return fibonacci(N - 1) + fibonacci(N - 2); @ })",
     vars: ["N"],
     args: function(d, b) { return "" + rnd(8); },
-    test: function(f) { return f(6) == 13; }
+    test: function(f) { return f(6) == 13; },
   },
   {
     // do *anything* while indexing over mixed-type arrays
@@ -68,21 +68,21 @@ var recursiveFunctions = [
         return (text.replace(/EXPR1/,      expr1)
                     .replace(/STATEMENT1/, statement1)
         ); },
-    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; }
+    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; },
   },
   {
     // this lets us play a little with mixed-type arrays
     text: "(function sum_indexing(array, start) { @; return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
     vars: ["array", "start"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
-    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; }
+    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; },
   },
   {
     text: "(function sum_slicing(array) { @; return array.length == 0 ? 0 : array[0] + sum_slicing(array.slice(1)); })",
     vars: ["array"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b); },
-    test: function(f) { return f([1,2,3,"4",5,6,7]) == "123418"; }
-  }
+    test: function(f) { return f([1,2,3,"4",5,6,7]) == "123418"; },
+  },
 ];
 
 function singleRecursionDepth(d, b)

@@ -61,12 +61,12 @@ var regexMakers =
     function(dr) { return regexQuantified(dr, "*?", 0, 1); },
     function(dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + "}", x, x); },
     function(dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + ",}", x, x + rnd(10)); },
-    function(dr) { var min = regexNumberOfMatches(); var max = min + regexNumberOfMatches(); return regexQuantified(dr, "{" + min + "," + max + "}", min, max); }
+    function(dr) { var min = regexNumberOfMatches(); var max = min + regexNumberOfMatches(); return regexQuantified(dr, "{" + min + "," + max + "}", min, max); },
   ],
   [
     // Combinations: concatenation, disjunction
     function(dr) { return regexConcatenation(dr); },
-    function(dr) { return regexDisjunction(dr); }
+    function(dr) { return regexDisjunction(dr); },
   ],
   [
     // Grouping
@@ -74,8 +74,8 @@ var regexMakers =
     function(dr) { return regexGrouped("(", dr, ")");   }, // capturing: feeds \1 and exec() result
     function(dr) { return regexGrouped("(?:", dr, ")"); }, // non-capturing
     function(dr) { return regexGrouped("(?=", dr, ")"); }, // lookahead
-    function(dr) { return regexGrouped("(?!", dr, ")"); }  // lookahead(not)
-  ]
+    function(dr) { return regexGrouped("(?!", dr, ")"); },  // lookahead(not)
+  ],
 ];
 
 
@@ -170,7 +170,7 @@ var hexDigits = [
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
   "a", "b", "c", "d", "e", "f",
-  "A", "B", "C", "D", "E", "F"
+  "A", "B", "C", "D", "E", "F",
 ];
 
 function regexTerm()

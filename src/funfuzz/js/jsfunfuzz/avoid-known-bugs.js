@@ -71,6 +71,7 @@ function whatToTestSpidermonkeyTrunk(code)
        /* eslint-disable no-control-regex */
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
        /* eslint-enable no-control-regex */
+    ,
 
   };
 }
@@ -84,7 +85,7 @@ function whatToTestJavaScriptCore(code)
     allowExec: unlikelyToHang(code),
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
-    expectConsistentOutputAcrossJITs: false
+    expectConsistentOutputAcrossJITs: false,
 
   };
 }
@@ -96,7 +97,7 @@ function whatToTestGeneric(code)
     allowExec: unlikelyToHang(code),
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
-    expectConsistentOutputAcrossJITs: false
+    expectConsistentOutputAcrossJITs: false,
   };
 }
 

@@ -735,8 +735,9 @@ function makeExpr(d, b)
 
 var binaryOps = [
   // Long-standing JavaScript operators, roughly in order from http://www.codehouse.com/javascript/precedence/
-  " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", " < ", " > ", " <= ", " >= ", " instanceof ", " in ", " == ", " != ", " === ", " !== ",
-  " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>= ", " &= ", " ^= ", " |= ", " , ", " ** ", " **= "
+  " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", " < ", " > ", " <= ", " >= ", " instanceof ",
+  " in ", " == ", " != ", " === ", " !== ", " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ",
+  " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>= ", " &= ", " ^= ", " |= ", " , ", " ** ", " **= ",
 ];
 
 var leftUnaryOps = [
@@ -1392,7 +1393,7 @@ if (typeof XPCNativeWrapper == "function") {
 
 if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   functionMakers = functionMakers.concat([
-    function(d, b) { return "oomTest"; }
+    function(d, b) { return "oomTest"; },
   ]);
 }
 
@@ -1407,7 +1408,7 @@ var typedArrayConstructors = [
   "Uint32Array",
   "Float32Array",
   "Float64Array",
-  "Uint8ClampedArray"
+  "Uint8ClampedArray",
 ];
 
 function makeTypedArrayStatements(d, b)
@@ -1745,7 +1746,7 @@ var destructuringLValueMakers = [
     Ti.push("}");
 
     return cat(Ti);
-  }
+  },
 ];
 
 // Allow "holes".
@@ -1891,7 +1892,7 @@ function makeShapeyValue(d, b)
     "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
 
     // various powers of two, with values near JSVAL_INT_MAX especially tested
-    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001"
+    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001",
     ],
 
     // Boundaries
@@ -1952,7 +1953,7 @@ function makeShapeyValue(d, b)
     [ "objectEmulatingUndefined()" ],
 
     // Actual variables (slightly dangerous)
-    [ b.length ? Random.index(b) : "x" ]
+    [ b.length ? Random.index(b) : "x" ],
   ];
 
   return Random.index(Random.index(a));

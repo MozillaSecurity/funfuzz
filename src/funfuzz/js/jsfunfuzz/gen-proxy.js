@@ -16,58 +16,58 @@ var proxyHandlerProperties = {
   },
   defineProperty: {
     empty:    "function(){}",
-    forward:  "function(name, desc) { Object.defineProperty(x, name, desc); }"
+    forward:  "function(name, desc) { Object.defineProperty(x, name, desc); }",
   },
   getOwnPropertyNames: {
     empty:    "function() { return []; }",
-    forward:  "function() { return Object.getOwnPropertyNames(x); }"
+    forward:  "function() { return Object.getOwnPropertyNames(x); }",
   },
   delete: {
     empty:    "function() { return true; }",
     yes:      "function() { return true; }",
     no:       "function() { return false; }",
-    forward:  "function(name) { return delete x[name]; }"
+    forward:  "function(name) { return delete x[name]; }",
   },
   fix: {
     empty:    "function() { return []; }",
     yes:      "function() { return []; }",
     no:       "function() { }",
-    forward:  "function() { if (Object.isFrozen(x)) { return Object.getOwnProperties(x); } }"
+    forward:  "function() { if (Object.isFrozen(x)) { return Object.getOwnProperties(x); } }",
   },
   has: {
     empty:    "function() { return false; }",
     yes:      "function() { return true; }",
     no:       "function() { return false; }",
-    forward:  "function(name) { return name in x; }"
+    forward:  "function(name) { return name in x; }",
   },
   hasOwn: {
     empty:    "function() { return false; }",
     yes:      "function() { return true; }",
     no:       "function() { return false; }",
-    forward:  "function(name) { return Object.prototype.hasOwnProperty.call(x, name); }"
+    forward:  "function(name) { return Object.prototype.hasOwnProperty.call(x, name); }",
   },
   get: {
     empty:    "function() { return undefined }",
     forward:  "function(receiver, name) { return x[name]; }",
-    bind:     "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }"
+    bind:     "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }",
   },
   set: {
     empty:    "function() { return true; }",
     yes:      "function() { return true; }",
     no:       "function() { return false; }",
-    forward:  "function(receiver, name, val) { x[name] = val; return true; }"
+    forward:  "function(receiver, name, val) { x[name] = val; return true; }",
   },
   iterate: {
-    forward:  "function() { return (function() { for (var name in x) { yield name; } })(); }"
+    forward:  "function() { return (function() { for (var name in x) { yield name; } })(); }",
   },
   enumerate: {
     empty:    "function() { return []; }",
-    forward:  "function() { var result = []; for (var name in x) { result.push(name); }; return result; }"
+    forward:  "function() { var result = []; for (var name in x) { result.push(name); }; return result; }",
   },
   keys: {
     empty:    "function() { return []; }",
-    forward:  "function() { return Object.keys(x); }"
-  }
+    forward:  "function() { return Object.keys(x); }",
+  },
 };
 
 function makeProxyHandlerFactory(d, b)
