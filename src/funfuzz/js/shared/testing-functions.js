@@ -55,7 +55,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
   }
 
   function setGcparam() {
-    switch(rnd(2)) {
+    switch (rnd(2)) {
       case 0:  return _set("sliceTimeBudget", rnd(100));
       default: return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
     }

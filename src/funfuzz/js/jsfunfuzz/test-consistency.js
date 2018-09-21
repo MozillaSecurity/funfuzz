@@ -24,7 +24,7 @@ function sandboxResult(code, zone)
       // Avoid cross-compartment excitement if it has a toString
       resultStr = "" + result;
     }
-  } catch(e) {
+  } catch (e) {
     result = "Error: " + errorToString(e);
   }
   // print("resultStr: " + resultStr);

@@ -48,7 +48,7 @@ function cat(toks)
 
     s += maybeLineBreak();
 
-    if (torture) switch(rnd(120)) {
+    if (torture) switch (rnd(120)) {
       case 0:
       case 1:
       case 2:

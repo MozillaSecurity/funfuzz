@@ -75,7 +75,7 @@ function testMathyFunction(f, inputs)
       for (var k = 0; k < inputs.length; ++k) {
         try {
           results.push(f(inputs[j], inputs[k]));
-        } catch(e) {
+        } catch (e) {
           results.push(errorToString(e));
         }
       }
@@ -113,7 +113,7 @@ function makeMathyFunAndTest(d, b)
 
   if (rnd(5)) {
     var inputsStr;
-    switch(rnd(8)) {
+    switch (rnd(8)) {
       case 0:  inputsStr = makeMixedTypeArray(d - 1, b); break;
       case 1:  inputsStr = "[" + Random.shuffled(confusableVals).join(", ") + "]"; break;
       default: inputsStr = "[" + Random.shuffled(numericVals).join(", ") + "]"; break;

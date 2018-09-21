@@ -45,7 +45,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
       var h;
       try {
         h = a[hn];
-      } catch(e) {
+      } catch (e) {
         if (debugMode) {
           dumpln("Threw: " + fullName);
         }

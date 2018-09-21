@@ -680,7 +680,7 @@ function makeTryBlock(d, b)
 
   var numCatches = 0;
 
-  while(rnd(3) === 0) {
+  while (rnd(3) === 0) {
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
     var catchId = makeId(d, b);
@@ -1065,7 +1065,7 @@ function makeGlobal(d, b)
     return "this";
 
   var gs;
-  switch(rnd(4)) {
+  switch (rnd(4)) {
     case 0:  gs = "evalcx('')"; break;
     case 1:  gs = "evalcx('lazy')"; break;
     default: gs = "newGlobal(" + makeNewGlobalArg(d - 1, b) + ")"; break;
@@ -1111,7 +1111,7 @@ function makeShapeyConstructor(d, b)
     if (rnd(5) === 0) {
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
     }
-    switch(rnd(8)) {
+    switch (rnd(8)) {
       case 0:  funText += "delete " + tprop + ";"; break;
       case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? propName : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
       case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
@@ -1169,7 +1169,7 @@ function makePropertyDescriptor(d, b)
 
   var s = "({";
 
-  switch(rnd(3)) {
+  switch (rnd(3)) {
     case 0:
     // Data descriptor. Can have 'value' and 'writable'.
       if (rnd(2)) s += "value: " + makeExpr(d, b) + ", ";
@@ -1197,7 +1197,7 @@ function makePropertyDescriptor(d, b)
 function makeBoolean(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
-  switch(rnd(4)) {
+  switch (rnd(4)) {
     case 0:   return "true";
     case 1:   return "false";
     case 2:   return makeExpr(d - 2, b);
@@ -1210,7 +1210,7 @@ function makeObjLiteralPart(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  switch(rnd(8))
+  switch (rnd(8))
   {
   // Literal getter/setter
   // Surprisingly, string literals, integer literals, and float literals are also good!
@@ -1228,7 +1228,7 @@ function makeToXFunction(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  switch(rnd(4)) {
+  switch (rnd(4)) {
     case 0:  return "function() { return " + makeExpr(d, b) + "; }";
     case 1:  return "function() { return this; }";
     case 2:  return makeEvilCallback(d, b);
@@ -1241,7 +1241,7 @@ function makeObjLiteralName(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  switch(rnd(6))
+  switch (rnd(6))
   {
     case 0:  return simpleSource(makeNumber(d, b)); // a quoted number
     case 1:  return makeNumber(d, b);
@@ -1258,7 +1258,7 @@ function makeFunction(d, b)
 
   d = d - 1;
 
-  if(rnd(5) === 1)
+  if (rnd(5) === 1)
     return makeExpr(d, b);
 
   if (rnd(4) === 1)
@@ -1290,7 +1290,7 @@ function makeFunctionBody(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  switch(rnd(6)) {
+  switch (rnd(6)) {
     case 0:  return cat([" { ", directivePrologue(), makeStatement(d - 1, b),   " } "]);
     case 1:  return cat([" { ", directivePrologue(), "return ", makeExpr(d, b), " } "]);
     case 2:  return cat([" { ", directivePrologue(), "yield ",  makeExpr(d, b), " } "]);
@@ -1448,7 +1448,7 @@ function makeNumber(d, b)
 
   var signStr = rnd(2) ? "-" : "";
 
-  switch(rnd(60)) {
+  switch (rnd(60)) {
     case 0:  return makeExpr(d - 2, b);
     case 1:  return signStr + "0";
     case 2:  return signStr + (rnd(1000) / 1000);
@@ -1572,7 +1572,7 @@ function makeId(d, b)
   if (rnd(3) === 1 && b.length)
     return Random.index(b);
 
-  switch(rnd(200))
+  switch (rnd(200))
   {
     case 0:
       return makeTerm(d, b);
@@ -1618,7 +1618,7 @@ function makeComprehension(d, b)
   if (d < 0)
     return "";
 
-  switch(rnd(7)) {
+  switch (rnd(7)) {
     case 0:
       return "";
     case 1:

@@ -22,7 +22,7 @@ var makeEvilCallback;
   var smallPowersOfTwo = [1, 2, 4, 8]; // The largest typed array views are 64-bit aka 8-byte
   function bufsize() { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); }
   function arrayIndex(d, b) {
-    switch(rnd(8)) {
+    switch (rnd(8)) {
       case 0:  return m("v");
       case 1:  return makeExpr(d - 1, b);
       case 2:  return "({valueOf: function() { " + makeStatement(d, b) + "return " + rnd(ARRAY_SIZE) + "; }})";
@@ -37,7 +37,7 @@ var makeEvilCallback;
       t = "aosmevbtihgfp";
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
-    switch(rnd(16)) {
+    switch (rnd(16)) {
       case 0:  return m("o") + "." + name;
       case 1:  return m("g") + "." + name;
       case 2:  return "this." + name;
@@ -55,7 +55,7 @@ var makeEvilCallback;
   // Emit an assignment (or a roughly-equivalent getter)
   function assign(d, b, t, rhs)
   {
-    switch(rnd(18)) {
+    switch (rnd(18)) {
     // Could have two forms of the getter: one that computes it each time on demand, and one that computes a constant-function closure
       case 0:  return (
         "Object.defineProperty(" +
@@ -146,7 +146,7 @@ var makeEvilCallback;
     )
       .replace(/X/g, m())
       .replace(/Z/g, function() {
-        switch(rnd(20)){
+        switch (rnd(20)){
           case 0:  return "return " + m();
           case 1:  return "throw " + m();
           default: return makeBuilderStatement(d - 2, b);
@@ -161,7 +161,7 @@ var makeEvilCallback;
 
   function strToEval(d, b)
   {
-    switch(rnd(5)) {
+    switch (rnd(5)) {
       case 0:  return simpleSource(fdecl(d, b));
       case 1:  return simpleSource(makeBuilderStatement(d, b));
       default: return simpleSource(makeScriptForEval(d, b));

@@ -42,7 +42,7 @@ function start(glob)
         print("That took " + elapsed1 + "ms!");
       }
       lastTime = new Date();
-    } while(lastTime - startTime < MAX_TOTAL_TIME);
+    } while (lastTime - startTime < MAX_TOTAL_TIME);
   } else {
     setTimeout(testStuffForAWhile, 200); // eslint-disable-line no-undef
   }
@@ -102,7 +102,7 @@ function failsToCompileInTry(code) {
     var codeInTry = "try { " + code + " } catch(e) { }";
     void new Function(codeInTry);
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 }

@@ -15,7 +15,7 @@ function optionalTests(f, code, wtt)
   if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
     try {
       Reflect.parse(code);
-    } catch(e) {
+    } catch (e) {
     }
   }
 
@@ -43,7 +43,7 @@ function testExpressionDecompiler(code)
 
   try {
     eval(fullCode);
-  } catch(e) {
+  } catch (e) {
     if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
       // Break up the following string intentionally, to prevent matching when contents of jsfunfuzz is printed.
       foundABug("Wrong error " + "message", e);
@@ -68,7 +68,7 @@ function tryHalves(code)
     f = new Function(firstHalf);
     void ("" + f);
   }
-  catch(e) {
+  catch (e) {
     if (verbose)
       dumpln("First half compilation error: " + e);
   }
@@ -80,7 +80,7 @@ function tryHalves(code)
     f = new Function(secondHalf);
     void ("" + f);
   }
-  catch(e) {
+  catch (e) {
     if (verbose)
       dumpln("Second half compilation error: " + e);
   }

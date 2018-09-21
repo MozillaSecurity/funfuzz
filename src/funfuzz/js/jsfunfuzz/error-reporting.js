@@ -45,5 +45,5 @@ function errorstack()
   print("EEE");
   try {
     void ([].qwerty.qwerty);
-  } catch(e) { print(e.stack); }
+  } catch (e) { print(e.stack); }
 }

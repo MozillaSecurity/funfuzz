@@ -101,7 +101,7 @@ function makeMathExpr(d, b, i)
   // (asm.js formalizes this concept, but JITs may have their own variants)
   var commonCoercion = rnd(10);
   function mc(expr) {
-    switch(rnd(3) ? commonCoercion : rnd(10)) {
+    switch (rnd(3) ? commonCoercion : rnd(10)) {
       case 0: return "(" + " + " + expr + ")";     // f64 (asm.js)
       case 1: return "Math.fround(" + expr + ")";  // f32
       case 2: return "(" + expr + " | 0)";         // i32 (asm.js)
@@ -119,7 +119,7 @@ function makeMathExpr(d, b, i)
     return mc("(" + mc(r()) + " ? " + mc(r()) + " : " + mc(r()) + ")");
   }
 
-  switch(rnd(4)) {
+  switch (rnd(4)) {
     case 0:  return mc("(" + mc(r()) + Random.index(binaryMathOps) + mc(r()) + ")");
     case 1:  return mc("(" + Random.index(leftUnaryMathOps) + mc(r()) + ")");
     case 2:  return mc("Math." + Random.index(unaryMathFunctions) + "(" + mc(r()) + ")");

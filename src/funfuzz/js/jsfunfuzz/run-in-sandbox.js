@@ -70,7 +70,7 @@ function useSpidermonkeyShellSandbox(sandboxType)
   return function(f, code, wtt) {
     try {
       evalcx(code, primarySandbox);
-    } catch(e) {
+    } catch (e) {
       dumpln("Running in sandbox threw " + errorToString(e));
     }
   };
@@ -100,7 +100,7 @@ function useGeckoSandbox() {
   return function(f, code, wtt) {
     try {
       Components.utils.evalInSandbox(code, primarySandbox); // eslint-disable-line no-undef
-    } catch(e) {
+    } catch (e) {
       // It might not be safe to operate on |e|.
     }
   };

@@ -214,7 +214,7 @@ var regexCharacterMakers = Random.weighted([
 function regexCharacter()
 {
   var [matcher, charcode] = Random.index(regexCharacterMakers)();
-  switch(rnd(10)) {
+  switch (rnd(10)) {
     case 0:  return [matcher, charcode + 32]; // lowercase
     case 1:  return [matcher, charcode - 32]; // uppercase
     case 2:  return [matcher, regexCharCode()]; // some other character

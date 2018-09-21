@@ -32,7 +32,7 @@ var recursiveFunctions = [
     text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); @ } else { @ } @ })",
     vars: ["depth"],
     args: function(d, b) { return singleRecursionDepth(d, b); },
-    test: function(f) { try { f(5000); } catch(e) { } return true; },
+    test: function(f) { try { f(5000); } catch (e) { } return true; },
   },
   {
     text: "(function factorial(N) { @; if (N == 0) { @; return 1; } @; return N * factorial(N - 1); @ })",

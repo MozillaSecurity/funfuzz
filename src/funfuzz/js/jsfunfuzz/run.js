@@ -18,7 +18,7 @@ function tryRunningDirectly(f, code, wtt)
 {
   if (count % 23 == 3) {
     dumpln("Plain eval!");
-    try { eval(code); } catch(e) { }
+    try { eval(code); } catch (e) { }
     tryEnsureSanity();
     return;
   }
@@ -34,8 +34,8 @@ function tryRunningDirectly(f, code, wtt)
     var rv = f();
     if (verbose)
       dumpln("It ran!");
-  } catch(runError) {
-    if(verbose)
+  } catch (runError) {
+    if (verbose)
       dumpln("Running threw!  About to toString to error.");
     var err = errorToString(runError);
     dumpln("Running threw: " + err);
@@ -61,17 +61,17 @@ function tryEnsureSanity()
   try {
     if (typeof resetOOMFailure == "function")
       resetOOMFailure();
-  } catch(e) { }
+  } catch (e) { }
 
   try {
     // The script might have turned on gczeal.
     // Turn it off to avoid slowness.
     if (typeof gczeal == "function")
       gczeal(0);
-  } catch(e) { }
+  } catch (e) { }
 
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
-  try { eval(""); } catch(e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
+  try { eval(""); } catch (e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
 
   if (!this) {
     // Strict mode. Great.
@@ -96,7 +96,7 @@ function tryEnsureSanity()
     this.gc = realGC;
     this.uneval = realUneval;
     this.toString = realToString;
-  } catch(e) {
+  } catch (e) {
     confused("tryEnsureSanity failed: " + errorToString(e));
   }
 
@@ -133,7 +133,7 @@ function tryItOut(code)
   var f;
   try {
     f = new Function(code);
-  } catch(compileError) {
+  } catch (compileError) {
     dumpln("Compiling threw: " + errorToString(compileError));
   }
 

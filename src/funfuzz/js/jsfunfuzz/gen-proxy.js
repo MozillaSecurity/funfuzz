@@ -99,7 +99,7 @@ function makeProxyHandlerFactory(d, b)
       if (proxyHandlerProperties[p][preferred] && rnd(10) <= fidelity) {
         funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
       } else {
-        switch(rnd(7)) {
+        switch (rnd(7)) {
           case 0:  funText = makeFunction(d - 3, bp); break;
           case 1:  funText = "undefined"; break;
           case 2:  funText = "function() { throw 3; }"; break;
@@ -112,7 +112,7 @@ function makeProxyHandlerFactory(d, b)
     handlerFactoryText += "}; })";
 
     return handlerFactoryText;
-  } catch(e) {
+  } catch (e) {
     return "({/* :( */})";
   }
 }
