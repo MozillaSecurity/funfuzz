@@ -120,5 +120,5 @@ function unlikelyToHang(code)
     && !( codeL.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
     && !( codeL.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
     && !( codeL.match( /for.*for.*gc/ ))
-    ;
+  ;
 }

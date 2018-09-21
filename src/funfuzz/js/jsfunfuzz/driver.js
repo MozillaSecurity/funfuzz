@@ -84,11 +84,11 @@ function start(glob)
       // print("Sane mode!")
     }
 
-  //  if (rnd(10) === 1) {
-  //    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));
-  //    if (dp)
-  //      code = dp;
-  //  }
+    //  if (rnd(10) === 1) {
+    //    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));
+    //    if (dp)
+    //      code = dp;
+    //  }
     dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
 
     tryItOut(code);

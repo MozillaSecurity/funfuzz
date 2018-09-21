@@ -55,7 +55,7 @@ function makeRegexUseBlock(d, b, rexExpr, strExpr)
             ]) +
           "); " +
           (rnd(3) ? "" : "print(r.lastIndex); ")
-          );
+  );
 }
 
 function makeRegexUseExpr(d, b)

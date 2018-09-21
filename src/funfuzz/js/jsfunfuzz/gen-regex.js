@@ -162,9 +162,10 @@ function regexGrouped(prefix, dr, postfix)
 }
 
 
-var letters =
-["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
- "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+var letters = [
+  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+  "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+];
 
 var hexDigits = [
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -223,9 +224,9 @@ function regexCharacter()
 
 
 var regexBuiltInCharClasses = [
-    "\\d", "\\D", // digit
-    "\\s", "\\S", // space
-    "\\w", "\\W", // "word" character (alphanumeric plus underscore)
+  "\\d", "\\D", // digit
+  "\\s", "\\S", // space
+  "\\w", "\\W", // "word" character (alphanumeric plus underscore)
 ];
 
 // Returns POTENTIAL_MATCHES one-character strings, mostly consisting of the input characters

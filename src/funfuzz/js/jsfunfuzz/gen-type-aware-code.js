@@ -57,15 +57,15 @@ var makeEvilCallback;
   {
     switch(rnd(18)) {
     // Could have two forms of the getter: one that computes it each time on demand, and one that computes a constant-function closure
-    case 0:  return (
-      "Object.defineProperty(" +
+      case 0:  return (
+        "Object.defineProperty(" +
         (rnd(8)?"this":m("og")) + ", " +
         simpleSource(m(t)) + ", " +
         "{ " + propertyDescriptorPrefix(d-1, b) + " get: function() { " + (rnd(8)?"":makeBuilderStatement(d-1,b)) + " return " + rhs + "; } }" +
       ");"
-    );
-    case 1:  return Random.index(varBinder) + m(t) + " = " + rhs + ";";
-    default: return m(t) + " = " + rhs + ";";
+      );
+      case 1:  return Random.index(varBinder) + m(t) + " = " + rhs + ";";
+      default: return m(t) + " = " + rhs + ";";
     }
   }
 
@@ -81,8 +81,8 @@ var makeEvilCallback;
           "++" + v + "; " +
             (rnd(3) ?
               "if (" + infrequently + ") { dumpln('hit!'); " + makeBuilderStatements(d, b) + " } " +
-              "else { dumpln('miss!'); " + makeBuilderStatements(d, b) + " } "
-            : m("f") + "(" + infrequently + ");"
+              "else { dumpln('miss!'); " + makeBuilderStatements(d, b) + " } " :
+              m("f") + "(" + infrequently + ");"
             ) +
         "};" +
       "})()");
@@ -144,14 +144,14 @@ var makeEvilCallback;
         "keys: function() { Z; return Object.keys(X); } " +
       "})"
     )
-    .replace(/X/g, m())
-    .replace(/Z/g, function() {
-      switch(rnd(20)){
-        case 0:  return "return " + m();
-        case 1:  return "throw " + m();
-        default: return makeBuilderStatement(d - 2, b);
-      }
-    });
+      .replace(/X/g, m())
+      .replace(/Z/g, function() {
+        switch(rnd(20)){
+          case 0:  return "return " + m();
+          case 1:  return "throw " + m();
+          default: return makeBuilderStatement(d - 2, b);
+        }
+      });
   }
 
   function propertyDescriptorPrefix(d, b)
@@ -183,7 +183,7 @@ var makeEvilCallback;
         ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
         ((rnd(2) == 0) ? (", elementAttributeName: " + m("s")) : "") +
         ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "")
-        ) : ""
+      ) : ""
       ) +
     " })");
   }

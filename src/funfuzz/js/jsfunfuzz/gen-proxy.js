@@ -100,10 +100,10 @@ function makeProxyHandlerFactory(d, b)
         funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
       } else {
         switch(rnd(7)) {
-        case 0:  funText = makeFunction(d - 3, bp); break;
-        case 1:  funText = "undefined"; break;
-        case 2:  funText = "function() { throw 3; }"; break;
-        default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
+          case 0:  funText = makeFunction(d - 3, bp); break;
+          case 1:  funText = "undefined"; break;
+          case 2:  funText = "function() { throw 3; }"; break;
+          default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
         }
       }
       handlerFactoryText += p + ": " + funText + ", ";

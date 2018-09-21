@@ -222,7 +222,7 @@ var statementMakers = Random.weighted([
 
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
-//  function(d, b) { return "let forCount = 0; for (let " + makeId(d, b) + " in " + makeExpr(d, b) + ") { if (forCount++ == " + rnd(3) + ") { " + makeStatement(d - 1, b) + " } }"; },
+  //  function(d, b) { return "let forCount = 0; for (let " + makeId(d, b) + " in " + makeExpr(d, b) + ") { if (forCount++ == " + rnd(3) + ") { " + makeStatement(d - 1, b) + " } }"; },
 
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
   // With "var" or "const", the entire thing is hoisted.
@@ -345,11 +345,11 @@ function makeUseRegressionTest(d, b)
 
     switch (rnd(2)) {
       case 0:
-        // simply inline the script -- this is the only one that will work in newGlobal()
+      // simply inline the script -- this is the only one that will work in newGlobal()
         s += "/* regression-test-inline */ " + inlineTest(file);
         break;
       default:
-        // run it using load()
+      // run it using load()
         s += "/* regression-test-load */ " + "load(" + simpleSource(file) + ");";
         break;
       // NB: these scripts will also be run through eval(), evalcx(), evaluate() thanks to other parts of the fuzzer using makeScriptForEval or makeStatement
@@ -1170,17 +1170,17 @@ function makePropertyDescriptor(d, b)
   var s = "({";
 
   switch(rnd(3)) {
-  case 0:
+    case 0:
     // Data descriptor. Can have 'value' and 'writable'.
-    if (rnd(2)) s += "value: " + makeExpr(d, b) + ", ";
-    if (rnd(2)) s += "writable: " + makeBoolean(d, b) + ", ";
-    break;
-  case 1:
+      if (rnd(2)) s += "value: " + makeExpr(d, b) + ", ";
+      if (rnd(2)) s += "writable: " + makeBoolean(d, b) + ", ";
+      break;
+    case 1:
     // Accessor descriptor. Can have 'get' and 'set'.
-    if (rnd(2)) s += "get: " + makeFunction(d, b) + ", ";
-    if (rnd(2)) s += "set: " + makeFunction(d, b) + ", ";
-    break;
-  default:
+      if (rnd(2)) s += "get: " + makeFunction(d, b) + ", ";
+      if (rnd(2)) s += "set: " + makeFunction(d, b) + ", ";
+      break;
+    default:
   }
 
   if (rnd(2)) s += "configurable: " + makeBoolean(d, b) + ", ";
@@ -1212,9 +1212,9 @@ function makeObjLiteralPart(d, b)
 
   switch(rnd(8))
   {
-    // Literal getter/setter
-    // Surprisingly, string literals, integer literals, and float literals are also good!
-    // (See https://bugzilla.mozilla.org/show_bug.cgi?id=520696.)
+  // Literal getter/setter
+  // Surprisingly, string literals, integer literals, and float literals are also good!
+  // (See https://bugzilla.mozilla.org/show_bug.cgi?id=520696.)
     case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
     case 3: return cat([" set ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
 
@@ -1574,34 +1574,35 @@ function makeId(d, b)
 
   switch(rnd(200))
   {
-  case 0:
-    return makeTerm(d, b);
-  case 1:
-    return makeExpr(d, b);
-  case 2: case 3: case 4: case 5:
-    return makeLValue(d, b);
-  case 6: case 7:
-    return makeDestructuringLValue(d, b);
-  case 8: case 9: case 10:
+    case 0:
+      return makeTerm(d, b);
+    case 1:
+      return makeExpr(d, b);
+    case 2: case 3: case 4: case 5:
+      return makeLValue(d, b);
+    case 6: case 7:
+      return makeDestructuringLValue(d, b);
+    case 8: case 9: case 10:
     // some keywords that can be used as identifiers in some contexts (e.g. variables, function names, argument names)
     // but that's annoying, and some of these cause lots of syntax errors.
-    return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "await", "of"]);
-  case 11: case 12: case 13:
-    return "this." + makeId(d, b);
-  case 14: case 15: case 16:
-    return makeObjLiteralName(d - 1, b);
-  case 17: case 18:
-    return makeId(d - 1, b);
-  case 19:
-    return " "; // [k, v] becomes [, v] -- test how holes are handled in unexpected destructuring
-  case 20:
-    return "this";
+      return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "await", "of"]);
+    case 11: case 12: case 13:
+      return "this." + makeId(d, b);
+    case 14: case 15: case 16:
+      return makeObjLiteralName(d - 1, b);
+    case 17: case 18:
+      return makeId(d - 1, b);
+    case 19:
+      return " "; // [k, v] becomes [, v] -- test how holes are handled in unexpected destructuring
+    case 20:
+      return "this";
   }
 
-  return Random.index(["a", "b", "c", "d", "e", "w", "x", "y", "z",
-                 "window", "eval", "\u3056", "NaN",
-//                 "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
-                  ]);
+  return Random.index([
+    "a", "b", "c", "d", "e", "w", "x", "y", "z",
+    "window", "eval", "\u3056", "NaN",
+    // "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
+  ]);
 
   // window is a const (in the browser), so some attempts to redeclare it will cause errors
 
@@ -1618,16 +1619,16 @@ function makeComprehension(d, b)
     return "";
 
   switch(rnd(7)) {
-  case 0:
-    return "";
-  case 1:
-    return cat([" for ",          "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
-  case 2:
-    return cat([" for ",          "(", makeId(d, b),       " of ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
-  case 3:
-    return cat([" for ",          "(", makeId(d, b),       " of ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-  default:
-    return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
+    case 0:
+      return "";
+    case 1:
+      return cat([" for ",          "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
+    case 2:
+      return cat([" for ",          "(", makeId(d, b),       " of ", makeExpr(d - 2, b),     ")"]) + makeComprehension(d - 1, b);
+    case 3:
+      return cat([" for ",          "(", makeId(d, b),       " of ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
+    default:
+      return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
   }
 }
 
@@ -1791,7 +1792,7 @@ var termMakers = [
     "length",
 
     '"\u03A0"', // unicode not escaped
-    ]);
+  ]);
   },
   makeNumber,
   function(d, b) { return Random.index([ "true", "false", "undefined", "null"]); },
@@ -1833,44 +1834,44 @@ function makeCrazyToken()
 
   return Random.index([
 
-  // Some of this is from reading jsscan.h.
+    // Some of this is from reading jsscan.h.
 
-  // Comments; comments hiding line breaks.
-  "//", UNTERMINATED_COMMENT, (UNTERMINATED_COMMENT + "\n"), "/*\n*/",
+    // Comments; comments hiding line breaks.
+    "//", UNTERMINATED_COMMENT, (UNTERMINATED_COMMENT + "\n"), "/*\n*/",
 
-  // groupers (which will usually be unmatched if they come from here ;)
-  "[", "]",
-  "{", "}",
-  "(", ")",
+    // groupers (which will usually be unmatched if they come from here ;)
+    "[", "]",
+    "{", "}",
+    "(", ")",
 
-  // a few operators
-  "!", "@", "%", "^", "*", "**", "|", ":", "?", "'", "\"", ",", ".", "/",
-  "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=",
-  "...", "=>",
+    // a few operators
+    "!", "@", "%", "^", "*", "**", "|", ":", "?", "'", "\"", ",", ".", "/",
+    "~", "_", "+", "=", "-", "++", "--", "+=", "%=", "|=", "-=",
+    "...", "=>",
 
-  // most real keywords plus a few reserved keywords
-  " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
-  " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " await ", " break ", " continue ", " typeof ", " var ", " const ",
+    // most real keywords plus a few reserved keywords
+    " in ", " instanceof ", " let ", " new ", " get ", " for ", " if ", " else ", " else if ", " try ", " catch ", " finally ", " export ", " import ", " void ", " with ",
+    " default ", " goto ", " case ", " switch ", " do ", " /*infloop*/while ", " return ", " yield ", " await ", " break ", " continue ", " typeof ", " var ", " const ",
 
-  // reserved when found in strict mode code
-  " package ",
+    // reserved when found in strict mode code
+    " package ",
 
-  // several keywords can be used as identifiers. these are just a few of them.
-  " enum ", // JS_HAS_RESERVED_ECMA_KEYWORDS
-  " debugger ", // JS_HAS_DEBUGGER_KEYWORD
-  " super ", // TOK_PRIMARY!
+    // several keywords can be used as identifiers. these are just a few of them.
+    " enum ", // JS_HAS_RESERVED_ECMA_KEYWORDS
+    " debugger ", // JS_HAS_DEBUGGER_KEYWORD
+    " super ", // TOK_PRIMARY!
 
-  " this ", // TOK_PRIMARY!
-  " null ", // TOK_PRIMARY!
-  " undefined ", // not a keyword, but a default part of the global object
-  "\n", // trigger semicolon insertion, also acts as whitespace where it might not be expected
-  "\r",
-  "\u2028", // LINE_SEPARATOR?
-  "\u2029", // PARA_SEPARATOR?
-  "<" + "!" + "--", // beginning of HTML-style to-end-of-line comment (!)
-  "--" + ">", // end of HTML-style comment
-  "",
-  "\0", // confuse anything that tries to guess where a string ends. but note: "illegal character"!
+    " this ", // TOK_PRIMARY!
+    " null ", // TOK_PRIMARY!
+    " undefined ", // not a keyword, but a default part of the global object
+    "\n", // trigger semicolon insertion, also acts as whitespace where it might not be expected
+    "\r",
+    "\u2028", // LINE_SEPARATOR?
+    "\u2029", // PARA_SEPARATOR?
+    "<" + "!" + "--", // beginning of HTML-style to-end-of-line comment (!)
+    "--" + ">", // end of HTML-style comment
+    "",
+    "\0", // confuse anything that tries to guess where a string ends. but note: "illegal character"!
   ]);
 }
 
@@ -1885,36 +1886,36 @@ function makeShapeyValue(d, b)
   var a = [
     // Numbers and number-like things
     [
-    "0", "1", "2", "3", "0.1", ".2", "1.3", "4.", "5.0000000000000000000000",
-    "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "-0", "(-0)",
-    "-1", "(-1)", "0x99", "033", "3/0", "-3/0", "0/0",
-    "Math.PI",
-    "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
+      "0", "1", "2", "3", "0.1", ".2", "1.3", "4.", "5.0000000000000000000000",
+      "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "-0", "(-0)",
+      "-1", "(-1)", "0x99", "033", "3/0", "-3/0", "0/0",
+      "Math.PI",
+      "0x2D413CCC", "0x5a827999", "0xB504F332", "-0x2D413CCC", "-0x5a827999", "-0xB504F332", "0x50505050", "(0x50505050 >> 1)",
 
-    // various powers of two, with values near JSVAL_INT_MAX especially tested
-    "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001",
+      // various powers of two, with values near JSVAL_INT_MAX especially tested
+      "0x10000000", "0x20000000", "0x3FFFFFFE", "0x3FFFFFFF", "0x40000000", "0x40000001",
     ],
 
     // Boundaries
     [
     // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
-    "0x07fffffff",  "0x080000000",  "0x080000001",
-    "-0x07fffffff", "-0x080000000", "-0x080000001",
-    "0x0ffffffff",  "0x100000000",  "0x100000001",
-    "-0x0ffffffff", "-0x100000000",  "-0x100000001",
+      "0x07fffffff",  "0x080000000",  "0x080000001",
+      "-0x07fffffff", "-0x080000000", "-0x080000001",
+      "0x0ffffffff",  "0x100000000",  "0x100000001",
+      "-0x0ffffffff", "-0x100000000",  "-0x100000001",
 
-    // Boundaries of double
-    "Number.MIN_VALUE", "-Number.MIN_VALUE",
-    "Number.MAX_VALUE", "-Number.MAX_VALUE",
+      // Boundaries of double
+      "Number.MIN_VALUE", "-Number.MIN_VALUE",
+      "Number.MAX_VALUE", "-Number.MAX_VALUE",
 
-    // Boundaries of maximum safe integer
-    "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
-    "-(2**53-2)", "-(2**53)", "-(2**53+2)",
-    "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
-    "(2**53)-2", "(2**53)", "(2**53)+2",
+      // Boundaries of maximum safe integer
+      "Number.MIN_SAFE_INTEGER", "-Number.MIN_SAFE_INTEGER",
+      "-(2**53-2)", "-(2**53)", "-(2**53+2)",
+      "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
+      "(2**53)-2", "(2**53)", "(2**53)+2",
 
-    // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
-    "0.000000000000001", "1.7976931348623157e308",
+      // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
+      "0.000000000000001", "1.7976931348623157e308",
     ],
 
     // Special numbers

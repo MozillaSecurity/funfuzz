@@ -75,7 +75,7 @@ function asmJsFunction(globalEnv, name, ret, args)
 
   // Add the required return statement at the end of the function
   if (ret != "void" || rnd(2))
-  s += asmReturnStatement("    ", env);
+    s += asmReturnStatement("    ", env);
 
   s += "  }\n";
 
@@ -120,7 +120,7 @@ function asmAssignmentStatement(indent, env)
   }
 
   var local = Random.index(env.locals);
-    if (local.charAt(0) == "d") {
+  if (local.charAt(0) == "d") {
     return indent + local + " = " + doubleExpr(10, env) + ";\n";
   } else {
     return indent + local + " = " + intExpr(10, env) + ";\n";
@@ -177,96 +177,96 @@ var additive = ["+", "-"];
 // * We're allowed to write to some fields of |e|
 
 var intExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return intLiteralRange(-0x8000000, 0xffffffff); }},
-    {w: 1,  v: function(d, e) { return intExpr(d - 3, e) + " ? " + intExpr(d - 3, e) + " : " + intExpr(d - 3, e); }},
-    {w: 1,  v: function(d, e) { return "!" + intExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return signedExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return unsignedExpr(d - 1, e); }},
-    {w: 10, v: function(d, e) { return intVar(e); }}, // + "|0"  ??
-    {w: 1,  v: function(d, e) { return e.globalEnv.foreignFunctions.length ? asmFfiCall(d, e) + "|0" : "1"; }},
-    {w: 1,  v: function(d, e) { return signedExpr(d - 2, e) + Random.index([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return unsignedExpr(d - 2, e) + Random.index([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return doubleExpr(d - 2, e) + Random.index([" < ", " <= ", " > ", " >= ", " == ", " != "]) + doubleExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return intLiteralRange(-0x8000000, 0xffffffff); }},
+  {w: 1,  v: function(d, e) { return intExpr(d - 3, e) + " ? " + intExpr(d - 3, e) + " : " + intExpr(d - 3, e); }},
+  {w: 1,  v: function(d, e) { return "!" + intExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return signedExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return unsignedExpr(d - 1, e); }},
+  {w: 10, v: function(d, e) { return intVar(e); }}, // + "|0"  ??
+  {w: 1,  v: function(d, e) { return e.globalEnv.foreignFunctions.length ? asmFfiCall(d, e) + "|0" : "1"; }},
+  {w: 1,  v: function(d, e) { return signedExpr(d - 2, e) + Random.index([" < ", " <= ", " > ", " >= ", " == ", " != "]) + signedExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return unsignedExpr(d - 2, e) + Random.index([" < ", " <= ", " > ", " >= ", " == ", " != "]) + unsignedExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return doubleExpr(d - 2, e) + Random.index([" < ", " <= ", " > ", " >= ", " == ", " != "]) + doubleExpr(d - 2, e); }},
 ]));
 
 var intishExpr = autoExpr(Random.weighted([
-    {w: 10, v: function(d, e) { return intExpr(d, e); }},
-    {w: 1,  v: function(d, e) { return intishMemberExpr(d, e); }},
-    // Add two or more ints
-    {w: 10, v: function(d, e) { return intExpr(d - 1, e) + Random.index(additive) + intExpr(d - 1, e); }},
-    {w: 5,  v: function(d, e) { return intExpr(d - 2, e) + Random.index(additive) + intExpr(d - 2, e) + Random.index(additive) + intExpr(d - 2, e); }},
-    // Multiply by a small int literal
-    {w: 2,  v: function(d, e) { return intExpr(d - 1, e) + "*" + intLiteralRange(-0xfffff, 0xfffff); }},
-    {w: 2,  v: function(d, e) { return intLiteralRange(-0xfffff, 0xfffff) + "*" + intExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return "-" + intExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return signedExpr(d - 2, e) + " / " + signedExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return unsignedExpr(d - 2, e) + " / " + unsignedExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return signedExpr(d - 2, e) + " % " + signedExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return unsignedExpr(d - 2, e) + " % " + unsignedExpr(d - 2, e); }},
+  {w: 10, v: function(d, e) { return intExpr(d, e); }},
+  {w: 1,  v: function(d, e) { return intishMemberExpr(d, e); }},
+  // Add two or more ints
+  {w: 10, v: function(d, e) { return intExpr(d - 1, e) + Random.index(additive) + intExpr(d - 1, e); }},
+  {w: 5,  v: function(d, e) { return intExpr(d - 2, e) + Random.index(additive) + intExpr(d - 2, e) + Random.index(additive) + intExpr(d - 2, e); }},
+  // Multiply by a small int literal
+  {w: 2,  v: function(d, e) { return intExpr(d - 1, e) + "*" + intLiteralRange(-0xfffff, 0xfffff); }},
+  {w: 2,  v: function(d, e) { return intLiteralRange(-0xfffff, 0xfffff) + "*" + intExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return "-" + intExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return signedExpr(d - 2, e) + " / " + signedExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return unsignedExpr(d - 2, e) + " / " + unsignedExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return signedExpr(d - 2, e) + " % " + signedExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return unsignedExpr(d - 2, e) + " % " + unsignedExpr(d - 2, e); }},
 ]));
 
 var signedExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return intLiteralRange(-0x8000000, 0x7fffffff); }},
-    {w: 1,  v: function(d, e) { return "~" + intishExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return "~~" + doubleExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return intishExpr(d - 1, e) + "|0"; }}, // this isn't a special form, but it's common for a good reason
-    {w: 1,  v: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")|0"; }},
-    {w: 1,  v: function(d, e) { return ensureMathImport(e, "abs") + "(" + signedExpr(d - 1, e) + ")|0"; }},
-    {w: 5,  v: function(d, e) { return intishExpr(d - 2, e) + Random.index([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return intLiteralRange(-0x8000000, 0x7fffffff); }},
+  {w: 1,  v: function(d, e) { return "~" + intishExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return "~~" + doubleExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return intishExpr(d - 1, e) + "|0"; }}, // this isn't a special form, but it's common for a good reason
+  {w: 1,  v: function(d, e) { return ensureMathImport(e, "imul") + "(" + intExpr(d - 2, e) + ", " + intExpr(d - 2, e) + ")|0"; }},
+  {w: 1,  v: function(d, e) { return ensureMathImport(e, "abs") + "(" + signedExpr(d - 1, e) + ")|0"; }},
+  {w: 5,  v: function(d, e) { return intishExpr(d - 2, e) + Random.index([" | ", " & ", " ^ ", " << ", " >> "]) + intishExpr(d - 2, e); }},
 ]));
 
 var unsignedExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return intLiteralRange(0, 0xffffffff); }},
-    {w: 1,  v: function(d, e) { return intishExpr(d - 2, e) + ">>>" + intishExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return intLiteralRange(0, 0xffffffff); }},
+  {w: 1,  v: function(d, e) { return intishExpr(d - 2, e) + ">>>" + intishExpr(d - 2, e); }},
 ]));
 
 var doublishExpr = autoExpr(Random.weighted([
-    {w: 10, v: function(d, e) { return doubleExpr(d, e); }},
-    {w: 1,  v: function(d, e) { return doublishMemberExpr(d, e); }},
-    // Read from a doublish typed array view
+  {w: 10, v: function(d, e) { return doubleExpr(d, e); }},
+  {w: 1,  v: function(d, e) { return doublishMemberExpr(d, e); }},
+  // Read from a doublish typed array view
 ]));
 
 var doubleExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return doubleLiteral(); }},
-    {w: 20, v: function(d, e) { return doubleVar(e); }},
-    {w: 1,  v: function(d, e) { return e.globalEnv.foreignFunctions.length ? "+" + asmFfiCall(d, e) : "1.0"; }},
-    {w: 1,  v: function(d, e) { return "+(1.0/0.0)"; }},
-    {w: 1,  v: function(d, e) { return "+(0.0/0.0)"; }},
-    {w: 1,  v: function(d, e) { return "+(-1.0/0.0)"; }},
-    // Unary ops that return double
-    {w: 1,  v: function(d, e) { return "+" + signedExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return "+" + unsignedExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return "+" + doublishExpr(d - 1, e); }},
-    {w: 1,  v: function(d, e) { return "-" + doublishExpr(d - 1, e); }},
-    // Binary ops that return double
-    {w: 1,  v: function(d, e) { return doubleExpr(d - 2, e) + " + " + doubleExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " * " + doublishExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " / " + doublishExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
-    {w: 1,  v: function(d, e) { return intExpr(d - 3, e) + " ? " + doubleExpr(d - 3, e) + " : " + doubleExpr(d - 3, e); }},
-    // with stdlib
-    {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, Random.index(["acos", "asin", "atan", "cos", "sin", "tan", "ceil", "floor", "exp", "log", "sqrt"])) + "(" + doublishExpr(d - 1, e) + ")"; }},
-    {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, "abs") + "(" + doublishExpr(d - 1, e) + ")"; }},
-    {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, Random.index(["atan2", "pow"])) + "(" + doublishExpr(d - 2, e) + ", " + doublishExpr(d - 2, e) + ")"; }},
-    {w: 1,  v: function(d, e) { return ensureImport(e, "Infinity"); }},
-    {w: 1,  v: function(d, e) { return ensureImport(e, "NaN"); }},
+  {w: 1,  v: function(d, e) { return doubleLiteral(); }},
+  {w: 20, v: function(d, e) { return doubleVar(e); }},
+  {w: 1,  v: function(d, e) { return e.globalEnv.foreignFunctions.length ? "+" + asmFfiCall(d, e) : "1.0"; }},
+  {w: 1,  v: function(d, e) { return "+(1.0/0.0)"; }},
+  {w: 1,  v: function(d, e) { return "+(0.0/0.0)"; }},
+  {w: 1,  v: function(d, e) { return "+(-1.0/0.0)"; }},
+  // Unary ops that return double
+  {w: 1,  v: function(d, e) { return "+" + signedExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return "+" + unsignedExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return "+" + doublishExpr(d - 1, e); }},
+  {w: 1,  v: function(d, e) { return "-" + doublishExpr(d - 1, e); }},
+  // Binary ops that return double
+  {w: 1,  v: function(d, e) { return doubleExpr(d - 2, e) + " + " + doubleExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " - " + doublishExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " * " + doublishExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " / " + doublishExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return doublishExpr(d - 2, e) + " % " + doublishExpr(d - 2, e); }},
+  {w: 1,  v: function(d, e) { return intExpr(d - 3, e) + " ? " + doubleExpr(d - 3, e) + " : " + doubleExpr(d - 3, e); }},
+  // with stdlib
+  {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, Random.index(["acos", "asin", "atan", "cos", "sin", "tan", "ceil", "floor", "exp", "log", "sqrt"])) + "(" + doublishExpr(d - 1, e) + ")"; }},
+  {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, "abs") + "(" + doublishExpr(d - 1, e) + ")"; }},
+  {w: 1,  v: function(d, e) { return "+" + ensureMathImport(e, Random.index(["atan2", "pow"])) + "(" + doublishExpr(d - 2, e) + ", " + doublishExpr(d - 2, e) + ")"; }},
+  {w: 1,  v: function(d, e) { return ensureImport(e, "Infinity"); }},
+  {w: 1,  v: function(d, e) { return ensureImport(e, "NaN"); }},
 ]));
 
 var externExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return doubleExpr(d, e); } },
-    {w: 1,  v: function(d, e) { return signedExpr(d, e); } },
+  {w: 1,  v: function(d, e) { return doubleExpr(d, e); } },
+  {w: 1,  v: function(d, e) { return signedExpr(d, e); } },
 ]));
 
 var intishMemberExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return ensureView(e, Random.index(["Int8Array",  "Uint8Array" ])) + "[" + asmIndex(d, e, 0) + "]"; }},
-    {w: 1,  v: function(d, e) { return ensureView(e, Random.index(["Int16Array", "Uint16Array"])) + "[" + asmIndex(d, e, 1) + "]"; }},
-    {w: 1,  v: function(d, e) { return ensureView(e, Random.index(["Int32Array", "Uint32Array"])) + "[" + asmIndex(d, e, 2) + "]"; }},
+  {w: 1,  v: function(d, e) { return ensureView(e, Random.index(["Int8Array",  "Uint8Array" ])) + "[" + asmIndex(d, e, 0) + "]"; }},
+  {w: 1,  v: function(d, e) { return ensureView(e, Random.index(["Int16Array", "Uint16Array"])) + "[" + asmIndex(d, e, 1) + "]"; }},
+  {w: 1,  v: function(d, e) { return ensureView(e, Random.index(["Int32Array", "Uint32Array"])) + "[" + asmIndex(d, e, 2) + "]"; }},
 ]), true);
 
 var doublishMemberExpr = autoExpr(Random.weighted([
-    {w: 1,  v: function(d, e) { return ensureView(e, "Float32Array") + "[" + asmIndex(d, e, 2) + "]"; }},
-    {w: 1,  v: function(d, e) { return ensureView(e, "Float64Array") + "[" + asmIndex(d, e, 3) + "]"; }},
+  {w: 1,  v: function(d, e) { return ensureView(e, "Float32Array") + "[" + asmIndex(d, e, 2) + "]"; }},
+  {w: 1,  v: function(d, e) { return ensureView(e, "Float64Array") + "[" + asmIndex(d, e, 3) + "]"; }},
 ]), true);
 
 function asmIndex(d, e, logSize)
@@ -322,9 +322,9 @@ function autoExpr(funs, avoidSubst)
 {
   return function(d, e) {
     var f = d < 1 ? funs[0] :
-            rnd(50) === 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]); } :
-            rnd(50) === 0 && !avoidSubst ? Random.index(anyAsmExpr) :
-            Random.index(funs);
+      rnd(50) === 0 && !e.globalEnv.sanePlease ? function(_d, _e) { return makeExpr(5, ["x"]); } :
+        rnd(50) === 0 && !avoidSubst ? Random.index(anyAsmExpr) :
+          Random.index(funs);
     return "(" + f(d, e) + ")";
   };
 }

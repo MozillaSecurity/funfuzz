@@ -53,9 +53,9 @@ var compareAsm = (function() {
     // Special float values
     0, -0, 0/0, 1/0, -1/0,
     // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
-     0x07fffffff,  0x080000000,  0x080000001,
+    0x07fffffff,  0x080000000,  0x080000001,
     -0x07fffffff, -0x080000000, -0x080000001,
-     0x0ffffffff,  0x100000000,  0x100000001,
+    0x0ffffffff,  0x100000000,  0x100000001,
     -0x0ffffffff, -0x100000000,  0x100000001,
     // Boundaries of double
     Number.MIN_VALUE, -Number.MIN_VALUE,
