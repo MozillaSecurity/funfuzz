@@ -24,6 +24,8 @@ module.exports = {
     // Turned off until we are ready to refactor jsfunfuzz
     // There are multiple areas where we deliberately split up strings to avoid the harness searching jsfunfuzz itself
     "no-useless-concat": "off",
+    // object-shorthand requires to be fully on ES6+
+    "object-shorthand": "off",
     "one-var": ["error", "never"],
     "operator-linebreak": ["error", "after"],
     "quotes": ["error", "double"],
