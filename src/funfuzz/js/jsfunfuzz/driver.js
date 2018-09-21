@@ -8,7 +8,7 @@
 
 function start(glob)
 {
-  var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
+  var fuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);
 

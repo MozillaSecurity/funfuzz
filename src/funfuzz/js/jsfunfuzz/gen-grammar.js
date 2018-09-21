@@ -1118,7 +1118,7 @@ function makeShapeyConstructor(d, b)
       case 3:  funText += tprop + " = " + makeExpr(d, bp)        + ";"; break;
       case 4:  funText += tprop + " = " + makeFunction(d, bp)    + ";"; break;
       case 5:  funText += "for (var ytq" + uniqueVarName() + " in " + t + ") { }"; break;
-      case 6:  funText += "Object." + Random.index(["preventExtensions","seal","freeze"]) + "(" + t + ");"; break;
+      case 6:  funText += "Object." + Random.index(["preventExtensions", "seal", "freeze"]) + "(" + t + ");"; break;
       default: funText += tprop + " = " + makeShapeyValue(d, bp) + ";"; break;
     }
   }

@@ -70,20 +70,20 @@ var recursiveFunctions = [
                   .replace(/STATEMENT1/, statement1)
       /* eslint-enable indent */
       ); },
-    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; },
+    test: function(f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; },
   },
   {
     // this lets us play a little with mixed-type arrays
     text: "(function sum_indexing(array, start) { @; return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
     vars: ["array", "start"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
-    test: function(f) { return f([1,2,3,"4",5,6,7], 0) == "123418"; },
+    test: function(f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; },
   },
   {
     text: "(function sum_slicing(array) { @; return array.length == 0 ? 0 : array[0] + sum_slicing(array.slice(1)); })",
     vars: ["array"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b); },
-    test: function(f) { return f([1,2,3,"4",5,6,7]) == "123418"; },
+    test: function(f) { return f([1, 2, 3, "4", 5, 6, 7]) == "123418"; },
   },
 ];
 
