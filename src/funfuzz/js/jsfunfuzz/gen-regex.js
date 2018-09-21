@@ -5,9 +5,9 @@
 
 /* global Random, regexTermPair, rnd */
 
-/*********************************
+/* ***************************** *
  * GENERATING REGEXPS AND INPUTS *
- *********************************/
+ * ***************************** */
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
@@ -204,7 +204,7 @@ var regexCharacterMakers = Random.weighted([
   { w: 1, v: function() { return ["\\f", 12]; } },  // form feed
   { w: 1, v: function() { return ["\\r", 13]; } },  // carriage return
   { w: 5, v: function() { var controlCharacterCode = rnd(26) + 1; return ["\\c" + String.fromCharCode(64 + controlCharacterCode), controlCharacterCode]; } },
-  //{ w: 5, v: function() { var cc = regexCharCode(); return ["\\0" + cc.toString(8), cc] } }, // octal escape
+  // { w: 5, v: function() { var cc = regexCharCode(); return ["\\0" + cc.toString(8), cc] } }, // octal escape
   { w: 5, v: function() { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\x" + twoHex, parseInt(twoHex, 16)]; } },
   { w: 5, v: function() { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\u00" + twoHex, parseInt(twoHex, 16)]; } },
   { w: 5, v: function() { var fourHex = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return ["\\u" + fourHex, parseInt(fourHex, 16)]; } },

@@ -6,9 +6,9 @@
 /* global confused, count, dumpln, errorToString, failsToCompileInTry, gc, gczeal, jsStrictMode, optionalTests */
 /* global resetOOMFailure, strTimes, tryRunning, uneval, verbose, whatToTest */
 
-/***********************
+/* ******************* *
  * UNSANDBOXED RUNNING *
- ***********************/
+ * ******************* */
 
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)

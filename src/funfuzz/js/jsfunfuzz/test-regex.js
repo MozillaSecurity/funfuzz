@@ -5,9 +5,9 @@
 
 /* global makeExpr, makeFunction, POTENTIAL_MATCHES, Random, regexPattern, rnd, simpleSource */
 
-/*****************
+/* ************* *
  * USING REGEXPS *
- *****************/
+ * ************* */
 
 function randomRegexFlags() {
   var s = "";

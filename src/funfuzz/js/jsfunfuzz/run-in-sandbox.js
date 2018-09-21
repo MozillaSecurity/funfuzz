@@ -5,9 +5,9 @@
 
 /* global dumpln, errorToString, evalcx, newGlobal, print, tryRunningDirectly, xpcshell */
 
-/*********************
+/* ***************** *
  * SANDBOXED RUNNING *
- *********************/
+ * ***************** */
 
 // We support three ways to run generated code:
 // * useGeckoSandbox(), which uses Components.utils.Sandbox.
@@ -42,11 +42,11 @@ function fillShellSandbox(sandbox)
   for (var i = 0; i < safeFuns.length; ++i) {
     var fn = safeFuns[i];
     if (sandbox[fn]) {
-      //print("Target already has " + fn);
+      // print("Target already has " + fn);
     } else if (this[fn]) { // FIXME: strict mode compliance requires passing glob around
       sandbox[fn] = this[fn].bind(this);
     } else {
-      //print("Source is missing " + fn);
+      // print("Source is missing " + fn);
     }
   }
 

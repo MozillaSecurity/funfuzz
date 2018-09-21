@@ -9,9 +9,9 @@ var count = 0;
 var verbose = false;
 
 
-/**************************************
+/* ********************************** *
  * To reproduce a crash or assertion: *
- **************************************/
+ * ********************************** */
 
 // 1. grep tryIt LOGFILE | grep -v "function tryIt" | pbcopy
 // 2. Paste the result between "ddbegin" and "ddend", replacing "start(this);"

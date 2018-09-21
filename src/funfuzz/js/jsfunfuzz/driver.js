@@ -63,7 +63,7 @@ function start(glob)
     ++count;
 
     // Sometimes it makes sense to start with simpler functions:
-    //var depth = ((count / 1000) | 0) & 16;
+    // var depth = ((count / 1000) | 0) & 16;
     var depth = 14;
 
     if (dumpEachSeed) {
@@ -81,7 +81,7 @@ function start(glob)
 
     if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
       code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
-      //print("Sane mode!")
+      // print("Sane mode!")
     }
 
   //  if (rnd(10) === 1) {

@@ -5,9 +5,9 @@
 
 /* global count, evalcx, errorToString, foundABug, newGlobal */
 
-/*******************************
+/* *************************** *
  * EXECUTION CONSISTENCY TESTS *
- *******************************/
+ * *************************** */
 
 function sandboxResult(code, zone)
 {
@@ -27,7 +27,7 @@ function sandboxResult(code, zone)
   } catch(e) {
     result = "Error: " + errorToString(e);
   }
-  //print("resultStr: " + resultStr);
+  // print("resultStr: " + resultStr);
   return resultStr;
 }
 
@@ -46,8 +46,8 @@ function nestingConsistencyTest(code)
   // These are on the same line so that line numbers in stack traces will match.
   var resultO = sandboxResult(codeNestedOnce, null); var resultD = sandboxResult(codeNestedDeep, null);
 
-  //if (resultO != "" && resultO != "undefined" && resultO != "use strict")
-  //  print("NestTest: " + resultO);
+  // if (resultO != "" && resultO != "undefined" && resultO != "use strict")
+  //   print("NestTest: " + resultO);
 
   if (resultO != resultD) {
     foundABug("NestTest mismatch",

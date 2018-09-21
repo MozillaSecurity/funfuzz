@@ -9,9 +9,9 @@
 /* global makeScriptForEval, makeStatement, Random, rnd, simpleSource, typedArrayConstructors, uniqueVarName */
 /* global varBinder */
 
-/***********************
+/* ******************* *
  * TEST BUILT-IN TYPES *
- ***********************/
+ * ******************* */
 
 var makeBuilderStatement;
 var makeEvilCallback;
@@ -291,8 +291,8 @@ var makeEvilCallback;
     // Typed Objects (aka Binary Data)
     // http://wiki.ecmascript.org/doku.php?id=harmony:typed_objects (does not match what's in spidermonkey as of 2014-02-11)
     // Do I need to keep track of 'types', 'objects of those types', and 'arrays of objects of those types'?
-    //{ w: 1,  v: function(d, b) { return assign(d, b, "d", m("d") + ".flatten()"); } },
-    //{ w: 1,  v: function(d, b) { return assign(d, b, "d", m("d") + ".partition(" + (rnd(2)?m("v"):rnd(10)) + ")"); } },
+    // { w: 1,  v: function(d, b) { return assign(d, b, "d", m("d") + ".flatten()"); } },
+    // { w: 1,  v: function(d, b) { return assign(d, b, "d", m("d") + ".partition(" + (rnd(2)?m("v"):rnd(10)) + ")"); } },
 
     // o: Object
     { w: 1,  v: function(d, b) { return assign(d, b, "o", "{}"); } },

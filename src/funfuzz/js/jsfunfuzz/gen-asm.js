@@ -5,9 +5,9 @@
 
 /* global makeExpr, makeStatement, Random, rnd, totallyRandom */
 
-/***************************
+/* *********************** *
  * GENERATE ASM.JS MODULES *
- ***************************/
+ * *********************** */
 
 // Not yet tested:
 // * loops (avoiding hangs with special forms, counters, and/or not executing)

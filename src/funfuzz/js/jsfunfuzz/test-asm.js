@@ -6,9 +6,9 @@
 /* global ArrayBuffer, asmJSInterior, binaryMathFunctions, dumpln, foundABug, gc, Int32Array, isAsmJSModule */
 /* global makeRegisterStompFunction, print, Random, rnd, unaryMathFunctions, uneval */
 
-/***************************
+/* *********************** *
  * TEST ASM.JS CORRECTNESS *
- ***************************/
+ * *********************** */
 
 // asm.js functions should always have the same semantics as JavaScript functions.
 //

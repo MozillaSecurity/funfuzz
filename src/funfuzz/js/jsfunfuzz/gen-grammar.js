@@ -12,9 +12,9 @@
 /* global stripSemicolon, TOTALLY_RANDOM, totallyRandom, unaryMathFunctions, uneval, UNTERMINATED_COMMENT */
 /* global w_pltfrm_res_dir, XPCNativeWrapper, xpcshell */
 
-/****************************
+/* ************************ *
  * GRAMMAR-BASED GENERATION *
- ****************************/
+ * ************************ */
 
 
 function makeScript(d, ignoredB)
@@ -233,9 +233,9 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
 
   // do..while
-  { w: 1, v: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /* don't split this, it's needed to avoid marking as infloop */, makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function(d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); } },
+  { w: 1, v: function(d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /* don't split this, it's needed to avoid marking as infloop */, ";"]); } },
   { w: 1, v: function(d, b) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"]); } },
 
   // Switch statement
@@ -277,7 +277,7 @@ var statementMakers = Random.weighted([
 
   // Long script -- can confuse Spidermonkey's short vs long jmp or something like that.
   // Spidermonkey's regexp engine is so slow for long strings that we have to bypass whatToTest :(
-  //{ w: 1, v: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
+  // { w: 1, v: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
   { w: 1, v: function(d, b) { if (rnd(200)==0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
 
   { w: 1, v: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
@@ -305,8 +305,8 @@ var statementMakers = Random.weighted([
   { w: 20, v: makeUseRegressionTest },
 
   // Discover properties to add to the allPropertyNames list
-  //{ w: 3, v: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
-  //{ w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
+  // { w: 3, v: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
+  // { w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
 if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
@@ -1155,7 +1155,7 @@ function makeShapeyConstructorLoop(d, b)
     "/*tLoopC*/for (let " + v + " of " + a + ") { " +
      "try{" +
        "let " + v2 + " = " + Random.index(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
-       //"print(uneval(" + v2 + "));" +
+       // "print(uneval(" + v2 + "));" +
        makeStatement(d - 2, bvv) +
      "}catch(e){print('TTEE ' + e); }" +
   " }";
