@@ -21,6 +21,9 @@ module.exports = {
     "no-undef-init": "error",
     // We want to test object-curly-spacing in funfuzz
     "object-curly-spacing": "off",
+    // Turned off until we are ready to refactor jsfunfuzz
+    // There are multiple areas where we deliberately split up strings to avoid the harness searching jsfunfuzz itself
+    "no-useless-concat": "off",
     "one-var": ["error", "never"],
     "operator-linebreak": ["error", "after"],
     "quotes": ["error", "double"],
