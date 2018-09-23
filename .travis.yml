@@ -260,10 +260,10 @@ before_install:
       echo "PY3_URL is: $PY3_URL"
       curl -sSf -o $PY3_BIN_TARBALL$PY3_TARBALL_EXT $PY3_URL
       echo 'Finished downloading Python 3 tarball...'
-      mkdir -p $HOME/py3-bin
-      sudo tar xzf $PY3_BIN_TARBALL$PY3_TARBALL_EXT --directory $HOME/py3-bin
+      mkdir -p ~/py3-bin
+      sudo tar xzf $PY3_BIN_TARBALL$PY3_TARBALL_EXT --directory ~/py3-bin
       echo 'Finished extracting tarball...'
-      export PYTHON3=$HOME/py3-bin/$PY3_BIN_TARBALL/INSTALLDIR/bin/python3
+      export PYTHON3=~/py3-bin/$PY3_BIN_TARBALL/INSTALLDIR/bin/python3
       $PYTHON3 --version
     else
       echo 'Not running in Python 2.7 Travis mode...'
@@ -324,8 +324,8 @@ before_script:
     else
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
-  - mkdir -p $HOME/trees/
-  - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
+  - mkdir -p ~/trees/
+  - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
 after_success:
