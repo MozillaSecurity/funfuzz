@@ -139,37 +139,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
-    if options.disableProfiling:
-        required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
-    if "--cache-ir-stubs=on" in flags or "--cache-ir-stubs=off" in flags:
-        required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
-    if platform.machine() == "aarch64":
-        required.append("2f727a828ea0")  # m-c 304669 Fx50, 1st w/ working aarch64 builds, see bug 1286207
-    if options.buildWithAsan:
-        required.append("e1cac03485d9")  # m-c 301874 Fx50, 1st w/ working ASan builds in Ubuntu 18.04, see bug 1264534
-    if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
-        required.append("b0a0ff5fa705")  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
-    if options.enableSimulatorArm64:
-        required.append("80a506f7caa7")  # m-c 264933 Fx44, 1st w/ stable --enable-simulator=arm64, see bug 984018
-    if "--ion-sincos=on" in flags or "--ion-sincos=off" in flags:
-        required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
-    if "--ion-instruction-reordering=on" in flags or "--ion-instruction-reordering=off" in flags:
-        required.append("59d2f2e62420")  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
-    if options.enableSimulatorArm32:
-        required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=arm, see bug 1173992
-    if "--ion-regalloc=testbed" in flags:
-        required.append("47e92bae09fd")  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
-    if '--execute=setJitCompilerOption("ion.forceinlineCaches",1)' in flags:
-        required.append("ea9608e33abe")  # m-c 247709 Fx41, 1st w/ion.forceinlineCaches, see bug 923717
-    if "--no-unboxed-objects" in flags:
-        required.append("322487136b28")  # m-c 244297 Fx41, 1st w/--no-unboxed-objects, see bug 1162199
-    if "--ion-extra-checks" in flags:
-        required.append("cdf93416b39a")  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
-    if "--no-cgc" in flags:
-        required.append("b63d7e80709a")  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    if "--enable-avx" in flags or "--no-avx" in flags:
-        required.append("5e6e959f0043")  # m-c 223959 Fx38, 1st w/--enable-avx, see bug 1118235
-    required.append("bcacb5692ad9")  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
+    required.append("bb868860dfc3")  # m-c 330353 Fx53, 1st w/ revised template literals, see bug 1317375
 
     return f"first(({common_descendants(required)}) - ({skip_revs}))"
 
