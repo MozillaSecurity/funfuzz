@@ -5,7 +5,6 @@
 
 function whatToTestSpidermonkeyTrunk(code)
 {
-  /* jshint laxcomma: true */
   // regexps can't match across lines, so replace whitespace with spaces.
   var codeL = code.replace(/\s/g, " ");
 
