@@ -64,7 +64,7 @@ function MersenneTwister19937()
   var mt = new Int32Array(N);   /* the array for the state vector */
   var mti = 625;
 
-  this.seed = function (s) {
+  this.seed = function(s) {
     mt[0] = s | 0;
     for (mti=1; mti<N; mti++) {
       mt[mti] = Math.imul(1812433253, mt[mti-1] ^ (mt[mti-1] >>> 30)) + mti;
@@ -83,7 +83,7 @@ function MersenneTwister19937()
     return MAG01[y & 0x1];
   }
 
-  this.int32 = function () {
+  this.int32 = function() {
     var y;
     var kk;
 
