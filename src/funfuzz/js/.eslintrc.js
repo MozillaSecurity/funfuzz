@@ -31,6 +31,8 @@ module.exports = {
     "operator-linebreak": "off",
     "quotes": ["error", "double"],
     "semi": ["error", "always"],
+    // jsfunfuzz has mostly been written in the current style for a long time
+    "space-before-function-paren": ["error", "never"],
     // jsfunfuzz turns strict mode on and off
     // "strict": ["error", "global"],
   }
