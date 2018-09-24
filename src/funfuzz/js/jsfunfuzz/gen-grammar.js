@@ -278,6 +278,7 @@ var statementMakers = Random.weighted([
 if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
     function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
+    function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ", { keepFailing: true })"; },
   ]);
 }
 
@@ -712,8 +713,7 @@ var incDecOps = [
 
 
 var specialProperties = [
-  "__count__",
-  "__parent__", "__proto__", "constructor", "prototype",
+  "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
   "toString", "valueOf",
@@ -786,7 +786,7 @@ var exprMakers =
   function(d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
   function(d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
 
-  // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
+  // RegExp replace.  This is interesting for the same reason as array extras.
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
@@ -906,10 +906,6 @@ var exprMakers =
   // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
   function(d, b) { return "(void options('strict'))"; },
 
-  // Spidermonkey: versions
-  // Commenting out because this version function has been removed as of m-c rev 392455 (Fx59) - 589914e65db7
-  //function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; },
-
   // More special Spidermonkey shell functions
   // (Note: functions without returned objects or visible side effects go in testing-functions.js, in order to allow presence/absence differential testing.)
   //  function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
@@ -990,11 +986,15 @@ function makeNewGlobalArg(d, b)
   // Make an options object to pass to the |newGlobal| shell builtin.
   var propStrs = [];
   if (rnd(2))
+    propStrs.push("sameCompartmentAs: " + makeExpr(d - 1, b));
+  if (rnd(2))
     propStrs.push("sameZoneAs: " + makeExpr(d - 1, b));
   if (rnd(2))
     propStrs.push("cloneSingletons: " + makeBoolean(d - 1, b));
   if (rnd(2))
     propStrs.push("disableLazyParsing: " + makeBoolean(d - 1, b));
+  if (rnd(2))
+    propStrs.push("invisibleToDebugger: " + makeBoolean(d - 1, b));
   return "{ " + propStrs.join(", ") + " }";
 }
 
@@ -1284,9 +1284,6 @@ var functionMakers = [
   // An async generator that does something
   function(d, b) { return "async function* (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
   function(d, b) { return "async function* (y) { " + directivePrologue() + "yield y; await y; " + makeStatement(d, b.concat(["y"])) + "; yield y; await y; }"; },
-
-  // A generator expression -- kinda a function??
-  function(d, b) { return "(1 for (x in []))"; },
 
   // A simple wrapping pattern
   function(d, b) { return "/*wrap1*/(" + functionPrefix() + "(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
@@ -1980,10 +1977,6 @@ var iterableExprMakers = Random.weighted([
 
   // Array comprehensions (JavaScript 1.7)
   { w: 1, v: function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
-
-  // Generator expressions (JavaScript 1.8)
-  { w: 1, v: function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); } },
-  { w: 1, v: function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); } },
 
   // A generator that yields once
   { w: 1, v: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
