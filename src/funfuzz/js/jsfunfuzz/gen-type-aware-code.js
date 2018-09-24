@@ -146,7 +146,7 @@ var makeEvilCallback;
     )
       .replace(/X/g, m())
       .replace(/Z/g, function() {
-        switch (rnd(20)){
+        switch (rnd(20)) {
           case 0:  return "return " + m();
           case 1:  return "throw " + m();
           default: return makeBuilderStatement(d - 2, b);

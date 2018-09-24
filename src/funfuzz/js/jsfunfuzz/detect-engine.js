@@ -31,7 +31,7 @@ if (jsshell) {
     }
 
     // Avoid accidentally waiting for user input that will never come.
-    readline = function(){};
+    readline = function() {};
   } else if (typeof XPCNativeWrapper == "function") { // eslint-disable-line no-undef
     // e.g. xpcshell or firefox
     engine = ENGINE_SPIDERMONKEY_TRUNK;
@@ -61,7 +61,7 @@ if (jsshell) {
 }
 
 if (typeof gc == "undefined")
-  this.gc = function(){};
+  this.gc = function() {};
 var gcIsQuiet = !(gc()); // see bug 706433
 
 // If the JavaScript engine being tested has heuristics like
