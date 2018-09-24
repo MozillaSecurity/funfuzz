@@ -27,7 +27,8 @@ module.exports = {
     // object-shorthand requires to be fully on ES6+
     "object-shorthand": "off",
     "one-var": ["error", "never"],
-    "operator-linebreak": ["error", "after"],
+    // jsfunfuzz has mostly been written in the current style for a long time, may help line-based reducer Lithium too
+    "operator-linebreak": "off",
     "quotes": ["error", "double"],
     "semi": ["error", "always"],
     // jsfunfuzz turns strict mode on and off
