@@ -251,7 +251,7 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         with io.open(str(build_options.patch_file.resolve()), "r", encoding="utf-8", errors="replace") as f:
             readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
-        fileName.append(hashlib.sha512(readResult).hexdigest()[:12])
+        fileName.append(hashlib.sha512(readResult.encode("utf-8")).hexdigest()[:12])
 
     assert "" not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
     return "-".join(fileName)
