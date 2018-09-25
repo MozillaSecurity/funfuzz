@@ -72,14 +72,16 @@ function MersenneTwister19937()
       mt[mti] = Math.imul(1812433253, mt[mti-1] ^ (mt[mti-1] >>> 30)) + mti;
     }
   };
-
+  
+  /* eslint-disable camelcase */
   this.export_state = function() { return [mt, mti]; };
   this.import_state = function(s) { mt = s[0]; mti = s[1]; };
   this.export_mta = function() { return mt; };
   this.import_mta = function(_mta) { mt = _mta; };
   this.export_mti = function() { return mti; };
   this.import_mti = function(_mti) { mti = _mti; };
-
+  /* eslint-enable camelcase */
+  
   function mag01(y)
   {
     return MAG01[y & 0x1];

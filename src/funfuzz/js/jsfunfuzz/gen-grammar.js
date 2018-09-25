@@ -1428,12 +1428,12 @@ function makeTypedArrayStatements(d, b)
     var type = Random.index(typedArrayConstructors);
     statements += "var " + view + " = new " + type + "(" + buffer + "); ";
     bv.push(view);
-    var view_0 = view + "[0]";
-    bv.push(view_0);
+    var viewZero = view + "[0]";
+    bv.push(viewZero);
     if (rnd(3) === 0)
-      statements += "print(" + view_0 + "); ";
+      statements += "print(" + viewZero + "); ";
     if (rnd(3))
-      statements += view_0 + " = " + makeNumber(d - 2, b) + "; ";
+      statements += viewZero + " = " + makeNumber(d - 2, b) + "; ";
     bv.push(view + "[" + rnd(11) + "]");
   }
   for (var j = 0; j < numExtraStatements; ++j) {

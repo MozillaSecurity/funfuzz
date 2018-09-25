@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-/* global final_level:writable, max_level:writable, oomAfterAllocations, oomAtAllocation, Random, resetOOMFailure, rnd */
+/* global finalLevel:writable, maxLevel:writable, oomAfterAllocations, oomAtAllocation, Random, resetOOMFailure, rnd */
 
 // Generate calls to SpiderMonkey "testing functions" for:
 // * testing that they do not cause assertions/crashes
@@ -22,23 +22,23 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
   {
     // As of m-c 451466:79cf24341024 2018-12-19
     // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
-    max_level = 25;
-    max_level++;  // rnd function starts from zero
-    var level = final_level = rnd(max_level - 3); // 3 levels disabled below
+    maxLevel = 25;
+    maxLevel++;  // rnd function starts from zero
+    var level = finalLevel = rnd(maxLevel - 3); // 3 levels disabled below
 
     // Generate the second level.
     // ref https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1001
-    var level_two = rnd(max_level - 3); // 3 levels disabled below
-    if (level_two >= 3) ++level_two; // gczeal 3 does not exist, so repurpose it
-    if (level_two >= 5) ++level_two; // gczeal 5 does not exist, so repurpose it
-    if (level_two >= 6) ++level_two; // gczeal 6 does not exist, so repurpose it
+    var levelTwo = rnd(maxLevel - 3); // 3 levels disabled below
+    if (levelTwo >= 3) ++levelTwo; // gczeal 3 does not exist, so repurpose it
+    if (levelTwo >= 5) ++levelTwo; // gczeal 5 does not exist, so repurpose it
+    if (levelTwo >= 6) ++levelTwo; // gczeal 6 does not exist, so repurpose it
 
-    if (level >= 3) final_level = '"' + (++level) + ";" + level_two + '"'; // gczeal 3 does not exist, so repurpose it
-    if (level >= 5) final_level = '"' + (++level) + ";" + level_two + '"'; // gczeal 5 does not exist, so repurpose it
-    if (level >= 6) final_level = '"' + (++level) + ";" + level_two + '"'; // gczeal 6 does not exist, so repurpose it
+    if (level >= 3) finalLevel = '"' + (++level) + ";" + levelTwo + '"'; // gczeal 3 does not exist, so repurpose it
+    if (level >= 5) finalLevel = '"' + (++level) + ";" + levelTwo + '"'; // gczeal 5 does not exist, so repurpose it
+    if (level >= 6) finalLevel = '"' + (++level) + ";" + levelTwo + '"'; // gczeal 6 does not exist, so repurpose it
 
     var period = numberOfAllocs();
-    return prefix + "gczeal" + "(" + final_level + ", " + period + ");";
+    return prefix + "gczeal" + "(" + finalLevel + ", " + period + ");";
   }
 
   function callSetGCCallback() {
