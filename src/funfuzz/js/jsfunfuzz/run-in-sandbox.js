@@ -20,7 +20,7 @@
 //   * This creates the most "interesting" testcases.
 
 var tryRunning;
-if (xpcshell) {  // Adapted from ternary operator - this longer form helps reducers reduce better
+if (xpcshell) { // Adapted from ternary operator - this longer form helps reducers reduce better
   tryRunning = useGeckoSandbox();
 } else {
   tryRunning = tryRunningDirectly;
@@ -58,11 +58,13 @@ function useSpidermonkeyShellSandbox(sandboxType)
   var primarySandbox;
 
   switch (sandboxType) {
+    /* eslint-disable no-multi-spaces */
     case 0:  primarySandbox = evalcx('');
     case 1:  primarySandbox = evalcx('lazy');
     case 2:  primarySandbox = newGlobal({sameCompartmentAs: {}});
     case 3:  primarySandbox = newGlobal({sameZoneAs: {}}); // same zone
     default: primarySandbox = newGlobal(); // new zone
+    /* eslint-enable no-multi-spaces */
   }
 
   fillShellSandbox(primarySandbox);

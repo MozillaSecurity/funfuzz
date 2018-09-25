@@ -71,9 +71,9 @@ var regexMakers =
   [
     // Grouping
     function(dr) { return ["\\" + (rnd(3) + 1), backrefHack.slice(0)]; }, // backref
-    function(dr) { return regexGrouped("(", dr, ")");   }, // capturing: feeds \1 and exec() result
-    function(dr) { return regexGrouped("(?:", dr, ")"); }, // non-capturing
-    function(dr) { return regexGrouped("(?=", dr, ")"); }, // lookahead
+    function(dr) { return regexGrouped("(", dr, ")"); },    // capturing: feeds \1 and exec() result
+    function(dr) { return regexGrouped("(?:", dr, ")"); },  // non-capturing
+    function(dr) { return regexGrouped("(?=", dr, ")"); },  // lookahead
     function(dr) { return regexGrouped("(?!", dr, ")"); },  // lookahead(not)
   ],
 ];
@@ -215,10 +215,12 @@ function regexCharacter()
 {
   var [matcher, charcode] = Random.index(regexCharacterMakers)();
   switch (rnd(10)) {
-    case 0:  return [matcher, charcode + 32]; // lowercase
-    case 1:  return [matcher, charcode - 32]; // uppercase
+    /* eslint-disable no-multi-spaces */
+    case 0:  return [matcher, charcode + 32];   // lowercase
+    case 1:  return [matcher, charcode - 32];   // uppercase
     case 2:  return [matcher, regexCharCode()]; // some other character
     default: return [matcher, charcode];
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -253,6 +255,7 @@ function regexShortStringsWith(frequentChars) {
 
 var regexTermMakers =
   [
+    /* eslint-disable no-multi-spaces */
     function() { return regexCharacterClass(); },
     function() { var [re, cc] = regexCharacter();   return [re, regexOneCharStringsWith([String.fromCharCode(cc)])]; },
     function() { return [Random.index(regexBuiltInCharClasses), regexOneCharStringsWith(["0", "a", "_"])]; },
@@ -260,6 +263,7 @@ var regexTermMakers =
     function() { return [".",                                   regexOneCharStringsWith(["\n"])];     },
     function() { return [Random.index(["^", "$"]),              regexShortStringsWith(["\n"])];     },            // string boundaries or line boundaries (with /m)
     function() { return [Random.index(["\\b", "\\B"]),          regexShortStringsWith([" ", "\n", "a", "1"])]; }, // word boundaries
+    /* eslint-enable no-multi-spaces */
   ];
 
 function regexTerm()

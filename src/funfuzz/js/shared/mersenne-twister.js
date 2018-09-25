@@ -63,7 +63,7 @@ function MersenneTwister19937()
   const M = 397;
   const MAG01 = new Int32Array([0, 0x9908b0df]);
 
-  var mt = new Int32Array(N);   /* the array for the state vector */
+  var mt = new Int32Array(N); /* the array for the state vector */
   var mti = 625;
 
   this.seed = function(s) {
@@ -72,7 +72,7 @@ function MersenneTwister19937()
       mt[mti] = Math.imul(1812433253, mt[mti-1] ^ (mt[mti-1] >>> 30)) + mti;
     }
   };
-  
+
   /* eslint-disable camelcase */
   this.export_state = function() { return [mt, mti]; };
   this.import_state = function(s) { mt = s[0]; mti = s[1]; };
@@ -81,7 +81,7 @@ function MersenneTwister19937()
   this.export_mti = function() { return mti; };
   this.import_mti = function(_mti) { mti = _mti; };
   /* eslint-enable camelcase */
-  
+
   function mag01(y)
   {
     return MAG01[y & 0x1];

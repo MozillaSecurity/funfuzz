@@ -114,9 +114,11 @@ function makeMathyFunAndTest(d, b)
   if (rnd(5)) {
     var inputsStr;
     switch (rnd(8)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  inputsStr = makeMixedTypeArray(d - 1, b); break;
       case 1:  inputsStr = "[" + Random.shuffled(confusableVals).join(", ") + "]"; break;
       default: inputsStr = "[" + Random.shuffled(numericVals).join(", ") + "]"; break;
+      /* eslint-enable no-multi-spaces */
     }
 
     s += "testMathyFunction(mathy" + i + ", " + inputsStr + "); ";

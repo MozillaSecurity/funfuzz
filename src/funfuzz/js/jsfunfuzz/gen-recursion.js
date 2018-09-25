@@ -60,7 +60,7 @@ var recursiveFunctions = [
     args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
     testSub: function(text) { return text.replace(/EXPR1/, "0").replace(/STATEMENT1/, "return thisitem + recval;"); },
     randSub: function(text, varMap, d, b) {
-      /* eslint-disable indent */
+      /* eslint-disable indent, no-multi-spaces */
       var expr1 =      makeExpr(d, b.concat([varMap["array"], varMap["start"]]));
       var statement1 = rnd(2) ?
                                  makeStatement(d, b.concat([varMap["thisitem"], varMap["recval"]]))        :
@@ -68,7 +68,7 @@ var recursiveFunctions = [
 
       return (text.replace(/EXPR1/,      expr1)
                   .replace(/STATEMENT1/, statement1)
-      /* eslint-enable indent */
+      /* eslint-enable indent, no-multi-spaces */
       ); },
     test: function(f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; },
   },

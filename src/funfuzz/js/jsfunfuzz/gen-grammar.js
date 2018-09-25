@@ -33,10 +33,12 @@ function makeScriptBody(d, ignoredB)
 function makeScriptForEval(d, b)
 {
   switch (rnd(4)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return makeExpr(d - 1, b);
     case 1:  return makeStatement(d - 1, b);
     case 2:  return makeUseRegressionTest(d, b);
     default: return makeScript(d - 3, b);
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -186,10 +188,13 @@ var statementMakers = Random.weighted([
   { w: 2, v: function(d, b) { return cat(["{", makeStatement(d, b), " }"]); } },
   { w: 2, v: function(d, b) { return cat(["{", makeStatement(d - 1, b), makeStatement(d - 1, b), " }"]); } },
 
+  /* eslint-disable no-multi-spaces */
   // "with" blocks
   { w: 2, v: function(d, b) {                          return cat([maybeLabel(), "with", "(", makeExpr(d, b), ")",                    makeStatementOrBlock(d, b)]);             } },
   { w: 2, v: function(d, b) { var v = makeNewId(d, b); return cat([maybeLabel(), "with", "(", "{", v, ": ", makeExpr(d, b), "}", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
+  /* eslint-enable no-multi-spaces */
 
+  /* eslint-disable no-multi-spaces */
   // C-style "for" loops
   // Two kinds of "for" loops: one with an expression as the first part, one with a var or let binding 'statement' as the first part.
   // I'm not sure if arbitrary statements are allowed there; I think not.
@@ -197,6 +202,7 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  /* eslint-enable no-multi-spaces */
 
   // Various types of "for" loops, specially set up to test tracing, carefully avoiding infinite loops
   { w: 6, v: makeTransparentIdiomaticLoop },
@@ -204,6 +210,7 @@ var statementMakers = Random.weighted([
   { w: 6, v: makeBranchUnstableLoop },
   { w: 8, v: makeTypeUnstableLoop },
 
+  /* eslint-disable no-multi-spaces */
   // "for..in" loops
   // arbitrary-LHS marked as infloop because
   // -- for (key in obj)
@@ -215,15 +222,19 @@ var statementMakers = Random.weighted([
   // -- for (element of arraylike)
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  /* eslint-enable no-multi-spaces */
 
+  /* eslint-disable no-multi-spaces */
   // -- for-await-of
   { w: 1, v: function(d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  /* eslint-enable no-multi-spaces */
 
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
   //  function(d, b) { return "let forCount = 0; for (let " + makeId(d, b) + " in " + makeExpr(d, b) + ") { if (forCount++ == " + rnd(3) + ") { " + makeStatement(d - 1, b) + " } }"; },
 
+  /* eslint-disable no-multi-spaces */
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
@@ -231,6 +242,7 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) {                                               return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b);                      return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   { w: 1, v: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
+  /* eslint-enable no-multi-spaces */
 
   // do..while
   { w: 1, v: function(d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /* don't split this, it's needed to avoid marking as infloop */, makeStatementOrBlock(d, b)]); } },
@@ -283,7 +295,7 @@ var statementMakers = Random.weighted([
   { w: 1, v: function(d, b) { return makeShapeyConstructorLoop(d, b); } },
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
-  { w: 1, v: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");";  } },
+  { w: 1, v: function(d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");"; } },
 
   // Oddly placed "use strict" or "use asm"
   { w: 1, v: function(d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
@@ -641,6 +653,7 @@ var exceptionyStatementMakers = [
   function(d, b) { var v = makeNewId(d, b); return "for(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
   function(d, b) { var v = makeNewId(d, b); return "for await(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
 
+  /* eslint-disable no-multi-spaces */
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
   function(d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
@@ -649,6 +662,7 @@ var exceptionyStatementMakers = [
   function(d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());"; },
   function(d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b) + "}"; },
   function(d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());"; },
+  /* eslint-enable no-multi-spaces */
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
@@ -869,10 +883,12 @@ var exprMakers =
   function(d, b) { return stripSemicolon(makeLittleStatement(d, b)); },
   function(d, b) { return ""; },
 
+  /* eslint-disable no-multi-spaces */
   // Let expressions -- note the lack of curly braces.
   function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v,                            ") ", makeExpr(d - 1, b.concat([v]))]); },
   function(d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, " = ", makeExpr(d - 1, b), ") ", makeExpr(d - 1, b.concat([v]))]); },
   function(d, b) {                          return cat(["let ", "(", makeLetHead(d, b),            ") ", makeExpr(d, b)]); },
+  /* eslint-enable no-multi-spaces */
 
   // Comments and whitespace
   function(d, b) { return cat([" /* Comment */", makeExpr(d, b)]); },
@@ -938,19 +954,25 @@ var exprMakers =
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
   function(d, b) { return "(uneval(" + makeExpr(d, b) + "))"; },
 
+  /* eslint-disable no-multi-spaces */
   // Constructors.  No cat() because I don't want to screw with the constructors themselves, just call them.
   function(d, b) { return "new " + Random.index(constructors) + "(" + makeActualArgList(d, b) + ")"; },
   function(d, b) { return          Random.index(constructors) + "(" + makeActualArgList(d, b) + ")"; },
+  /* eslint-enable no-multi-spaces */
 
+  /* eslint-disable no-multi-spaces */
   // Unary Math functions
   function(d, b) { return "Math." + Random.index(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
   function(d, b) { return "Math." + Random.index(unaryMathFunctions) + "(" + makeNumber(d, b) + ")"; },
+  /* eslint-enable no-multi-spaces */
 
+  /* eslint-disable no-multi-spaces */
   // Binary Math functions
   function(d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeExpr(d, b)   + ", " + makeExpr(d, b)   + ")"; },
   function(d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeExpr(d, b)   + ", " + makeNumber(d, b) + ")"; },
   function(d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeExpr(d, b)   + ")"; },
   function(d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeNumber(d, b) + ")"; },
+  /* eslint-enable no-multi-spaces */
 
   // Harmony proxy creation: object, function without constructTrap, function with constructTrap
   function(d, b) { return makeId(d, b) + " = " + "Proxy.create(" + makeProxyHandler(d, b) + ", " + makeExpr(d, b) + ")"; },
@@ -1066,9 +1088,11 @@ function makeGlobal(d, b)
 
   var gs;
   switch (rnd(4)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  gs = "evalcx('')"; break;
     case 1:  gs = "evalcx('lazy')"; break;
     default: gs = "newGlobal(" + makeNewGlobalArg(d - 1, b) + ")"; break;
+    /* eslint-enable no-multi-spaces */
   }
 
   if (rnd(2))
@@ -1112,6 +1136,7 @@ function makeShapeyConstructor(d, b)
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
     }
     switch (rnd(8)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  funText += "delete " + tprop + ";"; break;
       case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? propName : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
       case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
@@ -1120,6 +1145,7 @@ function makeShapeyConstructor(d, b)
       case 5:  funText += "for (var ytq" + uniqueVarName() + " in " + t + ") { }"; break;
       case 6:  funText += "Object." + Random.index(["preventExtensions", "seal", "freeze"]) + "(" + t + ");"; break;
       default: funText += tprop + " = " + makeShapeyValue(d, bp) + ";"; break;
+      /* eslint-enable no-multi-spaces */
     }
   }
   funText += "return " + t + "; }";
@@ -1198,10 +1224,12 @@ function makeBoolean(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   switch (rnd(4)) {
+    /* eslint-disable no-multi-spaces */
     case 0:   return "true";
     case 1:   return "false";
     case 2:   return makeExpr(d - 2, b);
     default:  var m = loopModulo(); return "(" + Random.index(b) + " % " + m + Random.index([" == ", " != "]) + rnd(m) + ")";
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -1229,10 +1257,12 @@ function makeToXFunction(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(4)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return "function() { return " + makeExpr(d, b) + "; }";
     case 1:  return "function() { return this; }";
     case 2:  return makeEvilCallback(d, b);
     default: return makeFunction(d, b);
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -1243,11 +1273,13 @@ function makeObjLiteralName(d, b)
 
   switch (rnd(6))
   {
+    /* eslint-disable no-multi-spaces */
     case 0:  return simpleSource(makeNumber(d, b)); // a quoted number
     case 1:  return makeNumber(d, b);
     case 2:  return Random.index(allPropertyNames);
     case 3:  return Random.index(specialProperties);
     default: return makeId(d, b);
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -1291,12 +1323,14 @@ function makeFunctionBody(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(6)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return cat([" { ", directivePrologue(), makeStatement(d - 1, b),   " } "]);
     case 1:  return cat([" { ", directivePrologue(), "return ", makeExpr(d, b), " } "]);
     case 2:  return cat([" { ", directivePrologue(), "yield ",  makeExpr(d, b), " } "]);
     case 3:  return cat([" { ", directivePrologue(), "await ",  makeExpr(d, b), " } "]);
     case 4:  return '"use asm"; ' + asmJSInterior([]);
     default: return makeExpr(d, b); // make an "expression closure"
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -1313,15 +1347,21 @@ var functionMakers = [
   makeMathFunction,
   makeMathyFunRef,
 
+  /* eslint-disable no-multi-spaces */
   // Functions and expression closures
   function(d, b) { var v = makeNewId(d, b); return cat([functionPrefix(), " ", maybeName(d, b), "(", v,                       ")", makeFunctionBody(d, b.concat([v]))]); },
   function(d, b) {                          return cat([functionPrefix(), " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
+  /* eslint-enable no-multi-spaces */
 
+  /* eslint-disable no-multi-spaces */
   // Arrow functions with one argument (no parens needed) (no destructuring allowed in this form?)
   function(d, b) { var v = makeNewId(d, b); return cat([     v,                            " => ", makeFunctionBody(d, b.concat([v]))]); },
+  /* eslint-enable no-multi-spaces */
 
+  /* eslint-disable no-multi-spaces */
   // Arrow functions with multiple arguments
   function(d, b) {                          return cat(["(", makeFormalArgList(d, b), ")", " => ", makeFunctionBody(d, b)]); },
+  /* eslint-enable no-multi-spaces */
 
   // The identity function
   function(d, b) { return functionPrefix() + "(q) { " + directivePrologue() + "return q; }"; },
@@ -1449,6 +1489,7 @@ function makeNumber(d, b)
   var signStr = rnd(2) ? "-" : "";
 
   switch (rnd(60)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return makeExpr(d - 2, b);
     case 1:  return signStr + "0";
     case 2:  return signStr + (rnd(1000) / 1000);
@@ -1476,6 +1517,7 @@ function makeNumber(d, b)
     ]);
     case 6:  return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
     default: return signStr + rnd(30);
+    /* eslint-enable no-multi-spaces */
   }
 }
 
@@ -2014,9 +2056,11 @@ function makeArrayLiteralElem(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(5)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return "..." + makeIterable(d - 1, b); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Spread_operator
     case 1:  return ""; // hole
     default: return makeExpr(d - 1, b);
+    /* eslint-enable no-multi-spaces */
   }
 }
 

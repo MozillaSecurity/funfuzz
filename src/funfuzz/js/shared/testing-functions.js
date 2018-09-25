@@ -23,7 +23,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // As of m-c 451466:79cf24341024 2018-12-19
     // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
     maxLevel = 25;
-    maxLevel++;  // rnd function starts from zero
+    maxLevel++; // rnd function starts from zero
     var level = finalLevel = rnd(maxLevel - 3); // 3 levels disabled below
 
     // Generate the second level.
@@ -56,8 +56,10 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
   function setGcparam() {
     switch (rnd(2)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  return _set("sliceTimeBudget", rnd(100));
       default: return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
+      /* eslint-enable no-multi-spaces */
     }
 
     function _set(name, value) {
@@ -69,10 +71,12 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
   // Functions shared between the SpiderMonkey shell and Firefox browser
   // https://mxr.mozilla.org/mozilla-central/source/js/src/builtin/TestingFunctions.cpp
   var sharedTestingFunctions = [
+    /* eslint-disable no-multi-spaces */
     // Force garbage collection (global or specific compartment)
     { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "("                                            + ");"; } },
     { w: 10, v: function(d, b) { return "void " + prefix + "gc" + "(" + "'compartment'" + maybeCommaShrinking() + ");"; } },
     { w: 5,  v: function(d, b) { return "void " + prefix + "gc" + "(" + fGlobal(d, b)   + maybeCommaShrinking() + ");"; } },
+    /* eslint-enable no-multi-spaces */
 
     // Run a minor garbage collection on the nursery.
     { w: 20, v: function(d, b) { return prefix + "minorgc" + "(false);"; } },

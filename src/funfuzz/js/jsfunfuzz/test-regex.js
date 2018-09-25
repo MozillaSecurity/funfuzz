@@ -81,9 +81,11 @@ function makeRegex(d, b)
 function makeReplacement(d, b)
 {
   switch (rnd(3)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return Random.index(["''", "'x'", "'\\u0341'"]);
     case 1:  return makeExpr(d, b);
     default: return makeFunction(d, b);
+    /* eslint-enable no-multi-spaces */
   }
 }
 

@@ -102,11 +102,13 @@ function makeMathExpr(d, b, i)
   var commonCoercion = rnd(10);
   function mc(expr) {
     switch (rnd(3) ? commonCoercion : rnd(10)) {
-      case 0: return "(" + " + " + expr + ")";     // f64 (asm.js)
-      case 1: return "Math.fround(" + expr + ")";  // f32
-      case 2: return "(" + expr + " | 0)";         // i32 (asm.js)
-      case 3: return "(" + expr + " >>> 0)";       // u32
+      /* eslint-disable no-multi-spaces */
+      case 0:  return "(" + " + " + expr + ")";     // f64 (asm.js)
+      case 1:  return "Math.fround(" + expr + ")";  // f32
+      case 2:  return "(" + expr + " | 0)";         // i32 (asm.js)
+      case 3:  return "(" + expr + " >>> 0)";       // u32
       default: return expr;
+      /* eslint-enable no-multi-spaces */
     }
   }
 
@@ -120,9 +122,11 @@ function makeMathExpr(d, b, i)
   }
 
   switch (rnd(4)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return mc("(" + mc(r()) + Random.index(binaryMathOps) + mc(r()) + ")");
     case 1:  return mc("(" + Random.index(leftUnaryMathOps) + mc(r()) + ")");
     case 2:  return mc("Math." + Random.index(unaryMathFunctions) + "(" + mc(r()) + ")");
     default: return mc("Math." + Random.index(binaryMathFunctions) + "(" + mc(r()) + ", " + mc(r()) + ")");
+    /* eslint-enable no-multi-spaces */
   }
 }

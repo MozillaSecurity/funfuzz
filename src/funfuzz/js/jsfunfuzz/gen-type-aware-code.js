@@ -23,10 +23,12 @@ var makeEvilCallback;
   function bufsize() { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); }
   function arrayIndex(d, b) {
     switch (rnd(8)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  return m("v");
       case 1:  return makeExpr(d - 1, b);
       case 2:  return "({valueOf: function() { " + makeStatement(d, b) + "return " + rnd(ARRAY_SIZE) + "; }})";
       default: return "" + rnd(ARRAY_SIZE);
+      /* eslint-enable no-multi-spaces */
     }
   }
 
@@ -38,10 +40,12 @@ var makeEvilCallback;
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
     switch (rnd(16)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  return m("o") + "." + name;
       case 1:  return m("g") + "." + name;
       case 2:  return "this." + name;
       default: return name;
+      /* eslint-enable no-multi-spaces */
     }
   }
 
@@ -56,7 +60,9 @@ var makeEvilCallback;
   function assign(d, b, t, rhs)
   {
     switch (rnd(18)) {
-    // Could have two forms of the getter: one that computes it each time on demand, and one that computes a constant-function closure
+      // Could have two forms of the getter: one that computes it each time on demand,
+      // and one that computes a constant-function closure
+      /* eslint-disable no-multi-spaces */
       case 0:  return (
         "Object.defineProperty(" +
         (rnd(8)?"this":m("og")) + ", " +
@@ -66,6 +72,7 @@ var makeEvilCallback;
       );
       case 1:  return Random.index(varBinder) + m(t) + " = " + rhs + ";";
       default: return m(t) + " = " + rhs + ";";
+      /* eslint-enable no-multi-spaces */
     }
   }
 
@@ -100,7 +107,7 @@ var makeEvilCallback;
     var s = "";
     var extras = rnd(4);
     for (var i = 0; i < extras; ++i) {
-      s += "try { " + makeBuilderStatement(d - 2, b) +  " } catch(e" + i + ") { } ";
+      s += "try { " + makeBuilderStatement(d - 2, b) + " } catch(e" + i + ") { } ";
     }
     s += makeBuilderStatement(d - 1, b);
     return s;
@@ -147,9 +154,11 @@ var makeEvilCallback;
       .replace(/X/g, m())
       .replace(/Z/g, function() {
         switch (rnd(20)) {
+          /* eslint-disable no-multi-spaces */
           case 0:  return "return " + m();
           case 1:  return "throw " + m();
           default: return makeBuilderStatement(d - 2, b);
+          /* eslint-enable no-multi-spaces */
         }
       });
   }
@@ -162,9 +171,11 @@ var makeEvilCallback;
   function strToEval(d, b)
   {
     switch (rnd(5)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  return simpleSource(fdecl(d, b));
       case 1:  return simpleSource(makeBuilderStatement(d, b));
       default: return simpleSource(makeScriptForEval(d, b));
+      /* eslint-enable no-multi-spaces */
     }
   }
 
@@ -229,9 +240,11 @@ var makeEvilCallback;
 
     // Emit a method call expression
     switch (rnd(4)) {
+      /* eslint-disable no-multi-spaces */
       case 0:  return clazz + ".prototype." + meth + ".apply(" + obj + ", [" + arglist.join(", ") + "])";
       case 1:  return clazz + ".prototype." + meth + ".call(" + [obj].concat(arglist).join(", ") + ")";
       default: return obj + "." + meth + "(" + arglist.join(", ") + ")";
+      /* eslint-enable no-multi-spaces */
     }
   }
 

@@ -5,7 +5,7 @@
 
 /* global engine, ENGINE_JAVASCRIPTCORE, ENGINE_SPIDERMONKEY_TRUNK, gcIsQuiet, jsshell */
 
-/* eslint-disable complexity */
+/* eslint-disable complexity, no-multi-spaces */
 function whatToTestSpidermonkeyTrunk(code)
 {
   // regexps can't match across lines, so replace whitespace with spaces.
@@ -75,7 +75,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
   };
 }
-/* eslint-enable complexity */
+/* eslint-enable complexity, no-multi-spaces */
 
 function whatToTestJavaScriptCore(code)
 {

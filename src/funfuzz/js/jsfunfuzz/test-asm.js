@@ -70,7 +70,7 @@ var compareAsm = (function() {
       var fr = f(x);
       var gr = g(x);
       if (!isSameNumber(fr, gr)) {
-        foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs "  + uneval(gr));
+        foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs " + uneval(gr));
       }
     }
   }
@@ -84,7 +84,7 @@ var compareAsm = (function() {
         var fr = f(x, y);
         var gr = g(x, y);
         if (!isSameNumber(fr, gr)) {
-          foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs "  + uneval(gr));
+          foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs " + uneval(gr));
         }
       }
     }
@@ -107,9 +107,9 @@ var pureForeign = {
   asString:  function(x) { return uneval(x); },
   asValueOf: function(x) { return { valueOf: function() { return x; } }; },
   // Test register arguments vs stack arguments.
-  sum:       function()  { var s = 0; for (var i = 0; i < arguments.length; ++i) s += arguments[i]; return s; },
+  sum:       function() { var s = 0; for (var i = 0; i < arguments.length; ++i) s += arguments[i]; return s; },
   // Will be replaced by calling makeRegisterStompFunction
-  stomp:     function()  { },
+  stomp:     function() { },
 };
 
 for (var f in unaryMathFunctions) {
