@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* eslint-disable complexity */
 function whatToTestSpidermonkeyTrunk(code)
 {
   // regexps can't match across lines, so replace whitespace with spaces.
@@ -69,6 +70,7 @@ function whatToTestSpidermonkeyTrunk(code)
 
   };
 }
+/* eslint-enable complexity */
 
 function whatToTestJavaScriptCore(code)
 {
