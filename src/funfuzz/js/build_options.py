@@ -191,6 +191,9 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
         if not valid[0]:
             print("WARNING: This set of build options is not tested well because: %s" % valid[1])
 
+    if build_options.patch_file:
+        build_options.patch_file = build_options.patch_file.expanduser().resolve()
+
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
     if DEFAULT_TREES_LOCATION.is_dir():  # pylint: disable=no-member
         # Repositories do not get randomized if a repository is specified.
@@ -210,7 +213,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
 
         if build_options.patch_file:
             hg_helpers.ensure_mq_enabled()
-            assert build_options.patch_file.resolve().is_file()
+            assert build_options.patch_file.is_file()
     else:
         sys.exit("DEFAULT_TREES_LOCATION not found at: %s. Exiting..." % DEFAULT_TREES_LOCATION)
 
@@ -247,8 +250,9 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     fileName.append("windows" if platform.system() == "Windows" else platform.system().lower())
     if build_options.patch_file:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
-        fileName.append(build_options.patch_file.name)
-        with io.open(str(build_options.patch_file.resolve()), "r", encoding="utf-8", errors="replace") as f:
+        # Also replace any "." in the name with "_" so pathlib .stem and suffix-wrangling work properly
+        fileName.append(build_options.patch_file.name.replace(".", "_"))
+        with io.open(str(build_options.patch_file), "r", encoding="utf-8", errors="replace") as f:
             readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult.encode("utf-8")).hexdigest()[:12])
