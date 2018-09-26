@@ -94,7 +94,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
         out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=str(repo), stderr=subprocess.PIPE)
         logger.info('"%s" had the above output and took - %s',
                     subprocess.list2cmdline(out_hg_pull.args),
-                    out_hg_pull.stderr)
+                    out_hg_pull.stderr.decode("utf-8", errors="replace").rstrip())
 
         hg_log_default_cmd = ["hg", "--time", "log", "-r", "default"]
         logger.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
@@ -102,7 +102,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
                                             stderr=subprocess.PIPE)
         logger.info('"%s" had the above output and took - %s',
                     subprocess.list2cmdline(out_hg_log_default.args),
-                    out_hg_log_default.stderr)
+                    out_hg_log_default.stderr.decode("utf-8", errors="replace").rstrip())
     elif repo_type == "git":
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
