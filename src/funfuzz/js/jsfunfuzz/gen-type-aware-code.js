@@ -397,7 +397,7 @@ var makeEvilCallback;
     { w: 5,  v: function(d, b) { return m() + ".toString = " + makeEvilCallback(d, b) + ";"; } },
     { w: 5,  v: function(d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1,  v: function(d, b) { return m() + " = " + m() + ";"; } },
-    { w: 1,  v: function(d, b) { return m() + " = " + m("g") + ".objectEmulatingUndefined();"; } },
+    { w: 1,  v: function(d, b) { return m() + " = " + m("g") + ".createIsHTMLDDA();"; } },
     { w: 1,  v: function(d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
     { w: 5,  v: function(d, b) { return m() + ".__proto__ = " + m() + ";"; } },
     { w: 10, v: function(d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },

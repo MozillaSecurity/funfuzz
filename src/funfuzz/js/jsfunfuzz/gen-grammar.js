@@ -1340,7 +1340,7 @@ var functionMakers = [
   function(d, b) { return "encodeURI"; },
   function(d, b) { return "encodeURIComponent"; },
   function(d, b) { return "neuter"; },
-  function(d, b) { return "objectEmulatingUndefined"; }, // spidermonkey shell object like the browser's document.all
+  function(d, b) { return "createIsHTMLDDA"; }, // spidermonkey shell object like the browser's document.all
   function(d, b) { return "offThreadCompileScript"; },
   function(d, b) { return "runOffThreadScript"; },
   function(d, b) { return makeProxyHandlerFactory(d, b); },
