@@ -119,7 +119,7 @@ def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstri
 
 def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    return [os.path.join(path, filename)[repoPathLength:]
+    return [os.path.join(path, filename)[repoPathLength + 1:]
             for path, _dirs, files in os.walk(str(root))
             for filename in files
             if filename.endswith(".js")]
