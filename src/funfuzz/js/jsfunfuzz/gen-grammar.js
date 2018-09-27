@@ -87,6 +87,8 @@ function forLoopHead(d, b, v, reps)
     sInit += ", " + makeLetHeadItem(d - 2, b);
   while (rnd(10) === 0)
     sInit += ", " + makeExpr(d - 2, b); // NB: only makes sense if our varBinder is ""
+  while (rnd(1000) === 0)
+    sInit = ""; // mostly throws ReferenceError, so make this rare
 
   while (rnd(20) === 0)
     sCond = sCond + " && (" + makeExpr(d - 2, b) + ")";
