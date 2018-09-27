@@ -59,9 +59,29 @@ var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
 
 function forLoopHead(d, b, v, reps)
 {
-  var sInit = Random.index(varBinderFor) + v + " = 0";
-  var sCond = v + " < " + reps;
-  var sNext = "++" + v;
+  var sInit = "";
+  var sCond = "";
+  var sNext = "";
+
+  switch (rnd(2)) {
+    case 0: // Generates constructs like `for (var x = 3; x > 0; x--) { ... }`
+      sInit = Random.index(varBinderFor) + v + " = " + reps;
+      sCond = v + " > 0";
+      if (rnd(2)) {
+        sNext = "--" + v;
+      } else {
+        sNext = v + "--";
+      }
+      break;
+    default: // Generates constructs like `for (var x = 0; x < 3; x++) { ... }`
+      sInit = Random.index(varBinderFor) + v + " = 0";
+      sCond = v + " < " + reps;
+      if (rnd(2)) {
+        sNext = "++" + v;
+      } else {
+        sNext = v + "++";
+      }
+  }
 
   while (rnd(10) === 0)
     sInit += ", " + makeLetHeadItem(d - 2, b);
