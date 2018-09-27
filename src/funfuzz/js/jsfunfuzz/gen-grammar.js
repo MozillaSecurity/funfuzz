@@ -88,6 +88,9 @@ function forLoopHead(d, b, v, reps)
   while (rnd(10) === 0)
     sInit += ", " + makeExpr(d - 2, b); // NB: only makes sense if our varBinder is ""
   while (rnd(1000) === 0)
+    // never causes the loop to be run, but stuff like register allocation may be happening in the background
+    sInit = Random.index(varBinderFor) + v;
+  while (rnd(10000) === 0)
     sInit = ""; // mostly throws ReferenceError, so make this rare
 
   while (rnd(20) === 0)
