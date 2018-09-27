@@ -786,9 +786,11 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), Random.index(binaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), Random.index(binaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), Random.index(binaryOps), makeExpr(d, b)]); },
+  function(d, b) { let expr = makeExpr(d, b); return cat(["/*infloop*/", expr, Random.index(binaryOps), expr]); },
   function(d, b) { return cat([makeId(d, b),   Random.index(binaryOps), makeId(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   Random.index(binaryOps), makeId(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   Random.index(binaryOps), makeId(d, b)]); },
+  function(d, b) { let id = makeId(d, b); return cat(["/*infloop*/", id, Random.index(binaryOps), id]); },
 
   // Ternary operator
   function(d, b) { return cat([makeExpr(d, b), " ? ", makeExpr(d, b), " : ", makeExpr(d, b)]); },
