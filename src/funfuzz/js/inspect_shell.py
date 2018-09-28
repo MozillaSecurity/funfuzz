@@ -189,7 +189,7 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert queryBuildConfiguration(binary, "asan") == sh.build_opts.buildWithAsan
     assert (queryBuildConfiguration(binary, "arm-simulator") and
             sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
-    assert (queryBuildConfiguration(binary, "arm-simulator") and not
+    assert (queryBuildConfiguration(binary, "arm64-simulator") and not
             sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
     # Note that we should test whether a shell has profiling turned on or not.
     # m-c rev 324836:800a887c705e turned profiling on by default, so once this is beyond the

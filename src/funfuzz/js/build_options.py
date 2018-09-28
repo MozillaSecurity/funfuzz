@@ -316,8 +316,6 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
             return False, "The 32-bit ARM simulator builds are only for 32-bit binaries."
         if args.enableSimulatorArm64 and args.enable32:
             return False, "The 64-bit ARM simulator builds are only for 64-bit binaries."
-        if args.enableSimulatorArm64 and not args.enable32:
-            return False, "The 64-bit ARM simulator builds are not ready for testing yet."
 
     return True, ""
 
