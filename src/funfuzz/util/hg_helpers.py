@@ -10,18 +10,12 @@
 from builtins import input
 import configparser
 import os
+from pathlib import Path
 import re
+import subprocess
 import sys
 
 from . import subprocesses as sps
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 
 def destroyPyc(repo_dir):  # pylint: disable=invalid-name,missing-docstring

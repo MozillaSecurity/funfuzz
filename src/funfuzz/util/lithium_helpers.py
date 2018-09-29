@@ -8,9 +8,10 @@
 """
 
 import io
-import os
+from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -22,14 +23,6 @@ from . import file_manipulation
 from ..js.inspect_shell import testJsShellOrXpcshell
 from ..js.js_interesting import JS_OVERALL_MISMATCH
 from ..js.js_interesting import JS_VG_AMISS
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 

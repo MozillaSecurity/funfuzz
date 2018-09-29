@@ -11,6 +11,7 @@ import argparse
 from builtins import object
 import hashlib
 import io
+from pathlib import Path
 import platform
 import random
 import sys
@@ -18,11 +19,6 @@ import sys
 from past.builtins import range
 
 from ..util import hg_helpers
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 DEFAULT_TREES_LOCATION = Path.home() / "trees"
 

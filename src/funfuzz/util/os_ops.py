@@ -9,8 +9,10 @@
 
 import io
 import os
+from pathlib import Path
 import platform
 import shutil
+import subprocess
 import sys
 import time
 
@@ -18,14 +20,6 @@ from pkg_resources import parse_version
 from shellescape import quote
 
 from . import subprocesses as sps
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 NO_DUMP_MSG = r"""
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.

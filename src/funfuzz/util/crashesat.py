@@ -13,18 +13,13 @@ Not merged into Lithium as it still relies on grab_crash_log.
 import argparse
 import logging
 import os
+from pathlib import Path
 import re
-import sys
 
 import lithium.interestingness.timed_run as timed_run
 from lithium.interestingness.utils import file_contains
 
 from . import os_ops
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 
 def interesting(cli_args, temp_prefix):

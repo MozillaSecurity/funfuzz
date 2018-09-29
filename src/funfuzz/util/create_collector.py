@@ -7,14 +7,9 @@
 """Functions here make use of a Collector created from FuzzManager.
 """
 
-import sys
+from pathlib import Path
 
 from Collector.Collector import Collector
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 
 def make_collector():

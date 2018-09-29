@@ -6,23 +6,17 @@
 
 """Test the compile_shell.py file."""
 
+from functools import lru_cache
 import logging
 import os
+from pathlib import Path
 import platform
-import sys
 import unittest
 
 import pytest
 
 from funfuzz import js
 from funfuzz import util
-
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
-    from pathlib import Path  # pylint: disable=import-error
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)

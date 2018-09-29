@@ -13,18 +13,10 @@ Assumes that the repositories are located in ../../trees/*.
 from copy import deepcopy
 import logging
 import os
+from pathlib import Path
 import platform
-import sys
+import subprocess
 import time
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name

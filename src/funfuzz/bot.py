@@ -13,9 +13,11 @@ import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 import platform
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -30,15 +32,6 @@ from .util import fork_join
 from .util import hg_helpers
 from .util import sm_compile_helpers
 from .util.lock_dir import LockDir
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-    import psutil  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
-    from pathlib import Path  # pylint: disable=import-error
 
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
@@ -157,10 +150,7 @@ def print_machine_info():
     print("Python version: %s" % sys.version.split()[0])
 
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
-    if sys.version_info.major == 2:
-        rootdir_free_space = psutil.disk_usage("/").free / (1024 ** 3)
-    else:
-        rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
+    rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
     print("Free space (GB): %.2f" % rootdir_free_space)
 
     hgrc_path = Path("~/.hg/hgrc").expanduser()

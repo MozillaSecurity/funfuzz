@@ -11,6 +11,8 @@ import io
 import json
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
+import subprocess
 import sys
 import time
 
@@ -22,14 +24,6 @@ from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithium_helpers
 from ..util import os_ops
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc

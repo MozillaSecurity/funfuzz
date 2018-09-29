@@ -8,12 +8,7 @@
 """
 
 import io
-import sys
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
+from pathlib import Path
 
 
 def link_fuzzer(target_path, prologue=""):

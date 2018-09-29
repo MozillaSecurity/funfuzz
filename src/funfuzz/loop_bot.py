@@ -14,14 +14,9 @@ Config-ish bits should move to bot, OR move into a config file,
 OR this file should subprocess-run ITSELF rather than using a while loop.
 """
 
-import os
+import subprocess
 import sys
 import time
-
-if sys.version_info.major == 2 and os.name == "posix":
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 
 def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-type-doc

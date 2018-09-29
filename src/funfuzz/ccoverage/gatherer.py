@@ -11,16 +11,11 @@ import configparser
 import io
 import logging
 import platform
-import sys
+import subprocess
 
 from ..bot import JS_SHELL_DEFAULT_TIMEOUT
 from ..js.loop import many_timed_runs
 from ..util import create_collector
-
-if sys.version_info.major == 2:
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
 

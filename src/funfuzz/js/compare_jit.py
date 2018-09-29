@@ -10,9 +10,12 @@
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 from random import random
 import re
+import subprocess
 import sys
+import tempfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as CrashInfo
@@ -22,16 +25,6 @@ from . import js_interesting
 from . import shell_flags
 from ..util import create_collector
 from ..util import lithium_helpers
-
-if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
-    import tempfile
 
 gOptions = ""  # pylint: disable=invalid-name
 lengthLimit = 1000000  # pylint: disable=invalid-name

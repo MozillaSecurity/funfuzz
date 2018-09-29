@@ -7,16 +7,10 @@
 """Known broken changeset ranges of SpiderMonkey are specified in this file.
 """
 
-import os
 import platform
-import sys
+import subprocess
 
 from pkg_resources import parse_version
-
-if sys.version_info.major == 2 and os.name == "posix":
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 
 def hgrange(first_bad, first_good):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc

@@ -9,19 +9,14 @@
 
 import io
 import logging
+from pathlib import Path
 import platform
-import sys
 import tarfile
 import zipfile
 
 import requests
 
 from ..js.inspect_shell import queryBuildConfiguration
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
 

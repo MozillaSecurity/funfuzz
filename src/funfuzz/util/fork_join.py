@@ -9,14 +9,10 @@
 
 import io
 import multiprocessing
+from pathlib import Path
 import sys
 
 from past.builtins import range
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.

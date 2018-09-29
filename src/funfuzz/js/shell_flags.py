@@ -7,17 +7,12 @@
 """Allows detection of support for various command-line flags.
 """
 
+from functools import lru_cache
 import multiprocessing
 import random
 import re
-import sys
 
 from . import inspect_shell
-
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
 @lru_cache(maxsize=None)

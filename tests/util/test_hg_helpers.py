@@ -7,17 +7,13 @@
 """Test the hg_helpers.py file."""
 
 import logging
+from pathlib import Path
 import sys
 import unittest
 
 import pytest
 
 from funfuzz.util import hg_helpers
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
