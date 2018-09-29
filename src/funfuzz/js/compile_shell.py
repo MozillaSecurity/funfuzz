@@ -14,7 +14,6 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 from pathlib import Path
 import platform
-import re
 from shlex import quote
 import shutil
 import subprocess
@@ -119,8 +118,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         parser.add_option("-b", "--build",
                           dest="build_opts",
                           help='Specify build options, e.g. -b "--disable-debug --enable-optimize" '
-                               "(%s -m funfuzz.js.build_options --help)" % re.search(
-                                   "python.*[2-3]", os.__file__).group(0).replace("/", ""))
+                               "(python3 -m funfuzz.js.build_options --help)")
 
         parser.add_option("-r", "--rev",
                           dest="revision",

@@ -11,7 +11,6 @@ import io
 import os
 from pathlib import Path
 import platform
-import re
 from shlex import quote
 import shutil
 import subprocess
@@ -80,7 +79,7 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# Create another shell in shell-cache like this one:\n")
         f.write('# %s -u -m %s -b "%s" -r %s\n# \n' % (
             # Perhaps this can go into a separate function. See ensureBuild in bot.py
-            "python" + re.search("python.*[2-3]", os.__file__).group(0).replace("/", "").split("python")[-1],
+            "python3",
             "funfuzz.js.compile_shell",
             shell.build_opts.build_options_str, shell.get_hg_hash()))
 

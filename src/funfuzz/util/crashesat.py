@@ -12,9 +12,7 @@ Not merged into Lithium as it still relies on grab_crash_log.
 
 import argparse
 import logging
-import os
 from pathlib import Path
-import re
 
 import lithium.interestingness.timed_run as timed_run
 from lithium.interestingness.utils import file_contains
@@ -33,8 +31,7 @@ def interesting(cli_args, temp_prefix):
         bool: True if the intended signature shows up on the stack, False otherwise.
     """
     parser = argparse.ArgumentParser(prog="crashesat",
-                                     usage=(re.search("python.*[2-3]", os.__file__).group(0).replace("/", "") +
-                                            " -m lithium %(prog)s [options] binary [flags] testcase.ext"))
+                                     usage="python3 -m lithium %(prog)s [options] binary [flags] testcase.ext")
     parser.add_argument("-r", "--regex", action="store_true", default=False,
                         help="Allow search for regular expressions instead of strings.")
     parser.add_argument("-s", "--sig", default="", type=str,

@@ -12,7 +12,6 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 from pathlib import Path
 from random import random
-import re
 from shlex import quote
 import subprocess
 import sys
@@ -186,7 +185,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
                 rerunCommand = " ".join(quote(str(x)) for x in [
-                    "%s -m funfuzz.js.compare_jit" % re.search("python.*[2-3]", os.__file__).group(0).replace("/", ""),
+                    "python3 -m funfuzz.js.compare_jit",
                     "--flags=" + " ".join(flags),
                     "--timeout=" + str(options.timeout),
                     str(options.knownPath),

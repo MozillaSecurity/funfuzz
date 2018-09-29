@@ -11,10 +11,8 @@
 import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
-import os
 from pathlib import Path
 import platform
-import re
 import shutil
 import subprocess
 import sys
@@ -196,7 +194,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
                 "|  Fuzzing %s js shell builds\n"
                 "|  DATE: %s\n"
                 "==============================================\n\n" % (
-                    "python" + re.search("python.*[2-3]", os.__file__).group(0).replace("/", "").split("python")[-1],
+                    "python3",
                     "funfuzz.js.compile_shell",
                     options.build_options.build_options_str,
                     options.build_options.repo_dir,
