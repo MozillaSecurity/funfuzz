@@ -331,10 +331,10 @@ def basic_flag_sets(shell_path):
     basic_flags = [
         # Parts of this flag permutation come from:
         # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
-        # compare_jit uses the following first flag set as the sole baseline when fuzzing
-        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
-        ["--fuzzing-safe"],
+        # compare_jit may choose to use the following first flag set as the baseline when fuzzing
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
+        ["--fuzzing-safe"],
+        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
