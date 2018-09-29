@@ -12,6 +12,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -19,7 +20,6 @@ from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as CrashInfo
 import lithium.interestingness.timed_run as timed_run
 from shellescape import quote
-from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
 from . import inspect_shell
 from ..util import create_collector
@@ -142,7 +142,8 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
         # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
         # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
-        if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
+        if (activated and platform.system() == "Linux" and
+                shutil.which("gdb") and not auxCrashData and not in_compare_jit):
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",

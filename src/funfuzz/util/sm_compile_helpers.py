@@ -12,10 +12,10 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 
 from shellescape import quote
-from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
 
 def ensure_cache_dir(base_dir):
@@ -42,19 +42,19 @@ def autoconf_run(working_dir):
     """
     if platform.system() == "Darwin":
         # Total hack to support new and old Homebrew configs, we can probably just call autoconf213
-        if which("brew"):
+        if shutil.which("brew"):
             autoconf213_mac_bin = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         else:
-            autoconf213_mac_bin = which("autoconf213")
+            autoconf213_mac_bin = shutil.which("autoconf213")
         if not Path(autoconf213_mac_bin).is_file():
             autoconf213_mac_bin = "autoconf213"
         subprocess.run([autoconf213_mac_bin], check=True, cwd=str(working_dir))
     elif platform.system() == "Linux":
-        if which("autoconf2.13"):
+        if shutil.which("autoconf2.13"):
             subprocess.run(["autoconf2.13"], check=True, cwd=str(working_dir))
-        elif which("autoconf-2.13"):
+        elif shutil.which("autoconf-2.13"):
             subprocess.run(["autoconf-2.13"], check=True, cwd=str(working_dir))
-        elif which("autoconf213"):
+        elif shutil.which("autoconf213"):
             subprocess.run(["autoconf213"], check=True, cwd=str(working_dir))
     elif platform.system() == "Windows":
         # Windows needs to call sh to be able to find autoconf.

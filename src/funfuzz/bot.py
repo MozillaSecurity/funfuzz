@@ -21,8 +21,6 @@ import sys
 import tempfile
 import time
 
-from whichcraft import which
-
 from .js import build_options
 from .js import compile_shell
 from .js import loop
@@ -138,18 +136,18 @@ def print_machine_info():
     print("hg info: %s" % subprocess.run(["hg", "-q", "version"],
                                          check=True,
                                          stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip())
-    if which("gdb"):
+    if shutil.which("gdb"):
         gdb_version = subprocess.run(["gdb", "--version"],
                                      stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
         print("gdb info: %s" % gdb_version.split("\n")[0])
-    if which("git"):
+    if shutil.which("git"):
         print("git info: %s" % subprocess.run(["git", "version"],
                                               check=True,
                                               stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip())
     print("Python version: %s" % sys.version.split()[0])
 
     print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
-    rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
+    rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)
     print("Free space (GB): %.2f" % rootdir_free_space)
 
     hgrc_path = Path("~/.hg/hgrc").expanduser()
