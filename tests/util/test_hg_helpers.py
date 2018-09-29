@@ -8,7 +8,6 @@
 
 import logging
 from pathlib import Path
-import sys
 import unittest
 
 import pytest
@@ -20,16 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
-class TestCase(unittest.TestCase):
-    """"TestCase class for general functions, e.g. backport ones."""
-    if sys.version_info.major == 2:
-        def assertRaisesRegex(self, *args, **kwds):  # pylint: disable=arguments-differ,invalid-name
-            # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
-            """Adds support for raising exceptions with messages containing desired regex."""
-            return self.assertRaisesRegexp(*args, **kwds)  # pylint: disable=deprecated-method
-
-
-class HgHelpersTests(TestCase):
+class HgHelpersTests(unittest.TestCase):
     """"TestCase class for functions in hg_helpers.py"""
     trees_location = Path.home() / "trees"
 

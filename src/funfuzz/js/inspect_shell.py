@@ -12,7 +12,6 @@ import os
 import platform
 from shlex import quote
 import subprocess
-import sys
 
 from lithium.interestingness.utils import env_with_path
 
@@ -86,7 +85,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = subprocess.run(
         ["file", str(binary)],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     filetype = unsplit_file_type.split(":", 1)[1]
@@ -147,7 +146,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
     sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
     test_cmd_result = subprocess.run(
         test_cmd,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         env=env_with_path(str(shellPath.parent)),
         stderr=stderr,
         stdout=subprocess.PIPE,

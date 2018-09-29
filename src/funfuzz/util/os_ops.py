@@ -14,7 +14,6 @@ import platform
 from shlex import quote
 import shutil
 import subprocess
-import sys
 import time
 
 from pkg_resources import parse_version
@@ -270,8 +269,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
                         crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
                         shutil.copyfile(str(full_report_path), str(crash_log))
                         subprocess.run(["chmod", "og+r", str(crash_log)],
-                                       # pylint: disable=no-member
-                                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
+                                       cwd=os.getcwd(),
                                        check=True,
                                        timeout=9)
                         return str(crash_log)
@@ -295,10 +293,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
     Returns:
         bool: Returns True when Windows has dumping enabled, and is dumping to the default location, otherwise False
     """
-    if sys.version_info.major == 2:
-        import _winreg as winreg  # pylint: disable=import-error
-    else:
-        import winreg  # pylint: disable=import-error
+    import winreg  # pylint: disable=import-error
     # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
     # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
     # If writing a key, we most likely need to flush. For the moment, no keys are written.

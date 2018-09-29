@@ -52,7 +52,7 @@ def findCommonAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-
     # pylint: disable=missing-return-type-doc
     return subprocess.run(
         ["hg", "-R", str(repo_dir), "log", "-r", "ancestor(" + a + "," + b + ")", "--template={node|short}"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
         timeout=999,
@@ -64,7 +64,7 @@ def isAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-do
     """Return true iff |a| is an ancestor of |b|. Throw if |a| or |b| does not exist."""
     return subprocess.run(
         ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
         timeout=999,
@@ -78,7 +78,7 @@ def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
     out = subprocess.run(
         ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         timeout=999,
@@ -125,7 +125,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
                             "--template", "{node|short} {rev}"]
     hg_id_full = subprocess.run(
         hg_log_template_cmds,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
         timeout=99,
@@ -149,7 +149,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
             raise ValueError("Invalid choice.")
         hg_id_full = subprocess.run(
             hg_log_template_cmds,
-            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            cwd=os.getcwd(),
             check=True,
             stdout=subprocess.PIPE,
             timeout=99,
@@ -189,13 +189,13 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
         str: Returns the name of the patch file
     """
     repo_dir = str(repo_dir) or (
-        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
+        os.getcwd())
     # We may have passed in the patch with or without the full directory.
     patch_abs_path = patch_file.resolve()
     pname = patch_abs_path.name
     qimport_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qimport", patch_abs_path],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         timeout=99)
@@ -210,7 +210,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
 
     qpush_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qpush", pname],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         check=True,
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
@@ -242,7 +242,7 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
     """
     qpop_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qpop"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         timeout=99)

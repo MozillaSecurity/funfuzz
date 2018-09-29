@@ -243,7 +243,7 @@ def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing
     diffcmd = ["diff", "-u", str(f1), str(f2)]
     s = " ".join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
     diff = subprocess.run(diffcmd,
-                          cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                          cwd=os.getcwd(),
                           stdout=subprocess.PIPE,
                           timeout=99).stdout.decode("utf-8", errors="replace")
     if len(diff) < 10000:

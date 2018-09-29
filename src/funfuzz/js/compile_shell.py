@@ -18,7 +18,6 @@ import re
 from shlex import quote
 import shutil
 import subprocess
-import sys
 import tarfile
 import traceback
 
@@ -665,8 +664,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             subprocess.run(["hg", "-R", str(shell.build_opts.repo_dir),
                             "update", "-C", "-r", updateToRev],
                            check=True,
-                           # pylint: disable=no-member
-                           cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
+                           cwd=os.getcwd(),
                            stderr=subprocess.DEVNULL,
                            timeout=9999)
         if shell.build_opts.patch_file:

@@ -62,12 +62,8 @@ def log_name(log_dir, i, log_type):
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    if sys.version_info.major == 2:
-        sys.stdout = io.open(log_name(logDir, i, "out"), "wb", buffering=0)
-        sys.stderr = io.open(log_name(logDir, i, "err"), "wb", buffering=0)
-    else:
-        sys.stdout = io.open(log_name(logDir, i, "out"), "w", buffering=1)
-        sys.stderr = io.open(log_name(logDir, i, "err"), "w", buffering=1)
+    sys.stdout = io.open(log_name(logDir, i, "out"), "w", buffering=1)
+    sys.stderr = io.open(log_name(logDir, i, "err"), "w", buffering=1)
     fun(*(someArgs + (i,)))
 
 

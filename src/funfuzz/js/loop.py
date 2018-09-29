@@ -285,6 +285,5 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
 
 
 if __name__ == "__main__":
-    # pylint: disable=no-member
-    many_timed_runs(None, os_ops.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
+    many_timed_runs(None, os_ops.make_wtmp_dir(Path(os.getcwd())),
                     sys.argv[1:], create_collector.make_collector(), False)

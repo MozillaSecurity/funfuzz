@@ -196,12 +196,12 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     # Reset bisect ranges and set skip ranges.
     subprocess.run(hgPrefix + ["bisect", "-r"],
                    check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   cwd=os.getcwd(),
                    timeout=99)
     if options.skipRevs:
         subprocess.run(hgPrefix + ["bisect", "--skip", options.skipRevs],
                        check=True,
-                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                       cwd=os.getcwd(),
                        timeout=300)
 
     labels = {}
@@ -215,7 +215,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         mid_bisect_output = subprocess.run(
             hgPrefix + ["bisect", "-U", "-b", eRepo],
             check=True,
-            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            cwd=os.getcwd(),
             stdout=subprocess.PIPE,
             timeout=300).stdout.decode("utf-8", errors="replace")
         currRev = hg_helpers.get_cset_hash_from_bisect_msg(
@@ -272,7 +272,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     sps.vdump("Resetting working directory")
     subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
                    check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   cwd=os.getcwd(),
                    timeout=999)
     hg_helpers.destroyPyc(repo_dir)
 
@@ -355,7 +355,7 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     hg_parent_output = subprocess.run(
         ["hg", "-R", str(repo_dir)] + ["parent", "--template={node|short},", "-r", blamedRev],
         check=True,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     parents = hg_parent_output.split(",")[:-1]
@@ -433,7 +433,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     outputResult = subprocess.run(
         hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev],
         check=True,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
