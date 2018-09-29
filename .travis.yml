@@ -167,8 +167,9 @@ install:
   - git --version
   - hg --version
   - python3 --version
-  - python -m flake8 --version
-  - python -m pylint --version
+  # Linters may not work properly in latest Python nightly on Travis
+  - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m flake8 --version ; fi
+  - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m pylint --version ; fi
 before_script:
   # To run everything locally in local funfuzz github repository directory:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
