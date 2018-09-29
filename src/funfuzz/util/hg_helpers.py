@@ -7,7 +7,6 @@
 """Helper functions involving Mercurial (hg).
 """
 
-from builtins import input
 import configparser
 import os
 from pathlib import Path
@@ -133,6 +132,7 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
         ).stdout.decode("utf-8", errors="replace")
     is_on_default = bool(hg_id_full)
     if not is_on_default:
+        # pylint: disable=input-builtin
         update_default = input("Not on default tip! "
                                "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
         update_default = update_default.strip()

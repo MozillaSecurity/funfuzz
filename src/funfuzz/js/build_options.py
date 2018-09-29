@@ -8,15 +8,12 @@
 """
 
 import argparse
-from builtins import object
 import hashlib
 import io
 from pathlib import Path
 import platform
 import random
 import sys
-
-from past.builtins import range
 
 from ..util import hg_helpers
 

@@ -8,7 +8,6 @@
 
 """
 
-from builtins import object
 import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module

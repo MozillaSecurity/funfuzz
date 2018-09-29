@@ -7,7 +7,6 @@
 """Functions here interact with Amazon EC2 using boto.
 """
 
-from builtins import object
 import os
 import platform
 import shutil

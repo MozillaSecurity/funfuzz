@@ -8,8 +8,6 @@
 released.
 """
 
-from builtins import object
-
 
 class LockDir(object):
     """Create a filesystem-based lock while in scope.

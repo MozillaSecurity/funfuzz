@@ -7,7 +7,6 @@
 """Compiles SpiderMonkey shells on different platforms using various specified configuration parameters.
 """
 
-from builtins import object
 import copy
 import io
 import multiprocessing

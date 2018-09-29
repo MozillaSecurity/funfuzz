@@ -7,7 +7,6 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
-from builtins import object
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -19,7 +18,6 @@ import sys
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as CrashInfo
 import lithium.interestingness.timed_run as timed_run
-from past.builtins import range
 from shellescape import quote
 from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
