@@ -223,7 +223,6 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     elif platform.system() == "Linux":
         print("Warning: grab_crash_log() did not find a core file for PID %d." % crashed_pid)
         print("Note: Your soft limit for core file sizes is currently %d. "
-              # pylint: disable=indexing-exception
               'You can increase it with "ulimit -c" in bash.' % get_core_limit()[0])
 
 
@@ -283,7 +282,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
     return None
 
 
-def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branches
+def is_win_dumping_to_default():  # pylint: disable=too-complex
     """Check whether Windows minidumps are enabled and set to go to Windows' default location.
 
     Raises:
