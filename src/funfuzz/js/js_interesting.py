@@ -12,6 +12,7 @@ from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 from pathlib import Path
 import platform
+from shlex import quote
 import shutil
 import subprocess
 import sys
@@ -19,7 +20,6 @@ import sys
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as CrashInfo
 import lithium.interestingness.timed_run as timed_run
-from shellescape import quote
 
 from . import inspect_shell
 from ..util import create_collector

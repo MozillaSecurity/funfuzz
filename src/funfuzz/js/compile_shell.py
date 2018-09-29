@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import platform
 import re
+from shlex import quote
 import shutil
 import subprocess
 import sys
@@ -22,7 +23,6 @@ import tarfile
 import traceback
 
 from pkg_resources import parse_version
-from shellescape import quote
 
 from . import build_options
 from . import inspect_shell
@@ -485,7 +485,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     cfg_cmds.append("--disable-tests")
 
     if platform.system() == "Windows":
-        # FIXME: Replace this with shellescape's quote  # pylint: disable=fixme
+        # FIXME: Replace this with shlex's quote  # pylint: disable=fixme
         counter = 0
         for entry in cfg_cmds:
             if os.sep in entry:

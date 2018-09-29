@@ -10,11 +10,11 @@
 import json
 import os
 import platform
+from shlex import quote
 import subprocess
 import sys
 
 from lithium.interestingness.utils import env_with_path
-from shellescape import quote
 
 from ..util import subprocesses as sps
 

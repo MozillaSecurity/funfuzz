@@ -10,13 +10,13 @@
 import io
 from pathlib import Path
 import re
+from shlex import quote
 import shutil
 import subprocess
 import sys
 import tempfile
 
 from lithium.interestingness.utils import file_contains_str
-from shellescape import quote
 
 from . import file_manipulation
 from ..js.inspect_shell import testJsShellOrXpcshell

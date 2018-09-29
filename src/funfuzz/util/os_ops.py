@@ -11,13 +11,13 @@ import io
 import os
 from pathlib import Path
 import platform
+from shlex import quote
 import shutil
 import subprocess
 import sys
 import time
 
 from pkg_resources import parse_version
-from shellescape import quote
 
 from . import subprocesses as sps
 

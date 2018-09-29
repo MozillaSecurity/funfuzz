@@ -12,10 +12,9 @@ import os
 from pathlib import Path
 import platform
 import re
+from shlex import quote
 import shutil
 import subprocess
-
-from shellescape import quote
 
 
 def ensure_cache_dir(base_dir):

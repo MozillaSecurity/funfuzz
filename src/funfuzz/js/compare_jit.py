@@ -13,13 +13,13 @@ import os
 from pathlib import Path
 from random import random
 import re
+from shlex import quote
 import subprocess
 import sys
 import tempfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as CrashInfo
-from shellescape import quote
 
 from . import js_interesting
 from . import shell_flags
