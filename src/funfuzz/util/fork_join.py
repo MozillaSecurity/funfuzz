@@ -7,8 +7,6 @@
 """Functions dealing with multiple processes.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
 import multiprocessing
 import sys

@@ -6,8 +6,6 @@
 
 """Test the os_ops.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import logging
 import sys
 import unittest

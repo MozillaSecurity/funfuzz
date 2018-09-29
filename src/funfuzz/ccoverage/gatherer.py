@@ -7,8 +7,6 @@
 """Gathers coverage data.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import configparser
 import io
 import logging

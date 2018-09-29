@@ -6,8 +6,6 @@
 
 """Test the link_fuzzer.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import io
 import logging
 import sys

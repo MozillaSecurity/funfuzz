@@ -10,8 +10,6 @@ the stack.
 Not merged into Lithium as it still relies on grab_crash_log.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import argparse
 import logging
 import os

@@ -7,8 +7,6 @@
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 import re

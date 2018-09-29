@@ -7,8 +7,6 @@
 """Concatenate js files to create jsfunfuzz.
 """
 
-from __future__ import absolute_import
-
 import io
 import sys
 

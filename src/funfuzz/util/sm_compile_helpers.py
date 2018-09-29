@@ -7,8 +7,6 @@
 """Helper functions to compile SpiderMonkey shells.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
 import os
 import platform

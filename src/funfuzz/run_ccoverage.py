@@ -8,8 +8,6 @@
 
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import argparse
 import logging
 import platform

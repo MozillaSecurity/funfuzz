@@ -7,8 +7,6 @@
 """Test comparing the output of SpiderMonkey using various flags (usually JIT-related).
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os

@@ -7,8 +7,6 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
 import json
 from optparse import OptionParser  # pylint: disable=deprecated-module

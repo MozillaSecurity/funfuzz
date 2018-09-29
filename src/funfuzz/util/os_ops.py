@@ -7,8 +7,6 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
-
 import io
 import os
 import platform
