@@ -27,7 +27,7 @@ class LockDir(object):
         try:
             self.directory.mkdir()
         except OSError:
-            print("Lock directory exists: %s" % self.directory)
+            print(f"Lock directory exists: {self.directory}")
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):

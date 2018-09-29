@@ -119,9 +119,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     # First check that the testcase is present.
     if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
         print(flush=True)
-        print("List of parameters to be passed to the shell is: %s" % " ".join(options.runtime_params), flush=True)
+        print(f'List of parameters to be passed to the shell is: {" ".join(options.runtime_params)}', flush=True)
         print(flush=True)
-        raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
+        raise OSError(f"Testcase at {options.runtime_params[-1]} is not present.")
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
 
@@ -129,7 +129,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     if options.useInterestingnessTests:
         if len(args) < 1:
-            print("args are: %s" % args, flush=True)
+            print(f"args are: {args}", flush=True)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
@@ -175,7 +175,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
     # pylint: disable=too-many-locals,too-many-statements
     repo_dir = str(repo_dir)
-    print("%s | Bisecting on: %s" % (time.asctime(), repo_dir), flush=True)
+    print(f"{time.asctime()} | Bisecting on: {repo_dir}", flush=True)
 
     hgPrefix = ["hg", "-R", repo_dir]  # pylint: disable=invalid-name
 
@@ -241,12 +241,12 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
             if skipCount > 20:
                 print("Skipped 20 times, stopping autobisectjs.", flush=True)
                 break
-        print("%s (%s) " % (label[0], label[1]), end=" ", flush=True)
+        print(f"{label[0]} ({label[1]}) ", end=" ", flush=True)
 
         if iterNum <= 0:
             print("Finished testing the initial boundary revisions...", end=" ", flush=True)
         else:
-            print("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum),
+            print(f"Bisecting for the n-th round where n is {iterNum} and 2^n is {2**iterNum} ...",
                   end=" ", flush=True)
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
@@ -259,7 +259,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         iterNum += 1
         endTime = time.time()
         oneRunTime = endTime - startTime
-        print("This iteration took %.3f seconds to run." % oneRunTime, flush=True)
+        print(f"This iteration took {oneRunTime:.3f} seconds to run.", flush=True)
 
     if blamedRev is not None:
         checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
@@ -297,7 +297,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
-                return "bad", "Specified-bad exit code %s (after converting to signal)" % exitCode
+                return "bad", f"Specified-bad exit code {exitCode} (after converting to signal)"
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
                 return "good", "Bad output, but not the specified one"
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
@@ -366,23 +366,23 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
             print(flush=True)
-            print("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p, flush=True)
+            print(f"Oops! We didn't test rev {p}, a parent of the blamed revision! Let's do that now.", flush=True)
             if not hg_helpers.isAncestor(repo_dir, startRepo, p) and \
                     not hg_helpers.isAncestor(repo_dir, endRepo, p):
-                print("We did not test rev %s because it is not a descendant of either %s or %s." % (
-                    p, startRepo, endRepo), flush=True)
+                print(f"We did not test rev {p} because it is not a descendant of either {startRepo} or {endRepo}.",
+                      flush=True)
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
             labels[p] = label
-            print("%s (%s) " % (label[0], label[1]), flush=True)
+            print(f"{label[0]} ({label[1]}) ", flush=True)
             print("As expected, the parent's label is the opposite of the blamed rev's label.", flush=True)
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            print('Parent rev %s was marked as "skip", so the regression window includes it.' % (p,), flush=True)
+            print(f'Parent rev {p} was marked as "skip", so the regression window includes it.', flush=True)
         elif labels[p][0] == blamedGoodOrBad:
-            print("Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad), flush=True)
+            print(f"Bisect lied to us! Parent rev {p} was also {blamedGoodOrBad}!", flush=True)
             bisectLied = True
         else:
             assert labels[p][0] == {"good": "bad", "bad": "good"}[blamedGoodOrBad]
@@ -394,10 +394,10 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
             print(flush=True)
             print("Bisect blamed the merge because our initial range did not include one", flush=True)
             print("of the parents.", flush=True)
-            print("The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca), flush=True)
+            print(f"The common ancestor of {parents[0]} and {parents[1]} is {ca}.", flush=True)
             label = testRev(ca)
-            print("%s (%s) " % (label[0], label[1]), flush=True)
-            print("Consider re-running autobisectjs with -s %s -e %s" % (ca, blamedRev), flush=True)
+            print(f"{label[0]} ({label[1]}) ", flush=True)
+            print(f"Consider re-running autobisectjs with -s {ca} -e {blamedRev}", flush=True)
             print("in a configuration where earliestWorking is before the common ancestor.", flush=True)
         else:
             print(flush=True)

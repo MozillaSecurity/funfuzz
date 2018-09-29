@@ -102,7 +102,7 @@ def get_cset_hash_from_bisect_msg(msg):
     matched = rgx.match(msg)
     if matched:
         return matched.group(3)
-    raise ValueError("Bisection output format required for hash extraction unavailable. The variable msg is: %s" % msg)
+    raise ValueError(f"Bisection output format required for hash extraction unavailable. The variable msg is: {msg}")
 
 
 def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
@@ -221,7 +221,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
     if qpush_return_code != 0:
         qpop_qrm_applied_patch(patch_file, repo_dir)
         print("You may have untracked .rej or .orig files in the repository.")
-        print("`hg status` output of the repository of interesting files in %s :" % repo_dir)
+        print(f"`hg status` output of the repository of interesting files in {repo_dir} :")
         subprocess.run(["hg", "-R", str(repo_dir), "status", "--modified", "--added",
                         "--removed", "--deleted"], check=True)
         raise OSError("Return code from `hg qpush` is: " + str(qpush_return_code))

@@ -65,4 +65,4 @@ def handle_rm_readonly(func, path, exc):
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word "DEBUG" to any verbose output."""
     if verbose:
-        print("DEBUG - %s" % inp)
+        print(f"DEBUG - {inp}")

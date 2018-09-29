@@ -352,14 +352,12 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         # 32-bit shell on 32/64-bit x86 Linux
         cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
         if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = cfg_env["HOST_CC"] = str(
-                "clang %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
-            cfg_env["CXX"] = cfg_env["HOST_CXX"] = str(
-                "clang++ %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
+            cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
+            cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
         else:
             # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            cfg_env["CC"] = "gcc -m32 %s" % SSE2_FLAGS
-            cfg_env["CXX"] = "g++ -m32 %s" % SSE2_FLAGS
+            cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
+            cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
             cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
@@ -527,8 +525,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     except subprocess.CalledProcessError as ex:
         with io.open(str(shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".busted")), "a",
                      encoding="utf-8", errors="replace") as f:
-            f.write("Configuration of %s rev %s failed with the following output:\n" %
-                    (shell.get_repo_name(), shell.get_hg_hash()))
+            f.write(f"Configuration of {shell.get_repo_name()} rev {shell.get_hg_hash()} "
+                    f"failed with the following output:\n")
             f.write(ex.stdout.decode("utf-8", errors="replace"))
         raise
 
@@ -585,11 +583,11 @@ def sm_compile(shell):
         if shell.get_shell_compiled_path().is_file():
             print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
-            print("%s did not result in a js shell:" % MAKE_BINARY)
+            print(f"{MAKE_BINARY} did not result in a js shell:")
             with io.open(str(shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".busted")), "a",
                          encoding="utf-8", errors="replace") as f:
-                f.write("Compilation of %s rev %s failed with the following output:\n" %
-                        (shell.get_repo_name(), shell.get_hg_hash()))
+                f.write(f"Compilation of {shell.get_repo_name()} rev {shell.get_hg_hash()} "
+                        f"failed with the following output:\n")
                 f.write(out)
             raise OSError(MAKE_BINARY + " did not result in a js shell.")
 
@@ -599,7 +597,7 @@ def sm_compile(shell):
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
     def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
         shell = CompiledShell(options.build_options, rev)
-        print("Rev %s:" % rev, end=" ")
+        print(f"Rev {rev}:", end=" ")
 
         try:
             obtainShell(shell, updateToRev=rev)
@@ -656,9 +654,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     try:
         if updateToRev:
             # Print *with* a trailing newline to avoid breaking other stuff
-            print("Updating to rev %s in the %s repository..." % (
-                updateToRev,
-                str(shell.build_opts.repo_dir)))
+            print(f"Updating to rev {updateToRev} in the {shell.build_opts.repo_dir} repository...")
             subprocess.run(["hg", "-R", str(shell.build_opts.repo_dir),
                             "update", "-C", "-r", updateToRev],
                            check=True,
@@ -679,10 +675,10 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if shell.get_shell_cache_js_bin_path().is_file():  # Switch to contextlib.suppress when we are fully on Python 3
             shell.get_shell_cache_js_bin_path().unlink()
         with io.open(str(cached_no_shell), "a", encoding="utf-8", errors="replace") as f:
-            f.write("\nCaught exception %r (%s)\n" % (ex, ex))
+            f.write(f"\nCaught exception {ex} ({ex})\n")
             f.write("Backtrace:\n")
             f.write(traceback.format_exc() + "\n")
-        print("Compilation failed (%s) (details in %s)" % (ex, cached_no_shell))
+        print(f"Compilation failed ({ex}) (details in {cached_no_shell})")
 
         if use_s3cache:
             s3cache_obj.uploadFileToS3(str(shell.get_shell_cache_js_bin_path()) + ".busted")

@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from textwrap import dedent
 import time
 
 from . import compare_jit
@@ -91,13 +92,12 @@ def showtail(filename):  # pylint: disable=missing-docstring
 def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
-    return """
-const regressionTestsRoot = %s;
-const libdir = regressionTestsRoot + %s; // needed by jit-tests
-const regressionTestList = %s;
-""" % (json.dumps(str(repo) + os.sep),
-       json.dumps(str(Path("js") / "src" / "jit-test" / "lib") + os.sep),
-       json.dumps(inTreeRegressionTests(repo)))
+    libdir = Path("js") / "src" / "jit-test" / "lib"
+    return dedent(f"""
+        const regressionTestsRoot = {json.dumps(str(repo) + os.sep)};
+        const libdir = regressionTestsRoot + {json.dumps(str(libdir) + os.sep)}; // needed by jit-tests
+        const regressionTestList = {json.dumps(inTreeRegressionTests(repo))};
+    """)
 
 
 def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
@@ -220,13 +220,13 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 else:
                     quality = 10
 
-                print("Submitting %s (quality=%s) at %s" % (reduced_log, quality, time.asctime()))
+                print(f"Submitting {reduced_log} (quality={quality}) at {time.asctime()}")
 
                 metadata = {}
                 if autoBisectLog:
                     metadata = {"autoBisectLog": "".join(autoBisectLog)}
                 collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
-                print("Submitted %s" % reduced_log)
+                print(f"Submitted {reduced_log}")
 
         else:
             are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags

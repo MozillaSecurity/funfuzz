@@ -49,7 +49,7 @@ def interesting(cli_args, temp_prefix):
         os_ops.grab_crash_log(args.cmd_with_flags[0], runinfo.pid, temp_prefix, True)
 
     crash_log = Path(temp_prefix + "-crash.txt")
-    time_str = " (%.3f seconds)" % runinfo.elapsedtime
+    time_str = f" ({runinfo.elapsedtime:.3f} seconds)"
 
     if runinfo.sta == timed_run.CRASHED:
         if crash_log.resolve().is_file():  # pylint: disable=no-member

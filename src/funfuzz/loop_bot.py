@@ -25,16 +25,16 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
     i = 0
     while True:
         i += 1
-        print("localLoop #%d!" % i)
+        print(f"localLoop #{i}!")
         for cmd in cmd_seq:
             try:
                 subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
-                print("Something went wrong when calling: %r" % (cmd,))
-                print("%r" % (ex,))
+                print(f"Something went wrong when calling: {cmd}")
+                print(f"{ex}")
                 import traceback
                 print(traceback.format_exc())
-                print("Waiting %d seconds..." % wait_time)
+                print(f"Waiting {wait_time} seconds...")
                 time.sleep(wait_time)
                 break
 

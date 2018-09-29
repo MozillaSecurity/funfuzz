@@ -18,7 +18,7 @@ import sys
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
 def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring
     def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
-        print("==== %s ====" % fn)
+        print(f"==== {fn} ====")
         print()
         with io.open(str(fn), "r", encoding="utf-8", errors="replace") as f:
             for line in f:
@@ -26,7 +26,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         print()
 
     # Fork a bunch of processes
-    print("Forking %s children..." % str(numProcesses))
+    print(f"Forking {numProcesses} children...")
     ps = []  # pylint: disable=invalid-name
     for i in range(numProcesses):
         p = multiprocessing.Process(  # pylint: disable=invalid-name
@@ -37,9 +37,9 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
     # Wait for them all to finish, and splat their outputs
     for i in range(numProcesses):
         p = ps[i]  # pylint: disable=invalid-name
-        print("=== Waiting for child #%s (%s) to finish... ===" % (str(i), str(p.pid)))
+        print(f"=== Waiting for child #{i} ({p.pid}) to finish... ===")
         p.join()
-        print("=== Child process #%s exited with code %s ===" % (str(i), str(p.exitcode)))
+        print(f"=== Child process #{i} exited with code {p.exitcode} ===")
         print()
         showFile(log_name(logDir, i, "out"))
         showFile(log_name(logDir, i, "err"))
@@ -58,7 +58,7 @@ def log_name(log_dir, i, log_type):
     Returns:
         str: The forkjoin log file path
     """
-    return str(Path(log_dir) / ("forkjoin-%s-%s.txt" % (i, log_type)))
+    return str(Path(log_dir) / f"forkjoin-{i}-{log_type}.txt")
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
@@ -77,7 +77,7 @@ def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=inval
 
 # def test_forkJoin_inner(adj, noun, forkjoin_id):
 #     import time
-#     print("%s %s" % (adj, noun))
+#     print(f"{adj} {noun}")
 #     print(forkjoin_id)
 #     if forkjoin_id == 5:
 #         time.sleep(1)

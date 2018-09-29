@@ -84,7 +84,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
         print()
-        print("Trees were absent from default location: %s" % build_options.DEFAULT_TREES_LOCATION)
+        print(f"Trees were absent from default location: {build_options.DEFAULT_TREES_LOCATION}")
         print("Using treeherder builds instead...")
         print()
         sys.exit("Fuzzing downloaded builds is disabled for now, until tooltool is removed. Exiting...")
@@ -129,24 +129,27 @@ def main():  # pylint: disable=missing-docstring
 
 def print_machine_info():
     """Log information about the machine."""
-    print("Platform details: %s" % " ".join(platform.uname()))
+    print(f'Platform details: {" ".join(platform.uname())}')
 
-    print("hg info: %s" % subprocess.run(["hg", "-q", "version"],
-                                         check=True,
-                                         stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip())
+    hg_version = subprocess.run(["hg", "-q", "version"],
+                                check=True,
+                                stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip()
+    print(f"hg info: {hg_version}")
+
     if shutil.which("gdb"):
         gdb_version = subprocess.run(["gdb", "--version"],
-                                     stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-        print("gdb info: %s" % gdb_version.split("\n")[0])
+                                     stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").split("\n")[0]
+        print(f"gdb info: {gdb_version}")
     if shutil.which("git"):
-        print("git info: %s" % subprocess.run(["git", "version"],
-                                              check=True,
-                                              stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip())
-    print("Python version: %s" % sys.version.split()[0])
+        git_version = subprocess.run(["git", "version"],
+                                     check=True,
+                                     stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").rstrip()
+        print(f"git info: {git_version}")
+    print(f"Python version: {sys.version.split()[0]}")
 
-    print("Number of cores visible to OS: %d" % multiprocessing.cpu_count())
+    print(f"Number of cores visible to OS: {multiprocessing.cpu_count()}")
     rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)
-    print("Free space (GB): %.2f" % rootdir_free_space)
+    print(f"Free space (GB): {rootdir_free_space:.2f}")
 
     hgrc_path = Path("~/.hg/hgrc").expanduser()
     if hgrc_path.is_file():
@@ -160,7 +163,7 @@ def print_machine_info():
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
         # pylint: disable=no-member
-        print("Corefile size (soft limit, hard limit) is: %r" % (resource.getrlimit(resource.RLIMIT_CORE),))
+        print(f"Corefile size (soft limit, hard limit) is: {resource.getrlimit(resource.RLIMIT_CORE)}")
     except ImportError:
         print("Not checking corefile size as resource module is unavailable")
 
@@ -188,24 +191,20 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             #   js-js-dbg-opt-64-dm-linux
             bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
             bSrc = (  # pylint: disable=invalid-name
-                "Create another shell in shell-cache like this one:\n"
-                '%s -u -m %s -b "%s -R %s" -r %s\n\n'
-                "==============================================\n"
-                "|  Fuzzing %s js shell builds\n"
-                "|  DATE: %s\n"
-                "==============================================\n\n" % (
-                    "python3",
-                    "funfuzz.js.compile_shell",
-                    options.build_options.build_options_str,
-                    options.build_options.repo_dir,
-                    bRev,
-                    cshell.get_repo_name(),
-                    time.asctime(),
-                ))
+                f"Create another shell in shell-cache like this one:\n"
+                f"python3 -u -m funfuzz.js.compile_shell "
+                f'-b "{options.build_options.build_options_str} '
+                f'-R {options.build_options.repo_dir}" '
+                f"-r {bRev}\n\n"
+                f"==============================================\n"
+                f"|  Fuzzing {cshell.get_repo_name()} js shell builds\n"
+                f"|  DATE: {time.asctime()}\n"
+                f"==============================================\n\n"
+            )
 
             manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name
-            print("buildDir is: %s" % bDir)
-            print("buildSrc is: %s" % bSrc)
+            print(f"buildDir is: {bDir}")
+            print(f"buildSrc is: {bSrc}")
     else:
         print("TBD: We need to switch to the fuzzfetch repository.")
         sys.exit(0)
@@ -222,7 +221,7 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []  # pylint: disable=invalid-name
-    manyTimedRunArgs.append("--repo=%s" % options.build_options.repo_dir)
+    manyTimedRunArgs.append(f"--repo={options.build_options.repo_dir}")
     manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
     if options.build_options.runWithVg:
         manyTimedRunArgs.append("--valgrind")

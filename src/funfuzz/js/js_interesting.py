@@ -149,7 +149,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 for line in f:
                     if line.rstrip() and not line.startswith("#") and not line.startswith("echo"):
                         extracted_gdb_cmds.append("-ex")
-                        extracted_gdb_cmds.append("%s" % line.rstrip())
+                        extracted_gdb_cmds.append(f"{line.rstrip()}")
             no_main_log_gdb_log = subprocess.run(
                 (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
                  [str(x) for x in runthis]),
@@ -180,7 +180,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             print("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
             match = False
 
-        print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
+        print(f"{logPrefix} | {summaryString(issues, lev, runinfo.elapsedtime)}")
 
         if lev != JS_FINE:
             summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
@@ -247,7 +247,7 @@ def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-
 def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     amissDetails = "" if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
-    return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
+    return f"{elapsedtime:5.1f}s | {level} | {JS_LEVEL_NAMES[level]}{amissDetails}"
 
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
@@ -364,7 +364,7 @@ def main():  # pylint: disable=missing-docstring
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
             testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
-            print("Submitting %s" % testcaseFilename)
+            print(f"Submitting {testcaseFilename}")
             quality = 0
             options.collector.submit(res.crashInfo, str(testcaseFilename), quality)  # pylint: disable=no-member
         else:

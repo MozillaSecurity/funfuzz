@@ -61,7 +61,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
         with io.open(str(autobisect_log), "w", encoding="utf-8", errors="replace") as f:
             subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
-        print("Done running autobisectjs. Log: %s" % autobisect_log)
+        print(f"Done running autobisectjs. Log: {autobisect_log}")
 
         with io.open(str(autobisect_log), "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
@@ -90,7 +90,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
         Path.mkdir(lithtmp)
         lithArgs = ["--tempdir=" + str(lithtmp)] + lithArgs
     lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
-    print("Preparing to run Lithium, log file %s" % lithlogfn)
+    print(f"Preparing to run Lithium, log file {lithlogfn}")
     print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
     with io.open(str(lithlogfn), "w", encoding="utf-8", errors="replace") as f:
         subprocess.run(runlithiumpy + lithArgs, stderr=subprocess.STDOUT, stdout=f)
@@ -145,7 +145,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         desc = "-chars" if strategy == "--char" else "-lines"
         (lith_result, lith_details) = run_lithium(
-            full_lith_args, (logPrefix.parent / ("%s-%s%s" % (logPrefix.stem, reductionCount[0], desc))), targetTime)
+            full_lith_args, (logPrefix.parent / f"{logPrefix.stem}-{reductionCount[0]}{desc}"), targetTime)
         if lith_result == LITH_FINISHED:
             shutil.copy2(str(infilename), str(backup_file))
 
@@ -260,6 +260,6 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         if backup_file.is_file():
             shutil.copy2(str(backup_file), str(infilename))
         else:
-            print("DEBUG! backup_file is supposed to be: %s" % backup_file)
+            print(f"DEBUG! backup_file is supposed to be: {backup_file}")
 
     return lith_result, lith_details

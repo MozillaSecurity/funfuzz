@@ -77,9 +77,9 @@ def get_grcov(dirpath, args):
         Path: Path to the grcov binary file
     """
     append_os = "win" if platform.system() == "Windows" else ("osx" if platform.system() == "Darwin" else "linux")
-    grcov_filename_with_ext = "grcov-%s-x86_64.tar.bz2" % append_os
+    grcov_filename_with_ext = f"grcov-{append_os}-x86_64.tar.bz2"
 
-    grcov_url = "https://github.com/marco-c/grcov/releases/download/v%s/%s" % (args.grcov_ver, grcov_filename_with_ext)
+    grcov_url = f"https://github.com/marco-c/grcov/releases/download/v{args.grcov_ver}/{grcov_filename_with_ext}"
 
     RUN_COV_LOG.info("Downloading grcov into %s from %s", str(dirpath), grcov_url)
     with requests.get(grcov_url, allow_redirects=True, stream=True) as grcov_request:

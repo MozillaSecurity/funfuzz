@@ -77,33 +77,30 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
         f.write("# Information about shell:\n# \n")
 
         f.write("# Create another shell in shell-cache like this one:\n")
-        f.write('# %s -u -m %s -b "%s" -r %s\n# \n' % (
-            # Perhaps this can go into a separate function. See ensureBuild in bot.py
-            "python3",
-            "funfuzz.js.compile_shell",
-            shell.build_opts.build_options_str, shell.get_hg_hash()))
+        f.write(f"# python3 -u -m funfuzz.js.compile_shell "
+                f'-b "{shell.build_opts.build_options_str}" -r {shell.get_hg_hash()}\n# \n')
 
         f.write("# Full environment is:\n")
-        f.write("# %s\n# \n" % str(shell.get_env_full()))
+        f.write(f"# {shell.get_env_full()}\n# \n")
 
         f.write("# Full configuration command with needed environment variables is:\n")
-        f.write("# %s %s\n# \n" % (" ".join(quote(str(x)) for x in shell.get_env_added()),
-                                   " ".join(quote(str(x)) for x in shell.get_cfg_cmd_excl_env())))
+        f.write(f'# {" ".join(quote(str(x)) for x in shell.get_env_added())} '
+                f'{" ".join(quote(str(x)) for x in shell.get_cfg_cmd_excl_env())}\n# \n')
 
         # .fuzzmanagerconf details
         f.write("\n")
         f.write("[Main]\n")
-        f.write("platform = %s\n" % fmconf_platform)
-        f.write("product = %s\n" % shell.get_repo_name())
-        f.write("product_version = %s\n" % shell.get_hg_hash())
-        f.write("os = %s\n" % fmconf_os)
+        f.write(f"platform = {fmconf_platform}\n")
+        f.write(f"product = {shell.get_repo_name()}\n")
+        f.write(f"product_version = {shell.get_hg_hash()}\n")
+        f.write(f"os = {fmconf_os}\n")
 
         f.write("\n")
         f.write("[Metadata]\n")
-        f.write("buildFlags = %s\n" % shell.build_opts.build_options_str)
-        f.write("majorVersion = %s\n" % shell.get_version().split(".")[0])
-        f.write("pathPrefix = %s/\n" % shell.get_repo_dir())
-        f.write("version = %s\n" % shell.get_version())
+        f.write(f"buildFlags = {shell.build_opts.build_options_str}\n")
+        f.write(f'majorVersion = {shell.get_version().split(".")[0]}\n')
+        f.write(f"pathPrefix = {shell.get_repo_dir()}/\n")
+        f.write(f"version = {shell.get_version()}\n")
 
 
 def extract_vers(objdir):  # pylint: disable=inconsistent-return-statements
@@ -146,9 +143,9 @@ def get_lock_dir_path(cache_dir_base, repo_dir, tbox_id=""):
     Returns:
         Path: Full path to the shell cache lock directory
     """
-    lockdir_name = "shell-%s-lock" % repo_dir.name
+    lockdir_name = f"shell-{repo_dir.name}-lock"
     if tbox_id:
-        lockdir_name += "-%s" % tbox_id
+        lockdir_name += f"-{tbox_id}"
     return ensure_cache_dir(cache_dir_base) / lockdir_name
 
 

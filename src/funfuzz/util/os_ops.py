@@ -41,7 +41,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
     """
     assert platform.system() == "Windows"
     # Look for a minidump.
-    dump_name = Path.home() / "AppData" / "Local" / "CrashDumps" / ("%s.%s.dmp" % (prog_full_path.name, crashed_pid))
+    dump_name = Path.home() / "AppData" / "Local" / "CrashDumps" / f"{prog_full_path.name}.{crashed_pid}.dmp"
 
     if platform.uname()[2] == "10":  # Windows 10
         win64_debugging_folder = Path(os.getenv("PROGRAMFILES(X86)")) / "Windows Kits" / "10" / "Debuggers" / "x64"
@@ -74,7 +74,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
             loops += 1
             if loops > max_loops:
                 # Windows may take some time to generate the dump.
-                print("make_cdb_cmd waited a long time, but %s never appeared!" % str(dump_name))
+                print(f"make_cdb_cmd waited a long time, but {dump_name} never appeared!")
                 return []
     else:
         return []
@@ -190,13 +190,13 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             preexec_fn=(disable_corefile if platform.system() == "Linux" else None),
         ).returncode
         if dbbgr_exit_code != 0:
-            print("Debugger exited with code %d : %s" % (dbbgr_exit_code, " ".join(quote(str(x)) for x in dbggr_cmd)))
+            print(f'Debugger exited with code {dbbgr_exit_code} : {" ".join(quote(str(x)) for x in dbggr_cmd)}')
         if use_logfiles:
             if core_file.is_file():
                 shutil.move(str(core_file), str(core_file))
                 subprocess.run(["gzip", "-f", str(core_file)], check=True)
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.run(["chmod", "og+r", "%s.gz" % core_file], check=True)
+                subprocess.run(["chmod", "og+r", f"{core_file}.gz"], check=True)
             return str(crash_log)
         else:
             print("I don't know what to do with a core file when log_prefix is null")
@@ -216,14 +216,14 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             if loops > max_loops:
                 # I suppose this might happen if the process corrupts itself so much that
                 # the crash reporter gets confused about the process name, for example.
-                print("grab_crash_log waited a long time, but a crash log for %s [%s] never appeared!" % (
-                    progname, crashed_pid))
+                print(f"grab_crash_log waited a long time, "
+                      f"but a crash log for {progname} [{crashed_pid}] never appeared!")
                 break
 
     elif platform.system() == "Linux":
-        print("Warning: grab_crash_log() did not find a core file for PID %d." % crashed_pid)
-        print("Note: Your soft limit for core file sizes is currently %d. "
-              'You can increase it with "ulimit -c" in bash.' % get_core_limit()[0])
+        print(f"Warning: grab_crash_log() did not find a core file for PID {crashed_pid}.")
+        print(f"Note: Your soft limit for core file sizes is currently {get_core_limit()[0]}. "
+              f'You can increase it with "ulimit -c" in bash.')
 
 
 def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
@@ -260,7 +260,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
             try:
                 with io.open(str(full_report_path), "r", encoding="utf-8", errors="replace") as f:
                     first_line = f.readline()
-                if first_line.rstrip().endswith("[%s]" % crash_pid):
+                if first_line.rstrip().endswith(f"[{crash_pid}]"):
                     if use_log_files:
                         # Copy, don't rename, because we might not have permissions
                         # (especially for the system rather than user crash log directory)
@@ -320,8 +320,8 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
                 if not (dump_folder_reg_value[0] == r"%LOCALAPPDATA%\CrashDumps" and
                         dump_folder_reg_value[1] == winreg.REG_EXPAND_SZ):
                     print()
-                    print("WARNING: Dumps are instead appearing at: %s - "
-                          "all crashes will be uninteresting." % dump_folder_reg_value[0])
+                    print(f"WARNING: Dumps are instead appearing at: {dump_folder_reg_value[0]} - "
+                          f"all crashes will be uninteresting.")
                     print()
                     return False
             except OSError as ex:
@@ -357,7 +357,7 @@ def make_wtmp_dir(base_dir):
 
     i = 1
     while True:
-        numbered_tmp_dir = "wtmp%s" % i
+        numbered_tmp_dir = f"wtmp{i}"
         full_dir = base_dir / numbered_tmp_dir
         try:
             full_dir.mkdir()  # To avoid race conditions, we use try/except instead of exists/create

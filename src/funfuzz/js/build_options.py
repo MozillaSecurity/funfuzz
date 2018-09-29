@@ -180,7 +180,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
         build_options.build_options_str = args
         valid = areArgsValid(build_options)
         if not valid[0]:
-            print("WARNING: This set of build options is not tested well because: %s" % valid[1])
+            print(f"WARNING: This set of build options is not tested well because: {valid[1]}")
 
     if build_options.patch_file:
         build_options.patch_file = build_options.patch_file.expanduser().resolve()
@@ -206,7 +206,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
             hg_helpers.ensure_mq_enabled()
             assert build_options.patch_file.is_file()
     else:
-        sys.exit("DEFAULT_TREES_LOCATION not found at: %s. Exiting..." % DEFAULT_TREES_LOCATION)
+        sys.exit(f"DEFAULT_TREES_LOCATION not found at: {DEFAULT_TREES_LOCATION}. Exiting...")
 
     return build_options
 

@@ -27,14 +27,14 @@ def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
     if crashInfo.createShortSignature() != "No crash detected":
         print()
         print("crashInfo:")
-        print("  Short Signature: %s" % crashInfo.createShortSignature())
-        print("  Class name: %s" % crashInfo.__class__.__name__)   # "NoCrashInfo", etc
-        print("  Stack trace: %r" % (crashInfo.backtrace,))
+        print(f"  Short Signature: {crashInfo.createShortSignature()}")
+        print(f"  Class name: {crashInfo.__class__.__name__}")   # "NoCrashInfo", etc
+        print(f"  Stack trace: {crashInfo.backtrace}")
         print()
 
 
 def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docstring
     print("Matches signature in FuzzManager:")
-    print("  Signature description: %s" % match[1].get("shortDescription"))
-    print("  Signature file: %s" % match[0])
+    print(f'  Signature description: {match[1].get("shortDescription")}')
+    print(f"  Signature file: {match[0]}")
     print()
