@@ -178,7 +178,11 @@ before_script:
     if [ $TRAVIS_PYTHON_VERSION == "3.7" ] ; then
       python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     elif [ $TRAVIS_PYTHON_VERSION == "nightly" ] ; then
-      python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
+      # Work around astroid failing in Python nightly
+      python -m pip uninstall -y pylint astroid
+      # Work around flake8 failing in Python nightly
+      python -m pytest -s -p no:flake8,cov -m "not slow"
+      # python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     else
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
