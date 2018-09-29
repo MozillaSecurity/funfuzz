@@ -12,6 +12,7 @@ from __future__ import absolute_import, print_function, unicode_literals  # isor
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from random import random
 import re
 import sys
 
@@ -72,8 +73,9 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
     # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
     logPrefix = Path(logPrefix)
     initialdir_name = (logPrefix.parent / (logPrefix.stem + "-initial"))
+    is_quick_mode = random() < 0.5
     # pylint: disable=invalid-name
-    cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, True)
+    cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, is_quick_mode)
     lev = cl[0]
 
     if lev != js_interesting.JS_FINE:
