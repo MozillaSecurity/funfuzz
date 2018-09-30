@@ -89,7 +89,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         timed_run_kw = {"env": (env or os.environ)}
         if not (platform.system() == "Windows" or
                 # We cannot set a limit for RLIMIT_AS for ASan binaries
-                inspect_shell.queryBuildConfiguration(options.jsengineWithArgs[0], "asan")):
+                inspect_shell.queryBuildConfiguration(options.jsengine, "asan")):
             timed_run_kw["preexec_fn"] = set_ulimit
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
@@ -333,11 +333,12 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
     options.jsengineWithArgs = [Path(args[1]).resolve()] + args[2:-1] + [Path(args[-1]).resolve()]
-    assert options.jsengineWithArgs[0].is_file()  # js shell
+    options.jsengine = options.jsengineWithArgs[0]  # options.jsengine is needed as it is present in compare_jit
+    assert options.jsengine.is_file()  # js shell
     assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
-        options.jsengineWithArgs[0], "more-deterministic")
+        options.jsengine, "more-deterministic")
 
     return options
 
