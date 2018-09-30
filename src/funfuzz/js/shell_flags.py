@@ -338,13 +338,12 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
+        # The following combination used to include --no-wasm but had too many false positives
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"]
     ]
     if shell_supports_flag(shell_path, "--ion-extra-checks"):
         basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",
                             "--ion-extra-checks", "--no-sse3"])
-    if shell_supports_flag(shell_path, "--no-wasm"):
-        basic_flags.append(["--fuzzing-safe", "--no-baseline", "--no-asmjs",
-                            "--no-wasm", "--no-native-regexp"])
     if shell_supports_flag(shell_path, "--nursery-strings=on"):
         basic_flags.append(["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager",
                             "--test-wasm-await-tier2", "--spectre-mitigations=on", "--nursery-strings=on"])
