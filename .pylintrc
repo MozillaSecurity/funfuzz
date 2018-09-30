@@ -11,6 +11,7 @@ max-line-length=120
 [MASTER]
 
 # Use multiple processes to speed up Pylint.
+# Note that sometimes the duplicate-code checker runs properly only when set to 1
 jobs=3
 
 # List of plugins (as comma separated values of python modules names) to load,
@@ -137,3 +138,8 @@ accept-no-return-doc=no
 # Whether to accept totally missing yields documentation in the docstring of a
 # generator.
 accept-no-yields-doc=no
+
+[SIMILARITIES]
+
+# Ignore imports when computing similarities.
+ignore-imports=yes
