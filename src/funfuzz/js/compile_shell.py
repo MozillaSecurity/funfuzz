@@ -294,7 +294,8 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             str: Name of the compiled js shell with the file extension
         """
-        return f'{self.shell_name_without_ext}{".exe" if platform.system() == "Windows" else ""}'
+        # pylint complains if this line uses an f-string with nested if-else, see https://git.io/fxfSo
+        return self.shell_name_without_ext + (".exe" if platform.system() == "Windows" else "")
 
     def get_shell_name_without_ext(self):
         """Retrieve the name of the compiled js shell without the file extension.
@@ -452,7 +453,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("--disable-debug")
 
     if shell.build_opts.enableOpt:
-        cfg_cmds.append(f'--enable-optimize{"=-O1" if shell.build_opts.buildWithVg else ""}')
+        # pylint complains if this line uses an f-string with nested if-else, see https://git.io/fxfSo
+        cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.buildWithVg else ""))
     elif shell.build_opts.disableOpt:
         cfg_cmds.append("--disable-optimize")
     if shell.build_opts.enableProfiling:  # Now obsolete, retained for backward compatibility
