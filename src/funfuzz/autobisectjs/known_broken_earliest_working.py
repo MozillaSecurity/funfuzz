@@ -20,7 +20,7 @@ def hgrange(first_bad, first_good):  # pylint: disable=missing-param-doc,missing
     # So this revset expression includes first_bad, but does not include first_good.
     # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set,
     # like we want"
-    return "(descendants(id(" + first_bad + "))-descendants(id(" + first_good + ")))"
+    return f"(descendants(id({first_bad}))-descendants(id({first_good})))"
 
 
 def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -159,8 +159,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("5e6e959f0043")  # m-c 223959 Fx38, 1st w/--enable-avx, see bug 1118235
     required.append("bcacb5692ad9")  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
 
-    return "first((" + common_descendants(required) + ") - (" + skip_revs + "))"
+    return f"first(({common_descendants(required)}) - ({skip_revs}))"
 
 
 def common_descendants(revs):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
-    return " and ".join("descendants(" + r + ")" for r in revs)
+    return " and ".join(f"descendants({r})" for r in revs)

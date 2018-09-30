@@ -145,7 +145,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
 
         # Construct command needed to loop jsfunfuzz fuzzing.
         js_interesting_args = []
-        js_interesting_args.append("--timeout=" + str(options.timeout))
+        js_interesting_args.append(f"--timeout={options.timeout}")
         if options.valgrind:
             js_interesting_args.append("--valgrind")
         js_interesting_args.append(str(options.knownPath))
@@ -153,12 +153,12 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
         if options.randomFlags:
             engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
-        js_interesting_args.extend(["-e", "maxRunTime=" + str(options.timeout * (1000 // 2))])
+        js_interesting_args.extend(["-e", f"maxRunTime={options.timeout * (1000 // 2)}"])
         js_interesting_args.extend(["-f", fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
-        logPrefix = wtmpDir / ("w" + str(iteration))  # pylint: disable=invalid-name
+        logPrefix = wtmpDir / f"w{iteration}"  # pylint: disable=invalid-name
 
         env = {}  # default environment will be used
         if ccoverage:
@@ -172,19 +172,19 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                                          js_interesting_options.jsengineWithArgs, logPrefix, False, env=env)
 
         if res.lev != js_interesting.JS_FINE:
-            out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+            out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
             showtail(out_log)
-            err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+            err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
             showtail(err_log)
 
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
-            reduced_log = (logPrefix.parent / (logPrefix.stem + "-reduced")).with_suffix(".js")
+            reduced_log = (logPrefix.parent / f"{logPrefix.stem}-reduced").with_suffix(".js")
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
             with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
-            orig_log = (logPrefix.parent / (logPrefix.stem + "-orig")).with_suffix(".js")
+            orig_log = (logPrefix.parent / f"{logPrefix.stem}-orig").with_suffix(".js")
             with io.open(str(orig_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
             with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
@@ -196,8 +196,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 itest = [interestingpy]
                 if options.valgrind:
                     itest.append("--valgrind")
-                itest.append("--minlevel=" + str(res.lev))
-                itest.append("--timeout=" + str(options.timeout))
+                itest.append(f"--minlevel={res.lev}")
+                itest.append(f"--timeout={options.timeout}")
                 itest.append(options.knownPath)
                 (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
                     itest, logPrefix, options.jsEngine, engineFlags, reduced_log, options.repo,
@@ -210,7 +210,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                     # pylint: disable=invalid-name
                     retestResult = js_interesting.ShellResult(js_interesting_options,
                                                               fargs,
-                                                              logPrefix.parent / (logPrefix.stem + "-final"),
+                                                              logPrefix.parent / f"{logPrefix.stem}-final",
                                                               False)
                     if retestResult.lev > js_interesting.JS_FINE:
                         res = retestResult
@@ -233,14 +233,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
             # pylint: disable=no-member
             if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
                     js_interesting_options.shellIsDeterministic and are_flags_deterministic:
-                out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+                out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
                 linesToCompare = jitCompareLines(out_log, "/*FCM*/")  # pylint: disable=invalid-name
-                jitcomparefilename = (logPrefix.parent / (logPrefix.stem + "-cj-in")).with_suffix(".js")
+                jitcomparefilename = (logPrefix.parent / f"{logPrefix.stem}-cj-in").with_suffix(".js")
                 with io.open(str(jitcomparefilename), "w", encoding="utf-8", errors="replace") as f:
                     f.writelines(linesToCompare)
                 if not ccoverage:
                     compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
-                                            logPrefix.parent / (logPrefix.stem + "-cj"), options.repo,
+                                            logPrefix.parent / f"{logPrefix.stem}-cj", options.repo,
                                             options.build_options_str, targetTime, js_interesting_options)
                 if jitcomparefilename.is_file():
                     jitcomparefilename.unlink()

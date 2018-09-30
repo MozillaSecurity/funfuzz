@@ -113,7 +113,7 @@ def constructVgCmdList(errorCode=77):  # pylint: disable=invalid-name,missing-pa
     valgrind_cmds.append("valgrind")
     if platform.system() == "Darwin":
         valgrind_cmds.append("--dsymutil=yes")
-    valgrind_cmds.append("--error-exitcode=" + str(errorCode))
+    valgrind_cmds.append(f"--error-exitcode={errorCode}")
     # See bug 913876 comment 18:
     valgrind_cmds.append("--vex-iropt-register-updates=allregs-at-mem-access")
     valgrind_cmds.append("--gen-suppressions=all")
@@ -141,14 +141,14 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
         # Since we want autobisectjs to support all shell versions, allow all these exit codes.
         return False
     else:
-        raise Exception("Unexpected exit code in shellSupports " + str(return_code))
+        raise Exception(f"Unexpected exit code in shellSupports {return_code}")
 
 
 def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylint: disable=invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
+    sps.vdump(f'The testing command is: {" ".join(quote(str(x)) for x in test_cmd)}')
     test_cmd_result = subprocess.run(
         test_cmd,
         cwd=os.getcwd(),
@@ -157,7 +157,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
         stdout=subprocess.PIPE,
         timeout=999)
     out, return_code = test_cmd_result.stdout.decode("utf-8", errors="replace"), test_cmd_result.returncode
-    sps.vdump("The exit code is: " + str(return_code))
+    sps.vdump(f"The exit code is: {return_code}")
     return out, return_code
 
 
@@ -171,7 +171,7 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     return json.loads(testBinary(s,
-                                 ["-e", 'print(getBuildConfiguration()["' + parameter + '"])'],
+                                 ["-e", f'print(getBuildConfiguration()["{parameter}"])'],
                                  False, stderr=subprocess.DEVNULL)[0].rstrip().lower())
 
 

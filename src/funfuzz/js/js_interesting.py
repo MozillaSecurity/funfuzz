@@ -99,23 +99,23 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
-        out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+        out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
         with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
             out = f.readlines()
-        err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+        err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
         with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)
-            valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
+            valgrindErrorPrefix = f"=={runinfo.pid}=="
             for line in err:
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
-                crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+                crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif file_manipulation.amiss(logPrefix):
@@ -134,7 +134,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Copy non-crash issues to where FuzzManager's "AssertionHelper" can see it.
         if lev != JS_FINE:
             for issue in issues:
-                err.append("[Non-crash bug] " + issue)
+                err.append(f"[Non-crash bug] {issue}")
 
         activated = False  # Turn on when trying to report *reliable* testcases that do not have a coredump
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
@@ -183,11 +183,11 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         print(f"{logPrefix} | {summaryString(issues, lev, runinfo.elapsedtime)}")
 
         if lev != JS_FINE:
-            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            summary_log = (logPrefix.parent / f"{logPrefix.stem}-summary").with_suffix(".txt")
             with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
-                f.writelines(["Number: " + str(logPrefix) + "\n",
-                              "Command: " + " ".join(quote(str(x)) for x in runthis) + "\n"] +
-                             ["Status: " + i + "\n" for i in issues])
+                f.writelines([f"Number: {logPrefix}\n",
+                              f'Command: {" ".join(quote(str(x)) for x in runthis)}\n'] +
+                             [f"Status: {i}\n" for i in issues])
 
         self.lev = lev
         self.out = out
@@ -246,7 +246,7 @@ def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-
 
 def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    amissDetails = "" if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
+    amissDetails = "" if (not issues) else f" | {issues[:5]!r} "  # pylint: disable=invalid-name
     return f"{elapsedtime:5.1f}s | {level} | {JS_LEVEL_NAMES[level]}{amissDetails}"
 
 
@@ -258,24 +258,24 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
 
 def valgrindSuppressions():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    return ["--suppressions=" + filename for filename in "valgrind_suppressions.txt"]
+    return [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"]
 
 
 def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
-    (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt").unlink()
-    (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt").unlink()
-    crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+    ((logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")).unlink()
+    ((logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")).unlink()
+    crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
     if crash_log.is_file():
         crash_log.unlink()
-    valgrind_xml = (logPrefix.parent / (logPrefix.stem + "-vg")).with_suffix(".xml")
+    valgrind_xml = (logPrefix.parent / f"{logPrefix.stem}-vg").with_suffix(".xml")
     if valgrind_xml.is_file():
         valgrind_xml.unlink()
     # pylint: disable=fixme
     # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
-    core_gzip = (logPrefix.parent / (logPrefix.stem + "-core")).with_suffix(".gz")
+    core_gzip = (logPrefix.parent / f"{logPrefix.stem}-core").with_suffix(".gz")
     if core_gzip.is_file():
         core_gzip.unlink()
 
@@ -348,8 +348,8 @@ def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)
-    out_log = (cwd_prefix.parent / (cwd_prefix.stem + "-out")).with_suffix(".txt")
-    err_log = (cwd_prefix.parent / (cwd_prefix.stem + "-err")).with_suffix(".txt")
+    out_log = (cwd_prefix.parent / f"{cwd_prefix.stem}-out").with_suffix(".txt")
+    err_log = (cwd_prefix.parent / f"{cwd_prefix.stem}-err").with_suffix(".txt")
     truncateFile(out_log, 1000000)
     truncateFile(err_log, 1000000)
     return res.lev >= gOptions.minimumInterestingLevel

@@ -30,7 +30,7 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
     ps = []  # pylint: disable=invalid-name
     for i in range(numProcesses):
         p = multiprocessing.Process(  # pylint: disable=invalid-name
-            target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
+            target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name=f"Parallel process {i}")
         p.start()
         ps.append(p)
 

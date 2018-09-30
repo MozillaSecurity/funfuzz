@@ -69,7 +69,7 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     for rtype in repo_types:
         if (r / rtype).is_dir():
             return rtype[1:]
-    raise Exception("Type of repository located at " + r + " cannot be determined.")
+    raise OSError(f"Type of repository located at {r} cannot be determined.")
 
 
 def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
@@ -100,7 +100,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
             gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
         time_cmd([GITBINARY, "pull"], cwd=str(repo), env=gitenv)
     else:
-        raise Exception("Unknown repository type: " + repo_type)
+        raise OSError(f"Unknown repository type: {repo_type}")
 
     return True
 

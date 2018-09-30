@@ -248,14 +248,14 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult.encode("utf-8")).hexdigest()[:12])
 
-    assert "" not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
+    assert "" not in fileName, f'fileName "{fileName!r}" should not have empty elements.'
     return "-".join(fileName)
 
 
 def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the shell type together with the build revision."""
-    return computeShellType(build_options) + "-" + buildRev
+    return f"{computeShellType(build_options)}-{buildRev}"
 
 
 def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc

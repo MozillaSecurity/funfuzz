@@ -51,7 +51,7 @@ def ensure_mq_enabled():
 def findCommonAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     return subprocess.run(
-        ["hg", "-R", str(repo_dir), "log", "-r", "ancestor(" + a + "," + b + ")", "--template={node|short}"],
+        ["hg", "-R", str(repo_dir), "log", "-r", f"ancestor({a},{b})", "--template={node|short}"],
         cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
@@ -63,7 +63,7 @@ def isAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-do
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return true iff |a| is an ancestor of |b|. Throw if |a| or |b| does not exist."""
     return subprocess.run(
-        ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
+        ["hg", "-R", str(repo_dir), "log", "-r", f"{a} and ancestor({a},{b})", "--template={node|short}"],
         cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
@@ -77,7 +77,7 @@ def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing
     # Note that if |a| is the same as |b|, it will return True
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
     out = subprocess.run(
-        ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
+        ["hg", "-R", str(repo_dir), "log", "-r", f"{a} and ancestor({a},{b})", "--template={node|short}"],
         cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
@@ -204,7 +204,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
     if qimport_return_code != 0:
         if "already exists" in qimport_output:
             print("A patch with the same name has already been qpush'ed. Please qremove it first.")
-        raise OSError("Return code from `hg qimport` is: " + str(qimport_return_code))
+        raise OSError(f"Return code from `hg qimport` is: {qimport_return_code}")
 
     print("Patch qimport'ed...", end=" ")
 
@@ -224,7 +224,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
         print(f"`hg status` output of the repository of interesting files in {repo_dir} :")
         subprocess.run(["hg", "-R", str(repo_dir), "status", "--modified", "--added",
                         "--removed", "--deleted"], check=True)
-        raise OSError("Return code from `hg qpush` is: " + str(qpush_return_code))
+        raise OSError(f"Return code from `hg qpush` is: {qpush_return_code}")
 
     print("Patch qpush'ed. Continuing...", end=" ")
     return pname
@@ -248,8 +248,8 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
         timeout=99)
     qpop_output, qpop_return_code = qpop_result.stdout.decode("utf-8", errors="replace"), qpop_result.returncode
     if qpop_return_code != 0:
-        print("`hg qpop` output is: " + qpop_output)
-        raise OSError("Return code from `hg qpop` is: " + str(qpop_return_code))
+        print(f"`hg qpop` output is: {qpop_output}")
+        raise OSError(f"Return code from `hg qpop` is: {qpop_return_code}")
 
     print("Patch qpop'ed...", end=" ")
     subprocess.run(["hg", "-R", str(repo_dir), "qdelete", patch_file.name], check=True)

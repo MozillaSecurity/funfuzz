@@ -65,7 +65,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
                 assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
 
                 cdb_cmd_list = []
-                cdb_cmd_list.append("$<" + str(dbggr_cmd_path))
+                cdb_cmd_list.append(f"$<{dbggr_cmd_path}")
 
                 # See bug 902706 about -g.
                 return [cdb_path, "-g", "-c", ";".join(cdb_cmd_list), "-z", str(dump_name)]
@@ -98,7 +98,7 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         # Core files will be generated if you do:
         #   mkdir -p /cores/
         #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
-        core_name = "/cores/core." + str(crashed_pid)
+        core_name = f"/cores/core.{crashed_pid}"
         core_name_path = Path(core_name)
     elif platform.system() == "Linux":
         is_pid_used = False
@@ -106,7 +106,7 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         if core_uses_pid_path.is_file():
             with io.open(str(core_uses_pid_path), "r", encoding="utf-8", errors="replace") as f:
                 is_pid_used = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
-        core_name = "core." + str(crashed_pid) if is_pid_used else "core"
+        core_name = f"core.{crashed_pid}" if is_pid_used else "core"
         core_name_path = Path.cwd() / core_name
         if not core_name_path.is_file():  # try the home dir
             core_name_path = Path.home() / core_name  # pylint: disable=redefined-variable-type
@@ -154,8 +154,8 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     progname = prog_full_path.name
 
     use_logfiles = isinstance(log_prefix, ("".__class__, u"".__class__, b"".__class__, Path))
-    crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
-    core_file = (log_prefix.parent / (log_prefix.stem + "-core"))
+    crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
+    core_file = log_prefix.parent / f"{log_prefix.stem}-core"
 
     if use_logfiles:
         if crash_log.is_file():
@@ -265,7 +265,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
                         # Copy, don't rename, because we might not have permissions
                         # (especially for the system rather than user crash log directory)
                         # Use copyfile, as we do not want to copy the permissions metadata over
-                        crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
+                        crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
                         shutil.copyfile(str(full_report_path), str(crash_log))
                         subprocess.run(["chmod", "og+r", str(crash_log)],
                                        cwd=os.getcwd(),

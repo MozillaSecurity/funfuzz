@@ -213,7 +213,7 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
 
 
 def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
-    tempDir = Path(tempfile.mkdtemp("loop" + str(i)))  # pylint: disable=invalid-name
+    tempDir = Path(tempfile.mkdtemp(f"loop{i}"))  # pylint: disable=invalid-name
     loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector, False)
 
 
@@ -222,7 +222,7 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []  # pylint: disable=invalid-name
     manyTimedRunArgs.append(f"--repo={options.build_options.repo_dir}")
-    manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
+    manyTimedRunArgs.append(f"--build={options.build_options.build_options_str}")
     if options.build_options.runWithVg:
         manyTimedRunArgs.append("--valgrind")
     if options.build_options.enableMoreDeterministic:

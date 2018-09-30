@@ -184,7 +184,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     realStartRepo = sRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.startRepo)[0]
     # pylint: disable=invalid-name
     realEndRepo = eRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.endRepo)[0]
-    sps.vdump("Bisecting in the range " + sRepo + ":" + eRepo)
+    sps.vdump(f"Bisecting in the range {sRepo}:{eRepo}")
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
@@ -290,9 +290,9 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
         if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
             return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
-            return "bad", "Specified-bad exit code " + str(exitCode)
+            return "bad", f"Specified-bad exit code {exitCode}"
         elif options.watchExitCode is None and 129 <= exitCode <= 159:
-            return "bad", "High exit code " + str(exitCode)
+            return "bad", f"High exit code {exitCode}"
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
@@ -302,7 +302,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
                 return "good", "Bad output, but not the specified one"
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
                 return "good", "Negative exit code, but not the specified one"
-            return "bad", "Negative exit code " + str(exitCode)
+            return "bad", f"Negative exit code {exitCode}"
         elif exitCode == 0:
             return "good", "Exit code 0"
         elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
@@ -312,10 +312,10 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
                                            stdoutStderr.find("Error: Invalid short option:") != -1):
             return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
-            return "good", "Acceptable exit code " + str(exitCode)
+            return "good", f"Acceptable exit code {exitCode}"
         elif options.watchExitCode is not None:
-            return "good", "Unknown exit code " + str(exitCode) + ", but not the specified one"
-        return "bad", "Unknown exit code " + str(exitCode)
+            return "good", f"Unknown exit code {exitCode}, but not the specified one"
+        return "bad", f"Unknown exit code {exitCode}"
     return inner
 
 
@@ -329,7 +329,7 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
         # pylint: disable=missing-return-type-doc
         # pylint: disable=invalid-name
         conditionArgs = conditionArgPrefix + [str(shellFilename)] + options.runtime_params
-        temp_dir = Path(tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash))
+        temp_dir = Path(tempfile.mkdtemp(prefix=f"abExtTestAndLabel-{hgHash}"))
         temp_prefix = temp_dir / "t"
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
@@ -419,7 +419,7 @@ def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-ret
         if line.find("<") != -1 and line.find("@") != -1 and line.find(">") != -1:
             line = " ".join(line.split(" ")[:-1])
         elif line.startswith("changeset:") and "mozilla-central" in str(repo):
-            line = "changeset:   https://hg.mozilla.org/mozilla-central/rev/" + line.split(":")[-1]
+            line = f'changeset:   https://hg.mozilla.org/mozilla-central/rev/{line.split(":")[-1]}'
         sanitizedMsgList.append(line)
     return "\n".join(sanitizedMsgList)
 
@@ -430,7 +430,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
     outputResult = subprocess.run(
-        hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev],
+        hgPrefix + ["bisect", "-U", f"--{hgLabel}", currRev],
         check=True,
         cwd=os.getcwd(),
         stdout=subprocess.PIPE,

@@ -58,7 +58,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-i"] + [str(x) for x in itest]
         )
         print(" ".join(quote(str(x)) for x in autobisectCmd))
-        autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
+        autobisect_log = (logPrefix.parent / f"{logPrefix.stem}-autobisect").with_suffix(".txt")
         with io.open(str(autobisect_log), "w", encoding="utf-8", errors="replace") as f:
             subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
         print(f"Done running autobisectjs. Log: {autobisect_log}")
@@ -83,13 +83,13 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
         # FIXME: this could be based on whether bot has a remoteHost  # pylint: disable=fixme
         # loop is being used by bot
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
-        lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
+        lithArgs = [f"--maxruntime={targetTime}", f"--tempdir={deletableLithTemp}"] + lithArgs
     else:
         # loop is being run standalone
-        lithtmp = logPrefix.parent / (logPrefix.stem + "-lith-tmp")
+        lithtmp = logPrefix.parent / f"{logPrefix.stem}-lith-tmp"
         Path.mkdir(lithtmp)
-        lithArgs = ["--tempdir=" + str(lithtmp)] + lithArgs
-    lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
+        lithArgs = [f"--tempdir={lithtmp}"] + lithArgs
+    lithlogfn = (logPrefix.parent / f"{logPrefix.stem}-lith-out").with_suffix(".txt")
     print(f"Preparing to run Lithium, log file {lithlogfn}")
     print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
     with io.open(str(lithlogfn), "w", encoding="utf-8", errors="replace") as f:
@@ -127,7 +127,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name
-    backup_file = (logPrefix.parent / (logPrefix.stem + "-backup"))
+    backup_file = logPrefix.parent / f"{logPrefix.stem}-backup"
 
     def lith_reduce(strategy):
         """Lithium reduction commands accepting various strategies.

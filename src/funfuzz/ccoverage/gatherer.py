@@ -30,7 +30,7 @@ def gather_coverage(dirpath):
         Path: Path to the coverage results file
     """
     RUN_COV_LOG.info("Coverage build is being run in the following directory: %s", str(dirpath))
-    bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
+    bin_name = f'js{".exe" if platform.system() == "Windows" else ""}'
     cov_build_bin_path = dirpath / "cov-build" / "dist" / "bin" / bin_name
     assert cov_build_bin_path.is_file()
     loop_args = ["--compare-jit", "--random-flags",

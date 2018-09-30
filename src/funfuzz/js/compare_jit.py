@@ -62,20 +62,20 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
     # pylint: disable=too-many-locals
     # If Lithium uses this as an interestingness test, logPrefix is likely not a Path object, so make it one.
     logPrefix = Path(logPrefix)
-    initialdir_name = (logPrefix.parent / (logPrefix.stem + "-initial"))
+    initialdir_name = logPrefix.parent / f"{logPrefix.stem}-initial"
     is_quick_mode = random() < 0.5
     # pylint: disable=invalid-name
     cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, is_quick_mode)
     lev = cl[0]
 
     if lev != js_interesting.JS_FINE:
-        itest = [__name__, "--flags=" + " ".join(flags),
-                 "--minlevel=" + str(lev), "--timeout=" + str(options.timeout), options.knownPath]
+        itest = [__name__, f'--flags={" ".join(flags)}',
+                 f"--minlevel={lev}", f"--timeout={options.timeout}", options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
             itest, logPrefix, jsEngine, [], infilename, repo, build_options_str, targetTime, lev)
         if lithResult == lithium_helpers.LITH_FINISHED:
             print(f"Retesting {infilename} after running Lithium:")
-            finaldir_name = (logPrefix.parent / (logPrefix.stem + "-final"))
+            finaldir_name = logPrefix.parent / f"{logPrefix.stem}-final"
             retest_cl = compareLevel(jsEngine, flags, infilename, finaldir_name, options, True, False)
             if retest_cl[0] != js_interesting.JS_FINE:
                 cl = retest_cl
@@ -139,7 +139,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                                                                 r.lev,
                                                                 r.runinfo.elapsedtime)
             print(f"{infilename} | {summary_more_serious}")
-            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            summary_log = (logPrefix.parent / f"{logPrefix.stem}-summary").with_suffix(".txt")
             with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
                 f.write("\n".join(r.issues + [" ".join(quote(str(x)) for x in command),
                                               "compare_jit found a more serious bug"]) + "\n")
@@ -187,17 +187,21 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # pylint: disable=invalid-name
                 rerunCommand = " ".join(quote(str(x)) for x in [
                     "python3 -m funfuzz.js.compare_jit",
-                    "--flags=" + " ".join(flags),
-                    "--timeout=" + str(options.timeout),
+                    f'--flags={" ".join(flags)}',
+                    f"--timeout={options.timeout}",
                     str(options.knownPath),
                     str(jsEngine),
                     str(infilename.name)])
                 (summary, issues) = summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix)
-                summary = ("  " + " ".join(quote(str(x)) for x in commands[0]) + "\n  " +
-                           " ".join(quote(str(x)) for x in command) + "\n\n" + summary)
-                summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+                summary = (
+                    f'  {" ".join(quote(str(x)) for x in commands[0])}\n'
+                    f'  {" ".join(quote(str(x)) for x in command)}\n'
+                    f"\n"
+                    f"{summary}"
+                )
+                summary_log = (logPrefix.parent / f"{logPrefix.stem}-summary").with_suffix(".txt")
                 with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
-                    f.write(rerunCommand + "\n\n" + summary)
+                    f.write(f"{rerunCommand}\n\n{summary}")
                 summary_overall_mismatch = js_interesting.summaryString(
                     issues, js_interesting.JS_OVERALL_MISMATCH, r.runinfo.elapsedtime)
                 print(f"{infilename} | {summary_overall_mismatch}")
@@ -227,14 +231,14 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix1):
     if mismatchErr:
         issues.append("[Non-crash bug] Mismatch on stderr")
         summary += "[Non-crash bug] Mismatch on stderr\n"
-        err0_log = (prefix0.parent / (prefix0.stem + "-err")).with_suffix(".txt")
-        err1_log = (prefix1.parent / (prefix1.stem + "-err")).with_suffix(".txt")
+        err0_log = (prefix0.parent / f"{prefix0.stem}-err").with_suffix(".txt")
+        err1_log = (prefix1.parent / f"{prefix1.stem}-err").with_suffix(".txt")
         summary += diffFiles(err0_log, err1_log)
     if mismatchOut:
         issues.append("[Non-crash bug] Mismatch on stdout")
         summary += "[Non-crash bug] Mismatch on stdout\n"
-        out0_log = (prefix0.parent / (prefix0.stem + "-out")).with_suffix(".txt")
-        out1_log = (prefix1.parent / (prefix1.stem + "-out")).with_suffix(".txt")
+        out0_log = (prefix0.parent / f"{prefix0.stem}-out").with_suffix(".txt")
+        out1_log = (prefix1.parent / f"{prefix1.stem}-out").with_suffix(".txt")
         summary += diffFiles(out0_log, out1_log)
     return summary, issues
 
@@ -242,15 +246,15 @@ def summarizeMismatch(mismatchErr, mismatchOut, prefix0, prefix1):
 def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Return a command to diff two files, along with the diff output (if it's short)."""
     diffcmd = ["diff", "-u", str(f1), str(f2)]
-    s = " ".join(diffcmd) + "\n\n"  # pylint: disable=invalid-name
+    s = f'{" ".join(diffcmd)}\n\n'  # pylint: disable=invalid-name
     diff = subprocess.run(diffcmd,
                           cwd=os.getcwd(),
                           stdout=subprocess.PIPE,
                           timeout=99).stdout.decode("utf-8", errors="replace")
     if len(diff) < 10000:
-        s += diff + "\n\n"  # pylint: disable=invalid-name
+        s += f"{diff}\n\n"  # pylint: disable=invalid-name
     else:
-        s += diff[:10000] + "\n(truncated after 10000 bytes)... \n\n"  # pylint: disable=invalid-name
+        s += f"{diff[:10000]}\n(truncated after 10000 bytes)... \n\n"  # pylint: disable=invalid-name
     return s
 
 

@@ -48,7 +48,7 @@ def interesting(cli_args, temp_prefix):
     if runinfo.sta == timed_run.CRASHED:
         os_ops.grab_crash_log(args.cmd_with_flags[0], runinfo.pid, temp_prefix, True)
 
-    crash_log = Path(temp_prefix + "-crash.txt")
+    crash_log = Path(f"{temp_prefix}-crash.txt")
     time_str = f" ({runinfo.elapsedtime:.3f} seconds)"
 
     if runinfo.sta == timed_run.CRASHED:

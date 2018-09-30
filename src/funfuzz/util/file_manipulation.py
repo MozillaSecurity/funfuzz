@@ -15,7 +15,7 @@ def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,m
     which are signs of malloc being unhappy (double free, out-of-memory, etc).
     """
     found_something = False
-    err_log = (log_prefix.parent / (log_prefix.stem + "-err")).with_suffix(".txt")
+    err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
     with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
             line = line.strip("\x07").rstrip("\n")
