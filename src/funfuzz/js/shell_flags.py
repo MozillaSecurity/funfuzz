@@ -74,7 +74,7 @@ def add_random_arch_flags(shell_path, input_list=False):
     # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
 
     if chance(.2):  # m-c rev 154600:526ba3ace37a, see bug 935791
-        input_list.append("--no-sse" + ("3" if chance(.5) else "4"))
+        input_list.append(f'--no-sse{"3" if chance(.5) else "4"}')
 
     return input_list
 
@@ -93,16 +93,16 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     """
     if shell_supports_flag(shell_path, "--cache-ir-stubs=on") and chance(.2):
         # m-c rev 308931:1c5b92144e1e, see bug 1292659
-        input_list.append("--cache-ir-stubs=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--cache-ir-stubs={"on" if chance(.1) else "off"}')
     if shell_supports_flag(shell_path, "--ion-pgo=on") and chance(.2):
         # m-c rev 272274:b0a0ff5fa705, see bug 1209515
-        input_list.append("--ion-pgo=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-pgo={"on" if chance(.1) else "off"}')
     if shell_supports_flag(shell_path, "--ion-sincos=on") and chance(.2):
         # m-c rev 262544:3dec2b935295, see bug 984018
-        input_list.append("--ion-sincos=" + ("on" if chance(.5) else "off"))
+        input_list.append(f'--ion-sincos={"on" if chance(.5) else "off"}')
     if shell_supports_flag(shell_path, "--ion-instruction-reordering=on") and chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
-        input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
+        input_list.append(f'--ion-instruction-reordering={"on" if chance(.9) else "off"}')
     if shell_supports_flag(shell_path, "--ion-regalloc=testbed") and chance(.2):
         # m-c rev 248962:47e92bae09fd, see bug 1170840
         input_list.append("--ion-regalloc=testbed")
@@ -121,35 +121,35 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
 
     # --ion-sink=on is still not ready to be fuzzed
     # if chance(.2):  # m-c rev 217242:9188c8b7962b, see bug 1093674
-    #     input_list.append("--ion-sink=" + ("on" if chance(.1) else "off"))
+    #     input_list.append(f'--ion-sink={"on" if chance(.1) else "off"}'')
     if chance(.2):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         input_list.append("--ion-warmup-threshold=100")
     if chance(.2):  # m-c rev 198804:aa33f4725177, see bug 1039458
-        input_list.append("--ion-loop-unrolling=" + ("on" if chance(.9) else "off"))
+        input_list.append(f'--ion-loop-unrolling={"on" if chance(.9) else "off"}')
     if chance(.2):  # m-c rev 194672:b2a822934b97, see bug 992845
-        input_list.append("--ion-scalar-replacement=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-scalar-replacement={"on" if chance(.1) else "off"}')
     if chance(.2):  # m-c rev 142933:f08e4a699011, see bug 894813
         input_list.append("--ion-check-range-analysis")
     # The stupid allocator isn't used by default and devs prefer not to have to fix fuzzbugs
     # if chance(.2):  # m-c rev 114120:7e97c5392d81, see bug 812945
         # input_list.append("--ion-regalloc=stupid")
     if chance(.2):  # m-c rev 106493:6688ede89a36, see bug 699883
-        input_list.append("--ion-range-analysis=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-range-analysis={"on" if chance(.1) else "off"}')
     if chance(.2):  # m-c rev 106491:6c870a497ea4, see bug 699883
-        input_list.append("--ion-edgecase-analysis=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-edgecase-analysis={"on" if chance(.1) else "off"}')
     if chance(.2):  # m-c rev 106247:feac7727629c, see bug 755010
-        input_list.append("--ion-limit-script-size=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-limit-script-size={"on" if chance(.1) else "off"}')
     if chance(.2):  # m-c rev 105351:9fb668f0baca, see bug 700108
-        input_list.append("--ion-osr=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-osr={"on" if chance(.1) else "off"}')
     if chance(.2):  # m-c rev 105338:01ebfabf29e2, see bug 687901
-        input_list.append("--ion-inlining=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-inlining={"on" if chance(.1) else "off"}')
     if chance(.7):  # m-c rev 105173:4ceb3e9961e4, see bug 683039
         input_list.append("--ion-eager")
     if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
-        input_list.append("--ion-gvn=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-gvn={"on" if chance(.1) else "off"}')
     if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
-        input_list.append("--ion-licm=" + ("on" if chance(.1) else "off"))
+        input_list.append(f'--ion-licm={"on" if chance(.1) else "off"}')
 
     return input_list
 
@@ -219,18 +219,18 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
     # Other flags
     if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.2):
         # m-c rev 406115:321c29f48508, see bug 903519
-        args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
+        args.append(f'--nursery-strings={"on" if chance(.1) else "off"}')
 
     if shell_supports_flag(shell_path, "--spectre-mitigations=on") and chance(.2):
         # m-c rev 399868:a98f615965d7, see bug 1430053
-        args.append("--spectre-mitigations=" + ("on" if chance(.9) else "off"))
+        args.append(f'--spectre-mitigations={"on" if chance(.9) else "off"}')
 
     # m-c rev 380023:1b55231e6628, see bug 1206770
     if shell_supports_flag(shell_path, "--cpu-count=1"):
         if shell_supports_flag(shell_path, "--ion-offthread-compile=on") and chance(.7):
             # Focus on the reproducible cases
             # m-c rev 188900:9ab3b097f304, see bug 1020364
-            args.append("--ion-offthread-compile=" + ("on" if chance(.1) else "off"))
+            args.append(f'--ion-offthread-compile={"on" if chance(.1) else "off"}')
         elif (chance(.5) and multiprocessing.cpu_count() > 1 and
               shell_supports_flag(shell_path, "--cpu-count=1")):
             # Adjusts default number of threads for offthread compilation (turned on by default)
