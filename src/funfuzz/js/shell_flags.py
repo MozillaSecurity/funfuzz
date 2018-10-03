@@ -339,7 +339,7 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
         # The following combination used to include --no-wasm but had too many false positives
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"]
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
     ]
     if shell_supports_flag(shell_path, "--ion-extra-checks"):
         basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",
