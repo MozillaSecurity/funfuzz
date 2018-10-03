@@ -38,7 +38,7 @@ def ensure_mq_enabled():
     user_hgrc = Path.home() / ".hgrc"
     assert user_hgrc.is_file()  # pylint: disable=no-member
 
-    user_hgrc_cfg = configparser.SafeConfigParser()
+    user_hgrc_cfg = configparser.ConfigParser()
     user_hgrc_cfg.read(str(user_hgrc))
 
     try:
@@ -169,7 +169,7 @@ def hgrc_repo_name(repo_dir):
     Returns:
         str: Returns the name of the Mercurial repository as indicated in the .hgrc
     """
-    hgrc_cfg = configparser.SafeConfigParser()
+    hgrc_cfg = configparser.ConfigParser()
     hgrc_cfg.read(str(repo_dir / ".hg" / "hgrc"))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgrc_cfg.get("paths", "default").split("/") if i][-1]

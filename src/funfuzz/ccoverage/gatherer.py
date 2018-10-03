@@ -41,7 +41,7 @@ def gather_coverage(dirpath):
     many_timed_runs(cov_timeout, dirpath, loop_args, create_collector.make_collector(), True)
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
 
-    fm_conf = configparser.SafeConfigParser()
+    fm_conf = configparser.ConfigParser()
     fm_conf.read(str(dirpath / "cov-build" / "dist" / "bin" / "js.fuzzmanagerconf"))
     RUN_COV_LOG.info("Generating grcov data...")
     cov_output = subprocess.run([str(dirpath / "grcov-bin" / "grcov"), str(dirpath),
