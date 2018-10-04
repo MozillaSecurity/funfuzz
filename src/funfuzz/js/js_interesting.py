@@ -73,7 +73,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if options.valgrind:
             runthis = (
                 inspect_shell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
-                valgrindSuppressions() +
+                [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"] +
                 runthis)
 
         timed_run_kw = {"env": (env or os.environ)}
@@ -254,11 +254,6 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
     if fn.is_file() and fn.stat().st_size > maxSize:
         with io.open(str(fn), "r+", encoding="utf-8", errors="replace") as f:
             f.truncate(maxSize)
-
-
-def valgrindSuppressions():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
-    return [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"]
 
 
 def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
