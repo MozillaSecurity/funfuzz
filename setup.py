@@ -9,9 +9,6 @@
 from setuptools import setup
 
 EXTRAS = {
-    ':python_version=="2.7"': [
-        "mercurial>=4.6.2",
-    ],
     "test": [
         "codecov==2.0.15",
         "coverage==4.5.1",
@@ -52,6 +49,8 @@ if __name__ == "__main__":
           package_dir={"": "src"},
           install_requires=[
               "boto>=2.48.0",
+              # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
+              # "mercurial>=4.7.2",  # Mercurial does not support Python 3 yet
               "requests>=2.18.4",
           ],
           extras_require=EXTRAS,
