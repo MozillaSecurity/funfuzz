@@ -66,7 +66,9 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("sourceIsLazy") == -1                 // see bug 1286407
        && code.indexOf("getAllocationMetadata") == -1        // see bug 1296243
        && code.indexOf(".length") == -1                      // bug 1027846
+       /* eslint-disable no-control-regex */
        && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
+       /* eslint-enable no-control-regex */
 
   };
 }
