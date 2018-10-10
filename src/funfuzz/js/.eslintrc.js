@@ -29,7 +29,7 @@ module.exports = {
     "one-var": ["error", "never"],
     // jsfunfuzz has mostly been written in the current style for a long time, may help line-based reducer Lithium too
     "operator-linebreak": "off",
-    "quotes": ["error", "double"],
+    "quotes": ["error", "double", {"avoidEscape": true}],
     "semi": ["error", "always"],
     // jsfunfuzz has mostly been written in the current style for a long time
     "space-before-function-paren": ["error", "never"],
