@@ -59,8 +59,8 @@ function useSpidermonkeyShellSandbox(sandboxType)
 
   switch (sandboxType) {
     /* eslint-disable no-multi-spaces */
-    case 0:  primarySandbox = evalcx('');
-    case 1:  primarySandbox = evalcx('lazy');
+    case 0:  primarySandbox = evalcx("");
+    case 1:  primarySandbox = evalcx("lazy");
     case 2:  primarySandbox = newGlobal({sameCompartmentAs: {}});
     case 3:  primarySandbox = newGlobal({sameZoneAs: {}}); // same zone
     default: primarySandbox = newGlobal(); // new zone

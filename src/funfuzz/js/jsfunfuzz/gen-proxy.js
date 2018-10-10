@@ -87,7 +87,7 @@ function makeProxyHandlerFactory(d, b)
 
     if (rnd(2)) {
       // handlerFactory has an argument 'x'
-      bp = b.concat(['x']);
+      bp = b.concat(["x"]);
     } else {
       // handlerFactory has no argument
       handlerFactoryText = handlerFactoryText.replace(/x/, "");

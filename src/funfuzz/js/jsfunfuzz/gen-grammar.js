@@ -2117,7 +2117,7 @@ function makeAsmJSModule(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior([]);
-  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + ' })';
+  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + " })";
 }
 
 function makeAsmJSFunction(d, b)
@@ -2125,5 +2125,5 @@ function makeAsmJSFunction(d, b)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior(["ff"]);
-  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + ' })(this, {ff: ' + makeFunction(d - 2, b) + '}, new ' + arrayBufferType() + '(4096))';
+  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + " })(this, {ff: " + makeFunction(d - 2, b) + "}, new " + arrayBufferType() + "(4096))";
 }

@@ -79,7 +79,7 @@ function tryEnsureSanity()
   }
 
   try {
-    if ('__defineSetter__' in this) {
+    if ("__defineSetter__" in this) {
       // The only way to get rid of getters/setters is to delete the property.
       if (!jsStrictMode)
         delete this.eval;
