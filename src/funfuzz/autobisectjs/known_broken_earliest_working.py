@@ -108,6 +108,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if "--enable-streams" in flags:
+        required.append("b8c1b5582913")  # m-c 440275 Fx64, 1st w/ working --enable-streams, see bug 1445854
     if "--wasm-gc" in flags:
         required.append("302befe7689a")  # m-c 413255 Fx61, 1st w/--wasm-gc, see bug 1445272
     if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
@@ -126,8 +128,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("158b333a0a89")  # m-c 375650 Fx57, 1st w/--no-wasm-ion, see bug 1277562
     if "--no-wasm-baseline" in flags:
         required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, see bug 1277562
-    if "--enable-streams" in flags:
-        required.append("64bbc26920aa")  # m-c 371894 Fx56, 1st w/--enable-streams, see bug 1272697
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.

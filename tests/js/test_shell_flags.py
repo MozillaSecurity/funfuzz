@@ -116,7 +116,7 @@ class ShellFlagsTests(CompileShellTests):
         assert "--nursery-strings=on" in all_flags
         assert "--spectre-mitigations=on" in all_flags
         assert "--ion-offthread-compile=on" in all_flags
-        # assert "--enable-streams" in all_flags
+        assert "--enable-streams" in all_flags
         assert "--no-unboxed-objects" in all_flags
         assert "--no-cgc" in all_flags
         assert "--gc-zeal=4,999" in all_flags
