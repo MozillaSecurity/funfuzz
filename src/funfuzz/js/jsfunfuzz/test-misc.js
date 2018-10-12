@@ -58,7 +58,9 @@ function tryHalves(code)
 
   // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)
 
-  var f, firstHalf, secondHalf;
+  var f;
+  var firstHalf;
+  var secondHalf;
 
   try {
 

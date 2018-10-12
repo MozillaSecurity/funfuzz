@@ -284,7 +284,8 @@ function regexCharacterClass()
     re += "^";
   }
 
-  var lo, hi;
+  var lo;
+  var hi;
 
   for (var i = 0; i < ranges; ++i) {
     if (rnd(100) == 0) {

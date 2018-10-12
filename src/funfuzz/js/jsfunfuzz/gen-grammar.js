@@ -239,9 +239,9 @@ var statementMakers = Random.weighted([
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
   // The last form is specific to JavaScript 1.7 (only).
-  { w: 1, v: function(d, b) {                                               return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function(d, b) { var v = makeNewId(d, b);                      return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  { w: 1, v: function(d, b) { var v = makeNewId(d, b), w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
+  { w: 1, v: function(d, b) {                                                   return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeId(d, b),         " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b);                          return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                    " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function(d, b) { var v = makeNewId(d, b); var w = makeNewId(d, b); return cat([maybeLabel(), "for", "(", Random.index(varBinderFor), "[", v, ", ", w, "]", " = ", makeExpr(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v, w]))]); } },
   /* eslint-enable no-multi-spaces */
 
   // do..while
@@ -494,8 +494,8 @@ function maybeLabel()
 function uniqueVarName()
 {
   // Make a random variable name.
-  var i, s = "";
-  for (i = 0; i < 6; ++i)
+  var s = "";
+  for (var i = 0; i < 6; ++i)
     s += String.fromCharCode(97 + rnd(26)); // a lowercase english letter
   return s;
 }
