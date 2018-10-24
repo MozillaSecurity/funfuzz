@@ -20,7 +20,7 @@ EXTRAS = {
     "test": [
         "codecov==2.0.15",
         "coverage==4.5.1",
-        "flake8==3.5.0",
+        "flake8==3.6.0",
         "flake8-commas==2.0.0",
         "flake8-isort==2.5",
         "flake8-quotes==1.0.0",
