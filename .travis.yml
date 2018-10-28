@@ -311,7 +311,7 @@ install:
   - python3 --version
   - pypy3 --version || true  # Ignore exit code if pypy3 does not exist
   - python -m flake8 --version
-  - python -m pylint --version || true  # Ignore exit code in case it fails on Python nightly
+  - python -m pylint --version
 before_script:
   # To run everything locally in local funfuzz github repository directory:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
