@@ -224,6 +224,10 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--no-streams") and chance(.2):
+        # m-c rev 442977:c6a8b4d451af, see bug 1501734
+        args.append("--no-streams")
+
     if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.2):
         # m-c rev 406115:321c29f48508, see bug 903519
         args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
