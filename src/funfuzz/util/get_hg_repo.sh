@@ -48,7 +48,7 @@ default = https://hg.mozilla.org$1$2
 EOF
 echo "Updating to default tip gets included below as well..."
 date
-hg -R "$3"/"$2" pull --rebase
+hg -R "$3"/"$2" pull -u
 date
 rm "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)"
 popd
