@@ -46,16 +46,9 @@ else
         | wget -i - -o "$3"/"$2"_download_log.txt
 fi
 date
-echo "Extracting the bundle filename minus the front and back single quotes..."
-if [ -x "$(command -v aria2c)" ]; then
-    grep "Download complete" "$3"/"$2"_download_log.txt \
-        | awk -F"/" '{print $NF}' 2>&1 \
-        | tee "$3"/"$2"_bundle_filename.txt
-else
-    awk 'NR==6{print substr($3, 2, length($3)-2)}' \
-        "$3"/"$2"_download_log.txt 2>&1 \
-        | tee "$3"/"$2"_bundle_filename.txt
-fi
+echo "Extracting the bundle filename, which is:"
+awk -F"/" 'NR==1{print $NF}' "$3"/"$2"_url_raw.txt 2>&1 \
+    | tee "$3"/"$2"_bundle_filename.txt
 echo "Extracting the bundle into $3/$2..."
 hg init "$3"/"$2"
 pushd "$3"/"$2"
