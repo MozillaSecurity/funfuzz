@@ -52,5 +52,7 @@ hg -R "$3"/"$2" pull -u
 date
 rm "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)"
 popd
-popd
+# The script may or may not have permissions to return to the original directory,
+# esp when this script is run as a different user, hence the "|| true"
+popd || true
 echo "Finished retrieving the $2 repository."
