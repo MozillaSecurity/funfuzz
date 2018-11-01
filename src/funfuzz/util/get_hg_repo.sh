@@ -16,8 +16,13 @@ mkdir -p "$3"
 pushd "$3"
 date
 # The clone process hangs quite so often, but less when downloaded standalone
-timeout 2 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" \
-    > "$3"/"$2"_url_raw.txt 2>&1
+if [ ! -d "$3"/"$2" ]; then
+    timeout 2 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" \
+        > "$3"/"$2"_url_raw.txt 2>&1
+else
+    echo "$3/$2 currently exists, which it shouldn't. Exiting..."
+    exit 1
+fi
 date
 echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
