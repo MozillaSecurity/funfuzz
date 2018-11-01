@@ -23,7 +23,12 @@ echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
     echo "aria2c found, using it..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
+        | timeout 90 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
+    echo "Running aria2c a second time just to be sure..."
+    # If the first run had stalled, the second run here completes it
+    # If it did not, the second gets a 2nd (may be partial) that we do not use
+    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
+        | timeout 30 aria2c -x5 -l "$3"/"$2"_download_log_2.txt -i -
 else
     echo "aria2c not found, using wget instead..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
