@@ -68,6 +68,7 @@ date
 rm "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)"
 rm -f "$3"/*.packed1.1.hg*  # Potential 2nd copy, last * deletes *.aria2 too
 rm -f "$3"/*.packed1.2.hg*  # Potential 3rd copy, last * deletes *.aria2 too
+rm -f /home/ubuntu/trees/mozilla-central_*.txt  # Remove all log files
 popd
 # The script may or may not have permissions to return to the original directory,
 # esp when this script is run as a different user, hence the "|| true"
