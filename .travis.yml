@@ -335,7 +335,7 @@ before_script:
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
   - mkdir -p $HOME/trees/
-  - chown ubuntu:ubuntu $HOME/trees/
+  - chown $USER:$USER $HOME/trees/
   - pushd $HOME/trees/
   # Use get_hg_repo.sh to clone instead
   - wget -O- https://git.io/fxN6S | sudo -u $USER bash -s -- / mozilla-central $HOME/trees
