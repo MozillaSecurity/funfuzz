@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -ex
 
 # This script downloads a bundle from Mozilla's Mercurial repositories and extracts them.
 #
