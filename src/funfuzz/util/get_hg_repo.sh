@@ -16,23 +16,29 @@ mkdir -p "$3"
 pushd "$3"
 date
 # The clone process hangs somewhat frequently, but not when downloaded standalone
-timeout 2 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" > "$3"/"$2"_url_raw.txt 2>&1
+timeout 2 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" \
+    > "$3"/"$2"_url_raw.txt 2>&1
 date
 echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
     echo "aria2c found, using it..."
-    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt | aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
+    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
+        | aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
 else
     echo "aria2c not found, using wget instead..."
-    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt | wget -i - -o "$3"/"$2"_download_log.txt
+    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
+        | wget -i - -o "$3"/"$2"_download_log.txt
 fi
 date
 echo "Extracting the bundle filename minus the front and back single quotes..."
 if [ -x "$(command -v aria2c)" ]; then
-    grep "Download complete" "$3"/"$2"_download_log.txt | awk -F"/" '{print $NF}' 2>&1 \
+    grep "Download complete" "$3"/"$2"_download_log.txt \
+        | awk -F"/" '{print $NF}' 2>&1 \
         | tee "$3"/"$2"_bundle_filename.txt
 else
-    awk 'NR==6{print substr($3, 2, length($3)-2)}' "$3"/"$2"_download_log.txt 2>&1 | tee "$3"/"$2"_bundle_filename.txt
+    awk 'NR==6{print substr($3, 2, length($3)-2)}' \
+        "$3"/"$2"_download_log.txt 2>&1 \
+        | tee "$3"/"$2"_bundle_filename.txt
 fi
 echo "Extracting the bundle into $3/$2..."
 hg init "$3"/"$2"
