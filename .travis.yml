@@ -327,7 +327,7 @@ before_script:
   - mkdir -p $HOME/trees/
   - pushd $HOME/trees/
   # Use get_hg_repo.sh to clone instead
-  - wget -O- https://git.io/fxN6S | sudo -u ubuntu bash -s -- / mozilla-central $HOME/trees
+  - wget -O- https://git.io/fxN6S | bash -s -- / mozilla-central $HOME/trees
   - popd
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
