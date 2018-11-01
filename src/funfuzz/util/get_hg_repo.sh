@@ -28,12 +28,16 @@ echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
     echo "aria2c found, using it..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | timeout 90 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
+        | timeout 40 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
     echo "Running aria2c a second time just to be sure..."
     # If the first run had stalled, the second run here completes it
     # If it did not, the second gets a 2nd (may be partial) that we do not use
+    # Remember to remove this potentially duped copy at the end of this script
+    # esp. if we run this yet another time (and get another potential copy)
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | timeout 30 aria2c -x5 -l "$3"/"$2"_download_log_2.txt -i -
+        | timeout 20 aria2c -x5 -l "$3"/"$2"_download_log_2.txt -i -
+    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
+        | timeout 10 aria2c -x5 -l "$3"/"$2"_download_log_3.txt -i -
 else
     echo "aria2c not found, using wget instead..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
@@ -67,6 +71,8 @@ date
 hg -R "$3"/"$2" pull -u
 date
 rm "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)"
+rm -f "$3"/*.packed1.1.hg*  # Potential 2nd copy, last * deletes *.aria2 too
+rm -f "$3"/*.packed1.2.hg*  # Potential 3rd copy, last * deletes *.aria2 too
 popd
 # The script may or may not have permissions to return to the original directory,
 # esp when this script is run as a different user, hence the "|| true"
