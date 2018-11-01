@@ -17,7 +17,7 @@ pushd "$3"
 date
 # The clone process hangs quite so often, but less when downloaded standalone
 if [ ! -d "$3"/"$2" ]; then
-    timeout 2 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" \
+    timeout 10 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" \
         > "$3"/"$2"_url_raw.txt 2>&1
     # Ensure that the cloning process did not create any repo directories
     rm -rf "$3"/"$2"
