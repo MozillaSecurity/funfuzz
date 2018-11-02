@@ -34,16 +34,13 @@ echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
     echo "aria2c found, using it..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | timeout 40 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
-    echo "Running aria2c a second time just to be sure..."
+        | timeout 4 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
     # If the first run had stalled, the second run here completes it
-    # If it did not, the second gets a 2nd (may be partial) that we do not use
-    # Remember to remove this potentially duped copy at the end of this script
-    # esp. if we run this yet another time (and get another potential copy)
-    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | timeout 20 aria2c -x5 -l "$3"/"$2"_download_log_2.txt -i -
-    awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | timeout 10 aria2c -x5 -l "$3"/"$2"_download_log_3.txt -i -
+    if [ -f "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)".aria2 ]; then
+        echo "Running aria2c a second time as the first did not complete..."
+        awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
+            | aria2c -x5 -l "$3"/"$2"_download_log_2.txt -i -
+    fi
 else
     echo "aria2c not found, using wget instead..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
@@ -68,7 +65,6 @@ hg -R "$3"/"$2" pull -u
 date
 rm "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)"
 rm -f "$3"/*.packed1.1.hg*  # Potential 2nd copy, last * deletes *.aria2 too
-rm -f "$3"/*.packed1.2.hg*  # Potential 3rd copy, last * deletes *.aria2 too
 rm -f /home/ubuntu/trees/mozilla-central_*.txt  # Remove all log files
 popd
 # The script may or may not have permissions to return to the original directory,
