@@ -26,6 +26,10 @@ else
     exit 1
 fi
 date
+echo "Extracting the bundle filename, which is:"
+awk -F"/" 'NR==1{print $NF}' "$3"/"$2"_url_raw.txt 2>&1 \
+    | tee "$3"/"$2"_bundle_filename.txt
+date
 echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
     echo "aria2c found, using it..."
@@ -46,9 +50,6 @@ else
         | wget -i - -o "$3"/"$2"_download_log.txt
 fi
 date
-echo "Extracting the bundle filename, which is:"
-awk -F"/" 'NR==1{print $NF}' "$3"/"$2"_url_raw.txt 2>&1 \
-    | tee "$3"/"$2"_bundle_filename.txt
 echo "Extracting the bundle into $3/$2..."
 hg init "$3"/"$2"
 pushd "$3"/"$2"
