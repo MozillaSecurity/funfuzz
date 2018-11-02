@@ -20,7 +20,7 @@ if [ ! -d "$3"/"$2" ]; then
     timeout 10 hg clone --stream https://hg.mozilla.org"$1""$2" "$3"/"$2" \
         > "$3"/"$2"_url_raw.txt 2>&1
     # Ensure that the cloning process did not create any repo directories
-    rm -rf "$3"/"$2"
+    rm -rf "${3:?}"/"$2"
 else
     echo "$3/$2 currently exists, which it shouldn't. Exiting..."
     exit 1
