@@ -34,7 +34,7 @@ echo "Downloading the $2 bundle..."
 if [ -x "$(command -v aria2c)" ]; then
     echo "aria2c found, using it..."
     awk 'NR==1{print $5}' "$3"/"$2"_url_raw.txt \
-        | timeout 4 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
+        | timeout 45 aria2c -x5 -l "$3"/"$2"_download_log.txt -i -
     # If the first run had stalled, the second run here completes it
     if [ -f "$3"/"$(cat "$3"/"$2"_bundle_filename.txt)".aria2 ]; then
         echo "Running aria2c a second time as the first did not complete..."
