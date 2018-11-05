@@ -680,7 +680,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if shell.get_shell_cache_js_bin_path().is_file():  # Switch to contextlib.suppress when we are fully on Python 3
             shell.get_shell_cache_js_bin_path().unlink()
         with io.open(str(cached_no_shell), "a", encoding="utf-8", errors="replace") as f:
-            f.write(f"\nCaught exception {ex} ({ex})\n")
+            f.write(f"\nCaught exception {ex!r} ({ex})\n")
             f.write("Backtrace:\n")
             f.write(f"{traceback.format_exc()}\n")
         print(f"Compilation failed ({ex}) (details in {cached_no_shell})")

@@ -30,8 +30,8 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
             try:
                 subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
-                print(f"Something went wrong when calling: {cmd}")
-                print(f"{ex}")
+                print(f"Something went wrong when calling: {cmd!r}")
+                print(f"{ex!r}")
                 import traceback
                 print(traceback.format_exc())
                 print(f"Waiting {wait_time} seconds...")

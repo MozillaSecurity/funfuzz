@@ -29,7 +29,7 @@ def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
         print("crashInfo:")
         print(f"  Short Signature: {crashInfo.createShortSignature()}")
         print(f"  Class name: {crashInfo.__class__.__name__}")   # "NoCrashInfo", etc
-        print(f"  Stack trace: {crashInfo.backtrace}")
+        print(f"  Stack trace: {crashInfo.backtrace!r}")
         print()
 
 
