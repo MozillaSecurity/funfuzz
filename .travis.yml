@@ -187,6 +187,8 @@ before_script:
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
   - mkdir -p $HOME/trees/
+  # aria2 / wget do not seem to have greater reliability than hg clone, so not using get_hg_repo.sh
+  # Apparently only hg 4.4+ have --stream - Python 3+ on Travis only has 4.2.2
   - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing

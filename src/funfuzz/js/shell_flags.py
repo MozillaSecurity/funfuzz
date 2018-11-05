@@ -217,6 +217,10 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--no-streams") and chance(.2):
+        # m-c rev 442977:c6a8b4d451af, see bug 1501734
+        args.append("--no-streams")
+
     if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.2):
         # m-c rev 406115:321c29f48508, see bug 903519
         args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
@@ -330,8 +334,8 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
-        # The following combination used to include --no-wasm but had too many false positives
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
+        # The following combination used to include --no-native-regexp and --no-wasm but had too many false positives
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs"],
     ]
     if shell_supports_flag(shell_path, "--ion-extra-checks"):
         basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",
