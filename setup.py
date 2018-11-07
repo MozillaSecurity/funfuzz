@@ -60,7 +60,7 @@ if __name__ == "__main__":
               "boto>=2.49.0",
               "configparser>=3.5.0",
               "future>=0.16.0",
-              "requests>=2.20.0",
+              "requests>=2.18.4",
               "shellescape>=3.4.1",
               "whichcraft>=0.4.1",
           ],
