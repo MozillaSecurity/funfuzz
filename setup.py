@@ -57,7 +57,7 @@ if __name__ == "__main__":
           package_dir={"": "src"},
           install_requires=[
               "backports.print_function>=1.1.1",
-              "boto>=2.48.0",
+              "boto>=2.49.0",
               "configparser>=3.5.0",
               "future>=0.16.0",
               "requests>=2.18.4",
