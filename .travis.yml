@@ -146,7 +146,7 @@ before_install:
   - clang++ --version
   - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
   - which llvm-config || true  # Find out location of llvm-config
-  - export LLVM_CONFIG=/usr/local/clang-5.0.0/bin/llvm-config  # From llvm-config location
+  - export LLVM_CONFIG=/usr/local/clang-7.0.0/bin/llvm-config  # From llvm-config location
   - llvm-config --version || true  # Ignore exit code if llvm-config does not exist
   - /usr/bin/llvm-config --version || true  # Ignore exit code if llvm-config does not exist
   # Ensure latest Rust is installed
@@ -192,5 +192,7 @@ before_script:
   - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
+after_failure:
+  - tail -n 100 $HOME/shell-cache/*/*.busted*
 after_success:
   - travis_retry codecov

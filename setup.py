@@ -27,7 +27,7 @@ EXTRAS = {
 
 if __name__ == "__main__":
     setup(name="funfuzz",
-          version="0.5.0a1",
+          version="0.6.0a1",
           entry_points={
               "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },
@@ -48,7 +48,7 @@ if __name__ == "__main__":
           ]},
           package_dir={"": "src"},
           install_requires=[
-              "boto>=2.48.0",
+              "boto>=2.49.0",
               # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
               # "mercurial>=4.7.2",  # Mercurial does not support Python 3 yet
               "requests>=2.18.4",

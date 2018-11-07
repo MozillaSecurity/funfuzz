@@ -1,12 +1,37 @@
-## 0.5.0 (201X-XX-XX)
+## 0.5.0 (2018-11-07)
+
+0.5.x is the final version series with stable dual Python 2/3 support, and the branch will then be put on maintenance mode. Going forward, funfuzz will be on Python 3.6+
 
 Features:
 
-* TBD
+* funfuzz: Numerous Python 3 compatibility fixes
+* funfuzz: SpiderMonkey code coverage support added
+* funfuzz: The `crashesat` interestingness test has been refactored to use argparse, logging and pathlib (#199)
+* funfuzz: `flake8-commas`, `flake8-quotes` extensions to `flake8` linting were added
+* funfuzz: There is now a `get_hg_repo.sh` script in the util directory to clone `mozilla-central` or `mozilla-beta` using aria2 instead
+* funfuzz: Remove `shellify` (#184)
+* funfuzz/compare_jit: `--no-streams` and `--enable-wasm-gc` are now tested
+* funfuzz/compare_jit: Removed `--ion-shared-stubs=[on|off]`, `--non-writable-jitcode`, `--ion-aa=flow-sensitive` and `--ion-aa=flow-insensitive` since they are no longer part of SpiderMonkey
+* jsfunfuzz: `objectEmulatingUndefined` became `createIsHTMLDDA`, see [bug 1410194](https://bugzilla.mozilla.org/show_bug.cgi?id=1410194)
+* jsfunfuzz: Generates decreasing for-loops
+* jsfunfuzz: Tests the `keepFailing:true` option for oomTest
+* jsfunfuzz: Support `recomputeWrappers`
+* jsfunfuzz: `evaluate` accepts `saveIncrementalBytecode` as a parameter, see [bug 1427860](https://bugzilla.mozilla.org/show_bug.cgi?id=1427860)
+* jsfunfuzz: `newGlobal` accepts `sameCompartmentAs` as a parameter, see [bug 1487238](https://bugzilla.mozilla.org/show_bug.cgi?id=1487238)
+* jsfunfuzz: `newGlobal` accepts `invisibleToDebugger` as a parameter
+* jsfunfuzz: Object.prototype no longer have the `__count__` and `__parent__` properties
+* jsfunfuzz: Stop generating generator expressions
 
 Bugfixes:
 
-* TBD
+* compare_jit: `--no-native-regexp` and `--no-wasm` were removed from basic_flag_sets
+* compare_jit: Calling `ShellResult` in `js_interesting` would fail due to the absence of `options.jsengine`
+* funfuzz: Fix #9 - compileShell fails on Fedora due to autoconf 2.13 binary name discrepancy (#189)
+* funfuzz: Fix #33 - Dump the error to `.busted` log files when configuration fails, but append the info to them if they already exist
+* funfuzz: Off-by-one error in path concatenation in `jsFilesIn` function fixed
+* funfuzz: Some Clang/ASan build support fixes
+* funfuzz: Rename `sps` to `os_ops` in loop.py (#205)
+* Various other bugfixes
 
 ## 0.4.2 (2018-04-20)
 
