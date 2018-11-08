@@ -10,23 +10,13 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 from copy import deepcopy
 import logging
 import os
+from pathlib import Path
 import platform
-import sys
+import subprocess
 import time
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -79,7 +69,7 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     for rtype in repo_types:
         if (r / rtype).is_dir():
             return rtype[1:]
-    raise Exception("Type of repository located at " + r + " cannot be determined.")
+    raise OSError(f"Type of repository located at {r} cannot be determined.")
 
 
 def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
@@ -110,7 +100,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
             gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
         time_cmd([GITBINARY, "pull"], cwd=str(repo), env=gitenv)
     else:
-        raise Exception("Unknown repository type: " + repo_type)
+        raise OSError(f"Unknown repository type: {repo_type}")
 
     return True
 

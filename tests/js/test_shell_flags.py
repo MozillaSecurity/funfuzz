@@ -6,8 +6,6 @@
 
 """Test the shell_flags.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import logging
 
 from _pytest.monkeypatch import MonkeyPatch

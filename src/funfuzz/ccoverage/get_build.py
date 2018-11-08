@@ -7,23 +7,16 @@
 """Downloads coverage builds and other coverage utilities, such as grcov.
 """
 
-from __future__ import absolute_import, division, unicode_literals  # isort:skip
-
 import io
 import logging
+from pathlib import Path
 import platform
-import sys
 import tarfile
 import zipfile
 
 import requests
 
 from ..js.inspect_shell import queryBuildConfiguration
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
 
@@ -50,7 +43,7 @@ def get_coverage_build(dirpath, args):
     build_zip.extractall(str(extract_folder.resolve()))
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
 
-    js_cov_bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
+    js_cov_bin_name = f'js{".exe" if platform.system() == "Windows" else ""}'
     js_cov_bin = extract_folder / "dist" / "bin" / js_cov_bin_name
 
     Path.chmod(js_cov_bin, Path.stat(js_cov_bin).st_mode | 0o111)  # Ensure the js binary is executable
@@ -60,7 +53,7 @@ def get_coverage_build(dirpath, args):
     assert not queryBuildConfiguration(js_cov_bin, "debug")
     assert queryBuildConfiguration(js_cov_bin, "coverage")
 
-    js_cov_fmconf = extract_folder / "dist" / "bin" / (js_cov_bin_name + ".fuzzmanagerconf")
+    js_cov_fmconf = extract_folder / "dist" / "bin" / f"{js_cov_bin_name}.fuzzmanagerconf"
     assert js_cov_fmconf.is_file()
 
     # Check that a coverage build with *.gcno files are present
@@ -84,9 +77,9 @@ def get_grcov(dirpath, args):
         Path: Path to the grcov binary file
     """
     append_os = "win" if platform.system() == "Windows" else ("osx" if platform.system() == "Darwin" else "linux")
-    grcov_filename_with_ext = "grcov-%s-x86_64.tar.bz2" % append_os
+    grcov_filename_with_ext = f"grcov-{append_os}-x86_64.tar.bz2"
 
-    grcov_url = "https://github.com/marco-c/grcov/releases/download/v%s/%s" % (args.grcov_ver, grcov_filename_with_ext)
+    grcov_url = f"https://github.com/marco-c/grcov/releases/download/v{args.grcov_ver}/{grcov_filename_with_ext}"
 
     RUN_COV_LOG.info("Downloading grcov into %s from %s", str(dirpath), grcov_url)
     with requests.get(grcov_url, allow_redirects=True, stream=True) as grcov_request:
@@ -97,7 +90,7 @@ def get_grcov(dirpath, args):
             f.extractall(str(grcov_bin_folder.resolve()))
 
     RUN_COV_LOG.info("grcov tarball extracted to this folder: %s", grcov_bin_folder.resolve())
-    grcov_bin = grcov_bin_folder / ("grcov" + (".exe" if platform.system() == "Windows" else ""))
+    grcov_bin = grcov_bin_folder / f'grcov{".exe" if platform.system() == "Windows" else ""}'
     assert grcov_bin.is_file()
 
     return grcov_bin

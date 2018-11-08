@@ -6,36 +6,20 @@
 
 """Test the hg_helpers.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import logging
-import sys
+from pathlib import Path
 import unittest
 
 import pytest
 
 from funfuzz.util import hg_helpers
 
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
-class TestCase(unittest.TestCase):
-    """"TestCase class for general functions, e.g. backport ones."""
-    if sys.version_info.major == 2:
-        def assertRaisesRegex(self, *args, **kwds):  # pylint: disable=arguments-differ,invalid-name
-            # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
-            """Adds support for raising exceptions with messages containing desired regex."""
-            return self.assertRaisesRegexp(*args, **kwds)  # pylint: disable=deprecated-method
-
-
-class HgHelpersTests(TestCase):
+class HgHelpersTests(unittest.TestCase):
     """"TestCase class for functions in hg_helpers.py"""
     trees_location = Path.home() / "trees"
 

@@ -7,19 +7,12 @@
 """Allows detection of support for various command-line flags.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
+from functools import lru_cache
 import multiprocessing
 import random
 import re
-import sys
 
 from . import inspect_shell
-
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
 @lru_cache(maxsize=None)
@@ -245,7 +238,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         elif (chance(.5) and multiprocessing.cpu_count() > 1 and
               shell_supports_flag(shell_path, "--cpu-count=1")):
             # Adjusts default number of threads for offthread compilation (turned on by default)
-            args.append("--cpu-count=%s" % random.randint(2, (multiprocessing.cpu_count() * 2)))
+            args.append(f"--cpu-count={random.randint(2, (multiprocessing.cpu_count() * 2))}")
 
     if shell_supports_flag(shell_path, "--enable-streams") and chance(.2):
         # m-c rev 371894:64bbc26920aa, see bug 1272697
@@ -276,18 +269,18 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
 
         if gczeal_a >= 3:  # gczeal 3 does not exist, so repurpose it
             gczeal_a += 1
-            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+            final_value = f"{gczeal_a};{gczeal_b}"
         if gczeal_a >= 5:  # gczeal 5 does not exist, so repurpose it
             gczeal_a += 1
-            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+            final_value = f"{gczeal_a};{gczeal_b}"
         if gczeal_a >= 6:  # gczeal 6 does not exist, so repurpose it
             gczeal_a += 1
-            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+            final_value = f"{gczeal_a};{gczeal_b}"
 
         # m-c rev 216625:03c6a758c9e8, see bug 1101602
         if not isinstance(final_value, int) and ";" in final_value:  # Bug 1453852
             final_value = final_value.split(";")[0]
-        args.append("--gc-zeal=%s,%s" % (final_value, allocations_number))
+        args.append(f"--gc-zeal={final_value},{allocations_number}")
 
     if shell_supports_flag(shell_path, "--no-incremental-gc") and chance(.2):
         # m-c rev 211115:35025fd9e99b, see bug 958492

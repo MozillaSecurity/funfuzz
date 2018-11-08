@@ -9,14 +9,6 @@
 from setuptools import setup
 
 EXTRAS = {
-    ':python_version=="2.7"': [
-        "mercurial>=4.6.2",
-        "backports.tempfile>=1.0",
-        "functools32>=3.2.3.post2",
-        "pathlib2>=2.1.0",
-        "psutil>=5.4.6",
-        "subprocess32>=3.5.2",
-    ],
     "test": [
         "codecov==2.0.15",
         "coverage==4.5.1",
@@ -56,14 +48,11 @@ if __name__ == "__main__":
           ]},
           package_dir={"": "src"},
           install_requires=[
-              "backports.print_function>=1.1.1",
               "boto>=2.49.0",
-              "configparser>=3.5.0",
-              "future>=0.16.0",
+              # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
+              # "mercurial>=4.7.2",  # Mercurial does not support Python 3 yet
               "requests>=2.18.4",
-              "shellescape>=3.4.1",
-              "whichcraft>=0.4.1",
           ],
           extras_require=EXTRAS,
-          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4",
+          python_requires=">=3.6",
           zip_safe=False)

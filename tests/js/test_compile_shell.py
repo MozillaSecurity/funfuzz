@@ -6,25 +6,17 @@
 
 """Test the compile_shell.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
+from functools import lru_cache
 import logging
 import os
+from pathlib import Path
 import platform
-import sys
 import unittest
 
 import pytest
 
 from funfuzz import js
 from funfuzz import util
-
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
-    from pathlib import Path  # pylint: disable=import-error
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -62,11 +54,11 @@ class CompileShellTests(unittest.TestCase):
         file_name = None
         if default_parameters_debug in build_opts:
             # Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support.
-            file_name = "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default
+            file_name = f"js-dbg-optDisabled-64-dm-vg-oombp-linux-{hg_hash_of_default}"
         elif "--disable-debug --disable-profiling --without-intl-api" in build_opts:
             # Test compilation of an opt shell with both profiling and Intl support disabled.
             # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
-            file_name = "js-64-profDisabled-intlDisabled-linux-" + hg_hash_of_default
+            file_name = f"js-64-profDisabled-intlDisabled-linux-{hg_hash_of_default}"
 
         js_bin_path = self.shell_cache / file_name / file_name
         if platform.system() == "Windows":

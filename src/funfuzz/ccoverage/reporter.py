@@ -7,8 +7,6 @@
 """Reports coverage build results to CovManager.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import logging
 import os
 

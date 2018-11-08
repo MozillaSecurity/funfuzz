@@ -7,24 +7,15 @@
 """Allows specification of build configuration parameters.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import argparse
-from builtins import object
 import hashlib
 import io
+from pathlib import Path
 import platform
 import random
 import sys
 
-from past.builtins import range
-
 from ..util import hg_helpers
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 DEFAULT_TREES_LOCATION = Path.home() / "trees"
 
@@ -189,7 +180,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
         build_options.build_options_str = args
         valid = areArgsValid(build_options)
         if not valid[0]:
-            print("WARNING: This set of build options is not tested well because: %s" % valid[1])
+            print(f"WARNING: This set of build options is not tested well because: {valid[1]}")
 
     if build_options.patch_file:
         build_options.patch_file = build_options.patch_file.expanduser().resolve()
@@ -215,7 +206,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
             hg_helpers.ensure_mq_enabled()
             assert build_options.patch_file.is_file()
     else:
-        sys.exit("DEFAULT_TREES_LOCATION not found at: %s. Exiting..." % DEFAULT_TREES_LOCATION)
+        sys.exit(f"DEFAULT_TREES_LOCATION not found at: {DEFAULT_TREES_LOCATION}. Exiting...")
 
     return build_options
 
@@ -257,14 +248,14 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
         fileName.append(hashlib.sha512(readResult.encode("utf-8")).hexdigest()[:12])
 
-    assert "" not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
+    assert "" not in fileName, f'fileName "{fileName!r}" should not have empty elements.'
     return "-".join(fileName)
 
 
 def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the shell type together with the build revision."""
-    return computeShellType(build_options) + "-" + buildRev
+    return f"{computeShellType(build_options)}-{buildRev}"
 
 
 def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc

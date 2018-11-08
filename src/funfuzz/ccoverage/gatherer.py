@@ -7,22 +7,15 @@
 """Gathers coverage data.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import configparser
 import io
 import logging
 import platform
-import sys
+import subprocess
 
 from ..bot import JS_SHELL_DEFAULT_TIMEOUT
 from ..js.loop import many_timed_runs
 from ..util import create_collector
-
-if sys.version_info.major == 2:
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
 
@@ -37,7 +30,7 @@ def gather_coverage(dirpath):
         Path: Path to the coverage results file
     """
     RUN_COV_LOG.info("Coverage build is being run in the following directory: %s", str(dirpath))
-    bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
+    bin_name = f'js{".exe" if platform.system() == "Windows" else ""}'
     cov_build_bin_path = dirpath / "cov-build" / "dist" / "bin" / bin_name
     assert cov_build_bin_path.is_file()
     loop_args = ["--compare-jit", "--random-flags",
@@ -48,7 +41,7 @@ def gather_coverage(dirpath):
     many_timed_runs(cov_timeout, dirpath, loop_args, create_collector.make_collector(), True)
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
 
-    fm_conf = configparser.SafeConfigParser()
+    fm_conf = configparser.ConfigParser()
     fm_conf.read(str(dirpath / "cov-build" / "dist" / "bin" / "js.fuzzmanagerconf"))
     RUN_COV_LOG.info("Generating grcov data...")
     cov_output = subprocess.run([str(dirpath / "grcov-bin" / "grcov"), str(dirpath),

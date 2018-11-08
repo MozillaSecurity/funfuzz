@@ -38,9 +38,6 @@ load-plugins=pylint.extensions.bad_builtin,
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-# Note: old-division can be removed once Python 2.7 gets EOL. It was interfering with pathlib2 usage
-# For all intents and purposes, all errors that old-division had pointed out were already fixed prior to pathlib2
-# It should be re-added to the enable= line below
 disable=locally-disabled,
         suppressed-message,
         useless-suppression,
