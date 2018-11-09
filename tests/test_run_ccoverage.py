@@ -11,10 +11,10 @@ import unittest
 
 from CovReporter import CovReporter
 from _pytest.monkeypatch import MonkeyPatch
-import distro
 from pkg_resources import parse_version
 import pytest
 
+import distro
 import funfuzz
 
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
@@ -62,4 +62,3 @@ class RunCcoverageTests(unittest.TestCase):
             monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
 
             assert not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
-
