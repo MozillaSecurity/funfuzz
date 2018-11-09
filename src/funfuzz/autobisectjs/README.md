@@ -9,7 +9,7 @@ It helps with work allocation:
 
 For SpiderMonkey, use the following while compiling locally:
 
-`python -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic"`
+`<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug --enable-more-deterministic"`
 
 assuming the testcase requires "--fuzzing-safe --no-threads --ion-eager" as runtime flags.
 
@@ -28,7 +28,7 @@ If you have an internet connection, and the testcase causes problems with:
 
 you can try bisecting using downloaded builds:
 
-`python -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug" -T`
+`<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager testcase.js" -b "--enable-debug" -T`
 
 This should take < 5 minutes total assuming a fast internet connection, since it does not need to compile shells.
 

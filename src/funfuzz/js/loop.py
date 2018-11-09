@@ -7,13 +7,14 @@
 """Allows the funfuzz harness to run continuously.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
 import json
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
+import subprocess
 import sys
+from textwrap import dedent
 import time
 
 from . import compare_jit
@@ -23,15 +24,7 @@ from . import shell_flags
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithium_helpers
-from ..util import subprocesses as sps
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
+from ..util import os_ops
 
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -99,25 +92,26 @@ def showtail(filename):  # pylint: disable=missing-docstring
 def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-param-doc
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
-    return """
-const regressionTestsRoot = %s;
-const libdir = regressionTestsRoot + %s; // needed by jit-tests
-const regressionTestList = %s;
-""" % (json.dumps(str(repo) + os.sep),
-       json.dumps(os.sep.join(["js", "src", "jit-test", "lib"]) + os.sep),
-       json.dumps(inTreeRegressionTests(repo)))
+    libdir = Path("js") / "src" / "jit-test" / "lib"
+    return dedent(f"""
+        const regressionTestsRoot = {json.dumps(str(repo) + os.sep)};
+        const libdir = regressionTestsRoot + {json.dumps(str(libdir) + os.sep)}; // needed by jit-tests
+        const regressionTestList = {json.dumps(inTreeRegressionTests(repo))};
+    """)
 
 
 def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     jit_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "jit-test" / "tests")
     js_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests")
-    return jit_tests + js_tests
+    non262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "non262")
+    test262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "test262")
+    return jit_tests + js_tests + non262_tests + test262_tests
 
 
 def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    return [os.path.join(path, filename)[repoPathLength:]
+    return [os.path.join(path, filename)[repoPathLength + 1:]
             for path, _dirs, files in os.walk(str(root))
             for filename in files
             if filename.endswith(".js")]
@@ -151,7 +145,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
 
         # Construct command needed to loop jsfunfuzz fuzzing.
         js_interesting_args = []
-        js_interesting_args.append("--timeout=" + str(options.timeout))
+        js_interesting_args.append(f"--timeout={options.timeout}")
         if options.valgrind:
             js_interesting_args.append("--valgrind")
         js_interesting_args.append(str(options.knownPath))
@@ -159,12 +153,12 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
         if options.randomFlags:
             engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
             js_interesting_args.extend(engineFlags)
-        js_interesting_args.extend(["-e", "maxRunTime=" + str(options.timeout * (1000 // 2))])
+        js_interesting_args.extend(["-e", f"maxRunTime={options.timeout * (1000 // 2)}"])
         js_interesting_args.extend(["-f", fuzzjs])
         js_interesting_options = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
-        logPrefix = wtmpDir / ("w" + str(iteration))  # pylint: disable=invalid-name
+        logPrefix = wtmpDir / f"w{iteration}"  # pylint: disable=invalid-name
 
         env = {}  # default environment will be used
         if ccoverage:
@@ -178,19 +172,19 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                                          js_interesting_options.jsengineWithArgs, logPrefix, False, env=env)
 
         if res.lev != js_interesting.JS_FINE:
-            out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+            out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
             showtail(out_log)
-            err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+            err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
             showtail(err_log)
 
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
-            reduced_log = (logPrefix.parent / (logPrefix.stem + "-reduced")).with_suffix(".js")
+            reduced_log = (logPrefix.parent / f"{logPrefix.stem}-reduced").with_suffix(".js")
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
             with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
-            orig_log = (logPrefix.parent / (logPrefix.stem + "-orig")).with_suffix(".js")
+            orig_log = (logPrefix.parent / f"{logPrefix.stem}-orig").with_suffix(".js")
             with io.open(str(orig_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
             with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
@@ -202,8 +196,8 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 itest = [interestingpy]
                 if options.valgrind:
                     itest.append("--valgrind")
-                itest.append("--minlevel=" + str(res.lev))
-                itest.append("--timeout=" + str(options.timeout))
+                itest.append(f"--minlevel={res.lev}")
+                itest.append(f"--timeout={options.timeout}")
                 itest.append(options.knownPath)
                 (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
                     itest, logPrefix, options.jsEngine, engineFlags, reduced_log, options.repo,
@@ -216,7 +210,7 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                     # pylint: disable=invalid-name
                     retestResult = js_interesting.ShellResult(js_interesting_options,
                                                               fargs,
-                                                              logPrefix.parent / (logPrefix.stem + "-final"),
+                                                              logPrefix.parent / f"{logPrefix.stem}-final",
                                                               False)
                     if retestResult.lev > js_interesting.JS_FINE:
                         res = retestResult
@@ -226,27 +220,27 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
                 else:
                     quality = 10
 
-                print("Submitting %s (quality=%s) at %s" % (reduced_log, quality, time.asctime()))
+                print(f"Submitting {reduced_log} (quality={quality}) at {time.asctime()}")
 
                 metadata = {}
                 if autoBisectLog:
                     metadata = {"autoBisectLog": "".join(autoBisectLog)}
                 collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
-                print("Submitted %s" % reduced_log)
+                print(f"Submitted {reduced_log}")
 
         else:
             are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags
             # pylint: disable=no-member
             if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
                     js_interesting_options.shellIsDeterministic and are_flags_deterministic:
-                out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+                out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
                 linesToCompare = jitCompareLines(out_log, "/*FCM*/")  # pylint: disable=invalid-name
-                jitcomparefilename = (logPrefix.parent / (logPrefix.stem + "-cj-in")).with_suffix(".js")
+                jitcomparefilename = (logPrefix.parent / f"{logPrefix.stem}-cj-in").with_suffix(".js")
                 with io.open(str(jitcomparefilename), "w", encoding="utf-8", errors="replace") as f:
                     f.writelines(linesToCompare)
                 if not ccoverage:
                     compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
-                                            logPrefix.parent / (logPrefix.stem + "-cj"), options.repo,
+                                            logPrefix.parent / f"{logPrefix.stem}-cj", options.repo,
                                             options.build_options_str, targetTime, js_interesting_options)
                 if jitcomparefilename.is_file():
                     jitcomparefilename.unlink()
@@ -272,7 +266,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "printProfilerEvents = function() { };\n",
         "saveStack = function() { };\n",
         "wasmIsSupported = function() { return true; };\n",
-        "// DDBEGIN\n"
+        "// DDBEGIN\n",
     ]
     with io.open(str(jsfunfuzzOutputFilename), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
@@ -285,12 +279,11 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
                     lines.append(sline)
     lines += [
         "\ntry{print(uneval(this));}catch(e){}\n",
-        "// DDEND\n"
+        "// DDEND\n",
     ]
     return lines
 
 
 if __name__ == "__main__":
-    # pylint: disable=no-member
-    many_timed_runs(None, sps.make_wtmp_dir(Path(os.getcwdu() if sys.version_info.major == 2 else os.getcwd())),
+    many_timed_runs(None, os_ops.make_wtmp_dir(Path(os.getcwd())),
                     sys.argv[1:], create_collector.make_collector(), False)

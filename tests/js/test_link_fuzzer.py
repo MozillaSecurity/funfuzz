@@ -6,21 +6,13 @@
 
 """Test the link_fuzzer.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import io
 import logging
-import sys
+from pathlib import Path
+import tempfile
 import unittest
 
 from funfuzz.js import link_fuzzer
-
-if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    from pathlib2 import Path
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import tempfile
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -29,7 +21,8 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class LinkFuzzerTests(unittest.TestCase):
     """"TestCase class for functions in link_fuzzer.py"""
-    def test_link_fuzzer(self):
+    @staticmethod
+    def test_link_fuzzer():
         """Test that a full jsfunfuzz file can be created."""
         with tempfile.TemporaryDirectory(suffix="link_fuzzer_test") as tmp_dir:
             tmp_dir = Path(tmp_dir)
@@ -44,4 +37,4 @@ class LinkFuzzerTests(unittest.TestCase):
                         found = True
                         break
 
-            self.assertTrue(found)
+            assert found

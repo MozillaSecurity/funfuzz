@@ -66,11 +66,11 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 
 To run **only the js fuzzers** which compiles shells with random configurations every 8 hours and tests them:
 
-`python -u funfuzz.loop_bot -b "--random" --target-time 28800 | tee ~/log-loop_botPy.txt`
+`<python executable> -u funfuzz.loop_bot -b "--random" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
 To test **a patch** (assuming patch is in `~/patch.diff`) against a specific branch (assuming **Mercurial** mozilla-inbound is in `~/trees/mozilla-inbound`), using a debug 64-bit deterministic shell configuration, every 8 hours:
 
-`python -u funfuzz.loop_bot -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" --target-time 28800 | tee ~/log-loop_botPy.txt`
+`<python executable> -u funfuzz.loop_bot -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
 In js mode, loop_bot makes use of:
 
@@ -102,10 +102,9 @@ Replace anything between `<` and `>` with your desired parameters.
 
 **A:** compile_shell has been tested on:
 
-* Windows 10 and 7, with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild).
+* Windows 10 and 7, with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild)
 * Mac OS X 10.13
-* Ubuntu 16.04 LTS and later
-  * Note: This also seems to work on Ubuntu 14.04 LTS (via Travis)
+* Ubuntu 18.04 LTS (only LTS versions supported going forward)
 
 Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively and there may be a few bugs along the way.
 
@@ -114,7 +113,8 @@ The following operating systems are less common and while they may still work, b
 * Windows 8 / Windows 8.1
 * Windows Server 2012 R2
 * Mac OS X 10.11 through 10.12
-* Ubuntu Linux 15.10 and prior (see note above about 14.04 LTS)
+* Ubuntu Linux 16.04 LTS (install Python 3.6 via a PPA)
+* Ubuntu Linux 15.10 and prior
 * Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:
@@ -125,4 +125,4 @@ Support for the following operating systems **have been removed**:
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** funfuzz requires the Python 2.7.x series. Due to [bug 1451065](https://bugzilla.mozilla.org/show_bug.cgi?id=1451065), Python 3.5+ will be required to be installed for the `compile_shell` tests to work, even in 2.7 mode. There is currently single core fuzzing support for Python 3.5+, on the as-yet unreleased 0.5.0 version.
+**A:** Python 3.6+. Version 0.5.x will be the last version to support 2.7 on POSIX platforms, Windows already requires Python 3.6 (found in MozillaBuild).

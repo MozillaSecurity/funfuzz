@@ -7,34 +7,24 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
-from builtins import object
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 import platform
+from shlex import quote
+import shutil
+import subprocess
 import sys
 
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as CrashInfo
 import lithium.interestingness.timed_run as timed_run
-from past.builtins import range
-from shellescape import quote
-from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
 from . import inspect_shell
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import os_ops
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -47,7 +37,7 @@ JS_LEVEL_NAMES = [
     "jsfunfuzz decided to exit",
     "overall mismatch",
     "valgrind error",
-    "new assert or crash"
+    "new assert or crash",
 ]
 assert len(JS_LEVEL_NAMES) == JS_LEVELS
 (
@@ -56,7 +46,7 @@ assert len(JS_LEVEL_NAMES) == JS_LEVELS
     JS_DECIDED_TO_EXIT,                 # correctness (only jsfunfuzzLevel)
     JS_OVERALL_MISMATCH,                # correctness (only compare_jit)
     JS_VG_AMISS,                        # memory safety
-    JS_NEW_ASSERT_OR_CRASH              # memory safety or other issue that is definitely a bug
+    JS_NEW_ASSERT_OR_CRASH,             # memory safety or other issue that is definitely a bug
 ) = range(JS_LEVELS)
 
 
@@ -83,18 +73,17 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if options.valgrind:
             runthis = (
                 inspect_shell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
-                valgrindSuppressions() +
+                [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"] +
                 runthis)
 
-        timed_run_kw = {}
-        timed_run_kw["env"] = (env or os.environ)
-        if not platform.system() == "Windows":
+        timed_run_kw = {"env": (env or os.environ)}
+        if not (platform.system() == "Windows" or
+                # We cannot set a limit for RLIMIT_AS for ASan binaries
+                inspect_shell.queryBuildConfiguration(options.jsengine, "asan")):
             timed_run_kw["preexec_fn"] = set_ulimit
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
-        # Total hack to make Python 2/3 work with Lithium
-        if sys.version_info.major == 3 and isinstance(lithium_logPrefix, b"".__class__):
-            # pylint: disable=redefined-variable-type
+        if isinstance(lithium_logPrefix, b"".__class__):
             lithium_logPrefix = lithium_logPrefix.decode("utf-8", errors="replace")
 
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
@@ -110,23 +99,23 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
-        out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+        out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
         with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
             out = f.readlines()
-        err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+        err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
         with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)
-            valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
+            valgrindErrorPrefix = f"=={runinfo.pid}=="
             for line in err:
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timed_run.CRASHED:
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
-                crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+                crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif file_manipulation.amiss(logPrefix):
@@ -145,13 +134,14 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Copy non-crash issues to where FuzzManager's "AssertionHelper" can see it.
         if lev != JS_FINE:
             for issue in issues:
-                err.append("[Non-crash bug] " + issue)
+                err.append(f"[Non-crash bug] {issue}")
 
         activated = False  # Turn on when trying to report *reliable* testcases that do not have a coredump
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
         # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
         # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
-        if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
+        if (activated and platform.system() == "Linux" and
+                shutil.which("gdb") and not auxCrashData and not in_compare_jit):
             print("Note: No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
@@ -159,13 +149,13 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 for line in f:
                     if line.rstrip() and not line.startswith("#") and not line.startswith("echo"):
                         extracted_gdb_cmds.append("-ex")
-                        extracted_gdb_cmds.append("%s" % line.rstrip())
+                        extracted_gdb_cmds.append(f"{line.rstrip()}")
             no_main_log_gdb_log = subprocess.run(
                 (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
                  [str(x) for x in runthis]),
                 check=True,
                 stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE,
             )
             auxCrashData = no_main_log_gdb_log.stdout
 
@@ -190,14 +180,14 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             print("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
             match = False
 
-        print("%s | %s" % (logPrefix, summaryString(issues, lev, runinfo.elapsedtime)))
+        print(f"{logPrefix} | {summaryString(issues, lev, runinfo.elapsedtime)}")
 
         if lev != JS_FINE:
-            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            summary_log = (logPrefix.parent / f"{logPrefix.stem}-summary").with_suffix(".txt")
             with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
-                f.writelines(["Number: " + str(logPrefix) + "\n",
-                              "Command: " + " ".join(quote(str(x)) for x in runthis) + "\n"] +
-                             ["Status: " + i + "\n" for i in issues])
+                f.writelines([f"Number: {logPrefix}\n",
+                              f'Command: {" ".join(quote(str(x)) for x in runthis)}\n'] +
+                             [f"Status: {i}\n" for i in issues])
 
         self.lev = lev
         self.out = out
@@ -218,6 +208,7 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
             return True
 
     for line in out:
+        # Note that "jsfunfuzz broke its own scripting environment: " is not currently generated in error-reporting.js
         if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
             return True
         if line.startswith("Found a bug: "):
@@ -255,8 +246,8 @@ def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-
 
 def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    amissDetails = ("") if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
-    return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
+    amissDetails = "" if (not issues) else f" | {issues[:5]!r} "  # pylint: disable=invalid-name
+    return f"{elapsedtime:5.1f}s | {level} | {JS_LEVEL_NAMES[level]}{amissDetails}"
 
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
@@ -265,26 +256,21 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
             f.truncate(maxSize)
 
 
-def valgrindSuppressions():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
-    return ["--suppressions=" + filename for filename in "valgrind_suppressions.txt"]
-
-
 def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
     # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
     # the search indexer, anti-virus realtime protection and backup applications.
-    (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt").unlink()
-    (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt").unlink()
-    crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+    ((logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")).unlink()
+    ((logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")).unlink()
+    crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
     if crash_log.is_file():
         crash_log.unlink()
-    valgrind_xml = (logPrefix.parent / (logPrefix.stem + "-vg")).with_suffix(".xml")
+    valgrind_xml = (logPrefix.parent / f"{logPrefix.stem}-vg").with_suffix(".xml")
     if valgrind_xml.is_file():
         valgrind_xml.unlink()
     # pylint: disable=fixme
     # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
-    core_gzip = (logPrefix.parent / (logPrefix.stem + "-core")).with_suffix(".gz")
+    core_gzip = (logPrefix.parent / f"{logPrefix.stem}-core").with_suffix(".gz")
     if core_gzip.is_file():
         core_gzip.unlink()
 
@@ -295,6 +281,7 @@ def set_ulimit():
         import resource  # pylint: disable=import-error
 
         # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
+        # We cannot set a limit for RLIMIT_AS for ASan binaries
         giga_byte = 2**30
         resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
 
@@ -330,11 +317,12 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
     options.jsengineWithArgs = [Path(args[1]).resolve()] + args[2:-1] + [Path(args[-1]).resolve()]
-    assert options.jsengineWithArgs[0].is_file()  # js shell
+    options.jsengine = options.jsengineWithArgs[0]  # options.jsengine is needed as it is present in compare_jit
+    assert options.jsengine.is_file()  # js shell
     assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
-        options.jsengineWithArgs[0], "more-deterministic")
+        options.jsengine, "more-deterministic")
 
     return options
 
@@ -355,8 +343,8 @@ def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)
-    out_log = (cwd_prefix.parent / (cwd_prefix.stem + "-out")).with_suffix(".txt")
-    err_log = (cwd_prefix.parent / (cwd_prefix.stem + "-err")).with_suffix(".txt")
+    out_log = (cwd_prefix.parent / f"{cwd_prefix.stem}-out").with_suffix(".txt")
+    err_log = (cwd_prefix.parent / f"{cwd_prefix.stem}-err").with_suffix(".txt")
     truncateFile(out_log, 1000000)
     truncateFile(err_log, 1000000)
     return res.lev >= gOptions.minimumInterestingLevel
@@ -371,7 +359,7 @@ def main():  # pylint: disable=missing-docstring
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
             testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
-            print("Submitting %s" % testcaseFilename)
+            print(f"Submitting {testcaseFilename}")
             quality = 0
             options.collector.submit(res.crashInfo, str(testcaseFilename), quality)  # pylint: disable=no-member
         else:

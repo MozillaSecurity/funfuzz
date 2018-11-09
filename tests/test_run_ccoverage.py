@@ -6,8 +6,6 @@
 
 """Test the run_ccoverage.py file."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import logging
 import unittest
 
@@ -64,3 +62,4 @@ class RunCcoverageTests(unittest.TestCase):
             monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
 
             assert not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
+

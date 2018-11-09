@@ -7,9 +7,6 @@
 """Functions here interact with Amazon EC2 using boto.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
-from builtins import object
 import os
 import platform
 import shutil
@@ -47,10 +44,10 @@ class S3Cache(object):  # pylint: disable=missing-docstring
             self.bucket = conn.get_bucket(self.bucket_name)
             return True
         except boto.provider.ProfileNotFoundError:
-            print('Unable to connect via boto using profile name "%s" in ~/.boto' % EC2_PROFILE)
+            print(f'Unable to connect via boto using profile name "{EC2_PROFILE}" in ~/.boto')
             return False
         except boto.exception.S3ResponseError:
-            print('Unable to connect to the following bucket "%s", please check your credentials.' % self.bucket_name)
+            print(f'Unable to connect to the following bucket "{self.bucket_name}", please check your credentials.')
             return False
 
     def downloadFile(self, origin, dest):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -75,7 +72,7 @@ class S3Cache(object):  # pylint: disable=missing-docstring
         # Root folder of the S3 bucket
         destDir = ""  # pylint: disable=invalid-name
         destpath = os.path.join(destDir, os.path.basename(filename))
-        print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
+        print(f"Uploading {filename} to Amazon S3 bucket {self.bucket_name}")
 
         k = Key(self.bucket)
         k.key = destpath
@@ -84,7 +81,7 @@ class S3Cache(object):  # pylint: disable=missing-docstring
     def uploadStrToS3(self, destDir, filename, contents):  # pylint: disable=invalid-name,missing-param-doc
         # pylint: disable=missing-type-doc
         """Upload a string to an S3 file."""
-        print("Uploading %s to Amazon S3 bucket %s" % (filename, self.bucket_name))
+        print(f"Uploading {filename} to Amazon S3 bucket {self.bucket_name}")
 
         k2 = Key(self.bucket)  # pylint: disable=invalid-name
         k2.key = os.path.join(destDir, filename)

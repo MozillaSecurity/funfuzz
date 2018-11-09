@@ -59,14 +59,39 @@ var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
 
 function forLoopHead(d, b, v, reps)
 {
-  var sInit = Random.index(varBinderFor) + v + " = 0";
-  var sCond = v + " < " + reps;
-  var sNext = "++" + v;
+  var sInit = "";
+  var sCond = "";
+  var sNext = "";
+
+  switch (rnd(2)) {
+    case 0: // Generates constructs like `for (var x = 3; x > 0; x--) { ... }`
+      sInit = Random.index(varBinderFor) + v + " = " + reps;
+      sCond = v + " > 0";
+      if (rnd(2)) {
+        sNext = "--" + v;
+      } else {
+        sNext = v + "--";
+      }
+      break;
+    default: // Generates constructs like `for (var x = 0; x < 3; x++) { ... }`
+      sInit = Random.index(varBinderFor) + v + " = 0";
+      sCond = v + " < " + reps;
+      if (rnd(2)) {
+        sNext = "++" + v;
+      } else {
+        sNext = v + "++";
+      }
+  }
 
   while (rnd(10) === 0)
     sInit += ", " + makeLetHeadItem(d - 2, b);
   while (rnd(10) === 0)
     sInit += ", " + makeExpr(d - 2, b); // NB: only makes sense if our varBinder is ""
+  while (rnd(1000) === 0)
+    // never causes the loop to be run, but stuff like register allocation may be happening in the background
+    sInit = Random.index(varBinderFor) + v;
+  while (rnd(10000) === 0)
+    sInit = ""; // mostly throws ReferenceError, so make this rare
 
   while (rnd(20) === 0)
     sCond = sCond + " && (" + makeExpr(d - 2, b) + ")";
@@ -278,6 +303,7 @@ var statementMakers = Random.weighted([
 if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
     function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
+    function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ", { keepFailing: true })"; },
   ]);
 }
 
@@ -712,8 +738,7 @@ var incDecOps = [
 
 
 var specialProperties = [
-  "__count__",
-  "__parent__", "__proto__", "constructor", "prototype",
+  "__proto__", "constructor", "prototype",
   "wrappedJSObject",
   "arguments", "caller", "callee",
   "toString", "valueOf",
@@ -764,9 +789,11 @@ var exprMakers =
   function(d, b) { return cat([makeExpr(d, b), Random.index(binaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), Random.index(binaryOps), makeExpr(d, b)]); },
   function(d, b) { return cat([makeExpr(d, b), Random.index(binaryOps), makeExpr(d, b)]); },
+  function(d, b) { let expr = makeExpr(d, b); return cat(["/*infloop*/", expr, Random.index(binaryOps), expr]); },
   function(d, b) { return cat([makeId(d, b),   Random.index(binaryOps), makeId(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   Random.index(binaryOps), makeId(d, b)]); },
   function(d, b) { return cat([makeId(d, b),   Random.index(binaryOps), makeId(d, b)]); },
+  function(d, b) { let id = makeId(d, b); return cat(["/*infloop*/", id, Random.index(binaryOps), id]); },
 
   // Ternary operator
   function(d, b) { return cat([makeExpr(d, b), " ? ", makeExpr(d, b), " : ", makeExpr(d, b)]); },
@@ -786,7 +813,7 @@ var exprMakers =
   function(d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
   function(d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
 
-  // RegExp replace.  This is interesting for the same reason as array extras.  Also, in SpiderMonkey, the "this" argument is weird (obj.__parent__?)
+  // RegExp replace.  This is interesting for the same reason as array extras.
   function(d, b) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(d, b), ")"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
@@ -906,10 +933,6 @@ var exprMakers =
   // Spidermonkey: additional "strict" warnings, distinct from ES5 strict mode
   function(d, b) { return "(void options('strict'))"; },
 
-  // Spidermonkey: versions
-  // Commenting out because this version function has been removed as of m-c rev 392455 (Fx59) - 589914e65db7
-  //function(d, b) { return "(void version(" + Random.index([170, 180, 185]) + "))"; },
-
   // More special Spidermonkey shell functions
   // (Note: functions without returned objects or visible side effects go in testing-functions.js, in order to allow presence/absence differential testing.)
   //  function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
@@ -990,11 +1013,15 @@ function makeNewGlobalArg(d, b)
   // Make an options object to pass to the |newGlobal| shell builtin.
   var propStrs = [];
   if (rnd(2))
+    propStrs.push("sameCompartmentAs: " + makeExpr(d - 1, b));
+  if (rnd(2))
     propStrs.push("sameZoneAs: " + makeExpr(d - 1, b));
   if (rnd(2))
     propStrs.push("cloneSingletons: " + makeBoolean(d - 1, b));
   if (rnd(2))
     propStrs.push("disableLazyParsing: " + makeBoolean(d - 1, b));
+  if (rnd(2))
+    propStrs.push("invisibleToDebugger: " + makeBoolean(d - 1, b));
   return "{ " + propStrs.join(", ") + " }";
 }
 
@@ -1285,9 +1312,6 @@ var functionMakers = [
   function(d, b) { return "async function* (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
   function(d, b) { return "async function* (y) { " + directivePrologue() + "yield y; await y; " + makeStatement(d, b.concat(["y"])) + "; yield y; await y; }"; },
 
-  // A generator expression -- kinda a function??
-  function(d, b) { return "(1 for (x in []))"; },
-
   // A simple wrapping pattern
   function(d, b) { return "/*wrap1*/(" + functionPrefix() + "(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
 
@@ -1319,7 +1343,7 @@ var functionMakers = [
   function(d, b) { return "encodeURI"; },
   function(d, b) { return "encodeURIComponent"; },
   function(d, b) { return "neuter"; },
-  function(d, b) { return "objectEmulatingUndefined"; }, // spidermonkey shell object like the browser's document.all
+  function(d, b) { return "createIsHTMLDDA"; }, // spidermonkey shell object like the browser's document.all
   function(d, b) { return "offThreadCompileScript"; },
   function(d, b) { return "runOffThreadScript"; },
   function(d, b) { return makeProxyHandlerFactory(d, b); },
@@ -1980,10 +2004,6 @@ var iterableExprMakers = Random.weighted([
 
   // Array comprehensions (JavaScript 1.7)
   { w: 1, v: function(d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
-
-  // Generator expressions (JavaScript 1.8)
-  { w: 1, v: function(d, b) { return cat([     makeExpr(d, b), makeComprehension(d, b)     ]); } },
-  { w: 1, v: function(d, b) { return cat(["(", makeExpr(d, b), makeComprehension(d, b), ")"]); } },
 
   // A generator that yields once
   { w: 1, v: function(d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },

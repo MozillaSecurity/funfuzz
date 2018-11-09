@@ -7,18 +7,10 @@
 """Known broken changeset ranges of SpiderMonkey are specified in this file.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
-import os
 import platform
-import sys
+import subprocess
 
 from pkg_resources import parse_version
-
-if sys.version_info.major == 2 and os.name == "posix":
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 
 def hgrange(first_bad, first_good):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -28,7 +20,7 @@ def hgrange(first_bad, first_good):  # pylint: disable=missing-param-doc,missing
     # So this revset expression includes first_bad, but does not include first_good.
     # NB: hg log -r "(descendants(id(badddddd)) - descendants(id(baddddddd)))" happens to return the empty set,
     # like we want"
-    return "(descendants(id(" + first_bad + "))-descendants(id(" + first_good + ")))"
+    return f"(descendants(id({first_bad}))-descendants(id({first_good})))"
 
 
 def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -37,9 +29,9 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     # Paste numbers into: https://hg.mozilla.org/mozilla-central/rev/<number> to get hgweb link.
     # To add to the list:
     # - (1) will tell you when the brokenness started
-    # - (1) python -m funfuzz.autobisectjs --compilationFailedLabel=bad -e FAILINGREV
+    # - (1) <python executable> -m funfuzz.autobisectjs --compilationFailedLabel=bad -e FAILINGREV
     # - (2) will tell you when the brokenness ended
-    # - (2) python -m funfuzz.autobisectjs --compilationFailedLabel=bad -s FAILINGREV
+    # - (2) <python executable> -m funfuzz.autobisectjs --compilationFailedLabel=bad -s FAILINGREV
 
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
@@ -50,6 +42,8 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         hgrange("3bcc3881b95d", "c609df6d3895"),  # Fx44, broken spidermonkey
         hgrange("d3a026933bce", "5fa834fe9b96"),  # Fx52, broken spidermonkey
         hgrange("4c72627cfc6c", "926f80f2c5cc"),  # Fx60, broken spidermonkey
+        hgrange("1fb7ddfad86d", "5202cfbf8d60"),  # Fx63, broken spidermonkey
+        hgrange("aae4f349fa58", "c5fbbf959e23"),  # Fx64, broken spidermonkey
     ]
 
     if platform.system() == "Linux":
@@ -106,10 +100,16 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if "--no-streams" in flags:
+        required.append("c6a8b4d451af")  # m-c 442977 Fx65, 1st w/ working --no-streams, see bug 1501734
+    if "--enable-streams" in flags:
+        required.append("b8c1b5582913")  # m-c 440275 Fx64, 1st w/ working --enable-streams, see bug 1445854
     if "--wasm-gc" in flags:
         required.append("302befe7689a")  # m-c 413255 Fx61, 1st w/--wasm-gc, see bug 1445272
     if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
         required.append("321c29f48508")  # m-c 406115 Fx60, 1st w/--nursery-strings=on, see bug 903519
+    if platform.system() == "Windows" and options.buildWithClang:
+        required.append("da5d7ba9a855")  # m-c 404087 Fx60, 1st w/ clang-cl.exe and MSVC 2017 builds, see bug 1402915
     if "--spectre-mitigations=on" in flags or "--spectre-mitigations=off" in flags:
         required.append("a98f615965d7")  # m-c 399868 Fx59, 1st w/--spectre-mitigations=on, see bug 1430053
     if "--test-wasm-await-tier2" in flags:
@@ -122,8 +122,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("158b333a0a89")  # m-c 375650 Fx57, 1st w/--no-wasm-ion, see bug 1277562
     if "--no-wasm-baseline" in flags:
         required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, see bug 1277562
-    if "--enable-streams" in flags:
-        required.append("64bbc26920aa")  # m-c 371894 Fx56, 1st w/--enable-streams, see bug 1272697
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
@@ -146,8 +144,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
     if "--ion-instruction-reordering=on" in flags or "--ion-instruction-reordering=off" in flags:
         required.append("59d2f2e62420")  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
-    if "--ion-shared-stubs=on" in flags or "--ion-shared-stubs=off" in flags:
-        required.append("3655d19ce241")  # m-c 257573 Fx43, 1st w/--ion-shared-stubs=on, see bug 1168756
     if options.enableSimulatorArm32 or options.enableSimulatorArm64:
         # For ARM64: This should get updated whenever ARM64 builds are stable
         required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
@@ -165,8 +161,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("5e6e959f0043")  # m-c 223959 Fx38, 1st w/--enable-avx, see bug 1118235
     required.append("bcacb5692ad9")  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
 
-    return "first((" + common_descendants(required) + ") - (" + skip_revs + "))"
+    return f"first(({common_descendants(required)}) - ({skip_revs}))"
 
 
 def common_descendants(revs):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
-    return " and ".join("descendants(" + r + ")" for r in revs)
+    return " and ".join(f"descendants({r})" for r in revs)

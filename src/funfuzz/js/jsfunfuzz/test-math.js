@@ -50,7 +50,7 @@ var confusableVals = [
   "(new String(''))",
   "(new Number(0))",
   "(new Number(-0))",
-  "objectEmulatingUndefined()",
+  "createIsHTMLDDA()",
 ];
 
 function hashStr(s)
@@ -88,8 +88,9 @@ function mathInitFCM()
   // FCM cookie, lines with this cookie are used for compare_jit
   var cookie = "/*F" + "CM*/";
 
-  print(cookie + hashStr.toString().replace(/\n/g, " "));
-  print(cookie + testMathyFunction.toString().replace(/\n/g, " "));
+  // Replace carriage returns (Windows) with line breaks, if present
+  print(cookie + hashStr.toString().replace(/\r/g, "\n").replace(/\n/g, " "));
+  print(cookie + testMathyFunction.toString().replace(/\r/g, "\n").replace(/\n/g, " "));
 }
 
 function makeMathyFunAndTest(d, b)

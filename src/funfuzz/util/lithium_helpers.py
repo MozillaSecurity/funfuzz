@@ -7,31 +7,21 @@
 """Helper functions to use the Lithium reducer.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
-import os
+from pathlib import Path
 import re
+from shlex import quote
 import shutil
+import subprocess
 import sys
 import tempfile
 
 from lithium.interestingness.utils import file_contains_str
-from past.builtins import range
-from shellescape import quote
 
 from . import file_manipulation
 from ..js.inspect_shell import testJsShellOrXpcshell
 from ..js.js_interesting import JS_OVERALL_MISMATCH
 from ..js.js_interesting import JS_VG_AMISS
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
@@ -68,10 +58,10 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-i"] + [str(x) for x in itest]
         )
         print(" ".join(quote(str(x)) for x in autobisectCmd))
-        autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
+        autobisect_log = (logPrefix.parent / f"{logPrefix.stem}-autobisect").with_suffix(".txt")
         with io.open(str(autobisect_log), "w", encoding="utf-8", errors="replace") as f:
             subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
-        print("Done running autobisectjs. Log: %s" % autobisect_log)
+        print(f"Done running autobisectjs. Log: {autobisect_log}")
 
         with io.open(str(autobisect_log), "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
@@ -79,7 +69,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     else:
         autobisect_log_trunc = []
 
-    return (lithResult, lithDetails, autobisect_log_trunc)
+    return lithResult, lithDetails, autobisect_log_trunc
 
 
 def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
@@ -93,14 +83,14 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
         # FIXME: this could be based on whether bot has a remoteHost  # pylint: disable=fixme
         # loop is being used by bot
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
-        lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
+        lithArgs = [f"--maxruntime={targetTime}", f"--tempdir={deletableLithTemp}"] + lithArgs
     else:
         # loop is being run standalone
-        lithtmp = logPrefix.parent / (logPrefix.stem + "-lith-tmp")
+        lithtmp = logPrefix.parent / f"{logPrefix.stem}-lith-tmp"
         Path.mkdir(lithtmp)
-        lithArgs = ["--tempdir=" + str(lithtmp)] + lithArgs
-    lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
-    print("Preparing to run Lithium, log file %s" % lithlogfn)
+        lithArgs = [f"--tempdir={lithtmp}"] + lithArgs
+    lithlogfn = (logPrefix.parent / f"{logPrefix.stem}-lith-out").with_suffix(".txt")
+    print(f"Preparing to run Lithium, log file {lithlogfn}")
     print(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
     with io.open(str(lithlogfn), "w", encoding="utf-8", errors="replace") as f:
         subprocess.run(runlithiumpy + lithArgs, stderr=subprocess.STDOUT, stdout=f)
@@ -119,15 +109,15 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
             if line.startswith("Lithium result"):
                 print(line.rstrip())
             if line.startswith("Lithium result: interesting"):
-                return (LITH_RETESTED_STILL_INTERESTING, None)
+                return LITH_RETESTED_STILL_INTERESTING, None
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 # pylint: disable=invalid-name
                 reducedTo = line[len("Lithium result: succeeded, reduced to: "):].rstrip()  # e.g. "4 lines"
-                return (LITH_FINISHED, reducedTo)
+                return LITH_FINISHED, reducedTo
             elif (line.startswith("Lithium result: not interesting") or
                   line.startswith("Lithium result: the original testcase is not")):
-                return (LITH_NO_REPRO, None)
-        return (LITH_BUSTED, None)
+                return LITH_NO_REPRO, None
+        return LITH_BUSTED, None
 
 
 def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint: disable=invalid-name
@@ -137,7 +127,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name
-    backup_file = (logPrefix.parent / (logPrefix.stem + "-backup"))
+    backup_file = logPrefix.parent / f"{logPrefix.stem}-backup"
 
     def lith_reduce(strategy):
         """Lithium reduction commands accepting various strategies.
@@ -155,7 +145,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         desc = "-chars" if strategy == "--char" else "-lines"
         (lith_result, lith_details) = run_lithium(
-            full_lith_args, (logPrefix.parent / ("%s-%s%s" % (logPrefix.stem, reductionCount[0], desc))), targetTime)
+            full_lith_args, (logPrefix.parent / f"{logPrefix.stem}-{reductionCount[0]}{desc}"), targetTime)
         if lith_result == LITH_FINISHED:
             shutil.copy2(str(infilename), str(backup_file))
 
@@ -167,6 +157,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # Step 1: Run the first instance of line reduction.
     lith_result, lith_details = lith_reduce([])
 
+    origNumOfLines = None  # pylint: disable=invalid-name
     if lith_details is not None:  # lith_details can be None if testcase no longer becomes interesting
         origNumOfLines = int(lith_details.split()[0])  # pylint: disable=invalid-name
 
@@ -269,6 +260,6 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         if backup_file.is_file():
             shutil.copy2(str(backup_file), str(infilename))
         else:
-            print("DEBUG! backup_file is supposed to be: %s" % backup_file)
+            print(f"DEBUG! backup_file is supposed to be: {backup_file}")
 
     return lith_result, lith_details

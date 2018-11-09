@@ -7,46 +7,23 @@
 """Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import json
 import os
 import platform
-import sys
+from shlex import quote
+import subprocess
 
 from lithium.interestingness.utils import env_with_path
-from shellescape import quote
 
 from ..util import subprocesses as sps
 
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
-
+RUN_MOZGLUE_LIB = ""
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
 RUN_PLC_LIB = ""
+RUN_TESTPLUG_LIB = ""
 
 if platform.system() == "Windows":
-    # Update if the following changes:
-    # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
-    RUN_ICUUC_LIB_EXCL_EXT = "icuuc"
-    # Debug builds seem to have their debug "d" notation *before* the ICU version.
-    # Check https://dxr.mozilla.org/mozilla-central/search?q=%40BINPATH%40%2Ficudt&case=true&redirect=true
-    RUN_ICUUCD_LIB_EXCL_EXT = "icuucd"
-    RUN_ICUIN_LIB_EXCL_EXT = "icuin"
-    RUN_ICUIND_LIB_EXCL_EXT = "icuind"
-    RUN_ICUIO_LIB_EXCL_EXT = "icuio"
-    RUN_ICUIOD_LIB_EXCL_EXT = "icuiod"
-    RUN_ICUDT_LIB_EXCL_EXT = "icudt"
-    RUN_ICUDTD_LIB_EXCL_EXT = "icudtd"
-    RUN_ICUTEST_LIB_EXCL_EXT = "icutest"
-    RUN_ICUTESTD_LIB_EXCL_EXT = "icutestd"
-    RUN_ICUTU_LIB_EXCL_EXT = "icutu"
-    RUN_ICUTUD_LIB_EXCL_EXT = "icutud"
-
     RUN_MOZGLUE_LIB = "mozglue.dll"
     RUN_NSPR_LIB = "nspr4.dll"
     RUN_PLDS_LIB = "plds4.dll"
@@ -67,19 +44,44 @@ if platform.system() == "Windows":
     # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     WIN_ICU_VERS.append(59)  # prior version
     WIN_ICU_VERS.append(60)  # m-c 391988 Fx59, 1st w/ ICU 60.1, see bug 1405993
+    WIN_ICU_VERS.append(61)  # m-c 410692 Fx61, 1st w/ ICU 61.1, see bug 1445465
+    WIN_ICU_VERS.append(62)  # m-c 425600 Fx63, 1st w/ ICU 62.1, see bug 1466471
+
+    # Update if the following changes:
+    # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
+    RUN_ICUUC_LIB_EXCL_EXT = "icuuc"
+    RUN_ICUIN_LIB_EXCL_EXT = "icuin"
+    RUN_ICUIO_LIB_EXCL_EXT = "icuio"
+    RUN_ICUDT_LIB_EXCL_EXT = "icudt"
+    RUN_ICUTEST_LIB_EXCL_EXT = "icutest"
+    RUN_ICUTU_LIB_EXCL_EXT = "icutu"
+
+    # Debug builds seem to have their debug "d" notation *before* the ICU version.
+    # Check https://dxr.mozilla.org/mozilla-central/search?q=%40BINPATH%40%2Ficudt&case=true&redirect=true
     for icu_ver in WIN_ICU_VERS:
-        ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIN_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIND_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIO_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIOD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUDT_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUDTD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTEST_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTESTD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTU_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUUC_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUUC_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUUC_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUIN_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIN_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIN_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUIO_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIO_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIO_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUDT_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUDT_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUDT_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUTEST_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTEST_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTEST_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUTU_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTU_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTU_LIB_EXCL_EXT}{icu_ver}d.dll")
 
 
 def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
@@ -88,7 +90,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = subprocess.run(
         ["file", str(binary)],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     filetype = unsplit_file_type.split(":", 1)[1]
@@ -111,7 +113,7 @@ def constructVgCmdList(errorCode=77):  # pylint: disable=invalid-name,missing-pa
     valgrind_cmds.append("valgrind")
     if platform.system() == "Darwin":
         valgrind_cmds.append("--dsymutil=yes")
-    valgrind_cmds.append("--error-exitcode=" + str(errorCode))
+    valgrind_cmds.append(f"--error-exitcode={errorCode}")
     # See bug 913876 comment 18:
     valgrind_cmds.append("--vex-iropt-register-updates=allregs-at-mem-access")
     valgrind_cmds.append("--gen-suppressions=all")
@@ -139,23 +141,23 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
         # Since we want autobisectjs to support all shell versions, allow all these exit codes.
         return False
     else:
-        raise Exception("Unexpected exit code in shellSupports " + str(return_code))
+        raise Exception(f"Unexpected exit code in shellSupports {return_code}")
 
 
 def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylint: disable=invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
+    sps.vdump(f'The testing command is: {" ".join(quote(str(x)) for x in test_cmd)}')
     test_cmd_result = subprocess.run(
         test_cmd,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         env=env_with_path(str(shellPath.parent)),
         stderr=stderr,
         stdout=subprocess.PIPE,
         timeout=999)
     out, return_code = test_cmd_result.stdout.decode("utf-8", errors="replace"), test_cmd_result.returncode
-    sps.vdump("The exit code is: " + str(return_code))
+    sps.vdump(f"The exit code is: {return_code}")
     return out, return_code
 
 
@@ -169,7 +171,7 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     return json.loads(testBinary(s,
-                                 ["-e", 'print(getBuildConfiguration()["' + parameter + '"])'],
+                                 ["-e", f'print(getBuildConfiguration()["{parameter}"])'],
                                  False, stderr=subprocess.DEVNULL)[0].rstrip().lower())
 
 
