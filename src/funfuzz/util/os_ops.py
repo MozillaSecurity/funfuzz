@@ -174,7 +174,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     else:
         dbggr_cmd = None
 
-    if dbggr_cmd:
+    if dbggr_cmd:  # pylint: disable=no-else-return
         sps.vdump(" ".join([str(x) for x in dbggr_cmd]))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
@@ -191,7 +191,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         ).returncode
         if dbbgr_exit_code != 0:
             print(f'Debugger exited with code {dbbgr_exit_code} : {" ".join(quote(str(x)) for x in dbggr_cmd)}')
-        if use_logfiles:
+        if use_logfiles:  # pylint: disable=no-else-return
             if core_file.is_file():
                 shutil.move(str(core_file), str(core_file))
                 subprocess.run(["gzip", "-f", str(core_file)], check=True)
@@ -308,7 +308,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
                     print(NO_DUMP_MSG)
                     return False
             except OSError as ex:
-                if ex.errno == 2:
+                if ex.errno == 2:  # pylint: disable=no-else-return
                     print(NO_DUMP_MSG)
                     return False
                 else:
@@ -326,6 +326,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
                     return False
             except OSError as ex:
                 # If the key value cannot be found, the dumps will be put in the default location
+                # pylint: disable=no-else-return
                 if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
                     return True
                 else:
@@ -334,6 +335,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
         return True
     except OSError as ex:
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
+        # pylint: disable=no-else-return
         if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
             print()
             print("WARNING: The registry key HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\"

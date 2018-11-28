@@ -107,7 +107,7 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
         for line in f:
             if line.startswith("Lithium result"):
                 print(line.rstrip())
-            if line.startswith("Lithium result: interesting"):
+            if line.startswith("Lithium result: interesting"):  # pylint: disable=no-else-return
                 return LITH_RETESTED_STILL_INTERESTING, None
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 # pylint: disable=invalid-name

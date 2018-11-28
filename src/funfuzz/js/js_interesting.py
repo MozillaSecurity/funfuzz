@@ -219,7 +219,7 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
 def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return True iff stderr text indicates that the shell hit a memory limit."""
-    if "ReportOverRecursed called" in err:
+    if "ReportOverRecursed called" in err:  # pylint: disable=no-else-return
         # --enable-more-deterministic
         return "ReportOverRecursed called"
     elif "ReportOutOfMemory called" in err:

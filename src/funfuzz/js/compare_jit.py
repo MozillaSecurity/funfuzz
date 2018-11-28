@@ -182,7 +182,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             mismatchErr = (r.err != r0.err and not optionDisabledAsmOnOneSide())  # pylint: disable=invalid-name
             mismatchOut = (r.out != r0.out)  # pylint: disable=invalid-name
 
-            if mismatchErr or mismatchOut:
+            if mismatchErr or mismatchOut:  # pylint: disable=no-else-return
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
                 rerunCommand = " ".join(quote(str(x)) for x in [

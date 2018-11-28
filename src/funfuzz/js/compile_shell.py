@@ -616,7 +616,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     assert sm_compile_helpers.get_lock_dir_path(Path.home(), shell.build_opts.repo_dir).is_dir()
     cached_no_shell = shell.get_shell_cache_js_bin_path().with_suffix(".busted")
 
-    if shell.get_shell_cache_js_bin_path().is_file():
+    if shell.get_shell_cache_js_bin_path().is_file():  # pylint: disable=no-else-return
         # Don't remove the comma at the end of this line, and thus remove the newline printed.
         # We would break JSBugMon.
         print("Found cached shell...")

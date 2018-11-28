@@ -287,7 +287,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
         (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.runtime_params,
                                                             options.build_options.runWithVg)
 
-        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
+        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):  # pylint: disable=no-else-return
             return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
             return "bad", f"Specified-bad exit code {exitCode}"
@@ -296,6 +296,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
+            # pylint: disable=no-else-return
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
                 return "bad", f"Specified-bad exit code {exitCode} (after converting to signal)"
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
