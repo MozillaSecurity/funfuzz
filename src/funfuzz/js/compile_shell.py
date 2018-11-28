@@ -330,11 +330,8 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
     shell.set_js_objdir(js_objdir_path)
 
     sm_compile_helpers.autoconf_run(shell.get_repo_dir() / "js" / "src")
-    try:
-        cfgBin(shell)
-        sm_compile(shell)
-    except (subprocess.CalledProcessError, OSError):
-        raise
+    cfgBin(shell)
+    sm_compile(shell)
     inspect_shell.verifyBinary(shell)
 
     compile_log = shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.fuzzmanagerconf"
