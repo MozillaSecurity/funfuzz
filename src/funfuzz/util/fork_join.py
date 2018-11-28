@@ -17,7 +17,7 @@ import sys
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
 def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring
-    def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
+    def showFile(fn):  # pylint: disable=invalid-name
         print(f"==== {fn} ====")
         print()
         with io.open(str(fn), "r", encoding="utf-8", errors="replace") as f:

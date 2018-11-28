@@ -29,9 +29,9 @@ if platform.system() == "Windows":
     # pylint: disable=invalid-name
     git_64bit_path = Path(os.getenv("PROGRAMFILES")) / "Git" / "bin" / "git.exe"
     git_32bit_path = Path(os.getenv("PROGRAMFILES(X86)")) / "Git" / "bin" / "git.exe"
-    if git_64bit_path.is_file():  # pylint: disable=no-member
+    if git_64bit_path.is_file():
         GITBINARY = str(git_64bit_path)
-    elif git_32bit_path.is_file():  # pylint: disable=no-member
+    elif git_32bit_path.is_file():
         GITBINARY = str(git_32bit_path)
     else:
         raise OSError("Git binary not found")

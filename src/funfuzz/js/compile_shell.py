@@ -596,7 +596,7 @@ def sm_compile(shell):
 
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    def testRev(rev):  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
         shell = CompiledShell(options.build_options, rev)
         print(f"Rev {rev}:", end=" ")
 

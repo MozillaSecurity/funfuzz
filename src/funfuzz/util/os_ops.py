@@ -50,7 +50,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
 
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdb_path = win64_debugging_folder / "cdb.exe"
-    if not cdb_path.is_file():  # pylint: disable=no-member
+    if not cdb_path.is_file():
         print()
         print("WARNING: cdb.exe is not found - all crashes will be interesting.")
         print()
@@ -62,7 +62,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
         while True:
             if dump_name.is_file():
                 dbggr_cmd_path = Path(__file__).parent / "cdb_cmds.txt"
-                assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
+                assert dbggr_cmd_path.is_file()
 
                 cdb_cmd_list = []
                 cdb_cmd_list.append(f"$<{dbggr_cmd_path}")
@@ -113,7 +113,7 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
 
     if core_name and core_name_path.is_file():
         dbggr_cmd_path = Path(__file__).parent / "gdb_cmds.txt"
-        assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
+        assert dbggr_cmd_path.is_file()
 
         # Run gdb and move the core file. Tip: gdb gives more info for:
         # (debug with intact build dir > debug > opt with frame pointers > opt)
@@ -250,8 +250,8 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         reports_dir = base_dir / "Library" / "Logs" / "DiagnosticReports"
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
-        if reports_dir.is_dir():  # pylint: disable=no-member
-            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)  # pylint: disable=no-member
+        if reports_dir.is_dir():
+            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)
         else:
             crash_logs = []
 

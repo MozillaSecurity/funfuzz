@@ -169,8 +169,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         else:
             # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
-            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-                # pylint: disable=missing-return-type-doc
+            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"  # pylint: disable=invalid-name
                 # pylint: disable=invalid-name
                 # pylint: disable=cell-var-from-loop

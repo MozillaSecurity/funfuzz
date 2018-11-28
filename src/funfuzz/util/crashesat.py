@@ -52,7 +52,7 @@ def interesting(cli_args, temp_prefix):
     time_str = f" ({runinfo.elapsedtime:.3f} seconds)"
 
     if runinfo.sta == timedrun.CRASHED:
-        if crash_log.resolve().is_file():  # pylint: disable=no-member
+        if crash_log.resolve().is_file():
             # When using this script, remember to escape characters, e.g. "\(" instead of "(" !
             if file_contains(str(crash_log), args.sig, args.regex)[0]:
                 log.info("Exit status: %s%s", runinfo.msg, time_str)

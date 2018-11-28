@@ -281,8 +281,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
     """Use autobisectjs without interestingness tests to examine the revision of the js shell."""
-    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc,too-many-return-statements
+    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-return-doc,too-many-return-statements
         # pylint: disable=invalid-name
         (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.runtime_params,
                                                             options.build_options.runWithVg)
@@ -326,8 +325,7 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
     conditionScript = rel_or_abs_import(interestingness[0])  # pylint: disable=invalid-name
     conditionArgPrefix = interestingness[1:]  # pylint: disable=invalid-name
 
-    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
+    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-return-doc
         # pylint: disable=invalid-name
         conditionArgs = conditionArgPrefix + [str(shellFilename)] + options.runtime_params
         temp_dir = Path(tempfile.mkdtemp(prefix=f"abExtTestAndLabel-{hgHash}"))
