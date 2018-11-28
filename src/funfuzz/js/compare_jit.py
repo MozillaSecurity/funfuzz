@@ -97,7 +97,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
 
 def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc,too-complex
-    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
+    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
 
     # options dict must be one we can pass to js_interesting.ShellResult
     # we also use it directly for knownPath, timeout, and collector
