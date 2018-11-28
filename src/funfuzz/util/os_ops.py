@@ -109,7 +109,7 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         core_name = f"core.{crashed_pid}" if is_pid_used else "core"
         core_name_path = Path.cwd() / core_name
         if not core_name_path.is_file():  # try the home dir
-            core_name_path = Path.home() / core_name  # pylint: disable=redefined-variable-type
+            core_name_path = Path.home() / core_name
 
     if core_name and core_name_path.is_file():
         dbggr_cmd_path = Path(__file__).parent / "gdb_cmds.txt"
