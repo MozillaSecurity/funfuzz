@@ -29,7 +29,7 @@ def mock_chance(i):
     Returns:
         bool: True if i > 0, False otherwise.
     """
-    return True if i > 0 else False
+    return i > 0
 
 
 class ShellFlagsTests(CompileShellTests):
