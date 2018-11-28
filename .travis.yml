@@ -175,9 +175,7 @@ before_script:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
   - |
-    if [ $TRAVIS_PYTHON_VERSION == "3.7" ] ; then
-      python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
-    elif [ $TRAVIS_PYTHON_VERSION == "nightly" ] ; then
+    if [ $TRAVIS_PYTHON_VERSION == "nightly" ] ; then
       # Work around astroid failing in Python nightly
       python -m pip uninstall -y pylint astroid
       # Work around flake8 failing in Python nightly
