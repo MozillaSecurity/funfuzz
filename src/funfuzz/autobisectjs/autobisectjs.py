@@ -305,11 +305,11 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
             return "bad", f"Negative exit code {exitCode}"
         elif exitCode == 0:
             return "good", "Exit code 0"
-        elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
-                options.output != "") and (stdoutStderr.find("usage: js [") != -1 or
-                                           stdoutStderr.find("Error: Short option followed by junk") != -1 or
-                                           stdoutStderr.find("Error: Invalid long option:") != -1 or
-                                           stdoutStderr.find("Error: Invalid short option:") != -1):
+        elif exitCode in (1, 2) and options.output != "" and (    # pylint: disable=too-many-boolean-expressions
+                stdoutStderr.find("usage: js [") != -1 or
+                stdoutStderr.find("Error: Short option followed by junk") != -1 or
+                stdoutStderr.find("Error: Invalid long option:") != -1 or
+                stdoutStderr.find("Error: Invalid short option:") != -1):
             return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
             return "good", f"Acceptable exit code {exitCode}"
