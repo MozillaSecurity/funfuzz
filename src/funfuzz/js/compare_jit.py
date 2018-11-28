@@ -18,7 +18,7 @@ import sys
 import tempfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
-import FTB.Signatures.CrashInfo as CrashInfo
+import FTB.Signatures.CrashInfo as Crash_Info
 
 from . import js_interesting
 from . import shell_flags
@@ -213,7 +213,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
                 pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)
-                crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
+                crashInfo = Crash_Info.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return js_interesting.JS_OVERALL_MISMATCH, crashInfo
             else:
                 # print "compare_jit: match"
