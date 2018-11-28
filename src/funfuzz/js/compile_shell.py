@@ -321,7 +321,7 @@ class CompiledShell:  # pylint: disable=too-many-instance-attributes,too-many-pu
         self.js_version = js_version
 
 
-def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
+def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Configures, compiles and copies a js shell according to required parameters."""
     print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
     js_objdir_path = shell.get_shell_cache_dir() / "objdir-js"
