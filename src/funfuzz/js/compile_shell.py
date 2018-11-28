@@ -53,7 +53,6 @@ else:
 
 class CompiledShellError(Exception):
     """Error class unique to CompiledShell objects."""
-    pass
 
 
 class CompiledShell:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
