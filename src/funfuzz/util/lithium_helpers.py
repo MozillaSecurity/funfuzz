@@ -80,7 +80,6 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     """
     deletableLithTemp = None  # pylint: disable=invalid-name
     if targetTime:
-        # FIXME: this could be based on whether bot has a remoteHost  # pylint: disable=fixme
         # loop is being used by bot
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
         lithArgs = [f"--maxruntime={targetTime}", f"--tempdir={deletableLithTemp}"] + lithArgs
