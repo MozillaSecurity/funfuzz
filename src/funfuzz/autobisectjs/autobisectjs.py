@@ -128,14 +128,14 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     extraFlags = []  # pylint: disable=invalid-name
 
     if options.useInterestingnessTests:
-        if len(args) < 1:
+        if not args:
             print(f"args are: {args}", flush=True)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
                 extraFlags = a[8:].split(" ")  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
-    elif len(args) >= 1:
+    elif args:
         parser.error("Too many arguments.")
     else:
         options.testAndLabel = internalTestAndLabel(options)
