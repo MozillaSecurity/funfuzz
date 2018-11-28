@@ -54,8 +54,7 @@ gOptions = ""  # pylint: disable=invalid-name
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
-
+class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit, env=None):  # pylint: disable=too-complex
         # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements

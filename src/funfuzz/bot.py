@@ -31,7 +31,7 @@ from .util.lock_dir import LockDir
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
-class BuildInfo(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
+class BuildInfo:  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
     """Store information related to the build, such as its directory, source and type."""
 
     def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):  # pylint: disable=too-many-arguments

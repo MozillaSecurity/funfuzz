@@ -56,7 +56,7 @@ class CompiledShellError(Exception):
     pass
 
 
-class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
+class CompiledShell:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """A CompiledShell object represents an actual compiled shell binary.
 
     Args:

@@ -24,7 +24,7 @@ def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-
     return random.random() < p
 
 
-class Randomizer(object):  # pylint: disable=missing-docstring
+class Randomizer:  # pylint: disable=missing-docstring
     def __init__(self):
         self.options = []
 
