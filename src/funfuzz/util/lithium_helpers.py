@@ -80,7 +80,6 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     """
     deletableLithTemp = None  # pylint: disable=invalid-name
     if targetTime:
-        # FIXME: this could be based on whether bot has a remoteHost  # pylint: disable=fixme
         # loop is being used by bot
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
         lithArgs = [f"--maxruntime={targetTime}", f"--tempdir={deletableLithTemp}"] + lithArgs
@@ -108,7 +107,7 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
         for line in f:
             if line.startswith("Lithium result"):
                 print(line.rstrip())
-            if line.startswith("Lithium result: interesting"):
+            if line.startswith("Lithium result: interesting"):  # pylint: disable=no-else-return
                 return LITH_RETESTED_STILL_INTERESTING, None
             elif line.startswith("Lithium result: succeeded, reduced to: "):
                 # pylint: disable=invalid-name

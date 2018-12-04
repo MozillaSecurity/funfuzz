@@ -18,7 +18,7 @@ import sys
 import tempfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
-import FTB.Signatures.CrashInfo as CrashInfo
+import FTB.Signatures.CrashInfo as Crash_Info
 
 from . import js_interesting
 from . import shell_flags
@@ -97,7 +97,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
 
 def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc,too-complex
-    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
+    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
 
     # options dict must be one we can pass to js_interesting.ShellResult
     # we also use it directly for knownPath, timeout, and collector
@@ -169,8 +169,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         else:
             # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
-            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-                # pylint: disable=missing-return-type-doc
+            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"  # pylint: disable=invalid-name
                 # pylint: disable=invalid-name
                 # pylint: disable=cell-var-from-loop
@@ -182,7 +181,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             mismatchErr = (r.err != r0.err and not optionDisabledAsmOnOneSide())  # pylint: disable=invalid-name
             mismatchOut = (r.out != r0.out)  # pylint: disable=invalid-name
 
-            if mismatchErr or mismatchOut:
+            if mismatchErr or mismatchOut:  # pylint: disable=no-else-return
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
                 rerunCommand = " ".join(quote(str(x)) for x in [
@@ -213,7 +212,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
                 pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)
-                crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
+                crashInfo = Crash_Info.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return js_interesting.JS_OVERALL_MISMATCH, crashInfo
             else:
                 # print "compare_jit: match"

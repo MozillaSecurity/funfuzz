@@ -24,7 +24,7 @@ def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-
     return random.random() < p
 
 
-class Randomizer(object):  # pylint: disable=missing-docstring
+class Randomizer:  # pylint: disable=missing-docstring
     def __init__(self):
         self.options = []
 
@@ -37,7 +37,7 @@ class Randomizer(object):  # pylint: disable=missing-docstring
 
     def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        def getWeight(o):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+        def getWeight(o):  # pylint: disable=invalid-name,missing-return-doc
             return o["slowDeviceWeight"]
         return [o["name"] for o in self.options if chance(getWeight(o))]
 
@@ -186,7 +186,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
         build_options.patch_file = build_options.patch_file.expanduser().resolve()
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
-    if DEFAULT_TREES_LOCATION.is_dir():  # pylint: disable=no-member
+    if DEFAULT_TREES_LOCATION.is_dir():
         # Repositories do not get randomized if a repository is specified.
         if build_options.repo_dir:
             build_options.repo_dir = build_options.repo_dir.expanduser()

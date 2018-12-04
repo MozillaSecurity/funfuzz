@@ -9,7 +9,7 @@ released.
 """
 
 
-class LockDir(object):
+class LockDir:
     """Create a filesystem-based lock while in scope.
 
     Use:

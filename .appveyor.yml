@@ -3,6 +3,7 @@ image:
 environment:
   matrix:
     - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python37-x64"
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade setuptools pip"
   - "%PYTHON%\\python.exe -m pip --version"

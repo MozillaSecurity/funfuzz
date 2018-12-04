@@ -18,8 +18,8 @@ import subprocess
 import sys
 
 from FTB.ProgramConfiguration import ProgramConfiguration
-import FTB.Signatures.CrashInfo as CrashInfo
-import lithium.interestingness.timed_run as timed_run
+import FTB.Signatures.CrashInfo as Crash_Info
+import lithium.interestingness.timed_run as timedrun
 
 from . import inspect_shell
 from ..util import create_collector
@@ -54,8 +54,7 @@ gOptions = ""  # pylint: disable=invalid-name
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
-
+class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit, env=None):  # pylint: disable=too-complex
         # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
@@ -87,7 +86,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             lithium_logPrefix = lithium_logPrefix.decode("utf-8", errors="replace")
 
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
-        runinfo = timed_run.timed_run(
+        runinfo = timedrun.timed_run(
             [str(x) for x in runthis],  # Convert all Paths/bytes to strings for Lithium
             options.timeout,
             lithium_logPrefix,
@@ -113,7 +112,7 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             for line in err:
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
-        elif runinfo.sta == timed_run.CRASHED:
+        elif runinfo.sta == timedrun.CRASHED:
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
                 crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
@@ -160,12 +159,12 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             auxCrashData = no_main_log_gdb_log.stdout
 
         # Finally, make a CrashInfo object and parse stack traces for asan/crash/assertion bugs
-        crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
+        crashInfo = Crash_Info.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
 
         create_collector.printCrashInfo(crashInfo)
         # We only care about crashes and assertion failures on shells with no symbols
         # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
-        if not isinstance(crashInfo, CrashInfo.NoCrashInfo) or \
+        if not isinstance(crashInfo, Crash_Info.NoCrashInfo) or \
                 "Assertion failure: " in str(crashInfo.rawStderr) or \
                 "Segmentation fault" in str(crashInfo.rawStderr) or \
                 "Bus error" in str(crashInfo.rawStderr):
@@ -220,7 +219,7 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
 def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return True iff stderr text indicates that the shell hit a memory limit."""
-    if "ReportOverRecursed called" in err:
+    if "ReportOverRecursed called" in err:  # pylint: disable=no-else-return
         # --enable-more-deterministic
         return "ReportOverRecursed called"
     elif "ReportOutOfMemory called" in err:
