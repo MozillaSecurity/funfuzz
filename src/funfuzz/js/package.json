@@ -1,0 +1,22 @@
+{
+  "name": "jsfunfuzz",
+  "version": "0.6.0a1",
+  "description": "A fuzzer for testing the SpiderMonkey JavaScript engine",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MozillaSecurity/funfuzz.git"
+  },
+  "author": "Gary Kwong",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/MozillaSecurity/funfuzz/issues"
+  },
+  "homepage": "https://github.com/MozillaSecurity/funfuzz#readme",
+  "devDependencies": {
+    "eslint": "^5.13.0"
+  },
+  "scripts": {
+    "lint": "eslint ./",
+    "lint:fix": "eslint --fix ./"
+  }
+}
