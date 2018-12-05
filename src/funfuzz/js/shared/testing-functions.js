@@ -148,6 +148,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // JIT bailout
     { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
     { w: 10, v: function(d, b) { return prefix + "bailAfter" + "(" + numberOfInstructions() + ");"; } },
+
+    // Enable some slow Shape assertions. See bug 1412289
+    { w: 1,  v: function(d, b) { return prefix + "enableShapeConsistencyChecks" + "();"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
