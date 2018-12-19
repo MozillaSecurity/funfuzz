@@ -151,6 +151,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
     // Enable some slow Shape assertions. See bug 1412289
     { w: 1,  v: function(d, b) { return prefix + "enableShapeConsistencyChecks" + "();"; } },
+
+    // Create gray root Array for the current compartment. See bug 1452602
+    { w: 1,  v: function(d, b) { return prefix + "grayRoot" + "();"; } },
   ];
 
   // Functions only in the SpiderMonkey shell

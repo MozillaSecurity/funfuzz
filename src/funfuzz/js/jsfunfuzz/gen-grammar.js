@@ -811,6 +811,15 @@ var exprMakers =
 
   function(d, b) { return cat(["await ", makeExpr(d, b)]); },
 
+  // Test mark bits of objects
+  // addMarkObservers may need a better input than makeArrayLiteral, to focus more on valid objects
+  function(d, b) { return cat(["addMarkObservers", "(", makeArrayLiteral(d, b), ")"]); },
+  function(d, b) { return cat(["clearMarkObservers", "()"]); },
+  function(d, b) { return cat(["getMarks", "()"]); },
+
+  // Print the scope chain of objects
+  function(d, b) { return cat(["dumpScopeChain", "(", makeFunction(d, b), ")"]); },
+
   // Array functions (including extras).  The most interesting are map and filter, I think.
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
   // This fuzzer isn't the best for attacking this kind of thing, since it's unlikely that the code in the function will attempt to modify the array or make it go away.
