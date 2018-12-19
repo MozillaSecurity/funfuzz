@@ -68,6 +68,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         skips.extend([
             hgrange("a048c55e1906", "ddaa87cfd7fa"),  # Fx46, broken opt builds w/ --enable-gczeal
             hgrange("c5561749c1c6", "f4c15a88c937"),  # Fx58-59, broken opt builds w/ --enable-gczeal
+            hgrange("247e265373eb", "e4aa68e2a85b"),  # Fx66, broken opt builds w/ --enable-gczeal
         ])
 
     if options.enableMoreDeterministic:
