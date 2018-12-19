@@ -888,6 +888,9 @@ var exprMakers =
   function(d, b) { return cat(["Object.getPrototypeOf", "(", makeId(d, b), ")"]); },
   function(d, b) { return cat(["Object.setPrototypeOf", "(", makeId(d, b), ", ", makeId(d, b), ")"]); },
 
+  // Test retrieving an object's enumerable property values
+  function(d, b) { return cat(["Object.values", "(", makeId(d, b), ")"]); },
+
   // Old getter/setter syntax, imperative
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineGetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineSetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },
