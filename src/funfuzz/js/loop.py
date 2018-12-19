@@ -93,9 +93,13 @@ def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-pa
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
     libdir = Path("js") / "src" / "jit-test" / "lib"
+    js_src_tests_dir = Path("js") / "src" / "tests"
+    w_pltfrm_res_dir = Path("testing") / "web-platform" / "tests" / "resources"
     return dedent(f"""
         const regressionTestsRoot = {json.dumps(str(repo) + os.sep)};
         const libdir = regressionTestsRoot + {json.dumps(str(libdir) + os.sep)}; // needed by jit-tests
+        const js_src_tests_dir = regressionTestsRoot + {json.dumps(str(js_src_tests_dir) + os.sep)}; // streams tests
+        const w_pltfrm_res_dir = regressionTestsRoot + {json.dumps(str(w_pltfrm_res_dir) + os.sep)}; // streams tests
         const regressionTestList = {json.dumps(inTreeRegressionTests(repo))};
     """)
 
@@ -106,7 +110,8 @@ def inTreeRegressionTests(repo):  # pylint: disable=invalid-name,missing-docstri
     js_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests")
     non262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "non262")
     test262_tests = jsFilesIn(len(str(repo)), repo / "js" / "src" / "tests" / "test262")
-    return jit_tests + js_tests + non262_tests + test262_tests
+    streams_tests = jsFilesIn(len(str(repo)), repo / "testing" / "web-platform" / "tests" / "streams")
+    return jit_tests + js_tests + non262_tests + test262_tests + streams_tests
 
 
 def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc

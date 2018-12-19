@@ -411,6 +411,12 @@ function regressionTestDependencies(maintest)
     if (maintest.indexOf("jit-test") != -1) {
       files.push(libdir + "prologue.js");
     }
+
+    // Include web-platform-test-shims.js and testharness.js for streams tests
+    if (maintest.indexOf("web-platform") != -1) {
+      files.push(js_src_tests_dir + "web-platform-test-shims.js");
+      files.push(w_pltfrm_res_dir + "testharness.js");
+    }
   }
 
   files.push(maintest);
