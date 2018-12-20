@@ -260,6 +260,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "backtrace = function() { };\n",
         "dumpHeap = function() { };\n",
         "dumpObject = function() { };\n",
+        "dumpScopeChain = function() { };\n",
         "dumpStringRepresentation = function() { };\n",
         "evalInCooperativeThread = function() { };\n",
         "evalInWorker = function() { };\n",
