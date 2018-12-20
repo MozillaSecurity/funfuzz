@@ -18,9 +18,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
   function enableGCZeal()
   {
-    // As of m-c 405243:02aa9c921aed 2018-02-26
-    // https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1000
-    max_level = 18;
+    // As of m-c 451466:79cf24341024 2018-12-19
+    // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
+    max_level = 25;
     max_level++;  // rnd function starts from zero
     var level = final_level = rnd(max_level - 3); // 3 levels disabled below
 
