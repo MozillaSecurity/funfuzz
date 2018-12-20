@@ -257,7 +257,9 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
     # pylint: disable=missing-return-doc,missing-return-type-doc,missing-type-doc
     """Create a compare_jit file, using the lines marked by jsfunfuzz as valid for comparison."""
     lines = [
+        "addMarkObservers = function() { };\n",
         "backtrace = function() { };\n",
+        "clearMarkObservers = function() { };\n",
         "dumpHeap = function() { };\n",
         "dumpObject = function() { };\n",
         "dumpScopeChain = function() { };\n",
@@ -266,6 +268,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "evalInWorker = function() { };\n",
         "getBacktrace = function() { };\n",
         "getLcovInfo = function() { };\n",
+        "getMarks = function() { };\n",
         "isAsmJSCompilationAvailable = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "oomTest = function() { };\n",
