@@ -16,11 +16,13 @@ import subprocess
 import sys
 from textwrap import dedent
 import time
+import zipfile
 
 from . import compare_jit
 from . import js_interesting
 from . import link_fuzzer
 from . import shell_flags
+from . import with_binaryen
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import lithium_helpers
@@ -122,11 +124,18 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
             if filename.endswith(".js")]
 
 
-def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint: disable=invalid-name,missing-docstring
-    # pylint: disable=too-many-branches,too-complex,too-many-locals,too-many-statements
+def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
+    """As long as the run length duration is less than target_time, the harness will run the fuzzers in a loop.
+
+    Args:
+        target_time (int): Target time the harness runs before restarting
+        wtmp_dir (Path): Path to the wtmp directory
+        args (list): Extra arguments
+        collector (object): Collector object for FuzzManager submission
+        ccoverage (bool): Whether we are running in coverage gathering mode
+    """
+    # pylint: disable=too-complex,too-many-branches,too-many-locals,too-many-statements
     options = parseOpts(args)
-    # engineFlags is overwritten later if --random-flags is set.
-    engineFlags = options.engineFlags  # pylint: disable=invalid-name
     startTime = time.time()  # pylint: disable=invalid-name
 
     if options.repo.is_dir():
@@ -134,18 +143,18 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
     else:
         regressionTestPrologue = ""  # pylint: disable=invalid-name
 
-    fuzzjs = wtmpDir / "jsfunfuzz.js"
+    fuzzjs = wtmp_dir / "jsfunfuzz.js"
 
     link_fuzzer.link_fuzzer(fuzzjs, regressionTestPrologue)
     assert fuzzjs.is_file()
 
     iteration = 0
     while True:
-        if targetTime and time.time() > startTime + targetTime:
+        if target_time and time.time() > startTime + target_time:
             print("Out of time!")
             fuzzjs.unlink()
-            if not os.listdir(str(wtmpDir)):
-                wtmpDir.rmdir()
+            if not os.listdir(str(wtmp_dir)):
+                wtmp_dir.rmdir()
             break
 
         # Construct command needed to loop jsfunfuzz fuzzing.
@@ -156,14 +165,14 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
         js_interesting_args.append(str(options.knownPath))
         js_interesting_args.append(str(options.jsEngine))
         if options.randomFlags:
-            engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
-            js_interesting_args.extend(engineFlags)
+            options.engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
+            js_interesting_args.extend(options.engineFlags)
         js_interesting_args.extend(["-e", f"maxRunTime={options.timeout * (1000 // 2)}"])
         js_interesting_args.extend(["-f", fuzzjs])
-        js_interesting_options = js_interesting.parseOptions(js_interesting_args)
+        js_interesting_opts = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
-        logPrefix = wtmpDir / f"w{iteration}"  # pylint: disable=invalid-name
+        log_prefix = wtmp_dir / f"w{iteration}"  # pylint: disable=invalid-name
 
         env = {}  # default environment will be used
         if ccoverage:
@@ -172,85 +181,157 @@ def many_timed_runs(targetTime, wtmpDir, args, collector, ccoverage):  # pylint:
             assert "cov-build" in str(cov_build_path)
             env["GCOV_PREFIX"] = str(cov_build_path)
 
-        res = js_interesting.ShellResult(js_interesting_options,
-                                         # pylint: disable=no-member
-                                         js_interesting_options.jsengineWithArgs, logPrefix, False, env=env)
+        res, out_log = run_to_report(options, js_interesting_opts, env, log_prefix,
+                                     fuzzjs, ccoverage, collector, target_time)
 
-        if res.lev != js_interesting.JS_FINE:
-            out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
-            showtail(out_log)
-            err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
-            showtail(err_log)
+        # Integrate with binaryen wasm project
+        if out_log.is_file():
+            binaryen_seed_out_log = out_log.with_suffix(".binaryen-seed")
+            out_log.rename(binaryen_seed_out_log)  # After renaming, out_log is gone
 
+            # Use the generated out_log as the seed for binaryen
+            wasm_wrapper, wasm_file = with_binaryen.wasmopt_run(binaryen_seed_out_log)
+            # pylint: disable=no-member
+            # We remove the last two entries of jsengineWithArgs (-f and the original filename)
+            # wasm files need to have -f absent
+            js_interesting_opts.jsengineWithArgs = js_interesting_opts.jsengineWithArgs[:-2] + [str(wasm_wrapper),
+                                                                                                str(wasm_file)]
+            # Ensure ion flags such as --execute="setJitCompilerOption(\"ion.forceinlineCaches\",1)" are not executed
+            # for wasm files
+            execute_ion_flags_in_shell = False
+            for runtime_flag in js_interesting_opts.jsengineWithArgs:
+                if "--execute=" in str(runtime_flag) and "ion." in str(runtime_flag):
+                    execute_ion_flags_in_shell = True
+            if ("--no-wasm-ion" in js_interesting_opts.jsengineWithArgs and
+                    "--no-wasm-baseline" in js_interesting_opts.jsengineWithArgs):
+                # WebAssembly object will not be present if either of these flags are not removed
+                js_interesting_opts.jsengineWithArgs.remove("--no-wasm-ion")
+
+            if not execute_ion_flags_in_shell:
+                run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccoverage, collector, target_time)
+
+        # compare_jit integration
+        are_flags_deterministic = "--dump-bytecode" not in options.engineFlags and "-D" not in options.engineFlags
+        # pylint: disable=no-member
+        if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
+                js_interesting_opts.shellIsDeterministic and are_flags_deterministic:
+            cj_out_log = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".txt")
+            linesToCompare = jitCompareLines(cj_out_log, "/*FCM*/")  # pylint: disable=invalid-name
+            cj_testcase = (log_prefix.parent / f"{log_prefix.stem}-cj-in").with_suffix(".js")
+            with io.open(str(cj_testcase), "w", encoding="utf-8", errors="replace") as f:
+                f.writelines(linesToCompare)
+            if not ccoverage:
+                compare_jit.compare_jit(options.jsEngine, options.engineFlags, cj_testcase,
+                                        log_prefix.parent / f"{log_prefix.stem}-cj", options.repo,
+                                        options.build_options_str, target_time, js_interesting_opts)
+
+            if cj_testcase.is_file():
+                cj_testcase.unlink()
+
+        js_interesting.deleteLogs(log_prefix)
+
+
+def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccoverage, collector, target_time):
+    """Runs the js shell with testcases and report them to FuzzManager if they are interesting.
+
+    Args:
+        options (function): Options for loop.py
+        js_interesting_opts (function): Options for js_interesting.py
+        env (dict): Environment to be run in
+        log_prefix (str): log_prefix'es
+        fuzzjs (Path): Path to the jsfunfuzz file
+        ccoverage (bool): Whether we are running in coverage gathering mode
+        collector (object): Collector object for FuzzManager submission
+        target_time (int): Target time the harness runs before restarting
+
+    Returns:
+        Tuple: Returns a tuple of the results object, Path to the stdout and stderr logs, and Path to the
+               reduced testcase
+    """
+    # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
+    res = js_interesting.ShellResult(js_interesting_opts,
+                                     # pylint: disable=no-member
+                                     js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
+
+    out_log = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".txt")
+    err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
+    reduced_log = (log_prefix.parent / f"{log_prefix.stem}-reduced").with_suffix(".js")
+    wrapper_file = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".wrapper")
+    wasm_file = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".wasm")
+
+    if res.lev >= js_interesting.JS_OVERALL_MISMATCH:
+        showtail(out_log)
+        showtail(err_log)
+
+        if wasm_file.is_file():
+            # binaryen integration, we do not yet have pinpoint nor autobisectjs support
+            assert wrapper_file.is_file()
+            result_zip = log_prefix.parent / "reduced.zip"
+            with zipfile.ZipFile(result_zip, "w") as f:
+                f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
+                f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
+            collector.submit(res.crashInfo, str(result_zip), 10, metaData={})  # Quality is 10, metaData {} for now
+            return res, out_log
+        else:
             # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
-            reduced_log = (logPrefix.parent / f"{logPrefix.stem}-reduced").with_suffix(".js")
             [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
             with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
                 newfileLines = before + [  # pylint: disable=invalid-name
                     l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
-            orig_log = (logPrefix.parent / f"{logPrefix.stem}-orig").with_suffix(".js")
+            orig_log = (log_prefix.parent / f"{log_prefix.stem}-orig").with_suffix(".js")
             with io.open(str(orig_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
             with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(newfileLines)
 
-            if not ccoverage:
-                # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
-                interestingpy = "funfuzz.js.js_interesting"
-                itest = [interestingpy]
-                if options.valgrind:
-                    itest.append("--valgrind")
-                itest.append(f"--minlevel={res.lev}")
-                itest.append(f"--timeout={options.timeout}")
-                itest.append(options.knownPath)
-                (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
-                    itest, logPrefix, options.jsEngine, engineFlags, reduced_log, options.repo,
-                    options.build_options_str, targetTime, res.lev)
+        if not ccoverage:
+            # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
+            # Note: binaryen wasm testcases should always have quality 10 for now,
+            # as pinpoint does not yet accept two testcase parameters
+            interestingpy = "funfuzz.js.js_interesting"
+            itest = [interestingpy]
+            if options.valgrind:
+                itest.append("--valgrind")
+            itest.append(f"--minlevel={res.lev}")
+            itest.append(f"--timeout={options.timeout}")
+            itest.append(options.knownPath)
+            (lith_result, _lith_details, autobisect_log) = lithium_helpers.pinpoint(
+                itest, log_prefix, options.jsEngine, options.engineFlags, reduced_log, options.repo,
+                options.build_options_str, target_time, res.lev)
 
-                # Upload with final output
-                if lithResult == lithium_helpers.LITH_FINISHED:
-                    # pylint: disable=no-member
-                    fargs = js_interesting_options.jsengineWithArgs[:-1] + [reduced_log]
-                    # pylint: disable=invalid-name
-                    retestResult = js_interesting.ShellResult(js_interesting_options,
-                                                              fargs,
-                                                              logPrefix.parent / f"{logPrefix.stem}-final",
-                                                              False)
-                    if retestResult.lev > js_interesting.JS_FINE:
-                        res = retestResult
-                        quality = 0
-                    else:
-                        quality = 6
+            # Upload with final output
+            if lith_result == lithium_helpers.LITH_FINISHED:
+                # pylint: disable=no-member
+                fargs = js_interesting_opts.jsengineWithArgs[:-1] + [reduced_log]
+                retest_result = js_interesting.ShellResult(js_interesting_opts,
+                                                           fargs,
+                                                           log_prefix.parent / f"{log_prefix.stem}-final",
+                                                           False)
+                if retest_result.lev > js_interesting.JS_FINE:
+                    res = retest_result
+                    quality = 0
                 else:
-                    quality = 10
+                    quality = 6
+            else:
+                quality = 10
 
-                print(f"Submitting {reduced_log} (quality={quality}) at {time.asctime()}")
+            print(f"Submitting {reduced_log} (quality={quality}) at {time.asctime()}")
 
-                metadata = {}
-                if autoBisectLog:
-                    metadata = {"autoBisectLog": "".join(autoBisectLog)}
+            metadata = {}
+            if autobisect_log:
+                metadata = {"autobisect_log": "\n".join(autobisect_log)}
+            if wasm_file.is_file():
+                result_zip = log_prefix.parent / "reduced.zip"
+                with zipfile.ZipFile(result_zip, "w") as f:
+                    f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
+                    f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
+                collector.submit(res.crashInfo, str(result_zip), quality, metaData=metadata)
+            else:
                 collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
-                print(f"Submitted {reduced_log}")
+            print(f"Submitted {reduced_log}")
 
-        else:
-            are_flags_deterministic = "--dump-bytecode" not in engineFlags and "-D" not in engineFlags
-            # pylint: disable=no-member
-            if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
-                    js_interesting_options.shellIsDeterministic and are_flags_deterministic:
-                out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
-                linesToCompare = jitCompareLines(out_log, "/*FCM*/")  # pylint: disable=invalid-name
-                jitcomparefilename = (logPrefix.parent / f"{logPrefix.stem}-cj-in").with_suffix(".js")
-                with io.open(str(jitcomparefilename), "w", encoding="utf-8", errors="replace") as f:
-                    f.writelines(linesToCompare)
-                if not ccoverage:
-                    compare_jit.compare_jit(options.jsEngine, engineFlags, jitcomparefilename,
-                                            logPrefix.parent / f"{logPrefix.stem}-cj", options.repo,
-                                            options.build_options_str, targetTime, js_interesting_options)
-                if jitcomparefilename.is_file():
-                    jitcomparefilename.unlink()
-
-            js_interesting.deleteLogs(logPrefix)
+    return res, out_log
 
 
 def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid-name,missing-param-doc
