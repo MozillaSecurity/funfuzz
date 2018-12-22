@@ -88,7 +88,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
 
         metadata = {}
         if autoBisectLog:
-            metadata = {"autoBisectLog": "".join(autoBisectLog)}
+            metadata = {"autoBisectLog": "\n".join(autoBisectLog)}
         options.collector.submit(cl[1], str(infilename), quality, metaData=metadata)
         return True
 
