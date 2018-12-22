@@ -53,7 +53,7 @@ def ignore_some_stderr(err_inp):
 
 
 def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-many-arguments
-                flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
+                flags, infilename, logPrefix, repo, build_options_str, targetTime, options, ccoverage):
     """For use in loop.py
 
     Returns:
@@ -68,7 +68,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
     cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, is_quick_mode)
     lev = cl[0]
 
-    if lev != js_interesting.JS_FINE:
+    if not (ccoverage or lev == js_interesting.JS_FINE):
         itest = [__name__, f'--flags={" ".join(flags)}',
                  f"--minlevel={lev}", f"--timeout={options.timeout}", options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name

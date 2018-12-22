@@ -220,10 +220,9 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
             cj_testcase = (log_prefix.parent / f"{log_prefix.stem}-cj-in").with_suffix(".js")
             with io.open(str(cj_testcase), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(linesToCompare)
-            if not ccoverage:
-                compare_jit.compare_jit(options.jsEngine, options.engineFlags, cj_testcase,
-                                        log_prefix.parent / f"{log_prefix.stem}-cj", options.repo,
-                                        options.build_options_str, target_time, js_interesting_opts)
+            compare_jit.compare_jit(options.jsEngine, options.engineFlags, cj_testcase,
+                                    log_prefix.parent / f"{log_prefix.stem}-cj", options.repo,
+                                    options.build_options_str, target_time, js_interesting_opts, ccoverage)
 
             if cj_testcase.is_file():
                 cj_testcase.unlink()
