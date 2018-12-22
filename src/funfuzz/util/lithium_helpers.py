@@ -7,6 +7,7 @@
 """Helper functions to use the Lithium reducer.
 """
 
+import gzip
 import io
 from pathlib import Path
 import re
@@ -97,7 +98,12 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)
     r = readLithiumResult(lithlogfn)  # pylint: disable=invalid-name
-    subprocess.run(["gzip", "-f", str(lithlogfn)], check=True)
+
+    with open(lithlogfn, "rb") as f_in:  # Replace the old gzip subprocess call
+        with gzip.open(lithlogfn.with_suffix(".txt.gz"), "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    lithlogfn.unlink()
+
     return r
 
 
