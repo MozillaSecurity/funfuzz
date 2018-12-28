@@ -9,7 +9,6 @@ then run the shell with the translated wasm binary using a js file wrapper
 """
 
 import io
-import os
 from pathlib import Path
 import platform
 import subprocess
