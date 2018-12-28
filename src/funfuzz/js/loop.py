@@ -348,6 +348,7 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
 
             if not ccoverage:
                 collector.submit(res.crashInfo, str(result_zip), 10, metaData={})  # Quality is 10, metaData {}
+                print(f"Submitted {result_zip}")
 
 
 def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid-name,missing-param-doc
