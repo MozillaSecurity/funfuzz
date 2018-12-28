@@ -187,29 +187,8 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
 
         # Integrate with binaryen wasm project
         if out_log.is_file():
-            binaryen_seed_out_log = out_log.with_suffix(".binaryen-seed")
-            out_log.rename(binaryen_seed_out_log)  # After renaming, out_log is gone
-
-            # Use the generated out_log as the seed for binaryen
-            wasm_wrapper, wasm_file = with_binaryen.wasmopt_run(binaryen_seed_out_log)
-            # pylint: disable=no-member
-            # We remove the last two entries of jsengineWithArgs (-f and the original filename)
-            # wasm files need to have -f absent
-            js_interesting_opts.jsengineWithArgs = js_interesting_opts.jsengineWithArgs[:-2] + [str(wasm_wrapper),
-                                                                                                str(wasm_file)]
-            # Ensure ion flags such as --execute="setJitCompilerOption(\"ion.forceinlineCaches\",1)" are not executed
-            # for wasm files
-            execute_ion_flags_in_shell = False
-            for runtime_flag in js_interesting_opts.jsengineWithArgs:
-                if "--execute=" in str(runtime_flag) and "ion." in str(runtime_flag):
-                    execute_ion_flags_in_shell = True
-            if ("--no-wasm-ion" in js_interesting_opts.jsengineWithArgs and
-                    "--no-wasm-baseline" in js_interesting_opts.jsengineWithArgs):
-                # WebAssembly object will not be present if either of these flags are not removed
-                js_interesting_opts.jsengineWithArgs.remove("--no-wasm-ion")
-
-            if not execute_ion_flags_in_shell:
-                run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccoverage, collector, target_time)
+            run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
+                               out_log, ccoverage, collector, target_time)
 
         # compare_jit integration
         are_flags_deterministic = "--dump-bytecode" not in options.engineFlags and "-D" not in options.engineFlags
@@ -248,7 +227,7 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
         Tuple: Returns a tuple of the results object, Path to the stdout and stderr logs, and Path to the
                reduced testcase
     """
-    # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
+    # pylint: disable=too-many-arguments,too-many-locals
     res = js_interesting.ShellResult(js_interesting_opts,
                                      # pylint: disable=no-member
                                      js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
@@ -256,22 +235,10 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
     out_log = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".txt")
     err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
     reduced_log = (log_prefix.parent / f"{log_prefix.stem}-reduced").with_suffix(".js")
-    wrapper_file = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".wrapper")
-    wasm_file = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".wasm")
 
     if res.lev >= js_interesting.JS_OVERALL_MISMATCH:
         showtail(out_log)
         showtail(err_log)
-
-        if wasm_file.is_file():
-            # binaryen integration, we do not yet have pinpoint nor autobisectjs support
-            assert wrapper_file.is_file()
-            result_zip = log_prefix.parent / "reduced.zip"
-            with zipfile.ZipFile(result_zip, "w") as f:
-                f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
-                f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
-            collector.submit(res.crashInfo, str(result_zip), 10, metaData={})  # Quality is 10, metaData {} for now
-            return res, out_log
 
         # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
         [before, after] = file_manipulation.fuzzSplice(fuzzjs)
@@ -321,17 +288,66 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
             metadata = {}
             if autobisect_log:
                 metadata = {"autobisect_log": "\n".join(autobisect_log)}
-            if wasm_file.is_file():
-                result_zip = log_prefix.parent / "reduced.zip"
-                with zipfile.ZipFile(result_zip, "w") as f:
-                    f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
-                    f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
-                collector.submit(res.crashInfo, str(result_zip), quality, metaData=metadata)
-            else:
-                collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
+            collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
             print(f"Submitted {reduced_log}")
 
     return res, out_log
+
+
+def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, ccoverage, collector, _target_time):
+    """Runs the js shell with wasm testcases and report them to FuzzManager if they are interesting.
+
+    Args:
+        _options (function): Options for loop.py
+        js_interesting_opts (function): Options for js_interesting.py
+        env (dict): Environment to be run in
+        log_prefix (str): log_prefix'es
+        out_log (Path): Path to the jsfunfuzz w*-out log file to act as the seed
+        ccoverage (bool): Whether we are running in coverage gathering mode
+        collector (object): Collector object for FuzzManager submission
+        _target_time (int): Target time the harness runs before restarting
+    """
+    # pylint: disable=too-many-arguments
+    binaryen_seed_out_log = out_log.with_suffix(".binaryen-seed")
+    out_log.rename(binaryen_seed_out_log)  # After renaming, out_log is gone
+
+    # Use the generated out_log as the seed for binaryen
+    wrapper_file, wasm_file = with_binaryen.wasmopt_run(binaryen_seed_out_log)
+    # pylint: disable=no-member
+    # We remove the last two entries of jsengineWithArgs (-f and the original filename)
+    # wasm files need to have -f absent
+    js_interesting_opts.jsengineWithArgs = js_interesting_opts.jsengineWithArgs[:-2] + [str(wrapper_file),
+                                                                                        str(wasm_file)]
+    # Ensure ion flags such as --execute="setJitCompilerOption(\"ion.forceinlineCaches\",1)" are not executed
+    # for wasm files
+    execute_ion_flags_in_shell = False
+    for runtime_flag in js_interesting_opts.jsengineWithArgs:
+        if "--execute=" in str(runtime_flag) and "ion." in str(runtime_flag):
+            execute_ion_flags_in_shell = True
+    if ("--no-wasm-ion" in js_interesting_opts.jsengineWithArgs and
+            "--no-wasm-baseline" in js_interesting_opts.jsengineWithArgs):
+        # WebAssembly object will not be present if either of these flags are not removed
+        js_interesting_opts.jsengineWithArgs.remove("--no-wasm-ion")
+
+    if not execute_ion_flags_in_shell:
+        res = js_interesting.ShellResult(js_interesting_opts,
+                                         # pylint: disable=no-member
+                                         js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
+
+        if res.lev >= js_interesting.JS_OVERALL_MISMATCH:
+            showtail(out_log)
+            err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
+            showtail(err_log)
+
+            # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily Q10
+            assert wrapper_file.is_file()
+            result_zip = log_prefix.parent / "reduced.zip"
+            with zipfile.ZipFile(result_zip, "w") as f:
+                f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
+                f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
+
+            if not ccoverage:
+                collector.submit(res.crashInfo, str(result_zip), 10, metaData={})  # Quality is 10, metaData {}
 
 
 def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid-name,missing-param-doc
