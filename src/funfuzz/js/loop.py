@@ -341,6 +341,8 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
             assert wrapper_file.is_file()
             result_zip = log_prefix.parent / "reduced.zip"
             with zipfile.ZipFile(result_zip, "w") as f:
+                f.write(out_log, f"{out_log.name}-binaryen-v{with_binaryen.BINARYEN_VERSION}-seed",
+                        compress_type=zipfile.ZIP_DEFLATED)
                 f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
                 f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
 
