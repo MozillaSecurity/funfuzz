@@ -23,6 +23,7 @@ import FTB.Signatures.CrashInfo as Crash_Info
 from . import js_interesting
 from . import shell_flags
 from ..util import create_collector
+from ..util import file_system_helpers
 from ..util import lithium_helpers
 
 gOptions = ""  # pylint: disable=invalid-name
@@ -132,7 +133,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             print("Got usage error from:")
             print(f'  {" ".join(quote(str(x)) for x in command)}')
             assert i
-            js_interesting.deleteLogs(prefix)
+            file_system_helpers.delete_logs(prefix)
         elif r.lev > js_interesting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
             summary_more_serious = js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
@@ -151,7 +152,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 r.lev, r.runinfo.elapsedtime)
             print(f"{infilename} | {summary_other}")
             print(f'  {" ".join(quote(str(x)) for x in command)}')
-            js_interesting.deleteLogs(prefix)
+            file_system_helpers.delete_logs(prefix)
             if not i:
                 return js_interesting.JS_FINE, None
         elif oom:
@@ -160,7 +161,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             message = "compare_jit is not comparing output: OOM"
             summary_oom = js_interesting.summaryString(r.issues + [message], r.lev, r.runinfo.elapsedtime)
             print(f"{infilename} | {summary_oom}")
-            js_interesting.deleteLogs(prefix)
+            file_system_helpers.delete_logs(prefix)
             if not i:
                 return js_interesting.JS_FINE, None
         elif not i:
@@ -216,10 +217,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 return js_interesting.JS_OVERALL_MISMATCH, crashInfo
             else:
                 # print "compare_jit: match"
-                js_interesting.deleteLogs(prefix)
+                file_system_helpers.delete_logs(prefix)
 
     # All matched :)
-    js_interesting.deleteLogs(prefix0)
+    file_system_helpers.delete_logs(prefix0)
     return js_interesting.JS_FINE, None
 
 

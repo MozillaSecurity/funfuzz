@@ -255,25 +255,6 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
             f.truncate(maxSize)
 
 
-def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
-    # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
-    # the search indexer, anti-virus realtime protection and backup applications.
-    ((logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")).unlink()
-    ((logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")).unlink()
-    crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
-    if crash_log.is_file():
-        crash_log.unlink()
-    valgrind_xml = (logPrefix.parent / f"{logPrefix.stem}-vg").with_suffix(".xml")
-    if valgrind_xml.is_file():
-        valgrind_xml.unlink()
-    # pylint: disable=fixme
-    # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
-    core_gzip = (logPrefix.parent / f"{logPrefix.stem}-core").with_suffix(".gz")
-    if core_gzip.is_file():
-        core_gzip.unlink()
-
-
 def set_ulimit():
     """Sets appropriate resource limits for the JS shell when on POSIX."""
     try:

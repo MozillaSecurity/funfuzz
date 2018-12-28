@@ -25,6 +25,7 @@ from . import shell_flags
 from . import with_binaryen
 from ..util import create_collector
 from ..util import file_manipulation
+from ..util import file_system_helpers
 from ..util import lithium_helpers
 from ..util import os_ops
 
@@ -227,7 +228,7 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
             if cj_testcase.is_file():
                 cj_testcase.unlink()
 
-        js_interesting.deleteLogs(log_prefix)
+        file_system_helpers.delete_logs(log_prefix)
 
 
 def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccoverage, collector, target_time):
