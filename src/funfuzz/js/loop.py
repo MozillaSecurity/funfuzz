@@ -330,12 +330,13 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
         js_interesting_opts.jsengineWithArgs.remove("--no-wasm-ion")
 
     if not execute_ion_flags_in_shell:
+        print("Running through binaryen/wasm testing integration...")
         res = js_interesting.ShellResult(js_interesting_opts,
                                          # pylint: disable=no-member
                                          js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
 
         if res.lev >= js_interesting.JS_OVERALL_MISMATCH:
-            showtail(out_log)
+            showtail(out_log)  # out_log appears again after js_interesting.ShellResult is run
             err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
             showtail(err_log)
 
