@@ -254,8 +254,6 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
 
         if not ccoverage:
             # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
-            # Note: binaryen wasm testcases should always have quality 10 for now,
-            # as pinpoint does not yet accept two testcase parameters
             interestingpy = "funfuzz.js.js_interesting"
             itest = [interestingpy]
             if options.valgrind:
