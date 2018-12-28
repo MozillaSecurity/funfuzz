@@ -308,11 +308,10 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
         _target_time (int): Target time the harness runs before restarting
     """
     # pylint: disable=too-many-arguments
-    binaryen_seed_out_log = out_log.with_suffix(".binaryen-seed")
-    out_log.rename(binaryen_seed_out_log)  # After renaming, out_log is gone
+    log_prefix = (log_prefix.parent / f"{log_prefix.stem}-wasm")
 
     # Use the generated out_log as the seed for binaryen
-    wrapper_file, wasm_file = with_binaryen.wasmopt_run(binaryen_seed_out_log)
+    wrapper_file, wasm_file = with_binaryen.wasmopt_run(out_log)
     # pylint: disable=no-member
     # We remove the last two entries of jsengineWithArgs (-f and the original filename)
     # wasm files need to have -f absent
@@ -330,17 +329,17 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
         js_interesting_opts.jsengineWithArgs.remove("--no-wasm-ion")
 
     if not execute_ion_flags_in_shell:
-        print("Running through binaryen/wasm testing integration...")
         res = js_interesting.ShellResult(js_interesting_opts,
                                          # pylint: disable=no-member
                                          js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
 
         if res.lev >= js_interesting.JS_OVERALL_MISMATCH:
-            showtail(out_log)  # out_log appears again after js_interesting.ShellResult is run
-            err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
-            showtail(err_log)
+            wasm_out_log = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".txt")
+            showtail(wasm_out_log)  # wasm_out_log appears again after js_interesting.ShellResult is run
+            wasm_err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
+            showtail(wasm_err_log)
 
-            # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily Q10
+            # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily quality 10
             assert wrapper_file.is_file()
             result_zip = log_prefix.parent / "reduced.zip"
             with zipfile.ZipFile(result_zip, "w") as f:
