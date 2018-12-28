@@ -272,18 +272,18 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
                 f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
             collector.submit(res.crashInfo, str(result_zip), 10, metaData={})  # Quality is 10, metaData {} for now
             return res, out_log
-        else:
-            # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
-            [before, after] = file_manipulation.fuzzSplice(fuzzjs)
 
-            with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
-                newfileLines = before + [  # pylint: disable=invalid-name
-                    l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
-            orig_log = (log_prefix.parent / f"{log_prefix.stem}-orig").with_suffix(".js")
-            with io.open(str(orig_log), "w", encoding="utf-8", errors="replace") as f:
-                f.writelines(newfileLines)
-            with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
-                f.writelines(newfileLines)
+        # splice jsfunfuzz.js with `grep "/*FRC-" wN-out`
+        [before, after] = file_manipulation.fuzzSplice(fuzzjs)
+
+        with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
+            newfileLines = before + [  # pylint: disable=invalid-name
+                l.replace("/*FRC-", "/*") for l in file_manipulation.linesStartingWith(f, "/*FRC-")] + after
+        orig_log = (log_prefix.parent / f"{log_prefix.stem}-orig").with_suffix(".js")
+        with io.open(str(orig_log), "w", encoding="utf-8", errors="replace") as f:
+            f.writelines(newfileLines)
+        with io.open(str(reduced_log), "w", encoding="utf-8", errors="replace") as f:
+            f.writelines(newfileLines)
 
         if not ccoverage:
             # Run Lithium and autobisectjs (make a reduced testcase and find a regression window)
