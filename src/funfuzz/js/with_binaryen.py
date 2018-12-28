@@ -21,7 +21,7 @@ from ..util import sm_compile_helpers
 
 BINARYEN_VERSION = 52
 BINARYEN_URL = (f"https://github.com/WebAssembly/binaryen/releases/download/version_{BINARYEN_VERSION}/"
-                f"binaryen-version_{BINARYEN_VERSION}-{os.uname().machine}-linux.tar.gz")
+                f"binaryen-version_{BINARYEN_VERSION}-{platform.uname()[4]}-linux.tar.gz")
 
 
 def ensure_binaryen(url, version):
