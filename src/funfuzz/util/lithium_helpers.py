@@ -132,7 +132,6 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name
-    backup_file = logPrefix.parent / f"{logPrefix.stem}-backup"
 
     def lith_reduce(strategy):
         """Lithium reduction commands accepting various strategies.
@@ -151,8 +150,6 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         desc = "-chars" if strategy == "--char" else "-lines"
         (lith_result, lith_details) = run_lithium(
             full_lith_args, (logPrefix.parent / f"{logPrefix.stem}-{reductionCount[0]}{desc}"), targetTime)
-        if lith_result == LITH_FINISHED:
-            shutil.copy2(str(infilename), str(backup_file))
 
         return lith_result, lith_details
 
@@ -258,13 +255,5 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         print("Running the final line reduction...")
         print()
         lith_result, lith_details = lith_reduce([])
-
-    # Restore from backup if testcase can no longer be reproduced halfway through reduction.
-    if lith_result != LITH_FINISHED:
-        # Probably can move instead of copy the backup, once this has stabilised.
-        if backup_file.is_file():
-            shutil.copy2(str(backup_file), str(infilename))
-        else:
-            print(f"DEBUG! backup_file is supposed to be: {backup_file}")
 
     return lith_result, lith_details
