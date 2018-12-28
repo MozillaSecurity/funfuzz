@@ -212,6 +212,8 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
             return True
         if line.startswith("Found a bug: "):
             return True
+        if line.startswith("calling: "):  # Working wasm testcases show this in stdout
+            return True
 
     return False
 
