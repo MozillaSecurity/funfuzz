@@ -325,8 +325,6 @@ def basic_flag_sets(shell_path):
         # Parts of this flag permutation come from:
         # https://hg.mozilla.org/mozilla-central/file/afdeb0288690/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
-        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
-        ["--fuzzing-safe"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
