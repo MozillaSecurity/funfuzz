@@ -7,23 +7,15 @@
 """Allows inspection of the SpiderMonkey shell to ensure that it is compiled as intended with specified configurations.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import json
 import os
 import platform
-import sys
+from shlex import quote
+import subprocess
 
 from lithium.interestingness.utils import env_with_path
-from shellescape import quote
 
 from ..util import subprocesses as sps
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 RUN_MOZGLUE_LIB = ""
 RUN_NSPR_LIB = ""
@@ -58,33 +50,38 @@ if platform.system() == "Windows":
     # Update if the following changes:
     # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
     RUN_ICUUC_LIB_EXCL_EXT = "icuuc"
+    RUN_ICUIN_LIB_EXCL_EXT = "icuin"
+    RUN_ICUIO_LIB_EXCL_EXT = "icuio"
+    RUN_ICUDT_LIB_EXCL_EXT = "icudt"
+    RUN_ICUTEST_LIB_EXCL_EXT = "icutest"
+    RUN_ICUTU_LIB_EXCL_EXT = "icutu"
+
     # Debug builds seem to have their debug "d" notation *before* the ICU version.
     # Check https://dxr.mozilla.org/mozilla-central/search?q=%40BINPATH%40%2Ficudt&case=true&redirect=true
-    RUN_ICUUCD_LIB_EXCL_EXT = "icuucd"
-    RUN_ICUIN_LIB_EXCL_EXT = "icuin"
-    RUN_ICUIND_LIB_EXCL_EXT = "icuind"
-    RUN_ICUIO_LIB_EXCL_EXT = "icuio"
-    RUN_ICUIOD_LIB_EXCL_EXT = "icuiod"
-    RUN_ICUDT_LIB_EXCL_EXT = "icudt"
-    RUN_ICUDTD_LIB_EXCL_EXT = "icudtd"
-    RUN_ICUTEST_LIB_EXCL_EXT = "icutest"
-    RUN_ICUTESTD_LIB_EXCL_EXT = "icutestd"
-    RUN_ICUTU_LIB_EXCL_EXT = "icutu"
-    RUN_ICUTUD_LIB_EXCL_EXT = "icutud"
-
     for icu_ver in WIN_ICU_VERS:
-        ALL_RUN_LIBS.append(RUN_ICUUC_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUUCD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIN_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIND_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIO_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUIOD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUDT_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUDTD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTEST_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTESTD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTU_LIB_EXCL_EXT + str(icu_ver) + ".dll")
-        ALL_RUN_LIBS.append(RUN_ICUTUD_LIB_EXCL_EXT + str(icu_ver) + ".dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUUC_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUUC_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUUC_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUIN_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIN_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIN_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUIO_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIO_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUIO_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUDT_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUDT_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUDT_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUTEST_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTEST_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTEST_LIB_EXCL_EXT}{icu_ver}d.dll")
+
+        ALL_RUN_LIBS.append(f"{RUN_ICUTU_LIB_EXCL_EXT}{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTU_LIB_EXCL_EXT}d{icu_ver}.dll")
+        ALL_RUN_LIBS.append(f"{RUN_ICUTU_LIB_EXCL_EXT}{icu_ver}d.dll")
 
 
 def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,invalid-name,missing-param-doc
@@ -93,11 +90,11 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = subprocess.run(
         ["file", str(binary)],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     filetype = unsplit_file_type.split(":", 1)[1]
-    if platform.system() == "Windows":
+    if platform.system() == "Windows":  # pylint: disable=no-else-return
         assert "MS Windows" in filetype
         return "32" if "Intel 80386 32-bit" in filetype else "64"
     else:
@@ -116,7 +113,7 @@ def constructVgCmdList(errorCode=77):  # pylint: disable=invalid-name,missing-pa
     valgrind_cmds.append("valgrind")
     if platform.system() == "Darwin":
         valgrind_cmds.append("--dsymutil=yes")
-    valgrind_cmds.append("--error-exitcode=" + str(errorCode))
+    valgrind_cmds.append(f"--error-exitcode={errorCode}")
     # See bug 913876 comment 18:
     valgrind_cmds.append("--vex-iropt-register-updates=allregs-at-mem-access")
     valgrind_cmds.append("--gen-suppressions=all")
@@ -135,7 +132,7 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
     You can add support for a function, e.g. ["-e", "foo()"], or a flag, e.g. ["-j", "-e", "42"].
     """
     return_code = testBinary(shellPath, args, False)[1]
-    if return_code == 0:
+    if return_code == 0:  # pylint: disable=no-else-return
         return True
     elif 1 <= return_code <= 3:
         # Exit codes 1 through 3 are all plausible "non-support":
@@ -144,23 +141,23 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
         # Since we want autobisectjs to support all shell versions, allow all these exit codes.
         return False
     else:
-        raise Exception("Unexpected exit code in shellSupports " + str(return_code))
+        raise Exception(f"Unexpected exit code in shellSupports {return_code}")
 
 
 def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylint: disable=invalid-name
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    sps.vdump("The testing command is: " + " ".join(quote(str(x)) for x in test_cmd))
+    sps.vdump(f'The testing command is: {" ".join(quote(str(x)) for x in test_cmd)}')
     test_cmd_result = subprocess.run(
         test_cmd,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         env=env_with_path(str(shellPath.parent)),
         stderr=stderr,
         stdout=subprocess.PIPE,
         timeout=999)
     out, return_code = test_cmd_result.stdout.decode("utf-8", errors="replace"), test_cmd_result.returncode
-    sps.vdump("The exit code is: " + str(return_code))
+    sps.vdump(f"The exit code is: {return_code}")
     return out, return_code
 
 
@@ -174,7 +171,7 @@ def queryBuildConfiguration(s, parameter):  # pylint: disable=invalid-name,missi
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Test if a binary is compiled with specified parameters, in getBuildConfiguration()."""
     return json.loads(testBinary(s,
-                                 ["-e", 'print(getBuildConfiguration()["' + parameter + '"])'],
+                                 ["-e", f'print(getBuildConfiguration()["{parameter}"])'],
                                  False, stderr=subprocess.DEVNULL)[0].rstrip().lower())
 
 

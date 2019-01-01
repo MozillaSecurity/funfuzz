@@ -7,16 +7,9 @@
 """Functions here make use of a Collector created from FuzzManager.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
-import sys
+from pathlib import Path
 
 from Collector.Collector import Collector
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 
 def make_collector():
@@ -26,7 +19,7 @@ def make_collector():
         Collector: jsfunfuzz collector object
     """
     sigcache_path = Path.home() / "sigcache"
-    sigcache_path.mkdir(exist_ok=True)  # pylint: disable=no-member
+    sigcache_path.mkdir(exist_ok=True)
     return Collector(sigCacheDir=str(sigcache_path), tool="jsfunfuzz")
 
 
@@ -34,14 +27,14 @@ def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
     if crashInfo.createShortSignature() != "No crash detected":
         print()
         print("crashInfo:")
-        print("  Short Signature: %s" % crashInfo.createShortSignature())
-        print("  Class name: %s" % crashInfo.__class__.__name__)   # "NoCrashInfo", etc
-        print("  Stack trace: %r" % (crashInfo.backtrace,))
+        print(f"  Short Signature: {crashInfo.createShortSignature()}")
+        print(f"  Class name: {crashInfo.__class__.__name__}")   # "NoCrashInfo", etc
+        print(f"  Stack trace: {crashInfo.backtrace!r}")
         print()
 
 
 def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docstring
     print("Matches signature in FuzzManager:")
-    print("  Signature description: %s" % match[1].get("shortDescription"))
-    print("  Signature file: %s" % match[0])
+    print(f'  Signature description: {match[1].get("shortDescription")}')
+    print(f"  Signature file: {match[0]}")
     print()

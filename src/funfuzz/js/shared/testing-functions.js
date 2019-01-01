@@ -18,9 +18,9 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
 
   function enableGCZeal()
   {
-    // As of m-c 405243:02aa9c921aed 2018-02-26
-    // https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1000
-    max_level = 18;
+    // As of m-c 451466:79cf24341024 2018-12-19
+    // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
+    max_level = 25;
     max_level++;  // rnd function starts from zero
     var level = final_level = rnd(max_level - 3); // 3 levels disabled below
 
@@ -118,7 +118,7 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.warmup.trigger', " + rnd(40) + ");"; } },
 
     // Test the baseline compiler
-    { w: 10,  v: function(d, b) { return prefix + "baselineCompiler" + "();"; } },
+    { w: 10,  v: function(d, b) { return prefix + "baselineCompile" + "();"; } },
 
     // Force inline cache.
     { w: 1,  v: function(d, b) { return prefix + "setJitCompilerOption" + "('ion.forceinlineCaches\', " + rnd(2) + ");"; } },
@@ -148,6 +148,12 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     // JIT bailout
     { w: 5,  v: function(d, b) { return prefix + "bailout" + "();"; } },
     { w: 10, v: function(d, b) { return prefix + "bailAfter" + "(" + numberOfInstructions() + ");"; } },
+
+    // Enable some slow Shape assertions. See bug 1412289
+    { w: 1,  v: function(d, b) { return prefix + "enableShapeConsistencyChecks" + "();"; } },
+
+    // Create gray root Array for the current compartment. See bug 1452602
+    { w: 1,  v: function(d, b) { return prefix + "grayRoot" + "();"; } },
   ];
 
   // Functions only in the SpiderMonkey shell
@@ -162,6 +168,10 @@ function fuzzTestingFunctionsCtor(browser, fGlobal, fObject)
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "();"; } },
     { w: 10, v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "('compartment');"; } },
     { w: 5,  v: function(d, b) { return "void " + prefix + "relazifyFunctions" + "(" + fGlobal(d, b) + ");"; } },
+
+    // Test recomputeWrappers - see bug 1492406
+    { w: 10,  v: function(d, b) { return prefix + "recomputeWrappers" + "();"; } },
+    // Also test recomputeWrappers calling newGlobal, see the bug
 
     // [TestingFunctions.cpp, but debug-only and CRASHY]
     // After N js_malloc memory allocations, fail every following allocation

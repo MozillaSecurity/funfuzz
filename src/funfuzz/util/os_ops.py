@@ -7,27 +7,18 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, print_function  # isort:skip
-
 import io
 import os
+from pathlib import Path
 import platform
+from shlex import quote
 import shutil
-import sys
+import subprocess
 import time
 
 from pkg_resources import parse_version
-from shellescape import quote
 
 from . import subprocesses as sps
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 NO_DUMP_MSG = r"""
 WARNING: Minidumps are not being generated, so all crashes will be uninteresting.
@@ -50,7 +41,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
     """
     assert platform.system() == "Windows"
     # Look for a minidump.
-    dump_name = Path.home() / "AppData" / "Local" / "CrashDumps" / ("%s.%s.dmp" % (prog_full_path.name, crashed_pid))
+    dump_name = Path.home() / "AppData" / "Local" / "CrashDumps" / f"{prog_full_path.name}.{crashed_pid}.dmp"
 
     if platform.uname()[2] == "10":  # Windows 10
         win64_debugging_folder = Path(os.getenv("PROGRAMFILES(X86)")) / "Windows Kits" / "10" / "Debuggers" / "x64"
@@ -59,7 +50,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
 
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdb_path = win64_debugging_folder / "cdb.exe"
-    if not cdb_path.is_file():  # pylint: disable=no-member
+    if not cdb_path.is_file():
         print()
         print("WARNING: cdb.exe is not found - all crashes will be interesting.")
         print()
@@ -71,10 +62,10 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
         while True:
             if dump_name.is_file():
                 dbggr_cmd_path = Path(__file__).parent / "cdb_cmds.txt"
-                assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
+                assert dbggr_cmd_path.is_file()
 
                 cdb_cmd_list = []
-                cdb_cmd_list.append("$<" + str(dbggr_cmd_path))
+                cdb_cmd_list.append(f"$<{dbggr_cmd_path}")
 
                 # See bug 902706 about -g.
                 return [cdb_path, "-g", "-c", ";".join(cdb_cmd_list), "-z", str(dump_name)]
@@ -83,7 +74,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
             loops += 1
             if loops > max_loops:
                 # Windows may take some time to generate the dump.
-                print("make_cdb_cmd waited a long time, but %s never appeared!" % str(dump_name))
+                print(f"make_cdb_cmd waited a long time, but {dump_name} never appeared!")
                 return []
     else:
         return []
@@ -107,7 +98,7 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         # Core files will be generated if you do:
         #   mkdir -p /cores/
         #   ulimit -c 2147483648 (or call resource.setrlimit from a preexec_fn hook)
-        core_name = "/cores/core." + str(crashed_pid)
+        core_name = f"/cores/core.{crashed_pid}"
         core_name_path = Path(core_name)
     elif platform.system() == "Linux":
         is_pid_used = False
@@ -115,14 +106,14 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         if core_uses_pid_path.is_file():
             with io.open(str(core_uses_pid_path), "r", encoding="utf-8", errors="replace") as f:
                 is_pid_used = bool(int(f.read()[0]))  # Setting [0] turns the input to a str.
-        core_name = "core." + str(crashed_pid) if is_pid_used else "core"
+        core_name = f"core.{crashed_pid}" if is_pid_used else "core"
         core_name_path = Path.cwd() / core_name
         if not core_name_path.is_file():  # try the home dir
-            core_name_path = Path.home() / core_name  # pylint: disable=redefined-variable-type
+            core_name_path = Path.home() / core_name
 
     if core_name and core_name_path.is_file():
         dbggr_cmd_path = Path(__file__).parent / "gdb_cmds.txt"
-        assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
+        assert dbggr_cmd_path.is_file()
 
         # Run gdb and move the core file. Tip: gdb gives more info for:
         # (debug with intact build dir > debug > opt with frame pointers > opt)
@@ -163,8 +154,8 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     progname = prog_full_path.name
 
     use_logfiles = isinstance(log_prefix, ("".__class__, u"".__class__, b"".__class__, Path))
-    crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
-    core_file = (log_prefix.parent / (log_prefix.stem + "-core"))
+    crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
+    core_file = log_prefix.parent / f"{log_prefix.stem}-core"
 
     if use_logfiles:
         if crash_log.is_file():
@@ -183,7 +174,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     else:
         dbggr_cmd = None
 
-    if dbggr_cmd:
+    if dbggr_cmd:  # pylint: disable=no-else-return
         sps.vdump(" ".join([str(x) for x in dbggr_cmd]))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
@@ -199,13 +190,13 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             preexec_fn=(disable_corefile if platform.system() == "Linux" else None),
         ).returncode
         if dbbgr_exit_code != 0:
-            print("Debugger exited with code %d : %s" % (dbbgr_exit_code, " ".join(quote(str(x)) for x in dbggr_cmd)))
-        if use_logfiles:
+            print(f'Debugger exited with code {dbbgr_exit_code} : {" ".join(quote(str(x)) for x in dbggr_cmd)}')
+        if use_logfiles:  # pylint: disable=no-else-return
             if core_file.is_file():
                 shutil.move(str(core_file), str(core_file))
                 subprocess.run(["gzip", "-f", str(core_file)], check=True)
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.run(["chmod", "og+r", "%s.gz" % core_file], check=True)
+                subprocess.run(["chmod", "og+r", f"{core_file}.gz"], check=True)
             return str(crash_log)
         else:
             print("I don't know what to do with a core file when log_prefix is null")
@@ -213,7 +204,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     # On Mac, look for a crash log generated by Mac OS X Crash Reporter
     elif platform.system() == "Darwin":
         loops = 0
-        max_loops = 500 if progname.startswith("firefox") else 450
+        max_loops = 450
         while True:
             crash_log_found = grab_mac_crash_log(crashed_pid, log_prefix, use_logfiles)
             if crash_log_found is not None:
@@ -225,15 +216,14 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             if loops > max_loops:
                 # I suppose this might happen if the process corrupts itself so much that
                 # the crash reporter gets confused about the process name, for example.
-                print("grab_crash_log waited a long time, but a crash log for %s [%s] never appeared!" % (
-                    progname, crashed_pid))
+                print(f"grab_crash_log waited a long time, "
+                      f"but a crash log for {progname} [{crashed_pid}] never appeared!")
                 break
 
     elif platform.system() == "Linux":
-        print("Warning: grab_crash_log() did not find a core file for PID %d." % crashed_pid)
-        print("Note: Your soft limit for core file sizes is currently %d. "
-              # pylint: disable=indexing-exception
-              'You can increase it with "ulimit -c" in bash.' % get_core_limit()[0])
+        print(f"Warning: grab_crash_log() did not find a core file for PID {crashed_pid}.")
+        print(f"Note: Your soft limit for core file sizes is currently {get_core_limit()[0]}. "
+              f'You can increase it with "ulimit -c" in bash.')
 
 
 def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
@@ -260,8 +250,8 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         reports_dir = base_dir / "Library" / "Logs" / "DiagnosticReports"
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
-        if reports_dir.is_dir():  # pylint: disable=no-member
-            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)  # pylint: disable=no-member
+        if reports_dir.is_dir():
+            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)
         else:
             crash_logs = []
 
@@ -270,16 +260,15 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
             try:
                 with io.open(str(full_report_path), "r", encoding="utf-8", errors="replace") as f:
                     first_line = f.readline()
-                if first_line.rstrip().endswith("[%s]" % crash_pid):
+                if first_line.rstrip().endswith(f"[{crash_pid}]"):
                     if use_log_files:
                         # Copy, don't rename, because we might not have permissions
                         # (especially for the system rather than user crash log directory)
                         # Use copyfile, as we do not want to copy the permissions metadata over
-                        crash_log = (log_prefix.parent / (log_prefix.stem + "-crash")).with_suffix(".txt")
+                        crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
                         shutil.copyfile(str(full_report_path), str(crash_log))
                         subprocess.run(["chmod", "og+r", str(crash_log)],
-                                       # pylint: disable=no-member
-                                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
+                                       cwd=os.getcwd(),
                                        check=True,
                                        timeout=9)
                         return str(crash_log)
@@ -293,7 +282,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
     return None
 
 
-def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branches
+def is_win_dumping_to_default():  # pylint: disable=too-complex
     """Check whether Windows minidumps are enabled and set to go to Windows' default location.
 
     Raises:
@@ -303,10 +292,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
     Returns:
         bool: Returns True when Windows has dumping enabled, and is dumping to the default location, otherwise False
     """
-    if sys.version_info.major == 2:
-        import _winreg as winreg  # pylint: disable=import-error
-    else:
-        import winreg  # pylint: disable=import-error
+    import winreg  # pylint: disable=import-error
     # For now, this code does not edit the Windows Registry because we tend to be in a 32-bit
     # version of Python and if one types in regedit in the Run dialog, opens up the 64-bit registry.
     # If writing a key, we most likely need to flush. For the moment, no keys are written.
@@ -322,7 +308,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
                     print(NO_DUMP_MSG)
                     return False
             except OSError as ex:
-                if ex.errno == 2:
+                if ex.errno == 2:  # pylint: disable=no-else-return
                     print(NO_DUMP_MSG)
                     return False
                 else:
@@ -334,12 +320,13 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
                 if not (dump_folder_reg_value[0] == r"%LOCALAPPDATA%\CrashDumps" and
                         dump_folder_reg_value[1] == winreg.REG_EXPAND_SZ):
                     print()
-                    print("WARNING: Dumps are instead appearing at: %s - "
-                          "all crashes will be uninteresting." % dump_folder_reg_value[0])
+                    print(f"WARNING: Dumps are instead appearing at: {dump_folder_reg_value[0]} - "
+                          f"all crashes will be uninteresting.")
                     print()
                     return False
             except OSError as ex:
                 # If the key value cannot be found, the dumps will be put in the default location
+                # pylint: disable=no-else-return
                 if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
                     return True
                 else:
@@ -348,6 +335,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex,too-many-branche
         return True
     except OSError as ex:
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
+        # pylint: disable=no-else-return
         if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
             print()
             print("WARNING: The registry key HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\"
@@ -371,7 +359,7 @@ def make_wtmp_dir(base_dir):
 
     i = 1
     while True:
-        numbered_tmp_dir = "wtmp%s" % i
+        numbered_tmp_dir = f"wtmp{i}"
         full_dir = base_dir / numbered_tmp_dir
         try:
             full_dir.mkdir()  # To avoid race conditions, we use try/except instead of exists/create

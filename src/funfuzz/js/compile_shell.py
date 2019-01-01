@@ -7,23 +7,20 @@
 """Compiles SpiderMonkey shells on different platforms using various specified configuration parameters.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
-from builtins import object
 import copy
 import io
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 import platform
-import re
+from shlex import quote
 import shutil
-import sys
+import subprocess
 import tarfile
+import traceback
 
 from pkg_resources import parse_version
-from shellescape import quote
-from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
 
 from . import build_options
 from . import inspect_shell
@@ -32,14 +29,6 @@ from ..util import s3cache
 from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
-
-if sys.version_info.major == 2:
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
@@ -51,11 +40,8 @@ if platform.system() == "Windows":
     CLANG_ASAN_PARAMS = ""
 else:
     MAKE_BINARY = "make"
-    CLANG_PARAMS = "-Qunused-arguments"
-    # See https://bugzilla.mozilla.org/show_bug.cgi?id=935795#c3 for some of the following flags:
-    # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc -mllvm -asan-stack=0"
-    # The flags above seem to fix a problem not on the js shell.
-    CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
+    CLANG_PARAMS = ""
+    CLANG_ASAN_PARAMS = "-fsanitize=address"
     SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
     CLANG_X86_FLAG = "-arch i386"
 
@@ -67,10 +53,9 @@ else:
 
 class CompiledShellError(Exception):
     """Error class unique to CompiledShell objects."""
-    pass
 
 
-class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
+class CompiledShell:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """A CompiledShell object represents an actual compiled shell binary.
 
     Args:
@@ -132,8 +117,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         parser.add_option("-b", "--build",
                           dest="build_opts",
                           help='Specify build options, e.g. -b "--disable-debug --enable-optimize" '
-                               "(%s -m funfuzz.js.build_options --help)" % re.search(
-                                   "python[2-3]", os.__file__).group(0))
+                               "(python3 -m funfuzz.js.build_options --help)")
 
         parser.add_option("-r", "--rev",
                           dest="revision",
@@ -257,7 +241,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             str: Name of the tarball
         """
-        return self.get_shell_name_without_ext() + ".tar.bz2"
+        return f"{self.get_shell_name_without_ext()}.tar.bz2"
 
     def get_s3_tar_with_ext_full_path(self):
         """Retrieve the path to the tarball downloaded from S3.
@@ -309,6 +293,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         Returns:
             str: Name of the compiled js shell with the file extension
         """
+        # pylint complains if this line uses an f-string with nested if-else, see https://git.io/fxfSo
         return self.shell_name_without_ext + (".exe" if platform.system() == "Windows" else "")
 
     def get_shell_name_without_ext(self):
@@ -336,7 +321,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.js_version = js_version
 
 
-def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
+def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Configures, compiles and copies a js shell according to required parameters."""
     print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
     js_objdir_path = shell.get_shell_cache_dir() / "objdir-js"
@@ -344,31 +329,17 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
     shell.set_js_objdir(js_objdir_path)
 
     sm_compile_helpers.autoconf_run(shell.get_repo_dir() / "js" / "src")
-    configure_try_count = 0
-    while True:
-        try:
-            cfgBin(shell)
-            break
-        except subprocess.CalledProcessError:
-            configure_try_count += 1
-            if configure_try_count > 3:
-                print("Configuration of the js binary failed 3 times.")
-                raise
-            print("Trying once more...")
-            continue
-    try:
-        sm_compile(shell)
-    except (subprocess.CalledProcessError, OSError):
-        raise
+    cfgBin(shell)
+    sm_compile(shell)
     inspect_shell.verifyBinary(shell)
 
-    compile_log = shell.get_shell_cache_dir() / (shell.get_shell_name_without_ext() + ".fuzzmanagerconf")
+    compile_log = shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.fuzzmanagerconf"
     if not compile_log.is_file():
         sm_compile_helpers.envDump(shell, compile_log)
 
 
-def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-complex,too-many-branches
-    # pylint: disable=too-many-statements
+def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
+    # pylint: disable=too-complex,too-many-branches,too-many-statements
     """Configure a binary according to required parameters."""
     cfg_cmds = []
     cfg_env = copy.deepcopy(os.environ)
@@ -378,17 +349,15 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         # 32-bit shell on 32/64-bit x86 Linux
         cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
         if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = cfg_env["HOST_CC"] = str(
-                "clang %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
-            cfg_env["CXX"] = cfg_env["HOST_CXX"] = str(
-                "clang++ %s %s %s" % (CLANG_PARAMS, SSE2_FLAGS, CLANG_X86_FLAG))
+            cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
+            cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
         else:
             # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            cfg_env["CC"] = "gcc -m32 %s" % SSE2_FLAGS
-            cfg_env["CXX"] = "g++ -m32 %s" % SSE2_FLAGS
+            cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
+            cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
-            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
+            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
+            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=i686-pc-linux")
@@ -404,12 +373,12 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
             cfg_cmds.append("--enable-simulator=arm")
     # 64-bit shell on Mac OS X 10.11 El Capitan and greater
     elif parse_version(platform.mac_ver()[0]) >= parse_version("10.11") and not shell.build_opts.enable32:
-        cfg_env["CC"] = "clang " + CLANG_PARAMS
-        cfg_env["CXX"] = "clang++ " + CLANG_PARAMS
+        cfg_env["CC"] = f"clang {CLANG_PARAMS}"
+        cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
         if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
-            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
-        if which("brew"):
+            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
+            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
+        if shutil.which("brew"):
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
@@ -423,18 +392,17 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     elif platform.system() == "Windows":
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = "clang-cl.exe " + CLANG_PARAMS
-            cfg_env["CXX"] = "clang-cl.exe " + CLANG_PARAMS
+            cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
+            cfg_env["CXX"] = f"clang-cl.exe {CLANG_PARAMS}"
+            cfg_env["LINKER"] = "lld-link.exe"
         if shell.build_opts.buildWithAsan:
             cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
-                                  "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib "
-                                  "clang_rt.asan_dynamic-x86_64.dll")
-            cfg_env["HOST_CFLAGS"] = " "
-            cfg_env["HOST_CXXFLAGS"] = " "
-            cfg_env["HOST_LDFLAGS"] = " "
-            cfg_env["LIB"] += r"C:\Program Files\LLVM\lib\clang\4.0.0\lib\windows"
+                                  "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
+            cfg_env["CLANG_LIB_DIR"] = "C:/Program Files/LLVM/lib/clang/6.0.1/lib/windows"
+            cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"] = f'{cfg_env["CLANG_LIB_DIR"]}/clang_rt.asan_dynamic-x86_64.dll'
+            cfg_env["LIB"] = cfg_env.get("LIB", "") + cfg_env["CLANG_LIB_DIR"]
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.enable32:
@@ -456,11 +424,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     else:
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = "clang " + CLANG_PARAMS
-            cfg_env["CXX"] = "clang++ " + CLANG_PARAMS
-        if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += " " + CLANG_ASAN_PARAMS
-            cfg_env["CXX"] += " " + CLANG_ASAN_PARAMS
+            cfg_env["CC"] = f"clang {CLANG_PARAMS}"
+            cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
+            if shell.build_opts.buildWithAsan:
+                cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
+                cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.buildWithAsan:
@@ -481,6 +449,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
         cfg_cmds.append("--disable-debug")
 
     if shell.build_opts.enableOpt:
+        # pylint complains if this line uses an f-string with nested if-else, see https://git.io/fxfSo
         cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.buildWithVg else ""))
     elif shell.build_opts.disableOpt:
         cfg_cmds.append("--disable-optimize")
@@ -509,7 +478,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     cfg_cmds.append("--disable-tests")
 
     if platform.system() == "Windows":
-        # FIXME: Replace this with shellescape's quote  # pylint: disable=fixme
+        # FIXME: Replace this with shlex's quote  # pylint: disable=fixme
         counter = 0
         for entry in cfg_cmds:
             if os.sep in entry:
@@ -519,39 +488,48 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-typ
     # Print whatever we added to the environment
     env_vars = []
     for env_var in set(cfg_env.keys()) - set(orig_cfg_env.keys()):
-        str_to_be_appended = str(env_var + '="' + cfg_env[str(env_var)] +
-                                 '"' if " " in cfg_env[str(env_var)] else env_var +
-                                 "=" + cfg_env[str(env_var)])
+        str_to_be_appended = (
+            f"{env_var}"
+            f'="{cfg_env[str(env_var)]}'
+            + '"' if " " in cfg_env[str(env_var)] else env_var +
+            f"={cfg_env[str(env_var)]}"
+        )
         env_vars.append(str_to_be_appended)
-    sps.vdump("Command to be run is: " + " ".join(quote(str(x)) for x in env_vars) + " " +
-              " ".join(quote(str(x)) for x in cfg_cmds))
+    sps.vdump(f'Command to be run is: {" ".join(quote(str(x)) for x in env_vars)} '
+              f'{" ".join(quote(str(x)) for x in cfg_cmds)}')
 
     assert shell.get_js_objdir().is_dir()
 
-    if platform.system() == "Windows":
-        changed_cfg_cmds = []
-        for entry in cfg_cmds:
-            # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
-            #   but really, the whole thing likes forward slashes way better"
-            # See bug 1038590 comment 9.
-            if "\\" in entry:
-                entry = entry.replace("\\", "/")
-            changed_cfg_cmds.append(entry)
-        subprocess.run(changed_cfg_cmds,
-                       check=True,
-                       cwd=str(shell.get_js_objdir()),
-                       env=cfg_env,
-                       stderr=subprocess.STDOUT,
-                       stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-    else:
-        subprocess.run(cfg_cmds,
-                       check=True,
-                       cwd=str(shell.get_js_objdir()),
-                       env=cfg_env,
-                       stderr=subprocess.STDOUT,
-                       stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-
-    # We could save the stdout here into a file if it throws
+    try:
+        if platform.system() == "Windows":
+            changed_cfg_cmds = []
+            for entry in cfg_cmds:
+                # For JS, quoted from :glandium: "the way icu subconfigure is called is what changed.
+                #   but really, the whole thing likes forward slashes way better"
+                # See bug 1038590 comment 9.
+                if "\\" in entry:
+                    entry = entry.replace("\\", "/")
+                changed_cfg_cmds.append(entry)
+            subprocess.run(changed_cfg_cmds,
+                           check=True,
+                           cwd=str(shell.get_js_objdir()),
+                           env=cfg_env,
+                           stderr=subprocess.STDOUT,
+                           stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        else:
+            subprocess.run(cfg_cmds,
+                           check=True,
+                           cwd=str(shell.get_js_objdir()),
+                           env=cfg_env,
+                           stderr=subprocess.STDOUT,
+                           stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+    except subprocess.CalledProcessError as ex:
+        with io.open(str(shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.busted"), "a",
+                     encoding="utf-8", errors="replace") as f:
+            f.write(f"Configuration of {shell.get_repo_name()} rev {shell.get_hg_hash()} "
+                    f"failed with the following output:\n")
+            f.write(ex.stdout.decode("utf-8", errors="replace"))
+        raise
 
     shell.set_env_added(env_vars)
     shell.set_env_full(cfg_env)
@@ -570,7 +548,7 @@ def sm_compile(shell):
     Returns:
         Path: Path to the compiled shell
     """
-    cmd_list = [MAKE_BINARY, "-C", str(shell.get_js_objdir()), "-j" + str(COMPILATION_JOBS), "-s"]
+    cmd_list = [MAKE_BINARY, "-C", str(shell.get_js_objdir()), f"-j{COMPILATION_JOBS}", "-s"]
     # Note that having a non-zero exit code does not mean that the operation did not succeed,
     # for example when compiling a shell. A non-zero exit code can appear even though a shell compiled successfully.
     # Thus, we should *not* use check=True here.
@@ -606,21 +584,21 @@ def sm_compile(shell):
         if shell.get_shell_compiled_path().is_file():
             print("A shell was compiled even though there was a non-zero exit code. Continuing...")
         else:
-            print("%s did not result in a js shell:" % MAKE_BINARY)
-            with io.open(str(shell.get_shell_cache_dir() / ".busted.log"), "w",
+            print(f"{MAKE_BINARY} did not result in a js shell:")
+            with io.open(str(shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.busted"), "a",
                          encoding="utf-8", errors="replace") as f:
-                f.write("The first compilation of %s rev %s failed with the following output:\n" %
-                        (shell.get_repo_name(), shell.get_hg_hash()))
+                f.write(f"Compilation of {shell.get_repo_name()} rev {shell.get_hg_hash()} "
+                        f"failed with the following output:\n")
                 f.write(out)
-            raise OSError(MAKE_BINARY + " did not result in a js shell.")
+            raise OSError(f"{MAKE_BINARY} did not result in a js shell.")
 
     return shell.get_shell_compiled_path()
 
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    def testRev(rev):  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
         shell = CompiledShell(options.build_options, rev)
-        print("Rev %s:" % rev, end=" ")
+        print(f"Rev {rev}:", end=" ")
 
         try:
             obtainShell(shell, updateToRev=rev)
@@ -638,7 +616,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     assert sm_compile_helpers.get_lock_dir_path(Path.home(), shell.build_opts.repo_dir).is_dir()
     cached_no_shell = shell.get_shell_cache_js_bin_path().with_suffix(".busted")
 
-    if shell.get_shell_cache_js_bin_path().is_file():
+    if shell.get_shell_cache_js_bin_path().is_file():  # pylint: disable=no-else-return
         # Don't remove the comma at the end of this line, and thus remove the newline printed.
         # We would break JSBugMon.
         print("Found cached shell...")
@@ -647,7 +625,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
         return
     elif cached_no_shell.is_file():
-        raise Exception("Found a cached shell that failed compilation...")
+        raise OSError("Found a cached shell that failed compilation...")
     elif shell.get_shell_cache_dir().is_dir():
         print("Found a cache dir without a successful/failed shell...")
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
@@ -659,11 +637,11 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     use_s3cache = s3cache_obj.connect()
 
     if use_s3cache:
-        if s3cache_obj.downloadFile(str(shell.get_shell_name_without_ext() + ".busted"),
-                                    str(shell.get_shell_cache_js_bin_path()) + ".busted"):
-            raise Exception("Found a .busted file for rev " + shell.get_hg_hash())
+        if s3cache_obj.downloadFile(f"{shell.get_shell_name_without_ext()}.busted",
+                                    f"{shell.get_shell_cache_js_bin_path()}.busted"):
+            raise OSError(f"Found a .busted file for rev {shell.get_hg_hash()}")
 
-        if s3cache_obj.downloadFile(str(shell.get_shell_name_without_ext() + ".tar.bz2"),
+        if s3cache_obj.downloadFile(f"{shell.get_shell_name_without_ext()}.tar.bz2",
                                     str(shell.get_s3_tar_with_ext_full_path())):
             print("Extracting shell...")
             with tarfile.open(str(shell.get_s3_tar_with_ext_full_path()), "r") as f:
@@ -677,14 +655,11 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     try:
         if updateToRev:
             # Print *with* a trailing newline to avoid breaking other stuff
-            print("Updating to rev %s in the %s repository..." % (
-                updateToRev,
-                str(shell.build_opts.repo_dir)))
+            print(f"Updating to rev {updateToRev} in the {shell.build_opts.repo_dir} repository...")
             subprocess.run(["hg", "-R", str(shell.build_opts.repo_dir),
                             "update", "-C", "-r", updateToRev],
                            check=True,
-                           # pylint: disable=no-member
-                           cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),
+                           cwd=os.getcwd(),
                            stderr=subprocess.DEVNULL,
                            timeout=9999)
         if shell.build_opts.patch_file:
@@ -697,12 +672,17 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
         raise
     except (subprocess.CalledProcessError, OSError) as ex:
-        # Remove the cache dir, but recreate it with only the .busted file.
-        sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
-        shell.get_shell_cache_dir().mkdir()
-        sm_compile_helpers.createBustedFile(cached_no_shell, ex)
+        shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
+        if shell.get_shell_cache_js_bin_path().is_file():  # Switch to contextlib.suppress when we are fully on Python 3
+            shell.get_shell_cache_js_bin_path().unlink()
+        with io.open(str(cached_no_shell), "a", encoding="utf-8", errors="replace") as f:
+            f.write(f"\nCaught exception {ex!r} ({ex})\n")
+            f.write("Backtrace:\n")
+            f.write(f"{traceback.format_exc()}\n")
+        print(f"Compilation failed ({ex}) (details in {cached_no_shell})")
+
         if use_s3cache:
-            s3cache_obj.uploadFileToS3(str(shell.get_shell_cache_js_bin_path()) + ".busted")
+            s3cache_obj.uploadFileToS3(f"{shell.get_shell_cache_js_bin_path()}.busted")
         raise
     finally:
         if shell.build_opts.patch_file:
@@ -714,7 +694,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if updateLatestTxt:
             # So js-dbg-64-dm-darwin-cdcd33fd6e39 becomes js-dbg-64-dm-darwin-latest.txt with
             # js-dbg-64-dm-darwin-cdcd33fd6e39 as its contents.
-            txt_info = "-".join(str(shell.get_s3_tar_name_with_ext()).split("-")[:-1] + ["latest"]) + ".txt"
+            txt_info = f'{"-".join(str(shell.get_s3_tar_name_with_ext()).split("-")[:-1] + ["latest"])}.txt'
             s3cache_obj.uploadStrToS3("", txt_info, str(shell.get_s3_tar_name_with_ext()))
         shell.get_s3_tar_with_ext_full_path().unlink()
 

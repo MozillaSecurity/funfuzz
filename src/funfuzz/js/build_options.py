@@ -7,24 +7,15 @@
 """Allows specification of build configuration parameters.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import argparse
-from builtins import object
 import hashlib
 import io
+from pathlib import Path
 import platform
 import random
 import sys
 
-from past.builtins import range
-
 from ..util import hg_helpers
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 DEFAULT_TREES_LOCATION = Path.home() / "trees"
 
@@ -33,7 +24,7 @@ def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-
     return random.random() < p
 
 
-class Randomizer(object):  # pylint: disable=missing-docstring
+class Randomizer:  # pylint: disable=missing-docstring
     def __init__(self):
         self.options = []
 
@@ -46,7 +37,7 @@ class Randomizer(object):  # pylint: disable=missing-docstring
 
     def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
-        def getWeight(o):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+        def getWeight(o):  # pylint: disable=invalid-name,missing-return-doc
             return o["slowDeviceWeight"]
         return [o["name"] for o in self.options if chance(getWeight(o))]
 
@@ -106,10 +97,10 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                   dest="disableProfiling",
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
-    # Alternative compiler for Linux and Windows. Clang is always turned on, on Macs.
+    # Alternative compiler for Linux. Clang is always turned on, on Win and Mac.
     randomizeBool(["--build-with-clang"], 0.5, 0.5,
                   dest="buildWithClang",
-                  help='Build with clang. Defaults to "True" on Macs, "%(default)s" otherwise.')
+                  help='Build with clang. Defaults to "True" on Win and Mac, "%(default)s" otherwise.')
     # Memory debuggers
     randomizeBool(["--build-with-asan"], 0.3, 0,
                   dest="buildWithAsan",
@@ -162,7 +153,7 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     return parser, randomizer
 
 
-def parse_shell_opts(args):  # pylint: disable=too-many-branches
+def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
     """Parses shell options into a build_options object.
 
     Args:
@@ -177,6 +168,9 @@ def parse_shell_opts(args):  # pylint: disable=too-many-branches
     if platform.system() == "Darwin":
         build_options.buildWithClang = True  # Clang seems to be the only supported compiler
 
+    if platform.system() == "Windows":
+        build_options.buildWithClang = True
+
     if build_options.enableArmSimulatorObsolete:
         build_options.enableSimulatorArm32 = True
 
@@ -186,10 +180,13 @@ def parse_shell_opts(args):  # pylint: disable=too-many-branches
         build_options.build_options_str = args
         valid = areArgsValid(build_options)
         if not valid[0]:
-            print("WARNING: This set of build options is not tested well because: %s" % valid[1])
+            print(f"WARNING: This set of build options is not tested well because: {valid[1]}")
+
+    if build_options.patch_file:
+        build_options.patch_file = build_options.patch_file.expanduser().resolve()
 
     # Ensures releng machines do not enter the if block and assumes mozilla-central always exists
-    if DEFAULT_TREES_LOCATION.is_dir():  # pylint: disable=no-member
+    if DEFAULT_TREES_LOCATION.is_dir():
         # Repositories do not get randomized if a repository is specified.
         if build_options.repo_dir:
             build_options.repo_dir = build_options.repo_dir.expanduser()
@@ -207,9 +204,9 @@ def parse_shell_opts(args):  # pylint: disable=too-many-branches
 
         if build_options.patch_file:
             hg_helpers.ensure_mq_enabled()
-            assert build_options.patch_file.resolve().is_file()
+            assert build_options.patch_file.is_file()
     else:
-        sys.exit("DEFAULT_TREES_LOCATION not found at: %s. Exiting..." % DEFAULT_TREES_LOCATION)
+        sys.exit(f"DEFAULT_TREES_LOCATION not found at: {DEFAULT_TREES_LOCATION}. Exiting...")
 
     return build_options
 
@@ -244,20 +241,21 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     fileName.append("windows" if platform.system() == "Windows" else platform.system().lower())
     if build_options.patch_file:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
-        fileName.append(build_options.patch_file.name)
-        with io.open(str(build_options.patch_file.resolve()), "r", encoding="utf-8", errors="replace") as f:
+        # Also replace any "." in the name with "_" so pathlib .stem and suffix-wrangling work properly
+        fileName.append(build_options.patch_file.name.replace(".", "_"))
+        with io.open(str(build_options.patch_file), "r", encoding="utf-8", errors="replace") as f:
             readResult = f.read()  # pylint: disable=invalid-name
         # Append the patch hash, but this is not equivalent to Mercurial's hash of the patch.
-        fileName.append(hashlib.sha512(readResult).hexdigest()[:12])
+        fileName.append(hashlib.sha512(readResult.encode("utf-8")).hexdigest()[:12])
 
-    assert "" not in fileName, 'fileName "' + repr(fileName) + '" should not have empty elements.'
+    assert "" not in fileName, f'fileName "{fileName!r}" should not have empty elements.'
     return "-".join(fileName)
 
 
 def computeShellName(build_options, buildRev):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return the shell type together with the build revision."""
-    return computeShellType(build_options) + "-" + buildRev
+    return f"{computeShellType(build_options)}-{buildRev}"
 
 
 def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
@@ -301,22 +299,18 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.buildWithClang:
         if platform.system() == "Linux" and not args.buildWithAsan:
             return False, "We do not really care about non-Asan clang-compiled Linux builds yet."
-        if platform.system() == "Windows":
-            return False, "Clang builds on Windows are not supported well yet."
 
     if args.buildWithAsan:
         if not args.buildWithClang:
-            return False, "We should test ASan builds that are only compiled with Clang."
-        # Also check for determinism to prevent LLVM compilation from happening on releng machines,
-        # since releng machines only test non-deterministic builds.
-        if not args.enableMoreDeterministic:
-            return False, "We should test deterministic ASan builds."
-        if platform.system() == "Linux":  # https://github.com/MozillaSecurity/funfuzz/issues/25
-            return False, "Linux ASan builds cannot yet submit to FuzzManager."
-        if platform.system() == "Darwin":  # https://github.com/MozillaSecurity/funfuzz/issues/25
-            return False, "Mac ASan builds cannot yet submit to FuzzManager."
+            return False, "We must only test ASan builds with Clang, else GCC builds crash on startup."
+        if args.enable32:
+            return False, "32-bit ASan builds fail on 18.04 due to https://github.com/google/sanitizers/issues/954."
+        if platform.system() == "Linux" and "Microsoft" in platform.release():
+            return False, "Linux ASan builds cannot yet work in WSL though there may be workarounds."
         if platform.system() == "Windows":
             return False, "Asan is not yet supported on Windows."
+        if platform.system() == "Windows" and args.enable32:
+            return False, "ASan is explicitly not supported in 32-bit Windows builds."
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
         if platform.system() == "Windows":

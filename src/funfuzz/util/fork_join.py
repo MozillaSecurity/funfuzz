@@ -7,26 +7,18 @@
 """Functions dealing with multiple processes.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import io
 import multiprocessing
+from pathlib import Path
 import sys
-
-from past.builtins import range
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 
 # Call |fun| in a bunch of separate processes, then wait for them all to finish.
 # fun is called with someArgs, plus an additional argument with a numeric ID.
 # |fun| must be a top-level function (not a closure) so it can be pickled on Windows.
 def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-name,missing-docstring
-    def showFile(fn):  # pylint: disable=invalid-name,missing-docstring
-        print("==== %s ====" % fn)
+    def showFile(fn):  # pylint: disable=invalid-name
+        print(f"==== {fn} ====")
         print()
         with io.open(str(fn), "r", encoding="utf-8", errors="replace") as f:
             for line in f:
@@ -34,20 +26,20 @@ def forkJoin(logDir, numProcesses, fun, *someArgs):  # pylint: disable=invalid-n
         print()
 
     # Fork a bunch of processes
-    print("Forking %s children..." % str(numProcesses))
+    print(f"Forking {numProcesses} children...")
     ps = []  # pylint: disable=invalid-name
     for i in range(numProcesses):
         p = multiprocessing.Process(  # pylint: disable=invalid-name
-            target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name="Parallel process " + str(i))
+            target=redirectOutputAndCallFun, args=[logDir, i, fun, someArgs], name=f"Parallel process {i}")
         p.start()
         ps.append(p)
 
     # Wait for them all to finish, and splat their outputs
     for i in range(numProcesses):
         p = ps[i]  # pylint: disable=invalid-name
-        print("=== Waiting for child #%s (%s) to finish... ===" % (str(i), str(p.pid)))
+        print(f"=== Waiting for child #{i} ({p.pid}) to finish... ===")
         p.join()
-        print("=== Child process #%s exited with code %s ===" % (str(i), str(p.exitcode)))
+        print(f"=== Child process #{i} exited with code {p.exitcode} ===")
         print()
         showFile(log_name(logDir, i, "out"))
         showFile(log_name(logDir, i, "err"))
@@ -66,16 +58,12 @@ def log_name(log_dir, i, log_type):
     Returns:
         str: The forkjoin log file path
     """
-    return str(Path(log_dir) / ("forkjoin-%s-%s.txt" % (i, log_type)))
+    return str(Path(log_dir) / f"forkjoin-{i}-{log_type}.txt")
 
 
 def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=invalid-name,missing-docstring
-    if sys.version_info.major == 2:
-        sys.stdout = io.open(log_name(logDir, i, "out"), "wb", buffering=0)
-        sys.stderr = io.open(log_name(logDir, i, "err"), "wb", buffering=0)
-    else:
-        sys.stdout = io.open(log_name(logDir, i, "out"), "w", buffering=1)
-        sys.stderr = io.open(log_name(logDir, i, "err"), "w", buffering=1)
+    sys.stdout = io.open(log_name(logDir, i, "out"), "w", buffering=1)
+    sys.stderr = io.open(log_name(logDir, i, "err"), "w", buffering=1)
     fun(*(someArgs + (i,)))
 
 
@@ -89,7 +77,7 @@ def redirectOutputAndCallFun(logDir, i, fun, someArgs):  # pylint: disable=inval
 
 # def test_forkJoin_inner(adj, noun, forkjoin_id):
 #     import time
-#     print("%s %s" % (adj, noun))
+#     print(f"{adj} {noun}")
 #     print(forkjoin_id)
 #     if forkjoin_id == 5:
 #         time.sleep(1)

@@ -14,16 +14,9 @@ Config-ish bits should move to bot, OR move into a config file,
 OR this file should subprocess-run ITSELF rather than using a while loop.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
-import os
+import subprocess
 import sys
 import time
-
-if sys.version_info.major == 2 and os.name == "posix":
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
 
 
 def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-type-doc
@@ -32,16 +25,16 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
     i = 0
     while True:
         i += 1
-        print("localLoop #%d!" % i)
+        print(f"localLoop #{i}!")
         for cmd in cmd_seq:
             try:
                 subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
-                print("Something went wrong when calling: %r" % (cmd,))
-                print("%r" % (ex,))
+                print(f"Something went wrong when calling: {cmd!r}")
+                print(f"{ex!r}")
                 import traceback
                 print(traceback.format_exc())
-                print("Waiting %d seconds..." % wait_time)
+                print(f"Waiting {wait_time} seconds...")
                 time.sleep(wait_time)
                 break
 

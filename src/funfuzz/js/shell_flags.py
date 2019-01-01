@@ -7,19 +7,12 @@
 """Allows detection of support for various command-line flags.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
+from functools import lru_cache
 import multiprocessing
 import random
 import re
-import sys
 
 from . import inspect_shell
-
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
 
 
 @lru_cache(maxsize=None)
@@ -110,9 +103,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if shell_supports_flag(shell_path, "--ion-instruction-reordering=on") and chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
         input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
-    if shell_supports_flag(shell_path, "--ion-shared-stubs=on") and chance(.2):
-        # m-c rev 257573:3655d19ce241, see bug 1168756
-        input_list.append("--ion-shared-stubs=" + ("on" if chance(.1) else "off"))
     if shell_supports_flag(shell_path, "--ion-regalloc=testbed") and chance(.2):
         # m-c rev 248962:47e92bae09fd, see bug 1170840
         input_list.append("--ion-regalloc=testbed")
@@ -227,6 +217,10 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--no-streams") and chance(.2):
+        # m-c rev 442977:c6a8b4d451af, see bug 1501734
+        args.append("--no-streams")
+
     if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.2):
         # m-c rev 406115:321c29f48508, see bug 903519
         args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
@@ -244,12 +238,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         elif (chance(.5) and multiprocessing.cpu_count() > 1 and
               shell_supports_flag(shell_path, "--cpu-count=1")):
             # Adjusts default number of threads for offthread compilation (turned on by default)
-            args.append("--cpu-count=%s" % random.randint(2, (multiprocessing.cpu_count() * 2)))
-
-    # Stop testing --enable-streams until bug 1445854 is fixed.
-    # if shell_supports_flag(shell_path, "--enable-streams") and chance(.2):
-    #     # m-c rev 371894:64bbc26920aa, see bug 1272697
-    #     args.append("--enable-streams")
+            args.append(f"--cpu-count={random.randint(2, (multiprocessing.cpu_count() * 2))}")
 
     if shell_supports_flag(shell_path, "--no-unboxed-objects") and chance(.2):
         # m-c rev 244297:322487136b28, see bug 1162199
@@ -262,7 +251,8 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
     if shell_supports_flag(shell_path, "--gc-zeal=1,1") and chance(.9):
         allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
-        highest_gczeal = 18
+        # Lowered from 25 due to bug 1516138
+        highest_gczeal = 23
         gczeal_value = highest_gczeal - 3  # 3 levels disabled below
         gczeal_a = final_value = 3 if chance(.001) else random.randint(0, gczeal_value)  # 3 is for tests
 
@@ -276,18 +266,18 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
 
         if gczeal_a >= 3:  # gczeal 3 does not exist, so repurpose it
             gczeal_a += 1
-            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+            final_value = f"{gczeal_a};{gczeal_b}"
         if gczeal_a >= 5:  # gczeal 5 does not exist, so repurpose it
             gczeal_a += 1
-            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+            final_value = f"{gczeal_a};{gczeal_b}"
         if gczeal_a >= 6:  # gczeal 6 does not exist, so repurpose it
             gczeal_a += 1
-            final_value = "%s;%s" % (gczeal_a, gczeal_b)
+            final_value = f"{gczeal_a};{gczeal_b}"
 
         # m-c rev 216625:03c6a758c9e8, see bug 1101602
         if not isinstance(final_value, int) and ";" in final_value:  # Bug 1453852
             final_value = final_value.split(";")[0]
-        args.append("--gc-zeal=%s,%s" % (final_value, allocations_number))
+        args.append(f"--gc-zeal={final_value},{allocations_number}")
 
     if shell_supports_flag(shell_path, "--no-incremental-gc") and chance(.2):
         # m-c rev 211115:35025fd9e99b, see bug 958492
@@ -338,6 +328,8 @@ def basic_flag_sets(shell_path):
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
+        ["--fuzzing-safe"],
+        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],

@@ -10,23 +10,14 @@ the stack.
 Not merged into Lithium as it still relies on grab_crash_log.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import argparse
 import logging
-import os
-import re
-import sys
+from pathlib import Path
 
-import lithium.interestingness.timed_run as timed_run
+import lithium.interestingness.timed_run as timedrun
 from lithium.interestingness.utils import file_contains
 
 from . import os_ops
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 
 def interesting(cli_args, temp_prefix):
@@ -40,8 +31,7 @@ def interesting(cli_args, temp_prefix):
         bool: True if the intended signature shows up on the stack, False otherwise.
     """
     parser = argparse.ArgumentParser(prog="crashesat",
-                                     usage=(re.search("python[2-3]", os.__file__).group(0) +
-                                            " -m lithium %(prog)s [options] binary [flags] testcase.ext"))
+                                     usage="python3 -m lithium %(prog)s [options] binary [flags] testcase.ext")
     parser.add_argument("-r", "--regex", action="store_true", default=False,
                         help="Allow search for regular expressions instead of strings.")
     parser.add_argument("-s", "--sig", default="", type=str,
@@ -54,15 +44,15 @@ def interesting(cli_args, temp_prefix):
     log = logging.getLogger(__name__)
 
     # Examine stack for crash signature, this is needed if args.sig is specified.
-    runinfo = timed_run.timed_run(args.cmd_with_flags, args.timeout, temp_prefix)
-    if runinfo.sta == timed_run.CRASHED:
+    runinfo = timedrun.timed_run(args.cmd_with_flags, args.timeout, temp_prefix)
+    if runinfo.sta == timedrun.CRASHED:
         os_ops.grab_crash_log(args.cmd_with_flags[0], runinfo.pid, temp_prefix, True)
 
-    crash_log = Path(temp_prefix + "-crash.txt")
-    time_str = " (%.3f seconds)" % runinfo.elapsedtime
+    crash_log = Path(f"{temp_prefix}-crash.txt")
+    time_str = f" ({runinfo.elapsedtime:.3f} seconds)"
 
-    if runinfo.sta == timed_run.CRASHED:
-        if crash_log.resolve().is_file():  # pylint: disable=no-member
+    if runinfo.sta == timedrun.CRASHED:
+        if crash_log.resolve().is_file():
             # When using this script, remember to escape characters, e.g. "\(" instead of "(" !
             if file_contains(str(crash_log), args.sig, args.regex)[0]:
                 log.info("Exit status: %s%s", runinfo.msg, time_str)

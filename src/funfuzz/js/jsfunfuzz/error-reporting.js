@@ -7,7 +7,10 @@ function confused(s)
 {
   if (jsshell) {
     // Magic string that js_interesting looks for
-    print("jsfunfuzz broke its own scripting environment: " + s);
+    // Currently disabled until its use can be figured out
+    // print("jsfunfuzz broke" + " its own scripting environment: " + s);
+    // Replaced with the following:
+    print("jsfunfuzz got confused: " + s);
     quit();
   }
 }

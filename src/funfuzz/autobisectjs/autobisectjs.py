@@ -7,17 +7,16 @@
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
 
-from backports.print_function import print_
 from lithium.interestingness.utils import rel_or_abs_import
 
 from . import known_broken_earliest_working as kbew
@@ -29,14 +28,6 @@ from ..util import s3cache
 from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -64,8 +55,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     # Specify how the shell will be built.
     parser.add_option("-b", "--build",
                       dest="build_options",
-                      help='Specify js shell build options, e.g. -b "--enable-debug --32"'
-                           "(%s -m funfuzz.js.build_options --help)" % re.search("python[2-3]", os.__file__).group(0))
+                      help=('Specify js shell build options, e.g. -b "--enable-debug --32"'
+                            "(python3 -m funfuzz.js.build_options --help)"))
 
     parser.add_option("--resetToTipFirst", dest="resetRepoFirst",
                       action="store_true",
@@ -117,7 +108,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     (options, args) = parser.parse_args()
     if options.useTreeherderBinaries:
-        print_("TBD: Bisection using downloaded shells is temporarily not supported.", flush=True)
+        print("TBD: Bisection using downloaded shells is temporarily not supported.", flush=True)
         sys.exit(0)
 
     options.build_options = build_options.parse_shell_opts(options.build_options)
@@ -127,24 +118,24 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     # First check that the testcase is present.
     if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
-        print_(flush=True)
-        print_("List of parameters to be passed to the shell is: %s" % " ".join(options.runtime_params), flush=True)
-        print_(flush=True)
-        raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
+        print(flush=True)
+        print(f'List of parameters to be passed to the shell is: {" ".join(options.runtime_params)}', flush=True)
+        print(flush=True)
+        raise OSError(f"Testcase at {options.runtime_params[-1]} is not present.")
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
 
     extraFlags = []  # pylint: disable=invalid-name
 
     if options.useInterestingnessTests:
-        if len(args) < 1:
-            print_("args are: %s" % args, flush=True)
+        if not args:
+            print(f"args are: {args}", flush=True)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
                 extraFlags = a[8:].split(" ")  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
-    elif len(args) >= 1:
+    elif args:
         parser.error("Too many arguments.")
     else:
         options.testAndLabel = internalTestAndLabel(options)
@@ -172,8 +163,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     #     raise Exception("endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration")
 
     if options.parameters == "-e 42":
-        print_("Note: since no parameters were specified, "
-               "we're just ensuring the shell does not crash on startup/shutdown.", flush=True)
+        print("Note: since no parameters were specified, "
+              "we're just ensuring the shell does not crash on startup/shutdown.", flush=True)
 
     if options.nameOfTreeherderBranch != "mozilla-inbound" and not options.useTreeherderBinaries:
         raise Exception("Setting the name of branches only works for treeherder shell bisection.")
@@ -184,7 +175,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
     # pylint: disable=too-many-locals,too-many-statements
     repo_dir = str(repo_dir)
-    print_("%s | Bisecting on: %s" % (time.asctime(), repo_dir), flush=True)
+    print(f"{time.asctime()} | Bisecting on: {repo_dir}", flush=True)
 
     hgPrefix = ["hg", "-R", repo_dir]  # pylint: disable=invalid-name
 
@@ -193,7 +184,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     realStartRepo = sRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.startRepo)[0]
     # pylint: disable=invalid-name
     realEndRepo = eRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.endRepo)[0]
-    sps.vdump("Bisecting in the range " + sRepo + ":" + eRepo)
+    sps.vdump(f"Bisecting in the range {sRepo}:{eRepo}")
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
@@ -204,12 +195,12 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     # Reset bisect ranges and set skip ranges.
     subprocess.run(hgPrefix + ["bisect", "-r"],
                    check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   cwd=os.getcwd(),
                    timeout=99)
     if options.skipRevs:
         subprocess.run(hgPrefix + ["bisect", "--skip", options.skipRevs],
                        check=True,
-                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                       cwd=os.getcwd(),
                        timeout=300)
 
     labels = {}
@@ -223,7 +214,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         mid_bisect_output = subprocess.run(
             hgPrefix + ["bisect", "-U", "-b", eRepo],
             check=True,
-            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            cwd=os.getcwd(),
             stdout=subprocess.PIPE,
             timeout=300).stdout.decode("utf-8", errors="replace")
         currRev = hg_helpers.get_cset_hash_from_bisect_msg(
@@ -248,15 +239,15 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                print_("Skipped 20 times, stopping autobisectjs.", flush=True)
+                print("Skipped 20 times, stopping autobisectjs.", flush=True)
                 break
-        print_("%s (%s) " % (label[0], label[1]), end=" ", flush=True)
+        print(f"{label[0]} ({label[1]}) ", end=" ", flush=True)
 
         if iterNum <= 0:
-            print_("Finished testing the initial boundary revisions...", end=" ", flush=True)
+            print("Finished testing the initial boundary revisions...", end=" ", flush=True)
         else:
-            print_("Bisecting for the n-th round where n is %s and 2^n is %s ..." % (iterNum, 2**iterNum),
-                   end=" ", flush=True)
+            print(f"Bisecting for the n-th round where n is {iterNum} and 2^n is {2**iterNum} ...",
+                  end=" ", flush=True)
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
@@ -268,7 +259,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         iterNum += 1
         endTime = time.time()
         oneRunTime = endTime - startTime
-        print_("This iteration took %.3f seconds to run." % oneRunTime, flush=True)
+        print(f"This iteration took {oneRunTime:.3f} seconds to run.", flush=True)
 
     if blamedRev is not None:
         checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
@@ -280,51 +271,51 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     sps.vdump("Resetting working directory")
     subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
                    check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   cwd=os.getcwd(),
                    timeout=999)
     hg_helpers.destroyPyc(repo_dir)
 
-    print_(time.asctime(), flush=True)
+    print(time.asctime(), flush=True)
 
 
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
     """Use autobisectjs without interestingness tests to examine the revision of the js shell."""
-    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc,too-many-return-statements
+    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-return-doc,too-many-return-statements
         # pylint: disable=invalid-name
         (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.runtime_params,
                                                             options.build_options.runWithVg)
 
-        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
+        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):  # pylint: disable=no-else-return
             return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
-            return "bad", "Specified-bad exit code " + str(exitCode)
+            return "bad", f"Specified-bad exit code {exitCode}"
         elif options.watchExitCode is None and 129 <= exitCode <= 159:
-            return "bad", "High exit code " + str(exitCode)
+            return "bad", f"High exit code {exitCode}"
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
+            # pylint: disable=no-else-return
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
-                return "bad", "Specified-bad exit code %s (after converting to signal)" % exitCode
+                return "bad", f"Specified-bad exit code {exitCode} (after converting to signal)"
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
                 return "good", "Bad output, but not the specified one"
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
                 return "good", "Negative exit code, but not the specified one"
-            return "bad", "Negative exit code " + str(exitCode)
+            return "bad", f"Negative exit code {exitCode}"
         elif exitCode == 0:
             return "good", "Exit code 0"
-        elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
-                options.output != "") and (stdoutStderr.find("usage: js [") != -1 or
-                                           stdoutStderr.find("Error: Short option followed by junk") != -1 or
-                                           stdoutStderr.find("Error: Invalid long option:") != -1 or
-                                           stdoutStderr.find("Error: Invalid short option:") != -1):
+        elif exitCode in (1, 2) and options.output != "" and (    # pylint: disable=too-many-boolean-expressions
+                stdoutStderr.find("usage: js [") != -1 or
+                stdoutStderr.find("Error: Short option followed by junk") != -1 or
+                stdoutStderr.find("Error: Invalid long option:") != -1 or
+                stdoutStderr.find("Error: Invalid short option:") != -1):
             return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
-            return "good", "Acceptable exit code " + str(exitCode)
+            return "good", f"Acceptable exit code {exitCode}"
         elif options.watchExitCode is not None:
-            return "good", "Unknown exit code " + str(exitCode) + ", but not the specified one"
-        return "bad", "Unknown exit code " + str(exitCode)
+            return "good", f"Unknown exit code {exitCode}, but not the specified one"
+        return "bad", f"Unknown exit code {exitCode}"
     return inner
 
 
@@ -334,11 +325,10 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
     conditionScript = rel_or_abs_import(interestingness[0])  # pylint: disable=invalid-name
     conditionArgPrefix = interestingness[1:]  # pylint: disable=invalid-name
 
-    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
+    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-return-doc
         # pylint: disable=invalid-name
         conditionArgs = conditionArgPrefix + [str(shellFilename)] + options.runtime_params
-        temp_dir = Path(tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash))
+        temp_dir = Path(tempfile.mkdtemp(prefix=f"abExtTestAndLabel-{hgHash}"))
         temp_prefix = temp_dir / "t"
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
@@ -363,7 +353,7 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     hg_parent_output = subprocess.run(
         ["hg", "-R", str(repo_dir)] + ["parent", "--template={node|short},", "-r", blamedRev],
         check=True,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     parents = hg_parent_output.split(",")[:-1]
@@ -374,24 +364,24 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     for p in parents:
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
-            print_(flush=True)
-            print_("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now." % p, flush=True)
+            print(flush=True)
+            print(f"Oops! We didn't test rev {p}, a parent of the blamed revision! Let's do that now.", flush=True)
             if not hg_helpers.isAncestor(repo_dir, startRepo, p) and \
                     not hg_helpers.isAncestor(repo_dir, endRepo, p):
-                print_("We did not test rev %s because it is not a descendant of either %s or %s." % (
-                    p, startRepo, endRepo), flush=True)
+                print(f"We did not test rev {p} because it is not a descendant of either {startRepo} or {endRepo}.",
+                      flush=True)
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
             labels[p] = label
-            print_("%s (%s) " % (label[0], label[1]), flush=True)
-            print_("As expected, the parent's label is the opposite of the blamed rev's label.", flush=True)
+            print(f"{label[0]} ({label[1]}) ", flush=True)
+            print("As expected, the parent's label is the opposite of the blamed rev's label.", flush=True)
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            print_('Parent rev %s was marked as "skip", so the regression window includes it.' % (p,), flush=True)
+            print(f'Parent rev {p} was marked as "skip", so the regression window includes it.', flush=True)
         elif labels[p][0] == blamedGoodOrBad:
-            print_("Bisect lied to us! Parent rev %s was also %s!" % (p, blamedGoodOrBad), flush=True)
+            print(f"Bisect lied to us! Parent rev {p} was also {blamedGoodOrBad}!", flush=True)
             bisectLied = True
         else:
             assert labels[p][0] == {"good": "bad", "bad": "good"}[blamedGoodOrBad]
@@ -400,23 +390,23 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     if bisectLied:
         if missedCommonAncestor:
             ca = hg_helpers.findCommonAncestor(repo_dir, parents[0], parents[1])
-            print_(flush=True)
-            print_("Bisect blamed the merge because our initial range did not include one", flush=True)
-            print_("of the parents.", flush=True)
-            print_("The common ancestor of %s and %s is %s." % (parents[0], parents[1], ca), flush=True)
+            print(flush=True)
+            print("Bisect blamed the merge because our initial range did not include one", flush=True)
+            print("of the parents.", flush=True)
+            print(f"The common ancestor of {parents[0]} and {parents[1]} is {ca}.", flush=True)
             label = testRev(ca)
-            print_("%s (%s) " % (label[0], label[1]), flush=True)
-            print_("Consider re-running autobisectjs with -s %s -e %s" % (ca, blamedRev), flush=True)
-            print_("in a configuration where earliestWorking is before the common ancestor.", flush=True)
+            print(f"{label[0]} ({label[1]}) ", flush=True)
+            print(f"Consider re-running autobisectjs with -s {ca} -e {blamedRev}", flush=True)
+            print("in a configuration where earliestWorking is before the common ancestor.", flush=True)
         else:
-            print_(flush=True)
-            print_("Most likely, bisect's result was unhelpful because one of the", flush=True)
-            print_('tested revisions was marked as "good" or "bad" for the wrong reason.', flush=True)
-            print_("I don't know which revision was incorrectly marked. Sorry.", flush=True)
+            print(flush=True)
+            print("Most likely, bisect's result was unhelpful because one of the", flush=True)
+            print('tested revisions was marked as "good" or "bad" for the wrong reason.', flush=True)
+            print("I don't know which revision was incorrectly marked. Sorry.", flush=True)
     else:
-        print_(flush=True)
-        print_("The bug was introduced by a merge (it was not present on either parent).", flush=True)
-        print_("I don't know which patches from each side of the merge contributed to the bug. Sorry.", flush=True)
+        print(flush=True)
+        print("The bug was introduced by a merge (it was not present on either parent).", flush=True)
+        print("I don't know which patches from each side of the merge contributed to the bug. Sorry.", flush=True)
 
 
 def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-return-doc
@@ -428,7 +418,7 @@ def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-ret
         if line.find("<") != -1 and line.find("@") != -1 and line.find(">") != -1:
             line = " ".join(line.split(" ")[:-1])
         elif line.startswith("changeset:") and "mozilla-central" in str(repo):
-            line = "changeset:   https://hg.mozilla.org/mozilla-central/rev/" + line.split(":")[-1]
+            line = f'changeset:   https://hg.mozilla.org/mozilla-central/rev/{line.split(":")[-1]}'
         sanitizedMsgList.append(line)
     return "\n".join(sanitizedMsgList)
 
@@ -439,9 +429,9 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
     outputResult = subprocess.run(
-        hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev],
+        hgPrefix + ["bisect", "-U", f"--{hgLabel}", currRev],
         check=True,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
@@ -451,20 +441,20 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         repo_dir = options.build_options.repo_dir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
-        print_(flush=True)
-        print_(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
-        print_(flush=True)
+        print(flush=True)
+        print(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
+        print(flush=True)
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
-        print_(flush=True)
-        print_(flush=True)
-        print_("autobisectjs shows this is probably related to the following changeset:", flush=True)
-        print_(flush=True)
-        print_(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
-        print_(flush=True)
+        print(flush=True)
+        print(flush=True)
+        print("autobisectjs shows this is probably related to the following changeset:", flush=True)
+        print(flush=True)
+        print(sanitizeCsetMsg(outputResult, repo_dir), flush=True)
+        print(flush=True)
         blamedGoodOrBad = m.group(1)
         blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
@@ -477,7 +467,7 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
 
     currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
-        print_("Resetting to default revision...", flush=True)
+        print("Resetting to default revision...", flush=True)
         subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
         hg_helpers.destroyPyc(repo_dir)
         raise Exception("hg did not suggest a changeset to test!")
@@ -533,7 +523,7 @@ def main():
     with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
                  if options.useTreeherderBinaries else sm_compile_helpers.get_lock_dir_path(Path.home(), repo_dir)):
         if options.useTreeherderBinaries:
-            print_("TBD: We need to switch to the autobisect repository.", flush=True)
+            print("TBD: We need to switch to the autobisect repository.", flush=True)
             sys.exit(0)
         else:  # Bisect using local builds
             findBlamedCset(options, repo_dir, compile_shell.makeTestRev(options))

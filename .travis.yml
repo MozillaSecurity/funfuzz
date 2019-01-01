@@ -5,104 +5,6 @@ cache: pip
 matrix:
   fast_finish: true
   include:
-    - python: "2.7"
-      dist: xenial
-      env: >
-        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
-      addons:
-        apt:
-          update: true
-          config:
-            retries: true
-          # sources:
-          #   - ubuntu-toolchain-r-test
-          packages:
-            - autoconf2.13
-            - cargo
-            - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
-            - gdb
-            - lib32z1  # needed by 32-bit builds
-            - libc6-dbg  # needed by Valgrind
-            - valgrind
-    - python: "2.7"
-      dist: xenial
-      env: >
-        BUILD="--disable-debug --disable-profiling --without-intl-api"
-      addons:
-        apt:
-          update: true
-          config:
-            retries: true
-          # sources:
-          #   - ubuntu-toolchain-r-test
-          packages:
-            - autoconf2.13
-            - cargo
-            - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
-            - gdb
-            - lib32z1  # needed by 32-bit builds
-            - libc6-dbg  # needed by Valgrind
-            - valgrind
-    - python: "3.5"
-      dist: xenial
-      env: >
-        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
-      addons:
-        apt:
-          update: true
-          config:
-            retries: true
-          # sources:
-          #   - ubuntu-toolchain-r-test
-          packages:
-            - autoconf2.13
-            - cargo
-            - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
-            - gdb
-            - lib32z1  # needed by 32-bit builds
-            - libc6-dbg  # needed by Valgrind
-            - valgrind
-    - python: "3.5"
-      dist: xenial
-      env: >
-        BUILD="--disable-debug --disable-profiling --without-intl-api"
-      addons:
-        apt:
-          update: true
-          config:
-            retries: true
-          # sources:
-          #   - ubuntu-toolchain-r-test
-          packages:
-            - autoconf2.13
-            - cargo
-            - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
-            - gdb
-            - lib32z1  # needed by 32-bit builds
-            - libc6-dbg  # needed by Valgrind
-            - valgrind
     - python: "3.6"
       dist: xenial
       env: >
@@ -117,7 +19,6 @@ matrix:
           #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
-            - cargo
             - expect-dev  # unbuffer requires this
             # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
             # - g++-6
@@ -141,7 +42,6 @@ matrix:
           #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
-            - cargo
             - expect-dev  # unbuffer requires this
             # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
             # - g++-6
@@ -166,7 +66,6 @@ matrix:
           #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
-            - cargo
             - expect-dev  # unbuffer requires this
             # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
             # - g++-6
@@ -190,7 +89,6 @@ matrix:
           #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
-            - cargo
             - expect-dev  # unbuffer requires this
             # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
             # - g++-6
@@ -216,32 +114,6 @@ matrix:
           #   - ubuntu-toolchain-r-test
           packages:
             - autoconf2.13
-            - cargo
-            - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
-            - gdb
-            - lib32z1  # needed by 32-bit builds
-            - libc6-dbg  # needed by Valgrind
-            - valgrind
-    - python: "pypy3.5-5.10.1"
-      dist: xenial
-      env: >
-        BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
-      addons:
-        apt:
-          update: true
-          config:
-            retries: true
-          # sources:
-          #   - ubuntu-toolchain-r-test
-          packages:
-            - autoconf2.13
-            - cargo
             - expect-dev  # unbuffer requires this
             # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
             # - g++-6
@@ -254,30 +126,7 @@ matrix:
             - valgrind
   allow_failures:
     - python: "nightly"
-    - python: "pypy3.5-5.10.1"
 before_install:
-  # Get the required version of Python 3 into a temporary directory, but only for Python 2.7 Travis mode for now
-  # This is for compile-related tests to run successfully
-  - |
-    if [ `python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'` == "2.7" ] ; then
-      export PY3_BIN_TARBALL=ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834
-      echo "PY3_BIN_TARBALL is: $PY3_BIN_TARBALL"
-      export PY3_TARBALL_EXT=.tar.gz
-      echo "PY3_TARBALL_EXT is: $PY3_TARBALL_EXT"
-      export ACTIVEPYTHON_DOWNLOAD_URL=https://downloads.activestate.com/ActivePython/releases
-      echo "ACTIVEPYTHON_DOWNLOAD_URL is: $ACTIVEPYTHON_DOWNLOAD_URL"
-      export PY3_URL=$ACTIVEPYTHON_DOWNLOAD_URL/3.6.0.3600/$PY3_BIN_TARBALL$PY3_TARBALL_EXT
-      echo "PY3_URL is: $PY3_URL"
-      curl -sSf -o $PY3_BIN_TARBALL$PY3_TARBALL_EXT $PY3_URL
-      echo 'Finished downloading Python 3 tarball...'
-      mkdir -p ~/py3-bin
-      sudo tar xzf $PY3_BIN_TARBALL$PY3_TARBALL_EXT --directory ~/py3-bin
-      echo 'Finished extracting tarball...'
-      export PYTHON3=~/py3-bin/$PY3_BIN_TARBALL/INSTALLDIR/bin/python3
-      $PYTHON3 --version
-    else
-      echo 'Not running in Python 2.7 Travis mode...'
-    fi
   # Use GCC 6
   # - |
   #   if [ `which gcc-6` ] && [ `which g++-6` ] ; then
@@ -296,6 +145,18 @@ before_install:
   - clang --version
   - clang++ --version
   - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
+  - which llvm-config || true  # Find out location of llvm-config
+  - export LLVM_CONFIG=/usr/local/clang-7.0.0/bin/llvm-config  # From llvm-config location
+  - llvm-config --version || true  # Ignore exit code if llvm-config does not exist
+  - /usr/bin/llvm-config --version || true  # Ignore exit code if llvm-config does not exist
+  # Ensure latest Rust is installed
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
+  - source $HOME/.cargo/env
+  - rustup update stable
+  - which rustup
+  - rustup --version
+  - which rustc
+  - rustc --version
 install:
   # Already in venv, no need for --user
   - travis_retry python -m pip install --upgrade setuptools pip
@@ -305,26 +166,31 @@ install:
   - travis_retry python -m pip install --upgrade -r requirements.txt  # Gets FuzzManager, lithium-reducer from GitHub
   - git --version
   - hg --version
-  - python2 --version
   - python3 --version
-  - pypy3 --version || true  # Ignore exit code if pypy3 does not exist
-  - python -m flake8 --version
-  - python -m pylint --version
+  # Linters may not work properly in latest Python nightly on Travis
+  - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m flake8 --version ; fi
+  - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m pylint --version ; fi
 before_script:
   # To run everything locally in local funfuzz github repository directory:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
   - |
-    if [ $TRAVIS_PYTHON_VERSION == "3.7" ] ; then
-      python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
-    elif [ $TRAVIS_PYTHON_VERSION == "nightly" ] ; then
-      python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
+    if [ $TRAVIS_PYTHON_VERSION == "nightly" ] ; then
+      # Work around astroid failing in Python nightly
+      python -m pip uninstall -y pylint astroid
+      # Work around flake8 failing in Python nightly
+      python -m pytest -s -p no:flake8,cov -m "not slow"
+      # python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     else
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
-  - mkdir -p ~/trees/
-  - travis_retry time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central
+  - mkdir -p $HOME/trees/
+  # aria2 / wget do not seem to have greater reliability than hg clone, so not using get_hg_repo.sh
+  # Apparently only hg 4.4+ have --stream - Python 3+ on Travis only has 4.2.2
+  - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
+after_failure:
+  - tail -n 100 $HOME/shell-cache/*/*.busted*
 after_success:
   - travis_retry codecov

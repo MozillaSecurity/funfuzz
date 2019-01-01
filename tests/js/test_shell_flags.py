@@ -6,8 +6,6 @@
 
 """Test the shell_flags.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import logging
 
 from _pytest.monkeypatch import MonkeyPatch
@@ -31,7 +29,7 @@ def mock_chance(i):
     Returns:
         bool: True if i > 0, False otherwise.
     """
-    return True if i > 0 else False
+    return i > 0
 
 
 class ShellFlagsTests(CompileShellTests):
@@ -63,7 +61,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--ion-pgo=on" in all_flags
         assert "--ion-sincos=on" in all_flags
         assert "--ion-instruction-reordering=on" in all_flags
-        assert "--ion-shared-stubs=on" in all_flags
         assert "--ion-regalloc=testbed" in all_flags
         assert '--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags
         assert "--ion-extra-checks" in all_flags
@@ -114,10 +111,10 @@ class ShellFlagsTests(CompileShellTests):
 
         all_flags = js.shell_flags.random_flag_set(self.test_shell_compile())
         assert "--fuzzing-safe" in all_flags
+        assert "--no-streams" in all_flags
         assert "--nursery-strings=on" in all_flags
         assert "--spectre-mitigations=on" in all_flags
         assert "--ion-offthread-compile=on" in all_flags
-        # assert "--enable-streams" in all_flags
         assert "--no-unboxed-objects" in all_flags
         assert "--no-cgc" in all_flags
         assert "--gc-zeal=4,999" in all_flags

@@ -7,8 +7,6 @@
 """Miscellaneous helper functions.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals  # isort:skip
-
 import errno
 import os
 import platform
@@ -67,4 +65,4 @@ def handle_rm_readonly(func, path, exc):
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
     """Append the word "DEBUG" to any verbose output."""
     if verbose:
-        print("DEBUG - %s" % inp)
+        print(f"DEBUG - {inp}")

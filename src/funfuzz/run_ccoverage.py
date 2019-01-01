@@ -8,23 +8,16 @@
 
 """
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import argparse
 import logging
+from pathlib import Path
 import platform
 import sys
+import tempfile
 
 from .ccoverage import gatherer
 from .ccoverage import get_build
 from .ccoverage import reporter
-
-if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import tempfile
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
 
@@ -41,7 +34,7 @@ def parse_args(args=None):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--report", action="store_true", help="Report results to FuzzManager")
     arg_parser.add_argument("--grcov_ver",
-                            default="0.1.37",
+                            default="0.2.3",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
     arg_parser.add_argument("--url",
                             required=True,
@@ -72,6 +65,7 @@ def main(argparse_args=None):
         cov_result_file = gatherer.gather_coverage(dirpath)
         if args.report:
             reporter.report_coverage(cov_result_file)
+        reporter.disable_pool()
 
 
 if __name__ == "__main__":

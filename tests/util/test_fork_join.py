@@ -6,21 +6,13 @@
 
 """Test the fork_join.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import io
 import logging
-import sys
+from pathlib import Path
+import tempfile
 import unittest
 
 from funfuzz.util import fork_join
-
-if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import tempfile
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)

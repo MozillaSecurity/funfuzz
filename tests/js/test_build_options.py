@@ -6,21 +6,14 @@
 
 """Test the build_options.py file."""
 
-from __future__ import absolute_import, unicode_literals  # isort:skip
-
 import logging
-import sys
+from pathlib import Path
 import unittest
 
 from _pytest.monkeypatch import MonkeyPatch
 import pytest
 
 from funfuzz.js import build_options
-
-if sys.version_info.major == 2:
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -36,7 +29,7 @@ def mock_chance(i):
     Returns:
         bool: True if i > 0, False otherwise.
     """
-    return True if i > 0 else False
+    return i > 0
 
 
 class BuildOptionsTests(unittest.TestCase):
