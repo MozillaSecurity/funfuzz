@@ -11,18 +11,18 @@ from setuptools import setup
 EXTRAS = {
     "test": [
         "codecov==2.0.15",
-        "coverage==4.5.1",
+        "coverage==4.5.2",
         "distro>=1.3.0",
         "flake8==3.6.0",
         "flake8-commas==2.0.0",
-        "flake8-isort==2.5",
+        "flake8-isort==2.6.0",
         "flake8-quotes==1.0.0",
         "isort==4.3.4",
-        "pylint==1.9.3",
-        "pytest==3.10.0",
+        "pylint==2.2.2",
+        "pytest==3.10.1",
         "pytest-cov==2.6.0",
         "pytest-flake8==1.0.2",
-        "pytest-pylint==0.12.3",
+        "pytest-pylint==0.13.0",
     ]}
 
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
               "boto>=2.49.0",
               # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
               # "mercurial>=4.7.2",  # Mercurial does not support Python 3 yet
-              "requests>=2.18.4",
+              "requests>=2.20.1",
           ],
           extras_require=EXTRAS,
           python_requires=">=3.6",

@@ -31,7 +31,7 @@ from .util.lock_dir import LockDir
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
-class BuildInfo(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
+class BuildInfo:  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
     """Store information related to the build, such as its directory, source and type."""
 
     def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):  # pylint: disable=too-many-arguments
@@ -79,7 +79,6 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     if args:
         print("Warning: bot does not use positional arguments")
 
-    # pylint: disable=no-member
     if not options.useTreeherderBuilds and not build_options.DEFAULT_TREES_LOCATION.is_dir():
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True

@@ -128,14 +128,14 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     extraFlags = []  # pylint: disable=invalid-name
 
     if options.useInterestingnessTests:
-        if len(args) < 1:
+        if not args:
             print(f"args are: {args}", flush=True)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
                 extraFlags = a[8:].split(" ")  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
-    elif len(args) >= 1:
+    elif args:
         parser.error("Too many arguments.")
     else:
         options.testAndLabel = internalTestAndLabel(options)
@@ -281,13 +281,12 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
     """Use autobisectjs without interestingness tests to examine the revision of the js shell."""
-    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc,too-many-return-statements
+    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-return-doc,too-many-return-statements
         # pylint: disable=invalid-name
         (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.runtime_params,
                                                             options.build_options.runWithVg)
 
-        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
+        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):  # pylint: disable=no-else-return
             return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
             return "bad", f"Specified-bad exit code {exitCode}"
@@ -296,6 +295,7 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
+            # pylint: disable=no-else-return
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
                 return "bad", f"Specified-bad exit code {exitCode} (after converting to signal)"
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
@@ -305,11 +305,11 @@ def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param
             return "bad", f"Negative exit code {exitCode}"
         elif exitCode == 0:
             return "good", "Exit code 0"
-        elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
-                options.output != "") and (stdoutStderr.find("usage: js [") != -1 or
-                                           stdoutStderr.find("Error: Short option followed by junk") != -1 or
-                                           stdoutStderr.find("Error: Invalid long option:") != -1 or
-                                           stdoutStderr.find("Error: Invalid short option:") != -1):
+        elif exitCode in (1, 2) and options.output != "" and (    # pylint: disable=too-many-boolean-expressions
+                stdoutStderr.find("usage: js [") != -1 or
+                stdoutStderr.find("Error: Short option followed by junk") != -1 or
+                stdoutStderr.find("Error: Invalid long option:") != -1 or
+                stdoutStderr.find("Error: Invalid short option:") != -1):
             return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
             return "good", f"Acceptable exit code {exitCode}"
@@ -325,8 +325,7 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
     conditionScript = rel_or_abs_import(interestingness[0])  # pylint: disable=invalid-name
     conditionArgPrefix = interestingness[1:]  # pylint: disable=invalid-name
 
-    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
+    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-return-doc
         # pylint: disable=invalid-name
         conditionArgs = conditionArgPrefix + [str(shellFilename)] + options.runtime_params
         temp_dir = Path(tempfile.mkdtemp(prefix=f"abExtTestAndLabel-{hgHash}"))

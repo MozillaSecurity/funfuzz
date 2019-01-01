@@ -411,6 +411,12 @@ function regressionTestDependencies(maintest)
     if (maintest.indexOf("jit-test") != -1) {
       files.push(libdir + "prologue.js");
     }
+
+    // Include web-platform-test-shims.js and testharness.js for streams tests
+    if (maintest.indexOf("web-platform") != -1) {
+      files.push(js_src_tests_dir + "web-platform-test-shims.js");
+      files.push(w_pltfrm_res_dir + "testharness.js");
+    }
   }
 
   files.push(maintest);
@@ -805,6 +811,15 @@ var exprMakers =
 
   function(d, b) { return cat(["await ", makeExpr(d, b)]); },
 
+  // Test mark bits of objects
+  // addMarkObservers may need a better input than makeArrayLiteral, to focus more on valid objects
+  function(d, b) { return cat(["addMarkObservers", "(", makeArrayLiteral(d, b), ")"]); },
+  function(d, b) { return cat(["clearMarkObservers", "()"]); },
+  function(d, b) { return cat(["getMarks", "()"]); },
+
+  // Print the scope chain of objects
+  function(d, b) { return cat(["dumpScopeChain", "(", makeFunction(d, b), ")"]); },
+
   // Array functions (including extras).  The most interesting are map and filter, I think.
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
   // This fuzzer isn't the best for attacking this kind of thing, since it's unlikely that the code in the function will attempt to modify the array or make it go away.
@@ -877,6 +892,13 @@ var exprMakers =
 
   // ES5 getter/setter syntax, imperative (added in Gecko 1.9.3?)
   function(d, b) { return cat(["Object.defineProperty", "(", makeId(d, b), ", ", makePropertyName(d, b), ", ", makePropertyDescriptor(d, b), ")"]); },
+
+  // Test the prototype of a particular object
+  function(d, b) { return cat(["Object.getPrototypeOf", "(", makeId(d, b), ")"]); },
+  function(d, b) { return cat(["Object.setPrototypeOf", "(", makeId(d, b), ", ", makeId(d, b), ")"]); },
+
+  // Test retrieving an object's enumerable property values
+  function(d, b) { return cat(["Object.values", "(", makeId(d, b), ")"]); },
 
   // Old getter/setter syntax, imperative
   function(d, b) { return cat([makeExpr(d, b), ".", "__defineGetter__", "(", uneval(makeId(d, b)), ", ", makeFunction(d, b), ")"]); },

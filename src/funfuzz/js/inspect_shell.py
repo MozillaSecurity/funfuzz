@@ -94,7 +94,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     filetype = unsplit_file_type.split(":", 1)[1]
-    if platform.system() == "Windows":
+    if platform.system() == "Windows":  # pylint: disable=no-else-return
         assert "MS Windows" in filetype
         return "32" if "Intel 80386 32-bit" in filetype else "64"
     else:
@@ -132,7 +132,7 @@ def shellSupports(shellPath, args):  # pylint: disable=invalid-name,missing-para
     You can add support for a function, e.g. ["-e", "foo()"], or a flag, e.g. ["-j", "-e", "42"].
     """
     return_code = testBinary(shellPath, args, False)[1]
-    if return_code == 0:
+    if return_code == 0:  # pylint: disable=no-else-return
         return True
     elif 1 <= return_code <= 3:
         # Exit codes 1 through 3 are all plausible "non-support":

@@ -36,7 +36,7 @@ def ensure_mq_enabled():
         NoOptionError: Raises if an mq entry is not found in [extensions]
     """
     user_hgrc = Path.home() / ".hgrc"
-    assert user_hgrc.is_file()  # pylint: disable=no-member
+    assert user_hgrc.is_file()
 
     user_hgrc_cfg = configparser.ConfigParser()
     user_hgrc_cfg.read(str(user_hgrc))

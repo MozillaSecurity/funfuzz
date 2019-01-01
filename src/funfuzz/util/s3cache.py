@@ -28,7 +28,7 @@ def isEC2VM():  # pylint: disable=invalid-name,missing-return-doc,missing-return
         return False
 
 
-class S3Cache(object):  # pylint: disable=missing-docstring
+class S3Cache:  # pylint: disable=missing-docstring
     def __init__(self, bucket_name):
         self.bucket = None
         self.bucket_name = bucket_name

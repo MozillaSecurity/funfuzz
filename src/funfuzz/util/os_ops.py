@@ -50,7 +50,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
 
     # 64-bit cdb.exe seems to also be able to analyse 32-bit binary dumps.
     cdb_path = win64_debugging_folder / "cdb.exe"
-    if not cdb_path.is_file():  # pylint: disable=no-member
+    if not cdb_path.is_file():
         print()
         print("WARNING: cdb.exe is not found - all crashes will be interesting.")
         print()
@@ -62,7 +62,7 @@ def make_cdb_cmd(prog_full_path, crashed_pid):
         while True:
             if dump_name.is_file():
                 dbggr_cmd_path = Path(__file__).parent / "cdb_cmds.txt"
-                assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
+                assert dbggr_cmd_path.is_file()
 
                 cdb_cmd_list = []
                 cdb_cmd_list.append(f"$<{dbggr_cmd_path}")
@@ -109,11 +109,11 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
         core_name = f"core.{crashed_pid}" if is_pid_used else "core"
         core_name_path = Path.cwd() / core_name
         if not core_name_path.is_file():  # try the home dir
-            core_name_path = Path.home() / core_name  # pylint: disable=redefined-variable-type
+            core_name_path = Path.home() / core_name
 
     if core_name and core_name_path.is_file():
         dbggr_cmd_path = Path(__file__).parent / "gdb_cmds.txt"
-        assert dbggr_cmd_path.is_file()  # pylint: disable=no-member
+        assert dbggr_cmd_path.is_file()
 
         # Run gdb and move the core file. Tip: gdb gives more info for:
         # (debug with intact build dir > debug > opt with frame pointers > opt)
@@ -174,7 +174,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     else:
         dbggr_cmd = None
 
-    if dbggr_cmd:
+    if dbggr_cmd:  # pylint: disable=no-else-return
         sps.vdump(" ".join([str(x) for x in dbggr_cmd]))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
@@ -191,7 +191,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         ).returncode
         if dbbgr_exit_code != 0:
             print(f'Debugger exited with code {dbbgr_exit_code} : {" ".join(quote(str(x)) for x in dbggr_cmd)}')
-        if use_logfiles:
+        if use_logfiles:  # pylint: disable=no-else-return
             if core_file.is_file():
                 shutil.move(str(core_file), str(core_file))
                 subprocess.run(["gzip", "-f", str(core_file)], check=True)
@@ -250,8 +250,8 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         reports_dir = base_dir / "Library" / "Logs" / "DiagnosticReports"
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
-        if reports_dir.is_dir():  # pylint: disable=no-member
-            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)  # pylint: disable=no-member
+        if reports_dir.is_dir():
+            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)
         else:
             crash_logs = []
 
@@ -308,7 +308,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
                     print(NO_DUMP_MSG)
                     return False
             except OSError as ex:
-                if ex.errno == 2:
+                if ex.errno == 2:  # pylint: disable=no-else-return
                     print(NO_DUMP_MSG)
                     return False
                 else:
@@ -326,6 +326,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
                     return False
             except OSError as ex:
                 # If the key value cannot be found, the dumps will be put in the default location
+                # pylint: disable=no-else-return
                 if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
                     return True
                 else:
@@ -334,6 +335,7 @@ def is_win_dumping_to_default():  # pylint: disable=too-complex
         return True
     except OSError as ex:
         # If the LocalDumps registry key cannot be found, dumps will be put in the default location.
+        # pylint: disable=no-else-return
         if ex.errno == 2 and ex.strerror == "The system cannot find the file specified":
             print()
             print("WARNING: The registry key HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\"

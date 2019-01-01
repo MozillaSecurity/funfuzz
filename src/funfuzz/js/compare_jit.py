@@ -18,11 +18,12 @@ import sys
 import tempfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
-import FTB.Signatures.CrashInfo as CrashInfo
+import FTB.Signatures.CrashInfo as Crash_Info
 
 from . import js_interesting
 from . import shell_flags
 from ..util import create_collector
+from ..util import file_system_helpers
 from ..util import lithium_helpers
 
 gOptions = ""  # pylint: disable=invalid-name
@@ -53,7 +54,7 @@ def ignore_some_stderr(err_inp):
 
 
 def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc,too-many-arguments
-                flags, infilename, logPrefix, repo, build_options_str, targetTime, options):
+                flags, infilename, logPrefix, repo, build_options_str, targetTime, options, ccoverage):
     """For use in loop.py
 
     Returns:
@@ -68,7 +69,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
     cl = compareLevel(jsEngine, flags, infilename, initialdir_name, options, False, is_quick_mode)
     lev = cl[0]
 
-    if lev != js_interesting.JS_FINE:
+    if not (ccoverage or lev == js_interesting.JS_FINE):
         itest = [__name__, f'--flags={" ".join(flags)}',
                  f"--minlevel={lev}", f"--timeout={options.timeout}", options.knownPath]
         (lithResult, _lithDetails, autoBisectLog) = lithium_helpers.pinpoint(  # pylint: disable=invalid-name
@@ -88,7 +89,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
 
         metadata = {}
         if autoBisectLog:
-            metadata = {"autoBisectLog": "".join(autoBisectLog)}
+            metadata = {"autoBisectLog": "\n".join(autoBisectLog)}
         options.collector.submit(cl[1], str(infilename), quality, metaData=metadata)
         return True
 
@@ -97,7 +98,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
 
 def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDiffs, quickMode):
     # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc,too-complex
-    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals
+    # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
 
     # options dict must be one we can pass to js_interesting.ShellResult
     # we also use it directly for knownPath, timeout, and collector
@@ -132,7 +133,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             print("Got usage error from:")
             print(f'  {" ".join(quote(str(x)) for x in command)}')
             assert i
-            js_interesting.deleteLogs(prefix)
+            file_system_helpers.delete_logs(prefix)
         elif r.lev > js_interesting.JS_OVERALL_MISMATCH:
             # would be more efficient to run lithium on one or the other, but meh
             summary_more_serious = js_interesting.summaryString(r.issues + ["compare_jit found a more serious bug"],
@@ -151,7 +152,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 r.lev, r.runinfo.elapsedtime)
             print(f"{infilename} | {summary_other}")
             print(f'  {" ".join(quote(str(x)) for x in command)}')
-            js_interesting.deleteLogs(prefix)
+            file_system_helpers.delete_logs(prefix)
             if not i:
                 return js_interesting.JS_FINE, None
         elif oom:
@@ -160,7 +161,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             message = "compare_jit is not comparing output: OOM"
             summary_oom = js_interesting.summaryString(r.issues + [message], r.lev, r.runinfo.elapsedtime)
             print(f"{infilename} | {summary_oom}")
-            js_interesting.deleteLogs(prefix)
+            file_system_helpers.delete_logs(prefix)
             if not i:
                 return js_interesting.JS_FINE, None
         elif not i:
@@ -169,8 +170,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         else:
             # Compare the output of this run (r.out) to the output of the first run (r0.out), etc.
 
-            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-                # pylint: disable=missing-return-type-doc
+            def optionDisabledAsmOnOneSide():  # pylint: disable=invalid-name
                 asmMsg = "asm.js type error: Disabled by javascript.options.asmjs"  # pylint: disable=invalid-name
                 # pylint: disable=invalid-name
                 # pylint: disable=cell-var-from-loop
@@ -182,7 +182,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
             mismatchErr = (r.err != r0.err and not optionDisabledAsmOnOneSide())  # pylint: disable=invalid-name
             mismatchOut = (r.out != r0.out)  # pylint: disable=invalid-name
 
-            if mismatchErr or mismatchOut:
+            if mismatchErr or mismatchOut:  # pylint: disable=no-else-return
                 # Generate a short summary for stdout and a long summary for a "*-summary.txt" file.
                 # pylint: disable=invalid-name
                 rerunCommand = " ".join(quote(str(x)) for x in [
@@ -213,14 +213,14 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
                 pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
                 pc.addProgramArguments(flags)
-                crashInfo = CrashInfo.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
+                crashInfo = Crash_Info.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return js_interesting.JS_OVERALL_MISMATCH, crashInfo
             else:
                 # print "compare_jit: match"
-                js_interesting.deleteLogs(prefix)
+                file_system_helpers.delete_logs(prefix)
 
     # All matched :)
-    js_interesting.deleteLogs(prefix0)
+    file_system_helpers.delete_logs(prefix0)
     return js_interesting.JS_FINE, None
 
 

@@ -53,10 +53,9 @@ else:
 
 class CompiledShellError(Exception):
     """Error class unique to CompiledShell objects."""
-    pass
 
 
-class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
+class CompiledShell:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """A CompiledShell object represents an actual compiled shell binary.
 
     Args:
@@ -322,7 +321,7 @@ class CompiledShell(object):  # pylint: disable=too-many-instance-attributes,too
         self.js_version = js_version
 
 
-def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-type-doc
+def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
     """Configures, compiles and copies a js shell according to required parameters."""
     print("Compiling...")  # Print *with* a trailing newline to avoid breaking other stuff
     js_objdir_path = shell.get_shell_cache_dir() / "objdir-js"
@@ -330,11 +329,8 @@ def cfgJsCompile(shell):  # pylint: disable=invalid-name,missing-param-doc,missi
     shell.set_js_objdir(js_objdir_path)
 
     sm_compile_helpers.autoconf_run(shell.get_repo_dir() / "js" / "src")
-    try:
-        cfgBin(shell)
-        sm_compile(shell)
-    except (subprocess.CalledProcessError, OSError):
-        raise
+    cfgBin(shell)
+    sm_compile(shell)
     inspect_shell.verifyBinary(shell)
 
     compile_log = shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.fuzzmanagerconf"
@@ -600,7 +596,7 @@ def sm_compile(shell):
 
 
 def makeTestRev(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    def testRev(rev):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
+    def testRev(rev):  # pylint: disable=invalid-name,missing-return-doc,missing-return-type-doc
         shell = CompiledShell(options.build_options, rev)
         print(f"Rev {rev}:", end=" ")
 
@@ -620,7 +616,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     assert sm_compile_helpers.get_lock_dir_path(Path.home(), shell.build_opts.repo_dir).is_dir()
     cached_no_shell = shell.get_shell_cache_js_bin_path().with_suffix(".busted")
 
-    if shell.get_shell_cache_js_bin_path().is_file():
+    if shell.get_shell_cache_js_bin_path().is_file():  # pylint: disable=no-else-return
         # Don't remove the comma at the end of this line, and thus remove the newline printed.
         # We would break JSBugMon.
         print("Found cached shell...")
