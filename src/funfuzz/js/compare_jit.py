@@ -112,7 +112,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         # Only used during initial fuzzing. Allowed to have false negatives.
         combos = [combos[0]]
 
-    if flags and "--no-wasm" not in flags and "--no-wasm-ion" not in flags and "--no-wasm-baseline" not in flags:
+    # Remove any of "--no-wasm", "--no-wasm-ion", "--no-wasm-baseline" flags from being used in compare_jit
+    flags = list(set(flags) - {"--no-wasm", "--no-wasm-ion", "--no-wasm-baseline"})
+    if flags:
         combos.insert(0, flags)
 
     commands = [[jsEngine] + combo + [str(infilename)] for combo in combos]
