@@ -52,9 +52,7 @@ def wasmopt_run(seed):
     Returns:
         bool: Returns True on successful wasm-opt execution, False otherwise
     """
-    if platform.system() != "Linux":
-        print("binaryen is only available on Linux systems")
-        return False
+    assert platform.system() != "Linux"
 
     assert seed.is_file()
     seed_wrapper_output = seed.resolve().with_suffix(".wrapper")
