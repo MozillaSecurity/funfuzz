@@ -344,7 +344,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     cfg_cmds = []
     cfg_env = copy.deepcopy(os.environ)
     orig_cfg_env = copy.deepcopy(os.environ)
-    cfg_env["AR"] = "ar"
+    if platform.system() != "Windows":
+        cfg_env["AR"] = "ar"
     if shell.build_opts.enable32 and platform.system() == "Linux":
         # 32-bit shell on 32/64-bit x86 Linux
         cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
