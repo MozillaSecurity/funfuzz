@@ -171,9 +171,6 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
     if platform.system() == "Windows":
         build_options.buildWithClang = True
 
-    if platform.system() == "Linux":
-        build_options.buildWithClang = True
-
     if build_options.enableArmSimulatorObsolete:
         build_options.enableSimulatorArm32 = True
 
@@ -298,6 +295,10 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
 
     if args.runWithVg and not args.buildWithVg:
         return False, "--run-with-valgrind needs --build-with-valgrind."
+
+    if args.buildWithClang:
+        if platform.system() == "Linux" and not args.buildWithAsan:
+            return False, "We do not really care about non-Asan clang-compiled Linux builds yet."
 
     if args.buildWithAsan:
         if not args.buildWithClang:
