@@ -393,7 +393,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm64")
 
     elif platform.system() == "Windows":
-        cfg_env["LIB_CLANG_PATH"] = f"{PROGRAMW6432_DIR}/LLVM/bin"
+        cfg_env["LIBCLANG_PATH"] = f"{PROGRAMW6432_DIR}/LLVM/bin"
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
