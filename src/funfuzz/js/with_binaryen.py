@@ -52,7 +52,7 @@ def wasmopt_run(seed):
     Returns:
         bool: Returns True on successful wasm-opt execution, False otherwise
     """
-    assert platform.system() != "Linux"
+    assert platform.system() == "Linux"
 
     assert seed.is_file()
     seed_wrapper_output = seed.resolve().with_suffix(".wrapper")
