@@ -19,7 +19,7 @@ EXTRAS = {
         "isort==4.3.4",
         "pylint==2.2.2",
         "pytest==3.10.1",
-        "pytest-cov==2.6.0",
+        "pytest-cov==2.6.1",
         "pytest-flake8==1.0.2",
         "pytest-pylint==0.13.0",
     ]}
