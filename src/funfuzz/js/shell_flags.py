@@ -255,8 +255,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
     if shell_supports_flag(shell_path, "--gc-zeal=1,1") and chance(.9):
         allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
-        # Lowered from 25 due to bug 1516138
-        highest_gczeal = 23
+        highest_gczeal = 25
         gczeal_value = highest_gczeal - 3  # 3 levels disabled below
         gczeal_a = final_value = 3 if chance(.001) else random.randint(0, gczeal_value)  # 3 is for tests
 
