@@ -6,6 +6,7 @@
 
 """setuptools install script"""
 
+from setuptools import find_packages
 from setuptools import setup
 
 EXTRAS = {
@@ -31,13 +32,6 @@ if __name__ == "__main__":
           entry_points={
               "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },
-          packages=[
-              "funfuzz",
-              "funfuzz.autobisectjs",
-              "funfuzz.ccoverage",
-              "funfuzz.js",
-              "funfuzz.util",
-          ],
           package_data={"funfuzz": [
               "autobisectjs/*",
               "ccoverage/*",
@@ -47,6 +41,7 @@ if __name__ == "__main__":
               "util/*",
           ]},
           package_dir={"": "src"},
+          packages=find_packages(where="src"),
           install_requires=[
               "boto>=2.49.0",
               # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
