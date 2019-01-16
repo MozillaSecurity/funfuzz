@@ -21,7 +21,7 @@ EXTRAS = {
         "pytest==3.10.1",
         "pytest-cov==2.6.1",
         "pytest-flake8==1.0.3",
-        "pytest-pylint==0.13.0",
+        "pytest-pylint==0.14.0",
     ]}
 
 
