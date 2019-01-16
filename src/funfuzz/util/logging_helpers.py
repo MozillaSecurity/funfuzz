@@ -15,7 +15,8 @@ def get_logger(name, level=logging.INFO, terminator="\n"):
 
     Args:
         name (str): Name of the logger
-        terminator (str): terminator string to be appended to every line
+        level (int): Required logging level
+        terminator (str): Terminator string to be appended to every line
 
     Returns:
         logging.Logger: Logging object
